@@ -9,5 +9,6 @@
     <string name="copy_device">Copy Device</string>
     <string name="delete_device">Delete Device</string>
     <string name="add_to_configured_devices">Add to configured devices</string>
+    <string name="error_reading_configured_devices">Error reading configured devices</string>
     
 </resources>

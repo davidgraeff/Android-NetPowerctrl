@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.TabActivity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -43,7 +47,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		lvConfiguredDevices = (ListView)findViewById(R.id.lvConfiguredDevices);
   		lvDiscoveredDevices = (ListView)findViewById(R.id.lvDiscoveredDevices);
 
-        tmp();
+        ReadConfiguredDevices();
 
         lvConfiguredDevices.setOnItemClickListener(this);
         lvDiscoveredDevices.setOnItemClickListener(this);
@@ -52,7 +56,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         registerForContextMenu(lvDiscoveredDevices);
     }
     
-    public void tmp() {
+    public void ReadConfiguredDevices() {
     	alConfiguredDevices = new ArrayList<Map<String,String>>();
     	adpConfiguredDevices = new SimpleAdapter(this,
     										     alConfiguredDevices,
@@ -61,28 +65,22 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     										     new int[] { android.R.id.text1, android.R.id.text2 });
   		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
 
-  		for (int i=0; i<4; i++) {
-	  		HashMap<String, String> item = new HashMap<String, String>();
-	  		item.put("name", String.format("conf %d", i));
-	  		item.put("ip", String.format("c%d", i));
-	  		alConfiguredDevices.add(item);
-  		}
-		
-    	alDiscoveredDevices = new ArrayList<Map<String,String>>();
-    	adpDiscoveredDevices = new SimpleAdapter(this,
-    										     alDiscoveredDevices,
-    										     android.R.layout.simple_list_item_2,
-    										     new String[]{ "name", "ip" },
-    										     new int[] { android.R.id.text1, android.R.id.text2 });
-  		lvDiscoveredDevices.setAdapter(adpDiscoveredDevices);
-
-  		for (int i=0; i<6; i++) {
-	  		HashMap<String, String> item = new HashMap<String, String>();
-	  		item.put("name", String.format("dis %d", i));
-	  		item.put("ip", String.format("d%d", i));
-	  		alDiscoveredDevices.add(item);
-  		}
-		
+		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
+		String configured_devices_str = prefs.getString("configured_devices", "[]");
+  		try {
+			JSONArray jdevices = new JSONArray(configured_devices_str);
+			
+			for (int i=0; i<jdevices.length(); i++) {
+				JSONObject jhost = jdevices.getJSONObject(i);
+				HashMap<String, String> item = new HashMap<String, String>();
+				item.put("name", jhost.getString("name"));
+				item.put("ip", jhost.getString("ip"));
+				alConfiguredDevices.add(item);
+			}
+		}
+		catch (JSONException e) {
+			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
+		}
 	}
     
   	@Override
