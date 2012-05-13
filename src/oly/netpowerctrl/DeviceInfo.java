@@ -2,7 +2,6 @@ package oly.netpowerctrl;
 
 import java.util.List;
 
-
 // this class holds all the info about one device
 public class DeviceInfo {
 
@@ -11,9 +10,5 @@ public class DeviceInfo {
 	
 	public List<OutletInfo> Outlets;
 	
-	// this class holds the info about a single outlet
-	public class OutletInfo {
-		public String Description;
-		public boolean State;
-	}
+	
 }
