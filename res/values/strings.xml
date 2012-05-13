@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="hello">Hello World, NetpowerctrlActivity!</string>
     <string name="app_name">Netpowerctrl</string>
-
+    
+    <string name="configured_devices">Configured Devices</string>
+    <string name="discovered_devices">Discovered Devices</string>
+    
+    <string name="edit_device">Edit Device</string>
+    <string name="copy_device">Copy Device</string>
+    <string name="delete_device">Delete Device</string>
+    <string name="add_to_configured_devices">Add to configured devices</string>
+    
 </resources>
