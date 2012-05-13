@@ -1,7 +1,6 @@
 package oly.netpowerctrl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -19,7 +18,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TabHost;
 import android.widget.Toast;
 
@@ -28,10 +26,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	ListView lvConfiguredDevices;
 	ListView lvDiscoveredDevices;
 	
-	ArrayList<Map<String, String>> alConfiguredDevices;
-	ArrayList<Map<String, String>> alDiscoveredDevices;
-	SimpleAdapter adpConfiguredDevices;
-	SimpleAdapter adpDiscoveredDevices;
+	ArrayList<DeviceInfo> alConfiguredDevices;
+	ArrayList<DeviceInfo> alDiscoveredDevices;
+	DeviceListAdapter adpConfiguredDevices;
+	DeviceListAdapter adpDiscoveredDevices;
 	
 	/** Called when the activity is first created. */
     @Override
@@ -47,6 +45,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		lvConfiguredDevices = (ListView)findViewById(R.id.lvConfiguredDevices);
   		lvDiscoveredDevices = (ListView)findViewById(R.id.lvDiscoveredDevices);
 
+  		tmp();
         ReadConfiguredDevices();
 
         lvConfiguredDevices.setOnItemClickListener(this);
@@ -56,13 +55,16 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         registerForContextMenu(lvDiscoveredDevices);
     }
     
+    public void tmp() {
+		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
+		SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putString("configured_devices", "[ {'name': 'o1', 'ip': '123', 'outlets': [{'description': 'x'},{'description': 'y'}]}, {'name': 'o2', 'ip': '192.168.178.7', 'outlets': [{'description': 'x'},{'description': 'y'}]} ]");
+		prefEditor.commit();
+	}
+    
     public void ReadConfiguredDevices() {
-    	alConfiguredDevices = new ArrayList<Map<String,String>>();
-    	adpConfiguredDevices = new SimpleAdapter(this,
-    										     alConfiguredDevices,
-    										     android.R.layout.simple_list_item_2,
-    										     new String[]{ "name", "ip" },
-    										     new int[] { android.R.id.text1, android.R.id.text2 });
+    	alConfiguredDevices = new ArrayList<DeviceInfo>();
+    	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
   		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
 
 		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
@@ -72,15 +74,26 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			
 			for (int i=0; i<jdevices.length(); i++) {
 				JSONObject jhost = jdevices.getJSONObject(i);
-				HashMap<String, String> item = new HashMap<String, String>();
-				item.put("name", jhost.getString("name"));
-				item.put("ip", jhost.getString("ip"));
-				alConfiguredDevices.add(item);
+				DeviceInfo di = new DeviceInfo();
+				di.DeviceName = jhost.getString("name");
+				di.HostName = jhost.getString("ip");
+				di.Outlets = new ArrayList<OutletInfo>();
+
+				JSONArray joutlets = jhost.getJSONArray("outlets");
+				for (int j=0; j<joutlets.length(); j++) {
+					JSONObject joutlet = joutlets.getJSONObject(j);
+					OutletInfo oi = new OutletInfo();
+					oi.Description = joutlet.getString("description");
+					di.Outlets.add(oi);
+				}
+
+				alConfiguredDevices.add(di);
 			}
 		}
 		catch (JSONException e) {
 			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
+        adpConfiguredDevices.getFilter().filter("");
 	}
     
   	@Override
