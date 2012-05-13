@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:layout_weight="0"
-            android:src="@android:drawable/ic_menu_edit" />
+            android:background ="@android:drawable/ic_menu_edit" />
 
 </LinearLayout>
 
