@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,6 +56,29 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         registerForContextMenu(lvDiscoveredDevices);
     }
     
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, R.id.id_menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.id_menu_about:
+			AboutDialog about = new AboutDialog(this);
+			about.setTitle(R.string.app_name);
+			about.show();
+			return true;
+		/*
+		case MENU_ABOUT:
+			startActivity(new Intent(this, AboutActivity.class));
+			return true;
+			*/
+		}
+		return false;
+	}
+	
     public void tmp() {
 		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
 		SharedPreferences.Editor prefEditor = prefs.edit();
