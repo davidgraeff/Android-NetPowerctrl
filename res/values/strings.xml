@@ -13,11 +13,17 @@
 
     <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>
+    <string name="device_name_summary">Custom description of this device.</string>
     <string name="device_ip">Hostname or IP</string>
+    <string name="device_ip_summary">The hostname or IP address to connect to.</string>
+    <string name="device_standard_ports">Non-standard UDP ports?</string>
     <string name="device_send_udp">UDP port for sending</string>
+    <string name="device_send_udp_summary">Consult the device\'s web interface ("Receive Port").</string>
     <string name="device_recv_udp">UDP port for receiving</string>
+    <string name="device_recv_udp_summary">Consult the device\'s web interface ("Send Port").</string>
     <string name="device_outlets">Outlets</string>
 
+    <string name="menu_add_device">Add</string>
     <string name="menu_about">About</string>
     
 </resources>

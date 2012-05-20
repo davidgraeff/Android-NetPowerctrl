@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.TabActivity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -46,6 +48,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		lvConfiguredDevices = (ListView)findViewById(R.id.lvConfiguredDevices);
   		lvDiscoveredDevices = (ListView)findViewById(R.id.lvDiscoveredDevices);
 
+    	alConfiguredDevices = new ArrayList<DeviceInfo>();
+    	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
+  		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
+
   		tmp();
         ReadConfiguredDevices();
 
@@ -58,6 +64,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, R.id.id_menu_add_device, 0, R.string.menu_add_device).setIcon(android.R.drawable.ic_menu_add);
 		menu.add(0, R.id.id_menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
 		return true;
 	}
@@ -65,18 +72,24 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.id_menu_add_device:
+			startActivityForResult(new Intent(this, DevicePreferences.class), R.id.request_code_new_device);
+			return true;
+
 		case R.id.id_menu_about:
 			AboutDialog about = new AboutDialog(this);
 			about.setTitle(R.string.app_name);
 			about.show();
 			return true;
-		/*
-		case MENU_ABOUT:
-			startActivity(new Intent(this, AboutActivity.class));
-			return true;
-			*/
 		}
 		return false;
+	}
+	
+	@Override
+	protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+		if (requestCode == R.id.request_code_new_device) {
+			ReadConfiguredDevices();
+		}
 	}
 	
     public void tmp() {
@@ -87,9 +100,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	}
     
     public void ReadConfiguredDevices() {
-    	alConfiguredDevices = new ArrayList<DeviceInfo>();
-    	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
-  		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
+    	alConfiguredDevices.clear();
 
 		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
 		String configured_devices_str = prefs.getString("configured_devices", "[]");
@@ -118,7 +129,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
         adpConfiguredDevices.getFilter().filter("");
-	}
+    }
     
   	@Override
   	public void onCreateContextMenu(ContextMenu cm, View v, ContextMenuInfo cmi) {

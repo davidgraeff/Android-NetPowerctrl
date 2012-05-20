@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="Device Settings">
+    <EditTextPreference android:summary="@string/device_name_summary" android:key="setting_device_name" android:title="@string/device_name" android:dialogMessage="@string/device_name"/>
+    <EditTextPreference android:summary="@string/device_ip_summary" android:key="setting_device_ip" android:title="@string/device_ip" android:dialogMessage="@string/device_ip"/>
+    <CheckBoxPreference android:key="setting_standard_ports" android:title="@string/device_standard_ports"/>
+    <EditTextPreference android:key="setting_send_udp" android:title="@string/device_send_udp" android:defaultValue="1075" android:dependency="setting_standard_ports" android:shouldDisableView="true"/>
+    <EditTextPreference android:key="setting_recv_udp" android:title="@string/device_recv_udp" android:defaultValue="1077" android:dependency="setting_standard_ports" android:shouldDisableView="true"/>
+    
+
+</PreferenceScreen>

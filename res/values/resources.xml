@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item format="integer" name="id_menu_about" type="id">100042</item>
+    <item format="integer" name="id_menu_add_device" type="id">100042</item>
+    <item format="integer" name="id_menu_about" type="id">100043</item>
+    
+    <item format="integer" name="request_code_new_device" type="id">100100</item>
+    
     
 </resources>
