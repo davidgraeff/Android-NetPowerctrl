@@ -155,12 +155,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   	}
 
 	@Override
-	public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-		Object o = arg0.getItemAtPosition(position);
+	public void onItemClick(AdapterView<?> av, View v, int position, long id) {
+		Object o = av.getItemAtPosition(position);
 		if (o != null) {
-			@SuppressWarnings("unchecked")
-			Map<String,String> map = (Map<String,String>)o;
-			Toast.makeText(getBaseContext(), String.format("click %s/%s", map.get("name"), map.get("ip")), Toast.LENGTH_LONG).show();
+			DeviceInfo di = (DeviceInfo)o;
+			Toast.makeText(getBaseContext(), String.format("click %s/%s", di.DeviceName, di.HostName), Toast.LENGTH_LONG).show();
 		}
 	}     
 }

@@ -13,7 +13,7 @@
 			    android:layout_height="wrap_content"
 	            android:layout_weight="1"
 			    android:orientation="vertical">
-			
+				
 			    <TextView android:id="@+id/device_name"
 			        android:textSize="16sp"
 			        android:textStyle="bold"
@@ -27,13 +27,24 @@
 			
 			</LinearLayout>
 
+		<TextView
+		    android:id="@+id/line"
+		    style="?android:attr/listSeparatorTextViewStyle"
+		    android:layout_width="1dp"
+		    android:layout_height="fill_parent"
+		    android:layout_marginBottom="5dp"
+		    android:layout_marginTop="5dp" />
+		   
         <ImageButton
             android:id="@+id/btnEditDevice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
             android:layout_weight="0"
-            android:background ="@android:drawable/ic_menu_edit" />
+            android:background="@android:drawable/list_selector_background"
+            android:contentDescription="@string/edit_device"
+            android:src="@android:drawable/ic_menu_edit" />
 
 </LinearLayout>
 
