@@ -1,11 +1,6 @@
 package oly.netpowerctrl;
 
 import java.util.ArrayList;
-import java.util.Map;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.TabActivity;
 import android.content.Intent;
@@ -17,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -73,7 +67,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.id_menu_add_device:
-			startActivityForResult(new Intent(this, DevicePreferences.class), R.id.request_code_new_device);
+			int devno = alConfiguredDevices.size();
+			Intent it = new Intent(this, DevicePreferences.class);
+			it.putExtra("new_device", true);
+			//it.putExtra("device_info", new DeviceInfo());
+			startActivityForResult(it, devno);
 			return true;
 
 		case R.id.id_menu_about:
@@ -87,15 +85,25 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	
 	@Override
 	protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-		if (requestCode == R.id.request_code_new_device) {
-			ReadConfiguredDevices();
-		}
+		Toast.makeText(getBaseContext(), String.format("result %d", resultCode), Toast.LENGTH_LONG).show();
+		ReadConfiguredDevices();
 	}
 	
     public void tmp() {
 		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
 		SharedPreferences.Editor prefEditor = prefs.edit();
-		prefEditor.putString("configured_devices", "[ {'name': 'o1', 'ip': '123', 'outlets': [{'description': 'x'},{'description': 'y'}]}, {'name': 'o2', 'ip': '192.168.178.7', 'outlets': [{'description': 'x'},{'description': 'y'}]} ]");
+		prefEditor.putInt("num_configured_devices", 2);
+		
+		prefEditor.putString("setting_device_name_0", "gaga");
+		prefEditor.putString("setting_device_ip_0", "lala");
+		prefEditor.putBoolean("setting_standard_ports_0", true);
+		
+		prefEditor.putString("setting_device_name_1", "lulu");
+		prefEditor.putString("setting_device_ip_1", "schuhu");
+		prefEditor.putBoolean("setting_standard_ports_1", false);
+		prefEditor.putInt("setting_send_udp_1",17);
+		prefEditor.putInt("setting_recv_udp_1",18);
+		
 		prefEditor.commit();
 	}
     
@@ -103,30 +111,14 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	alConfiguredDevices.clear();
 
 		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
-		String configured_devices_str = prefs.getString("configured_devices", "[]");
-  		try {
-			JSONArray jdevices = new JSONArray(configured_devices_str);
-			
-			for (int i=0; i<jdevices.length(); i++) {
-				JSONObject jhost = jdevices.getJSONObject(i);
-				DeviceInfo di = new DeviceInfo();
-				di.DeviceName = jhost.getString("name");
-				di.HostName = jhost.getString("ip");
-				di.Outlets = new ArrayList<OutletInfo>();
+		int num_configured_devices = prefs.getInt("num_configured_devices", 0);
+		for (int i=0; i<num_configured_devices; i++) {
+			DeviceInfo di = new DeviceInfo();
+			di.DeviceName = prefs.getString(String.format("setting_device_name_%d", i), "unknown device");
+			di.HostName = prefs.getString(String.format("setting_device_ip_%d", i), "unknown device");
+			di.Outlets = new ArrayList<OutletInfo>();
 
-				JSONArray joutlets = jhost.getJSONArray("outlets");
-				for (int j=0; j<joutlets.length(); j++) {
-					JSONObject joutlet = joutlets.getJSONObject(j);
-					OutletInfo oi = new OutletInfo();
-					oi.Description = joutlet.getString("description");
-					di.Outlets.add(oi);
-				}
-
-				alConfiguredDevices.add(di);
-			}
-		}
-		catch (JSONException e) {
-			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
+			alConfiguredDevices.add(di);
 		}
         adpConfiguredDevices.getFilter().filter("");
     }

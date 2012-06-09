@@ -5,6 +5,9 @@
     <CheckBoxPreference android:key="setting_standard_ports" android:title="@string/device_standard_ports"/>
     <EditTextPreference android:key="setting_send_udp" android:title="@string/device_send_udp" android:defaultValue="1075" android:dependency="setting_standard_ports" android:shouldDisableView="true"/>
     <EditTextPreference android:key="setting_recv_udp" android:title="@string/device_recv_udp" android:defaultValue="1077" android:dependency="setting_standard_ports" android:shouldDisableView="true"/>
+    <EditTextPreference android:summary="@string/device_username_summary" android:key="setting_username" android:title="@string/device_username"/>
+    <EditTextPreference android:summary="@string/device_password_summary" android:key="setting_password" android:title="@string/device_password" android:password="true"/>
+    <PreferenceScreen android:title="@string/device_outlets" android:key="setting_outlets"></PreferenceScreen>
     
 
 </PreferenceScreen>

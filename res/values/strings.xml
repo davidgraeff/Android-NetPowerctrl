@@ -21,8 +21,13 @@
     <string name="device_send_udp_summary">Consult the device\'s web interface ("Receive Port").</string>
     <string name="device_recv_udp">UDP port for receiving</string>
     <string name="device_recv_udp_summary">Consult the device\'s web interface ("Send Port").</string>
+    <string name="device_username">Username</string>
+    <string name="device_username_summary">The username to log on to the device. Can be configured from the device\'s web interface</string>
+    <string name="device_password">Password</string>
+    <string name="device_password_summary">The password to log on to the device.</string>
     <string name="device_outlets">Outlets</string>
-
+    <string name="device_outlets_summary">Configure this device\'s outlets</string>
+    
     <string name="menu_add_device">Add</string>
     <string name="menu_about">About</string>
     
