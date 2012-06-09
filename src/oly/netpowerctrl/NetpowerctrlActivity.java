@@ -2,6 +2,10 @@ package oly.netpowerctrl;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.TabActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -58,23 +62,22 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.id_menu_add_device, 0, R.string.menu_add_device).setIcon(android.R.drawable.ic_menu_add);
-		menu.add(0, R.id.id_menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
+		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.id_menu_add_device:
-			int devno = alConfiguredDevices.size();
+		case R.id.menu_add_device:
 			Intent it = new Intent(this, DevicePreferences.class);
 			it.putExtra("new_device", true);
-			//it.putExtra("device_info", new DeviceInfo());
-			startActivityForResult(it, devno);
+			it.putExtra("device_info", new DeviceInfo(this));
+			startActivityForResult(it, R.id.request_code_new_device);
 			return true;
 
-		case R.id.id_menu_about:
+		case R.id.menu_about:
 			AboutDialog about = new AboutDialog(this);
 			about.setTitle(R.string.app_name);
 			about.show();
@@ -85,25 +88,49 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	
 	@Override
 	protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-		Toast.makeText(getBaseContext(), String.format("result %d", resultCode), Toast.LENGTH_LONG).show();
-		ReadConfiguredDevices();
+		if (requestCode == R.id.request_code_cancel)
+			return;
+		
+        DeviceInfo device_info = (DeviceInfo) data.getExtras().get("device_info");
+        SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
+    	String device_name = prefs.getString("setting_device_name", "ERROR");
+    	String device_ip = prefs.getString("setting_device_ip", "");
+    	boolean standard_ports = prefs.getBoolean("setting_standard_ports", false);
+    	int send_udp = prefs.getInt("setting_send_udp", R.integer.default_send_port);
+    	int recv_udp = prefs.getInt("setting_recv_udp", R.integer.default_recv_port);
+		String username = prefs.getString("setting_username", "");
+		String password = prefs.getString("setting_password", "");
+        
+		if (requestCode == R.id.request_code_new_device) {
+			if ((device_name == "") &&
+				(device_ip == "") &&
+				(username == "") &&
+				(password == "")) {
+				// editing was cancelled by user
+				return;
+			}
+			
+			device_info.DeviceName = device_name;
+			device_info.HostName = device_ip;
+			device_info.UserName = username;
+			device_info.Password = password;
+			if (standard_ports) {
+				device_info.SendPort = R.integer.default_send_port;
+				device_info.RecvPort = R.integer.default_recv_port;
+			} else {
+				device_info.SendPort = send_udp;
+				device_info.RecvPort = recv_udp;
+			}
+			alConfiguredDevices.add(device_info);
+	        adpConfiguredDevices.getFilter().filter("");
+		}
+		
 	}
 	
     public void tmp() {
 		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
 		SharedPreferences.Editor prefEditor = prefs.edit();
-		prefEditor.putInt("num_configured_devices", 2);
-		
-		prefEditor.putString("setting_device_name_0", "gaga");
-		prefEditor.putString("setting_device_ip_0", "lala");
-		prefEditor.putBoolean("setting_standard_ports_0", true);
-		
-		prefEditor.putString("setting_device_name_1", "lulu");
-		prefEditor.putString("setting_device_ip_1", "schuhu");
-		prefEditor.putBoolean("setting_standard_ports_1", false);
-		prefEditor.putInt("setting_send_udp_1",17);
-		prefEditor.putInt("setting_recv_udp_1",18);
-		
+		prefEditor.putString("configured_devices", "[ {'name': 'o1', 'ip': '123', 'outlets': [{'description': 'x'},{'description': 'y'}]}, {'name': 'o2', 'ip': '192.168.178.7', 'outlets': [{'description': 'x'},{'description': 'y'}]} ]");
 		prefEditor.commit();
 	}
     
@@ -111,14 +138,30 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	alConfiguredDevices.clear();
 
 		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
-		int num_configured_devices = prefs.getInt("num_configured_devices", 0);
-		for (int i=0; i<num_configured_devices; i++) {
-			DeviceInfo di = new DeviceInfo();
-			di.DeviceName = prefs.getString(String.format("setting_device_name_%d", i), "unknown device");
-			di.HostName = prefs.getString(String.format("setting_device_ip_%d", i), "unknown device");
-			di.Outlets = new ArrayList<OutletInfo>();
+		String configured_devices_str = prefs.getString("configured_devices", "[]");
+  		try {
+			JSONArray jdevices = new JSONArray(configured_devices_str);
+			
+			for (int i=0; i<jdevices.length(); i++) {
+				JSONObject jhost = jdevices.getJSONObject(i);
+				DeviceInfo di = new DeviceInfo(this);
+				di.DeviceName = jhost.getString("name");
+				di.HostName = jhost.getString("ip");
+				di.Outlets = new ArrayList<OutletInfo>();
 
-			alConfiguredDevices.add(di);
+				JSONArray joutlets = jhost.getJSONArray("outlets");
+				for (int j=0; j<joutlets.length(); j++) {
+					JSONObject joutlet = joutlets.getJSONObject(j);
+					OutletInfo oi = new OutletInfo();
+					oi.Description = joutlet.getString("description");
+					di.Outlets.add(oi);
+				}
+
+				alConfiguredDevices.add(di);
+			}
+		}
+		catch (JSONException e) {
+			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
         adpConfiguredDevices.getFilter().filter("");
     }
