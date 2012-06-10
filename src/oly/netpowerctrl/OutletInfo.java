@@ -13,6 +13,11 @@ public class OutletInfo implements Parcelable {
 			State = false;
 		}
 
+		public OutletInfo(OutletInfo other) {
+			Description = other.Description;
+			State = other.State;
+		}
+
 		@Override
 		public int describeContents() {
 			return 0;

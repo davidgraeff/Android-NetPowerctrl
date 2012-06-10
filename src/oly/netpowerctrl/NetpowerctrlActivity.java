@@ -234,6 +234,22 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			onConfigureDevice(info.position);
 			return true;
   		}
+  	    case R.id.menu_delete_device: {
+	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+	  		alConfiguredDevices.remove(info.position);
+	  		SaveConfiguredDevices();
+	  		adpConfiguredDevices.getFilter().filter("");
+			return true;
+  		}
+  	    case R.id.menu_copy_device: {
+	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+	  		DeviceInfo new_device = new DeviceInfo(alConfiguredDevices.get(info.position));
+	  		new_device.DeviceName = String.format(getResources().getString(R.string.copy_of), new_device.DeviceName);
+	  		alConfiguredDevices.add(new_device);
+	  		SaveConfiguredDevices();
+	  		adpConfiguredDevices.getFilter().filter("");
+			return true;
+  		}
   	    default:
   	    	return super.onContextItemSelected(item);
   	    }

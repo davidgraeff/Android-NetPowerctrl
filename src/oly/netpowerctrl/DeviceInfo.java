@@ -38,6 +38,18 @@ public class DeviceInfo implements Parcelable {
     	RecvPort = cx.getResources().getInteger(R.integer.default_recv_port);
     }
 
+    public DeviceInfo(DeviceInfo other) {
+    	DeviceName = other.DeviceName;
+    	HostName = other.HostName;
+    	UserName = other.UserName;
+    	Password = other.Password;
+    	SendPort = other.SendPort;
+    	RecvPort = other.RecvPort;
+    	Outlets = new ArrayList<OutletInfo>();
+    	for (OutletInfo oi: other.Outlets)
+    		Outlets.add(new OutletInfo(oi));
+    }
+    
 	
 	@Override
 	public int describeContents() {
