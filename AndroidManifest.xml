@@ -23,6 +23,21 @@
         </activity>
         <activity android:name="DevicePreferences"></activity>
         <activity android:name="DeviceControl"></activity>
-        </application>
 
+	    <receiver
+	       android:icon="@drawable/netpowerctrl"
+	       android:label="Net-PowerCTRL widget"
+	       android:name="DeviceWidgetProvider" >
+	       <intent-filter >
+	            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+	       </intent-filter>
+	
+	       <meta-data
+	          android:name="android.appwidget.provider"
+	          android:resource="@xml/appwidget_provider" />
+		</receiver>
+	        
+     </application>
+
+    
 </manifest>

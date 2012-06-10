@@ -41,6 +41,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 						   getResources().getString(R.string.error_creating_device_control),
 						   Toast.LENGTH_LONG).show();
 			finish();
+			return;
 		}
 
 		setContentView(R.layout.device_control);
