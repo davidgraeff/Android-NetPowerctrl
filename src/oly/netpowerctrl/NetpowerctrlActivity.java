@@ -51,7 +51,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
   		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
 
-  		tmp();
         ReadConfiguredDevices();
 
         lvConfiguredDevices.setOnItemClickListener(this);
@@ -143,16 +142,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			} else {
 			  adpConfiguredDevices.notifyDataSetChanged();
 			}
+			SaveConfiguredDevices();
 		}
 	}
 	
-    public void tmp() {
-		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
-		SharedPreferences.Editor prefEditor = prefs.edit();
-		prefEditor.putString("configured_devices", "[ {'name': 'o1', 'ip': '123', 'outlets': [{'description': 'x'},{'description': 'y'}]}, {'name': 'o2', 'ip': '192.168.178.7', 'outlets': [{'description': 'x'},{'description': 'y'}]} ]");
-		prefEditor.commit();
-	}
-    
     public void ReadConfiguredDevices() {
     	alConfiguredDevices.clear();
 
@@ -166,6 +159,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				DeviceInfo di = new DeviceInfo(this);
 				di.DeviceName = jhost.getString("name");
 				di.HostName = jhost.getString("ip");
+				di.UserName= jhost.getString("username");
+				di.Password = jhost.getString("password");
+				di.SendPort = jhost.getInt("sendport");
+				di.RecvPort = jhost.getInt("recvport");
 				di.Outlets = new ArrayList<OutletInfo>();
 
 				JSONArray joutlets = jhost.getJSONArray("outlets");
@@ -183,6 +180,38 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
         adpConfiguredDevices.getFilter().filter("");
+    }
+    
+    public void SaveConfiguredDevices() {
+    	JSONArray jdevices = new JSONArray();
+  		try {
+  			for (DeviceInfo di: alConfiguredDevices) {
+				JSONObject jhost = new JSONObject();
+				jhost.put("name", di.DeviceName);
+				jhost.put("ip", di.HostName);
+				jhost.put("username", di.UserName);
+				jhost.put("password", di.Password);
+				jhost.put("sendport", di.SendPort);
+				jhost.put("recvport", di.RecvPort);
+
+				JSONArray joutlets = new JSONArray();
+	  			for (OutletInfo oi: di.Outlets) {
+					JSONObject joutlet = new JSONObject();
+					joutlet.put("description", oi.Description);
+					joutlets.put(joutlet);
+				}
+	  			jhost.put("outlets", joutlets);
+	  			jdevices.put(jhost);
+  			}
+		}
+		catch (JSONException e) {
+			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_saving_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
+			return;
+		}
+		SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
+		SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putString("configured_devices", jdevices.toString());
+		prefEditor.commit();
     }
     
   	@Override
