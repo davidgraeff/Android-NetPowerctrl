@@ -25,8 +25,10 @@ import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.Toast;
 
-public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent {
+public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent, DeviceFoundEvent {
 
+	DiscoveryThread discoveryThread = null;
+	
 	ListView lvConfiguredDevices;
 	ListView lvDiscoveredDevices;
 	
@@ -53,6 +55,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
   		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
 
+    	alDiscoveredDevices = new ArrayList<DeviceInfo>();
+    	adpDiscoveredDevices = new DeviceListAdapter(this, alDiscoveredDevices);
+  		lvDiscoveredDevices.setAdapter(adpDiscoveredDevices);
+
         ReadConfiguredDevices();
 
         lvConfiguredDevices.setOnItemClickListener(this);
@@ -62,6 +68,19 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         registerForContextMenu(lvDiscoveredDevices);
         
         adpConfiguredDevices.setDeviceConfigureEvent(this);
+    }
+    
+    @Override
+    protected void onStart() {
+    	super.onStart();
+    	
+    	alDiscoveredDevices.clear();
+  		adpDiscoveredDevices.getFilter().filter("");
+    	
+    	if (discoveryThread != null)
+    		discoveryThread.interrupt();
+    	discoveryThread = new DiscoveryThread(this, this);
+    	discoveryThread.start();
     }
     
     @Override
@@ -309,5 +328,42 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		alConfiguredDevices.clear();
   		SaveConfiguredDevices();
   		adpConfiguredDevices.getFilter().filter("");
+	}
+
+	@Override
+	public void onDeviceFound(DeviceInfo device_info) {
+		// we may have this one in the list already
+		boolean found = false;
+		for (DeviceInfo di: alDiscoveredDevices) {
+			if ((device_info.DeviceName == di.DeviceName) && (device_info.HostName == di.HostName)) {
+				found = true;
+				updateOutletInfo(di, device_info);
+				break;
+			}
+		}
+		
+		if (!found) {
+			alDiscoveredDevices.add(device_info);
+	  		adpDiscoveredDevices.getFilter().filter("");
+		}
+		
+		// if it matches a configured device, update it's outlet states
+		for (DeviceInfo di: alConfiguredDevices) {
+			if (device_info.HostName == di.HostName) {
+				updateOutletInfo(di, device_info);
+				break;
+			}
+		}
+	}
+	
+	public void updateOutletInfo(DeviceInfo target, DeviceInfo src) {
+		for (OutletInfo srcoi: src.Outlets) {
+			for (OutletInfo tgtoi: target.Outlets) {
+				if (tgtoi.Description == srcoi.Description) {
+					tgtoi.State = srcoi.State;
+					break;
+				}
+			}
+		}
 	}
 }
