@@ -45,6 +45,21 @@ public class DiscoveryThread extends Thread {
 		if (msg.length < 3)
 			return;
 		
+		if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
+			// error packet received
+			String desc;
+			if (msg[2].trim().equals("NoPass"))
+				desc = activity.getResources().getString(R.string.error_nopass);
+			else desc = msg[2];
+			final String error = activity.getResources().getString(R.string.error_packet_received) + desc;
+			activity.runOnUiThread(new Runnable() {
+			    public void run() {
+			    	Toast.makeText(activity, error, Toast.LENGTH_LONG).show();
+			    }
+			});
+			return;
+		}
+		
 		final DeviceInfo di = new DeviceInfo();
 		di.DeviceName = msg[1].trim();
 		di.HostName = msg[2];
