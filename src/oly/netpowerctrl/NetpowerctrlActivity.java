@@ -173,8 +173,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			device_info.UserName = username;
 			device_info.Password = password;
 			if (standard_ports) {
-				device_info.SendPort = R.integer.default_send_port;
-				device_info.RecvPort = R.integer.default_recv_port;
+				device_info.SendPort = getResources().getInteger(R.integer.default_send_port);
+				device_info.RecvPort = getResources().getInteger(R.integer.default_recv_port);
 			} else {
 				device_info.SendPort = send_udp;
 				device_info.RecvPort = recv_udp;
