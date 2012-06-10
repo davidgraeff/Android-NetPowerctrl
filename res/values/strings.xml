@@ -8,6 +8,7 @@
     <string name="edit_device">Edit Device</string>
     <string name="copy_device">Copy Device</string>
     <string name="delete_device">Delete Device</string>
+    <string name="delete_all_devices">Delete all devices</string>
     <string name="add_to_configured_devices">Add to configured devices</string>
     <string name="error_reading_configured_devices">Error reading configured devices</string>
     <string name="error_saving_configured_devices">Error saving configured devices</string>
@@ -32,7 +33,12 @@
     <string name="menu_add_device">Add</string>
     <string name="menu_about">About</string>
     <string name="menu_cancel">Cancel</string>
+    <string name="menu_delete_all">Delete all</string>
     
     <string name="default_device_name">New device</string>
     <string name="copy_of">Copy of %s</string>
+
+    <string name="confirmation_delete_device">Are you sure you want to delete this device?</string>
+    <string name="confirmation_delete_all_devices">Are you sure you want to delete all devices?</string>
+    
 </resources>

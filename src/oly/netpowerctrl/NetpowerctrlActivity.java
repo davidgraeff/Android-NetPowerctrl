@@ -6,7 +6,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.AlertDialog;
 import android.app.TabActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -65,6 +67,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(android.R.drawable.ic_menu_delete);
 		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
 		return true;
 	}
@@ -76,6 +79,19 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			Intent it = new Intent(this, DevicePreferences.class);
 			it.putExtra("new_device", true);
 			startActivityForResult(it, R.id.request_code_new_device);
+			return true;
+		}
+		
+		case R.id.menu_delete_all_devices: {
+			new AlertDialog.Builder(this)
+				.setTitle(R.string.delete_all_devices)
+				.setMessage(R.string.confirmation_delete_all_devices)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+				    public void onClick(DialogInterface dialog, int whichButton) {
+				    	deleteAllDevices();
+				    }})
+				 .setNegativeButton(android.R.string.no, null).show();
 			return true;
 		}
 		
@@ -235,10 +251,16 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			return true;
   		}
   	    case R.id.menu_delete_device: {
-	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-	  		alConfiguredDevices.remove(info.position);
-	  		SaveConfiguredDevices();
-	  		adpConfiguredDevices.getFilter().filter("");
+	  		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			new AlertDialog.Builder(this)
+				.setTitle(R.string.delete_device)
+				.setMessage(R.string.confirmation_delete_device)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+				    public void onClick(DialogInterface dialog, int whichButton) {
+				    	deleteDevice(info.position);
+				    }})
+				 .setNegativeButton(android.R.string.no, null).show();
 			return true;
   		}
   	    case R.id.menu_copy_device: {
@@ -275,5 +297,17 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			it.putExtra("device_info", di);
 			startActivityForResult(it, R.id.request_code_modify_device);
 		}
-	}     
+	}    
+	
+	public void deleteDevice(int position) {
+  		alConfiguredDevices.remove(position);
+  		SaveConfiguredDevices();
+  		adpConfiguredDevices.getFilter().filter("");
+	}
+	
+	public void deleteAllDevices() {
+  		alConfiguredDevices.clear();
+  		SaveConfiguredDevices();
+  		adpConfiguredDevices.getFilter().filter("");
+	}
 }
