@@ -17,12 +17,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.Toast;
 
-public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener {
+public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent {
 
 	ListView lvConfiguredDevices;
 	ListView lvDiscoveredDevices;
@@ -58,6 +59,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         
         registerForContextMenu(lvConfiguredDevices);
         registerForContextMenu(lvDiscoveredDevices);
+        
+        adpConfiguredDevices.setDeviceConfigureEvent(this);
     }
     
     @Override
@@ -70,46 +73,55 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.menu_add_device:
+		case R.id.menu_add_device: {
 			Intent it = new Intent(this, DevicePreferences.class);
 			it.putExtra("new_device", true);
-			it.putExtra("device_info", new DeviceInfo(this));
 			startActivityForResult(it, R.id.request_code_new_device);
 			return true;
-
-		case R.id.menu_about:
+		}
+		
+		case R.id.menu_about: {
 			AboutDialog about = new AboutDialog(this);
 			about.setTitle(R.string.app_name);
 			about.show();
 			return true;
+		}
 		}
 		return false;
 	}
 	
 	@Override
 	protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-		if (requestCode == R.id.request_code_cancel)
-			return;
-		
-        DeviceInfo device_info = (DeviceInfo) data.getExtras().get("device_info");
-        SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl", MODE_PRIVATE);
-    	String device_name = prefs.getString("setting_device_name", "ERROR");
-    	String device_ip = prefs.getString("setting_device_ip", "");
-    	boolean standard_ports = prefs.getBoolean("setting_standard_ports", false);
-    	int send_udp = prefs.getInt("setting_send_udp", R.integer.default_send_port);
-    	int recv_udp = prefs.getInt("setting_recv_udp", R.integer.default_recv_port);
-		String username = prefs.getString("setting_username", "");
-		String password = prefs.getString("setting_password", "");
-        
-		if (requestCode == R.id.request_code_new_device) {
-			if ((device_name == "") &&
-				(device_ip == "") &&
-				(username == "") &&
-				(password == "")) {
-				// editing was cancelled by user
-				return;
+		if ((requestCode == R.id.request_code_new_device) || (requestCode == R.id.request_code_modify_device)) {
+	        String prefName = data.getExtras().getString("SharedPreferencesName");
+	        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
+	    	String device_name = prefs.getString("setting_device_name", "ERROR");
+	    	String device_ip = prefs.getString("setting_device_ip", "");
+	    	boolean standard_ports = prefs.getBoolean("setting_standard_ports", false);
+	        int default_send_port = getResources().getInteger(R.integer.default_send_port);
+	        int default_recv_port = getResources().getInteger(R.integer.default_send_port);
+	    	int send_udp = Integer.getInteger(prefs.getString("setting_send_udp", ""), default_send_port);
+	    	int recv_udp = Integer.getInteger(prefs.getString("setting_recv_udp", ""), default_recv_port);
+			String username = prefs.getString("setting_username", "");
+			String password = prefs.getString("setting_password", "");
+	    
+			DeviceInfo device_info;
+			if (requestCode == R.id.request_code_new_device) {
+				if ((device_name == "") &&
+					(device_ip == "") &&
+					(username == "") &&
+					(password == "")) {
+					// editing was cancelled by user
+					return;
+				} else {
+					device_info = new DeviceInfo(this);
+				}
+			} else {
+				// requestCode == edit device
+		        int position = data.getExtras().getInt("position");
+		        device_info = (DeviceInfo)adpConfiguredDevices.getItem(position);
 			}
-			
+				
 			device_info.DeviceName = device_name;
 			device_info.HostName = device_ip;
 			device_info.UserName = username;
@@ -121,10 +133,14 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				device_info.SendPort = send_udp;
 				device_info.RecvPort = recv_udp;
 			}
-			alConfiguredDevices.add(device_info);
-	        adpConfiguredDevices.getFilter().filter("");
+
+			if (requestCode == R.id.request_code_new_device) {
+				alConfiguredDevices.add(device_info);
+				adpConfiguredDevices.getFilter().filter("");
+			} else {
+			  adpConfiguredDevices.notifyDataSetChanged();
+			}
 		}
-		
 	}
 	
     public void tmp() {
@@ -180,24 +196,15 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 
   	@Override
   	public boolean onContextItemSelected(MenuItem item) {
-  		/*
-  	    AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-			Object o = hosts_adapter.getItem(info.position);
-			@SuppressWarnings("unchecked")
-		Map<String,String> map = (Map<String,String>)o;
   	    switch (item.getItemId()) {
-  	        case R.id.menu_edit_host:
-  	        	Toast.makeText(getBaseContext(), String.format("Edit %s/%s", map.get("name"), map.get("ip")), Toast.LENGTH_LONG).show();
-  	            return true;
-  	        case R.id.menu_delete_host:
-  	        	host_list.remove(info.position);
-  	        	hosts_adapter.notifyDataSetChanged();
-  	            return true;
-  	        default:
-  	            return super.onContextItemSelected(item);
+  	    case R.id.menu_edit_device: {
+	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			onConfigureDevice(info.position);
+			return true;
+  		}
+  	    default:
+  	    	return super.onContextItemSelected(item);
   	    }
-  	    */
-  		return super.onContextItemSelected(item);
   	}
 
 	@Override
@@ -206,6 +213,19 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		if (o != null) {
 			DeviceInfo di = (DeviceInfo)o;
 			Toast.makeText(getBaseContext(), String.format("click %s/%s", di.DeviceName, di.HostName), Toast.LENGTH_LONG).show();
+		}
+	}
+
+	@Override
+	public void onConfigureDevice(int position) {
+		Object o = adpConfiguredDevices.getItem(position);
+		if (o != null) {
+			DeviceInfo di = (DeviceInfo)o;
+			Intent it = new Intent(this, DevicePreferences.class);
+			it.putExtra("new_device", false);
+			it.putExtra("position", position);
+			it.putExtra("device_info", di);
+			startActivityForResult(it, R.id.request_code_modify_device);
 		}
 	}     
 }

@@ -13,10 +13,11 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClickListener {
 
+	private DeviceConfigureEvent deviceConfigureEvent = null;
+	
     private List<DeviceInfo> all_devices;
     private List<DeviceInfo> visible_devices;
     private LayoutInflater inflater;
@@ -55,6 +56,7 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
         tvIP.setText(visible_devices.get(position).HostName);
         
         ImageButton btn = (ImageButton) convertView.findViewById(R.id.btnEditDevice); 
+        btn.setTag(position);
         btn.setFocusable(false); // or else onItemClick doesn't work in the ListView
         btn.setFocusableInTouchMode(false);
         btn.setOnClickListener(this);
@@ -62,9 +64,14 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
         return convertView;
     }
 
+    public void setDeviceConfigureEvent(DeviceConfigureEvent dce) {
+    	deviceConfigureEvent = dce;
+    }
+    
 	@Override
 	public void onClick(View v) {
-		Toast.makeText(v.getContext(), "ImageButton click", Toast.LENGTH_LONG).show();
+		if (deviceConfigureEvent != null) 
+			deviceConfigureEvent.onConfigureDevice((Integer)v.getTag());
 	}
     
     

@@ -1,5 +1,6 @@
 package oly.netpowerctrl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -15,13 +16,26 @@ public class DeviceInfo implements Parcelable {
 	public String UserName;
 	public String Password;
 	
-	public int SendPort = R.integer.default_send_port;
-	public int RecvPort = R.integer.default_recv_port;
+	public int SendPort;
+	public int RecvPort;
 	
 	public List<OutletInfo> Outlets;
 
+    public DeviceInfo() {
+    	DeviceName = "";
+    	HostName = "";
+    	UserName = "";
+    	Password = "";
+    	SendPort = -1;
+    	RecvPort = -1;
+    	Outlets = new ArrayList<OutletInfo>();
+    }
+    
     public DeviceInfo(Context cx) {
+    	this();
     	DeviceName = (String) cx.getResources().getText(R.string.default_device_name);
+    	SendPort = cx.getResources().getInteger(R.integer.default_send_port);
+    	RecvPort = cx.getResources().getInteger(R.integer.default_recv_port);
     }
 
 	
@@ -54,13 +68,14 @@ public class DeviceInfo implements Parcelable {
 
     // example constructor that takes a Parcel and gives you an object populated with it's values
     private DeviceInfo(Parcel in) {
+    	this();
 		DeviceName = in.readString();
 		HostName = in.readString();
 		UserName = in.readString();
 		Password = in.readString();
 		SendPort = in.readInt();
 		RecvPort = in.readInt();
-		in.readList(Outlets, null);
+		in.readTypedList(Outlets, OutletInfo.CREATOR);
     }
 	
 }
