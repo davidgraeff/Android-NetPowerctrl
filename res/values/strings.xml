@@ -15,6 +15,8 @@
     <string name="error_saving_configured_devices">Error saving configured devices</string>
     <string name="suggest_enter_username_password">You probably need to set the username/password in the device\'s settings.</string>
     <string name="error_sending_inquiry">Error sending inquiry packet</string>
+    <string name="error_creating_device_control">Internal program error: device unknown!</string>
+    <string name="error_outlet_number">Configuration error: this outlet was not assigned a number!</string>
     
     <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>

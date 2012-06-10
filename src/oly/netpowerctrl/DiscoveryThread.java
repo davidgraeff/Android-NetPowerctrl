@@ -31,7 +31,7 @@ public class DiscoveryThread extends Thread {
 			} catch (final IOException e) {
 				activity.runOnUiThread(new Runnable() {
 				    public void run() {
-				    	Toast.makeText(null, e.getMessage(), Toast.LENGTH_LONG).show();
+				    	Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
 				    }
 				});
 			}
@@ -46,19 +46,20 @@ public class DiscoveryThread extends Thread {
 			return;
 		
 		final DeviceInfo di = new DeviceInfo();
-		di.DeviceName = msg[0];
+		di.DeviceName = msg[1].trim();
 		di.HostName = msg[2];
 		di.RecvPort = recevied_port;
 		di.SendPort = activity.getResources().getInteger(R.integer.default_send_port); // that's where we were sending after all
 		
-		for (int i=6; i<msg.length; i++) {
+		for (int i=6; i<(msg.length-2); i++) {
 			String outlet[] = msg[i].split(",");
 			if (outlet.length < 1)
 				continue;
 			OutletInfo oi = new OutletInfo();
+			oi.OutletNumber = i-5; // 1-based
 			oi.Description = outlet[0];
 			if (outlet.length > 1)
-				oi.State = outlet[1] != "0";
+				oi.State = outlet[1].equals("1");
 			di.Outlets.add(oi);
 		}
 		

@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.DialogInterface;
@@ -212,6 +213,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				for (int j=0; j<joutlets.length(); j++) {
 					JSONObject joutlet = joutlets.getJSONObject(j);
 					OutletInfo oi = new OutletInfo();
+					oi.OutletNumber = joutlet.getInt("number");
 					oi.Description = joutlet.getString("description");
 					di.Outlets.add(oi);
 				}
@@ -240,6 +242,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				JSONArray joutlets = new JSONArray();
 	  			for (OutletInfo oi: di.Outlets) {
 					JSONObject joutlet = new JSONObject();
+					joutlet.put("number", oi.OutletNumber);
 					joutlet.put("description", oi.Description);
 					joutlets.put(joutlet);
 				}
@@ -321,10 +324,12 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		Object o = av.getItemAtPosition(position);
 		if (o != null) {
 			DeviceInfo di = (DeviceInfo)o;
-			Toast.makeText(getBaseContext(), String.format("click %s/%s", di.DeviceName, di.HostName), Toast.LENGTH_LONG).show();
-			if ((v == lvDiscoveredDevices) && (di.UserName.equals("")) && (di.Password.equals("")))
+			if ((av == lvDiscoveredDevices) && (di.UserName.equals("")) && (di.Password.equals("")))
 				Toast.makeText(getBaseContext(), R.string.suggest_enter_username_password, Toast.LENGTH_LONG).show();
-			//TODO show control activity
+			
+			Intent it = new Intent(this, DeviceControl.class);
+			it.putExtra("device", di);
+			startActivity(it);
 		}
 	}
 
@@ -391,26 +396,25 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	}
 	
 	public void sendQuery() {
+		final Activity self = this;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 			        String messageStr="wer da?\r\n";
-			        int server_port = getResources().getInteger(R.integer.default_send_port); //TODO: make configurable
-			        DatagramSocket s;
-					s = new DatagramSocket();
-					//TODO s.setBroadcast(true);
-					InetAddress local;
-					local = InetAddress.getByName("angrenostpwr.nittka.com"); // TODO
+			        int port = getResources().getInteger(R.integer.default_send_port); //TODO: make configurable
+			        DatagramSocket s = new DatagramSocket();
+					s.setBroadcast(true);
+					InetAddress host = InetAddress.getByName("255.255.255.255"); //TODO: make configurable
 			        int msg_length=messageStr.length();
 			        byte[] message = messageStr.getBytes();
-			        DatagramPacket p = new DatagramPacket(message, msg_length,local,server_port);
+			        DatagramPacket p = new DatagramPacket(message, msg_length, host, port);
 					s.send(p);
 			        s.close();
 				} catch (final IOException e) {
 					runOnUiThread(new Runnable() {
 					    public void run() {
-					    	Toast.makeText(null, getResources().getString(R.string.error_sending_inquiry) +": "+ e.getMessage(), Toast.LENGTH_LONG).show();
+					    	Toast.makeText(self, getResources().getString(R.string.error_sending_inquiry) +": "+ e.getMessage(), Toast.LENGTH_LONG).show();
 					    }
 					});
 				}

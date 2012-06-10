@@ -5,15 +5,18 @@ import android.os.Parcelable;
 
 //this class holds the info about a single outlet
 public class OutletInfo implements Parcelable {
+		public int OutletNumber;
 		public String Description;
 		public boolean State;
 		
 		public OutletInfo() {
+			OutletNumber = -1;
 			Description = "";
 			State = false;
 		}
 
 		public OutletInfo(OutletInfo other) {
+			OutletNumber = other.OutletNumber;
 			Description = other.Description;
 			State = other.State;
 		}
@@ -25,6 +28,7 @@ public class OutletInfo implements Parcelable {
 
 		@Override
 		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeInt(OutletNumber);
 			dest.writeString(Description);
 			dest.writeInt(State ? 1 : 0);
 		}
@@ -42,6 +46,7 @@ public class OutletInfo implements Parcelable {
 
 	    // example constructor that takes a Parcel and gives you an object populated with it's values
 	    private OutletInfo(Parcel in) {
+	    	OutletNumber = in.readInt();
 	    	Description = in.readString();
 	    	State = in.readInt() != 0;
 	    }

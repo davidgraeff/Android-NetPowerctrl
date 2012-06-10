@@ -64,7 +64,7 @@ public class DeviceInfo implements Parcelable {
 		dest.writeString(Password);
 		dest.writeInt(SendPort);
 		dest.writeInt(RecvPort);
-		dest.writeList(Outlets);
+		dest.writeTypedList(Outlets);
 	}
 	
 	// this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
