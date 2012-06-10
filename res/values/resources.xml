@@ -6,6 +6,7 @@
     <item format="integer" name="request_code_new_device" type="id">100045</item>
     <item format="integer" name="request_code_modify_device" type="id">100046</item>
     <item format="integer" name="request_code_cancel" type="id">100047</item>
+    <item format="integer" name="menu_cancel" type="id">100048</item>
     
     <item format="integer" name="default_send_port" type="integer">1075</item>
     <item format="integer" name="default_recv_port" type="integer">1077</item>

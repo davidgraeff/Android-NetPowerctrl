@@ -92,6 +92,9 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	
 	@Override
 	protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+		if (resultCode == RESULT_CANCELED)
+			return;
+		
 		if ((requestCode == R.id.request_code_new_device) || (requestCode == R.id.request_code_modify_device)) {
 	        String prefName = data.getExtras().getString("SharedPreferencesName");
 	        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);

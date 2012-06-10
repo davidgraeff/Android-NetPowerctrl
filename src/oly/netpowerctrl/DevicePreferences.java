@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 
 
 public class DevicePreferences extends PreferenceActivity {
@@ -61,4 +63,20 @@ public class DevicePreferences extends PreferenceActivity {
 		});
     }
 	
+   @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, R.id.menu_cancel, 0, R.string.menu_cancel).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_cancel: 
+	        setResult(RESULT_CANCELED);
+	        finish();
+			return true;
+		}
+		return false;
+	}
 }
