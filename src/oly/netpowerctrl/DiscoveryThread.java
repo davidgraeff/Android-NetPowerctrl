@@ -3,7 +3,6 @@ package oly.netpowerctrl;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 
 import android.app.Activity;
 import android.widget.Toast;
@@ -20,8 +19,6 @@ public class DiscoveryThread extends Thread {
 	
 	public void run() {
 
-		sendQuery();
-		
 		while (getState() != Thread.State.TERMINATED) {
 			try {
 				int recv_port = activity.getResources().getInteger(R.integer.default_recv_port); //TODO: make configurable
@@ -41,29 +38,6 @@ public class DiscoveryThread extends Thread {
 		}
 	}
 
-	
-	public void sendQuery() {
-		try {
-	        String messageStr="wer da?\r\n";
-	        int server_port = activity.getResources().getInteger(R.integer.default_send_port); //TODO: make configurable
-	        DatagramSocket s;
-			s = new DatagramSocket();
-			//TODO s.setBroadcast(true);
-			InetAddress local;
-			local = InetAddress.getByName("angrenostpwr.nittka.com"); // TODO
-	        int msg_length=messageStr.length();
-	        byte[] message = messageStr.getBytes();
-	        DatagramPacket p = new DatagramPacket(message, msg_length,local,server_port);
-			s.send(p);
-	        s.close();
-		} catch (final IOException e) {
-			activity.runOnUiThread(new Runnable() {
-			    public void run() {
-			    	Toast.makeText(null, e.getMessage(), Toast.LENGTH_LONG).show();
-			    }
-			});
-		}
-	}
 	
 	public void parsePacket(final String message, int recevied_port) {
 		

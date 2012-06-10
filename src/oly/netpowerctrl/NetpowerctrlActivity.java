@@ -1,5 +1,9 @@
 package oly.netpowerctrl;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -68,25 +72,23 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         registerForContextMenu(lvDiscoveredDevices);
         
         adpConfiguredDevices.setDeviceConfigureEvent(this);
+        
+    	discoveryThread = new DiscoveryThread(this, this);
+    	discoveryThread.start();
+    	sendQuery();
     }
     
     @Override
-    protected void onStart() {
-    	super.onStart();
-    	
-    	alDiscoveredDevices.clear();
-  		adpDiscoveredDevices.getFilter().filter("");
-    	
-    	if (discoveryThread != null)
-    		discoveryThread.interrupt();
-    	discoveryThread = new DiscoveryThread(this, this);
-    	discoveryThread.start();
-    }
+    protected void onDestroy() {
+    	super.onDestroy();
+		discoveryThread.interrupt();
+	}
     
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(android.R.drawable.ic_menu_add);
 		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(android.R.drawable.ic_menu_delete);
+		menu.add(0, R.id.menu_requery, 0, R.string.requery).setIcon(android.R.drawable.ic_menu_compass);
 		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
 		return true;
 	}
@@ -111,6 +113,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				    	deleteAllDevices();
 				    }})
 				 .setNegativeButton(android.R.string.no, null).show();
+			return true;
+		}
+		
+		case R.id.menu_requery: {
+			sendQuery();
 			return true;
 		}
 		
@@ -144,10 +151,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	    
 			DeviceInfo device_info;
 			if (requestCode == R.id.request_code_new_device) {
-				if ((device_name == "") &&
-					(device_ip == "") &&
-					(username == "") &&
-					(password == "")) {
+				if ((device_name.equals("")) &&
+					(device_ip.equals("")) &&
+					(username.equals("")) &&
+					(password.equals(""))) {
 					// editing was cancelled by user
 					return;
 				} else {
@@ -156,6 +163,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			} else {
 				// requestCode == edit device
 		        int position = data.getExtras().getInt("position");
+		        //TODO handle configuring of discovered deevices
 		        device_info = (DeviceInfo)adpConfiguredDevices.getItem(position);
 			}
 				
@@ -269,6 +277,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			onConfigureDevice(info.position);
 			return true;
   		}
+  	    
   	    case R.id.menu_delete_device: {
 	  		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 			new AlertDialog.Builder(this)
@@ -282,6 +291,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				 .setNegativeButton(android.R.string.no, null).show();
 			return true;
   		}
+  	    
   	    case R.id.menu_copy_device: {
 	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 	  		DeviceInfo new_device = new DeviceInfo(alConfiguredDevices.get(info.position));
@@ -291,6 +301,16 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	  		adpConfiguredDevices.getFilter().filter("");
 			return true;
   		}
+  	    
+  	    case R.id.menu_add_to_configured_devices: {
+	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+	  		DeviceInfo new_device = new DeviceInfo(alDiscoveredDevices.get(info.position));
+  	    	alConfiguredDevices.add(new_device);
+	  		SaveConfiguredDevices();
+	  		adpConfiguredDevices.getFilter().filter("");
+			Toast.makeText(getBaseContext(), R.string.suggest_enter_username_password, Toast.LENGTH_LONG).show();
+  	    }
+  	    
   	    default:
   	    	return super.onContextItemSelected(item);
   	    }
@@ -302,6 +322,9 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		if (o != null) {
 			DeviceInfo di = (DeviceInfo)o;
 			Toast.makeText(getBaseContext(), String.format("click %s/%s", di.DeviceName, di.HostName), Toast.LENGTH_LONG).show();
+			if ((v == lvDiscoveredDevices) && (di.UserName.equals("")) && (di.Password.equals("")))
+				Toast.makeText(getBaseContext(), R.string.suggest_enter_username_password, Toast.LENGTH_LONG).show();
+			//TODO show control activity
 		}
 	}
 
@@ -335,7 +358,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		// we may have this one in the list already
 		boolean found = false;
 		for (DeviceInfo di: alDiscoveredDevices) {
-			if ((device_info.DeviceName == di.DeviceName) && (device_info.HostName == di.HostName)) {
+			if ((device_info.DeviceName.equals(di.DeviceName)) && (device_info.HostName.equals(di.HostName))) {
 				found = true;
 				updateOutletInfo(di, device_info);
 				break;
@@ -349,7 +372,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		
 		// if it matches a configured device, update it's outlet states
 		for (DeviceInfo di: alConfiguredDevices) {
-			if (device_info.HostName == di.HostName) {
+			if (device_info.HostName.equals(di.HostName)) {
 				updateOutletInfo(di, device_info);
 				break;
 			}
@@ -359,11 +382,41 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	public void updateOutletInfo(DeviceInfo target, DeviceInfo src) {
 		for (OutletInfo srcoi: src.Outlets) {
 			for (OutletInfo tgtoi: target.Outlets) {
-				if (tgtoi.Description == srcoi.Description) {
+				if (tgtoi.Description.equals(srcoi.Description)) {
 					tgtoi.State = srcoi.State;
 					break;
 				}
 			}
 		}
 	}
+	
+	public void sendQuery() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+			        String messageStr="wer da?\r\n";
+			        int server_port = getResources().getInteger(R.integer.default_send_port); //TODO: make configurable
+			        DatagramSocket s;
+					s = new DatagramSocket();
+					//TODO s.setBroadcast(true);
+					InetAddress local;
+					local = InetAddress.getByName("angrenostpwr.nittka.com"); // TODO
+			        int msg_length=messageStr.length();
+			        byte[] message = messageStr.getBytes();
+			        DatagramPacket p = new DatagramPacket(message, msg_length,local,server_port);
+					s.send(p);
+			        s.close();
+				} catch (final IOException e) {
+					runOnUiThread(new Runnable() {
+					    public void run() {
+					    	Toast.makeText(null, getResources().getString(R.string.error_sending_inquiry) +": "+ e.getMessage(), Toast.LENGTH_LONG).show();
+					    }
+					});
+				}
+			}
+		}).start();
+	}
+	
+	
 }

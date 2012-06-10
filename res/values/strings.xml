@@ -9,9 +9,12 @@
     <string name="copy_device">Copy Device</string>
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
+    <string name="requery">Re-start discovery</string>
     <string name="add_to_configured_devices">Add to configured devices</string>
     <string name="error_reading_configured_devices">Error reading configured devices</string>
     <string name="error_saving_configured_devices">Error saving configured devices</string>
+    <string name="suggest_enter_username_password">You probably need to set the username/password in the device\'s settings.</string>
+    <string name="error_sending_inquiry">Error sending inquiry packet</string>
     
     <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>
