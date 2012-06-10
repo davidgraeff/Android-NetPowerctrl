@@ -10,7 +10,7 @@ android:stretchColumns="*">
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="left|center"
-    android:src="@drawable/ic_launcher" />
+    android:src="@drawable/netpowerctrl" />
 
 <TextView
     android:id="@+id/tvAboutTitle"
