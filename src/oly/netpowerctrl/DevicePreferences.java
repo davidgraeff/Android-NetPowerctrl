@@ -37,7 +37,7 @@ public class DevicePreferences extends PreferenceActivity {
 			prefEditor.putString("setting_username", "");
 			prefEditor.putString("setting_password", "");
         } else {
-            ret_intent.putExtra("position", getIntent().getExtras().getBoolean("position"));
+            ret_intent.putExtra("position", getIntent().getExtras().getInt("position"));
             DeviceInfo device_info = (DeviceInfo) getIntent().getExtras().get("device_info");
         	setTitle(device_info.DeviceName);
         	prefEditor.putString("setting_device_name", device_info.DeviceName);
