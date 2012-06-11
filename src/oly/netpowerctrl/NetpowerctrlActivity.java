@@ -75,15 +75,26 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         adpConfiguredDevices.setDeviceConfigureEvent(this);
         adpDiscoveredDevices.setDeviceConfigureEvent(this);
         
-    	discoveryThread = new DiscoveryThread(this, this);
-    	discoveryThread.start();
+		discoveryThread = null;
+    }
+    
+    @Override
+    protected void onResume() {
+    	super.onResume();
+    	if (discoveryThread == null) {
+	    	discoveryThread = new DiscoveryThread(this, this);
+	    	discoveryThread.start();
+    	}
     	sendQuery();
     }
     
     @Override
-    protected void onDestroy() {
-    	super.onDestroy();
-		discoveryThread.interrupt();
+    protected void onPause() {
+    	super.onPause();
+    	if (discoveryThread != null) {
+    		discoveryThread.interrupt();
+    		discoveryThread = null;
+    	}
 	}
     
     @Override

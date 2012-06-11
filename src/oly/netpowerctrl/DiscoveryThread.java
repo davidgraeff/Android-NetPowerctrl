@@ -11,31 +11,47 @@ public class DiscoveryThread extends Thread {
 	
 	Activity activity;
 	DeviceFoundEvent found_event;
+	boolean keep_running;
+	DatagramSocket socket;
 	
 	public DiscoveryThread(Activity act, DeviceFoundEvent dfe) {
 		activity = act;
 		found_event = dfe;
+		socket = null;
 	}
 	
 	public void run() {
 
-		while (getState() != Thread.State.TERMINATED) {
+		keep_running = true;
+		while (keep_running) {
 			try {
 				int recv_port = activity.getResources().getInteger(R.integer.default_recv_port); //TODO: make configurable
 				byte[] message = new byte[1500];
 		        DatagramPacket p = new DatagramPacket(message, message.length);
-		        DatagramSocket s = new DatagramSocket(recv_port);
-		        s.receive(p);
-		        s.close();
-		        parsePacket(new String(message, 0, p.getLength()), recv_port);
+		        socket = new DatagramSocket(recv_port);
+		        socket.receive(p);
+		        if (! socket.isClosed()) {
+		        	socket.close();
+		        	parsePacket(new String(message, 0, p.getLength()), recv_port);
+		        }
 			} catch (final IOException e) {
-				activity.runOnUiThread(new Runnable() {
-				    public void run() {
-				    	Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
-				    }
-				});
+				if (keep_running) { // no message if we were interrupt()ed
+					activity.runOnUiThread(new Runnable() {
+					    public void run() {
+					    	Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+					    }
+					});
+				}
 			}
 		}
+	}
+
+	@Override
+	public void interrupt() {
+	    super.interrupt();
+	    keep_running = false;
+	    if (socket != null)
+	    	this.socket.close();
 	}
 
 	
