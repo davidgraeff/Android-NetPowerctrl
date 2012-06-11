@@ -22,11 +22,13 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     private List<DeviceInfo> visible_devices;
     private LayoutInflater inflater;
     private DeviceFilter filter = null;
-
-    public DeviceListAdapter(Context context, List<DeviceInfo> devices) {
+    private DeviceConfigureEvent.ConfType configure_type;
+    
+    public DeviceListAdapter(Context context, List<DeviceInfo> devices, DeviceConfigureEvent.ConfType config_type) {
         inflater = LayoutInflater.from(context);
-        this.all_devices = devices;
+        all_devices = devices;
         visible_devices = new ArrayList<DeviceInfo>(devices);
+        configure_type = config_type;
     }    
 
     @Override
@@ -71,7 +73,7 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
 	@Override
 	public void onClick(View v) {
 		if (deviceConfigureEvent != null) 
-			deviceConfigureEvent.onConfigureDevice((Integer)v.getTag());
+			deviceConfigureEvent.onConfigureDevice(configure_type, (Integer)v.getTag());
 	}
     
     

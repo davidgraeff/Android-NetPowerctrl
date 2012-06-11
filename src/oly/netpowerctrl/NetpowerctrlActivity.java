@@ -57,11 +57,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		lvDiscoveredDevices = (ListView)findViewById(R.id.lvDiscoveredDevices);
 
     	alConfiguredDevices = new ArrayList<DeviceInfo>();
-    	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
+    	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices, ConfType.ConfiguredDevice);
   		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
 
     	alDiscoveredDevices = new ArrayList<DeviceInfo>();
-    	adpDiscoveredDevices = new DeviceListAdapter(this, alDiscoveredDevices);
+    	adpDiscoveredDevices = new DeviceListAdapter(this, alDiscoveredDevices, ConfType.DiscoveredDevice);
   		lvDiscoveredDevices.setAdapter(adpDiscoveredDevices);
 
         ReadConfiguredDevices();
@@ -73,6 +73,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         registerForContextMenu(lvDiscoveredDevices);
         
         adpConfiguredDevices.setDeviceConfigureEvent(this);
+        adpDiscoveredDevices.setDeviceConfigureEvent(this);
         
     	discoveryThread = new DiscoveryThread(this, this);
     	discoveryThread.start();
@@ -151,6 +152,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			String password = prefs.getString("setting_password", "");
 	    
 			DeviceInfo device_info;
+			DeviceConfigureEvent.ConfType conf_type = null;
 			if (requestCode == R.id.request_code_new_device) {
 				if ((device_name.equals("")) &&
 					(device_ip.equals("")) &&
@@ -164,8 +166,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			} else {
 				// requestCode == edit device
 		        int position = data.getExtras().getInt("position");
-		        //TODO handle configuring of discovered deevices
-		        device_info = (DeviceInfo)adpConfiguredDevices.getItem(position);
+		        conf_type = (DeviceConfigureEvent.ConfType)data.getExtras().get("configure_type");
+		        if (conf_type == DeviceConfigureEvent.ConfType.ConfiguredDevice)
+		        	device_info = (DeviceInfo)adpConfiguredDevices.getItem(position);
+		        else device_info = (DeviceInfo)adpDiscoveredDevices.getItem(position);
 			}
 				
 			device_info.DeviceName = device_name;
@@ -184,7 +188,9 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				alConfiguredDevices.add(device_info);
 				adpConfiguredDevices.getFilter().filter("");
 			} else {
-			  adpConfiguredDevices.notifyDataSetChanged();
+				if (conf_type == DeviceConfigureEvent.ConfType.ConfiguredDevice)
+					adpConfiguredDevices.notifyDataSetChanged();
+				else adpDiscoveredDevices.notifyDataSetChanged();
 			}
 			SaveConfiguredDevices();
 		}
@@ -277,10 +283,16 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   	    switch (item.getItemId()) {
   	    case R.id.menu_edit_device: {
 	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-			onConfigureDevice(info.position);
+			onConfigureDevice(DeviceConfigureEvent.ConfType.ConfiguredDevice, info.position);
 			return true;
   		}
-  	    
+
+  	    case R.id.menu_edit_discovered_device: {
+	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			onConfigureDevice(DeviceConfigureEvent.ConfType.DiscoveredDevice, info.position);
+			return true;
+  		}
+
   	    case R.id.menu_delete_device: {
 	  		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 			new AlertDialog.Builder(this)
@@ -334,12 +346,18 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	}
 
 	@Override
-	public void onConfigureDevice(int position) {
-		Object o = adpConfiguredDevices.getItem(position);
+	public void onConfigureDevice(ConfType type, int position) {
+		
+		Object o = null;
+		if (type == ConfType.ConfiguredDevice) 
+			o = adpConfiguredDevices.getItem(position);
+		else o = adpDiscoveredDevices.getItem(position);
+		
 		if (o != null) {
 			DeviceInfo di = (DeviceInfo)o;
 			Intent it = new Intent(this, DevicePreferences.class);
 			it.putExtra("new_device", false);
+			it.putExtra("configure_type", type);
 			it.putExtra("position", position);
 			it.putExtra("device_info", di);
 			startActivityForResult(it, R.id.request_code_modify_device);
@@ -387,7 +405,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	public void updateOutletInfo(DeviceInfo target, DeviceInfo src) {
 		for (OutletInfo srcoi: src.Outlets) {
 			for (OutletInfo tgtoi: target.Outlets) {
-				if (tgtoi.Description.equals(srcoi.Description)) {
+				if (tgtoi.OutletNumber == srcoi.OutletNumber) {
 					tgtoi.State = srcoi.State;
 					break;
 				}
