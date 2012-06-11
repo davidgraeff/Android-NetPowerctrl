@@ -7,10 +7,12 @@ import java.net.InetAddress;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,14 +49,26 @@ public class DeviceControl extends Activity implements OnClickListener {
 		setContentView(R.layout.device_control);
 		((TextView)findViewById(R.id.tvDeviceName)).setText(device.DeviceName);
 		
+		int layout_resource = R.layout.outlet_switch;
+		int top_margin = 10;
+		if (Build.VERSION.SDK_INT >= 14) {
+			// uses the "switch" widget
+			layout_resource = R.layout.outlet_switch_14;
+			top_margin = 30;
+		}
+		
 		LinearLayout ll = (LinearLayout)findViewById(R.id.llDeviceControl);
+		LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 		for (OutletInfo oi: device.Outlets) {
-			CheckBox cb = new CheckBox(this);
-			cb.setText(oi.Description);
+			View v = inflater.inflate(layout_resource, null);
+			CompoundButton cb = (CompoundButton)v.findViewById(R.id.outletSwitch);
 			cb.setChecked(oi.State);
 			cb.setTag(oi.OutletNumber);
+			cb.setText(oi.Description);
 			cb.setOnClickListener(this);
-			ll.addView(cb);
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+			lp.setMargins(0, top_margin, 0, 0);
+			ll.addView(cb, lp);
 		}
 	}
 
@@ -62,7 +76,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 	public void onClick(View v) {
 		int outletNumber = (Integer)v.getTag();
 		if (outletNumber >= 0) {
-			sendOutlet(outletNumber, ((CheckBox)v).isChecked());
+			sendOutlet(outletNumber, ((CompoundButton)v).isChecked());
 		} else {
 			Toast.makeText(this,
 					   getResources().getString(R.string.error_outlet_number),
