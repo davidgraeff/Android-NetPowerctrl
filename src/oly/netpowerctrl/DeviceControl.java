@@ -9,11 +9,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,19 +50,18 @@ public class DeviceControl extends Activity implements OnClickListener {
 		setContentView(R.layout.device_control);
 		((TextView)findViewById(R.id.tvDeviceName)).setText(device.DeviceName);
 		
-		int layout_resource = R.layout.outlet_switch;
 		int top_margin = 10;
 		if (Build.VERSION.SDK_INT >= 14) {
 			// uses the "switch" widget
-			layout_resource = R.layout.outlet_switch_14;
 			top_margin = 30;
 		}
 		
 		LinearLayout ll = (LinearLayout)findViewById(R.id.llDeviceControl);
-		LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 		for (OutletInfo oi: device.Outlets) {
-			View v = inflater.inflate(layout_resource, null);
-			CompoundButton cb = (CompoundButton)v.findViewById(R.id.outletSwitch);
+			CompoundButton cb = null;
+			if (Build.VERSION.SDK_INT >= 14) 
+				cb = new Switch(this);
+				else cb = new CheckBox(this);	
 			cb.setChecked(oi.State);
 			cb.setTag(oi.OutletNumber);
 			cb.setText(oi.Description);
