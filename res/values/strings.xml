@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Netpowerctrl</string>
+    <string name="app_name">Net-PwrCtrl</string>
     
     <string name="configured_devices">Configured Devices</string>
     <string name="discovered_devices">Discovered Devices</string>

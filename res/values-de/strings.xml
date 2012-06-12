@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Net-PwrCtrl</string>
+    
+    <string name="configured_devices">Konfigurierte Geräte</string>
+    <string name="discovered_devices">Erkannte Geräte</string>
+    
+    <string name="edit_device">Bearbeiten</string>
+    <string name="copy_device">Kopieren</string>
+    <string name="delete_device">Löschen</string>
+    <string name="delete_all_devices">Alle löschen</string>
+    <string name="requery">Erkennung neu starten</string>
+    <string name="add_to_configured_devices">Zu konfigurierten Geräten hinzufügen</string>
+    <string name="error_reading_configured_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
+    <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
+    <string name="suggest_enter_username_password">Sie müssen wahrscheinlich in den Geräteeinstellungen den Benutzerame und Passwort eingeben.</string>
+    <string name="error_sending_inquiry">Fehler beim Senden des Erkennungs-Pakets</string>
+    <string name="error_creating_device_control">Interner Programmfehler: unbekanntes Gerät!</string>
+    <string name="error_outlet_number">Fehler in der internen Konfiguration: dieses Geräte hat keine ID!</string>
+    <string name="error_packet_received">Fehler vom Gerät empfangen: </string>
+    <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
+    
+    <string name="device_settings">Geräte-Einstellungen</string>
+    <string name="device_name">Name</string>
+    <string name="device_name_summary">Beliebige Bezeichnung für dieses Gerät.</string>
+    <string name="device_ip">Hostname or IP</string>
+    <string name="device_ip_summary">Der Hostname oder die IP-Adresse für dieses Gerät.</string>
+    <string name="device_standard_ports">Spezielle UDP-Ports?</string>
+    <string name="device_send_udp">UDP-Port zum Senden</string>
+    <string name="device_send_udp_summary">Siehe \"Empfangen\" in der Web-Oberfläche des Gerätes.</string>
+    <string name="device_recv_udp">UDP-Port zum Empfangen</string>
+    <string name="device_recv_udp_summary">Siehe \"Senden\" in der Web-Oberfläche des Gerätes.</string>
+    <string name="device_username">Benutzername</string>
+    <string name="device_username_summary">Benutzername zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
+    <string name="device_password">Passwort</string>
+    <string name="device_password_summary">Passwort zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
+    <string name="device_outlets">Steckdosen</string>
+    <string name="device_outlets_summary">Konfiguration der einzelnen Steckdosen des Gerätes</string>
+    
+    <string name="menu_add_device">Neues Gerät</string>
+    <string name="menu_about">Über</string>
+    <string name="menu_cancel">Abbruch</string>
+    <string name="menu_delete_all">Alle löschen</string>
+    
+    <string name="default_device_name">Neues Gerät</string>
+    <string name="copy_of">Kopie von %s</string>
+
+    <string name="confirmation_delete_device">Sind Sie sicher, dass Sie dieses Gerät löschen wollen?</string>
+    <string name="confirmation_delete_all_devices">Sind Sie sicher, dass Sie alle Geräte löschen wollen?</string>
+    
+</resources>
