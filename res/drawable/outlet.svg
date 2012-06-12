@@ -88,13 +88,13 @@
        id="rect3050"
        width="33.30357"
        height="33.035713"
-       x="6.25"
-       y="7.1071429"
-       ry="1.6964285"
+       x="7.0044651"
+       y="1011.5631"
+       ry="6"
        inkscape:export-filename="/home/oly/src/android-probe/netpowerctrl/res/drawable/netpowerctrl.png"
        inkscape:export-xdpi="130.76758"
        inkscape:export-ydpi="130.76758"
-       transform="translate(0,1004.3622)" />
+       rx="6" />
     <path
        sodipodi:nodetypes="ccccc"
        inkscape:connector-curvature="0"
