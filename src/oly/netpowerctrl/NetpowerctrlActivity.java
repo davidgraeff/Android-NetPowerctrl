@@ -30,6 +30,7 @@ import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+@SuppressWarnings("deprecation")
 public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent, DeviceFoundEvent {
 
 	DiscoveryThread discoveryThread = null;
