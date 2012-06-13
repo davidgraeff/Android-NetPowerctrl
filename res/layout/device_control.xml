@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scvDeviceControl"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/frame1"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <LinearLayout
-        android:id="@+id/llDeviceControl"
+    <ImageView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:src="@drawable/outlet_bg"
+        android:contentDescription="@string/app_name"/>
+    
+    <ScrollView
+        android:id="@+id/scvDeviceControl"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical" >
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" >
 
-        <TextView
-            android:id="@+id/tvDeviceName"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/llDeviceControl"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="DeviceName"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-    </LinearLayout>
+            android:orientation="vertical" >
 
-</ScrollView>
+            <TextView
+                android:id="@+id/tvDeviceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DeviceName"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+        </LinearLayout>
+    </ScrollView>
+
+</FrameLayout>
