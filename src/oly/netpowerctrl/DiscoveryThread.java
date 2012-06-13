@@ -95,7 +95,6 @@ public class DiscoveryThread extends Thread {
 		}
 		
 		activity.runOnUiThread(new Runnable() {
-			@Override
 			public void run() {
 				found_event.onDeviceFound(di);
 			}

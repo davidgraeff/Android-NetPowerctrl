@@ -343,7 +343,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   	    }
   	}
 
-	@Override
 	public void onItemClick(AdapterView<?> av, View v, int position, long id) {
 		Object o = av.getItemAtPosition(position);
 		if (o != null) {
@@ -357,7 +356,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}
 	}
 
-	@Override
 	public void onConfigureDevice(ConfType type, int position) {
 		
 		Object o = null;
@@ -388,7 +386,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		adpConfiguredDevices.getFilter().filter("");
 	}
 
-	@Override
 	public void onDeviceFound(DeviceInfo device_info) {
 		// we may have this one in the list already
 		boolean found = false;
@@ -428,7 +425,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	public void sendQuery() {
 		final Activity self = this;
 		new Thread(new Runnable() {
-			@Override
 			public void run() {
 				try {
 			        String messageStr="wer da?\r\n";

@@ -72,7 +72,6 @@ public class DeviceControl extends Activity implements OnClickListener {
 		}
 	}
 
-	@Override
 	public void onClick(View v) {
 		int outletNumber = (Integer)v.getTag();
 		if (outletNumber >= 0) {
@@ -87,7 +86,6 @@ public class DeviceControl extends Activity implements OnClickListener {
 	public void sendOutlet(final int number, final boolean state) {
 		final Activity self = this;
 		new Thread(new Runnable() {
-			@Override
 			public void run() {
 				try {
 			        String messageStr = String.format("%s%d%s%s", state ? "Sw_on" : "Sw_off", number, device.UserName, device.Password);

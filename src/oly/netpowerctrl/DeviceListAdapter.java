@@ -31,22 +31,18 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
         configure_type = config_type;
     }    
 
-    @Override
     public int getCount() {
         return visible_devices.size();
     }
 
-    @Override
     public Object getItem(int position) {
         return visible_devices.get(position);
     }
 
-    @Override
     public long getItemId(int position) {
         return position;
     }
 
-    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
     	convertView = inflater.inflate(R.layout.device_list_item, null);
@@ -70,14 +66,12 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     	deviceConfigureEvent = dce;
     }
     
-	@Override
 	public void onClick(View v) {
 		if (deviceConfigureEvent != null) 
 			deviceConfigureEvent.onConfigureDevice(configure_type, (Integer)v.getTag());
 	}
     
     
-	@Override
 	public Filter getFilter() {
 	   if (filter == null) {
             filter = new DeviceFilter();

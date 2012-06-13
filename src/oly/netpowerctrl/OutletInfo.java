@@ -21,12 +21,10 @@ public class OutletInfo implements Parcelable {
 			State = other.State;
 		}
 
-		@Override
 		public int describeContents() {
 			return 0;
 		}
 
-		@Override
 		public void writeToParcel(Parcel dest, int flags) {
 			dest.writeInt(OutletNumber);
 			dest.writeString(Description);

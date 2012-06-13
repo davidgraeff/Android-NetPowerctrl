@@ -57,7 +57,6 @@ public class DevicePreferences extends PreferenceActivity {
 		
 		Preference p = findPreference("setting_device_name");
 		p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				setTitle(newValue.toString());
 				return true;
