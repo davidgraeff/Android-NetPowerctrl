@@ -2,6 +2,7 @@ package oly.netpowerctrl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import android.content.Context;
 import android.os.Parcel;
@@ -10,6 +11,8 @@ import android.os.Parcelable;
 // this class holds all the info about one device
 public class DeviceInfo implements Parcelable {
 
+	public UUID uuid;
+	
 	public String DeviceName; // name of the device as reported by UDP or configured by the user
 	public String HostName;   // the hostname or ip address used to reach the device
 
@@ -22,6 +25,7 @@ public class DeviceInfo implements Parcelable {
 	public List<OutletInfo> Outlets;
 
     public DeviceInfo() {
+    	uuid = UUID.randomUUID();
     	DeviceName = "";
     	HostName = "";
     	UserName = "";
@@ -39,6 +43,7 @@ public class DeviceInfo implements Parcelable {
     }
 
     public DeviceInfo(DeviceInfo other) {
+    	uuid = UUID.randomUUID();
     	DeviceName = other.DeviceName;
     	HostName = other.HostName;
     	UserName = other.UserName;
@@ -50,12 +55,20 @@ public class DeviceInfo implements Parcelable {
     		Outlets.add(new OutletInfo(oi));
     }
     
+    public boolean equals(DeviceInfo other) {
+    	return uuid.equals(other.uuid);
+    }
+	
+    public boolean equals(UUID uuid) {
+    	return uuid.equals(uuid);
+    }
 	
 	public int describeContents() {
 		return 0;
 	}
 
 	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeString(uuid.toString());
 		dest.writeString(DeviceName);
 		dest.writeString(HostName);
 		dest.writeString(UserName);
@@ -79,7 +92,8 @@ public class DeviceInfo implements Parcelable {
     // example constructor that takes a Parcel and gives you an object populated with it's values
     private DeviceInfo(Parcel in) {
     	this();
-		DeviceName = in.readString();
+    	uuid = UUID.fromString(in.readString());
+    	DeviceName = in.readString();
 		HostName = in.readString();
 		UserName = in.readString();
 		Password = in.readString();

@@ -19,6 +19,7 @@
     <string name="error_outlet_number">Fehler in der internen Konfiguration: dieses Geräte hat keine ID!</string>
     <string name="error_packet_received">Fehler vom Gerät empfangen: </string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
+    <string name="error_edited_device_not_found">Interner Programmfehler: editiertes Gerät nicht gefunden!</string>
     
     <string name="device_settings">Geräte-Einstellungen</string>
     <string name="device_name">Name</string>

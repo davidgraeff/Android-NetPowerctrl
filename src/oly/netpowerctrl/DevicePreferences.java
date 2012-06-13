@@ -17,10 +17,8 @@ public class DevicePreferences extends PreferenceActivity {
         super.onCreate(savedInstanceState);
 
         boolean new_device = getIntent().getExtras().getBoolean("new_device");
-        DeviceConfigureEvent.ConfType conf_type = (DeviceConfigureEvent.ConfType)getIntent().getExtras().get("configure_type");
         Intent ret_intent = new Intent(); // for returning data to onActivityResult()
         ret_intent.putExtra("SharedPreferencesName", getPreferenceManager().getSharedPreferencesName());
-        ret_intent.putExtra("configure_type", conf_type);
         setResult(RESULT_OK, ret_intent); // default
         
         SharedPreferences pref = getSharedPreferences(getPreferenceManager().getSharedPreferencesName(), MODE_PRIVATE);
@@ -39,8 +37,8 @@ public class DevicePreferences extends PreferenceActivity {
 			prefEditor.putString("setting_username", "");
 			prefEditor.putString("setting_password", "");
         } else {
-            ret_intent.putExtra("position", getIntent().getExtras().getInt("position"));
             DeviceInfo device_info = (DeviceInfo) getIntent().getExtras().get("device_info");
+            ret_intent.putExtra("uuid", device_info.uuid);
         	setTitle(device_info.DeviceName);
         	prefEditor.putString("setting_device_name", device_info.DeviceName);
 			prefEditor.putString("setting_device_ip", device_info.HostName);

@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,11 +59,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		lvDiscoveredDevices = (ListView)findViewById(R.id.lvDiscoveredDevices);
 
     	alConfiguredDevices = new ArrayList<DeviceInfo>();
-    	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices, ConfType.ConfiguredDevice);
+    	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
   		lvConfiguredDevices.setAdapter(adpConfiguredDevices);
 
     	alDiscoveredDevices = new ArrayList<DeviceInfo>();
-    	adpDiscoveredDevices = new DeviceListAdapter(this, alDiscoveredDevices, ConfType.DiscoveredDevice);
+    	adpDiscoveredDevices = new DeviceListAdapter(this, alDiscoveredDevices);
   		lvDiscoveredDevices.setAdapter(adpDiscoveredDevices);
 
         ReadConfiguredDevices();
@@ -164,7 +165,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			String password = prefs.getString("setting_password", "");
 	    
 			DeviceInfo device_info;
-			DeviceConfigureEvent.ConfType conf_type = null;
 			if (requestCode == R.id.request_code_new_device) {
 				if ((device_name.equals("")) &&
 					(device_ip.equals("")) &&
@@ -177,11 +177,15 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				}
 			} else {
 				// requestCode == edit device
-		        int position = data.getExtras().getInt("position");
-		        conf_type = (DeviceConfigureEvent.ConfType)data.getExtras().get("configure_type");
-		        if (conf_type == DeviceConfigureEvent.ConfType.ConfiguredDevice)
-		        	device_info = (DeviceInfo)adpConfiguredDevices.getItem(position);
-		        else device_info = (DeviceInfo)adpDiscoveredDevices.getItem(position);
+		        UUID uuid = (UUID) data.getExtras().get("uuid");
+		        device_info = adpConfiguredDevices.findDevice(uuid);
+		        if (device_info == null)
+			        device_info = adpDiscoveredDevices.findDevice(uuid);
+		        if (device_info == null) {
+					Toast.makeText(getBaseContext(), getResources().getText(R.string.error_edited_device_not_found), Toast.LENGTH_SHORT).show();
+					return;
+		        }
+		        	
 			}
 				
 			device_info.DeviceName = device_name;
@@ -200,9 +204,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				alConfiguredDevices.add(device_info);
 				adpConfiguredDevices.getFilter().filter("");
 			} else {
-				if (conf_type == DeviceConfigureEvent.ConfType.ConfiguredDevice)
-					adpConfiguredDevices.notifyDataSetChanged();
-				else adpDiscoveredDevices.notifyDataSetChanged();
+				adpConfiguredDevices.notifyDataSetChanged();
+				adpDiscoveredDevices.notifyDataSetChanged();
 			}
 			SaveConfiguredDevices();
 		}
@@ -219,6 +222,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			for (int i=0; i<jdevices.length(); i++) {
 				JSONObject jhost = jdevices.getJSONObject(i);
 				DeviceInfo di = new DeviceInfo(this);
+				di.uuid = UUID.fromString(jhost.getString("uuid"));
 				di.DeviceName = jhost.getString("name");
 				di.HostName = jhost.getString("ip");
 				di.UserName= jhost.getString("username");
@@ -250,6 +254,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		try {
   			for (DeviceInfo di: alConfiguredDevices) {
 				JSONObject jhost = new JSONObject();
+				jhost.put("uuid", di.uuid.toString());
 				jhost.put("name", di.DeviceName);
 				jhost.put("ip", di.HostName);
 				jhost.put("username", di.UserName);
@@ -295,13 +300,15 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   	    switch (item.getItemId()) {
   	    case R.id.menu_edit_device: {
 	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-			onConfigureDevice(DeviceConfigureEvent.ConfType.ConfiguredDevice, info.position);
+	  		DeviceInfo di = (DeviceInfo) adpConfiguredDevices.getItem(info.position);
+			onConfigureDevice(di);
 			return true;
   		}
 
   	    case R.id.menu_edit_discovered_device: {
 	  		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-			onConfigureDevice(DeviceConfigureEvent.ConfType.DiscoveredDevice, info.position);
+	  		DeviceInfo di = (DeviceInfo) adpDiscoveredDevices.getItem(info.position);
+			onConfigureDevice(di);
 			return true;
   		}
 
@@ -356,22 +363,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}
 	}
 
-	public void onConfigureDevice(ConfType type, int position) {
-		
-		Object o = null;
-		if (type == ConfType.ConfiguredDevice) 
-			o = adpConfiguredDevices.getItem(position);
-		else o = adpDiscoveredDevices.getItem(position);
-		
-		if (o != null) {
-			DeviceInfo di = (DeviceInfo)o;
-			Intent it = new Intent(this, DevicePreferences.class);
-			it.putExtra("new_device", false);
-			it.putExtra("configure_type", type);
-			it.putExtra("position", position);
-			it.putExtra("device_info", di);
-			startActivityForResult(it, R.id.request_code_modify_device);
-		}
+	public void onConfigureDevice(DeviceInfo device_info) {
+		Intent it = new Intent(this, DevicePreferences.class);
+		it.putExtra("new_device", false);
+		it.putExtra("device_info", device_info);
+		startActivityForResult(it, R.id.request_code_modify_device);
 	}    
 	
 	public void deleteDevice(int position) {

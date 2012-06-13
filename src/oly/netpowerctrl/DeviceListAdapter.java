@@ -2,6 +2,7 @@ package oly.netpowerctrl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -22,13 +23,11 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     private List<DeviceInfo> visible_devices;
     private LayoutInflater inflater;
     private DeviceFilter filter = null;
-    private DeviceConfigureEvent.ConfType configure_type;
     
-    public DeviceListAdapter(Context context, List<DeviceInfo> devices, DeviceConfigureEvent.ConfType config_type) {
+    public DeviceListAdapter(Context context, List<DeviceInfo> devices) {
         inflater = LayoutInflater.from(context);
         all_devices = devices;
         visible_devices = new ArrayList<DeviceInfo>(devices);
-        configure_type = config_type;
     }    
 
     public int getCount() {
@@ -43,6 +42,15 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
         return position;
     }
 
+    public DeviceInfo findDevice(UUID uuid) {
+    	for (DeviceInfo di: all_devices) {
+    		if (di.equals(uuid)) {
+    			return di;
+    		}
+    	}
+    	return null;
+    }
+    
     public View getView(int position, View convertView, ViewGroup parent) {
 
     	convertView = inflater.inflate(R.layout.device_list_item, null);
@@ -67,8 +75,10 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     }
     
 	public void onClick(View v) {
-		if (deviceConfigureEvent != null) 
-			deviceConfigureEvent.onConfigureDevice(configure_type, (Integer)v.getTag());
+		if (deviceConfigureEvent != null) {
+			DeviceInfo di = (DeviceInfo) getItem((Integer)v.getTag()); 
+			deviceConfigureEvent.onConfigureDevice(di);
+		}
 	}
     
     

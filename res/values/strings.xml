@@ -19,6 +19,7 @@
     <string name="error_outlet_number">Configuration error: this outlet was not assigned a number!</string>
     <string name="error_packet_received">An error was received from the device: </string>
     <string name="error_nopass">Invalid username / password combination</string>
+    <string name="error_edited_device_not_found">Internal program error: edited device not found!</string>
     
     <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>
