@@ -81,7 +81,17 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         adpConfiguredDevices.setDeviceConfigureEvent(this);
         adpDiscoveredDevices.setDeviceConfigureEvent(this);
         
-		discoveryThread = null;
+    	discoveryThread = new DiscoveryThread(this);
+    	discoveryThread.start();
+    }
+    
+    @Override
+    protected void onDestroy() {
+    	if (discoveryThread != null) {
+    		discoveryThread.interrupt();
+    		discoveryThread = null;
+    	}
+    	super.onDestroy();
     }
     
     @Override
@@ -91,21 +101,13 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	IntentFilter itf= new IntentFilter(DiscoveryThread.BROADCAST_DEVICE_DISCOVERED);
         LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
     	
-    	if (discoveryThread == null) {
-	    	discoveryThread = new DiscoveryThread(this);
-	    	discoveryThread.start();
-    	}
     	sendQuery();
     }
     
     @Override
     protected void onPause() {
-    	super.onPause();
     	LocalBroadcastManager.getInstance(this).unregisterReceiver(onDeviceDiscovered);
-    	if (discoveryThread != null) {
-    		discoveryThread.interrupt();
-    		discoveryThread = null;
-    	}
+    	super.onPause();
 	}
     
     @Override
@@ -165,6 +167,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
 	    	String device_name = prefs.getString("setting_device_name", "ERROR");
 	    	String device_ip = prefs.getString("setting_device_ip", "");
+	    	String device_mac = prefs.getString("setting_device_mac", "");
 	    	boolean standard_ports = prefs.getBoolean("setting_standard_ports", false);
 	        int default_send_port = getResources().getInteger(R.integer.default_send_port);
 	        int default_recv_port = getResources().getInteger(R.integer.default_send_port);
@@ -199,6 +202,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				
 			device_info.DeviceName = device_name;
 			device_info.HostName = device_ip;
+			device_info.MacAddress = device_mac;
 			device_info.UserName = username;
 			device_info.Password = password;
 			if (standard_ports) {
@@ -234,6 +238,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				di.uuid = UUID.fromString(jhost.getString("uuid"));
 				di.DeviceName = jhost.getString("name");
 				di.HostName = jhost.getString("ip");
+				di.MacAddress = jhost.getString("mac");
 				di.UserName= jhost.getString("username");
 				di.Password = jhost.getString("password");
 				di.SendPort = jhost.getInt("sendport");
@@ -266,6 +271,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				jhost.put("uuid", di.uuid.toString());
 				jhost.put("name", di.DeviceName);
 				jhost.put("ip", di.HostName);
+				jhost.put("mac", di.MacAddress);
 				jhost.put("username", di.UserName);
 				jhost.put("password", di.Password);
 				jhost.put("sendport", di.SendPort);
@@ -460,7 +466,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			
 			// if it matches a configured device, update it's outlet states
 			for (DeviceInfo di: alConfiguredDevices) {
-				if (device_info.HostName.equals(di.HostName)) {
+				if (device_info.MacAddress.equals(di.MacAddress)) {
 					updateOutletInfo(di, device_info);
 					break;
 				}
