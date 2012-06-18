@@ -26,6 +26,8 @@
     <string name="device_name_summary">Custom description of this device.</string>
     <string name="device_ip">Hostname or IP</string>
     <string name="device_ip_summary">The hostname or IP address to connect to.</string>
+    <string name="device_mac">MAC Address</string>
+    <string name="device_mac_summary">The MAC Address as reported by the device.</string>
     <string name="device_standard_ports">Non-standard UDP ports?</string>
     <string name="device_send_udp">UDP port for sending</string>
     <string name="device_send_udp_summary">Consult the device\'s web interface ("Receive Port").</string>

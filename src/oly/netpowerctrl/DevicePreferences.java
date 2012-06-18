@@ -31,6 +31,7 @@ public class DevicePreferences extends PreferenceActivity {
         	setTitle(getResources().getText(R.string.default_device_name));
         	prefEditor.putString("setting_device_name", "");
 			prefEditor.putString("setting_device_ip", "");
+			prefEditor.putString("setting_device_mac", "");
 			prefEditor.putBoolean("setting_standard_ports", true);
 			prefEditor.putString("setting_send_udp", String.format("%d",default_send_port));
 			prefEditor.putString("setting_recv_udp", String.format("%d",default_recv_port));
@@ -42,6 +43,7 @@ public class DevicePreferences extends PreferenceActivity {
         	setTitle(device_info.DeviceName);
         	prefEditor.putString("setting_device_name", device_info.DeviceName);
 			prefEditor.putString("setting_device_ip", device_info.HostName);
+			prefEditor.putString("setting_device_mac", device_info.MacAddress);
 			boolean default_ports = (device_info.SendPort == default_send_port) && (device_info.RecvPort == default_recv_port); 
 			prefEditor.putBoolean("setting_standard_ports", default_ports);
 			prefEditor.putString("setting_send_udp", String.format("%d",device_info.SendPort));

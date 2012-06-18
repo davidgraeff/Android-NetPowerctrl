@@ -15,6 +15,7 @@ public class DeviceInfo implements Parcelable {
 	
 	public String DeviceName; // name of the device as reported by UDP or configured by the user
 	public String HostName;   // the hostname or ip address used to reach the device
+	public String MacAddress; // the mac address as sent from the device
 
 	public String UserName;
 	public String Password;
@@ -28,6 +29,7 @@ public class DeviceInfo implements Parcelable {
     	uuid = UUID.randomUUID();
     	DeviceName = "";
     	HostName = "";
+    	MacAddress = "";
     	UserName = "";
     	Password = "";
     	SendPort = -1;
@@ -46,6 +48,7 @@ public class DeviceInfo implements Parcelable {
     	uuid = UUID.randomUUID();
     	DeviceName = other.DeviceName;
     	HostName = other.HostName;
+    	MacAddress = other.MacAddress;
     	UserName = other.UserName;
     	Password = other.Password;
     	SendPort = other.SendPort;
@@ -71,6 +74,7 @@ public class DeviceInfo implements Parcelable {
 		dest.writeString(uuid.toString());
 		dest.writeString(DeviceName);
 		dest.writeString(HostName);
+		dest.writeString(MacAddress);
 		dest.writeString(UserName);
 		dest.writeString(Password);
 		dest.writeInt(SendPort);
@@ -95,6 +99,7 @@ public class DeviceInfo implements Parcelable {
     	uuid = UUID.fromString(in.readString());
     	DeviceName = in.readString();
 		HostName = in.readString();
+		MacAddress = in.readString();
 		UserName = in.readString();
 		Password = in.readString();
 		SendPort = in.readInt();
