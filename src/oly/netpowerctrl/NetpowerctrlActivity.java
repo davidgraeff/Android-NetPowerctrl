@@ -14,10 +14,14 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.TabActivity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -32,7 +36,7 @@ import android.widget.TabHost;
 import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
-public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent, DeviceFoundEvent {
+public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent {
 
 	DiscoveryThread discoveryThread = null;
 	
@@ -83,8 +87,12 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     @Override
     protected void onResume() {
     	super.onResume();
+    	
+    	IntentFilter itf= new IntentFilter(DiscoveryThread.BROADCAST_DEVICE_DISCOVERED);
+        LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
+    	
     	if (discoveryThread == null) {
-	    	discoveryThread = new DiscoveryThread(this, this);
+	    	discoveryThread = new DiscoveryThread(this);
 	    	discoveryThread.start();
     	}
     	sendQuery();
@@ -93,6 +101,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     @Override
     protected void onPause() {
     	super.onPause();
+    	LocalBroadcastManager.getInstance(this).unregisterReceiver(onDeviceDiscovered);
     	if (discoveryThread != null) {
     		discoveryThread.interrupt();
     		discoveryThread = null;
@@ -382,31 +391,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		adpConfiguredDevices.getFilter().filter("");
 	}
 
-	public void onDeviceFound(DeviceInfo device_info) {
-		// we may have this one in the list already
-		boolean found = false;
-		for (DeviceInfo di: alDiscoveredDevices) {
-			if ((device_info.DeviceName.equals(di.DeviceName)) && (device_info.HostName.equals(di.HostName))) {
-				found = true;
-				updateOutletInfo(di, device_info);
-				break;
-			}
-		}
-		
-		if (!found) {
-			alDiscoveredDevices.add(device_info);
-	  		adpDiscoveredDevices.getFilter().filter("");
-		}
-		
-		// if it matches a configured device, update it's outlet states
-		for (DeviceInfo di: alConfiguredDevices) {
-			if (device_info.HostName.equals(di.HostName)) {
-				updateOutletInfo(di, device_info);
-				break;
-			}
-		}
-	}
-	
+
 	public void updateOutletInfo(DeviceInfo target, DeviceInfo src) {
 		for (OutletInfo srcoi: src.Outlets) {
 			for (OutletInfo tgtoi: target.Outlets) {
@@ -444,5 +429,44 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}).start();
 	}
 	
+	private BroadcastReceiver onDeviceDiscovered= new BroadcastReceiver() {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	    	DeviceInfo device_info = null;
+			Bundle extra = intent.getExtras();
+			if (extra != null) {
+				Object o = extra.get("device_info");
+				if (o != null) {
+					device_info = (DeviceInfo) o; 
+				}
+			}
+			if (device_info == null)
+				return;
+
+	    	// we may have this one in the list already
+			boolean found = false;
+			for (DeviceInfo di: alDiscoveredDevices) {
+				if ((device_info.DeviceName.equals(di.DeviceName)) && (device_info.HostName.equals(di.HostName))) {
+					found = true;
+					updateOutletInfo(di, device_info);
+					break;
+				}
+			}
+			
+			if (!found) {
+				alDiscoveredDevices.add(device_info);
+		  		adpDiscoveredDevices.getFilter().filter("");
+			}
+			
+			// if it matches a configured device, update it's outlet states
+			for (DeviceInfo di: alConfiguredDevices) {
+				if (device_info.HostName.equals(di.HostName)) {
+					updateOutletInfo(di, device_info);
+					break;
+				}
+			}
+	    }
+	};
+
 	
 }

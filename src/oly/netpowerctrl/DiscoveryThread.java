@@ -5,18 +5,20 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 public class DiscoveryThread extends Thread {
 	
+	public static String BROADCAST_DEVICE_DISCOVERED = "com.nittka.netpowerctrl.DEVICE_DISCOVERED";
+	
 	Activity activity;
-	DeviceFoundEvent found_event;
 	boolean keep_running;
 	DatagramSocket socket;
 	
-	public DiscoveryThread(Activity act, DeviceFoundEvent dfe) {
+	public DiscoveryThread(Activity act) {
 		activity = act;
-		found_event = dfe;
 		socket = null;
 	}
 	
@@ -54,7 +56,6 @@ public class DiscoveryThread extends Thread {
 	    	this.socket.close();
 	}
 
-	
 	public void parsePacket(final String message, int recevied_port) {
 		
 		String msg[] = message.split(":");
@@ -96,7 +97,9 @@ public class DiscoveryThread extends Thread {
 		
 		activity.runOnUiThread(new Runnable() {
 			public void run() {
-				found_event.onDeviceFound(di);
+				Intent it = new Intent(BROADCAST_DEVICE_DISCOVERED);
+				it.putExtra("device_info", di);
+		        LocalBroadcastManager.getInstance(activity).sendBroadcast(it);
 			}
 		});
 		
