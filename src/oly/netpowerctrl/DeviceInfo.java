@@ -20,6 +20,7 @@ public class DeviceInfo implements Parcelable {
 	public String UserName;
 	public String Password;
 	
+	public boolean DefaultPorts;
 	public int SendPort;
 	public int RecvPort;
 	
@@ -32,6 +33,7 @@ public class DeviceInfo implements Parcelable {
     	MacAddress = "";
     	UserName = "";
     	Password = "";
+    	DefaultPorts = true;
     	SendPort = -1;
     	RecvPort = -1;
     	Outlets = new ArrayList<OutletInfo>();
@@ -40,10 +42,10 @@ public class DeviceInfo implements Parcelable {
     public DeviceInfo(Context cx) {
     	this();
     	DeviceName = (String) cx.getResources().getText(R.string.default_device_name);
-    	SendPort = cx.getResources().getInteger(R.integer.default_send_port);
-    	RecvPort = cx.getResources().getInteger(R.integer.default_recv_port);
+    	SendPort = DeviceQuery.getDefaultSendPort(cx);
+    	RecvPort = DeviceQuery.getDefaultRecvPort(cx);
     }
-
+	    
     public DeviceInfo(DeviceInfo other) {
     	uuid = UUID.randomUUID();
     	DeviceName = other.DeviceName;
@@ -51,6 +53,7 @@ public class DeviceInfo implements Parcelable {
     	MacAddress = other.MacAddress;
     	UserName = other.UserName;
     	Password = other.Password;
+    	DefaultPorts = other.DefaultPorts;
     	SendPort = other.SendPort;
     	RecvPort = other.RecvPort;
     	Outlets = new ArrayList<OutletInfo>();
@@ -77,6 +80,7 @@ public class DeviceInfo implements Parcelable {
 		dest.writeString(MacAddress);
 		dest.writeString(UserName);
 		dest.writeString(Password);
+		dest.writeInt(DefaultPorts ? 1 : 0);
 		dest.writeInt(SendPort);
 		dest.writeInt(RecvPort);
 		dest.writeTypedList(Outlets);
@@ -102,6 +106,7 @@ public class DeviceInfo implements Parcelable {
 		MacAddress = in.readString();
 		UserName = in.readString();
 		Password = in.readString();
+		DefaultPorts = in.readInt() != 0;
 		SendPort = in.readInt();
 		RecvPort = in.readInt();
 		in.readTypedList(Outlets, OutletInfo.CREATOR);

@@ -28,6 +28,11 @@
              android:configChanges="keyboardHidden|orientation|screenSize">
         </activity>
         
+        <activity
+             android:name=".Preferences"
+             android:configChanges="keyboardHidden|orientation|screenSize">
+        </activity>
+        
         <activity 
             android:name=".DeviceControl"
             android:configChanges="keyboardHidden|orientation|screenSize"

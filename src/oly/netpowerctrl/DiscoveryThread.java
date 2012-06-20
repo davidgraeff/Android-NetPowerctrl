@@ -23,11 +23,11 @@ public class DiscoveryThread extends Thread {
 	}
 	
 	public void run() {
-
+		
 		keep_running = true;
 		while (keep_running) {
 			try {
-				int recv_port = activity.getResources().getInteger(R.integer.default_recv_port); //TODO: make configurable
+				int recv_port = DeviceQuery.getDefaultRecvPort(activity);
 				byte[] message = new byte[1500];
 		        DatagramPacket p = new DatagramPacket(message, message.length);
 		        socket = new DatagramSocket(recv_port);
@@ -77,11 +77,11 @@ public class DiscoveryThread extends Thread {
 			return;
 		}
 		
-		final DeviceInfo di = new DeviceInfo();
+		final DeviceInfo di = new DeviceInfo(activity);
 		di.DeviceName = msg[1].trim();
 		di.HostName = msg[2];
 		di.RecvPort = recevied_port;
-		di.SendPort = activity.getResources().getInteger(R.integer.default_send_port); // that's where we were sending after all
+		// leave SendPort as default, as we have no way to know.
 		
 		for (int i=6; i<(msg.length-2); i++) {
 			String outlet[] = msg[i].split(",");

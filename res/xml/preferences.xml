@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="Device Settings">
+    <EditTextPreference android:key="standard_send_port" android:title="@string/preference_standard_send_port" android:inputType="number" android:defaultValue="@integer/default_send_port" android:dialogMessage="@string/preference_standard_send_port_summary" android:summary="@string/preference_standard_send_port_summary" android:dialogTitle="@string/preference_standard_send_port"/>
+    <EditTextPreference android:key="standard_recv_port" android:title="@string/preference_standard_recv_port" android:inputType="number" android:defaultValue="@integer/default_recv_port" android:dialogMessage="@string/preference_standard_recv_port_summary" android:summary="@string/preference_standard_recv_port_summary" android:dialogTitle="@string/preference_standard_recv_port"/>
+</PreferenceScreen>

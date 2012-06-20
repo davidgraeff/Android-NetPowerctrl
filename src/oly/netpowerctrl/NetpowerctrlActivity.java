@@ -110,6 +110,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(android.R.drawable.ic_menu_add);
 		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(android.R.drawable.ic_menu_delete);
 		menu.add(0, R.id.menu_requery, 0, R.string.requery).setIcon(android.R.drawable.ic_menu_compass);
+		menu.add(0, R.id.menu_preferences, 0, R.string.menu_preferences).setIcon(android.R.drawable.ic_menu_preferences);
 		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
 		return true;
 	}
@@ -142,6 +143,12 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			return true;
 		}
 		
+		case R.id.menu_preferences: {
+			Intent it = new Intent(this, Preferences.class);
+			startActivityForResult(it, R.id.request_code_preferences);
+			return true;
+		}
+		
 		case R.id.menu_about: {
 			AboutDialog about = new AboutDialog(this);
 			about.setTitle(R.string.app_name);
@@ -164,8 +171,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	    	String device_ip = prefs.getString("setting_device_ip", "");
 	    	String device_mac = prefs.getString("setting_device_mac", "");
 	    	boolean nonstandard_ports = prefs.getBoolean("setting_nonstandard_ports", false);
-	        int send_udp = getResources().getInteger(R.integer.default_send_port);
-	        int recv_udp = getResources().getInteger(R.integer.default_recv_port);
+	        int send_udp = DeviceQuery.getDefaultSendPort(this);
+	        int recv_udp = DeviceQuery.getDefaultRecvPort(this);
 	        try { send_udp = Integer.parseInt(prefs.getString("setting_send_udp", "")); } catch (NumberFormatException e) { /*nop*/ }
 	        try { recv_udp = Integer.parseInt(prefs.getString("setting_recv_udp", "")); } catch (NumberFormatException e) { /*nop*/ }
 			String username = prefs.getString("setting_username", "");
@@ -200,12 +207,13 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			device_info.MacAddress = device_mac;
 			device_info.UserName = username;
 			device_info.Password = password;
+			device_info.DefaultPorts = ! nonstandard_ports;
 			if (nonstandard_ports) {
 				device_info.SendPort = send_udp;
 				device_info.RecvPort = recv_udp;
 			} else {
-				device_info.SendPort = getResources().getInteger(R.integer.default_send_port);
-				device_info.RecvPort = getResources().getInteger(R.integer.default_recv_port);
+				device_info.SendPort = DeviceQuery.getDefaultSendPort(this);
+				device_info.RecvPort = DeviceQuery.getDefaultRecvPort(this);
 			}
 
 			if (requestCode == R.id.request_code_new_device) {
@@ -217,6 +225,21 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			}
 			SaveConfiguredDevices();
 		}
+		
+		
+		if (requestCode == R.id.request_code_preferences) {
+			// update devices that are configured to use default ports
+	        int send_udp = DeviceQuery.getDefaultSendPort(this);
+	        int recv_udp = DeviceQuery.getDefaultRecvPort(this);
+  			for (DeviceInfo di: alConfiguredDevices) {
+  				if (di.DefaultPorts) {
+  					di.SendPort = send_udp;
+  					di.RecvPort = recv_udp;
+  				}
+  			}
+  			SaveConfiguredDevices();
+		}
+
 	}
 	
     public void ReadConfiguredDevices() {
@@ -236,8 +259,14 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				di.MacAddress = jhost.getString("mac");
 				di.UserName= jhost.getString("username");
 				di.Password = jhost.getString("password");
-				di.SendPort = jhost.getInt("sendport");
-				di.RecvPort = jhost.getInt("recvport");
+				di.DefaultPorts = jhost.getBoolean("default_ports");
+				if (di.DefaultPorts) {
+					di.SendPort = DeviceQuery.getDefaultSendPort(this);
+					di.RecvPort = DeviceQuery.getDefaultRecvPort(this);
+				} else {
+					di.SendPort = jhost.getInt("sendport");
+					di.RecvPort = jhost.getInt("recvport");
+				}
 				di.Outlets = new ArrayList<OutletInfo>();
 
 				JSONArray joutlets = jhost.getJSONArray("outlets");
@@ -269,6 +298,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				jhost.put("mac", di.MacAddress);
 				jhost.put("username", di.UserName);
 				jhost.put("password", di.Password);
+				jhost.put("default_ports", di.DefaultPorts);
 				jhost.put("sendport", di.SendPort);
 				jhost.put("recvport", di.RecvPort);
 

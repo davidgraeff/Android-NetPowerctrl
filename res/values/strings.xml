@@ -44,11 +44,17 @@
     <string name="menu_about">About</string>
     <string name="menu_cancel">Cancel</string>
     <string name="menu_delete_all">Delete all</string>
+    <string name="menu_preferences">Preferences</string>
     
     <string name="default_device_name">New device</string>
     <string name="copy_of">Copy of %s</string>
 
     <string name="confirmation_delete_device">Are you sure you want to delete this device?</string>
     <string name="confirmation_delete_all_devices">Are you sure you want to delete all devices?</string>
+    
+    <string name="preference_standard_send_port">Standard UDP port for sending queries</string>
+    <string name="preference_standard_send_port_summary">Queries will be sent to this port. (This corresponds to the \"RECEIVE\" port in the device\'s web interface)</string>
+    <string name="preference_standard_recv_port">Standard UDP port for receiving from the device</string>
+    <string name="preference_standard_recv_port_summary">The application will listen on this port for answers (and on each port of your configured devices, if any). This corresponds to the \"SEND\" port in the device\'s web interface</string>
     
 </resources>

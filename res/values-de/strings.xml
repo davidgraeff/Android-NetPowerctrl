@@ -42,11 +42,17 @@
     <string name="menu_about">Über</string>
     <string name="menu_cancel">Abbruch</string>
     <string name="menu_delete_all">Alle löschen</string>
+    <string name="menu_preferences">Einstellungen</string>
     
     <string name="default_device_name">Neues Gerät</string>
     <string name="copy_of">Kopie von %s</string>
 
     <string name="confirmation_delete_device">Sind Sie sicher, dass Sie dieses Gerät löschen wollen?</string>
     <string name="confirmation_delete_all_devices">Sind Sie sicher, dass Sie alle Geräte löschen wollen?</string>
+
+    <string name="preference_standard_send_port">Standard UDP-Port zum Senden</string>
+    <string name="preference_standard_send_port_summary">Anfragen werden standardmäßig an diesen Port gesendet. (Dies entspricht dem \"Empfangen\"-Port im Web-Interface des Gerätes)</string>
+    <string name="preference_standard_recv_port">Standard UDP-Port zum Empfangen</string>
+    <string name="preference_standard_recv_port_summary">Die Applikation empfängt Antworten auf diesem Port (und an allen individuellen Ports der konfigurierten Geräte). Dies entspricht dem \"Senden\"-Port im Web-Interface des Gerätes</string>
     
 </resources>

@@ -1,6 +1,5 @@
 package oly.netpowerctrl;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -14,6 +13,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 public class DeviceQuery {
@@ -31,7 +31,7 @@ public class DeviceQuery {
 			        DatagramPacket p = new DatagramPacket(message, msg_length, host, port);
 					s.send(p);
 			        s.close();
-				} catch (final IOException e) {
+				} catch (final Exception e) {
 					activity.runOnUiThread(new Runnable() {
 					    public void run() {
 					    	Toast.makeText(activity, activity.getResources().getString(R.string.error_sending_inquiry) +": "+ e.getMessage(), Toast.LENGTH_LONG).show();
@@ -45,7 +45,7 @@ public class DeviceQuery {
 	public static void sendBroadcastQuery(final Activity activity) {
 		// make a unique list of the default port and all configured devices
 		HashSet<Integer> ports = new HashSet<Integer>();
-		ports.add(activity.getResources().getInteger(R.integer.default_send_port)); //TODO: make configurable);
+		ports.add(DeviceQuery.getDefaultSendPort(activity));
 		
 		SharedPreferences prefs = activity.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
 		String configured_devices_str = prefs.getString("configured_devices", "[]");
@@ -66,5 +66,19 @@ public class DeviceQuery {
 			sendQuery(activity, "255.255.255.255", port);
 	}
 	
+
+	public static int getDefaultSendPort(Context context) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int send_udp = context.getResources().getInteger(R.integer.default_send_port);
+        try { send_udp = Integer.parseInt(prefs.getString("standard_send_port", "")); } catch (NumberFormatException e) { /*nop*/ }
+        return send_udp;
+	}
+
+	public static int getDefaultRecvPort(Context context) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int recv_udp = context.getResources().getInteger(R.integer.default_recv_port);
+        try { recv_udp = Integer.parseInt(prefs.getString("standard_recv_port", "")); } catch (NumberFormatException e) { /*nop*/ }
+        return recv_udp;
+	}
 
 }
