@@ -9,10 +9,10 @@ particular NET-PwrCtrl. Your mileage may vary.
 
 What works:
 - devices are detected on the network if they are
-  configured for UDP communication, send
-  port 1077 / receive port 1075. These ports
-  are currently hardcoded.
-  UNfortunately, We can not use the default ports
+  configured for UDP communication.
+  Default send port 1077 / receive port 1075
+  (can be configured).
+  Unfortunately, We can not use the default ports
   of 77/75 on non-rooted android devices, so you have
   to re-configure.
    
