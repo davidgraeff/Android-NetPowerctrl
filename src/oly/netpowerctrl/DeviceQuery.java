@@ -7,7 +7,13 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.widget.Toast;
 
 public class DeviceQuery {
@@ -40,6 +46,20 @@ public class DeviceQuery {
 		// make a unique list of the default port and all configured devices
 		HashSet<Integer> ports = new HashSet<Integer>();
 		ports.add(activity.getResources().getInteger(R.integer.default_send_port)); //TODO: make configurable);
+		
+		SharedPreferences prefs = activity.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
+		String configured_devices_str = prefs.getString("configured_devices", "[]");
+  		try {
+			JSONArray jdevices = new JSONArray(configured_devices_str);
+			for (int i=0; i<jdevices.length(); i++) {
+				JSONObject jhost = jdevices.getJSONObject(i);
+				ports.add(jhost.getInt("sendport"));
+			}
+  		}
+		catch (JSONException e) {
+			// nop
+		}
+		
 		ArrayList<Integer> uniquePorts = new ArrayList<Integer>(ports);
 		
 		for (int port: uniquePorts) 
