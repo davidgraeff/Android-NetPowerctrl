@@ -1,6 +1,7 @@
 package oly.netpowerctrl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.json.JSONArray;
@@ -33,7 +34,7 @@ import android.widget.Toast;
 @SuppressWarnings("deprecation")
 public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent {
 
-	DiscoveryThread discoveryThread = null;
+	List<DiscoveryThread> discoveryThreads;
 	
 	ListView lvConfiguredDevices;
 	ListView lvDiscoveredDevices;
@@ -48,6 +49,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        discoveryThreads = new ArrayList<DiscoveryThread>();
 
         TabHost th = (TabHost)findViewById(android.R.id.tabhost);
         th.setup();
@@ -76,16 +79,14 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         adpConfiguredDevices.setDeviceConfigureEvent(this);
         adpDiscoveredDevices.setDeviceConfigureEvent(this);
         
-    	discoveryThread = new DiscoveryThread(this);
-    	discoveryThread.start();
     }
     
     @Override
     protected void onDestroy() {
-    	if (discoveryThread != null) {
-    		discoveryThread.interrupt();
-    		discoveryThread = null;
-    	}
+    	for (DiscoveryThread thr: discoveryThreads)
+    		thr.interrupt();
+    	discoveryThreads.clear();
+    	
     	super.onDestroy();
     }
     
@@ -103,6 +104,18 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     protected void onPause() {
     	LocalBroadcastManager.getInstance(this).unregisterReceiver(onDeviceDiscovered);
     	super.onPause();
+	}
+    
+    public void restartDiscoveryThreads() {
+    	for (DiscoveryThread thr: discoveryThreads)
+    		thr.interrupt();
+    	discoveryThreads.clear();
+    	
+    	for (int port: DeviceQuery.getAllReceivePorts(this)) {
+        	DiscoveryThread thr = new DiscoveryThread(port, this);
+        	thr.start();
+        	discoveryThreads.add(thr);
+        }
 	}
     
     @Override
@@ -285,6 +298,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			Toast.makeText(getBaseContext(), getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
         adpConfiguredDevices.getFilter().filter("");
+        restartDiscoveryThreads();
     }
     
     public void SaveConfiguredDevices() {
@@ -321,6 +335,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		SharedPreferences.Editor prefEditor = prefs.edit();
 		prefEditor.putString("configured_devices", jdevices.toString());
 		prefEditor.commit();
+        restartDiscoveryThreads();
     }
     
   	@Override

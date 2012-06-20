@@ -20,6 +20,8 @@
     <string name="error_packet_received">Fehler vom Gerät empfangen: </string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
     <string name="error_edited_device_not_found">Interner Programmfehler: editiertes Gerät nicht gefunden!</string>
+    <string name="error_listen_thread_exception">Kann nicht Port %d zum Empfangen öffnen:\n</string>
+    <string name="error_port_lt_1024">(Ports &lt; 1024 sind nur auf gerooteten Geräten möglich)</string>
     
     <string name="device_settings">Geräte-Einstellungen</string>
     <string name="device_name">Name</string>

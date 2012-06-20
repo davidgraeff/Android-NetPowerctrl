@@ -20,6 +20,8 @@
     <string name="error_packet_received">An error was received from the device: </string>
     <string name="error_nopass">Invalid username / password combination</string>
     <string name="error_edited_device_not_found">Internal program error: edited device not found!</string>
+    <string name="error_listen_thread_exception">Could not listen on port %d:\n</string>
+    <string name="error_port_lt_1024">(ports &lt; 1024 only possible on rooted devices)</string>
     
     <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>

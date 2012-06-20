@@ -13,11 +13,13 @@ public class DiscoveryThread extends Thread {
 	
 	public static String BROADCAST_DEVICE_DISCOVERED = "com.nittka.netpowerctrl.DEVICE_DISCOVERED";
 	
+	int recv_port;
 	Activity activity;
 	boolean keep_running;
 	DatagramSocket socket;
 	
-	public DiscoveryThread(Activity act) {
+	public DiscoveryThread(int port, Activity act) {
+		recv_port = port;
 		activity = act;
 		socket = null;
 	}
@@ -27,7 +29,6 @@ public class DiscoveryThread extends Thread {
 		keep_running = true;
 		while (keep_running) {
 			try {
-				int recv_port = DeviceQuery.getDefaultRecvPort(activity);
 				byte[] message = new byte[1500];
 		        DatagramPacket p = new DatagramPacket(message, message.length);
 		        socket = new DatagramSocket(recv_port);
@@ -40,10 +41,14 @@ public class DiscoveryThread extends Thread {
 				if (keep_running) { // no message if we were interrupt()ed
 					activity.runOnUiThread(new Runnable() {
 					    public void run() {
-					    	Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+					    	String msg = String.format(activity.getResources().getString(R.string.error_listen_thread_exception), recv_port);
+					    	msg += e.getLocalizedMessage();
+					    	if (recv_port < 1024) msg += activity.getResources().getString(R.string.error_port_lt_1024);
+					    	Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
 					    }
 					});
 				}
+				break;
 			}
 		}
 	}

@@ -43,26 +43,7 @@ public class DeviceQuery {
 	}
 	
 	public static void sendBroadcastQuery(final Activity activity) {
-		// make a unique list of the default port and all configured devices
-		HashSet<Integer> ports = new HashSet<Integer>();
-		ports.add(DeviceQuery.getDefaultSendPort(activity));
-		
-		SharedPreferences prefs = activity.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
-		String configured_devices_str = prefs.getString("configured_devices", "[]");
-  		try {
-			JSONArray jdevices = new JSONArray(configured_devices_str);
-			for (int i=0; i<jdevices.length(); i++) {
-				JSONObject jhost = jdevices.getJSONObject(i);
-				ports.add(jhost.getInt("sendport"));
-			}
-  		}
-		catch (JSONException e) {
-			// nop
-		}
-		
-		ArrayList<Integer> uniquePorts = new ArrayList<Integer>(ports);
-		
-		for (int port: uniquePorts) 
+		for (int port: getAllSendPorts(activity)) 
 			sendQuery(activity, "255.255.255.255", port);
 	}
 	
@@ -79,6 +60,50 @@ public class DeviceQuery {
         int recv_udp = context.getResources().getInteger(R.integer.default_recv_port);
         try { recv_udp = Integer.parseInt(prefs.getString("standard_recv_port", "")); } catch (NumberFormatException e) { /*nop*/ }
         return recv_udp;
+	}
+	
+	//! get a list of all send ports of all configured devices plus the default send port
+	public static ArrayList<Integer> getAllSendPorts(Context context) {
+		HashSet<Integer> ports = new HashSet<Integer>();
+		ports.add(getDefaultSendPort(context));
+		
+		SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
+		String configured_devices_str = prefs.getString("configured_devices", "[]");
+  		try {
+			JSONArray jdevices = new JSONArray(configured_devices_str);
+			for (int i=0; i<jdevices.length(); i++) {
+				JSONObject jhost = jdevices.getJSONObject(i);
+				if (! jhost.getBoolean("default_ports"))
+					ports.add(jhost.getInt("sendport"));
+			}
+  		}
+		catch (JSONException e) {
+			// nop
+		}
+		
+		return new ArrayList<Integer>(ports);
+	}
+
+	//! get a list of all receive ports of all configured devices plus the default receive port
+	public static ArrayList<Integer> getAllReceivePorts(Context context) {
+		HashSet<Integer> ports = new HashSet<Integer>();
+		ports.add(getDefaultRecvPort(context));
+		
+		SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
+		String configured_devices_str = prefs.getString("configured_devices", "[]");
+  		try {
+			JSONArray jdevices = new JSONArray(configured_devices_str);
+			for (int i=0; i<jdevices.length(); i++) {
+				JSONObject jhost = jdevices.getJSONObject(i);
+				if (! jhost.getBoolean("default_ports"))
+					ports.add(jhost.getInt("recvport"));
+			}
+  		}
+		catch (JSONException e) {
+			// nop
+		}
+		
+		return new ArrayList<Integer>(ports);
 	}
 
 }
