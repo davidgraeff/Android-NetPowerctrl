@@ -1,9 +1,5 @@
 package oly.netpowerctrl;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -11,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.BroadcastReceiver;
@@ -101,7 +96,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	IntentFilter itf= new IntentFilter(DiscoveryThread.BROADCAST_DEVICE_DISCOVERED);
         LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
     	
-    	sendQuery();
+    	DeviceQuery.sendBroadcastQuery(this);
     }
     
     @Override
@@ -143,7 +138,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}
 		
 		case R.id.menu_requery: {
-			sendQuery();
+	    	DeviceQuery.sendBroadcastQuery(this);
 			return true;
 		}
 		
@@ -409,31 +404,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}
 	}
 	
-	public void sendQuery() {
-		final Activity self = this;
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-			        String messageStr="wer da?\r\n";
-			        int port = getResources().getInteger(R.integer.default_send_port); //TODO: make configurable
-			        DatagramSocket s = new DatagramSocket();
-					s.setBroadcast(true);
-					InetAddress host = InetAddress.getByName("255.255.255.255"); //TODO: make configurable
-			        int msg_length=messageStr.length();
-			        byte[] message = messageStr.getBytes();
-			        DatagramPacket p = new DatagramPacket(message, msg_length, host, port);
-					s.send(p);
-			        s.close();
-				} catch (final IOException e) {
-					runOnUiThread(new Runnable() {
-					    public void run() {
-					    	Toast.makeText(self, getResources().getString(R.string.error_sending_inquiry) +": "+ e.getMessage(), Toast.LENGTH_LONG).show();
-					    }
-					});
-				}
-			}
-		}).start();
-	}
 	
 	private BroadcastReceiver onDeviceDiscovered= new BroadcastReceiver() {
 	    @Override

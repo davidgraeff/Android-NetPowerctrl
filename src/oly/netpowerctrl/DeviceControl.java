@@ -89,7 +89,7 @@ public class DeviceControl extends Activity implements OnClickListener {
     	super.onResume();
     	IntentFilter itf= new IntentFilter(DiscoveryThread.BROADCAST_DEVICE_DISCOVERED);
         LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
-        // TODO sendQuery(device.SendPort);
+        DeviceQuery.sendQuery(this, device.HostName, device.SendPort);
     }
     
     @Override
@@ -160,6 +160,5 @@ public class DeviceControl extends Activity implements OnClickListener {
 			}
 	    }
 	};
-	
 	
 }
