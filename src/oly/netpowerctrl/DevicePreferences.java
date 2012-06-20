@@ -25,14 +25,14 @@ public class DevicePreferences extends PreferenceActivity {
         SharedPreferences.Editor prefEditor = pref.edit();
 
         int default_send_port = getResources().getInteger(R.integer.default_send_port);
-        int default_recv_port = getResources().getInteger(R.integer.default_send_port);
+        int default_recv_port = getResources().getInteger(R.integer.default_recv_port);
         
         if (new_device) {
         	setTitle(getResources().getText(R.string.default_device_name));
         	prefEditor.putString("setting_device_name", "");
 			prefEditor.putString("setting_device_ip", "");
 			prefEditor.putString("setting_device_mac", "");
-			prefEditor.putBoolean("setting_standard_ports", true);
+			prefEditor.putBoolean("setting_nonstandard_ports", false);
 			prefEditor.putString("setting_send_udp", String.format("%d",default_send_port));
 			prefEditor.putString("setting_recv_udp", String.format("%d",default_recv_port));
 			prefEditor.putString("setting_username", "");
@@ -44,8 +44,8 @@ public class DevicePreferences extends PreferenceActivity {
         	prefEditor.putString("setting_device_name", device_info.DeviceName);
 			prefEditor.putString("setting_device_ip", device_info.HostName);
 			prefEditor.putString("setting_device_mac", device_info.MacAddress);
-			boolean default_ports = (device_info.SendPort == default_send_port) && (device_info.RecvPort == default_recv_port); 
-			prefEditor.putBoolean("setting_standard_ports", default_ports);
+			boolean nonstandard_ports = (device_info.SendPort != default_send_port) || (device_info.RecvPort != default_recv_port); 
+			prefEditor.putBoolean("setting_nonstandard_ports", nonstandard_ports);
 			prefEditor.putString("setting_send_udp", String.format("%d",device_info.SendPort));
 			prefEditor.putString("setting_recv_udp", String.format("%d",device_info.RecvPort));
 			prefEditor.putString("setting_username", device_info.UserName);

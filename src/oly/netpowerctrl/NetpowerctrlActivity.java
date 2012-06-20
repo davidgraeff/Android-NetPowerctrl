@@ -163,11 +163,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	    	String device_name = prefs.getString("setting_device_name", "ERROR");
 	    	String device_ip = prefs.getString("setting_device_ip", "");
 	    	String device_mac = prefs.getString("setting_device_mac", "");
-	    	boolean standard_ports = prefs.getBoolean("setting_standard_ports", false);
-	        int default_send_port = getResources().getInteger(R.integer.default_send_port);
-	        int default_recv_port = getResources().getInteger(R.integer.default_send_port);
-	    	int send_udp = Integer.getInteger(prefs.getString("setting_send_udp", ""), default_send_port);
-	    	int recv_udp = Integer.getInteger(prefs.getString("setting_recv_udp", ""), default_recv_port);
+	    	boolean nonstandard_ports = prefs.getBoolean("setting_nonstandard_ports", false);
+	        int send_udp = getResources().getInteger(R.integer.default_send_port);
+	        int recv_udp = getResources().getInteger(R.integer.default_recv_port);
+	        try { send_udp = Integer.parseInt(prefs.getString("setting_send_udp", "")); } catch (NumberFormatException e) { /*nop*/ }
+	        try { recv_udp = Integer.parseInt(prefs.getString("setting_recv_udp", "")); } catch (NumberFormatException e) { /*nop*/ }
 			String username = prefs.getString("setting_username", "");
 			String password = prefs.getString("setting_password", "");
 	    
@@ -200,12 +200,12 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			device_info.MacAddress = device_mac;
 			device_info.UserName = username;
 			device_info.Password = password;
-			if (standard_ports) {
-				device_info.SendPort = getResources().getInteger(R.integer.default_send_port);
-				device_info.RecvPort = getResources().getInteger(R.integer.default_recv_port);
-			} else {
+			if (nonstandard_ports) {
 				device_info.SendPort = send_udp;
 				device_info.RecvPort = recv_udp;
+			} else {
+				device_info.SendPort = getResources().getInteger(R.integer.default_send_port);
+				device_info.RecvPort = getResources().getInteger(R.integer.default_recv_port);
 			}
 
 			if (requestCode == R.id.request_code_new_device) {

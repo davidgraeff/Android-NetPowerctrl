@@ -26,7 +26,7 @@
     <string name="device_name_summary">Beliebige Bezeichnung für dieses Gerät.</string>
     <string name="device_ip">Hostname or IP</string>
     <string name="device_ip_summary">Der Hostname oder die IP-Adresse für dieses Gerät.</string>
-    <string name="device_standard_ports">Spezielle UDP-Ports?</string>
+    <string name="device_nonstandard_ports">Spezielle UDP-Ports?</string>
     <string name="device_send_udp">UDP-Port zum Senden</string>
     <string name="device_send_udp_summary">Siehe \"Empfangen\" in der Web-Oberfläche des Gerätes.</string>
     <string name="device_recv_udp">UDP-Port zum Empfangen</string>
