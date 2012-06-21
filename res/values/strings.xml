@@ -59,4 +59,8 @@
     <string name="preference_standard_recv_port">Standard UDP port for receiving from the device</string>
     <string name="preference_standard_recv_port_summary">The application will listen on this port for answers (and on each port of your configured devices, if any). This corresponds to the \"SEND\" port in the device\'s web interface</string>
     
+    <string name="outlet_name">Outlet Name</string>
+    <string name="outlet_numbers">Outlet Number(s)</string>
+    <string name="outlet_delete">Delete</string>
+    
 </resources>

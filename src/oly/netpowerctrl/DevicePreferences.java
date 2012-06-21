@@ -1,10 +1,12 @@
 package oly.netpowerctrl;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,6 +14,8 @@ import android.view.MenuItem;
 
 public class DevicePreferences extends PreferenceActivity {
 
+	public DeviceInfo device_info;
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,32 +28,20 @@ public class DevicePreferences extends PreferenceActivity {
         SharedPreferences pref = getSharedPreferences(getPreferenceManager().getSharedPreferencesName(), MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = pref.edit();
 
-        int default_send_port = DeviceQuery.getDefaultSendPort(this);
-        int default_recv_port = DeviceQuery.getDefaultRecvPort(this);
+        if (new_device) 
+        	device_info = new DeviceInfo(this);
+        	else  device_info = (DeviceInfo) getIntent().getExtras().get("device_info");
         
-        if (new_device) {
-        	setTitle(getResources().getText(R.string.default_device_name));
-        	prefEditor.putString("setting_device_name", "");
-			prefEditor.putString("setting_device_ip", "");
-			prefEditor.putString("setting_device_mac", "");
-			prefEditor.putBoolean("setting_nonstandard_ports", false);
-			prefEditor.putString("setting_send_udp", String.format("%d",default_send_port));
-			prefEditor.putString("setting_recv_udp", String.format("%d",default_recv_port));
-			prefEditor.putString("setting_username", "");
-			prefEditor.putString("setting_password", "");
-        } else {
-            DeviceInfo device_info = (DeviceInfo) getIntent().getExtras().get("device_info");
-            ret_intent.putExtra("uuid", device_info.uuid);
-        	setTitle(device_info.DeviceName);
-        	prefEditor.putString("setting_device_name", device_info.DeviceName);
-			prefEditor.putString("setting_device_ip", device_info.HostName);
-			prefEditor.putString("setting_device_mac", device_info.MacAddress);
-			prefEditor.putBoolean("setting_nonstandard_ports", ! device_info.DefaultPorts);
-			prefEditor.putString("setting_send_udp", String.format("%d",device_info.SendPort));
-			prefEditor.putString("setting_recv_udp", String.format("%d",device_info.RecvPort));
-			prefEditor.putString("setting_username", device_info.UserName);
-			prefEditor.putString("setting_password", device_info.Password);
-        }
+        ret_intent.putExtra("uuid", device_info.uuid);
+    	setTitle(device_info.DeviceName);
+    	prefEditor.putString("setting_device_name", device_info.DeviceName);
+		prefEditor.putString("setting_device_ip", device_info.HostName);
+		prefEditor.putString("setting_device_mac", device_info.MacAddress);
+		prefEditor.putBoolean("setting_nonstandard_ports", ! device_info.DefaultPorts);
+		prefEditor.putString("setting_send_udp", String.format("%d",device_info.SendPort));
+		prefEditor.putString("setting_recv_udp", String.format("%d",device_info.RecvPort));
+		prefEditor.putString("setting_username", device_info.UserName);
+		prefEditor.putString("setting_password", device_info.Password);
 		prefEditor.commit();
 		
         addPreferencesFromResource(R.xml.device_preferences);
@@ -61,6 +53,18 @@ public class DevicePreferences extends PreferenceActivity {
 				return true;
 			}
 		});
+		
+		Preference myPref = (Preference) findPreference("setting_outlets");
+		final Activity self = this;
+		myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			public boolean onPreferenceClick(Preference preference) {
+				Intent it = new Intent(self, OutletConfig.class);
+				it.putExtra("device_info", device_info);
+				startActivityForResult(it, R.id.request_code_new_device);
+			    return true;
+			}
+		});
+
     }
 	
    @Override
