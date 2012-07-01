@@ -11,6 +11,7 @@
     <item format="integer" name="menu_requery" type="id">100050</item>
     <item format="integer" name="menu_preferences" type="id">100051</item>
     <item format="integer" name="request_code_preferences" type="id">100052</item>
+    <item format="integer" name="request_code_config_outlets" type="id">100053</item>
     
     <item format="integer" name="default_send_port" type="integer">1075</item>
     <item format="integer" name="default_recv_port" type="integer">1077</item>

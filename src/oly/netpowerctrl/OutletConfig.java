@@ -3,6 +3,7 @@ package oly.netpowerctrl;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -56,6 +57,10 @@ public class OutletConfig extends Activity {
 			return;
 		}
 		
+        Intent ret_intent = new Intent(); // for returning data to onActivityResult()
+        ret_intent.putExtra("device_info", device_info);
+        setResult(RESULT_OK, ret_intent);
+
 		super.onBackPressed();
 	}
 	
@@ -79,9 +84,4 @@ public class OutletConfig extends Activity {
 		}
 	};
 
-	private OnClickListener onDeleteClicked = new OnClickListener() {
-		public void onClick(View v) {
-			// TODO Auto-generated method stub
-		}
-	};
 }

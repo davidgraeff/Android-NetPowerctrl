@@ -228,6 +228,13 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				device_info.SendPort = DeviceQuery.getDefaultSendPort(this);
 				device_info.RecvPort = DeviceQuery.getDefaultRecvPort(this);
 			}
+			device_info.Outlets.clear();
+			for (int i=0; i<prefs.getInt("num_outlets", 0); i++) {
+				OutletInfo oi = new OutletInfo();
+				oi.Description = prefs.getString(String.format("outlet_name%d",i), "?");
+				oi.OutletNumber = prefs.getInt(String.format("outlet_number%d",i), 1);
+				device_info.Outlets.add(oi);
+			}
 
 			if (requestCode == R.id.request_code_new_device) {
 				alConfiguredDevices.add(device_info);

@@ -44,6 +44,8 @@ public class DevicePreferences extends PreferenceActivity {
 		prefEditor.putString("setting_password", device_info.Password);
 		prefEditor.commit();
 		
+    	save_outlet_settings(device_info);
+
         addPreferencesFromResource(R.xml.device_preferences);
 		
 		Preference p = findPreference("setting_device_name");
@@ -60,12 +62,34 @@ public class DevicePreferences extends PreferenceActivity {
 			public boolean onPreferenceClick(Preference preference) {
 				Intent it = new Intent(self, OutletConfig.class);
 				it.putExtra("device_info", device_info);
-				startActivityForResult(it, R.id.request_code_new_device);
+				startActivityForResult(it, R.id.request_code_config_outlets);
 			    return true;
 			}
 		});
 
     }
+	
+	@Override
+	protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+		if (resultCode == RESULT_CANCELED)
+			return;
+		
+		if (requestCode == R.id.request_code_config_outlets) {
+        	device_info = (DeviceInfo) data.getExtras().get("device_info");
+        	save_outlet_settings(device_info);
+		}
+	}
+	
+	public void save_outlet_settings(DeviceInfo device_info) {
+    	SharedPreferences pref = getSharedPreferences(getPreferenceManager().getSharedPreferencesName(), MODE_PRIVATE);
+        SharedPreferences.Editor prefEditor = pref.edit();
+        prefEditor.putInt("num_outlets", device_info.Outlets.size());
+        for (int i=0; i<device_info.Outlets.size(); i++) {
+        	prefEditor.putString(String.format("outlet_name%d",i), device_info.Outlets.get(i).Description);
+        	prefEditor.putInt(String.format("outlet_number%d",i), device_info.Outlets.get(i).OutletNumber);
+        }
+		prefEditor.commit();
+	}
 	
    @Override
 	public boolean onCreateOptionsMenu(Menu menu) {

@@ -7,9 +7,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 public class OutletConfigAdapter extends BaseAdapter {
 
@@ -65,6 +67,15 @@ public class OutletConfigAdapter extends BaseAdapter {
 				catch (Exception e) {
 					outlet.OutletNumber = -1;
 				}
+			}
+		});
+
+        ImageButton btnDelete = (ImageButton)convertView.findViewById(R.id.delete_outlet);
+        btnDelete.setTag(position);
+        btnDelete.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				items.remove(outlet);
+				notifyDataSetChanged();
 			}
 		});
 
