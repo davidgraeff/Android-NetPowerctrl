@@ -53,7 +53,8 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     
     public View getView(int position, View convertView, ViewGroup parent) {
 
-    	convertView = inflater.inflate(R.layout.device_list_item, null);
+    	if (convertView == null)
+    		convertView = inflater.inflate(R.layout.device_list_item, null);
         
         TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
         tvName.setText(visible_devices.get(position).DeviceName);
@@ -67,6 +68,7 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
         btn.setFocusableInTouchMode(false);
         btn.setOnClickListener(this);
 
+        convertView.setTag(position);
         return convertView;
     }
 

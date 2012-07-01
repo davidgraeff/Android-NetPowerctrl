@@ -486,6 +486,22 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 					break;
 				}
 			}
+			
+			// if it's visible in the listView, flash it
+			flashGreen(device_info.MacAddress, lvConfiguredDevices, adpConfiguredDevices);
+			flashGreen(device_info.MacAddress, lvDiscoveredDevices, adpDiscoveredDevices);
+	    }
+	    
+	    public void flashGreen(String macAddress, ListView lstv, DeviceListAdapter adapter) {
+			for (int i=0; i<lstv.getChildCount(); i++) {
+				View child = lstv.getChildAt(i);
+				if (child != null) {
+					DeviceInfo di = (DeviceInfo)adapter.getItem((Integer)child.getTag());
+					if (di.MacAddress.equals(macAddress)) {
+						GreenFlasher.flashBgColor(child);
+					}
+				}	
+			}
 	    }
 	};
 
