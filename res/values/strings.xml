@@ -22,7 +22,10 @@
     <string name="error_edited_device_not_found">Internal program error: edited device not found!</string>
     <string name="error_listen_thread_exception">Could not listen on port %d:\n</string>
     <string name="error_port_lt_1024">(ports &lt; 1024 only possible on rooted devices)</string>
-    
+    <string name="error_outlet_title">Outlet data error</string>
+    <string name="error_outlet_config_name">Please enter a description for every outlet.</string>
+    <string name="error_outlet_config_number">Please enter only valid outlet numbers.</string>
+        
     <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>
     <string name="device_name_summary">Custom description of this device.</string>
@@ -59,8 +62,8 @@
     <string name="preference_standard_recv_port">Standard UDP port for receiving from the device</string>
     <string name="preference_standard_recv_port_summary">The application will listen on this port for answers (and on each port of your configured devices, if any). This corresponds to the \"SEND\" port in the device\'s web interface</string>
     
-    <string name="outlet_name">Outlet Name</string>
-    <string name="outlet_numbers">Outlet Number(s)</string>
+    <string name="outlet_name">Name</string>
+    <string name="outlet_numbers">Number</string>
     <string name="outlet_delete">Delete</string>
     
 </resources>

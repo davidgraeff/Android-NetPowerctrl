@@ -12,47 +12,12 @@
         android:text="Title"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <ScrollView
-        android:id="@+id/scrollView1"
-        android:layout_width="match_parent"
+    <ListView
+        android:id="@+id/lvOutlets"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_weight="1" >
-
-        <TableLayout
-            android:id="@+id/tlyoOutlets"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:stretchColumns="0" >
-
-            <TableRow
-                android:id="@+id/tableRow1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:id="@+id/textView1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/outlet_name"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                <TextView
-                    android:id="@+id/textView2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/outlet_numbers"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                <TextView
-                    android:id="@+id/textView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:text="@string/outlet_delete"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </TableRow>
-        </TableLayout>
-    </ScrollView>
+    </ListView>
 
     <ImageButton
         android:id="@+id/btnAddOutlet"
