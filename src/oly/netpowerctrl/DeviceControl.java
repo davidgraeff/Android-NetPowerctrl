@@ -157,6 +157,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 						}
 					}
 				}
+				GreenFlasher.flashBgColor(findViewById(R.id.tvDeviceName));
 			}
 	    }
 	};
