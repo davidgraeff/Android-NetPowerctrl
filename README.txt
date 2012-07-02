@@ -12,16 +12,19 @@ What works:
   configured for UDP communication.
   Default send port 1077 / receive port 1075
   (can be configured).
-  Unfortunately, We can not use the default ports
+  Unfortunately, We can not use the ANEL default ports
   of 77/75 on non-rooted android devices, so you have
   to re-configure.
    
-- there is currently no user interface to configure
-  the individual outlets of a device. You must set
-  the username/password of a discovered device
-  (and copy it to configured devices) to be able
-  to switch the outlets on/off (which is what
-  this software is all about ;-)
+- Copy a discovered device or create a new one,
+  set the username/password and maybe the ports
+  (for the correct ports, see the web-interface
+  of your ANEL device)
+  
+- Create a homescreen widget for a particular
+  (previously configured) device.  
+
+enjoy :-)
 
 Copyright GPLv2
 oly@nittka.com
