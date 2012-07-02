@@ -72,6 +72,10 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
         return convertView;
     }
 
+    public void setDevices(List<DeviceInfo> new_devices) {
+    	all_devices = new_devices;
+    }
+    
     public void setDeviceConfigureEvent(DeviceConfigureEvent dce) {
     	deviceConfigureEvent = dce;
     }
