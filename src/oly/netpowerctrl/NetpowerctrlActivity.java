@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextMenu;
@@ -425,14 +426,16 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	    }
 	    
 	    public void flashGreen(String macAddress, ListView lstv, DeviceListAdapter adapter) {
-			for (int i=0; i<lstv.getChildCount(); i++) {
-				View child = lstv.getChildAt(i);
-				if (child != null) {
-					DeviceInfo di = (DeviceInfo)adapter.getItem((Integer)child.getTag());
-					if (di.MacAddress.equals(macAddress)) {
-						GreenFlasher.flashBgColor(child);
-					}
-				}	
+			if (Build.VERSION.SDK_INT >= 11) {
+				for (int i=0; i<lstv.getChildCount(); i++) {
+					View child = lstv.getChildAt(i);
+					if (child != null) {
+						DeviceInfo di = (DeviceInfo)adapter.getItem((Integer)child.getTag());
+						if (di.MacAddress.equals(macAddress)) {
+							GreenFlasher.flashBgColor(child);
+						}
+					}	
+				}
 			}
 	    }
 	};

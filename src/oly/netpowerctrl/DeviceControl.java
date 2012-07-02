@@ -136,28 +136,30 @@ public class DeviceControl extends Activity implements OnClickListener {
 	private BroadcastReceiver onDeviceDiscovered= new BroadcastReceiver() {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	    	DeviceInfo device_info = null;
-			Bundle extra = intent.getExtras();
-			if (extra != null) {
-				Object o = extra.get("device_info");
-				if (o != null) {
-					device_info = (DeviceInfo) o; 
-				}
-			}
-			if (device_info == null)
-				return;
-
-			// our device?
-			if (device.MacAddress.equals(device_info.MacAddress)) {
-				// update outlet states
-				for (CompoundButton button: buttons) {
-					for (OutletInfo oi: device_info.Outlets) {
-						if (oi.OutletNumber == (Integer)button.getTag()) {
-							button.setChecked(oi.State);
-						}
+			if (Build.VERSION.SDK_INT >= 11) {
+		    	DeviceInfo device_info = null;
+				Bundle extra = intent.getExtras();
+				if (extra != null) {
+					Object o = extra.get("device_info");
+					if (o != null) {
+						device_info = (DeviceInfo) o; 
 					}
 				}
-				GreenFlasher.flashBgColor(findViewById(R.id.tvDeviceName));
+				if (device_info == null)
+					return;
+	
+				// our device?
+				if (device.MacAddress.equals(device_info.MacAddress)) {
+					// update outlet states
+					for (CompoundButton button: buttons) {
+						for (OutletInfo oi: device_info.Outlets) {
+							if (oi.OutletNumber == (Integer)button.getTag()) {
+								button.setChecked(oi.State);
+							}
+						}
+					}
+					GreenFlasher.flashBgColor(findViewById(R.id.tvDeviceName));
+				}
 			}
 	    }
 	};

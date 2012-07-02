@@ -2,7 +2,6 @@ package oly.netpowerctrl;
 
 import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
-import android.os.Build;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
@@ -33,13 +32,11 @@ public class GreenFlasher {
 	static GreenAlphaEvaluator bgEvaluator = new GreenAlphaEvaluator();
 	
 	static void flashBgColor(View view) { 
-		if (Build.VERSION.SDK_INT >= 11) {
-			// ObjectAnimator anim = ObjectAnimator.ofInt(view, "backgroundColor", 0x0000ff00, 0xff00ff00, 0x0000ff00);
-			ObjectAnimator anim = ObjectAnimator.ofInt(view, "backgroundColor", 0, 1, 0);
-			anim.setEvaluator(bgEvaluator);
-			anim.setDuration(400);
-			anim.setInterpolator(new AccelerateDecelerateInterpolator());
-			anim.start();
-		}
+		// ObjectAnimator anim = ObjectAnimator.ofInt(view, "backgroundColor", 0x0000ff00, 0xff00ff00, 0x0000ff00);
+		ObjectAnimator anim = ObjectAnimator.ofInt(view, "backgroundColor", 0, 1, 0);
+		anim.setEvaluator(bgEvaluator);
+		anim.setDuration(400);
+		anim.setInterpolator(new AccelerateDecelerateInterpolator());
+		anim.start();
 	}
 }
