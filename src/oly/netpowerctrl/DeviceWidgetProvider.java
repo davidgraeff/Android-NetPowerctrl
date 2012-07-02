@@ -14,7 +14,6 @@ public class DeviceWidgetProvider extends AppWidgetProvider {
         for (int i=0; i<N; i++) {
             int appWidgetId = appWidgetIds[i];
 
-            /* Create the PendingIntent for a QuickNote */
             Intent intent = new Intent(context, DeviceControl.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
