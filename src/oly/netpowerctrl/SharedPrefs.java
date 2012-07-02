@@ -8,25 +8,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
 public class SharedPrefs {
 
-    public static ArrayList<DeviceInfo> ReadConfiguredDevices(Activity activity) {
+    public static ArrayList<DeviceInfo> ReadConfiguredDevices(Context context) {
 
     	ArrayList<DeviceInfo> devices = new ArrayList<DeviceInfo>();
     	
-		SharedPreferences prefs = activity.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
+		SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
 		String configured_devices_str = prefs.getString("configured_devices", "[]");
   		try {
 			JSONArray jdevices = new JSONArray(configured_devices_str);
 			
 			for (int i=0; i<jdevices.length(); i++) {
 				JSONObject jhost = jdevices.getJSONObject(i);
-				DeviceInfo di = new DeviceInfo(activity);
+				DeviceInfo di = new DeviceInfo(context);
 				di.uuid = UUID.fromString(jhost.getString("uuid"));
 				di.DeviceName = jhost.getString("name");
 				di.HostName = jhost.getString("ip");
@@ -35,8 +34,8 @@ public class SharedPrefs {
 				di.Password = jhost.getString("password");
 				di.DefaultPorts = jhost.getBoolean("default_ports");
 				if (di.DefaultPorts) {
-					di.SendPort = DeviceQuery.getDefaultSendPort(activity);
-					di.RecvPort = DeviceQuery.getDefaultRecvPort(activity);
+					di.SendPort = DeviceQuery.getDefaultSendPort(context);
+					di.RecvPort = DeviceQuery.getDefaultRecvPort(context);
 				} else {
 					di.SendPort = jhost.getInt("sendport");
 					di.RecvPort = jhost.getInt("recvport");
@@ -56,12 +55,12 @@ public class SharedPrefs {
 			}
 		}
 		catch (JSONException e) {
-			Toast.makeText(activity, activity.getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
+			Toast.makeText(context, context.getResources().getText(R.string.error_reading_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
   		return devices;
     }
     
-    public static void SaveConfiguredDevices(List<DeviceInfo> devices, Activity activity) {
+    public static void SaveConfiguredDevices(List<DeviceInfo> devices, Context context) {
     	JSONArray jdevices = new JSONArray();
   		try {
   			for (DeviceInfo di: devices) {
@@ -88,10 +87,10 @@ public class SharedPrefs {
   			}
 		}
 		catch (JSONException e) {
-			Toast.makeText(activity, activity.getResources().getText(R.string.error_saving_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
+			Toast.makeText(context, context.getResources().getText(R.string.error_saving_configured_devices) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
 			return;
 		}
-		SharedPreferences prefs = activity.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
+		SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
 		SharedPreferences.Editor prefEditor = prefs.edit();
 		prefEditor.putString("configured_devices", jdevices.toString());
 		prefEditor.commit();

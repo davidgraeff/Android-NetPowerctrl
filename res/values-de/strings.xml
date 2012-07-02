@@ -63,4 +63,6 @@
     <string name="outlet_name">Bezeichnung</string>
     <string name="outlet_numbers">Nr.</string>
     <string name="outlet_delete">Löschen</string>
+    
+    <string name="choose_widget_device">Bitte wählen Sie ein Gerät für dieses Widget</string>
 </resources>

@@ -66,4 +66,5 @@
     <string name="outlet_numbers">Number</string>
     <string name="outlet_delete">Delete</string>
     
+    <string name="choose_widget_device">Please choose a device for this widget</string>
 </resources>
