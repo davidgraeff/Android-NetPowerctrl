@@ -32,6 +32,7 @@ public class DiscoveryThread extends Thread {
 				byte[] message = new byte[1500];
 		        DatagramPacket p = new DatagramPacket(message, message.length);
 		        socket = new DatagramSocket(recv_port);
+		        socket.setReuseAddress(true);
 		        socket.receive(p);
 		        if (! socket.isClosed()) {
 		        	socket.close();
@@ -55,10 +56,11 @@ public class DiscoveryThread extends Thread {
 
 	@Override
 	public void interrupt() {
-	    super.interrupt();
 	    keep_running = false;
-	    if (socket != null)
-	    	this.socket.close();
+	    if (socket != null) {
+	    	socket.close();
+	    }	    	
+	    super.interrupt();
 	}
 
 	public void parsePacket(final String message, int recevied_port) {
