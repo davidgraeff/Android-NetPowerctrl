@@ -1,7 +1,6 @@
 package oly.netpowerctrl;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import android.app.AlertDialog;
@@ -31,8 +30,6 @@ import android.widget.Toast;
 @SuppressWarnings("deprecation")
 public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent {
 
-	List<DiscoveryThread> discoveryThreads;
-	
 	ListView lvConfiguredDevices;
 	ListView lvDiscoveredDevices;
 	
@@ -46,8 +43,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
-        discoveryThreads = new ArrayList<DiscoveryThread>();
 
         TabHost th = (TabHost)findViewById(android.R.id.tabhost);
         th.setup();
@@ -78,6 +73,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         
     }
     
+    /*
     @Override
     protected void onDestroy() {
     	for (DiscoveryThread thr: discoveryThreads)
@@ -86,6 +82,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	
     	super.onDestroy();
     }
+    */
     
     @Override
     protected void onResume() {
@@ -101,18 +98,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     protected void onPause() {
     	LocalBroadcastManager.getInstance(this).unregisterReceiver(onDeviceDiscovered);
     	super.onPause();
-	}
-    
-    public void restartDiscoveryThreads() {
-    	for (DiscoveryThread thr: discoveryThreads)
-    		thr.interrupt();
-    	discoveryThreads.clear();
-    	
-    	for (int port: DeviceQuery.getAllReceivePorts(this)) {
-        	DiscoveryThread thr = new DiscoveryThread(port, this);
-        	thr.start();
-        	discoveryThreads.add(thr);
-        }
 	}
     
     @Override
@@ -263,12 +248,12 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	alConfiguredDevices = SharedPrefs.ReadConfiguredDevices(this);
     	adpConfiguredDevices.setDevices(alConfiguredDevices);
         adpConfiguredDevices.getFilter().filter("");
-        restartDiscoveryThreads();
+        ((AppMain)getApplicationContext()).restartDiscoveryThreads(this);
     }
     
     public void SaveConfiguredDevices() {
     	SharedPrefs.SaveConfiguredDevices(alConfiguredDevices, this);
-        restartDiscoveryThreads();
+        ((AppMain)getApplicationContext()).restartDiscoveryThreads(this);
     }
     
   	@Override

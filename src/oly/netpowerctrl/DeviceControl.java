@@ -33,6 +33,8 @@ public class DeviceControl extends Activity implements OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+        ((AppMain)getApplicationContext()).restartDiscoveryThreads(this);
 		
 		buttons = new ArrayList<CompoundButton>();
 		
