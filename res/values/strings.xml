@@ -50,6 +50,7 @@
     <string name="menu_cancel">Cancel</string>
     <string name="menu_delete_all">Delete all</string>
     <string name="menu_preferences">Preferences</string>
+    <string name="menu_refresh">Refresh</string>
     
     <string name="default_device_name">New device</string>
     <string name="copy_of">Copy of %s</string>

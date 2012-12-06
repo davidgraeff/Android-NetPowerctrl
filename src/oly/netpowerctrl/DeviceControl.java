@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +16,8 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
@@ -30,6 +33,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 	List<CompoundButton> buttons;
 
 	/** Called when the activity is first created. */
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -100,6 +104,17 @@ public class DeviceControl extends Activity implements OnClickListener {
     	super.onPause();
 	}
 
+	@SuppressLint("NewApi")
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+    	super.onCreateOptionsMenu(menu);
+		menu.add(0, R.id.menu_refresh, 0, R.string.menu_refresh).setIcon(R.drawable.ic_menu_refresh);
+		if (Build.VERSION.SDK_INT >= 11) {
+			menu.findItem(R.id.menu_refresh).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		}
+		return true;
+	}
+
 	public void onClick(View v) {
 		int outletNumber = (Integer)v.getTag();
 		if (outletNumber >= 0) {
@@ -109,6 +124,18 @@ public class DeviceControl extends Activity implements OnClickListener {
 					   getResources().getString(R.string.error_outlet_number),
 					   Toast.LENGTH_LONG).show();
 		}
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_refresh: {
+	        DeviceQuery.sendQuery(this, device.HostName, device.SendPort);
+			return true;
+		}
+		
+		}
+		return false;
 	}
 	
 	public void sendOutlet(final int number, final boolean state) {
