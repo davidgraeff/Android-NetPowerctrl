@@ -3,6 +3,7 @@ package oly.netpowerctrl;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.BroadcastReceiver;
@@ -100,13 +101,20 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	super.onPause();
 	}
     
-    @Override
+    
+	@SuppressLint("NewApi")
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(android.R.drawable.ic_menu_add);
-		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(android.R.drawable.ic_menu_delete);
-		menu.add(0, R.id.menu_requery, 0, R.string.requery).setIcon(android.R.drawable.ic_menu_compass);
-		menu.add(0, R.id.menu_preferences, 0, R.string.menu_preferences).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
+    	super.onCreateOptionsMenu(menu);
+		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(R.drawable.ic_menu_add);
+		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(R.drawable.ic_menu_delete);
+		menu.add(0, R.id.menu_requery, 0, R.string.requery).setIcon(R.drawable.ic_menu_refresh);
+		menu.add(0, R.id.menu_preferences, 0, R.string.menu_preferences).setIcon(R.drawable.ic_menu_preferences);
+		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(R.drawable.ic_menu_info_details);
+		if (Build.VERSION.SDK_INT >= 11) {
+			menu.findItem(R.id.menu_add_device).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			menu.findItem(R.id.menu_requery).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		}
 		return true;
 	}
 

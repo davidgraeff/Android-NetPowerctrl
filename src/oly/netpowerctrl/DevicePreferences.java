@@ -93,7 +93,7 @@ public class DevicePreferences extends PreferenceActivity {
 	
    @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, R.id.menu_cancel, 0, R.string.menu_cancel).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+		menu.add(0, R.id.menu_cancel, 0, R.string.menu_cancel).setIcon(R.drawable.ic_menu_close_clear_cancel);
 		return true;
 	}
 	

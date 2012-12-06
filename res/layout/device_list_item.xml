@@ -46,6 +46,6 @@
         android:background="@android:drawable/list_selector_background"
         android:contentDescription="@string/edit_device"
         android:padding="5dp"
-        android:src="@drawable/ic_bt_config" />
+        android:src="@drawable/ic_menu_edit" />
 
 </LinearLayout>

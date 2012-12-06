@@ -35,7 +35,7 @@
         android:background="@android:drawable/list_selector_background"
         android:contentDescription="@string/edit_device"
         android:padding="5dp"
-        android:src="@android:drawable/ic_menu_delete" />
+        android:src="@drawable/ic_menu_delete" />
     
     
 </LinearLayout>
