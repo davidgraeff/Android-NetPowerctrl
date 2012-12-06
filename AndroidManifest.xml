@@ -45,7 +45,7 @@
             android:theme="@style/Theme.CustomLightTheme">
         </activity>
 
-	    <activity android:name=".WidgetConfig" android:permission="android.permission.INTERNET">
+	    <activity android:name=".WidgetConfig">
     	    <intent-filter>        
     	    	<action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
     	    </intent-filter>
