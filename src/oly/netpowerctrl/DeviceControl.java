@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -20,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -163,7 +165,8 @@ public class DeviceControl extends Activity implements OnClickListener {
 	}
 	
 	private BroadcastReceiver onDeviceDiscovered= new BroadcastReceiver() {
-	    @Override
+	    @SuppressLint("NewApi")
+		@Override
 	    public void onReceive(Context context, Intent intent) {
 	    	DeviceInfo device_info = null;
 			Bundle extra = intent.getExtras();
@@ -187,7 +190,10 @@ public class DeviceControl extends Activity implements OnClickListener {
 					}
 				}
 				if (Build.VERSION.SDK_INT >= 11) {
-					GreenFlasher.flashBgColor(findViewById(R.id.tvDeviceName));
+					ObjectAnimator anim = ObjectAnimator.ofFloat(findViewById(R.id.imgReceive), "Alpha", 0, 1, 0);
+					anim.setDuration(400);
+					anim.setInterpolator(new AccelerateDecelerateInterpolator());
+					anim.start();
 				}
 			}
 	    }
