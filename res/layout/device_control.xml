@@ -4,34 +4,42 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <ImageView 
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
-        android:src="@drawable/outlet_bg"
-        android:contentDescription="@string/app_name"/>
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/outlet_bg" />
 
-    <TextView
-        android:id="@+id/tvDeviceName"
+    <LinearLayout
+        android:id="@+id/llTop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableRight="@drawable/ic_menu_refresh"
-        android:text="@string/device_name"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-    
-    <ScrollView
-        android:id="@+id/scvDeviceControl"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp" >
+        android:orientation="vertical" >
 
-        <LinearLayout
-            android:id="@+id/llDeviceControl"
-            android:layout_width="fill_parent"
+        <TextView
+            android:id="@+id/tvDeviceName"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
-        </LinearLayout>
-    </ScrollView>
+            android:drawableRight="@drawable/ic_menu_refresh"
+            android:text="@string/device_name"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <ScrollView
+            android:id="@+id/scvDeviceControl"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp" >
+
+            <LinearLayout
+                android:id="@+id/llDeviceControl"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
 
 </FrameLayout>
