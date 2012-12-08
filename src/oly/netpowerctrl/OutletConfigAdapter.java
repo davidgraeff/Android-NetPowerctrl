@@ -43,32 +43,32 @@ public class OutletConfigAdapter extends BaseAdapter {
     	final OutletInfo outlet = items.get(position);
         EditText tvName = (EditText) convertView.findViewById(R.id.outlet_name);
         tvName.setText(outlet.Description);
-        tvName.addTextChangedListener(new TextWatcher() {
-			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
-			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
-			
-			public void afterTextChanged(Editable s) {
-				outlet.Description = s.toString();
-			}
-		});
+//        tvName.addTextChangedListener(new TextWatcher() {
+//			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
+//			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
+//			
+//			public void afterTextChanged(Editable s) {
+//				outlet.Description = s.toString();
+//			}
+//		});
       
         EditText tvNumber = (EditText) convertView.findViewById(R.id.outlet_number);
         if (outlet.OutletNumber >= 1) 
         	tvNumber.setText(((Integer)outlet.OutletNumber).toString());
         else tvNumber.setText("");
-        tvNumber.addTextChangedListener(new TextWatcher() {
-			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
-			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
-			
-			public void afterTextChanged(Editable s) {
-				try {
-					outlet.OutletNumber = Integer.parseInt(s.toString());
-				}
-				catch (Exception e) {
-					outlet.OutletNumber = -1;
-				}
-			}
-		});
+//        tvNumber.addTextChangedListener(new TextWatcher() {
+//			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
+//			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
+//			
+//			public void afterTextChanged(Editable s) {
+//				try {
+//					outlet.OutletNumber = Integer.parseInt(s.toString());
+//				}
+//				catch (Exception e) {
+//					outlet.OutletNumber = -1;
+//				}
+//			}
+//		});
 
         ImageButton btnDelete = (ImageButton)convertView.findViewById(R.id.delete_outlet);
         btnDelete.setTag(position);
