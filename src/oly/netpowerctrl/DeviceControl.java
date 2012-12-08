@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +25,7 @@ import android.view.View.OnClickListener;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -33,6 +35,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 
 	DeviceInfo device;
 	List<CompoundButton> buttons;
+	ImageView imgReceive;
 
 	/** Called when the activity is first created. */
 	@SuppressLint("NewApi")
@@ -40,8 +43,6 @@ public class DeviceControl extends Activity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        ((AppMain)getApplicationContext()).restartDiscoveryThreads(this);
-		
 		buttons = new ArrayList<CompoundButton>();
 		
 		device = null;
@@ -66,11 +67,17 @@ public class DeviceControl extends Activity implements OnClickListener {
 
 		setContentView(R.layout.device_control);
 		((TextView)findViewById(R.id.tvDeviceName)).setText(device.DeviceName);
+		imgReceive = (ImageView)findViewById(R.id.imgReceive);
 		
 		int top_margin = 10;
 		if (Build.VERSION.SDK_INT >= 14) {
 			// uses the "switch" widget
 			top_margin = 30;
+		}
+
+		if (Build.VERSION.SDK_INT < 11) {
+			// receive image is not handled by ObjectAnimator, but simply on/off
+			imgReceive.setVisibility(View.INVISIBLE);
 		}
 		
 		buttons.clear();
@@ -89,6 +96,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 			ll.addView(cb, lp);
 			buttons.add(cb);
 		}
+		
 	}
 	
 	
@@ -190,10 +198,17 @@ public class DeviceControl extends Activity implements OnClickListener {
 					}
 				}
 				if (Build.VERSION.SDK_INT >= 11) {
-					ObjectAnimator anim = ObjectAnimator.ofFloat(findViewById(R.id.imgReceive), "Alpha", 0, 1, 0);
+					ObjectAnimator anim = ObjectAnimator.ofFloat(imgReceive, "Alpha", 0, 1, 0);
 					anim.setDuration(400);
 					anim.setInterpolator(new AccelerateDecelerateInterpolator());
 					anim.start();
+				} else {
+					imgReceive.setVisibility(View.VISIBLE);
+					new Handler().postDelayed(new Runnable() { 
+				         public void run() { 
+				        	 imgReceive.setVisibility(View.INVISIBLE);
+				         } 
+				    }, 400);
 				}
 			}
 	    }
