@@ -3,11 +3,10 @@ package oly.netpowerctrl;
 import java.util.List;
 
 import android.content.Context;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -35,44 +34,57 @@ public class OutletConfigAdapter extends BaseAdapter {
         return position;
     }
 
+    class ViewHolder {
+    	EditText etName;
+    	EditText etNumber;
+    	ImageButton btnDelete;
+    }
+    
     public View getView(int position, View convertView, ViewGroup parent) {
 
-    	// deliberately a new view because of the textwatchers below
-    	convertView = inflater.inflate(R.layout.outlet_config_item, null);
-
+    	ViewHolder holder;
+        if (convertView == null) {
+            holder = new ViewHolder();
+            convertView = inflater.inflate(R.layout.outlet_config_item, null);
+            holder.etName = (EditText)convertView.findViewById(R.id.outlet_name);
+            holder.etNumber = (EditText)convertView.findViewById(R.id.outlet_number);
+            holder.btnDelete = (ImageButton)convertView.findViewById(R.id.delete_outlet);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
+    	 	               
     	final OutletInfo outlet = items.get(position);
-        EditText tvName = (EditText) convertView.findViewById(R.id.outlet_name);
-        tvName.setText(outlet.Description);
-//        tvName.addTextChangedListener(new TextWatcher() {
-//			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
-//			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
-//			
-//			public void afterTextChanged(Editable s) {
-//				outlet.Description = s.toString();
-//			}
-//		});
-      
-        EditText tvNumber = (EditText) convertView.findViewById(R.id.outlet_number);
+    	holder.etName.setText(outlet.Description);
         if (outlet.OutletNumber >= 1) 
-        	tvNumber.setText(((Integer)outlet.OutletNumber).toString());
-        else tvNumber.setText("");
-//        tvNumber.addTextChangedListener(new TextWatcher() {
-//			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
-//			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
-//			
-//			public void afterTextChanged(Editable s) {
-//				try {
-//					outlet.OutletNumber = Integer.parseInt(s.toString());
-//				}
-//				catch (Exception e) {
-//					outlet.OutletNumber = -1;
-//				}
-//			}
-//		});
-
-        ImageButton btnDelete = (ImageButton)convertView.findViewById(R.id.delete_outlet);
-        btnDelete.setTag(position);
-        btnDelete.setOnClickListener(new OnClickListener() {
+        	holder.etNumber.setText(((Integer)outlet.OutletNumber).toString());
+        else holder.etNumber.setText("");
+    	holder.etName.setTag(position);
+    	holder.etNumber.setTag(position);
+        holder.btnDelete.setTag(position);
+    	
+        //we need to update adapter once we finish with editing
+        holder.etName.setOnFocusChangeListener(new OnFocusChangeListener() {
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus){
+                    outlet.Description = ((EditText)v).getText().toString();
+                }
+            }
+	    });
+        holder.etNumber.setOnFocusChangeListener(new OnFocusChangeListener() {
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus){
+                	try {
+    					outlet.OutletNumber = Integer.parseInt(((EditText)v).getText().toString());
+    				}
+    				catch (Exception e) {
+    					outlet.OutletNumber = -1;
+    				}
+                }
+            }
+	    });
+        
+        holder.btnDelete.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				items.remove(outlet);
 				notifyDataSetChanged();
