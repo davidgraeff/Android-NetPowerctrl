@@ -43,6 +43,8 @@ public class DeviceControl extends Activity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+        ((AppMain)getApplicationContext()).maybeStartDiscoveryThreads(this);
+		
 		buttons = new ArrayList<CompoundButton>();
 		
 		device = null;
