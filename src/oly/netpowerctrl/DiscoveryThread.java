@@ -33,11 +33,11 @@ public class DiscoveryThread extends Thread {
 		        DatagramPacket p = new DatagramPacket(message, message.length);
 		        socket = new DatagramSocket(recv_port);
 		        socket.setReuseAddress(true);
-		        socket.receive(p);
-		        if (! socket.isClosed()) {
-		        	socket.close();
+				while (keep_running) {
+					socket.receive(p);
 		        	parsePacket(new String(message, 0, p.getLength()), recv_port);
-		        }
+				}
+				socket.close();
 			} catch (final IOException e) {
 				if (keep_running) { // no message if we were interrupt()ed
 					activity.runOnUiThread(new Runnable() {

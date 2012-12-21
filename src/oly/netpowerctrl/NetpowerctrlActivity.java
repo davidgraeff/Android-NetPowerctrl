@@ -378,7 +378,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	
 	private BroadcastReceiver onDeviceDiscovered= new BroadcastReceiver() {
 	    @Override
-	    public void onReceive(Context context, Intent intent) {
+	    synchronized public void onReceive(Context context, Intent intent) {
 	    	DeviceInfo device_info = null;
 			Bundle extra = intent.getExtras();
 			if (extra != null) {
