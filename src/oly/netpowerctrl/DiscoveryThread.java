@@ -87,6 +87,7 @@ public class DiscoveryThread extends Thread {
 		final DeviceInfo di = new DeviceInfo(activity);
 		di.DeviceName = msg[1].trim();
 		di.HostName = msg[2];
+		di.MacAddress = msg[5];
 		di.RecvPort = recevied_port;
 		// leave SendPort as default, as we have no way to know.
 		

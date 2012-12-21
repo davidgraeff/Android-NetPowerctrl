@@ -1,36 +1,20 @@
 package oly.netpowerctrl;
 
-import java.util.List;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.widget.RemoteViews;
 
 public class DeviceWidgetProvider extends AppWidgetProvider {
 	@Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
-		SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl.widgets", Context.MODE_PRIVATE);
-		List<DeviceInfo> devices = SharedPrefs.ReadConfiguredDevices(context);
-		
-		final int N = appWidgetIds.length;
-        for (int i=0; i<N; i++) {
+        for (int i=0; i<appWidgetIds.length; i++) {
             int appWidgetId = appWidgetIds[i];
 
-			String myuuid = prefs.getString(String.format("%08x", appWidgetId), "");
-			
-			DeviceInfo myDevice = null;
-			for (DeviceInfo di: devices) {
-				if (di.uuid.toString().equals(myuuid)) {
-					myDevice = di;
-					break;
-				}
-			}
-            
+			DeviceInfo myDevice = SharedPrefs.ReadDevice(context, SharedPrefs.PREF_WIDGET_BASENAME+String.valueOf(appWidgetId));
             Intent intent = new Intent(context, DeviceControl.class);
             intent.putExtra("device", myDevice);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

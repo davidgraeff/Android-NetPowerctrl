@@ -74,17 +74,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         
     }
     
-    /*
-    @Override
-    protected void onDestroy() {
-    	for (DiscoveryThread thr: discoveryThreads)
-    		thr.interrupt();
-    	discoveryThreads.clear();
-    	
-    	super.onDestroy();
-    }
-    */
-    
+
     @Override
     protected void onResume() {
     	super.onResume();
@@ -124,7 +114,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		case R.id.menu_add_device: {
 			Intent it = new Intent(this, DevicePreferences.class);
 			it.putExtra("new_device", true);
-			startActivityForResult(it, R.id.request_code_new_device);
+			startActivity(it);
 			return true;
 		}
 		
@@ -163,96 +153,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}
 		return false;
 	}
-	
-	@Override
-	protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-		if (resultCode == RESULT_CANCELED)
-			return;
-		
-		if ((requestCode == R.id.request_code_new_device) || (requestCode == R.id.request_code_modify_device)) {
-	        String prefName = data.getExtras().getString("SharedPreferencesName");
-	        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
-	    	String device_name = prefs.getString("setting_device_name", "ERROR");
-	    	String device_ip = prefs.getString("setting_device_ip", "");
-	    	String device_mac = prefs.getString("setting_device_mac", "");
-	    	boolean nonstandard_ports = prefs.getBoolean("setting_nonstandard_ports", false);
-	        int send_udp = DeviceQuery.getDefaultSendPort(this);
-	        int recv_udp = DeviceQuery.getDefaultRecvPort(this);
-	        try { send_udp = Integer.parseInt(prefs.getString("setting_send_udp", "")); } catch (NumberFormatException e) { /*nop*/ }
-	        try { recv_udp = Integer.parseInt(prefs.getString("setting_recv_udp", "")); } catch (NumberFormatException e) { /*nop*/ }
-			String username = prefs.getString("setting_username", "");
-			String password = prefs.getString("setting_password", "");
-	    
-			DeviceInfo device_info;
-			if (requestCode == R.id.request_code_new_device) {
-				if ((device_name.equals("")) &&
-					(device_ip.equals("")) &&
-					(username.equals("")) &&
-					(password.equals(""))) {
-					// editing was cancelled by user
-					return;
-				} else {
-					device_info = new DeviceInfo(this);
-				}
-			} else {
-				// requestCode == edit device
-		        UUID uuid = (UUID) data.getExtras().get("uuid");
-		        device_info = adpConfiguredDevices.findDevice(uuid);
-		        if (device_info == null)
-			        device_info = adpDiscoveredDevices.findDevice(uuid);
-		        if (device_info == null) {
-					Toast.makeText(getBaseContext(), getResources().getText(R.string.error_edited_device_not_found), Toast.LENGTH_SHORT).show();
-					return;
-		        }
-		        	
-			}
-				
-			device_info.DeviceName = device_name;
-			device_info.HostName = device_ip;
-			device_info.MacAddress = device_mac;
-			device_info.UserName = username;
-			device_info.Password = password;
-			device_info.DefaultPorts = ! nonstandard_ports;
-			if (nonstandard_ports) {
-				device_info.SendPort = send_udp;
-				device_info.RecvPort = recv_udp;
-			} else {
-				device_info.SendPort = DeviceQuery.getDefaultSendPort(this);
-				device_info.RecvPort = DeviceQuery.getDefaultRecvPort(this);
-			}
-			device_info.Outlets.clear();
-			for (int i=0; i<prefs.getInt("num_outlets", 0); i++) {
-				OutletInfo oi = new OutletInfo();
-				oi.Description = prefs.getString(String.format("outlet_name%d",i), "?");
-				oi.OutletNumber = prefs.getInt(String.format("outlet_number%d",i), 1);
-				device_info.Outlets.add(oi);
-			}
 
-			if (requestCode == R.id.request_code_new_device) {
-				alConfiguredDevices.add(device_info);
-				adpConfiguredDevices.getFilter().filter("");
-			} else {
-				adpConfiguredDevices.notifyDataSetChanged();
-				adpDiscoveredDevices.notifyDataSetChanged();
-			}
-			SaveConfiguredDevices();
-		}
-		
-		
-		if (requestCode == R.id.request_code_preferences) {
-			// update devices that are configured to use default ports
-	        int send_udp = DeviceQuery.getDefaultSendPort(this);
-	        int recv_udp = DeviceQuery.getDefaultRecvPort(this);
-  			for (DeviceInfo di: alConfiguredDevices) {
-  				if (di.DefaultPorts) {
-  					di.SendPort = send_udp;
-  					di.RecvPort = recv_udp;
-  				}
-  			}
-  			SaveConfiguredDevices();
-		}
-
-	}
 	
     public void ReadConfiguredDevices() {
     	alConfiguredDevices = SharedPrefs.ReadConfiguredDevices(this);
@@ -349,8 +250,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	public void onConfigureDevice(DeviceInfo device_info) {
 		Intent it = new Intent(this, DevicePreferences.class);
 		it.putExtra("new_device", false);
-		it.putExtra("device_info", device_info);
-		startActivityForResult(it, R.id.request_code_modify_device);
+		it.putExtra("prefname", device_info.getPrefname());
+		startActivity(it);
 	}    
 	
 	public void deleteDevice(int position) {

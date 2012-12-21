@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 public class WidgetConfig extends Activity {
@@ -35,13 +34,10 @@ public class WidgetConfig extends Activity {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.choose_widget_device);
+		final Context ctx = this;
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 		    public void onClick(DialogInterface dialog, int item) {
-
-				SharedPreferences prefs = getSharedPreferences("oly.netpowerctrl.widgets", Context.MODE_PRIVATE);
-				SharedPreferences.Editor prefEditor = prefs.edit();
-				prefEditor.putString(String.format("%08x", widgetId), devices.get(item).uuid.toString());
-				prefEditor.commit();
+		    	SharedPrefs.SaveDevice(ctx, SharedPrefs.PREF_WIDGET_BASENAME+String.valueOf(widgetId), devices.get(item));
 
 		    	Intent updateWidget = new Intent();   
 		    	updateWidget.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);

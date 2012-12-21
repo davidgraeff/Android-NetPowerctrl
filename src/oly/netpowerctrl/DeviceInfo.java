@@ -26,6 +26,12 @@ public class DeviceInfo implements Parcelable {
 	
 	public List<OutletInfo> Outlets;
 
+    public static String makePrefname(UUID uuid) {
+    	return uuid.toString().replace(":", "-");
+    }
+    
+	
+	
     public DeviceInfo() {
     	uuid = UUID.randomUUID();
     	DeviceName = "";
@@ -69,6 +75,10 @@ public class DeviceInfo implements Parcelable {
     	return uuid.equals(uuid);
     }
 	
+    public String getPrefname() {
+    	return makePrefname(uuid);
+    }
+    
 	public int describeContents() {
 		return 0;
 	}

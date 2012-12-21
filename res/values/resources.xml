@@ -3,9 +3,6 @@
     <item format="integer" name="menu_add_device" type="id">100042</item>
     <item format="integer" name="menu_about" type="id">100043</item>
     <item format="integer" name="settings_result" type="id">100044</item>
-    <item format="integer" name="request_code_new_device" type="id">100045</item>
-    <item format="integer" name="request_code_modify_device" type="id">100046</item>
-    <item format="integer" name="request_code_cancel" type="id">100047</item>
     <item format="integer" name="menu_cancel" type="id">100048</item>
     <item format="integer" name="menu_delete_all_devices" type="id">100049</item>
     <item format="integer" name="menu_requery" type="id">100050</item>
@@ -16,5 +13,7 @@
     
     <item format="integer" name="default_send_port" type="integer">1075</item>
     <item format="integer" name="default_recv_port" type="integer">1077</item>
+    
+    <item format="string" name="setting_outlets" type="string">setting_outlets</item>
     
 </resources>
