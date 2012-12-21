@@ -116,6 +116,15 @@ public class DeviceControl extends Activity implements OnClickListener {
     	super.onPause();
 	}
 
+	@Override
+	public void onBackPressed() {
+		// always go back to the main activity, or we may have to
+		// traverse endless DeviceConfig Activities from widgets
+		Intent it = new Intent(this, NetpowerctrlActivity.class);
+		startActivity(it);
+		super.onBackPressed();
+	}
+
 	@SuppressLint("NewApi")
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
