@@ -61,7 +61,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 
 		if (device == null) {
 			Toast.makeText(this,
-						   getResources().getString(R.string.error_creating_device_control),
+						   getResources().getString(R.string.error_unknown_device),
 						   Toast.LENGTH_LONG).show();
 			finish();
 			return;

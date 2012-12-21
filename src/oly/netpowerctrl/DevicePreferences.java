@@ -1,10 +1,7 @@
 package oly.netpowerctrl;
 
-import java.util.UUID;
-
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -12,6 +9,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 
 public class DevicePreferences extends PreferenceActivity {
@@ -20,48 +18,77 @@ public class DevicePreferences extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        boolean new_device = true;
         String prefname = null;
 		Intent it = getIntent();
 		if (it != null) {
 			Bundle extra = it.getExtras();
 			if (extra != null) {
-				Object o = extra.get("new_device");
-				if (o != null) {
-					new_device = (Boolean) o; 
-				}
-
-				o = extra.get("prefname");
+				Object o = extra.get("prefname");
 				if (o != null) {
 					prefname = (String) o; 
 				}
 			}
 		}
-		if (prefname == null)
-				new_device = true; // fallback
-		
-        if (new_device) { 
-			setTitle(R.string.default_device_name);
-			prefname = DeviceInfo.makePrefname(UUID.randomUUID());
-        }
+		if (prefname == null) {
+			Toast.makeText(this,
+					getResources().getString(R.string.error_unknown_device),
+					Toast.LENGTH_LONG).show();
+			finish();
+			return;
+		}
         
         getPreferenceManager().setSharedPreferencesName(SharedPrefs.PREF_BASENAME+"."+prefname);
-        //TODO setTitle(device_info.DeviceName);
+        setTitle(getPreferenceManager().getSharedPreferences().getString(SharedPrefs.PREF_NAME, getResources().getText(R.string.default_device_name).toString()));
 		
         addPreferencesFromResource(R.xml.device_preferences);
 		
-		Preference p = findPreference(SharedPrefs.PREF_NAME);
-		p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+		findPreference(SharedPrefs.PREF_NAME).setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				setTitle(newValue.toString());
 				return true;
 			}
 		});
 		
-		Preference myPref = (Preference) findPreference(this.getResources().getText(R.string.setting_outlets));
 		final Activity self = this;
+
+		findPreference(SharedPrefs.PREF_SENDPORT+"_str").setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				int port = -1;
+				try {
+					port = Integer.parseInt(newValue.toString());
+				} catch(NumberFormatException nfe) {
+					Toast.makeText(self,
+							getResources().getString(R.string.error_port_config_number),
+							Toast.LENGTH_LONG).show();
+					return false;
+				} 
+				
+		        getPreferenceManager().getSharedPreferences()
+		          .edit().putInt(SharedPrefs.PREF_SENDPORT, port);
+				return true;
+			}
+		});
+		
+		findPreference(SharedPrefs.PREF_RECVPORT+"_str").setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				int port = -1;
+				try {
+					port = Integer.parseInt(newValue.toString());
+				} catch(NumberFormatException nfe) {
+					Toast.makeText(self,
+							getResources().getString(R.string.error_port_config_number),
+							Toast.LENGTH_LONG).show();
+					return false;
+				} 
+				
+		        getPreferenceManager().getSharedPreferences()
+		          .edit().putInt(SharedPrefs.PREF_RECVPORT, port);
+				return true;
+			}
+		});
+		
 		final String f_prefname = prefname;
-		myPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+		findPreference(this.getResources().getText(R.string.setting_outlets)).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference preference) {
 				Intent it = new Intent(self, OutletConfig.class);
 				it.putExtra("device_info", f_prefname);

@@ -15,7 +15,7 @@
     <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
     <string name="suggest_enter_username_password">Sie müssen wahrscheinlich in den Geräteeinstellungen den Benutzerame und Passwort eingeben.</string>
     <string name="error_sending_inquiry">Fehler beim Senden des Erkennungs-Pakets</string>
-    <string name="error_creating_device_control">Interner Programmfehler: unbekanntes Gerät!</string>
+    <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
     <string name="error_outlet_number">Fehler in der internen Konfiguration: dieses Geräte hat keine ID!</string>
     <string name="error_packet_received">Fehler vom Gerät empfangen: </string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
@@ -25,13 +25,14 @@
     <string name="error_outlet_title">Fehler</string>
     <string name="error_outlet_config_name">Bitte geben Sie für jede Steckdose eine Bezeichnung ein.</string>
     <string name="error_outlet_config_number">Bitte geben Sie gültige Nummern ein.</string>
+    <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
     
     <string name="device_settings">Geräte-Einstellungen</string>
     <string name="device_name">Name</string>
     <string name="device_name_summary">Beliebige Bezeichnung für dieses Gerät.</string>
     <string name="device_ip">Hostname or IP</string>
     <string name="device_ip_summary">Der Hostname oder die IP-Adresse für dieses Gerät.</string>
-    <string name="device_nonstandard_ports">Spezielle UDP-Ports?</string>
+    <string name="device_default_ports">Standard UDP-Ports?</string>
     <string name="device_send_udp">UDP-Port zum Senden</string>
     <string name="device_send_udp_summary">Siehe \"Empfangen\" in der Web-Oberfläche des Gerätes.</string>
     <string name="device_recv_udp">UDP-Port zum Empfangen</string>

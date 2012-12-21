@@ -1,7 +1,6 @@
 package oly.netpowerctrl;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -11,7 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -79,6 +77,9 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     protected void onResume() {
     	super.onResume();
     	
+    	// we may be returning from a configure dialog
+    	ReadConfiguredDevices();
+    	
     	IntentFilter itf= new IntentFilter(DiscoveryThread.BROADCAST_DEVICE_DISCOVERED);
         LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
     	
@@ -112,9 +113,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_add_device: {
-			Intent it = new Intent(this, DevicePreferences.class);
-			it.putExtra("new_device", true);
-			startActivity(it);
+			DeviceInfo di = new DeviceInfo(this);
+			alConfiguredDevices.add(di);
+			SaveConfiguredDevices(); // we need to know the device on return from config activity 
+			onConfigureDevice(di);
 			return true;
 		}
 		
@@ -249,7 +251,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 
 	public void onConfigureDevice(DeviceInfo device_info) {
 		Intent it = new Intent(this, DevicePreferences.class);
-		it.putExtra("new_device", false);
 		it.putExtra("prefname", device_info.getPrefname());
 		startActivity(it);
 	}    
