@@ -16,7 +16,7 @@
     <string name="suggest_enter_username_password">Sie müssen wahrscheinlich in den Geräteeinstellungen den Benutzerame und Passwort eingeben.</string>
     <string name="error_sending_inquiry">Fehler beim Senden des Erkennungs-Pakets</string>
     <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
-    <string name="error_outlet_number">Fehler in der internen Konfiguration: dieses Geräte hat keine ID!</string>
+    <string name="error_outlet_number">Fehler in der Konfiguration: dieses Gerät hat keine ID!</string>
     <string name="error_packet_received">Fehler vom Gerät empfangen: </string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
     <string name="error_edited_device_not_found">Interner Programmfehler: editiertes Gerät nicht gefunden!</string>

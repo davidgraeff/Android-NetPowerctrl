@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="Device Settings">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="@string/device_settings">
     <EditTextPreference android:summary="@string/device_name_summary" android:key="NAME" android:title="@string/device_name" android:dialogMessage="@string/device_name_summary" android:dialogTitle="@string/device_name"/>
     <EditTextPreference android:summary="@string/device_ip_summary" android:key="IP" android:title="@string/device_ip" android:dialogMessage="@string/device_ip_summary" android:dialogTitle="@string/device_ip"/>
     <EditTextPreference android:summary="@string/device_username_summary" android:key="USERNAME" android:title="@string/device_username" android:dialogMessage="@string/device_username_summary" android:dialogTitle="@string/device_username"/>

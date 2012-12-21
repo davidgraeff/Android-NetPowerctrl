@@ -37,10 +37,10 @@ public class DevicePreferences extends PreferenceActivity {
 			return;
 		}
         
-        getPreferenceManager().setSharedPreferencesName(SharedPrefs.PREF_BASENAME+"."+prefname);
-        setTitle(getPreferenceManager().getSharedPreferences().getString(SharedPrefs.PREF_NAME, getResources().getText(R.string.default_device_name).toString()));
+        getPreferenceManager().setSharedPreferencesName(SharedPrefs.getFullPrefname(prefname));
 		
         addPreferencesFromResource(R.xml.device_preferences);
+        setTitle(getPreferenceManager().getSharedPreferences().getString(SharedPrefs.PREF_NAME, getResources().getText(R.string.default_device_name).toString()));
 		
 		findPreference(SharedPrefs.PREF_NAME).setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -91,8 +91,8 @@ public class DevicePreferences extends PreferenceActivity {
 		findPreference(this.getResources().getText(R.string.setting_outlets)).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference preference) {
 				Intent it = new Intent(self, OutletConfig.class);
-				it.putExtra("device_info", f_prefname);
-				startActivityForResult(it, R.id.request_code_config_outlets);
+				it.putExtra("prefname", f_prefname);
+				startActivity(it);
 			    return true;
 			}
 		});

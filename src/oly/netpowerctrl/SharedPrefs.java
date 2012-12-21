@@ -25,6 +25,11 @@ public class SharedPrefs {
 	public final static String PREF_OUTLET_NAME     = "OUTLET_NAME";
 	public final static String PREF_OUTLET_NUMBER   = "OUTLET_NUMBER";
 	
+	
+	public static String getFullPrefname(String prefname) {
+		return PREF_BASENAME+"."+prefname;
+	}
+	
     public static ArrayList<DeviceInfo> ReadConfiguredDevices(Context context) {
 
     	ArrayList<DeviceInfo> devices = new ArrayList<DeviceInfo>();
@@ -33,7 +38,7 @@ public class SharedPrefs {
 		String configured_devices_str = prefs.getString(PREF_DEVICES, "");
 		String[] configured_devices = configured_devices_str.split(":");
 		for (String device: configured_devices)
-			devices.add(ReadDevice(context, PREF_BASENAME+"."+device));
+			devices.add(ReadDevice(context, getFullPrefname(device)));
   		return devices;
     }
 
@@ -71,7 +76,7 @@ public class SharedPrefs {
 
     	for (DeviceInfo di: devices) {
 			configured_devices += di.getPrefname() + ":";
-	    	SaveDevice(context, PREF_BASENAME+"."+di.getPrefname(), di);
+	    	SaveDevice(context, getFullPrefname(di.getPrefname()), di);
 		}
 
     	if (configured_devices.endsWith(":"))
