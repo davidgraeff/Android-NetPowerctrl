@@ -43,12 +43,13 @@ public class DeviceControl extends Activity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        ((AppMain)getApplicationContext()).maybeStartDiscoveryThreads(this);
+		Intent it = new Intent(this, NetpowerctrlService.class);
+		startService(it);
 		
 		buttons = new ArrayList<CompoundButton>();
 		
 		device = null;
-		Intent it = getIntent();
+		it = getIntent();
 		if (it != null) {
 			Bundle extra = it.getExtras();
 			if (extra != null) {
@@ -98,7 +99,6 @@ public class DeviceControl extends Activity implements OnClickListener {
 			ll.addView(cb, lp);
 			buttons.add(cb);
 		}
-		
 	}
 	
 	

@@ -59,8 +59,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	adpDiscoveredDevices = new DeviceListAdapter(this, alDiscoveredDevices);
   		lvDiscoveredDevices.setAdapter(adpDiscoveredDevices);
 
-        ReadConfiguredDevices();
-
         lvConfiguredDevices.setOnItemClickListener(this);
         lvDiscoveredDevices.setOnItemClickListener(this);
         
@@ -69,7 +67,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         
         adpConfiguredDevices.setDeviceConfigureEvent(this);
         adpDiscoveredDevices.setDeviceConfigureEvent(this);
-        
     }
     
 
@@ -83,6 +80,9 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	IntentFilter itf= new IntentFilter(DiscoveryThread.BROADCAST_DEVICE_DISCOVERED);
         LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
     	
+		Intent it = new Intent(this, NetpowerctrlService.class);
+		startService(it);
+        
     	DeviceQuery.sendBroadcastQuery(this);
     }
     
@@ -161,12 +161,11 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     	alConfiguredDevices = SharedPrefs.ReadConfiguredDevices(this);
     	adpConfiguredDevices.setDevices(alConfiguredDevices);
         adpConfiguredDevices.getFilter().filter("");
-        ((AppMain)getApplicationContext()).restartDiscoveryThreads(this);
     }
     
     public void SaveConfiguredDevices() {
     	SharedPrefs.SaveConfiguredDevices(alConfiguredDevices, this);
-        ((AppMain)getApplicationContext()).restartDiscoveryThreads(this);
+        DeviceQuery.restartDiscovery(this);  // ports may have changed
     }
     
   	@Override

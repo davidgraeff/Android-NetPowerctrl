@@ -83,6 +83,8 @@ public class DevicePreferences extends PreferenceActivity {
 				
 		        getPreferenceManager().getSharedPreferences()
 		          .edit().putInt(SharedPrefs.PREF_RECVPORT, port);
+		        
+		        DeviceQuery.restartDiscovery(self);  // port may have changed
 				return true;
 			}
 		});

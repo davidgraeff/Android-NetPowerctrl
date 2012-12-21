@@ -12,8 +12,10 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 public class DeviceQuery {
@@ -106,4 +108,9 @@ public class DeviceQuery {
 		return new ArrayList<Integer>(ports);
 	}
 
+	public static void restartDiscovery(Context ctx) {
+		Intent it = new Intent(DiscoveryThread.BROADCAST_RESTART_DISCOVERY);
+        LocalBroadcastManager.getInstance(ctx).sendBroadcast(it);
+	}
+	
 }

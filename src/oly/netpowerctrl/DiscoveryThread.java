@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
@@ -12,15 +12,16 @@ import android.widget.Toast;
 public class DiscoveryThread extends Thread {
 	
 	public static String BROADCAST_DEVICE_DISCOVERED = "com.nittka.netpowerctrl.DEVICE_DISCOVERED";
+	public static String BROADCAST_RESTART_DISCOVERY = "com.nittka.netpowerctrl.RESTART_DISCOVERY";
 	
 	int recv_port;
-	Activity activity;
+	Context ctx;
 	boolean keep_running;
 	DatagramSocket socket;
 	
-	public DiscoveryThread(int port, Activity act) {
+	public DiscoveryThread(int port, Context context) {
 		recv_port = port;
-		activity = act;
+		ctx = context;
 		socket = null;
 	}
 	
@@ -40,14 +41,10 @@ public class DiscoveryThread extends Thread {
 				socket.close();
 			} catch (final IOException e) {
 				if (keep_running) { // no message if we were interrupt()ed
-					activity.runOnUiThread(new Runnable() {
-					    public void run() {
-					    	String msg = String.format(activity.getResources().getString(R.string.error_listen_thread_exception), recv_port);
-					    	msg += e.getLocalizedMessage();
-					    	if (recv_port < 1024) msg += activity.getResources().getString(R.string.error_port_lt_1024);
-					    	Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
-					    }
-					});
+			    	String msg = String.format(ctx.getResources().getString(R.string.error_listen_thread_exception), recv_port);
+			    	msg += e.getLocalizedMessage();
+			    	if (recv_port < 1024) msg += ctx.getResources().getString(R.string.error_port_lt_1024);
+			    	Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
 				}
 				break;
 			}
@@ -73,18 +70,14 @@ public class DiscoveryThread extends Thread {
 			// error packet received
 			String desc;
 			if (msg[2].trim().equals("NoPass"))
-				desc = activity.getResources().getString(R.string.error_nopass);
+				desc = ctx.getResources().getString(R.string.error_nopass);
 			else desc = msg[2];
-			final String error = activity.getResources().getString(R.string.error_packet_received) + desc;
-			activity.runOnUiThread(new Runnable() {
-			    public void run() {
-			    	Toast.makeText(activity, error, Toast.LENGTH_LONG).show();
-			    }
-			});
+			String error = ctx.getResources().getString(R.string.error_packet_received) + desc;
+	    	Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
 			return;
 		}
 		
-		final DeviceInfo di = new DeviceInfo(activity);
+		final DeviceInfo di = new DeviceInfo(ctx);
 		di.DeviceName = msg[1].trim();
 		di.HostName = msg[2];
 		di.MacAddress = msg[5];
@@ -103,13 +96,8 @@ public class DiscoveryThread extends Thread {
 			di.Outlets.add(oi);
 		}
 		
-		activity.runOnUiThread(new Runnable() {
-			public void run() {
-				Intent it = new Intent(BROADCAST_DEVICE_DISCOVERED);
-				it.putExtra("device_info", di);
-		        LocalBroadcastManager.getInstance(activity).sendBroadcast(it);
-			}
-		});
-		
+		Intent it = new Intent(BROADCAST_DEVICE_DISCOVERED);
+		it.putExtra("device_info", di);
+        LocalBroadcastManager.getInstance(ctx).sendBroadcast(it);
 	}
 }
