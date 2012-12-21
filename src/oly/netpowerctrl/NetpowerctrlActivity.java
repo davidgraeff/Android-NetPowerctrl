@@ -142,7 +142,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		
 		case R.id.menu_preferences: {
 			Intent it = new Intent(this, Preferences.class);
-			startActivityForResult(it, R.id.request_code_preferences);
+			startActivity(it);
 			return true;
 		}
 		
