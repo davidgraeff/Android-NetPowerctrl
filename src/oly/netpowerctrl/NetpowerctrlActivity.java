@@ -142,6 +142,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}
 		
 		case R.id.menu_requery: {
+	  		alDiscoveredDevices.clear();
+	  		adpDiscoveredDevices.getFilter().filter("");
 	    	DeviceQuery.sendBroadcastQuery(this);
 			return true;
 		}
