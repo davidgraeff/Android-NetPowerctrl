@@ -1,6 +1,7 @@
 package oly.netpowerctrl;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -36,7 +37,7 @@ public class DiscoveryThread extends Thread {
 		        socket.setReuseAddress(true);
 				while (keep_running) {
 					socket.receive(p);
-		        	parsePacket(new String(message, 0, p.getLength()), recv_port);
+		        	parsePacket(new String(message, 0, p.getLength(), "latin-1"), recv_port);
 				}
 				socket.close();
 			} catch (final IOException e) {
