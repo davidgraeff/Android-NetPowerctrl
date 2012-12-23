@@ -5,6 +5,8 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -52,11 +54,13 @@ public class OutletConfigAdapter extends BaseAdapter {
     	EditText etName;
     	EditText etNumber;
     	ImageButton btnDelete;
+    	TextWatcher etNameTextWatcher;
+    	TextWatcher etNumberTextWatcher;
     }
     
     public View getView(int position, View convertView, ViewGroup parent) {
 
-    	ViewHolder holder;
+    	final ViewHolder holder;
         if (convertView == null) {
             holder = new ViewHolder();
             convertView = inflater.inflate(R.layout.outlet_config_item, null);
@@ -66,6 +70,8 @@ public class OutletConfigAdapter extends BaseAdapter {
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
+            holder.etName.removeTextChangedListener(holder.etNameTextWatcher);
+            holder.etNumber.removeTextChangedListener(holder.etNumberTextWatcher);
         }
     	 	               
     	OutletInfo outlet = items.get(position);
@@ -73,9 +79,9 @@ public class OutletConfigAdapter extends BaseAdapter {
         if (outlet.OutletNumber >= 1) 
         	holder.etNumber.setText(((Integer)outlet.OutletNumber).toString());
         else holder.etNumber.setText("");
-    	holder.etName.setTag(position);
-    	holder.etNumber.setTag(position);
-        holder.btnDelete.setTag(position);
+    	holder.etName.setTag(outlet);
+    	holder.etNumber.setTag(outlet);
+        holder.btnDelete.setTag(outlet);
 
         if (holder.etName.getText().toString().length() == 0)
         	holder.etName.setError(convertView.getContext().getResources().getText(R.string.error_outlet_config_name));
@@ -88,39 +94,42 @@ public class OutletConfigAdapter extends BaseAdapter {
         	holder.etNumber.setError(null);
 
         //we need to update adapter once we finish with editing
-        holder.etName.setOnFocusChangeListener(new OnFocusChangeListener() {
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus){
-                	OutletInfo outlet = items.get((Integer)v.getTag());
-                    outlet.Description = ((EditText)v).getText().toString();
-                    if (outlet.Description.length() == 0)
-                    	((EditText)v).setError(v.getResources().getText(R.string.error_outlet_config_name));
-                    else
-                    	((EditText)v).setError(null);
-					SaveOutlets();
-                }
+        holder.etNameTextWatcher = new TextWatcher() {
+			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
+			public void afterTextChanged(Editable s) {
+            	OutletInfo outlet = (OutletInfo)holder.etName.getTag();
+                outlet.Description = s.toString();
+                if (outlet.Description.length() == 0)
+                	holder.etName.setError(holder.etName.getResources().getText(R.string.error_outlet_config_name));
+                else
+                	holder.etName.setError(null);
+				SaveOutlets();
             }
-	    });
-        holder.etNumber.setOnFocusChangeListener(new OnFocusChangeListener() {
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus){
-                	OutletInfo outlet = items.get((Integer)v.getTag());
-                	try {
-    					outlet.OutletNumber = Integer.parseInt(((EditText)v).getText().toString());
-    					SaveOutlets();
-    					((EditText)v).setError(null);
-    				}
-    				catch (Exception e) {
-    					outlet.OutletNumber = -1;
-                    	((EditText)v).setError(v.getResources().getText(R.string.error_outlet_config_number));
-    				}
-                }
-            }
-	    });
+	    };
+        holder.etName.addTextChangedListener(holder.etNameTextWatcher);
         
+        holder.etNumberTextWatcher = new TextWatcher() {
+			public void onTextChanged(CharSequence s, int start, int before, int count)  {/*nop*/}
+			public void beforeTextChanged(CharSequence s, int start, int count, int after)  {/*nop*/}
+			public void afterTextChanged(Editable s) {
+				OutletInfo outlet = (OutletInfo)holder.etNumber.getTag();
+            	try {
+					outlet.OutletNumber = Integer.parseInt(s.toString());
+					SaveOutlets();
+					holder.etNumber.setError(null);
+				}
+				catch (Exception e) {
+					outlet.OutletNumber = -1;
+					holder.etNumber.setError(holder.etNumber.getResources().getText(R.string.error_outlet_config_number));
+				}
+            }
+	    };
+        holder.etNumber.addTextChangedListener(holder.etNumberTextWatcher);
+
         holder.btnDelete.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				items.remove(items.get((Integer)v.getTag()));
+				items.remove((OutletInfo)v.getTag());
 				SaveOutlets();
 				notifyDataSetChanged();
 			}
