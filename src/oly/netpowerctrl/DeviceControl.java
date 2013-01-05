@@ -5,7 +5,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
@@ -17,6 +19,7 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,15 +36,22 @@ import android.widget.Toast;
 
 public class DeviceControl extends Activity implements OnClickListener {
 
+	final Activity _this = this;
 	DeviceInfo device;
 	List<CompoundButton> buttons;
 	ImageView imgReceive;
+	boolean firstPacketReceived = false;
+	
+	// for remembering what the device sent back
+	Map<Integer,Boolean> lastreceivedState;
 
 	/** Called when the activity is first created. */
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		lastreceivedState = new HashMap<Integer,Boolean>();
 
 		Intent it = new Intent(this, NetpowerctrlService.class);
 		startService(it);
@@ -90,6 +100,7 @@ public class DeviceControl extends Activity implements OnClickListener {
 			if (Build.VERSION.SDK_INT >= 14) 
 				cb = new Switch(this);
 				else cb = new CheckBox(this);	
+			cb.setEnabled(false); // will only be enabled when the first answer arrives
 			cb.setChecked(oi.State);
 			cb.setTag(oi.OutletNumber);
 			cb.setText(oi.Description);
@@ -105,8 +116,15 @@ public class DeviceControl extends Activity implements OnClickListener {
     @Override
     protected void onResume() {
     	super.onResume();
+    	
+    	// disable all buttons, will be re-enabled when the first answer arrives
+    	for (View v: buttons)
+    		v.setEnabled(false);
+    	
     	IntentFilter itf= new IntentFilter(DiscoveryThread.BROADCAST_DEVICE_DISCOVERED);
         LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
+        firstPacketReceived = false;
+        onFirstPacketCheck.sendMessageDelayed(onFirstPacketCheck.obtainMessage(), 2000); // after 2 seconds, check if no packet was received and display the respective dialog
         DeviceQuery.sendQuery(this, device.HostName, device.SendPort);
     }
     
@@ -139,7 +157,10 @@ public class DeviceControl extends Activity implements OnClickListener {
 	public void onClick(View v) {
 		int outletNumber = (Integer)v.getTag();
 		if (outletNumber >= 0) {
-			sendOutlet(outletNumber, ((CompoundButton)v).isChecked());
+			boolean new_state = ((CompoundButton)v).isChecked();
+			AfterSentHandler ash = new AfterSentHandler(outletNumber, new_state);
+			ash.sendMessageDelayed(ash.obtainMessage(), 500); // check after 500 ms
+			sendOutlet(outletNumber, new_state);
 		} else {
 			Toast.makeText(this,
 					   getResources().getString(R.string.error_outlet_number),
@@ -200,13 +221,15 @@ public class DeviceControl extends Activity implements OnClickListener {
 
 			// our device?
 			if (device.MacAddress.equals(device_info.MacAddress)) {
+				// remember this state
+				lastreceivedState.clear();
+				for (OutletInfo oi: device_info.Outlets) 
+					lastreceivedState.put(oi.OutletNumber, oi.State); 
+				
 				// update outlet states
 				for (CompoundButton button: buttons) {
-					for (OutletInfo oi: device_info.Outlets) {
-						if (oi.OutletNumber == (Integer)button.getTag()) {
-							button.setChecked(oi.State);
-						}
-					}
+					if (lastreceivedState.containsKey((Integer)button.getTag()))
+						button.setChecked(lastreceivedState.get((Integer)button.getTag()));
 				}
 				if (Build.VERSION.SDK_INT >= 11) {
 					ObjectAnimator anim = ObjectAnimator.ofFloat(imgReceive, "Alpha", 0, 1, 0);
@@ -221,8 +244,67 @@ public class DeviceControl extends Activity implements OnClickListener {
 				         } 
 				    }, 400);
 				}
+				
+				// re-enable all buttons
+				for (View v: buttons)
+					v.setEnabled(true);
+				firstPacketReceived = true; // some way, every packet is the first packet ;-)
+				
 			}
 	    }
 	};
+
+	private Handler onFirstPacketCheck= new Handler() {
+		public void handleMessage(Message m) {
+			if (! firstPacketReceived) {
+		    	Toast.makeText(_this, getResources().getString(R.string.error_getting_first_packet), Toast.LENGTH_LONG).show();
+				for (View v: buttons)
+					v.setEnabled(true);
+			}
+		}
+	};
+	
+	private class AfterSentHandler extends Handler {
+		int outletNumber; // remember for which outlet we were started
+		boolean state;    // the state we want the outlet to be in
+		int retries;
+		
+		public AfterSentHandler(int outletNr, boolean expected_state) {
+			outletNumber = outletNr;
+			state = expected_state;
+			retries = 0;
+		}
+		
+	    public void handleMessage(Message m) {
+			if (retries > 3) {
+				//give up
+		    	Toast.makeText(_this, getResources().getString(R.string.error_setting_outlet), Toast.LENGTH_LONG).show();
+				return;
+			}
+			
+			if (lastreceivedState.containsKey(outletNumber)) {
+				if (lastreceivedState.get(outletNumber) != state) {
+					retries++;
+					sendMessageDelayed(obtainMessage(), 500); // check again after 500 ms
+					sendOutlet(outletNumber, state);
+					// show the current state
+					for (CompoundButton button: buttons) {
+						if ((Integer)button.getTag() == outletNumber) {
+							button.setChecked(!state);
+						}
+					}
+				}
+				
+			} else {
+				// nothing received yet, try again
+				retries++;
+				sendMessageDelayed(obtainMessage(), 500); // check again after 500 ms
+				sendOutlet(outletNumber, state);
+			}
+	    }
+
+	}
+	
+	
 	
 }

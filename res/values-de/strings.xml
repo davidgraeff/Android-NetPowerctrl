@@ -26,6 +26,8 @@
     <string name="error_outlet_config_name">Bitte geben Sie für jede Steckdose eine Bezeichnung ein.</string>
     <string name="error_outlet_config_number">Bitte geben Sie gültige Nummern ein.</string>
     <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
+    <string name="error_getting_first_packet">Keine Antwort vom Gerät. Entweder die Ports sind falsch konfiguriert oder das Gerät ist nicht erreichbar. Sie können versuchen, Kommandos zu schicken, aber ob\'s was nützt, ist nicht sicher.</string>
+    <string name="error_setting_outlet">Keine Antwort vom Gerät oder Sie haben keine Berechtigung, diese Steckdose zu schalten.</string>
     
     <string name="device_settings">Geräte-Einstellungen</string>
     <string name="device_name">Name</string>
