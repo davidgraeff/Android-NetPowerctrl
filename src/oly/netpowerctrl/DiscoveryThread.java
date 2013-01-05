@@ -1,12 +1,12 @@
 package oly.netpowerctrl;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
@@ -45,7 +45,7 @@ public class DiscoveryThread extends Thread {
 			    	String msg = String.format(ctx.getResources().getString(R.string.error_listen_thread_exception), recv_port);
 			    	msg += e.getLocalizedMessage();
 			    	if (recv_port < 1024) msg += ctx.getResources().getString(R.string.error_port_lt_1024);
-			    	Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
+			    	ShowToast(msg);
 				}
 				break;
 			}
@@ -74,7 +74,7 @@ public class DiscoveryThread extends Thread {
 				desc = ctx.getResources().getString(R.string.error_nopass);
 			else desc = msg[2];
 			String error = ctx.getResources().getString(R.string.error_packet_received) + desc;
-	    	Toast.makeText(ctx, error, Toast.LENGTH_LONG).show();
+			ShowToast(error);
 			return;
 		}
 		
@@ -100,5 +100,15 @@ public class DiscoveryThread extends Thread {
 		Intent it = new Intent(BROADCAST_DEVICE_DISCOVERED);
 		it.putExtra("device_info", di);
         LocalBroadcastManager.getInstance(ctx).sendBroadcast(it);
+	}
+	
+	public void ShowToast(final String message) {
+	  Handler h = new Handler(ctx.getMainLooper());
+
+	    h.post(new Runnable() {
+	        public void run() {
+	             Toast.makeText(ctx,message,Toast.LENGTH_LONG).show();
+	        }
+	    });
 	}
 }
