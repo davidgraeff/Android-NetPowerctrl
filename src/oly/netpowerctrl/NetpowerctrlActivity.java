@@ -1,6 +1,7 @@
 package oly.netpowerctrl;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -304,6 +305,15 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			}
 			
 			if (!found) {
+				// remove it's disabled outlets
+				List<OutletInfo> remove = new ArrayList<OutletInfo>();
+				for (OutletInfo oi: device_info.Outlets) 
+					if (oi.Disabled)
+						remove.add(oi);
+				
+				for (OutletInfo oi: remove)
+					device_info.Outlets.remove(oi);
+
 				alDiscoveredDevices.add(device_info);
 		  		adpDiscoveredDevices.getFilter().filter("");
 			}

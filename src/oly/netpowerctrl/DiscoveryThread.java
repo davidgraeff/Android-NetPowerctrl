@@ -85,15 +85,26 @@ public class DiscoveryThread extends Thread {
 		di.RecvPort = recevied_port;
 		// leave SendPort as default, as we have no way to know.
 		
-		for (int i=6; i<(msg.length-2); i++) {
-			String outlet[] = msg[i].split(",");
+		int disabledOutlets = 0;
+		int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
+		
+		if (msg.length > 14)
+			try {disabledOutlets = Integer.parseInt(msg[14]);} catch (NumberFormatException e) {}
+			
+		if (msg.length < 14)
+			numOutlets = msg.length-6;
+		
+		for (int i=0; i<numOutlets; i++) {
+			String outlet[] = msg[6+i].split(",");
 			if (outlet.length < 1)
 				continue;
 			OutletInfo oi = new OutletInfo();
-			oi.OutletNumber = i-5; // 1-based
+			oi.OutletNumber = i+1; // 1-based
 			oi.Description = outlet[0];
 			if (outlet.length > 1)
 				oi.State = outlet[1].equals("1");
+			oi.Disabled = (disabledOutlets & (1<<i)) != 0; 
+
 			di.Outlets.add(oi);
 		}
 		

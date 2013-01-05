@@ -8,17 +8,20 @@ public class OutletInfo implements Parcelable {
 		public int OutletNumber;
 		public String Description;
 		public boolean State;
+		public boolean Disabled;
 		
 		public OutletInfo() {
 			OutletNumber = -1;
 			Description = "";
 			State = false;
+			Disabled = false;
 		}
 
 		public OutletInfo(OutletInfo other) {
 			OutletNumber = other.OutletNumber;
 			Description = other.Description;
 			State = other.State;
+			Disabled = other.Disabled;
 		}
 
 		public int describeContents() {
@@ -29,6 +32,7 @@ public class OutletInfo implements Parcelable {
 			dest.writeInt(OutletNumber);
 			dest.writeString(Description);
 			dest.writeInt(State ? 1 : 0);
+			dest.writeInt(Disabled ? 1 : 0);
 		}
 		
 		// this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -47,6 +51,7 @@ public class OutletInfo implements Parcelable {
 	    	OutletNumber = in.readInt();
 	    	Description = in.readString();
 	    	State = in.readInt() != 0;
+	    	Disabled = in.readInt() != 0;
 	    }
 }
 
