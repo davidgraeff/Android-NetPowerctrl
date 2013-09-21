@@ -15,7 +15,7 @@ public class DeviceWidgetProvider extends AppWidgetProvider {
             int appWidgetId = appWidgetIds[i];
 
 			DeviceInfo myDevice = SharedPrefs.ReadDevice(context, SharedPrefs.PREF_WIDGET_BASENAME+String.valueOf(appWidgetId));
-            Intent intent = new Intent(context, DeviceControl.class);
+            Intent intent = new Intent(context, DeviceControlActivity.class);
             intent.putExtra("device", myDevice);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), intent, 0);

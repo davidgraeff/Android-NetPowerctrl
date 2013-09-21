@@ -71,4 +71,5 @@
     <string name="outlet_delete">Delete</string>
     
     <string name="choose_widget_device">Please choose a device for this widget</string>
+    <string name="all_outlets">Outlets</string>
 </resources>

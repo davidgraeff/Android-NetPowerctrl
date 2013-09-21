@@ -69,4 +69,5 @@
     <string name="outlet_delete">Löschen</string>
     
     <string name="choose_widget_device">Bitte wählen Sie ein Gerät für dieses Widget</string>
+    <string name="all_outlets">Steckdosen</string>
 </resources>

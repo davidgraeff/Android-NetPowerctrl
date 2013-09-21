@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.BroadcastReceiver;
@@ -23,18 +24,21 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
 public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, DeviceConfigureEvent {
-
+	final Activity _this = this;
+//	LinearLayout llAllOutlets;
 	ListView lvConfiguredDevices;
 	ListView lvDiscoveredDevices;
 	
 	ArrayList<DeviceInfo> alConfiguredDevices;
 	ArrayList<DeviceInfo> alDiscoveredDevices;
+	ArrayList<DeviceControl> alConfiguredDevicesAllOutlets;
 	DeviceListAdapter adpConfiguredDevices;
 	DeviceListAdapter adpDiscoveredDevices;
 	
@@ -46,11 +50,15 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 
         TabHost th = (TabHost)findViewById(android.R.id.tabhost);
         th.setup();
+        th.addTab(th.newTabSpec("outlets").setIndicator(getResources().getString(R.string.all_outlets)).setContent(R.id.lvAllOutlets));
         th.addTab(th.newTabSpec("conf").setIndicator(getResources().getString(R.string.configured_devices)).setContent(R.id.lvConfiguredDevices));
         th.addTab(th.newTabSpec("found").setIndicator(getResources().getString(R.string.discovered_devices)).setContent(R.id.lvDiscoveredDevices));
 
+//        llAllOutlets = (LinearLayout)findViewById(R.id.llAllOutlets);
   		lvConfiguredDevices = (ListView)findViewById(R.id.lvConfiguredDevices);
   		lvDiscoveredDevices = (ListView)findViewById(R.id.lvDiscoveredDevices);
+  		
+  		alConfiguredDevicesAllOutlets = new ArrayList<DeviceControl>();
 
     	alConfiguredDevices = new ArrayList<DeviceInfo>();
     	adpConfiguredDevices = new DeviceListAdapter(this, alConfiguredDevices);
@@ -243,7 +251,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			if ((av == lvDiscoveredDevices) && (di.UserName.equals("")) && (di.Password.equals("")))
 				Toast.makeText(getBaseContext(), R.string.suggest_enter_username_password, Toast.LENGTH_LONG).show();
 			
-			Intent it = new Intent(this, DeviceControl.class);
+			Intent it = new Intent(this, DeviceControlActivity.class);
 			it.putExtra("device", di);
 			startActivity(it);
 		}
@@ -322,10 +330,23 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			for (DeviceInfo di: alConfiguredDevices) {
 				if (device_info.MacAddress.equals(di.MacAddress)) {
 					updateOutletInfo(di, device_info);
+					found = false;
+					for (DeviceControl dc: alConfiguredDevicesAllOutlets) {
+						if (device_info.MacAddress.equals(dc.device.MacAddress)) {
+							found = true;
+							dc.onReceive(di);
+							break;
+						}
+					}
+					if (!found) {
+						alConfiguredDevicesAllOutlets.add(new DeviceControl(_this, di));
+					}
 					break;
 				}
 			}
 			
+
+						
 			// if it's visible in the listView, flash it
 			flashGreen(device_info.MacAddress, lvConfiguredDevices, adpConfiguredDevices);
 			flashGreen(device_info.MacAddress, lvDiscoveredDevices, adpDiscoveredDevices);
@@ -335,7 +356,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			if (Build.VERSION.SDK_INT >= 11) {
 				for (int i=0; i<lstv.getChildCount(); i++) {
 					View child = lstv.getChildAt(i);
-					if (child != null) {
+					if (child != null && adapter.getCount()>(Integer)child.getTag()) {
 						DeviceInfo di = (DeviceInfo)adapter.getItem((Integer)child.getTag());
 						if (di.MacAddress.equals(macAddress)) {
 							GreenFlasher.flashBgColor(child);

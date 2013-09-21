@@ -24,7 +24,22 @@
             android:id="@android:id/tabcontent"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
-           
+		    
+	        <ScrollView
+	            android:id="@+id/lvAllOutlets"
+	            android:layout_width="fill_parent"
+	            android:layout_height="fill_parent"
+	            android:layout_marginLeft="10dp"
+	            android:layout_marginRight="10dp" >
+	
+	            <LinearLayout
+	                android:id="@+id/llAllOutlets"
+	                android:layout_width="fill_parent"
+	                android:layout_height="wrap_content"
+	                android:orientation="vertical" >
+	            </LinearLayout>
+	        </ScrollView>
+		    
 		    <ListView
 		        android:id="@+id/lvConfiguredDevices"
 		        android:layout_width="fill_parent"
