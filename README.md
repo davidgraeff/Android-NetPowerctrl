@@ -7,9 +7,6 @@ For bugs and feature requests please use [github Issues](https://github.com/davi
 
 This is an (extended) github mirror of http://sourceforge.net/projects/netpowerctrl/.
 
-![Picture of devices](doc/devices.png)
-![Picture of outlets](doc/outlets.png)
-
 ## Features
 * Devices are detected automatically on the network if they are configured for UDP communication.
   Default send port 1077 / receive port 1075 (can be configured). Please be aware
@@ -23,6 +20,12 @@ Features, you can find on this repository only:
 * Create switch-groups to switch multiple outlets at once.
 * Use Shortcuts for toggling/switching on/off of individual outlets
   on your homescreen (or via automation apps like Tasker/Llama).
+
+<table><tr valign="top"><td>
+<img src="doc/devices.png" />
+</td><td>
+<img src="doc/outlets.png" />
+</td></tr></table>
 
 ## Building
 To compile, you need the [Android SDK](http://developer.android.com/sdk).
