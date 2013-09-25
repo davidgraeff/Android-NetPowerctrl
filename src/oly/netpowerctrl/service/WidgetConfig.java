@@ -1,6 +1,10 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.service;
 
 import java.util.List;
+
+import oly.netpowerctrl.DeviceInfo;
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.SharedPrefs;
 
 import android.app.Activity;
 import android.app.AlertDialog;

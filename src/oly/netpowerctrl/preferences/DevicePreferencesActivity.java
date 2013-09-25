@@ -1,5 +1,9 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.preferences;
 
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.outletconfig.OutletConfig;
+import oly.netpowerctrl.service.DeviceQuery;
+import oly.netpowerctrl.utils.SharedPrefs;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,9 +15,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+public class DevicePreferencesActivity extends PreferenceActivity {
 
-public class DevicePreferences extends PreferenceActivity {
-
+	@SuppressWarnings("deprecation")
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

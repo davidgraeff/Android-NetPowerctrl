@@ -9,6 +9,7 @@ public class OutletInfo implements Parcelable {
 		public String Description;
 		public boolean State;
 		public boolean Disabled;
+		public DeviceInfo device;
 		
 		public OutletInfo() {
 			OutletNumber = -1;

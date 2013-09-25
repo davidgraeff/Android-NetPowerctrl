@@ -1,9 +1,12 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.service;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+import oly.netpowerctrl.DeviceInfo;
+import oly.netpowerctrl.OutletInfo;
+import oly.netpowerctrl.R;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;

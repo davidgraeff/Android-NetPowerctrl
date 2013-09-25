@@ -1,5 +1,8 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.outletconfig;
 
+import oly.netpowerctrl.DeviceInfo;
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.SharedPrefs;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

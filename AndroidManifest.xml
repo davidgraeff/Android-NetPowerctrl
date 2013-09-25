@@ -4,7 +4,7 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="8" 
+    <uses-sdk android:minSdkVersion="14" 
               android:targetSdkVersion="17" />
     
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -13,7 +13,7 @@
         android:icon="@drawable/netpowerctrl"
         android:label="@string/app_name" android:allowBackup="true">
         <activity
-            android:name=".NetpowerctrlActivity"
+            android:name="oly.netpowerctrl.main.NetpowerctrlActivity"
             android:label="@string/app_name"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/Theme.CustomLightTheme">
@@ -24,37 +24,53 @@
         </activity>
         
         <activity
-             android:name=".DevicePreferences"
+             android:name="oly.netpowerctrl.preferences.DevicePreferencesActivity"
+             android:configChanges="keyboardHidden|orientation|screenSize">
+        </activity>
+        
+        <activity			 android:name="oly.netpowerctrl.preferences.PreferencesActivity"
              android:configChanges="keyboardHidden|orientation|screenSize">
         </activity>
         
         <activity
-             android:name=".Preferences"
-             android:configChanges="keyboardHidden|orientation|screenSize">
-        </activity>
-        
-        <activity
-             android:name=".OutletConfig"
+             android:name="oly.netpowerctrl.outletconfig.OutletConfig"
              android:configChanges="keyboardHidden|orientation|screenSize"
              android:windowSoftInputMode="adjustPan"> <!--  needed for focusable EditText inside ListView -->
         </activity>
         
         <activity 
-            android:name=".DeviceControlActivity"
+            android:name="oly.netpowerctrl.main.DeviceControlActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/Theme.CustomLightTheme">
         </activity>
+        
+        <activity 
+            android:name="oly.netpowerctrl.service.ShortcutExecutionActivity"
+            android:label="@string/app_name"
+            android:icon="@drawable/netpowerctrl"
+            android:exported="true">
+        </activity>
 
-	    <activity android:name=".WidgetConfig">
+	    <activity android:name="oly.netpowerctrl.service.WidgetConfig">
     	    <intent-filter>        
     	    	<action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
     	    </intent-filter>
    	    </activity>
+   	    
+	    <activity
+	        android:icon="@drawable/netpowerctrl"
+		  	android:label="@string/app_name"
+		  	android:name="oly.netpowerctrl.service.ShortcutCreatorActivity">
+		  <intent-filter>
+		    <action android:name="android.intent.action.CREATE_SHORTCUT" />
+		    <category android:name="android.intent.category.DEFAULT" />
+		  </intent-filter>
+		</activity>
 
         <receiver
 	       android:icon="@drawable/netpowerctrl"
 	       android:label="@string/app_name"
-	       android:name=".DeviceWidgetProvider" >
+	       android:name="oly.netpowerctrl.service.DeviceWidgetProvider" >
 	       <intent-filter >
 	            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 	       </intent-filter>
@@ -67,7 +83,7 @@
         <service 
             android:label="@string/app_name"
             android:icon="@drawable/netpowerctrl"
-            android:name=".NetpowerctrlService"
+            android:name="oly.netpowerctrl.service.NetpowerctrlService"
             android:permission="android.permission.INTERNET">
         </service>
 

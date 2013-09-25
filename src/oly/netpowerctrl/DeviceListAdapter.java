@@ -23,8 +23,10 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     private List<DeviceInfo> visible_devices;
     private LayoutInflater inflater;
     private DeviceFilter filter = null;
+    private Context context = null;
     
     public DeviceListAdapter(Context context, List<DeviceInfo> devices) {
+    	this.context = context;
         inflater = LayoutInflater.from(context);
         all_devices = devices;
         visible_devices = new ArrayList<DeviceInfo>(devices);
@@ -56,13 +58,21 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     	if (convertView == null)
     		convertView = inflater.inflate(R.layout.device_list_item, null);
         
+    	DeviceInfo di = visible_devices.get(position);
         TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
-        tvName.setText(visible_devices.get(position).DeviceName);
+        tvName.setText(di.DeviceName);
         
         TextView tvIP = (TextView) convertView.findViewById(R.id.device_ip);
-        tvIP.setText(visible_devices.get(position).HostName);
+        if (di.isConfigured())
+        	tvIP.setText(di.HostName);
+        else
+        	tvIP.setText(di.HostName + " (" + context.getResources().getString(R.string.default_device_name) + ")");
         
         ImageButton btn = (ImageButton) convertView.findViewById(R.id.btnEditDevice); 
+        if (di.isConfigured())
+        	btn.setImageResource(android.R.drawable.ic_menu_edit);
+        else
+        	btn.setImageResource(android.R.drawable.ic_menu_add);
         btn.setTag(position);
         btn.setFocusable(false); // or else onItemClick doesn't work in the ListView
         btn.setFocusableInTouchMode(false);
@@ -74,6 +84,7 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
 
     public void setDevices(List<DeviceInfo> new_devices) {
     	all_devices = new_devices;
+    	update();
     }
     
     public void setDeviceConfigureEvent(DeviceConfigureEvent dce) {
@@ -82,8 +93,9 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
     
 	public void onClick(View v) {
 		if (deviceConfigureEvent != null) {
-			DeviceInfo di = (DeviceInfo) getItem((Integer)v.getTag()); 
-			deviceConfigureEvent.onConfigureDevice(di);
+			int position = (Integer)v.getTag();
+			DeviceInfo di = (DeviceInfo) getItem(position); 
+			deviceConfigureEvent.onConfigureDevice(v, position);
 		}
 	}
     
@@ -130,6 +142,10 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
             }
 		}
 		
+	}
+
+	public void update() {
+		getFilter().filter("");
 	}
 
 }

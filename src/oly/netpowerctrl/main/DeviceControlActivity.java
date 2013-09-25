@@ -1,13 +1,19 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.main;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
+
+import oly.netpowerctrl.DeviceInfo;
+import oly.netpowerctrl.OutletInfo;
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.service.DeviceQuery;
+import oly.netpowerctrl.service.DiscoveryThread;
+import oly.netpowerctrl.service.NetpowerctrlService;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
@@ -21,6 +27,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,7 +50,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 	boolean firstPacketReceived = false;
 	
 	// for remembering what the device sent back
-	Map<Integer,Boolean> lastreceivedState;
+	SparseBooleanArray lastreceivedState;
 
 	/** Called when the activity is first created. */
 	@SuppressLint("NewApi")
@@ -51,7 +58,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		lastreceivedState = new HashMap<Integer,Boolean>();
+		lastreceivedState = new SparseBooleanArray(); // HashMap<Integer,Boolean>();
 
 		Intent it = new Intent(this, NetpowerctrlService.class);
 		startService(it);
@@ -105,7 +112,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 			cb.setTag(oi.OutletNumber);
 			cb.setText(oi.Description);
 			cb.setOnClickListener(this);
-			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
 			lp.setMargins(0, top_margin, 0, 0);
 			ll.addView(cb, lp);
 			buttons.add(cb);
@@ -139,18 +146,16 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 		// always go back to the main activity, or we may have to
 		// traverse endless DeviceConfig Activities from widgets
 		Intent it = new Intent(this, NetpowerctrlActivity.class);
+		it.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(it);
 		super.onBackPressed();
 	}
 
-	@SuppressLint("NewApi")
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
     	super.onCreateOptionsMenu(menu);
 		menu.add(0, R.id.menu_refresh, 0, R.string.menu_refresh).setIcon(R.drawable.ic_menu_refresh);
-		if (Build.VERSION.SDK_INT >= 11) {
-			menu.findItem(R.id.menu_refresh).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		}
+		menu.findItem(R.id.menu_refresh).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		return true;
 	}
 
@@ -185,7 +190,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-			        String messageStr = String.format("%s%d%s%s", state ? "Sw_on" : "Sw_off", number, device.UserName, device.Password);
+			        String messageStr = String.format(Locale.US, "%s%d%s%s", state ? "Sw_on" : "Sw_off", number, device.UserName, device.Password);
 			        DatagramSocket s = new DatagramSocket();
 					InetAddress host = InetAddress.getByName(device.HostName);
 			        int msg_length=messageStr.length();
@@ -228,7 +233,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 				
 				// update outlet states
 				for (CompoundButton button: buttons) {
-					if (lastreceivedState.containsKey((Integer)button.getTag()))
+					if (lastreceivedState.indexOfKey((Integer)button.getTag())>=0)
 						button.setChecked(lastreceivedState.get((Integer)button.getTag()));
 				}
 				if (Build.VERSION.SDK_INT >= 11) {
@@ -254,6 +259,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 	    }
 	};
 
+	@SuppressLint("HandlerLeak")
 	private Handler onFirstPacketCheck= new Handler() {
 		public void handleMessage(Message m) {
 			if (! firstPacketReceived) {
@@ -264,6 +270,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 		}
 	};
 	
+	@SuppressLint("HandlerLeak")
 	private class AfterSentHandler extends Handler {
 		int outletNumber; // remember for which outlet we were started
 		boolean state;    // the state we want the outlet to be in
@@ -282,7 +289,7 @@ public class DeviceControlActivity extends Activity implements OnClickListener {
 				return;
 			}
 			
-			if (lastreceivedState.containsKey(outletNumber)) {
+			if (lastreceivedState.indexOfKey(outletNumber)>=0) {
 				if (lastreceivedState.get(outletNumber) != state) {
 					retries++;
 					sendMessageDelayed(obtainMessage(), 500); // check again after 500 ms

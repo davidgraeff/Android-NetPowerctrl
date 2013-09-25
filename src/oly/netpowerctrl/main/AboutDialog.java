@@ -1,7 +1,8 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.main;
 
 import java.io.InputStream;
 
+import oly.netpowerctrl.R;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;

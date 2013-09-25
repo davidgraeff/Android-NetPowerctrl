@@ -1,8 +1,12 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.outletconfig;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import oly.netpowerctrl.DeviceInfo;
+import oly.netpowerctrl.OutletInfo;
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.SharedPrefs;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Editable;
@@ -10,7 +14,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -27,7 +30,6 @@ public class OutletConfigAdapter extends BaseAdapter {
     	this.prefname = prefname;
     	ctx = context;
         inflater = LayoutInflater.from(context);
-        items = new ArrayList<OutletInfo>();
         DeviceInfo di = SharedPrefs.ReadDevice(context, SharedPrefs.getFullPrefname(prefname));
         items = new ArrayList<OutletInfo>(di.Outlets);
     }    

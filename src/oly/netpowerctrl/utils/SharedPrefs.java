@@ -1,8 +1,13 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.utils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import oly.netpowerctrl.DeviceInfo;
+import oly.netpowerctrl.OutletInfo;
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.service.DeviceQuery;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -59,6 +64,7 @@ public class SharedPrefs {
 			di.SendPort = device_prefs.getInt(PREF_SENDPORT, DeviceQuery.getDefaultSendPort(context));
 			di.RecvPort = device_prefs.getInt(PREF_RECVPORT, DeviceQuery.getDefaultRecvPort(context));
 		}
+		di.Configured = true;
 		di.Outlets = new ArrayList<OutletInfo>();
 
 		int num_outlets = device_prefs.getInt(PREF_NUM_OUTLETS, 0);

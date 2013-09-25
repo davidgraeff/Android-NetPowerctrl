@@ -1,4 +1,4 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.service;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import oly.netpowerctrl.R;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

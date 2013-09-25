@@ -1,4 +1,4 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.service;
 
 import java.util.ArrayList;
 import java.util.List;

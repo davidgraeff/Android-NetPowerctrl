@@ -5,7 +5,7 @@
     <string name="configured_devices">Konfigurierte Geräte</string>
     <string name="discovered_devices">Erkannte Geräte</string>
     
-    <string name="edit_device">Bearbeiten</string>
+    <string name="configure_device">Bearbeiten</string>
     <string name="copy_device">Kopieren</string>
     <string name="delete_device">Löschen</string>
     <string name="delete_all_devices">Alle löschen</string>
@@ -70,4 +70,6 @@
     
     <string name="choose_widget_device">Bitte wählen Sie ein Gerät für dieses Widget</string>
     <string name="all_outlets">Steckdosen</string>
+    <string name="groups">Gruppen</string>
+    <string name="devices">Geräte</string>
 </resources>

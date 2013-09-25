@@ -1,5 +1,9 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.service;
 
+import oly.netpowerctrl.DeviceInfo;
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.main.DeviceControlActivity;
+import oly.netpowerctrl.utils.SharedPrefs;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;

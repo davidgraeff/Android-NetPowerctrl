@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.service.DeviceQuery;
+
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -24,6 +26,8 @@ public class DeviceInfo implements Parcelable {
 	public int SendPort;
 	public int RecvPort;
 	
+	public boolean Configured;
+	
 	public List<OutletInfo> Outlets;
 
     public static String makePrefname(UUID uuid) {
@@ -42,6 +46,7 @@ public class DeviceInfo implements Parcelable {
     	DefaultPorts = true;
     	SendPort = -1;
     	RecvPort = -1;
+    	Configured = false;
     	Outlets = new ArrayList<OutletInfo>();
     }
     
@@ -62,6 +67,7 @@ public class DeviceInfo implements Parcelable {
     	DefaultPorts = other.DefaultPorts;
     	SendPort = other.SendPort;
     	RecvPort = other.RecvPort;
+    	Configured = other.Configured;
     	Outlets = new ArrayList<OutletInfo>();
     	for (OutletInfo oi: other.Outlets)
     		Outlets.add(new OutletInfo(oi));
@@ -119,7 +125,16 @@ public class DeviceInfo implements Parcelable {
 		DefaultPorts = in.readInt() != 0;
 		SendPort = in.readInt();
 		RecvPort = in.readInt();
+		Configured = true;
 		in.readTypedList(Outlets, OutletInfo.CREATOR);
     }
+
+	public void setConfigured(boolean b) {
+		Configured = b;
+	}
+
+	public boolean isConfigured() {
+		return Configured;
+	}
 	
 }

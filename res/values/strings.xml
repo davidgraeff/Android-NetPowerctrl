@@ -5,7 +5,7 @@
     <string name="configured_devices">Configured Devices</string>
     <string name="discovered_devices">Discovered Devices</string>
     
-    <string name="edit_device">Edit Device</string>
+    <string name="configure_device">Edit Device</string>
     <string name="copy_device">Copy Device</string>
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
@@ -72,4 +72,6 @@
     
     <string name="choose_widget_device">Please choose a device for this widget</string>
     <string name="all_outlets">Outlets</string>
+    <string name="groups">Groups</string>
+    <string name="devices">Devices</string>
 </resources>
