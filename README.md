@@ -2,8 +2,9 @@
 	netpowerctrl is an Android App for controlling ANEL NET-PwrCtrl's (http://www.anel-elektronik.de)
 	switchable network outlets.
 
-You can find a ready to install apk at [github Releases](https://github.com/davidgraeff/netpowerctrl-sf-mirror/releases).
-For bugs and feature requests please use [github Issues](https://github.com/davidgraeff/netpowerctrl-sf-mirror/issues).
+You can find a ready to install apk at [Github Releases](https://github.com/davidgraeff/netpowerctrl-sf-mirror/releases)
+and on [Google Play](https://play.google.com/store/apps/details?id=oly.netpowerctrl).
+For bugs and feature requests please use [Github Issues](https://github.com/davidgraeff/netpowerctrl-sf-mirror/issues).
 
 This is an (extended) github mirror of http://sourceforge.net/projects/netpowerctrl/.
 
