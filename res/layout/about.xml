@@ -19,19 +19,25 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
 		    android:layout_gravity="center"
-		    android:gravity="center" />
+		    android:gravity="center" 
+		    android:linksClickable="true"
+		    android:autoLink="web"/>
 
 	</TableRow>
 	
 	<TableRow>
-		<TextView
-			android:id="@+id/tvAboutCopyright"
+		<Button
+			android:id="@+id/tvAboutStore"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:textSize="10dip"
-			android:textStyle="italic"
-			android:layout_span="2"
-			android:layout_margin="8dip"
-			android:textColor="#cccccc" />
+			android:layout_span="2" />
 	</TableRow>
+	<TableRow>
+		<Button
+			android:id="@+id/tvAboutSource"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_span="2" />
+	</TableRow>
+	
 </TableLayout>

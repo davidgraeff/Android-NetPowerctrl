@@ -2,10 +2,10 @@ package oly.netpowerctrl.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
-import oly.netpowerctrl.DeviceInfo;
-import oly.netpowerctrl.OutletInfo;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.service.DeviceQuery;
 
@@ -16,7 +16,10 @@ public class SharedPrefs {
 
 	public final static String PREF_BASENAME        = "oly.netpowerctrl";
 	public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
+	public final static String PREF_GROUPS_BASENAME = "oly.netpowerctrl.groups";
 	public final static String PREF_DEVICES         = "CONFIGURED_DEVICES";
+	public final static String PREF_GROUPS          = "GROUPS";
+	public final static String PREF_FIRSTTAB        = "FIRST_TAB";
 	public final static String PREF_UUID            = "UUID";
 	public final static String PREF_NAME            = "NAME";
 	public final static String PREF_IP              = "IP";
@@ -30,7 +33,55 @@ public class SharedPrefs {
 	public final static String PREF_OUTLET_NAME     = "OUTLET_NAME";
 	public final static String PREF_OUTLET_NUMBER   = "OUTLET_NUMBER";
 	
+	public static boolean getNextToggleState(Context context) {
+		SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
+		boolean r = prefs.getBoolean("toggle", false); 
+		SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putBoolean("toggle", !r);
+		prefEditor.commit();
+		return r;
+	}
 	
+	public static String getFirstTab(Context context) {
+		SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
+		return prefs.getString(PREF_FIRSTTAB, "outlets");
+	}
+	
+	public static void setFirstTab(Context context, String tabtag) {
+		SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
+		SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putString(PREF_FIRSTTAB, tabtag);
+		prefEditor.commit();
+	}
+	
+    public static ArrayList<OutletCommandGroup> ReadGroups(Context context) {
+    	ArrayList<OutletCommandGroup> groups = new ArrayList<OutletCommandGroup>();
+		SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
+		Set<String> groupSet = prefs.getStringSet(PREF_GROUPS, null);
+		if (groupSet==null)
+			return groups;
+		
+		for (String group_str: groupSet) {
+			OutletCommandGroup og = OutletCommandGroup.fromString(group_str, context);
+			groups.add(og);
+			
+		}
+  		return groups;
+    }
+    
+    public static void SaveGroups(ArrayList<OutletCommandGroup> groups, Context context) {
+    	Set<String> group_str = new TreeSet<String>();
+
+    	for (OutletCommandGroup b: groups) {
+    		group_str.add(b.toString());
+		}
+
+    	SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
+		SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putStringSet(PREF_GROUPS, group_str);
+		prefEditor.commit();
+    }
+    
 	public static String getFullPrefname(String prefname) {
 		return PREF_BASENAME+"."+prefname;
 	}
@@ -82,7 +133,8 @@ public class SharedPrefs {
 
     	for (DeviceInfo di: devices) {
 			configured_devices += di.getPrefname() + ":";
-	    	SaveDevice(context, getFullPrefname(di.getPrefname()), di);
+			String prefname = getFullPrefname(di.getPrefname());
+	    	SaveDevice(context, prefname, di);
 		}
 
     	if (configured_devices.endsWith(":"))

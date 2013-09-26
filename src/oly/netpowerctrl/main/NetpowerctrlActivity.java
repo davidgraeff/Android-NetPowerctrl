@@ -2,18 +2,22 @@ package oly.netpowerctrl.main;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import oly.netpowerctrl.DeviceConfigureEvent;
-import oly.netpowerctrl.DeviceInfo;
-import oly.netpowerctrl.DeviceListAdapter;
-import oly.netpowerctrl.OutledSwitchListAdapter;
-import oly.netpowerctrl.OutletInfo;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.devicecontrol.DeviceControlActivity;
+import oly.netpowerctrl.listadapter.DeviceListAdapter;
+import oly.netpowerctrl.listadapter.GroupListAdapter;
+import oly.netpowerctrl.listadapter.OutledSwitchListAdapter;
 import oly.netpowerctrl.preferences.DevicePreferencesActivity;
 import oly.netpowerctrl.preferences.PreferencesActivity;
 import oly.netpowerctrl.service.DeviceQuery;
 import oly.netpowerctrl.service.DiscoveryThread;
 import oly.netpowerctrl.service.NetpowerctrlService;
+import oly.netpowerctrl.service.ShortcutCreatorActivity;
+import oly.netpowerctrl.utils.DeviceConfigureEvent;
+import oly.netpowerctrl.utils.DeviceInfo;
 import oly.netpowerctrl.utils.GreenFlasher;
+import oly.netpowerctrl.utils.OutletCommandGroup;
+import oly.netpowerctrl.utils.OutletInfo;
 import oly.netpowerctrl.utils.SharedPrefs;
 
 import android.app.Activity;
@@ -26,7 +30,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,35 +39,43 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TabHost;
+import android.widget.TabHost.OnTabChangeListener;
 
 @SuppressWarnings("deprecation")
-public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, PopupMenu.OnMenuItemClickListener, DeviceConfigureEvent {
+public class NetpowerctrlActivity extends TabActivity implements OnItemClickListener, PopupMenu.OnMenuItemClickListener, DeviceConfigureEvent, OnTabChangeListener {
 	final Activity _this = this;
+	final static int ACTIVITY_REQUEST_ADDGROUP = 12; 
 	
-	ListView lvDevices;
+	ListView lvGroups;
 	ListView lvAllOutlets;
+	ListView lvDevices;
 	
 	ArrayList<DeviceInfo> alDevices;
 	DeviceListAdapter adpDevices;
 	OutledSwitchListAdapter adpOutlets;
+	GroupListAdapter adpGroups;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.main_activity);
 
         TabHost th = (TabHost)findViewById(android.R.id.tabhost);
         th.setup();
         th.addTab(th.newTabSpec("groups").setIndicator(getResources().getString(R.string.groups)).setContent(R.id.lvGroups));
         th.addTab(th.newTabSpec("outlets").setIndicator(getResources().getString(R.string.all_outlets)).setContent(R.id.lvAllOutlets));
         th.addTab(th.newTabSpec("devices").setIndicator(getResources().getString(R.string.devices)).setContent(R.id.lvDevices));
+        th.setOnTabChangedListener(this);
         
         if (savedInstanceState != null) {
         	th.setCurrentTabByTag(savedInstanceState.getString("tab", "outlets"));
+        } else {
+        	th.setCurrentTabByTag(SharedPrefs.getFirstTab(this));
         }
 
   		lvDevices = (ListView)findViewById(R.id.lvDevices);
   		lvAllOutlets = (ListView)findViewById(R.id.lvAllOutlets);
+  		lvGroups = (ListView)findViewById(R.id.lvGroups);
   		
     	alDevices = new ArrayList<DeviceInfo>();
     	adpDevices = new DeviceListAdapter(this, alDevices);
@@ -75,6 +86,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 
   		adpOutlets = new OutledSwitchListAdapter(this, alDevices);
   		lvAllOutlets.setAdapter(adpOutlets);
+  		
+  		adpGroups = new GroupListAdapter(this);
+  		lvGroups.setAdapter(adpGroups);
+
     }
     
     private void clearNonConfiguredDevices() {
@@ -109,6 +124,8 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     protected void onPause() {
     	LocalBroadcastManager.getInstance(this).unregisterReceiver(onDeviceDiscovered);
     	super.onPause();
+    	TabHost th = (TabHost)findViewById(android.R.id.tabhost);
+    	SharedPrefs.setFirstTab(this,th.getCurrentTabTag());
 	}
     
     
@@ -125,6 +142,14 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		return true;
 	}
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+    	TabHost th = (TabHost)findViewById(android.R.id.tabhost);
+        menu.findItem(R.id.menu_add_device).setVisible(!th.getCurrentTabTag().equals("outlets"));
+        super.onPrepareOptionsMenu(menu);
+        return true;
+    }
+    
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -138,9 +163,10 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				Intent it = new Intent(this, DevicePreferencesActivity.class);
 				it.putExtra("prefname", di.getPrefname());
 				startActivity(it);
-				return true;				
+				return true;
 			} else if (th.getCurrentTabTag().equals("groups")) {
-				
+				Intent it = new Intent(this, ShortcutCreatorActivity.class);
+				startActivityForResult(it, ACTIVITY_REQUEST_ADDGROUP);
 				return true;				
 			}
 			return false;
@@ -348,5 +374,19 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	    }
 	};
 
-	
+	@Override
+	public void onTabChanged(String tabId) {
+		invalidateOptionsMenu();
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == ACTIVITY_REQUEST_ADDGROUP && resultCode == RESULT_OK) {
+			Bundle shortcut_bundle = data.getExtras();
+			Intent groupIntent = shortcut_bundle.getParcelable(Intent.EXTRA_SHORTCUT_INTENT);
+			shortcut_bundle = groupIntent.getExtras();
+			OutletCommandGroup og = OutletCommandGroup.fromString(shortcut_bundle.getString("commands"), this);
+			adpGroups.addGroup(og);
+		}
+	}
 }

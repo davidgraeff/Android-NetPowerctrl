@@ -3,9 +3,9 @@ package oly.netpowerctrl.outletconfig;
 import java.util.ArrayList;
 import java.util.List;
 
-import oly.netpowerctrl.DeviceInfo;
-import oly.netpowerctrl.OutletInfo;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.DeviceInfo;
+import oly.netpowerctrl.utils.OutletInfo;
 import oly.netpowerctrl.utils.SharedPrefs;
 import android.content.Context;
 import android.content.SharedPreferences;

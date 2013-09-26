@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-import oly.netpowerctrl.DeviceInfo;
-import oly.netpowerctrl.OutletInfo;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.DeviceInfo;
+import oly.netpowerctrl.utils.OutletInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;

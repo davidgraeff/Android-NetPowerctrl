@@ -1,8 +1,13 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.listadapter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.DeviceConfigureEvent;
+import oly.netpowerctrl.utils.DeviceInfo;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -94,7 +99,6 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
 	public void onClick(View v) {
 		if (deviceConfigureEvent != null) {
 			int position = (Integer)v.getTag();
-			DeviceInfo di = (DeviceInfo) getItem(position); 
 			deviceConfigureEvent.onConfigureDevice(v, position);
 		}
 	}
@@ -119,9 +123,9 @@ public class DeviceListAdapter extends BaseAdapter implements Filterable, OnClic
                 list = new ArrayList<DeviceInfo>(all_devices);
 			} else {
                 list = new ArrayList<DeviceInfo>();
-				String match = constraint.toString().toLowerCase();
+				String match = constraint.toString().toLowerCase(Locale.US);
 				for (DeviceInfo item : all_devices) {
-					if (item.DeviceName.toLowerCase().contains(match))
+					if (item.DeviceName.toLowerCase(Locale.US).contains(match))
 						list.add(item);
 				}
 				

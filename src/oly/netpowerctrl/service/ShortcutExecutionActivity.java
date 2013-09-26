@@ -2,13 +2,14 @@ package oly.netpowerctrl.service;
 
 import java.util.ArrayList;
 
-import oly.netpowerctrl.DeviceInfo;
-import oly.netpowerctrl.OutledListAdapter;
-import oly.netpowerctrl.UDPSendToDevice;
-import oly.netpowerctrl.utils.SharedPrefs;
+import oly.netpowerctrl.listadapter.OutledListAdapter;
+import oly.netpowerctrl.utils.DeviceInfo;
+import oly.netpowerctrl.utils.OutletCommandGroup;
+import oly.netpowerctrl.utils.UDPSendToDevice;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 public class ShortcutExecutionActivity extends Activity
 {
@@ -19,8 +20,6 @@ public class ShortcutExecutionActivity extends Activity
 	protected void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		ArrayList<DeviceInfo> alDevices = SharedPrefs.ReadConfiguredDevices(this);
-
 		Intent it = getIntent();
 		if (it == null) {
 			finish();
@@ -28,35 +27,14 @@ public class ShortcutExecutionActivity extends Activity
 		}
 		
 		Bundle extra = it.getExtras();
-		if (extra == null) {
-			finish();
+		OutletCommandGroup g = OutletCommandGroup.fromString(extra.getString("commands"), this);
+		if (g == null) {
+			Toast.makeText(this, "Shortcut not valid!", Toast.LENGTH_SHORT).show();
 			return;
 		}
 		
-		String mac = null;
-		int OutletNumber = -1;
-		DeviceInfo di = null;
-		Object o = extra.get("Device");
-		if (o == null) {
-			finish();
-			return;
-		}
-		mac = (String)o;
-		o = extra.get("OutletNumber");
-		if (o == null) {
-			finish();
-			return;
-		}
-		OutletNumber = (Integer)o;
-		for(DeviceInfo check: alDevices) {
-			if (check.MacAddress.equals(mac)) {
-				di = check;
-				break;
-			}
-		}
-		
-		UDPSendToDevice.sendOutlet(this, di, OutletNumber, true);
-		setResult(RESULT_OK,null);
+		if (UDPSendToDevice.sendOutlet(this, g))
+			setResult(RESULT_OK,null);
 		finish();
 	}
 }

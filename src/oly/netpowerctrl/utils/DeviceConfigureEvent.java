@@ -1,4 +1,4 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.utils;
 
 import android.view.View;
 

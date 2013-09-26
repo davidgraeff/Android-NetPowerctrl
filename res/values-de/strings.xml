@@ -34,6 +34,8 @@
     <string name="device_name_summary">Beliebige Bezeichnung für dieses Gerät.</string>
     <string name="device_ip">Hostname or IP</string>
     <string name="device_ip_summary">Der Hostname oder die IP-Adresse für dieses Gerät.</string>
+    <string name="device_mac">MAC Adresse</string>
+    <string name="device_mac_summary">Die MAC Adresse des Geräts.</string>
     <string name="device_default_ports">Standard UDP-Ports?</string>
     <string name="device_send_udp">UDP-Port zum Senden</string>
     <string name="device_send_udp_summary">Siehe \"Empfangen\" in der Web-Oberfläche des Gerätes.</string>
@@ -47,6 +49,7 @@
     <string name="device_outlets_summary">Konfiguration der einzelnen Steckdosen des Gerätes</string>
     
     <string name="menu_add_device">Neues Gerät</string>
+    <string name="menu_remove_group">Gruppe entfernen</string>
     <string name="menu_about">Über</string>
     <string name="menu_cancel">Abbruch</string>
     <string name="menu_delete_all">Alle löschen</string>
@@ -69,7 +72,22 @@
     <string name="outlet_delete">Löschen</string>
     
     <string name="choose_widget_device">Bitte wählen Sie ein Gerät für dieses Widget</string>
+    <string name="choose_shortcut_outlets">Erstelle Shortcut/Gruppe</string>
     <string name="all_outlets">Steckdosen</string>
     <string name="groups">Gruppen</string>
     <string name="devices">Geräte</string>
+    
+    <string name="groupname">Gruppename</string>
+    <string name="groupname_long">Bitte geben Sie einen neuen Gruppennamen ein</string>
+    
+    <string name="off">Aus</string>
+    <string name="on">An</string>
+    <string name="toggle">Wechsel</string>
+    
+    <string-array name="shortcutchoices">
+        <item>Ignorieren</item>
+        <item>Aussschalten</item>
+        <item>Einschalten</item>
+        <item>Umschalten</item>
+    </string-array>
 </resources>

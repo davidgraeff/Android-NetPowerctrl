@@ -1,13 +1,13 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.listadapter;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.AfterSentHandler;
+import oly.netpowerctrl.utils.DeviceInfo;
+import oly.netpowerctrl.utils.OutletInfo;
+import oly.netpowerctrl.utils.UDPSendToDevice;
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,14 +16,13 @@ import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
-import android.widget.Toast;
 import android.widget.ListAdapter;
 
 public class OutledSwitchListAdapter extends BaseAdapter implements ListAdapter, OnCheckedChangeListener {
     private List<DeviceInfo> all_devices;
     private List<OutletInfo> all_outlets;
     private LayoutInflater inflater;
-    final Activity context;
+    public final Activity context;
     AfterSentHandler ash = new AfterSentHandler(this);
     
     public OutledSwitchListAdapter(Activity context, List<DeviceInfo> devices) {

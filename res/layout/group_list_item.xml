@@ -17,21 +17,20 @@
         android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/device_name"
+            android:id="@+id/group_list_name"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/device_ip"
+            android:id="@+id/group_list_details"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp" />
     </LinearLayout>
 
    <View
-       android:id="@+id/firstDivider"
        android:layout_width="1dp"
        android:layout_height="fill_parent"
        android:layout_marginBottom="10dp"
@@ -39,12 +38,12 @@
        android:background="#80808080" />
 
     <ImageButton
-        android:id="@+id/btnEditDevice"
+        android:id="@+id/btnRemoveGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:drawable/list_selector_background"
-        android:contentDescription="@string/configure_device"
+        android:contentDescription="@string/delete_device"
         android:padding="5dp"
-        android:src="@drawable/ic_menu_edit" />
+        android:src="@drawable/ic_menu_delete" />
 
 </LinearLayout>

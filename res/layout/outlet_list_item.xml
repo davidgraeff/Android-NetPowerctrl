@@ -2,19 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:baselineAligned="true"
-    android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingLeft="16dip"
     android:paddingRight="12dip" >
 
-    <TextView
-        android:id="@+id/outlet_list_item"
-        android:layout_width="0dip"
+    <Spinner
+        android:id="@+id/outlet_list_spinner"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="0.48"
-    	android:layout_marginBottom="5dp"
-    	android:layout_marginTop="5dp"
-        android:text="" />
+        android:layout_weight="0.30" />
 
+    <TextView
+        android:id="@+id/outlet_list_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="fill"
+        android:layout_weight="0.70"
+        android:text="" />
+    
 </LinearLayout>

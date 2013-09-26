@@ -1,11 +1,13 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.utils;
 
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.listadapter.OutledSwitchListAdapter;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
-class AfterSentHandler extends Handler {
+public class AfterSentHandler extends Handler {
 	int listposition;
 	boolean state;    // the state we want the outlet to be in
 	int retries;

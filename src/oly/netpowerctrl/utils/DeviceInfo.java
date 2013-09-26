@@ -1,9 +1,10 @@
-package oly.netpowerctrl;
+package oly.netpowerctrl.utils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.service.DeviceQuery;
 
 import android.content.Context;

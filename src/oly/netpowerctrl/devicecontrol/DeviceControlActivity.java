@@ -1,4 +1,4 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl.devicecontrol;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import oly.netpowerctrl.DeviceInfo;
-import oly.netpowerctrl.OutletInfo;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.service.DeviceQuery;
 import oly.netpowerctrl.service.DiscoveryThread;
 import oly.netpowerctrl.service.NetpowerctrlService;
+import oly.netpowerctrl.utils.DeviceInfo;
+import oly.netpowerctrl.utils.OutletInfo;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
