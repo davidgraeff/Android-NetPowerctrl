@@ -3,6 +3,7 @@ package oly.netpowerctrl.listadapter;
 import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.GreenFlasher;
 import oly.netpowerctrl.utils.OutletCommandGroup;
 import oly.netpowerctrl.utils.SharedPrefs;
 import oly.netpowerctrl.utils.UDPSendToDevice;
@@ -64,6 +65,7 @@ public class GroupListAdapter extends BaseAdapter implements OnClickListener, On
 	@Override
 	public void onClick(View v) {
 		int position = (Integer) v.getTag();
+		GreenFlasher.flashBgColor(v);
 		OutletCommandGroup og = (OutletCommandGroup) getItem(position);
 		UDPSendToDevice.sendOutlet(context, og);
 	}

@@ -3,6 +3,8 @@ package oly.netpowerctrl.service;
 import java.util.ArrayList;
 
 import oly.netpowerctrl.listadapter.OutledListAdapter;
+import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.outletconfig.OutletConfig;
 import oly.netpowerctrl.utils.DeviceInfo;
 import oly.netpowerctrl.utils.OutletCommandGroup;
 import oly.netpowerctrl.utils.UDPSendToDevice;
@@ -35,6 +37,11 @@ public class ShortcutExecutionActivity extends Activity
 		
 		if (UDPSendToDevice.sendOutlet(this, g))
 			setResult(RESULT_OK,null);
+		
+		if (extra.getBoolean("show_mainwindow")) {
+			Intent mainIt = new Intent(this, NetpowerctrlActivity.class);
+			startActivity(mainIt);
+		}
 		finish();
 	}
 }

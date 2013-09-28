@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -93,9 +94,49 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     }
     
     private void clearNonConfiguredDevices() {
-    	alDevices = SharedPrefs.ReadConfiguredDevices(this);
-    	adpDevices.setDevices(alDevices);
-    	adpOutlets.setDevices(alDevices);
+    	ArrayList<DeviceInfo> newEntries = SharedPrefs.ReadConfiguredDevices(this);
+    	// This is somehow a more complicated way of alDevices := newEntries
+    	// because with an assignment we would lose the outlet states which are not stored in the SharedPref
+    	// and only with the next UDP update those states are restored. This
+    	// induces a flicker where we can first observe all outlets set to off and
+    	// within a fraction of a second the actual values are applied.
+    	// Therefore we update by hand without touching outlet states.
+    	Iterator<DeviceInfo> oldEntriesIt = alDevices.iterator();
+    	while (oldEntriesIt.hasNext()) {
+    		// remove devices not existing anymore
+    		DeviceInfo old_di = oldEntriesIt.next();
+    		DeviceInfo new_di = null;
+    		for (int i=0;i<newEntries.size();++i) {
+    			if (newEntries.get(i).MacAddress.equals(old_di.MacAddress)) {
+    				new_di = newEntries.get(i);
+    				break;
+    			}
+    		}
+    		if (new_di == null) {
+    			oldEntriesIt.remove();
+    		} else if (old_di.Outlets.size() != new_di.Outlets.size()) {
+        		// Number of outlets have changed. This is a reason to forget about
+    			// outlet states and replace the old device with the new one.
+    			old_di = new_di;
+    		}
+    	}
+    	// add new devices
+    	Iterator<DeviceInfo> newEntriesIt = newEntries.iterator();
+    	while (newEntriesIt.hasNext()) {
+    		DeviceInfo new_di = newEntriesIt.next();
+    		DeviceInfo old_di = null;
+    		for (int i=0;i<alDevices.size();++i) {
+    			if (alDevices.get(i).MacAddress.equals(new_di.MacAddress)) {
+    				old_di = newEntries.get(i);
+    				break;
+    			}
+    		}
+    		if (old_di == null) {
+    			alDevices.add(new_di);
+    		}
+    	}
+    	adpDevices.update();
+    	adpOutlets.update();
     }
 
     @Override
@@ -166,6 +207,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				return true;
 			} else if (th.getCurrentTabTag().equals("groups")) {
 				Intent it = new Intent(this, ShortcutCreatorActivity.class);
+				it.putExtra("groups", true);
 				startActivityForResult(it, ACTIVITY_REQUEST_ADDGROUP);
 				return true;				
 			}

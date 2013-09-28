@@ -16,12 +16,14 @@ import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Switch;
 
 public class ShortcutCreatorActivity extends Activity
 {
 	ArrayList<DeviceInfo> alDevices;
 	OutledListAdapter adpOutlets;
 	ListView lvOutletSelect;
+	Switch show_mainwindow;
 	final Activity that = this;
 	
 	@Override
@@ -31,9 +33,24 @@ public class ShortcutCreatorActivity extends Activity
 		setResult(RESULT_CANCELED,null);
 		setContentView(R.layout.shortcut_activity);
 		setTitle(R.string.choose_shortcut_outlets);
+		
+		boolean isForGroups = false;
+		Intent it = getIntent();
+		if (it != null) {
+			Bundle extra = it.getExtras();
+			if (extra != null) {
+				Object o = extra.get("groups");
+				if (o != null) {
+					isForGroups = (Boolean) o; 
+				}
+			}
+		}
 
     	alDevices = SharedPrefs.ReadConfiguredDevices(this);
   		adpOutlets = new OutledListAdapter(this, alDevices);
+  		show_mainwindow = (Switch)findViewById(R.id.shortcut_show_mainwindow);
+  		if (isForGroups)
+  			show_mainwindow.setVisibility(View.GONE);
 
 		lvOutletSelect = (ListView)findViewById(R.id.lvOutletSelect);
   		lvOutletSelect.setAdapter(adpOutlets);
@@ -41,9 +58,6 @@ public class ShortcutCreatorActivity extends Activity
   		((Button)findViewById(R.id.btnAcceptShortcut)).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// Create shortcut intent
-				Intent shortcutIntent=new Intent(that, oly.netpowerctrl.service.ShortcutExecutionActivity.class);
-				
 				// Generate list of checked items
 				List<OutletCommand> commands = adpOutlets.getCheckedItems();
 				if (commands.isEmpty()) {
@@ -54,9 +68,20 @@ public class ShortcutCreatorActivity extends Activity
 				for (OutletCommand c: commands) {
 					og.add(c);
 				}
+				
+				// Determine default name
 				Calendar t = Calendar.getInstance();
 				og.groupname = DateFormat.getMediumDateFormat(that).format(t.getTime()) + " - " + DateFormat.getTimeFormat(that).format(t.getTime());
+				
+				// Create shortcut intent
+				Intent shortcutIntent=new Intent(that, oly.netpowerctrl.service.ShortcutExecutionActivity.class);
 				shortcutIntent.putExtra("commands", og.toString());
+				shortcutIntent.setClass(that, oly.netpowerctrl.service.ShortcutExecutionActivity.class);
+				shortcutIntent.setAction(Intent.ACTION_MAIN);
+				
+				if (show_mainwindow.isChecked()) {
+					shortcutIntent.putExtra("show_mainwindow", true);
+				}
 				
 				// Return result
 				// Shortcut name is "app_name (9)" where 9 is the amount of commands

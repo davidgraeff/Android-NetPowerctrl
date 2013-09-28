@@ -79,6 +79,7 @@
     
     <string name="groupname">Gruppename</string>
     <string name="groupname_long">Bitte geben Sie einen neuen Gruppennamen ein</string>
+    <string name="shortcut_show_mainwindow">Zeige Hauptfenster</string>
     
     <string name="off">Aus</string>
     <string name="on">An</string>
