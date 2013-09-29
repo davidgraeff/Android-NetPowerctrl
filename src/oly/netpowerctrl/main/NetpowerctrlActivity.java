@@ -150,6 +150,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
         LocalBroadcastManager.getInstance(this).registerReceiver(onDeviceDiscovered, itf);
     	
 		Intent it = new Intent(this, NetpowerctrlService.class);
+		it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 		startService(it);
         
     	DeviceQuery.sendBroadcastQuery(this);
@@ -203,11 +204,13 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 				SaveConfiguredDevices(); // we need to know the device on return from config activity 
 				Intent it = new Intent(this, DevicePreferencesActivity.class);
 				it.putExtra("prefname", di.getPrefname());
+				it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 				startActivity(it);
 				return true;
 			} else if (th.getCurrentTabTag().equals("groups")) {
 				Intent it = new Intent(this, ShortcutCreatorActivity.class);
 				it.putExtra("groups", true);
+				it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 				startActivityForResult(it, ACTIVITY_REQUEST_ADDGROUP);
 				return true;				
 			}
@@ -235,6 +238,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		
 		case R.id.menu_preferences: {
 			Intent it = new Intent(this, PreferencesActivity.class);
+			it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 			startActivity(it);
 			return true;
 		}
@@ -273,6 +277,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   	    	SaveConfiguredDevices();
 			Intent it = new Intent(this, DevicePreferencesActivity.class);
 			it.putExtra("prefname", current_device.getPrefname());
+			it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 			startActivity(it);
 			return true;
   	    }
@@ -280,6 +285,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   	    case R.id.menu_configure_device: {
 			Intent it = new Intent(this, DevicePreferencesActivity.class);
 			it.putExtra("prefname", current_device.getPrefname());
+			it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 			startActivity(it);
 			return true;
   		}
@@ -326,6 +332,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 			if (di.isConfigured()) {
 				Intent it = new Intent(this, DeviceControlActivity.class);
 				it.putExtra("device", di);
+				it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 				startActivity(it);				
 			} else {
 				onConfigureDevice(v, position);

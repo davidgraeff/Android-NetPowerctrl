@@ -98,6 +98,7 @@ public class DevicePreferencesActivity extends PreferenceActivity {
 			public boolean onPreferenceClick(Preference preference) {
 				Intent it = new Intent(self, OutletConfig.class);
 				it.putExtra("prefname", f_prefname);
+				it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 				startActivity(it);
 			    return true;
 			}
