@@ -40,6 +40,7 @@ public class ShortcutExecutionActivity extends Activity
 		
 		if (extra.getBoolean("show_mainwindow")) {
 			Intent mainIt = new Intent(this, NetpowerctrlActivity.class);
+			mainIt.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
 			startActivity(mainIt);
 		}
 		finish();
