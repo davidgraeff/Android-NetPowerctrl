@@ -175,12 +175,13 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	public boolean onCreateOptionsMenu(Menu menu) {
     	super.onCreateOptionsMenu(menu);
 		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(R.drawable.ic_menu_add);
-		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(R.drawable.ic_menu_delete);
 		menu.add(0, R.id.menu_requery, 0, R.string.requery).setIcon(R.drawable.ic_menu_refresh);
+		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(R.drawable.ic_menu_delete);
 		menu.add(0, R.id.menu_preferences, 0, R.string.menu_preferences).setIcon(R.drawable.ic_menu_preferences);
 		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(R.drawable.ic_menu_info_details);
 		menu.findItem(R.id.menu_add_device).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.findItem(R.id.menu_requery).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		menu.findItem(R.id.menu_delete_all_devices).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		return true;
 	}
 
@@ -188,6 +189,7 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
     public boolean onPrepareOptionsMenu(Menu menu) {
     	TabHost th = (TabHost)findViewById(android.R.id.tabhost);
         menu.findItem(R.id.menu_add_device).setVisible(!th.getCurrentTabTag().equals("outlets"));
+        menu.findItem(R.id.menu_delete_all_devices).setVisible(!th.getCurrentTabTag().equals("outlets"));
         super.onPrepareOptionsMenu(menu);
         return true;
     }
@@ -218,15 +220,31 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 		}
 		
 		case R.id.menu_delete_all_devices: {
-			new AlertDialog.Builder(this)
-				.setTitle(R.string.delete_all_devices)
-				.setMessage(R.string.confirmation_delete_all_devices)
+			TabHost th = (TabHost)findViewById(android.R.id.tabhost);
+			if (th.getCurrentTabTag().equals("devices")) {
+				new AlertDialog.Builder(this)
+					.setTitle(R.string.delete_all_devices)
+					.setMessage(R.string.confirmation_delete_all_devices)
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					    public void onClick(DialogInterface dialog, int whichButton) {
+					    	// Delete all devices
+					  		alDevices.clear();
+					  		SaveConfiguredDevices();
+					    }})
+					 .setNegativeButton(android.R.string.no, null).show();
+			} else if (th.getCurrentTabTag().equals("groups")) {
+				new AlertDialog.Builder(this)
+				.setTitle(R.string.delete_all_groups)
+				.setMessage(R.string.confirmation_delete_all_groups)
 				.setIcon(android.R.drawable.ic_dialog_alert)
 				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 				    public void onClick(DialogInterface dialog, int whichButton) {
-				    	deleteAllDevices();
+				    	// Delete all groups
+				    	adpGroups.deleteAll();
 				    }})
 				 .setNegativeButton(android.R.string.no, null).show();
+			}
 			return true;
 		}
 		
@@ -362,11 +380,6 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
   		SaveConfiguredDevices();
 	}
 	
-	public void deleteAllDevices() {
-  		alDevices.clear();
-  		SaveConfiguredDevices();
-	}
-
 	private BroadcastReceiver onDeviceDiscovered= new BroadcastReceiver() {
 	    @Override
 	    synchronized public void onReceive(Context context, Intent intent) {

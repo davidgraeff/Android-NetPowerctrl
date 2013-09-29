@@ -132,4 +132,10 @@ public class GroupListAdapter extends BaseAdapter implements OnClickListener, On
 		return true;
 	}
 
+	public void deleteAll() {
+		groups.clear();
+		SharedPrefs.SaveGroups(groups, that.context);
+		that.notifyDataSetChanged();
+	}
+
 }

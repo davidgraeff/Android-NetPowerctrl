@@ -59,7 +59,7 @@
     <string name="default_device_name">New device</string>
     <string name="copy_of">Copy of %s</string>
 
-    <string name="confirmation_delete_device">Are you sure you want to delete this device?</string>
+    <string name="confirmation_delete_device">Delete all devices?</string>
     <string name="confirmation_delete_all_devices">Are you sure you want to delete all devices?</string>
     
     <string name="preference_standard_send_port">Standard UDP port for sending queries</string>
@@ -80,6 +80,8 @@
     <string name="groupname">Group name</string>
     <string name="groupname_long">Please enter a new group name</string>
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
+    <string name="delete_all_groups">Delete all groups?</string>
+    <string name="confirmation_delete_all_groups">Are you sure you want to delete all groups?</string>
     
     <string name="off">Off</string>
     <string name="on">On</string>
