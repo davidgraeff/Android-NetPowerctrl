@@ -174,13 +174,13 @@ public class NetpowerctrlActivity extends TabActivity implements OnItemClickList
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
     	super.onCreateOptionsMenu(menu);
-		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(R.drawable.ic_menu_add);
 		menu.add(0, R.id.menu_requery, 0, R.string.requery).setIcon(R.drawable.ic_menu_refresh);
+		menu.add(0, R.id.menu_add_device, 0, R.string.menu_add_device).setIcon(R.drawable.ic_menu_add);
 		menu.add(0, R.id.menu_delete_all_devices, 0, R.string.menu_delete_all).setIcon(R.drawable.ic_menu_delete);
 		menu.add(0, R.id.menu_preferences, 0, R.string.menu_preferences).setIcon(R.drawable.ic_menu_preferences);
 		menu.add(0, R.id.menu_about, 0, R.string.menu_about).setIcon(R.drawable.ic_menu_info_details);
-		menu.findItem(R.id.menu_add_device).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.findItem(R.id.menu_requery).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		menu.findItem(R.id.menu_add_device).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.findItem(R.id.menu_delete_all_devices).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		return true;
 	}
