@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/menu_test_device"
+        android:title="@string/test_device"
+        android:showAsAction="ifRoom|withText"></item>
+
+    <item android:id="@+id/menu_save_device"
+        android:title="@string/add_to_configured_devices"
+        android:showAsAction="always"
+        android:icon="@android:drawable/ic_menu_save"></item>
+</menu>

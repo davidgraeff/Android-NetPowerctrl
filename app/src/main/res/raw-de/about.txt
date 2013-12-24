@@ -1,0 +1,5 @@
+﻿<h3>NET-PwrCtrl</h3>
+Version VersionX<br>
+
+© 2013 <b>David Gräff</b><br>
+© 2012 <b><a href="http://www.nittka.com">Oliver Nittka</a></b><br><br>

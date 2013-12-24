@@ -1,0 +1,23 @@
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 16
+    buildToolsVersion '19.0.0'
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 17
+    }
+
+    buildTypes {
+        release {
+            zipAlign true
+            runProguard false
+            debuggable false
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:+'
+}

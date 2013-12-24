@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Net-PwrCtrl</string>
+    
+    <string name="configured_devices">Konfigurierte Geräte</string>
+    <string name="discovered_devices">Erkannte Geräte</string>
+    
+    <string name="configure_device">Bearbeiten</string>
+    <string name="copy_device">Kopieren</string>
+    <string name="delete_device">Löschen</string>
+    <string name="delete_all_devices">Alle löschen</string>
+    <string name="requery">Erkennung neu starten</string>
+    <string name="add_to_configured_devices">Zu konfigurierten Geräten hinzufügen</string>
+    <string name="test_device">Test</string>
+    <string name="error_reading_configured_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
+    <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
+    <string name="suggest_enter_username_password">Sie müssen wahrscheinlich in den Geräteeinstellungen den Benutzerame und Passwort eingeben.</string>
+    <string name="error_sending_inquiry">Fehler beim Senden des Erkennungs-Pakets</string>
+    <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
+    <string name="error_outlet_number">Fehler in der Konfiguration: dieses Gerät hat keine ID!</string>
+    <string name="error_packet_received">Fehler vom Gerät empfangen: </string>
+    <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
+    <string name="error_edited_device_not_found">Interner Programmfehler: editiertes Gerät nicht gefunden!</string>
+    <string name="error_listen_thread_exception">Kann nicht Port %d zum Empfangen öffnen:\n</string>
+    <string name="error_port_lt_1024">(Ports &lt; 1024 sind nur auf gerooteten Geräten möglich)</string>
+    <string name="error_outlet_title">Fehler</string>
+    <string name="error_outlet_config_name">Bitte geben Sie für jede Steckdose eine Bezeichnung ein.</string>
+    <string name="error_outlet_config_number">Bitte geben Sie gültige Nummern ein.</string>
+    <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
+    <string name="error_getting_first_packet">Keine Antwort vom Gerät. Entweder die Ports sind falsch konfiguriert oder das Gerät ist nicht erreichbar. Sie können versuchen, Kommandos zu schicken, aber ob\'s was nützt, ist nicht sicher.</string>
+    <string name="error_setting_outlet">Keine Antwort vom Gerät oder Sie haben keine Berechtigung, diese Steckdose zu schalten.</string>
+    
+    <string name="device_settings">Geräte-Einstellungen</string>
+    <string name="device_name">Name</string>
+    <string name="device_name_summary">Beliebige Bezeichnung für dieses Gerät.</string>
+    <string name="device_ip">Hostname or IP</string>
+    <string name="device_ip_summary">Der Hostname oder die IP-Adresse für dieses Gerät.</string>
+    <string name="device_mac">MAC Adresse</string>
+    <string name="device_mac_summary">Die MAC Adresse des Geräts.</string>
+    <string name="device_default_ports">Standard UDP-Ports?</string>
+    <string name="device_send_udp">UDP-Port zum Senden</string>
+    <string name="device_send_udp_summary">Siehe \"Empfangen\" in der Web-Oberfläche des Gerätes.</string>
+    <string name="device_recv_udp">UDP-Port zum Empfangen</string>
+    <string name="device_recv_udp_summary">Siehe \"Senden\" in der Web-Oberfläche des Gerätes.</string>
+    <string name="device_username">Benutzername</string>
+    <string name="device_username_summary">Benutzername zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
+    <string name="device_password">Passwort</string>
+    <string name="device_password_summary">Passwort zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
+    <string name="device_outlets">Steckdosen</string>
+    <string name="device_outlets_summary">Konfiguration der einzelnen Steckdosen des Gerätes</string>
+
+    <string name="menu_add_device">Neues Gerät</string>
+    <string name="menu_add_scene">Neue Szene</string>
+    <string name="menu_remove_scene">Szene entfernen</string>
+    <string name="menu_cancel">Abbruch</string>
+    <string name="menu_delete_all">Alle löschen</string>
+    <string name="menu_refresh">Aktualisieren</string>
+    
+    <string name="default_device_name">Neues Gerät</string>
+    <string name="copy_of">Kopie von %s</string>
+
+    <string name="confirmation_delete_device">Sind Sie sicher, dass Sie dieses Gerät löschen wollen?</string>
+    <string name="confirmation_delete_all_devices">Sind Sie sicher, dass Sie alle Geräte löschen wollen?</string>
+
+    <string name="preference_standard_send_port">Standard UDP-Port zum Senden</string>
+    <string name="preference_standard_send_port_summary">Anfragen werden standardmäßig an diesen Port gesendet. (Dies entspricht dem \"Empfangen\"-Port im Web-Interface des Gerätes)</string>
+    <string name="preference_standard_recv_port">Standard UDP-Port zum Empfangen</string>
+    <string name="preference_standard_recv_port_summary">Die Applikation empfängt Antworten auf diesem Port (und an allen individuellen Ports der konfigurierten Geräte). Dies entspricht dem \"Senden\"-Port im Web-Interface des Gerätes</string>
+    
+    <string name="outlet_name">Bezeichnung</string>
+    <string name="outlet_numbers">Nr.</string>
+    <string name="outlet_delete">Löschen</string>
+    
+    <string name="choose_widget_device">Bitte wählen Sie ein Gerät für dieses Widget</string>
+    <string name="choose_shortcut_outlets">Erstelle Shortcut/Gruppe</string>
+    <string name="all_outlets">Steckdosen</string>
+    <string name="groups">Gruppen</string>
+
+    <string name="groupname">Gruppename</string>
+    <string name="groupname_long">Bitte geben Sie einen neuen Gruppennamen ein</string>
+    <string name="shortcut_show_mainwindow">Zeige Hauptfenster</string>
+    <string name="delete_all_groups">Alle Gruppen löschen?</string>
+    <string name="confirmation_delete_all_groups">Sind Sie sicher, dass Sie alle Gruppen löschen wollen?</string>
+
+    <string name="bug_reports">Fehler melden / Quellcode</string>
+    <string name="rate_and_comment">In Google Play bewerten</string>
+
+    <string name="off">Aus</string>
+    <string name="on">An</string>
+    <string name="toggle">Wechsel</string>
+    
+    <string-array name="shortcutchoices">
+        <item>Ignorieren</item>
+        <item>Aussschalten</item>
+        <item>Einschalten</item>
+        <item>Umschalten</item>
+    </string-array>
+
+    <string-array name="drawer_titles">
+        <item>Steckdosen</item>
+        <item>Alle Steckdosen</item>
+        <item>Szenen</item>
+        <item>Geräte</item>
+        <item>Neue Geräte einrichten</item>
+        <item>Eingerichtete Geräte</item>
+        <item>App</item>
+        <item>Einstellungen</item>
+        <item>Hilfe</item>
+        <item>Über</item>
+    </string-array>
+    <string-array name="drawer_descriptions">
+        <item>-</item>
+        <item>Einzelne Steckdose schalten</item>
+        <item>Mehrere Steckdosen zugleich schalten</item>
+        <item>-</item>
+        <item></item>
+        <item></item>
+        <item>-</item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string name="drawer_open">Öffne Navigationsleiste</string>
+    <string name="drawer_close">Schließe Navigationsleiste</string>
+</resources>
