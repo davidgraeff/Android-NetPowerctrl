@@ -13,25 +13,38 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.utils.MenuConfigureEvent;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.service.DeviceUpdated;
+import oly.netpowerctrl.utils.ListItemMenu;
 
-public class DeviceListAdapter extends BaseAdapter implements OnClickListener {
+public class DeviceListAdapter extends BaseAdapter implements OnClickListener, DeviceUpdated {
 
-    private MenuConfigureEvent menuConfigureEvent = null;
+    private ListItemMenu listItemMenu = null;
 
     private List<DeviceInfo> all_devices;
     private LayoutInflater inflater;
 
-    public DeviceListAdapter(Context context, List<DeviceInfo> devices) {
+    public DeviceListAdapter(Context context, boolean showNewDevices) {
         inflater = LayoutInflater.from(context);
-        all_devices = devices;
+        if (showNewDevices) {
+            all_devices = NetpowerctrlApplication.instance.newDevices;
+            NetpowerctrlApplication.instance.registerNewDeviceObserver(this);
+        } else {
+            all_devices = NetpowerctrlApplication.instance.configuredDevices;
+            NetpowerctrlApplication.instance.registerConfiguredObserver(this);
+
+        }
+    }
+
+    public List<DeviceInfo> getDevices() {
+        return all_devices;
     }
 
     public int getCount() {
         return all_devices.size();
     }
 
-    public Object getItem(int position) {
+    public DeviceInfo getItem(int position) {
         return all_devices.get(position);
     }
 
@@ -71,20 +84,24 @@ public class DeviceListAdapter extends BaseAdapter implements OnClickListener {
         update();
     }
 
-    public void setMenuConfigureEvent(MenuConfigureEvent dce) {
-        menuConfigureEvent = dce;
+    public void setListItemMenu(ListItemMenu dce) {
+        listItemMenu = dce;
     }
 
     @Override
     public void onClick(View v) {
-        if (menuConfigureEvent != null) {
+        if (listItemMenu != null) {
             int position = (Integer) v.getTag();
-            menuConfigureEvent.onConfigure(v, position);
+            listItemMenu.onMenuItemClicked(v, position);
         }
     }
 
-    public void update() {
+    void update() {
         notifyDataSetChanged();
     }
 
+    @Override
+    public void onDeviceUpdated(DeviceInfo di) {
+        notifyDataSetChanged();
+    }
 }

@@ -5,11 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.network.UDPSendToDevice;
 
-public class ShortcutExecutionActivity extends Activity {
+class ShortcutExecutionActivity extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,17 +21,18 @@ public class ShortcutExecutionActivity extends Activity {
         }
 
         Bundle extra = it.getExtras();
-        @SuppressWarnings("null")
+        //TODO get all devices from application, force update before sending
+        assert extra != null;
         OutletCommandGroup g = OutletCommandGroup.fromString(extra.getString("commands"), this);
         if (g == null) {
-            Toast.makeText(this, "Shortcut not valid!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (UDPSendToDevice.sendOutlet(this, g))
-            setResult(RESULT_OK, null);
+        UDPSendToDevice.sendOutlet(this, g);
+        setResult(RESULT_OK, null);
 
-        if (extra.getBoolean("show_mainwindow")) {
+        if (extra.getBoolean("show_mainWindow")) {
             Intent mainIt = new Intent(this, NetpowerctrlActivity.class);
             startActivity(mainIt);
         }

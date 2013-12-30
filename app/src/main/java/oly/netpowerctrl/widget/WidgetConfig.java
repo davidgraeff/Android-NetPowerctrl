@@ -16,12 +16,12 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
-public class WidgetConfig extends Activity {
-    Context ctx;
-    int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    List<DeviceInfo> devices;
-    List<OutletInfo> outlets;
-    String selectedDeviceMac;
+class WidgetConfig extends Activity {
+    private Context ctx;
+    private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    private List<DeviceInfo> devices;
+    private List<OutletInfo> outlets;
+    private String selectedDeviceMac;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,7 +49,7 @@ public class WidgetConfig extends Activity {
         alert.show();
     }
 
-    protected DialogInterface.OnCancelListener cancelListener = new OnCancelListener() {
+    private DialogInterface.OnCancelListener cancelListener = new OnCancelListener() {
         public void onCancel(DialogInterface dialog) {
             finish();
         }
@@ -80,7 +80,7 @@ public class WidgetConfig extends Activity {
 
             SharedPrefs.SaveWidget(ctx, widgetId, selectedDeviceMac, item);
 
-            WidgetUpdate.WidgetUpdate(ctx, widgetId);
+            WidgetUpdate.Update(ctx, widgetId);
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);

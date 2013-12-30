@@ -6,27 +6,24 @@
     <string name="copy_device">Kopieren</string>
     <string name="delete_device">Löschen</string>
     <string name="delete_all_devices">Alle löschen</string>
-    <string name="requery">Erkennung neu starten</string>
+
     <string name="add_to_configured_devices">Zu konfigurierten Geräten hinzufügen</string>
-    <string name="test_device">Test</string>
     <string name="error_reading_configured_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
     <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
-    <string name="suggest_enter_username_password">Sie müssen wahrscheinlich in den Geräteeinstellungen den Benutzerame und Passwort eingeben.</string>
     <string name="error_sending_inquiry">Fehler beim Senden des Erkennungs-Pakets</string>
     <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
-    <string name="error_outlet_number">Fehler in der Konfiguration: dieses Gerät hat keine ID!</string>
     <string name="error_packet_received">Fehler vom Gerät empfangen: </string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
     <string name="error_edited_device_not_found">Interner Programmfehler: editiertes Gerät nicht gefunden!</string>
     <string name="error_listen_thread_exception">Kann nicht Port %d zum Empfangen öffnen:\n</string>
     <string name="error_port_lt_1024">(Ports &lt; 1024 sind nur auf gerooteten Geräten möglich)</string>
     <string name="error_outlet_title">Fehler</string>
-    <string name="error_outlet_config_name">Bitte geben Sie für jede Steckdose eine Bezeichnung ein.</string>
-    <string name="error_outlet_config_number">Bitte geben Sie gültige Nummern ein.</string>
     <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
     <string name="error_getting_first_packet">Keine Antwort vom Gerät. Entweder die Ports sind falsch konfiguriert oder das Gerät ist nicht erreichbar. Sie können versuchen, Kommandos zu schicken, aber ob\'s was nützt, ist nicht sicher.</string>
     <string name="error_setting_outlet">Keine Antwort vom Gerät oder Sie haben keine Berechtigung, diese Steckdose zu schalten.</string>
+    <string name="error_shortcut_not_valid">Verknüpfung beschädigt!</string>
 
+    <string name="device_test">Test</string>
     <string name="device_settings">Geräte-Einstellungen</string>
     <string name="device_name">Name</string>
     <string name="device_name_summary">Beliebige Bezeichnung für dieses Gerät.</string>
@@ -123,7 +120,8 @@
     <string name="menu_unhide_outlet">Einblenden</string>
     <string name="menu_up">Hoch</string>
     <string name="menu_down">Runter</string>
-    <string name="menu_rename_outlet">Umbennenen</string>
-    <string name="outlet_rename_title">Steckdose umbennenen</string>
+    <string name="menu_rename_outlet">Umbenennen</string>
+    <string name="outlet_rename_title">Steckdose Umbenennen</string>
     <string name="outlet_rename_message">Der Name gilt nur für dieses Handy/Tablet und wird zurückgesetzt, sobald der Name auf der Anel Steckdosenleiste verändert wird. Nutzte einen leeren Text um den Namen zurückzusetzten.</string>
+    <string name="name">Name</string>
 </resources>

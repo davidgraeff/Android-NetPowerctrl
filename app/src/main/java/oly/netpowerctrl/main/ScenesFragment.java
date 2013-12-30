@@ -18,12 +18,12 @@ import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.listadapter.ScenesListAdapter;
 import oly.netpowerctrl.shortcut.ShortcutCreatorActivity;
 import oly.netpowerctrl.utils.GridOrListFragment;
-import oly.netpowerctrl.utils.MenuConfigureEvent;
+import oly.netpowerctrl.utils.ListItemMenu;
 
 /**
  */
-public class ScenesFragment extends GridOrListFragment implements MenuConfigureEvent, PopupMenu.OnMenuItemClickListener {
-    final static int ACTIVITY_REQUEST_ADDGROUP = 12;
+public class ScenesFragment extends GridOrListFragment implements ListItemMenu, PopupMenu.OnMenuItemClickListener {
+    private final static int ACTIVITY_REQUEST_ADDGROUP = 12;
 
     public ScenesFragment() {
     }
@@ -70,7 +70,8 @@ public class ScenesFragment extends GridOrListFragment implements MenuConfigureE
             Bundle shortcut_bundle = data.getExtras();
             Intent groupIntent = shortcut_bundle.getParcelable(Intent.EXTRA_SHORTCUT_INTENT);
             shortcut_bundle = groupIntent.getExtras();
-            OutletCommandGroup og = OutletCommandGroup.fromString(shortcut_bundle.getString("commands"), getActivity());
+            OutletCommandGroup og = OutletCommandGroup.fromString(shortcut_bundle.getString("commands"),
+                    getActivity());
             NetpowerctrlActivity._this.adapterUpdateManger.adpGroups.addScene(og);
         }
     }
@@ -87,7 +88,7 @@ public class ScenesFragment extends GridOrListFragment implements MenuConfigureE
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
         ScenesListAdapter adapter = NetpowerctrlActivity._this.adapterUpdateManger.adpGroups;
-        adapter.setMenuConfigureEvent(this);
+        adapter.setListItemMenu(this);
 
         mListView.setAdapter(adapter);
         setAutoCheckDataAvailable(true);
@@ -95,7 +96,7 @@ public class ScenesFragment extends GridOrListFragment implements MenuConfigureE
     }
 
     @Override
-    public void onConfigure(View v, int position) {
+    public void onMenuItemClicked(View v, int position) {
         mListView.setTag(position);
         PopupMenu popup = new PopupMenu(getActivity(), v);
         MenuInflater inflater = popup.getMenuInflater();

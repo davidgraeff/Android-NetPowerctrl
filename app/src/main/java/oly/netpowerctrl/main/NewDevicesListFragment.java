@@ -17,11 +17,13 @@ import oly.netpowerctrl.preferences.DevicePreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.service.DeviceQuery;
 import oly.netpowerctrl.utils.GridOrListFragment;
-import oly.netpowerctrl.utils.MenuConfigureEvent;
+import oly.netpowerctrl.utils.ListItemMenu;
 
 /**
  */
-public class NewDevicesListFragment extends GridOrListFragment implements MenuConfigureEvent {
+public class NewDevicesListFragment extends GridOrListFragment implements ListItemMenu {
+    private DeviceListAdapter adapter;
+
     public NewDevicesListFragment() {
     }
 
@@ -40,6 +42,7 @@ public class NewDevicesListFragment extends GridOrListFragment implements MenuCo
 
                 Fragment fragment = DevicePreferencesFragment.instantiate(getActivity());
                 FragmentManager fragmentManager = getFragmentManager();
+                assert fragmentManager != null;
                 fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
                 return true;
             }
@@ -64,8 +67,8 @@ public class NewDevicesListFragment extends GridOrListFragment implements MenuCo
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        DeviceListAdapter adapter = NetpowerctrlActivity._this.adapterUpdateManger.adpNewDevices;
-        adapter.setMenuConfigureEvent(this);
+        adapter = NetpowerctrlActivity._this.adapterUpdateManger.adpNewDevices;
+        adapter.setListItemMenu(this);
 
         mListView.setAdapter(adapter);
         setAutoCheckDataAvailable(true);
@@ -73,13 +76,14 @@ public class NewDevicesListFragment extends GridOrListFragment implements MenuCo
     }
 
     @Override
-    public void onConfigure(View v, int position) {
-        DeviceInfo di = NetpowerctrlActivity._this.adapterUpdateManger.newDevices.get(position);
+    public void onMenuItemClicked(View v, int position) {
+        DeviceInfo di = adapter.getItem(position);
 
         SharedPrefs.SaveTempDevice(getActivity(), di);
 
         Fragment fragment = DevicePreferencesFragment.instantiate(getActivity());
         FragmentManager fragmentManager = getFragmentManager();
+        assert fragmentManager != null;
         fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
     }
 }

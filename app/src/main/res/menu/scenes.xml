@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/menu_add_scene"
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_add_scene"
         android:title="@string/menu_add_scene"
-        android:showAsAction="always"
+        android:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_add"></item>
 
-    <item android:id="@+id/menu_remove_scene"
+    <item
+        android:id="@+id/menu_remove_scene"
         android:title="@string/menu_remove_scene"
-        android:showAsAction="always"
+        android:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_delete"></item>
 </menu>
