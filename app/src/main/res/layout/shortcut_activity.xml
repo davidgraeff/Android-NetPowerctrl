@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <ListView
         android:id="@+id/lvOutletSelect"
@@ -10,7 +10,7 @@
         android:layout_height="0dp"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
-        android:layout_weight="1" >
+        android:layout_weight="1">
 
     </ListView>
 
@@ -18,37 +18,69 @@
         android:id="@+id/shortcut_show_mainwindow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-    	android:layout_marginBottom="5dp"
-    	android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:paddingLeft="16dip"
         android:text="@string/shortcut_show_mainwindow" />
-    
-        
-    <LinearLayout 
-	    style="?android:attr/buttonBarStyle"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:gravity="bottom|right"
-	    android:padding="5dp"
-	    android:orientation="horizontal" >
-	    
-	    <Button
-	        style="?android:attr/buttonBarButtonStyle"
-	        android:id="@+id/btnCancelShortcut"
-	        android:layout_width="0dp"
-        	android:layout_height="wrap_content"
-        	android:layout_weight="1"
-        	android:text="@android:string/cancel"
-	        android:drawableLeft="@drawable/ic_menu_close_clear_cancel" />
 
-	    <Button
-	        style="?android:attr/buttonBarButtonStyle"
-	        android:id="@+id/btnAcceptShortcut"
-	        android:layout_width="0dp"
-        	android:layout_height="wrap_content"
-        	android:layout_weight="1"
-        	android:text="@android:string/ok"
-	        android:drawableLeft="@android:drawable/ic_menu_save" />
+    <LinearLayout
+        android:paddingLeft="16dip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-   	</LinearLayout>
-    
+        <TextView
+            android:text="Name: "
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center_vertical" />
+
+        <EditText
+            android:id="@+id/shortcut_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Name"
+            android:imeOptions="actionNext"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/shortcut_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp" />
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="bottom|right"
+        android:padding="5dp"
+        android:orientation="horizontal">
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/btnCancelShortcut"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@android:string/cancel"
+            android:drawableLeft="@drawable/ic_menu_close_clear_cancel" />
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/btnAcceptShortcut"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@android:string/ok"
+            android:drawableLeft="@android:drawable/ic_menu_save" />
+
+    </LinearLayout>
+
 </LinearLayout>

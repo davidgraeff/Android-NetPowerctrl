@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Net-PwrCtrl</string>
-    
-    <string name="configured_devices">Configured Devices</string>
-    <string name="discovered_devices">Discovered Devices</string>
-    
+
     <string name="configure_device">Edit Device</string>
     <string name="copy_device">Copy Device</string>
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
+
     <string name="requery">Re-start discovery</string>
     <string name="add_to_configured_devices">Add to configured devices</string>
     <string name="test_device">Test</string>
@@ -29,7 +27,7 @@
     <string name="error_port_config_number">Please enter only valid port numbers.</string>
     <string name="error_getting_first_packet">No answer from the device. Either the ports are not configured correctly or it is out of reach. You may try sending comands, but the result is uncertain.</string>
     <string name="error_setting_outlet">No answer from the device or you don\'t gave the required permission to switch the outlet.</string>
-    
+
     <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>
     <string name="device_name_summary">Custom description of this device.</string>
@@ -48,39 +46,36 @@
     <string name="device_password_summary">The password to log in to the device.</string>
     <string name="device_outlets">Outlets</string>
     <string name="device_outlets_summary">Configure this device\'s outlets</string>
-    
+
     <string name="menu_add_device">Add device</string>
     <string name="menu_add_scene">Add scene</string>
-    <string name="menu_remove_scene">Delete scene</string>
+    <string name="menu_remove_scene">Delete</string>
+    <string name="menu_edit_scene">Edit</string>
+    <string name="menu_backup_scene">Backup</string>
     <string name="menu_cancel">Cancel</string>
     <string name="menu_delete_all">Delete all</string>
     <string name="menu_refresh">Refresh</string>
-    
+
     <string name="default_device_name">New device</string>
-    <string name="copy_of">Copy of %s</string>
 
     <string name="confirmation_delete_device">Delete all devices?</string>
     <string name="confirmation_delete_all_devices">Are you sure you want to delete all devices?</string>
-    
+
     <string name="preference_standard_send_port">Standard UDP port for sending queries</string>
     <string name="preference_standard_send_port_summary">Queries will be sent to this port. (This corresponds to the \"RECEIVE\" port in the device\'s web interface)</string>
     <string name="preference_standard_recv_port">Standard UDP port for receiving from the device</string>
     <string name="preference_standard_recv_port_summary">The application will listen on this port for answers (and on each port of your configured devices, if any). This corresponds to the \"SEND\" port in the device\'s web interface</string>
-    
-    <string name="outlet_name">Name</string>
-    <string name="outlet_numbers">Number</string>
-    <string name="outlet_delete">Delete</string>
-    
-    <string name="choose_widget_device">Please choose a device for this widget</string>
-    <string name="choose_shortcut_outlets">Create Shortcut/Group</string>
-    <string name="all_outlets">Outlets</string>
-    <string name="groups">Groups</string>
 
-    <string name="groupname">Group name</string>
-    <string name="groupname_long">Please enter a new group name</string>
+    <string name="choose_widget_device">Please choose a device for this widget</string>
+    <string name="choose_widget_outlet">Please choose an outlet for this widget</string>
+    <string name="title_shortcut">Create Shortcut</string>
+    <string name="title_scene">Create scene</string>
+
+    <string name="configure_scene">Edit Scene</string>
+    <string name="scenename">Group name</string>
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
-    <string name="delete_all_groups">Delete all groups?</string>
-    <string name="confirmation_delete_all_groups">Are you sure you want to delete all groups?</string>
+    <string name="delete_all_groups">Delete all scenes?</string>
+    <string name="confirmation_delete_all_groups">Are you sure you want to delete all scenes?</string>
 
     <string name="bug_reports">Bug reports and Source code</string>
     <string name="rate_and_comment">Rate in Google Play</string>
@@ -88,7 +83,7 @@
     <string name="off">Off</string>
     <string name="on">On</string>
     <string name="toggle">Toggle</string>
-    
+
     <string-array name="shortcutchoices">
         <item>No change</item>
         <item>Switch off</item>
@@ -113,13 +108,23 @@
         <item>Switch single outlet</item>
         <item>Switch multiple grouped outlets</item>
         <item>-</item>
-        <item></item>
-        <item></item>
+        <item />
+        <item />
         <item>-</item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item />
+        <item />
+        <item />
     </string-array>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="empty">No content to show</string>
+    <string name="show_hidden">Show hidden</string>
+    <string name="hide_hidden">Hide hidden</string>
+    <string name="menu_hide_outlet">Hide</string>
+    <string name="menu_unhide_outlet">Unhide</string>
+    <string name="menu_up">Move up</string>
+    <string name="menu_down">Move down</string>
+    <string name="menu_rename_outlet">Rename</string>
+    <string name="outlet_rename_title">Rename outlet</string>
+    <string name="outlet_rename_message">The name is local to this device only and will be reset if you rename this outlet on your anel device. Use an empty name to fall back to the default.</string>
 </resources>

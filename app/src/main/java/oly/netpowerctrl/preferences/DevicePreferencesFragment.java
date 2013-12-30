@@ -1,7 +1,6 @@
 package oly.netpowerctrl.preferences;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -14,27 +13,18 @@ import android.widget.Toast;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.service.DeviceQuery;
-import oly.netpowerctrl.utils.DeviceInfo;
-import oly.netpowerctrl.utils.SharedPrefs;
 
 /**
  */
-public class DevicePreferencesDialog extends PreferenceFragment {
+public class DevicePreferencesFragment extends PreferenceFragment {
     private static final String ARG_PARAM1 = "prefname";
     private String prefname = null;
 
-    public DevicePreferencesDialog() {}
-
-    public static DevicePreferencesDialog instantiateEdit(Context ctx, String prefname) {
-        DevicePreferencesDialog fragment = (DevicePreferencesDialog)Fragment.instantiate(ctx, DevicePreferencesDialog.class.getName());
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, SharedPrefs.getFullPrefname(prefname));
-        fragment.setArguments(args);
-        return fragment;
+    public DevicePreferencesFragment() {
     }
 
-    public static DevicePreferencesDialog instantiateNew(Context ctx) {
-        DevicePreferencesDialog fragment = (DevicePreferencesDialog)Fragment.instantiate(ctx, DevicePreferencesDialog.class.getName());
+    public static DevicePreferencesFragment instantiate(Context ctx) {
+        DevicePreferencesFragment fragment = (DevicePreferencesFragment) Fragment.instantiate(ctx, DevicePreferencesFragment.class.getName());
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, SharedPrefs.PREF_TEMPDEVICE);
         fragment.setArguments(args);
@@ -95,12 +85,12 @@ public class DevicePreferencesDialog extends PreferenceFragment {
             }
         });
 
-        findPreference(SharedPrefs.PREF_SENDPORT+"_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        findPreference(SharedPrefs.PREF_SENDPORT + "_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                int port = -1;
+                int port;
                 try {
                     port = Integer.parseInt(newValue.toString());
-                } catch(NumberFormatException nfe) {
+                } catch (NumberFormatException nfe) {
                     Toast.makeText(getActivity(),
                             getResources().getString(R.string.error_port_config_number),
                             Toast.LENGTH_LONG).show();
@@ -113,12 +103,12 @@ public class DevicePreferencesDialog extends PreferenceFragment {
             }
         });
 
-        findPreference(SharedPrefs.PREF_RECVPORT+"_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        findPreference(SharedPrefs.PREF_RECVPORT + "_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 int port = -1;
                 try {
                     port = Integer.parseInt(newValue.toString());
-                } catch(NumberFormatException nfe) {
+                } catch (NumberFormatException nfe) {
                     Toast.makeText(getActivity(),
                             getResources().getString(R.string.error_port_config_number),
                             Toast.LENGTH_LONG).show();

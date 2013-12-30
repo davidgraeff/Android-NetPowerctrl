@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/menu_requery"
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_requery"
         android:title="@string/requery"
         android:showAsAction="always"
-        android:icon="@android:drawable/ic_menu_search"></item>
+        android:icon="@drawable/ic_menu_refresh" />
+    <item
+        android:id="@+id/menu_showhidden"
+        android:title="@string/show_hidden"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_action_split" />
+    <item
+        android:id="@+id/menu_hidehidden"
+        android:title="@string/hide_hidden"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_action_merge" />
 </menu>

@@ -9,53 +9,49 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
-import android.widget.PopupMenu;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.preferences.DevicePreferencesDialog;
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.listadapter.DeviceListAdapter;
+import oly.netpowerctrl.preferences.DevicePreferencesFragment;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.service.DeviceQuery;
-import oly.netpowerctrl.utils.DeviceConfigureEvent;
-import oly.netpowerctrl.utils.DeviceInfo;
-import oly.netpowerctrl.utils.SharedPrefs;
+import oly.netpowerctrl.utils.GridOrListFragment;
+import oly.netpowerctrl.utils.MenuConfigureEvent;
 
 /**
  */
-public class NewDevicesListFragment extends Fragment implements AbsListView.OnItemClickListener, DeviceConfigureEvent {
-    private AbsListView mListView;
-
+public class NewDevicesListFragment extends GridOrListFragment implements MenuConfigureEvent {
     public NewDevicesListFragment() {
     }
 
     @Override
     public void onCreateOptionsMenu(
-        Menu menu, MenuInflater inflater) {
+            Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.unconfigured_device, menu);
     }
 
     @Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.menu_add_device: {
-            DeviceInfo di = new DeviceInfo(getActivity());
-            SharedPrefs.SaveTempDevice(getActivity(), di);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_add_device: {
+                DeviceInfo di = new DeviceInfo(getActivity());
+                SharedPrefs.SaveTempDevice(getActivity(), di);
 
-            Fragment fragment = DevicePreferencesDialog.instantiateNew(getActivity());
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
-            return true;
-		}
+                Fragment fragment = DevicePreferencesFragment.instantiate(getActivity());
+                FragmentManager fragmentManager = getFragmentManager();
+                fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
+                return true;
+            }
 
-		case R.id.menu_requery: {
-	    	DeviceQuery.sendBroadcastQuery(getActivity());
-			return true;
-		}
+            case R.id.menu_requery: {
+                DeviceQuery.sendBroadcastQuery(getActivity());
+                return true;
+            }
 
-		}
-		return false;
-	}
+        }
+        return false;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,34 +62,23 @@ public class NewDevicesListFragment extends Fragment implements AbsListView.OnIt
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item, container, false);
+        View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(NetpowerctrlActivity._this.adapterUpdateManger.adpNewDevices);
+        DeviceListAdapter adapter = NetpowerctrlActivity._this.adapterUpdateManger.adpNewDevices;
+        adapter.setMenuConfigureEvent(this);
 
-        // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
-
-        NetpowerctrlActivity._this.adapterUpdateManger.adpNewDevices.setDeviceConfigureEvent(this);
-
+        mListView.setAdapter(adapter);
+        setAutoCheckDataAvailable(true);
         return view;
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-    }
-
-    @Override
-    public void onConfigureDevice(View v, int position) {
-        PopupMenu popup = new PopupMenu(getActivity(), v);
-        MenuInflater inflater = popup.getMenuInflater();
+    public void onConfigure(View v, int position) {
         DeviceInfo di = NetpowerctrlActivity._this.adapterUpdateManger.newDevices.get(position);
 
         SharedPrefs.SaveTempDevice(getActivity(), di);
 
-        Fragment fragment = DevicePreferencesDialog.instantiateNew(getActivity());
+        Fragment fragment = DevicePreferencesFragment.instantiate(getActivity());
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
     }

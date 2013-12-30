@@ -8,10 +8,8 @@
     <item format="integer" name="menu_requery" type="id">100050</item>
     <item format="integer" name="menu_preferences" type="id">100051</item>
     <item format="integer" name="menu_refresh" type="id">100054</item>
-    
+
     <item format="integer" name="default_send_port" type="integer">1075</item>
     <item format="integer" name="default_recv_port" type="integer">1077</item>
-    
-    <item format="string" name="setting_outlets" type="string">setting_outlets</item>
-    
+
 </resources>
