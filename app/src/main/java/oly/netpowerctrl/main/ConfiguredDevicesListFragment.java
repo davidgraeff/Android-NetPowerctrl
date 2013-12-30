@@ -11,22 +11,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.PopupMenu;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.preferences.DevicePreferencesDialog;
-import oly.netpowerctrl.utils.DeviceConfigureEvent;
-import oly.netpowerctrl.utils.DeviceInfo;
-import oly.netpowerctrl.utils.SharedPrefs;
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.listadapter.DeviceListAdapter;
+import oly.netpowerctrl.preferences.DevicePreferencesFragment;
+import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.GridOrListFragment;
+import oly.netpowerctrl.utils.MenuConfigureEvent;
 
 /**
  */
-public class ConfiguredDevicesListFragment extends Fragment implements AbsListView.OnItemClickListener, PopupMenu.OnMenuItemClickListener, DeviceConfigureEvent {
-    private AbsListView mListView;
-
+public class ConfiguredDevicesListFragment extends GridOrListFragment implements PopupMenu.OnMenuItemClickListener, MenuConfigureEvent {
     public ConfiguredDevicesListFragment() {
     }
 
@@ -45,24 +42,15 @@ public class ConfiguredDevicesListFragment extends Fragment implements AbsListVi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item, container, false);
+        View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(NetpowerctrlActivity._this.adapterUpdateManger.adpConfiguredDevices);
+        DeviceListAdapter adapter = NetpowerctrlActivity._this.adapterUpdateManger.adpConfiguredDevices;
+        adapter.setMenuConfigureEvent(this);
 
-        // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
-
-        NetpowerctrlActivity._this.adapterUpdateManger.adpConfiguredDevices.setDeviceConfigureEvent(this);
-
+        mListView.setAdapter(adapter);
+        setAutoCheckDataAvailable(true);
         return view;
     }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -77,7 +65,8 @@ public class ConfiguredDevicesListFragment extends Fragment implements AbsListVi
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all devices
                                 NetpowerctrlActivity._this.adapterUpdateManger.deleteAllConfiguredDevices();
-                            }})
+                            }
+                        })
                         .setNegativeButton(android.R.string.no, null).show();
 
                 return true;
@@ -89,54 +78,49 @@ public class ConfiguredDevicesListFragment extends Fragment implements AbsListVi
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-  		final int position = (Integer)mListView.getTag();
-  		DeviceInfo current_device = NetpowerctrlActivity._this.adapterUpdateManger.configuredDevices.get(position);
+        final int position = (Integer) mListView.getTag();
+        DeviceInfo current_device = NetpowerctrlActivity._this.adapterUpdateManger.configuredDevices.get(position);
 
-  	    switch (menuItem.getItemId()) {
-  	    case R.id.menu_configure_device: {
-            SharedPrefs.SaveTempDevice(getActivity(), current_device);
+        switch (menuItem.getItemId()) {
+            case R.id.menu_configure_device: {
+                SharedPrefs.SaveTempDevice(getActivity(), current_device);
 
-            Fragment fragment = DevicePreferencesDialog.instantiateNew(getActivity());
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
-			return true;
-  		}
+                Fragment fragment = DevicePreferencesFragment.instantiate(getActivity());
+                FragmentManager fragmentManager = getFragmentManager();
+                fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
+                return true;
+            }
 
-  	    case R.id.menu_delete_device: {
-  	    	if (!current_device.isConfigured())
-  	    		return true;
+            case R.id.menu_delete_device: {
+                if (!current_device.isConfigured())
+                    return true;
 
-			new AlertDialog.Builder(getActivity())
-				.setTitle(R.string.delete_device)
-				.setMessage(R.string.confirmation_delete_device)
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-				    public void onClick(DialogInterface dialog, int whichButton) {
-                        NetpowerctrlActivity._this.adapterUpdateManger.deleteDevice(position);
-				    }})
-				 .setNegativeButton(android.R.string.no, null).show();
-			return true;
-  		}
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.delete_device)
+                        .setMessage(R.string.confirmation_delete_device)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                NetpowerctrlActivity._this.adapterUpdateManger.deleteDevice(position);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null).show();
+                return true;
+            }
 
-  	    case R.id.menu_copy_device: {
-            NetpowerctrlActivity._this.adapterUpdateManger.CopyDevice(current_device);
-			return true;
-  		}
-
-  	    default:
-  	    	return false;
-  	    }
+            default:
+                return false;
+        }
     }
 
     @Override
-    public void onConfigureDevice(View v, int position) {
+    public void onConfigure(View v, int position) {
         mListView.setTag(position);
-		PopupMenu popup = new PopupMenu(getActivity(), v);
-	    MenuInflater inflater = popup.getMenuInflater();
-		DeviceInfo current_device = NetpowerctrlActivity._this.adapterUpdateManger.configuredDevices.get(position);
+        PopupMenu popup = new PopupMenu(getActivity(), v);
+        MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.configured_device_item, popup.getMenu());
 
-		popup.setOnMenuItemClickListener(this);
-	    popup.show();
+        popup.setOnMenuItemClickListener(this);
+        popup.show();
     }
 }

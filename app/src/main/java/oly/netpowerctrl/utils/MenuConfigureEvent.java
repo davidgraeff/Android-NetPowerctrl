@@ -2,8 +2,7 @@ package oly.netpowerctrl.utils;
 
 import android.view.View;
 
-public interface DeviceConfigureEvent
-{
+public interface MenuConfigureEvent {
     // Request this device to be configured
-    public void onConfigureDevice (View v, int position);
+    public void onConfigure(View v, int position);
 }

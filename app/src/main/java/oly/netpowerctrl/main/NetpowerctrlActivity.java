@@ -32,7 +32,6 @@ import android.os.Parcelable;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -42,14 +41,12 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.listadapter.AdapterUpdateManager;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
 import oly.netpowerctrl.preferences.PreferencesFragment;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.service.DeviceQuery;
 import oly.netpowerctrl.service.NetpowerctrlService;
-import oly.netpowerctrl.utils.OutletCommandGroup;
-import oly.netpowerctrl.utils.SharedPrefs;
 
 public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static NetpowerctrlActivity _this = null;
-    final static int ACTIVITY_REQUEST_ADDGROUP = 12;
 
     // NFC
     private NfcAdapter mNfcAdapter;
@@ -64,7 +61,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
     // Core
     public AdapterUpdateManager adapterUpdateManger;
-
 
 
     @Override
@@ -84,8 +80,8 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         String[] mFragmentDesc = getResources().getStringArray(R.array.drawer_descriptions);
         String[] mFragmentClasses = {
                 "",
-                OutletsListFragment.class.getName(),
-                GroupListFragment.class.getName(),
+                OutletsFragment.class.getName(),
+                ScenesFragment.class.getName(),
                 "",
                 NewDevicesListFragment.class.getName(),
                 ConfiguredDevicesListFragment.class.getName(),
@@ -95,7 +91,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
                 AboutDialog.class.getName()};
 
         mDrawerAdapter = new DrawerAdapter(this);
-        for (int i=0;i< mFragmentNames.length;++i) {
+        for (int i = 0; i < mFragmentNames.length; ++i) {
             if (mFragmentDesc[i].equals("-")) {
                 mDrawerAdapter.addHeader(mFragmentNames[i]);
             } else {
@@ -118,7 +114,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
                 R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
                 R.string.drawer_open,  /* "open drawer" description for accessibility */
                 R.string.drawer_close  /* "close drawer" description for accessibility */
-                ) {
+        ) {
             public void onDrawerClosed(View view) {
                 getActionBar().setTitle(mTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
@@ -134,7 +130,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         // Restore the last visited screen
         if (savedInstanceState == null) {
             int pos = SharedPrefs.getFirstTab(this);
-            if (pos==-1)
+            if (pos == -1)
                 pos = indexOf(HelpFragment.class.getName(), mFragmentClasses);
             selectItem(pos);
         } else {
@@ -169,34 +165,33 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     public NdefMessage createNdefMessage(NfcEvent event) {
         String text = ("Beam me up, Android!\n\n" +
                 "Beam Time: " + System.currentTimeMillis());
-        NdefMessage msg = new NdefMessage(
-                        NdefRecord.createApplicationRecord("oly.netpowerctrl"),
-                        NdefRecord.createMime("application/oly.netpowerctrl", text.getBytes())
-                );
-        return msg;
+        //TODO nfc send
+        return new NdefMessage(
+                NdefRecord.createApplicationRecord("oly.netpowerctrl"),
+                NdefRecord.createMime("application/oly.netpowerctrl", text.getBytes())
+        );
     }
 
     @Override
     public void onResume() {
         super.onResume();
         // Check to see that the Activity started due to an Android Beam
-        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
+        String intentAction = getIntent().getAction();
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intentAction)) {
             Intent intent = getIntent();
             Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                     NfcAdapter.EXTRA_NDEF_MESSAGES);
             // only one message sent during the beam
             NdefMessage msg = (NdefMessage) rawMsgs[0];
             String beamedDeviceConfigurations = new String(msg.getRecords()[1].getPayload());
+            //TODO nfc read
         }
 
         // we may be returning from a configure dialog
         adapterUpdateManger.updateConfiguredDevices();
         adapterUpdateManger.start();
 
-        Intent it = new Intent(this, NetpowerctrlService.class);
-        it.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        startService(it);
-
+        startService(new Intent(this, NetpowerctrlService.class));
         DeviceQuery.sendBroadcastQuery(this);
     }
 
@@ -207,40 +202,12 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //MenuInflater inflater = getMenuInflater();
-        //inflater.inflate(R.menu.outlets, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    /* Called whenever we call invalidateOptionsMenu() */
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        // If the nav drawer is open, hide action items related to the content view
-        //boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        //menu.findItem(R.id.menu_test11).setVisible(!drawerOpen);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-         // The action bar home/up action should open or close the drawer.
-         // ActionBarDrawerToggle will take care of this.
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        // Handle action buttons
-        switch(item.getItemId()) {
-
-        default:
-            return super.onOptionsItemSelected(item);
-        }
+        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     /* The click listener for ListView in the navigation drawer */
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
-
-
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             selectItem(position);
@@ -248,7 +215,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     }
 
     private void selectItem(int position) {
-        if (mDrawerAdapter.getItemViewType(position)==0)
+        if (mDrawerAdapter.getItemViewType(position) == 0)
             return;
         DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(position);
         if (item.mClazz.equals(""))
@@ -263,7 +230,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
                 ft.remove(prev);
             }
             ft.addToBackStack(null);
-            ((DialogFragment)fragment).show(ft, "dialog");
+            ((DialogFragment) fragment).show(ft, "dialog");
         } else {
             fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
             // update selected item and title, then close the drawer
@@ -299,21 +266,8 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ACTIVITY_REQUEST_ADDGROUP && resultCode == RESULT_OK) {
-            Bundle shortcut_bundle = data.getExtras();
-            Intent groupIntent = shortcut_bundle.getParcelable(Intent.EXTRA_SHORTCUT_INTENT);
-            shortcut_bundle = groupIntent.getExtras();
-            OutletCommandGroup og = OutletCommandGroup.fromString(shortcut_bundle.getString("commands"), this);
-            adapterUpdateManger.adpGroups.addGroup(og);
-        }
-    }
-
-    public static <T> int indexOf(T needle, T[] haystack)
-    {
-        for (int i=0; i<haystack.length; i++)
-        {
+    public static <T> int indexOf(T needle, T[] haystack) {
+        for (int i = 0; i < haystack.length; i++) {
             if (haystack[i] != null && haystack[i].equals(needle)
                     || needle == null && haystack[i] == null) return i;
         }

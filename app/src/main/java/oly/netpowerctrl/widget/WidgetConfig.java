@@ -1,11 +1,5 @@
 package oly.netpowerctrl.widget;
 
-import java.util.List;
-
-import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.DeviceInfo;
-import oly.netpowerctrl.utils.SharedPrefs;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.appwidget.AppWidgetManager;
@@ -15,53 +9,85 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
 
+import java.util.List;
+
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.preferences.SharedPrefs;
+
 public class WidgetConfig extends Activity {
+    Context ctx;
+    int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    List<DeviceInfo> devices;
+    List<OutletInfo> outlets;
+    String selectedDeviceMac;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		Intent intent = getIntent();
-		Bundle extras = intent.getExtras();
-		int tmp = AppWidgetManager.INVALID_APPWIDGET_ID;
-		if (extras != null) {
-		    tmp = extras.getInt(
-		            AppWidgetManager.EXTRA_APPWIDGET_ID, 
-		            AppWidgetManager.INVALID_APPWIDGET_ID);
-		}
-		final int widgetId = tmp;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ctx = this;
+        devices = SharedPrefs.ReadConfiguredDevices(this);
 
-		final List<DeviceInfo> devices = SharedPrefs.ReadConfiguredDevices(this);
-		final CharSequence[] items = new String[devices.size()];
-		for (int i=0; i<devices.size(); i++)
-			items[i] = devices.get(i).DeviceName;
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            widgetId = extras.getInt(
+                    AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.choose_widget_device);
-		final Context ctx = this;
-		builder.setItems(items, new DialogInterface.OnClickListener() {
-		    public void onClick(DialogInterface dialog, int item) {
-		    	SharedPrefs.SaveDevice(ctx, SharedPrefs.PREF_WIDGET_BASENAME+String.valueOf(widgetId), devices.get(item));
+        CharSequence[] items = new String[devices.size()];
+        for (int i = 0; i < devices.size(); i++)
+            items[i] = devices.get(i).DeviceName;
 
-		    	Intent updateWidget = new Intent();   
-		    	updateWidget.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-		    	updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{widgetId});
-		    	sendBroadcast(updateWidget);
-		    	
-		    	Intent resultValue = new Intent();
-		    	resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-		    	setResult(RESULT_OK, resultValue);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.choose_widget_device);
+        builder.setItems(items, selectedDeviceListener);
+        AlertDialog alert = builder.create();
+        alert.setOnCancelListener(cancelListener);
+        alert.show();
+    }
 
-		        finish();
-		    }
-		});
-		AlertDialog alert = builder.create();
-		alert.setOnCancelListener(new OnCancelListener() {
-			public void onCancel(DialogInterface dialog) {
-				finish();
-			}
-		});
-		alert.show();
-	}
+    protected DialogInterface.OnCancelListener cancelListener = new OnCancelListener() {
+        public void onCancel(DialogInterface dialog) {
+            finish();
+        }
+    };
+
+    private DialogInterface.OnClickListener selectedDeviceListener = new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int item) {
+
+            // Get outlets of device
+            outlets = devices.get(item).Outlets;
+            selectedDeviceMac = devices.get(item).MacAddress;
+
+            CharSequence[] items = new String[outlets.size()];
+            for (int i = 0; i < outlets.size(); i++)
+                items[i] = outlets.get(i).Description;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+            builder.setTitle(R.string.choose_widget_outlet);
+            builder.setItems(items, selectedOutletListener);
+            AlertDialog alert = builder.create();
+            alert.setOnCancelListener(cancelListener);
+            alert.show();
+        }
+    };
+
+    private DialogInterface.OnClickListener selectedOutletListener = new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int item) {
+
+            SharedPrefs.SaveWidget(ctx, widgetId, selectedDeviceMac, item);
+
+            WidgetUpdate.WidgetUpdate(ctx, widgetId);
+
+            Intent resultValue = new Intent();
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+            setResult(RESULT_OK, resultValue);
+
+            finish();
+        }
+    };
 
 }

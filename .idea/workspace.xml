@@ -6,7 +6,7 @@
         <option name="logLevel" value="verbose" />
         <option name="logMessagePattern" value="" />
         <option name="logTagPattern" value="" />
-        <option name="name" value="Unnamed-0" />
+        <option name="name" value="oly.netpowerctrl" />
         <option name="packageNamePattern" value="oly.netpowerctrl" />
         <option name="pid" value="" />
       </filter>
@@ -25,115 +25,61 @@
     </shared>
   </component>
   <component name="AndroidLogFilters">
-    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Unnamed-0" />
+    <option name="TOOL_WINDOW_LOG_LEVEL" value="INFO" />
+    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="oly.netpowerctrl" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="30621369-1261-4dd8-85ba-7e435b5a013d" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Android-NetPowerctrl12.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/app.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/support_v4_19_0_0.xml" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.classpath" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.project" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.settings/org.eclipse.jdt.core.prefs" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/AndroidManifest.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/libs/android-support-v4.jar" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/project.properties" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_menu_add.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_menu_close_clear_cancel.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_menu_delete.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_menu_edit.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_menu_info_details.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_menu_preferences.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/ic_menu_refresh.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/netpowerctrl.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/perm_group_network.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-hdpi/widget.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/ic_menu_add.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/ic_menu_close_clear_cancel.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/ic_menu_delete.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/ic_menu_edit.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/ic_menu_info_details.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/ic_menu_preferences.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/ic_menu_refresh.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/netpowerctrl.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/perm_group_network.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-ldpi/widget.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_menu_add.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_menu_close_clear_cancel.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_menu_delete.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_menu_edit.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_menu_info_details.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_menu_preferences.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/ic_menu_refresh.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/netpowerctrl.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/perm_group_network.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-mdpi/widget.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_menu_add.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_menu_close_clear_cancel.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_menu_delete.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_menu_edit.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_menu_info_details.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_menu_preferences.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/ic_menu_refresh.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/netpowerctrl.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/perm_group_network.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable-xhdpi/widget.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/drawable/outlet_bg.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/about.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/device_control.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/device_list_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/group_list_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/main_activity.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/outlet_config.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/outlet_config_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/outlet_list_item.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/outlet_list_switch.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/shortcut_activity.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/layout/widget.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/menu/configured_device_menu.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/menu/unconfigured_device_menu.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/raw/about.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/raw/make_drawables.sh" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/raw/outlet.svg" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/raw/outlet_bg.svg" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/raw/widget.svg" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/values-de/strings.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/values-v14/dimens.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/values-v14/theme.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/values/dimens.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/values/resources.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/values/strings.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/values/theme.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/xml/appwidget_provider.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/xml/device_preferences.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/res/xml/preferences.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/listadapter/DeviceListAdapter.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/listadapter/GroupListAdapter.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/listadapter/OutledListAdapter.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/main/AboutDialog.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/main/NetpowerctrlActivity.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/outletconfig/OutletConfig.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/outletconfig/OutletConfigAdapter.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/preferences/DevicePreferencesActivity.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/preferences/PreferencesActivity.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/service/DeviceQuery.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/service/DiscoveryThread.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/service/NetpowerctrlService.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/service/ShortcutCreatorActivity.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/service/ShortcutExecutionActivity.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/AfterSentHandler.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/DeviceConfigureEvent.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/DeviceInfo.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/GreenFlasher.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/OutletCommand.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/OutletCommandGroup.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/OutletInfo.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/SharedPrefs.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/utils/UDPSendToDevice.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/widget/DeviceWidgetProvider.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/oly/netpowerctrl/widget/WidgetConfig.java" afterPath="" />
+    <list default="true" id="30621369-1261-4dd8-85ba-7e435b5a013d" name="Default" comment="Implement missing functionality, refactor package structure&#10;* New package &quot;datastructure&quot; and &quot;network&quot;&#10;* Add icons for refresh,show hidden, hide hidden&#10;* Outlets can be renamed, can be hidden, can be reordered&#10;* Scenes can be created again (fix)&#10;* New concept for widgets&#10;&#10;Still missing:&#10;* Save scenes and configured devices as json files&#10;* Renamed outlets are not persistent (json files necessary)&#10;* NFC (json files necessary)&#10;* Widgets do not work&#10;* Device test before saving as configured device&#10;&#10;# Please enter the commit message for your changes. Lines starting&#10;# with '#' will be ignored, and an empty message aborts the commit.&#10;# Auf Zweig master&#10;# Your branch is up-to-date with 'origin/master'.&#10;#&#10;# zum Eintragen bereitgestellte Änderungen:&#10;#&#9;gelöscht:    .classpath&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/cache.properties&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/cache.properties.lock&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/fileHashes.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/fileSnapshots.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/outputFileStates.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/taskArtifacts.bin&#10;#&#9;neue Datei:   .idea/.name&#10;#&#9;neue Datei:   .idea/compiler.xml&#10;#&#9;neue Datei:   .idea/copyright/profiles_settings.xml&#10;#&#9;neue Datei:   .idea/encodings.xml&#10;#&#9;neue Datei:   .idea/gradle.xml&#10;#&#9;neue Datei:   .idea/libraries/net_simonvt_menudrawer_menudrawer_3_0_4.xml&#10;#&#9;neue Datei:   .idea/libraries/support_v4_19_0_0.xml&#10;#&#9;neue Datei:   .idea/misc.xml&#10;#&#9;neue Datei:   .idea/modules.xml&#10;#&#9;neue Datei:   .idea/scopes/scope_settings.xml&#10;#&#9;neue Datei:   .idea/vcs.xml&#10;#&#9;neue Datei:   .idea/workspace.xml&#10;#&#9;gelöscht:    .project&#10;#&#9;gelöscht:    .settings/org.eclipse.jdt.core.prefs&#10;#&#9;neue Datei:   Android-NetPowerctrl12.iml&#10;#&#9;neue Datei:   app/app.apk&#10;#&#9;neue Datei:   app/app.iml&#10;#&#9;neue Datei:   app/build.gradle&#10;#&#9;umbenannt:    AndroidManifest.xml -&gt; app/src/main/AndroidManifest.xml&#10;#&#9;umbenannt:    src/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java -&gt; app/src/main/java/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/DeviceListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/GroupListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/GroupListAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/OutledListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/OutledListAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/AboutDialog.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/GroupListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/HelpFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/OutletsListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/preferences/PreferencesActivity.java -&gt; app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/DeviceQuery.java -&gt; app/src/main/java/oly/netpowerctrl/service/DeviceQuery.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/DiscoveryThread.java -&gt; app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/NetpowerctrlService.java -&gt; app/src/main/java/oly/netpowerctrl/service/NetpowerctrlService.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/ShortcutCreatorActivity.java -&gt; app/src/main/java/oly/netpowerctrl/service/ShortcutCreatorActivity.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/ShortcutExecutionActivity.java -&gt; app/src/main/java/oly/netpowerctrl/service/ShortcutExecutionActivity.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/AfterSentHandler.java -&gt; app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/DeviceConfigureEvent.java -&gt; app/src/main/java/oly/netpowerctrl/utils/DeviceConfigureEvent.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/DeviceInfo.java -&gt; app/src/main/java/oly/netpowerctrl/utils/DeviceInfo.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/GreenFlasher.java -&gt; app/src/main/java/oly/netpowerctrl/utils/GreenFlasher.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletCommand.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletCommand.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletCommandGroup.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletCommandGroup.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletInfo.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletInfo.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/SharedPrefs.java -&gt; app/src/main/java/oly/netpowerctrl/utils/SharedPrefs.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/UDPSendToDevice.java -&gt; app/src/main/java/oly/netpowerctrl/utils/UDPSendToDevice.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/widget/DeviceWidgetProvider.java -&gt; app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/widget/WidgetConfig.java -&gt; app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_refresh.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/md__category_background.png&#10;#&#9;umbenannt:    res/drawable-hdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-hdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-hdpi/perm_group_network.png -&gt; app/src/main/res/drawable-hdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-hdpi/widget.png -&gt; app/src/main/res/drawable-hdpi/widget.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_add.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-ldpi/netpowerctrl.png -&gt; app/src/main/res/drawable-ldpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-ldpi/perm_group_network.png -&gt; app/src/main/res/drawable-ldpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-ldpi/widget.png -&gt; app/src/main/res/drawable-ldpi/widget.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-mdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-mdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-mdpi/perm_group_network.png -&gt; app/src/main/res/drawable-mdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-mdpi/widget.png -&gt; app/src/main/res/drawable-mdpi/widget.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-xhdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/perm_group_network.png -&gt; app/src/main/res/drawable-xhdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/widget.png -&gt; app/src/main/res/drawable-xhdpi/widget.png&#10;#&#9;umbenannt:    res/drawable/outlet_bg.png -&gt; app/src/main/res/drawable/outlet_bg.png&#10;#&#9;umbenannt:    res/layout/about.xml -&gt; app/src/main/res/layout/about.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/activity_main.xml&#10;#&#9;umbenannt:    res/layout/device_control.xml -&gt; app/src/main/res/layout/device_control.xml&#10;#&#9;umbenannt:    res/layout/device_list_item.xml -&gt; app/src/main/res/layout/device_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/drawer_list_header.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/drawer_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_item_grid.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_item_list.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_planet.xml&#10;#&#9;umbenannt:    res/layout/group_list_item.xml -&gt; app/src/main/res/layout/group_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/main_activity.xml&#10;#&#9;umbenannt:    res/layout/outlet_config.xml -&gt; app/src/main/res/layout/outlet_config.xml&#10;#&#9;umbenannt:    res/layout/outlet_config_item.xml -&gt; app/src/main/res/layout/outlet_config_item.xml&#10;#&#9;umbenannt:    res/layout/outlet_list_item.xml -&gt; app/src/main/res/layout/outlet_list_item.xml&#10;#&#9;umbenannt:    res/layout/outlet_list_switch.xml -&gt; app/src/main/res/layout/outlet_list_switch.xml&#10;#&#9;umbenannt:    res/layout/shortcut_activity.xml -&gt; app/src/main/res/layout/shortcut_activity.xml&#10;#&#9;umbenannt:    res/layout/widget.xml -&gt; app/src/main/res/layout/widget.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/configured_device.xml&#10;#&#9;umbenannt:    res/menu/configured_device_menu.xml -&gt; app/src/main/res/menu/configured_device_item.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/device_preferences.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/outlets.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/scenes.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/unconfigured_device.xml&#10;#&#9;umbenannt:    res/raw/about.txt -&gt; app/src/main/res/raw-de/about.txt&#10;#&#9;neue Datei:   app/src/main/res/raw-de/help.txt&#10;#&#9;neue Datei:   app/src/main/res/raw/about.txt&#10;#&#9;neue Datei:   app/src/main/res/raw/help.txt&#10;#&#9;umbenannt:    res/values-de/strings.xml -&gt; app/src/main/res/values-de/strings.xml&#10;#&#9;neue Datei:   app/src/main/res/values-large/refs.xml&#10;#&#9;neue Datei:   app/src/main/res/values-sw600dp/refs.xml&#10;#&#9;umbenannt:    res/values-v14/dimens.xml -&gt; app/src/main/res/values-v14/dimens.xml&#10;#&#9;umbenannt:    res/values-v14/theme.xml -&gt; app/src/main/res/values-v14/theme.xml&#10;#&#9;umbenannt:    res/values/dimens.xml -&gt; app/src/main/res/values/dimens.xml&#10;#&#9;neue Datei:   app/src/main/res/values/refs.xml&#10;#&#9;umbenannt:    res/values/resources.xml -&gt; app/src/main/res/values/resources.xml&#10;#&#9;umbenannt:    res/values/strings.xml -&gt; app/src/main/res/values/strings.xml&#10;#&#9;neue Datei:   app/src/main/res/values/theme.xml&#10;#&#9;umbenannt:    res/xml/appwidget_provider.xml -&gt; app/src/main/res/xml/appwidget_provider.xml&#10;#&#9;umbenannt:    res/xml/device_preferences.xml -&gt; app/src/main/res/xml/device_preferences.xml&#10;#&#9;umbenannt:    res/xml/preferences.xml -&gt; app/src/main/res/xml/preferences.xml&#10;#&#9;neue Datei:   build.gradle&#10;#&#9;neue Datei:   gradle/wrapper/gradle-wrapper.jar&#10;#&#9;neue Datei:   gradle/wrapper/gradle-wrapper.properties&#10;#&#9;neue Datei:   gradlew&#10;#&#9;neue Datei:   gradlew.bat&#10;#&#9;gelöscht:    libs/android-support-v4.jar&#10;#&#9;neue Datei:   local.properties&#10;#&#9;gelöscht:    project.properties&#10;#&#9;gelöscht:    res/layout/main_activity.xml&#10;#&#9;gelöscht:    res/menu/unconfigured_device_menu.xml&#10;#&#9;gelöscht:    res/values/theme.xml&#10;#&#9;neue Datei:   settings.gradle&#10;#&#9;gelöscht:    src/oly/netpowerctrl/main/AboutDialog.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/main/NetpowerctrlActivity.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/outletconfig/OutletConfig.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/outletconfig/OutletConfigAdapter.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/preferences/DevicePreferencesActivity.java&#10;#&#9;umbenannt:    res/raw/make_drawables.sh -&gt; tools/make_drawables.sh&#10;#&#9;umbenannt:    res/raw/outlet.svg -&gt; tools/outlet.svg&#10;#&#9;umbenannt:    res/raw/outlet_bg.svg -&gt; tools/outlet_bg.svg&#10;#&#9;umbenannt:    res/raw/widget.svg -&gt; tools/widget.svg&#10;#&#10;# Änderungen, die nicht zum Eintragen bereitgestellt sind:&#10;#&#9;geändert:   .idea/workspace.xml&#10;#&#10;# Nicht überwachte Dateien:&#10;#&#9;app/build/&#10;#&#10;">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutCreatorActivity.java" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/ShortcutCreatorActivity.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/widget.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/res/layout/device_control.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_planet.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/res/layout/main_activity.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/res/layout/outlet_config.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/app/src/main/res/layout/outlet_config_item.xml" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/GroupListAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/ScenesListAdapter.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/GroupListFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ScenesFragment.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsListFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesFragment.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/ShortcutExecutionActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/DeviceConfigureEvent.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/MenuConfigureEvent.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/DeviceInfo.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/OutletCommand.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletCommand.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/OutletCommandGroup.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletCommandGroup.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/OutletInfo.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletInfo.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/SharedPrefs.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/UDPSendToDevice.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/UDPSendToDevice.java" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/res/layout/group_list_item.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/scene_list_item.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledListAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledListAdapter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/raw/about.txt" afterPath="$PROJECT_DIR$/app/src/main/res/raw/about.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/raw-de/about.txt" afterPath="$PROJECT_DIR$/app/src/main/res/raw-de/about.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/xml/appwidget_provider.xml" afterPath="$PROJECT_DIR$/app/src/main/res/xml/appwidget_provider.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/menu/configured_device_item.xml" afterPath="$PROJECT_DIR$/app/src/main/res/menu/configured_device_item.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/device_list_item.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/device_list_item.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_grid.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_grid.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/outlet_list_item.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/outlet_list_item.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/menu/outlets.xml" afterPath="$PROJECT_DIR$/app/src/main/res/menu/outlets.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/resources.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/resources.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/shortcut_activity.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/shortcut_activity.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/menu/unconfigured_device.xml" afterPath="$PROJECT_DIR$/app/src/main/res/menu/unconfigured_device.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/widget.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/widget.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Android-NetPowerctrl.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -144,6 +90,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
+  <component name="Commander">
+    <leftPanel />
+    <rightPanel />
+    <splitter proportion="0.5" />
+  </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
@@ -197,41 +148,15 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="NetpowerctrlActivity.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java">
+      <file leaf-file-name="ShortcutCreatorActivity.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutCreatorActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="257" column="63" selection-start="9721" selection-end="9776" vertical-scroll-proportion="0.0" vertical-offset="4129" max-vertical-offset="5966">
+            <state line="109" column="10" selection-start="4323" selection-end="4323" vertical-scroll-proportion="0.0" vertical-offset="1166" max-vertical-offset="1786">
               <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="NewDevicesListFragment.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="22" column="0" selection-start="715" selection-end="715" vertical-scroll-proportion="-28.5" vertical-offset="0" max-vertical-offset="1634">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DevicePreferencesDialog.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="65" column="5" selection-start="1733" selection-end="2234" vertical-scroll-proportion="-196.5" vertical-offset="842" max-vertical-offset="2698">
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#2586#2641#0" expanded="true" />
-                <element signature="e#3143#3378#0" expanded="true" />
-                <element signature="e#3367#3368#0" expanded="true" />
-                <element signature="e#3469#4209#0" expanded="true" />
-                <element signature="e#3853#3912#0" expanded="true" />
-                <element signature="e#4198#4199#0" expanded="true" />
-                <element signature="e#4300#5128#0" expanded="true" />
-                <element signature="e#4684#4743#0" expanded="true" />
-                <element signature="e#5117#5118#0" expanded="true" />
+                <element signature="e#2822#3477#0" expanded="true" />
+                <element signature="e#3466#3467#0" expanded="true" />
+                <element signature="e#3545#3687#0" expanded="true" />
+                <element signature="e#3676#3677#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -240,37 +165,83 @@
       <file leaf-file-name="ConfiguredDevicesListFragment.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="101" column="24" selection-start="3791" selection-end="3791" vertical-scroll-proportion="0.0" vertical-offset="1327" max-vertical-offset="2413">
+            <state line="125" column="1" selection-start="4795" selection-end="4795" vertical-scroll-proportion="0.0" vertical-offset="1451" max-vertical-offset="2071">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="DeviceInfo.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="80" column="31" selection-start="2271" selection-end="2271" vertical-scroll-proportion="0.0" vertical-offset="929" max-vertical-offset="2565">
               <folding>
-                <element signature="e#2386#2413#0" expanded="true" />
-                <element signature="e#2451#2491#0" expanded="true" />
-                <element signature="e#3961#3983#0" expanded="true" />
-                <element signature="e#4001#4036#0" expanded="true" />
-                <element signature="e#4132#4348#0" expanded="true" />
-                <element signature="e#4346#4347#0" expanded="true" />
+                <element signature="e#1385#1442#0" expanded="true" />
+                <element signature="e#2119#2146#0" expanded="true" />
+                <element signature="e#2244#2271#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AdapterUpdateManager.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java">
+      <file leaf-file-name="AndroidManifest.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="143" column="13" selection-start="5502" selection-end="5502" vertical-scroll-proportion="0.5447316" vertical-offset="2443" max-vertical-offset="3971">
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#783#795#0" expanded="true" />
-                <element signature="e#858#870#0" expanded="true" />
-                <element signature="e#3756#3802#0" expanded="true" />
-              </folding>
+            <state line="78" column="62" selection-start="3105" selection-end="3105" vertical-scroll-proportion="0.0" vertical-offset="1058" max-vertical-offset="1691">
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GroupListFragment.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/GroupListFragment.java">
+      <file leaf-file-name="DiscoveryThread.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="2" column="7" selection-start="39" selection-end="39" vertical-scroll-proportion="0.0" vertical-offset="1" max-vertical-offset="1463">
+            <state line="96" column="31" selection-start="3268" selection-end="3283" vertical-scroll-proportion="0.0" vertical-offset="1542" max-vertical-offset="2223">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="strings.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="115" column="12" selection-start="6627" selection-end="6627" vertical-scroll-proportion="0.0" vertical-offset="1884" max-vertical-offset="2565">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="strings.xml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/src/main/res/values-de/strings.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="115" column="19" selection-start="6965" selection-end="6965" vertical-scroll-proportion="0.516129" vertical-offset="1865" max-vertical-offset="2546">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NetpowerctrlActivity.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="216" column="23" selection-start="8306" selection-end="8306" vertical-scroll-proportion="0.0" vertical-offset="2910" max-vertical-offset="4579">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NewDevicesListFragment.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="77" column="0" selection-start="2529" selection-end="2529" vertical-scroll-proportion="0.0" vertical-offset="767" max-vertical-offset="1387">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ScenesListAdapter.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/ScenesListAdapter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="106" column="19" selection-start="3231" selection-end="3231" vertical-scroll-proportion="0.0" vertical-offset="1214" max-vertical-offset="1881">
               <folding />
             </state>
           </provider>
@@ -298,6 +269,24 @@
         <entry key="Android-NetPowerctrl12/" value="true" />
         <entry key="app/Android-NetPowerctrl12/" value="true" />
       </map>
+    </option>
+    <option name="recentTasks">
+      <list>
+        <ExternalTaskExecutionInfo>
+          <option name="executorId" value="Run" />
+          <option name="settings">
+            <ExternalSystemSettings>
+              <option name="externalProjectPath" value="$PROJECT_DIR$/app" />
+              <option name="externalSystemIdString" value="GRADLE" />
+              <option name="taskNames">
+                <list>
+                  <option value="lint" />
+                </list>
+              </option>
+            </ExternalSystemSettings>
+          </option>
+        </ExternalTaskExecutionInfo>
+      </list>
     </option>
     <option name="availableProjects">
       <map>
@@ -661,50 +650,57 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/GroupListAdapter.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/UDPSendToDevice.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/main_activity.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java" />
-        <option value="$PROJECT_DIR$/app/app.iml" />
-        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
-        <option value="$PROJECT_DIR$/app/build.gradle" />
-        <option value="$PROJECT_DIR$/app/src/main/res/values/theme.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/drawer_list_item.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/drawer_list_header.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_grid.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/HelpFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/raw/about.txt" />
         <option value="$PROJECT_DIR$/app/src/main/res/raw-de/about.txt" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/AboutDialog.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/raw/help.txt" />
-        <option value="$PROJECT_DIR$/app/src/main/res/raw-de/help.txt" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OldNetpowerctrlActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/widget.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/values/resources.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/xml/appwidget_provider.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdate.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/SharedPrefs.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/DeviceConfigureEvent.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/MenuConfigureEvent.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/OutletCommand.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/outlet_list_item.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/shortcut_activity.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/Shortcuts.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/OutletCommandGroup.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/device_list_item.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/scene_list_item.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/GroupListAdapter.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/ShortcutCreatorActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_grid.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/GridOrListFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/menu/scenes_item.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/menu/outlets_item.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletInfo.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledListAdapter.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletCommand.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/menu/unconfigured_device.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/menu/outlets.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/menu/configured_device_item.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletCommandGroup.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/menu/configured_device.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/menu/scenes.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/ShortcutExecutionActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/UDPSendToDevice.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ScenesFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/ScenesListAdapter.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutCreatorActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" />
+        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/DeviceInfo.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/menu/device_preferences.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/xml/device_preferences.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/SharedPrefs.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/DeviceQuery.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/GroupListFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsListFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/menu/outlets.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java" />
       </list>
     </option>
   </component>
@@ -798,36 +794,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Android-NetPowerctrl" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Android-NetPowerctrl12" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="res" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="xml" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1006,6 +972,10 @@
               <option name="myItemId" value="netpowerctrl" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="widget" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -1071,7 +1041,105 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="preferences" />
+              <option name="myItemId" value="shortcut" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl12" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="netpowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="service" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl12" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="netpowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl12" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="netpowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="network" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1143,12 +1211,46 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-NetPowerctrl12" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="netpowerctrl" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="datastructure" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="PackagesPane">
         <subPane />
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1180,6 +1282,11 @@
     <property name="OverrideImplement.combined" value="true" />
     <property name="OverrideImplement.overriding.sorted" value="false" />
   </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/res/menu" />
+    </key>
+  </component>
   <component name="RunManager" selected="Android Application.app">
     <configuration default="false" name="build" type="GroovyScriptRunConfiguration" factoryName="Groovy" temporary="true">
       <module name="" />
@@ -1193,6 +1300,24 @@
       <method>
         <option name="Make" enabled="false" />
       </method>
+    </configuration>
+    <configuration default="false" name="Android-NetPowerctrl12:app [lint]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/app" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="lint" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <RunnerSettings RunnerId="ExternalSystemTaskRunner" />
+      <ConfigurationWrapper RunnerId="ExternalSystemTaskRunner" />
+      <method />
     </configuration>
     <configuration default="true" type="GroovyScriptRunConfiguration" factoryName="Groovy">
       <module name="" />
@@ -1389,13 +1514,15 @@
       <ConfigurationWrapper RunnerId="AndroidDebugRunner" />
       <method />
     </configuration>
-    <list size="2">
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Android Application.app" />
       <item index="1" class="java.lang.String" itemvalue="Groovy.build" />
+      <item index="2" class="java.lang.String" itemvalue="Gradle.Android-NetPowerctrl12:app [lint]" />
     </list>
     <recent_temporary>
-      <list size="1">
-        <item index="0" class="java.lang.String" itemvalue="Groovy.build" />
+      <list size="2">
+        <item index="0" class="java.lang.String" itemvalue="Gradle.Android-NetPowerctrl12:app [lint]" />
+        <item index="1" class="java.lang.String" itemvalue="Groovy.build" />
       </list>
     </recent_temporary>
     <configuration name="&lt;template&gt;" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" default="true" selected="false">
@@ -1437,35 +1564,55 @@
     </task>
     <servers />
   </component>
+  <component name="TodoView" selected-index="1">
+    <todo-panel id="selected-file">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="default-changelist">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
+  </component>
   <component name="ToolWindowManager">
     <frame x="1365" y="28" width="1682" height="990" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32977462" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32986537" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32977462" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32699168" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20166074" sideWeight="0.15483476" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20095125" sideWeight="0.15483476" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32977462" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32733813" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.35434008" sideWeight="0.84516525" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32986537" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21521997" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25802615" sideWeight="0.84516525" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20501836" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.249694" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32986537" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32986537" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25214198" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32818073" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="6" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23561811" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.17954816" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -1513,435 +1660,461 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
+    <MESSAGE value="Implement missing functionality, refactor package structure&#10;* New package &quot;datastructure&quot; and &quot;network&quot;&#10;* Add icons for refresh,show hidden, hide hidden&#10;* Outlets can be renamed, can be hidden, can be reordered&#10;* Scenes can be created again (fix)&#10;* New concept for widgets&#10;&#10;Still missing:&#10;* Save scenes and configured devices as json files&#10;* Renamed outlets are not persistent (json files necessary)&#10;* NFC (json files necessary)&#10;* Widgets do not work&#10;* Device test before saving as configured device&#10;&#10;# Please enter the commit message for your changes. Lines starting&#10;# with '#' will be ignored, and an empty message aborts the commit.&#10;# Auf Zweig master&#10;# Your branch is up-to-date with 'origin/master'.&#10;#&#10;# zum Eintragen bereitgestellte Änderungen:&#10;#&#9;gelöscht:    .classpath&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/cache.properties&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/cache.properties.lock&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/fileHashes.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/fileSnapshots.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/outputFileStates.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/taskArtifacts.bin&#10;#&#9;neue Datei:   .idea/.name&#10;#&#9;neue Datei:   .idea/compiler.xml&#10;#&#9;neue Datei:   .idea/copyright/profiles_settings.xml&#10;#&#9;neue Datei:   .idea/encodings.xml&#10;#&#9;neue Datei:   .idea/gradle.xml&#10;#&#9;neue Datei:   .idea/libraries/net_simonvt_menudrawer_menudrawer_3_0_4.xml&#10;#&#9;neue Datei:   .idea/libraries/support_v4_19_0_0.xml&#10;#&#9;neue Datei:   .idea/misc.xml&#10;#&#9;neue Datei:   .idea/modules.xml&#10;#&#9;neue Datei:   .idea/scopes/scope_settings.xml&#10;#&#9;neue Datei:   .idea/vcs.xml&#10;#&#9;neue Datei:   .idea/workspace.xml&#10;#&#9;gelöscht:    .project&#10;#&#9;gelöscht:    .settings/org.eclipse.jdt.core.prefs&#10;#&#9;neue Datei:   Android-NetPowerctrl12.iml&#10;#&#9;neue Datei:   app/app.apk&#10;#&#9;neue Datei:   app/app.iml&#10;#&#9;neue Datei:   app/build.gradle&#10;#&#9;umbenannt:    AndroidManifest.xml -&gt; app/src/main/AndroidManifest.xml&#10;#&#9;umbenannt:    src/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java -&gt; app/src/main/java/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/DeviceListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/GroupListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/GroupListAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/OutledListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/OutledListAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/AboutDialog.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/GroupListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/HelpFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/OutletsListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/preferences/PreferencesActivity.java -&gt; app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/DeviceQuery.java -&gt; app/src/main/java/oly/netpowerctrl/service/DeviceQuery.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/DiscoveryThread.java -&gt; app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/NetpowerctrlService.java -&gt; app/src/main/java/oly/netpowerctrl/service/NetpowerctrlService.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/ShortcutCreatorActivity.java -&gt; app/src/main/java/oly/netpowerctrl/service/ShortcutCreatorActivity.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/ShortcutExecutionActivity.java -&gt; app/src/main/java/oly/netpowerctrl/service/ShortcutExecutionActivity.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/AfterSentHandler.java -&gt; app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/DeviceConfigureEvent.java -&gt; app/src/main/java/oly/netpowerctrl/utils/DeviceConfigureEvent.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/DeviceInfo.java -&gt; app/src/main/java/oly/netpowerctrl/utils/DeviceInfo.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/GreenFlasher.java -&gt; app/src/main/java/oly/netpowerctrl/utils/GreenFlasher.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletCommand.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletCommand.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletCommandGroup.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletCommandGroup.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletInfo.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletInfo.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/SharedPrefs.java -&gt; app/src/main/java/oly/netpowerctrl/utils/SharedPrefs.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/UDPSendToDevice.java -&gt; app/src/main/java/oly/netpowerctrl/utils/UDPSendToDevice.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/widget/DeviceWidgetProvider.java -&gt; app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/widget/WidgetConfig.java -&gt; app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_refresh.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/md__category_background.png&#10;#&#9;umbenannt:    res/drawable-hdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-hdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-hdpi/perm_group_network.png -&gt; app/src/main/res/drawable-hdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-hdpi/widget.png -&gt; app/src/main/res/drawable-hdpi/widget.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_add.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-ldpi/netpowerctrl.png -&gt; app/src/main/res/drawable-ldpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-ldpi/perm_group_network.png -&gt; app/src/main/res/drawable-ldpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-ldpi/widget.png -&gt; app/src/main/res/drawable-ldpi/widget.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-mdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-mdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-mdpi/perm_group_network.png -&gt; app/src/main/res/drawable-mdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-mdpi/widget.png -&gt; app/src/main/res/drawable-mdpi/widget.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-xhdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/perm_group_network.png -&gt; app/src/main/res/drawable-xhdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/widget.png -&gt; app/src/main/res/drawable-xhdpi/widget.png&#10;#&#9;umbenannt:    res/drawable/outlet_bg.png -&gt; app/src/main/res/drawable/outlet_bg.png&#10;#&#9;umbenannt:    res/layout/about.xml -&gt; app/src/main/res/layout/about.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/activity_main.xml&#10;#&#9;umbenannt:    res/layout/device_control.xml -&gt; app/src/main/res/layout/device_control.xml&#10;#&#9;umbenannt:    res/layout/device_list_item.xml -&gt; app/src/main/res/layout/device_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/drawer_list_header.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/drawer_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_item_grid.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_item_list.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_planet.xml&#10;#&#9;umbenannt:    res/layout/group_list_item.xml -&gt; app/src/main/res/layout/group_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/main_activity.xml&#10;#&#9;umbenannt:    res/layout/outlet_config.xml -&gt; app/src/main/res/layout/outlet_config.xml&#10;#&#9;umbenannt:    res/layout/outlet_config_item.xml -&gt; app/src/main/res/layout/outlet_config_item.xml&#10;#&#9;umbenannt:    res/layout/outlet_list_item.xml -&gt; app/src/main/res/layout/outlet_list_item.xml&#10;#&#9;umbenannt:    res/layout/outlet_list_switch.xml -&gt; app/src/main/res/layout/outlet_list_switch.xml&#10;#&#9;umbenannt:    res/layout/shortcut_activity.xml -&gt; app/src/main/res/layout/shortcut_activity.xml&#10;#&#9;umbenannt:    res/layout/widget.xml -&gt; app/src/main/res/layout/widget.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/configured_device.xml&#10;#&#9;umbenannt:    res/menu/configured_device_menu.xml -&gt; app/src/main/res/menu/configured_device_item.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/device_preferences.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/outlets.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/scenes.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/unconfigured_device.xml&#10;#&#9;umbenannt:    res/raw/about.txt -&gt; app/src/main/res/raw-de/about.txt&#10;#&#9;neue Datei:   app/src/main/res/raw-de/help.txt&#10;#&#9;neue Datei:   app/src/main/res/raw/about.txt&#10;#&#9;neue Datei:   app/src/main/res/raw/help.txt&#10;#&#9;umbenannt:    res/values-de/strings.xml -&gt; app/src/main/res/values-de/strings.xml&#10;#&#9;neue Datei:   app/src/main/res/values-large/refs.xml&#10;#&#9;neue Datei:   app/src/main/res/values-sw600dp/refs.xml&#10;#&#9;umbenannt:    res/values-v14/dimens.xml -&gt; app/src/main/res/values-v14/dimens.xml&#10;#&#9;umbenannt:    res/values-v14/theme.xml -&gt; app/src/main/res/values-v14/theme.xml&#10;#&#9;umbenannt:    res/values/dimens.xml -&gt; app/src/main/res/values/dimens.xml&#10;#&#9;neue Datei:   app/src/main/res/values/refs.xml&#10;#&#9;umbenannt:    res/values/resources.xml -&gt; app/src/main/res/values/resources.xml&#10;#&#9;umbenannt:    res/values/strings.xml -&gt; app/src/main/res/values/strings.xml&#10;#&#9;neue Datei:   app/src/main/res/values/theme.xml&#10;#&#9;umbenannt:    res/xml/appwidget_provider.xml -&gt; app/src/main/res/xml/appwidget_provider.xml&#10;#&#9;umbenannt:    res/xml/device_preferences.xml -&gt; app/src/main/res/xml/device_preferences.xml&#10;#&#9;umbenannt:    res/xml/preferences.xml -&gt; app/src/main/res/xml/preferences.xml&#10;#&#9;neue Datei:   build.gradle&#10;#&#9;neue Datei:   gradle/wrapper/gradle-wrapper.jar&#10;#&#9;neue Datei:   gradle/wrapper/gradle-wrapper.properties&#10;#&#9;neue Datei:   gradlew&#10;#&#9;neue Datei:   gradlew.bat&#10;#&#9;gelöscht:    libs/android-support-v4.jar&#10;#&#9;neue Datei:   local.properties&#10;#&#9;gelöscht:    project.properties&#10;#&#9;gelöscht:    res/layout/main_activity.xml&#10;#&#9;gelöscht:    res/menu/unconfigured_device_menu.xml&#10;#&#9;gelöscht:    res/values/theme.xml&#10;#&#9;neue Datei:   settings.gradle&#10;#&#9;gelöscht:    src/oly/netpowerctrl/main/AboutDialog.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/main/NetpowerctrlActivity.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/outletconfig/OutletConfig.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/outletconfig/OutletConfigAdapter.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/preferences/DevicePreferencesActivity.java&#10;#&#9;umbenannt:    res/raw/make_drawables.sh -&gt; tools/make_drawables.sh&#10;#&#9;umbenannt:    res/raw/outlet.svg -&gt; tools/outlet.svg&#10;#&#9;umbenannt:    res/raw/outlet_bg.svg -&gt; tools/outlet_bg.svg&#10;#&#9;umbenannt:    res/raw/widget.svg -&gt; tools/widget.svg&#10;#&#10;# Änderungen, die nicht zum Eintragen bereitgestellt sind:&#10;#&#9;geändert:   .idea/workspace.xml&#10;#&#10;# Nicht überwachte Dateien:&#10;#&#9;app/build/&#10;#&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implement missing functionality, refactor package structure&#10;* New package &quot;datastructure&quot; and &quot;network&quot;&#10;* Add icons for refresh,show hidden, hide hidden&#10;* Outlets can be renamed, can be hidden, can be reordered&#10;* Scenes can be created again (fix)&#10;* New concept for widgets&#10;&#10;Still missing:&#10;* Save scenes and configured devices as json files&#10;* Renamed outlets are not persistent (json files necessary)&#10;* NFC (json files necessary)&#10;* Widgets do not work&#10;* Device test before saving as configured device&#10;&#10;# Please enter the commit message for your changes. Lines starting&#10;# with '#' will be ignored, and an empty message aborts the commit.&#10;# Auf Zweig master&#10;# Your branch is up-to-date with 'origin/master'.&#10;#&#10;# zum Eintragen bereitgestellte Änderungen:&#10;#&#9;gelöscht:    .classpath&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/cache.properties&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/cache.properties.lock&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/fileHashes.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/fileSnapshots.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/outputFileStates.bin&#10;#&#9;neue Datei:   .gradle/1.9/taskArtifacts/taskArtifacts.bin&#10;#&#9;neue Datei:   .idea/.name&#10;#&#9;neue Datei:   .idea/compiler.xml&#10;#&#9;neue Datei:   .idea/copyright/profiles_settings.xml&#10;#&#9;neue Datei:   .idea/encodings.xml&#10;#&#9;neue Datei:   .idea/gradle.xml&#10;#&#9;neue Datei:   .idea/libraries/net_simonvt_menudrawer_menudrawer_3_0_4.xml&#10;#&#9;neue Datei:   .idea/libraries/support_v4_19_0_0.xml&#10;#&#9;neue Datei:   .idea/misc.xml&#10;#&#9;neue Datei:   .idea/modules.xml&#10;#&#9;neue Datei:   .idea/scopes/scope_settings.xml&#10;#&#9;neue Datei:   .idea/vcs.xml&#10;#&#9;neue Datei:   .idea/workspace.xml&#10;#&#9;gelöscht:    .project&#10;#&#9;gelöscht:    .settings/org.eclipse.jdt.core.prefs&#10;#&#9;neue Datei:   Android-NetPowerctrl12.iml&#10;#&#9;neue Datei:   app/app.apk&#10;#&#9;neue Datei:   app/app.iml&#10;#&#9;neue Datei:   app/build.gradle&#10;#&#9;umbenannt:    AndroidManifest.xml -&gt; app/src/main/AndroidManifest.xml&#10;#&#9;umbenannt:    src/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java -&gt; app/src/main/java/oly/netpowerctrl/devicecontrol/DeviceControlActivity.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/DeviceListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/GroupListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/GroupListAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/OutledListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/OutledListAdapter.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java -&gt; app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/AboutDialog.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/GroupListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/HelpFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/main/OutletsListFragment.java&#10;#&#9;neue Datei:   app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/preferences/PreferencesActivity.java -&gt; app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/DeviceQuery.java -&gt; app/src/main/java/oly/netpowerctrl/service/DeviceQuery.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/DiscoveryThread.java -&gt; app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/NetpowerctrlService.java -&gt; app/src/main/java/oly/netpowerctrl/service/NetpowerctrlService.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/ShortcutCreatorActivity.java -&gt; app/src/main/java/oly/netpowerctrl/service/ShortcutCreatorActivity.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/service/ShortcutExecutionActivity.java -&gt; app/src/main/java/oly/netpowerctrl/service/ShortcutExecutionActivity.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/AfterSentHandler.java -&gt; app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/DeviceConfigureEvent.java -&gt; app/src/main/java/oly/netpowerctrl/utils/DeviceConfigureEvent.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/DeviceInfo.java -&gt; app/src/main/java/oly/netpowerctrl/utils/DeviceInfo.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/GreenFlasher.java -&gt; app/src/main/java/oly/netpowerctrl/utils/GreenFlasher.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletCommand.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletCommand.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletCommandGroup.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletCommandGroup.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/OutletInfo.java -&gt; app/src/main/java/oly/netpowerctrl/utils/OutletInfo.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/SharedPrefs.java -&gt; app/src/main/java/oly/netpowerctrl/utils/SharedPrefs.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/utils/UDPSendToDevice.java -&gt; app/src/main/java/oly/netpowerctrl/utils/UDPSendToDevice.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/widget/DeviceWidgetProvider.java -&gt; app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java&#10;#&#9;umbenannt:    src/oly/netpowerctrl/widget/WidgetConfig.java -&gt; app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-hdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-hdpi/ic_menu_refresh.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-hdpi/md__category_background.png&#10;#&#9;umbenannt:    res/drawable-hdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-hdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-hdpi/perm_group_network.png -&gt; app/src/main/res/drawable-hdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-hdpi/widget.png -&gt; app/src/main/res/drawable-hdpi/widget.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_add.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-ldpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-ldpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-ldpi/netpowerctrl.png -&gt; app/src/main/res/drawable-ldpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-ldpi/perm_group_network.png -&gt; app/src/main/res/drawable-ldpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-ldpi/widget.png -&gt; app/src/main/res/drawable-ldpi/widget.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-mdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-mdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-mdpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-mdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-mdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-mdpi/perm_group_network.png -&gt; app/src/main/res/drawable-mdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-mdpi/widget.png -&gt; app/src/main/res/drawable-mdpi/widget.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/action_search.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/drawer_shadow.9.png&#10;#&#9;neue Datei:   app/src/main/res/drawable-xhdpi/ic_drawer.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_add.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_add.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_close_clear_cancel.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_close_clear_cancel.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_delete.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_delete.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_edit.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_edit.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_info_details.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_info_details.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_preferences.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_preferences.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/ic_menu_refresh.png -&gt; app/src/main/res/drawable-xhdpi/ic_menu_refresh.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/netpowerctrl.png -&gt; app/src/main/res/drawable-xhdpi/netpowerctrl.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/perm_group_network.png -&gt; app/src/main/res/drawable-xhdpi/perm_group_network.png&#10;#&#9;umbenannt:    res/drawable-xhdpi/widget.png -&gt; app/src/main/res/drawable-xhdpi/widget.png&#10;#&#9;umbenannt:    res/drawable/outlet_bg.png -&gt; app/src/main/res/drawable/outlet_bg.png&#10;#&#9;umbenannt:    res/layout/about.xml -&gt; app/src/main/res/layout/about.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/activity_main.xml&#10;#&#9;umbenannt:    res/layout/device_control.xml -&gt; app/src/main/res/layout/device_control.xml&#10;#&#9;umbenannt:    res/layout/device_list_item.xml -&gt; app/src/main/res/layout/device_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/drawer_list_header.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/drawer_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_item_grid.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_item_list.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/fragment_planet.xml&#10;#&#9;umbenannt:    res/layout/group_list_item.xml -&gt; app/src/main/res/layout/group_list_item.xml&#10;#&#9;neue Datei:   app/src/main/res/layout/main_activity.xml&#10;#&#9;umbenannt:    res/layout/outlet_config.xml -&gt; app/src/main/res/layout/outlet_config.xml&#10;#&#9;umbenannt:    res/layout/outlet_config_item.xml -&gt; app/src/main/res/layout/outlet_config_item.xml&#10;#&#9;umbenannt:    res/layout/outlet_list_item.xml -&gt; app/src/main/res/layout/outlet_list_item.xml&#10;#&#9;umbenannt:    res/layout/outlet_list_switch.xml -&gt; app/src/main/res/layout/outlet_list_switch.xml&#10;#&#9;umbenannt:    res/layout/shortcut_activity.xml -&gt; app/src/main/res/layout/shortcut_activity.xml&#10;#&#9;umbenannt:    res/layout/widget.xml -&gt; app/src/main/res/layout/widget.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/configured_device.xml&#10;#&#9;umbenannt:    res/menu/configured_device_menu.xml -&gt; app/src/main/res/menu/configured_device_item.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/device_preferences.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/outlets.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/scenes.xml&#10;#&#9;neue Datei:   app/src/main/res/menu/unconfigured_device.xml&#10;#&#9;umbenannt:    res/raw/about.txt -&gt; app/src/main/res/raw-de/about.txt&#10;#&#9;neue Datei:   app/src/main/res/raw-de/help.txt&#10;#&#9;neue Datei:   app/src/main/res/raw/about.txt&#10;#&#9;neue Datei:   app/src/main/res/raw/help.txt&#10;#&#9;umbenannt:    res/values-de/strings.xml -&gt; app/src/main/res/values-de/strings.xml&#10;#&#9;neue Datei:   app/src/main/res/values-large/refs.xml&#10;#&#9;neue Datei:   app/src/main/res/values-sw600dp/refs.xml&#10;#&#9;umbenannt:    res/values-v14/dimens.xml -&gt; app/src/main/res/values-v14/dimens.xml&#10;#&#9;umbenannt:    res/values-v14/theme.xml -&gt; app/src/main/res/values-v14/theme.xml&#10;#&#9;umbenannt:    res/values/dimens.xml -&gt; app/src/main/res/values/dimens.xml&#10;#&#9;neue Datei:   app/src/main/res/values/refs.xml&#10;#&#9;umbenannt:    res/values/resources.xml -&gt; app/src/main/res/values/resources.xml&#10;#&#9;umbenannt:    res/values/strings.xml -&gt; app/src/main/res/values/strings.xml&#10;#&#9;neue Datei:   app/src/main/res/values/theme.xml&#10;#&#9;umbenannt:    res/xml/appwidget_provider.xml -&gt; app/src/main/res/xml/appwidget_provider.xml&#10;#&#9;umbenannt:    res/xml/device_preferences.xml -&gt; app/src/main/res/xml/device_preferences.xml&#10;#&#9;umbenannt:    res/xml/preferences.xml -&gt; app/src/main/res/xml/preferences.xml&#10;#&#9;neue Datei:   build.gradle&#10;#&#9;neue Datei:   gradle/wrapper/gradle-wrapper.jar&#10;#&#9;neue Datei:   gradle/wrapper/gradle-wrapper.properties&#10;#&#9;neue Datei:   gradlew&#10;#&#9;neue Datei:   gradlew.bat&#10;#&#9;gelöscht:    libs/android-support-v4.jar&#10;#&#9;neue Datei:   local.properties&#10;#&#9;gelöscht:    project.properties&#10;#&#9;gelöscht:    res/layout/main_activity.xml&#10;#&#9;gelöscht:    res/menu/unconfigured_device_menu.xml&#10;#&#9;gelöscht:    res/values/theme.xml&#10;#&#9;neue Datei:   settings.gradle&#10;#&#9;gelöscht:    src/oly/netpowerctrl/main/AboutDialog.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/main/NetpowerctrlActivity.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/outletconfig/OutletConfig.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/outletconfig/OutletConfigAdapter.java&#10;#&#9;gelöscht:    src/oly/netpowerctrl/preferences/DevicePreferencesActivity.java&#10;#&#9;umbenannt:    res/raw/make_drawables.sh -&gt; tools/make_drawables.sh&#10;#&#9;umbenannt:    res/raw/outlet.svg -&gt; tools/outlet.svg&#10;#&#9;umbenannt:    res/raw/outlet_bg.svg -&gt; tools/outlet_bg.svg&#10;#&#9;umbenannt:    res/raw/widget.svg -&gt; tools/widget.svg&#10;#&#10;# Änderungen, die nicht zum Eintragen bereitgestellt sind:&#10;#&#9;geändert:   .idea/workspace.xml&#10;#&#10;# Nicht überwachte Dateien:&#10;#&#9;app/build/&#10;#&#10;" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values-sw600dp/refs.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="818">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values-v14/theme.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="12" selection-start="141" selection-end="141" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="135">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values-v14/dimens.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="541">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-16/android.jar!/java/lang/Object.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="43" selection-start="510" selection-end="510" vertical-scroll-proportion="0.2567237" vertical-offset="0" max-vertical-offset="818">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="0" selection-start="199" selection-end="199" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1575">
-          <folding>
-            <element signature="e#506#524#0" expanded="true" />
-            <element signature="e#667#685#0" expanded="true" />
-            <element signature="e#2183#2201#0" expanded="true" />
-            <element signature="e#2790#2808#0" expanded="true" />
-            <element signature="e#3157#3175#0" expanded="true" />
-            <element signature="e#3569#3587#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/app.iml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="61" selection-start="4605" selection-end="4605" vertical-scroll-proportion="0.0" vertical-offset="639" max-vertical-offset="1230">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/theme.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="0" selection-start="556" selection-end="556" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="510">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/refs.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="818">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_item_grid.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="14" selection-start="614" selection-end="614" vertical-scroll-proportion="-10.384615" vertical-offset="0" max-vertical-offset="360">
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="49" column="0" selection-start="1126" selection-end="1126" vertical-scroll-proportion="0.4987745" vertical-offset="328" max-vertical-offset="1830">
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#450#458#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="5" selection-start="307" selection-end="307" vertical-scroll-proportion="0.3125" vertical-offset="0" max-vertical-offset="816">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/drawer_list_header.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="19" selection-start="685" selection-end="685" vertical-scroll-proportion="0.37974682" vertical-offset="0" max-vertical-offset="790">
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/drawer_list_item.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="27" selection-start="320" selection-end="343" vertical-scroll-proportion="0.15189873" vertical-offset="0" max-vertical-offset="790">
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/HelpFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="0" selection-start="1400" selection-end="1400" vertical-scroll-proportion="0.4595588" vertical-offset="0" max-vertical-offset="816">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/raw-de/about.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="40" selection-start="113" selection-end="113" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="150">
+        <state line="5" column="94" selection-start="239" selection-end="239" vertical-scroll-proportion="0.14328809" vertical-offset="0" max-vertical-offset="663">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/raw/about.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="21" selection-start="94" selection-end="94" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="150">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="14" selection-start="583" selection-end="583" vertical-scroll-proportion="0.3227848" vertical-offset="0" max-vertical-offset="790">
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/AboutDialog.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="28" column="5" selection-start="798" selection-end="798" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="795">
-          <folding>
-            <element signature="e#1265#1316#0" expanded="false" />
-            <element signature="e#1774#1820#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/raw-de/help.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="77" selection-start="1127" selection-end="1127" vertical-scroll-proportion="0.24632353" vertical-offset="144" max-vertical-offset="960">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/raw/help.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="40" selection-start="1874" selection-end="1874" vertical-scroll-proportion="0.4276316" vertical-offset="215" max-vertical-offset="975">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/outlet_list_item.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="15" selection-start="736" selection-end="736" vertical-scroll-proportion="0.4177215" vertical-offset="0" max-vertical-offset="790">
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/outlet_list_switch.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="790">
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/appwidget_provider.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="514">
+        <state line="5" column="0" selection-start="145" selection-end="239" vertical-scroll-proportion="0.14328809" vertical-offset="0" max-vertical-offset="663">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values/resources.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="12" selection-start="908" selection-end="908" vertical-scroll-proportion="0.46692607" vertical-offset="0" max-vertical-offset="514">
+        <state line="14" column="12" selection-start="817" selection-end="817" vertical-scroll-proportion="0.40120664" vertical-offset="0" max-vertical-offset="663">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-16/android.jar!/android/preference/Preference.class">
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/appwidget_provider.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="186" column="1" selection-start="7694" selection-end="7694" vertical-scroll-proportion="0.8249027" vertical-offset="2351" max-vertical-offset="2865">
+        <state line="10" column="21" selection-start="441" selection-end="441" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="304">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/unconfigured_device.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/widget.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="60" selection-start="296" selection-end="296" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="240">
-          <folding />
+        <state line="31" column="0" selection-start="1118" selection-end="1118" vertical-scroll-proportion="0.74556965" vertical-offset="0" max-vertical-offset="790">
+          <folding>
+            <element signature="e#853#871#0" expanded="false" />
+          </folding>
         </state>
       </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/ShortcutExecutionActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdate.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="60" selection-start="618" selection-end="618" vertical-scroll-proportion="0.36764705" vertical-offset="0" max-vertical-offset="816">
+        <state line="8" column="3" selection-start="181" selection-end="181" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="437">
           <folding>
             <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/scenes.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="7" selection-start="501" selection-end="501" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="255">
+        <state line="187" column="38" selection-start="8120" selection-end="8120" vertical-scroll-proportion="0.0" vertical-offset="2940" max-vertical-offset="3800">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="47" column="50" selection-start="1520" selection-end="1520" vertical-scroll-proportion="0.0" vertical-offset="628" max-vertical-offset="1615">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/MenuConfigureEvent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="1" selection-start="194" selection-end="194" vertical-scroll-proportion="0.18627451" vertical-offset="0" max-vertical-offset="816">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/outlet_list_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="25" selection-start="25" selection-end="25" vertical-scroll-proportion="-0.0" vertical-offset="0" max-vertical-offset="570">
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/Shortcuts.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="30" column="9" selection-start="1039" selection-end="1039" vertical-scroll-proportion="0.46683046" vertical-offset="57" max-vertical-offset="874">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/device_list_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="41" selection-start="894" selection-end="894" vertical-scroll-proportion="0.44399184" vertical-offset="219" max-vertical-offset="1102">
           <folding>
-            <element signature="e#364#391#0" expanded="true" />
+            <element signature="e#622#648#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/scene_list_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="44" selection-start="514" selection-end="514" vertical-scroll-proportion="0.31345177" vertical-offset="0" max-vertical-offset="1064">
+          <folding>
+            <element signature="e#621#646#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/shortcut_activity.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="77" column="46" selection-start="2617" selection-end="2634" vertical-scroll-proportion="-18.615385" vertical-offset="979" max-vertical-offset="1767">
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/NFC.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="0" selection-start="95" selection-end="95" vertical-scroll-proportion="0.16339067" vertical-offset="0" max-vertical-offset="814">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_item_grid.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="38" selection-start="473" selection-end="473" vertical-scroll-proportion="0.40826446" vertical-offset="0" max-vertical-offset="605">
+          <folding>
+            <element signature="e#444#459#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="8" selection-start="451" selection-end="479" vertical-scroll-proportion="0.40826446" vertical-offset="0" max-vertical-offset="605">
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/GridOrListFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="55" column="59" selection-start="1725" selection-end="1725" vertical-scroll-proportion="0.0" vertical-offset="744" max-vertical-offset="1273">
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="56" selection-start="298" selection-end="298" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1950">
+        <state line="24" column="5" selection-start="654" selection-end="654" vertical-scroll-proportion="-0.048275862" vertical-offset="389" max-vertical-offset="969">
+          <folding>
+            <element signature="e#1176#1243#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/NetpowerctrlService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="4" selection-start="529" selection-end="529" vertical-scroll-proportion="0.0" vertical-offset="57" max-vertical-offset="1235">
+          <folding>
+            <element signature="e#1870#2005#0" expanded="false" />
+            <element signature="e#2001#2002#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/ShowToast.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="0" selection-start="553" selection-end="553" vertical-scroll-proportion="0.696" vertical-offset="43" max-vertical-offset="418">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/scenes_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="7" selection-start="404" selection-end="404" vertical-scroll-proportion="0.15912898" vertical-offset="0" max-vertical-offset="597">
+          <folding>
+            <element signature="e#267#292#0" expanded="false" />
+            <element signature="e#361#388#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/configured_device.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="7" selection-start="880" selection-end="880" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="405">
+        <state line="21" column="7" selection-start="880" selection-end="880" vertical-scroll-proportion="0.490172" vertical-offset="0" max-vertical-offset="814">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/outlet_list_switch.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="15" selection-start="663" selection-end="663" vertical-scroll-proportion="0.45812184" vertical-offset="0" max-vertical-offset="788">
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/outlets_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="66" selection-start="105" selection-end="105" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="247">
           <folding>
-            <element signature="e#745#770#0" expanded="true" />
+            <element signature="e#165#191#0" expanded="true" />
+            <element signature="e#261#289#0" expanded="true" />
+            <element signature="e#359#387#0" expanded="true" />
+            <element signature="e#446#463#0" expanded="true" />
+            <element signature="e#524#543#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values-de/strings.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletInfo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="59" selection-start="455" selection-end="455" vertical-scroll-proportion="0.1867995" vertical-offset="0" max-vertical-offset="1950">
+        <state line="13" column="26" selection-start="402" selection-end="402" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1387">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/DeviceInfo.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledSwitchListAdapter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="39" selection-start="1412" selection-end="1412" vertical-scroll-proportion="0.6642157" vertical-offset="163" max-vertical-offset="2010">
+        <state line="72" column="5" selection-start="2608" selection-end="2608" vertical-scroll-proportion="0.0" vertical-offset="456" max-vertical-offset="1900">
           <folding>
-            <element signature="e#1317#1374#0" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#3557#3558#0" expanded="true" />
+            <element signature="e#3590#3591#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletCommand.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="257" column="63" selection-start="9721" selection-end="9776" vertical-scroll-proportion="0.0" vertical-offset="4129" max-vertical-offset="5652">
+        <state line="10" column="4" selection-start="314" selection-end="314" vertical-scroll-proportion="0.32534248" vertical-offset="0" max-vertical-offset="874">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutledListAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="71" column="12" selection-start="2523" selection-end="2523" vertical-scroll-proportion="0.0" vertical-offset="684" max-vertical-offset="1995">
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/device_preferences.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="19" selection-start="2028" selection-end="2028" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="270">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="0" selection-start="370" selection-end="370" vertical-scroll-proportion="0.39130434" vertical-offset="0" max-vertical-offset="506">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/preferences.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="19" selection-start="936" selection-end="936" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="180">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/SharedPrefs.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="100" column="0" selection-start="4059" selection-end="4059" vertical-scroll-proportion="0.43083003" vertical-offset="1402" max-vertical-offset="3150">
+        <state line="130" column="28" selection-start="4919" selection-end="4919" vertical-scroll-proportion="0.0" vertical-offset="1707" max-vertical-offset="2622">
           <folding>
-            <element signature="e#4543#4603#0" expanded="false" />
+            <element signature="e#3722#3776#0" expanded="true" />
+            <element signature="e#3812#3868#0" expanded="true" />
+            <element signature="e#4170#4447#0" expanded="true" />
+            <element signature="e#4428#4429#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/device_preferences.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/unconfigured_device.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="43" selection-start="278" selection-end="294" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="288">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/GroupListAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="44" column="0" selection-start="1382" selection-end="1541" vertical-scroll-proportion="0.32678133" vertical-offset="171" max-vertical-offset="2375">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesDialog.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="5" selection-start="1733" selection-end="2234" vertical-scroll-proportion="-196.5" vertical-offset="842" max-vertical-offset="2698">
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#2586#2641#0" expanded="true" />
-            <element signature="e#3143#3378#0" expanded="true" />
-            <element signature="e#3367#3368#0" expanded="true" />
-            <element signature="e#3469#4209#0" expanded="true" />
-            <element signature="e#3853#3912#0" expanded="true" />
-            <element signature="e#4198#4199#0" expanded="true" />
-            <element signature="e#4300#5128#0" expanded="true" />
-            <element signature="e#4684#4743#0" expanded="true" />
-            <element signature="e#5117#5118#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/configured_device_item.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="7" selection-start="394" selection-end="394" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="209">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-16/android.jar!/java/util/ArrayList.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="19" selection-start="499" selection-end="499" vertical-scroll-proportion="0.2846442" vertical-offset="0" max-vertical-offset="1197">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="5" selection-start="2350" selection-end="2350" vertical-scroll-proportion="0.0" vertical-offset="689" max-vertical-offset="1710">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/DeviceQuery.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="4" selection-start="1698" selection-end="1698" vertical-scroll-proportion="0.7116105" vertical-offset="0" max-vertical-offset="1938">
-          <folding>
-            <element signature="e#1374#1438#0" expanded="true" />
-            <element signature="e#1864#1926#0" expanded="true" />
-            <element signature="e#2253#2315#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/UDPSendToDevice.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="63" column="47" selection-start="2272" selection-end="2299" vertical-scroll-proportion="0.8064919" vertical-offset="285" max-vertical-offset="1748">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/GroupListFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="7" selection-start="39" selection-end="39" vertical-scroll-proportion="0.0" vertical-offset="1" max-vertical-offset="1463">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="0" selection-start="715" selection-end="715" vertical-scroll-proportion="-28.5" vertical-offset="0" max-vertical-offset="1634">
+        <state line="12" column="7" selection-start="485" selection-end="485" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="342">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/outlets.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="7" selection-start="296" selection-end="296" vertical-scroll-proportion="0.22093023" vertical-offset="0" max-vertical-offset="516">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsListFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="43" selection-start="741" selection-end="741" vertical-scroll-proportion="0.3836978" vertical-offset="73" max-vertical-offset="1159">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="101" column="24" selection-start="3791" selection-end="3791" vertical-scroll-proportion="0.0" vertical-offset="1327" max-vertical-offset="2413">
+        <state line="17" column="7" selection-start="661" selection-end="661" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="437">
           <folding>
-            <element signature="e#2386#2413#0" expanded="true" />
-            <element signature="e#2451#2491#0" expanded="true" />
-            <element signature="e#3961#3983#0" expanded="true" />
-            <element signature="e#4001#4036#0" expanded="true" />
-            <element signature="e#4132#4348#0" expanded="true" />
-            <element signature="e#4346#4347#0" expanded="true" />
+            <element signature="e#176#193#0" expanded="true" />
+            <element signature="e#358#379#0" expanded="true" />
+            <element signature="e#543#564#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/configured_device_item.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="7" column="47" selection-start="316" selection-end="316" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="266">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="20" column="0" selection-start="654" selection-end="654" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="703">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletCommandGroup.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="79" column="24" selection-start="2305" selection-end="2305" vertical-scroll-proportion="0.0" vertical-offset="967" max-vertical-offset="1824">
+          <folding>
+            <element signature="e#484#511#0" expanded="true" />
+            <element signature="e#617#644#0" expanded="true" />
+            <element signature="e#1958#2004#0" expanded="true" />
+            <element signature="e#2081#2126#0" expanded="true" />
+            <element signature="e#2203#2252#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="24" column="0" selection-start="735" selection-end="735" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="703">
+          <folding>
+            <element signature="e#783#808#1" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DevicePreferencesFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="90" column="21" selection-start="3140" selection-end="3140" vertical-scroll-proportion="0.0" vertical-offset="1200" max-vertical-offset="2166">
+          <folding>
+            <element signature="e#2074#2129#0" expanded="true" />
+            <element signature="e#3339#3398#0" expanded="true" />
+            <element signature="e#4173#4232#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/AdapterUpdateManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="143" column="13" selection-start="5502" selection-end="5502" vertical-scroll-proportion="0.5447316" vertical-offset="2443" max-vertical-offset="3971">
+        <state line="141" column="22" selection-start="5479" selection-end="5479" vertical-scroll-proportion="0.0" vertical-offset="1932" max-vertical-offset="3876">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DeviceListAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="47" column="0" selection-start="1323" selection-end="1323" vertical-scroll-proportion="0.0" vertical-offset="264" max-vertical-offset="1539">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/UDPSendToDevice.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="70" column="19" selection-start="3184" selection-end="3184" vertical-scroll-proportion="0.0" vertical-offset="649" max-vertical-offset="1634">
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#783#795#0" expanded="true" />
-            <element signature="e#858#870#0" expanded="true" />
-            <element signature="e#3756#3802#0" expanded="true" />
+            <element signature="e#3014#3078#0" expanded="true" />
+            <element signature="e#4211#4275#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ScenesFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="111" column="0" selection-start="4057" selection-end="4057" vertical-scroll-proportion="0.0" vertical-offset="1470" max-vertical-offset="2147">
+          <folding>
+            <element signature="e#1330#1356#0" expanded="true" />
+            <element signature="e#1374#1413#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="77" column="0" selection-start="2529" selection-end="2529" vertical-scroll-proportion="0.0" vertical-offset="767" max-vertical-offset="1387">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/ScenesListAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="106" column="19" selection-start="3231" selection-end="3231" vertical-scroll-proportion="0.0" vertical-offset="1214" max-vertical-offset="1881">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutCreatorActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="109" column="10" selection-start="4323" selection-end="4323" vertical-scroll-proportion="0.0" vertical-offset="1166" max-vertical-offset="1786">
+          <folding>
+            <element signature="e#2822#3477#0" expanded="true" />
+            <element signature="e#3466#3467#0" expanded="true" />
+            <element signature="e#3545#3687#0" expanded="true" />
+            <element signature="e#3676#3677#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfiguredDevicesListFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="125" column="1" selection-start="4795" selection-end="4795" vertical-scroll-proportion="0.0" vertical-offset="1451" max-vertical-offset="2071">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="80" column="31" selection-start="2271" selection-end="2271" vertical-scroll-proportion="0.0" vertical-offset="929" max-vertical-offset="2565">
+          <folding>
+            <element signature="e#1385#1442#0" expanded="true" />
+            <element signature="e#2119#2146#0" expanded="true" />
+            <element signature="e#2244#2271#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="78" column="62" selection-start="3105" selection-end="3105" vertical-scroll-proportion="0.0" vertical-offset="1058" max-vertical-offset="1691">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/service/DiscoveryThread.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="96" column="31" selection-start="3268" selection-end="3283" vertical-scroll-proportion="0.0" vertical-offset="1542" max-vertical-offset="2223">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="216" column="23" selection-start="8306" selection-end="8306" vertical-scroll-proportion="0.0" vertical-offset="2910" max-vertical-offset="4579">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="115" column="12" selection-start="6627" selection-end="6627" vertical-scroll-proportion="0.0" vertical-offset="1884" max-vertical-offset="2565">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/values-de/strings.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="115" column="19" selection-start="6965" selection-end="6965" vertical-scroll-proportion="0.516129" vertical-offset="1865" max-vertical-offset="2546">
+          <folding />
         </state>
       </provider>
     </entry>
