@@ -16,23 +16,27 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.network.UDPSendToDevice;
+import oly.netpowerctrl.service.DeviceUpdated;
 import oly.netpowerctrl.utils.AfterSentHandler;
 
-public class OutledSwitchListAdapter extends BaseAdapter implements ListAdapter, OnCheckedChangeListener {
+public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter, OnCheckedChangeListener, DeviceUpdated {
     private List<DeviceInfo> all_devices;
     private List<OutletInfo> all_outlets;
     private LayoutInflater inflater;
     public final Context context;
     private boolean showHidden;
-    AfterSentHandler ash = new AfterSentHandler(this);
+    private AfterSentHandler ash = new AfterSentHandler(this);
 
-    public OutledSwitchListAdapter(Context context, List<DeviceInfo> devices) {
+    public OutletSwitchListAdapter(Context context) {
         this.context = context;
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<OutletInfo>();
         showHidden = false;
-        setDevices(devices);
+        NetpowerctrlApplication.instance.registerConfiguredObserver(this);
+        all_devices = NetpowerctrlApplication.instance.configuredDevices;
+        update();
     }
 
     public int getCount() {
@@ -50,9 +54,10 @@ public class OutledSwitchListAdapter extends BaseAdapter implements ListAdapter,
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.outlet_list_switch, null);
+            assert convertView != null;
             Switch tv = (Switch) convertView.findViewById(R.id.outlet_list_switch);
             tv.setOnCheckedChangeListener(this);
-            // We need this empty on long click handler, otherwise the listview's
+            // We need this empty on long click handler, otherwise the listView's
             // on long click handler does not work
             tv.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -70,11 +75,6 @@ public class OutledSwitchListAdapter extends BaseAdapter implements ListAdapter,
         tv.setEnabled(!info.Disabled);
         tv.setTag(position);
         return convertView;
-    }
-
-    public void setDevices(List<DeviceInfo> new_devices) {
-        all_devices = new_devices;
-        update();
     }
 
     public void update() {
@@ -111,6 +111,11 @@ public class OutledSwitchListAdapter extends BaseAdapter implements ListAdapter,
 
     public void setShowHidden(boolean b) {
         showHidden = b;
+        update();
+    }
+
+    @Override
+    public void onDeviceUpdated(DeviceInfo di) {
         update();
     }
 }

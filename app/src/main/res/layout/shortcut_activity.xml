@@ -31,7 +31,7 @@
         android:orientation="horizontal">
 
         <TextView
-            android:text="Name: "
+            android:text="@string/name"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginBottom="5dp"
@@ -40,20 +40,13 @@
 
         <EditText
             android:id="@+id/shortcut_name"
-            android:layout_width="match_parent"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Name"
+            android:hint="@android:string/unknownName"
             android:imeOptions="actionNext"
             android:singleLine="true" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/shortcut_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp" />
 
     <LinearLayout
         style="?android:attr/buttonBarStyle"

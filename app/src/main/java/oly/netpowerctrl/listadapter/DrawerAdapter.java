@@ -13,7 +13,7 @@ import java.util.List;
 import oly.netpowerctrl.R;
 
 /**
- * Created by david on 23.12.13.
+ * Adapter with items and headers
  */
 public class DrawerAdapter extends BaseAdapter {
 
@@ -34,13 +34,13 @@ public class DrawerAdapter extends BaseAdapter {
         public String mTitle;
         public String mSummary;
         public String mClazz;
-        public boolean mdialog;
+        public boolean mDialog;
 
         public DrawerItem(String title, String summary, String clazz, boolean dialog) {
             mTitle = title;
             mSummary = summary;
             mClazz = clazz;
-            mdialog = dialog;
+            mDialog = dialog;
         }
     }
 
@@ -54,10 +54,6 @@ public class DrawerAdapter extends BaseAdapter {
 
     public void addItem(String title, String summary, String clazz, boolean dialog) {
         mItems.add(new DrawerItem(title, summary, clazz, dialog));
-    }
-
-    public void addItem(String title, String summary, String clazz) {
-        mItems.add(new DrawerItem(title, summary, clazz, false));
     }
 
     @Override
@@ -93,6 +89,7 @@ public class DrawerAdapter extends BaseAdapter {
                 v = inflater.inflate(R.layout.drawer_list_header, parent, false);
             }
 
+            assert v != null;
             ((TextView) v.findViewById(R.id.headertitle)).setText(((Header) getItem(position)).mTitle);
 
             return v;
@@ -105,9 +102,10 @@ public class DrawerAdapter extends BaseAdapter {
                 v = inflater.inflate(R.layout.drawer_list_item, parent, false);
             }
 
+            assert v != null;
             ((TextView) v.findViewById(R.id.title)).setText(sample.mTitle);
-            TextView summary =  ((TextView) v.findViewById(R.id.summary));
-            summary.setVisibility (sample.mSummary.isEmpty()?View.GONE:View.VISIBLE);
+            TextView summary = ((TextView) v.findViewById(R.id.summary));
+            summary.setVisibility(sample.mSummary.isEmpty() ? View.GONE : View.VISIBLE);
             summary.setText(sample.mSummary);
 
             return v;

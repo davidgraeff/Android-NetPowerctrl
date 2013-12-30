@@ -1,6 +1,6 @@
 package oly.netpowerctrl.listadapter;
 
-import android.app.Activity;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,24 +20,23 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletCommand;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.utils.MenuConfigureEvent;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.service.DeviceUpdated;
+import oly.netpowerctrl.utils.ListItemMenu;
 
-public class OutledListAdapter extends BaseAdapter implements ListAdapter, OnItemSelectedListener {
-    private List<DeviceInfo> all_devices;
+public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnItemSelectedListener, DeviceUpdated {
     private List<OutletCommand> all_outlets;
     private LayoutInflater inflater;
-    final Activity context;
-    ArrayAdapter<CharSequence> spinneradapter;
-    private MenuConfigureEvent menuConfigureEvent = null;
+    private ArrayAdapter<CharSequence> spinner_adapter;
+    private ListItemMenu listItemMenu = null;
 
-    public OutledListAdapter(Activity context, List<DeviceInfo> devices) {
-        this.context = context;
+    public OutletListAdapter(Context context) {
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<OutletCommand>();
-        all_devices = devices;
+        NetpowerctrlApplication.instance.registerConfiguredObserver(this);
 
-        spinneradapter = ArrayAdapter.createFromResource(context, R.array.shortcutchoices, android.R.layout.simple_spinner_item);
-        spinneradapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner_adapter = ArrayAdapter.createFromResource(context, R.array.shortcutchoices, android.R.layout.simple_spinner_item);
+        spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         update();
     }
 
@@ -57,8 +56,9 @@ public class OutledListAdapter extends BaseAdapter implements ListAdapter, OnIte
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.outlet_list_item, null);
+            assert convertView != null;
             Spinner r = (Spinner) convertView.findViewById(R.id.outlet_list_spinner);
-            r.setAdapter(spinneradapter);
+            r.setAdapter(spinner_adapter);
         }
         OutletCommand command = all_outlets.get(position);
         TextView tv = (TextView) convertView.findViewById(R.id.outlet_list_text);
@@ -76,9 +76,9 @@ public class OutledListAdapter extends BaseAdapter implements ListAdapter, OnIte
         return convertView;
     }
 
-    public void update() {
+    void update() {
         all_outlets.clear();
-        for (DeviceInfo device : all_devices) {
+        for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
                 all_outlets.add(OutletCommand.fromOutletInfo(oi, false));
@@ -103,19 +103,24 @@ public class OutledListAdapter extends BaseAdapter implements ListAdapter, OnIte
         Spinner sp = (Spinner) parent;
         OutletCommand info = all_outlets.get((Integer) parent.getTag());
         int sel = sp.getSelectedItemPosition();
-        info.enabled = (sel == 0 || sel == Spinner.INVALID_POSITION) ? false : true;
+        info.enabled = (!(sel == 0 || sel == Spinner.INVALID_POSITION));
         if (info.enabled) {
             info.state = sel - 1; //1:off;2:on;3:toggle
         }
-        if (menuConfigureEvent != null)
-            menuConfigureEvent.onConfigure(view, position);
+        if (listItemMenu != null)
+            listItemMenu.onMenuItemClicked(view, position);
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
     }
 
-    public void setMenuConfigureEvent(MenuConfigureEvent dce) {
-        menuConfigureEvent = dce;
+    public void setListItemMenu(ListItemMenu dce) {
+        listItemMenu = dce;
+    }
+
+    @Override
+    public void onDeviceUpdated(DeviceInfo di) {
+        update();
     }
 }

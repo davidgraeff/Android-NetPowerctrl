@@ -1,9 +1,5 @@
 package oly.netpowerctrl.service;
 
-import android.content.Context;
-import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -13,19 +9,15 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.utils.ShowToast;
 
-public class DiscoveryThread extends Thread {
+class DiscoveryThread extends Thread {
+    private int receive_port;
+    private boolean keep_running;
+    private DatagramSocket socket;
+    private NetpowerctrlService service;
 
-    public static String BROADCAST_DEVICE_DISCOVERED = "com.nittka.netpowerctrl.DEVICE_DISCOVERED";
-    public static String BROADCAST_RESTART_DISCOVERY = "com.nittka.netpowerctrl.RESTART_DISCOVERY";
-
-    int recv_port;
-    Context ctx;
-    boolean keep_running;
-    DatagramSocket socket;
-
-    public DiscoveryThread(int port, Context context) {
-        recv_port = port;
-        ctx = context;
+    public DiscoveryThread(int port, NetpowerctrlService service) {
+        this.service = service;
+        receive_port = port;
         socket = null;
     }
 
@@ -36,20 +28,20 @@ public class DiscoveryThread extends Thread {
             try {
                 byte[] message = new byte[1500];
                 DatagramPacket p = new DatagramPacket(message, message.length);
-                socket = new DatagramSocket(recv_port);
+                socket = new DatagramSocket(receive_port);
                 socket.setReuseAddress(true);
                 while (keep_running) {
                     socket.receive(p);
-                    parsePacket(new String(message, 0, p.getLength(), "latin-1"), recv_port);
+                    parsePacket(new String(message, 0, p.getLength(), "latin-1"), receive_port);
                 }
                 socket.close();
             } catch (final IOException e) {
                 if (keep_running) { // no message if we were interrupt()ed
-                    String msg = String.format(ctx.getResources().getString(R.string.error_listen_thread_exception), recv_port);
+                    String msg = String.format(service.getResources().getString(R.string.error_listen_thread_exception), receive_port);
                     msg += e.getLocalizedMessage();
-                    if (recv_port < 1024)
-                        msg += ctx.getResources().getString(R.string.error_port_lt_1024);
-                    ShowToast.ShowToast(ctx, msg);
+                    if (receive_port < 1024)
+                        msg += service.getResources().getString(R.string.error_port_lt_1024);
+                    ShowToast.FromOtherThread(service, msg);
                 }
                 break;
             }
@@ -65,29 +57,23 @@ public class DiscoveryThread extends Thread {
         super.interrupt();
     }
 
-    public void parsePacket(final String message, int recevied_port) {
+    void parsePacket(final String message, int receive_port) {
 
         String msg[] = message.split(":");
-        if (msg.length < 3)
-            return;
-
-        if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
-            // error packet received
-            String desc;
-            if (msg[2].trim().equals("NoPass"))
-                desc = ctx.getResources().getString(R.string.error_nopass);
-            else desc = msg[2];
-            String error = ctx.getResources().getString(R.string.error_packet_received) + desc;
-            ShowToast.ShowToast(ctx, error);
+        if (msg.length < 3) {
             return;
         }
 
-        final DeviceInfo di = new DeviceInfo(ctx);
+        if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
+            service.notifyErrorObservers(msg[1].trim(), msg[2].trim());
+            return;
+        }
+
+        final DeviceInfo di = new DeviceInfo(service);
         di.DeviceName = msg[1].trim();
         di.HostName = msg[2];
         di.MacAddress = msg[5];
-        di.RecvPort = recevied_port;
-        // leave SendPort as default, as we have no way to know.
+        di.ReceivePort = receive_port;
 
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
@@ -115,8 +101,6 @@ public class DiscoveryThread extends Thread {
             di.Outlets.add(oi);
         }
 
-        Intent it = new Intent(BROADCAST_DEVICE_DISCOVERED);
-        it.putExtra("device_info", di);
-        LocalBroadcastManager.getInstance(ctx).sendBroadcast(it);
+        service.notifyObservers(di);
     }
 }

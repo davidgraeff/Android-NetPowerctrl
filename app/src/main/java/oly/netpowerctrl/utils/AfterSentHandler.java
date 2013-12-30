@@ -7,17 +7,17 @@ import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.listadapter.OutledSwitchListAdapter;
+import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
 import oly.netpowerctrl.network.UDPSendToDevice;
 
 public class AfterSentHandler extends Handler {
-    int listposition;
-    boolean state;    // the state we want the outlet to be in
-    int retries;
-    static final int WHAT = 111;
-    final OutledSwitchListAdapter ola;
+    private int list_position;
+    private boolean state;    // the state we want the outlet to be in
+    private int retries;
+    private static final int WHAT = 111;
+    private final OutletSwitchListAdapter ola;
 
-    public AfterSentHandler(OutledSwitchListAdapter l) {
+    public AfterSentHandler(OutletSwitchListAdapter l) {
         ola = l;
     }
 
@@ -31,8 +31,8 @@ public class AfterSentHandler extends Handler {
         removeMessages(WHAT);
     }
 
-    public void setData(int listposition, boolean expected_state) {
-        this.listposition = listposition;
+    public void setData(int list_position, boolean expected_state) {
+        this.list_position = list_position;
         state = expected_state;
         retries = 0;
     }
@@ -44,10 +44,10 @@ public class AfterSentHandler extends Handler {
             return;
         }
 
-        OutletInfo oi = (OutletInfo) ola.getItem(listposition);
+        OutletInfo oi = (OutletInfo) ola.getItem(list_position);
         if (oi.State != state) {
             retries++;
-            Log.w("DeviceControl", "Sending again, no response " + Integer.valueOf(listposition).toString());
+            Log.w("DeviceControl", "Sending again, no response " + Integer.valueOf(list_position).toString());
             startDelayedCheck();
             UDPSendToDevice.sendOutlet(ola.context, oi.device, oi.OutletNumber, state);
         }

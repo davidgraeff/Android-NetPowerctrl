@@ -15,14 +15,14 @@ import android.widget.PopupMenu;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.listadapter.OutledSwitchListAdapter;
+import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
 import oly.netpowerctrl.service.DeviceQuery;
 import oly.netpowerctrl.utils.GridOrListFragment;
 
 /**
  */
 public class OutletsFragment extends GridOrListFragment implements AdapterView.OnItemLongClickListener, PopupMenu.OnMenuItemClickListener {
-    private OutledSwitchListAdapter adapter;
+    private OutletSwitchListAdapter adapter;
 
     public OutletsFragment() {
     }

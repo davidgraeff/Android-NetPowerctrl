@@ -8,7 +8,7 @@ import android.widget.RemoteViews;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
-public class DeviceWidgetProvider extends AppWidgetProvider {
+class DeviceWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 

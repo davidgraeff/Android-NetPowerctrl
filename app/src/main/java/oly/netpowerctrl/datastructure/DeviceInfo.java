@@ -25,18 +25,17 @@ public class DeviceInfo implements Parcelable {
 
     public boolean DefaultPorts;
     public int SendPort;
-    public int RecvPort;
+    public int ReceivePort;
 
     public boolean Configured;
 
     public List<OutletInfo> Outlets;
 
-    public static String makePrefname(UUID uuid) {
+    private static String uuidToString(UUID uuid) {
         return uuid.toString().replace(":", "-");
     }
 
-
-    public DeviceInfo() {
+    private DeviceInfo() {
         uuid = UUID.randomUUID();
         DeviceName = "";
         HostName = "";
@@ -45,7 +44,7 @@ public class DeviceInfo implements Parcelable {
         Password = "";
         DefaultPorts = true;
         SendPort = -1;
-        RecvPort = -1;
+        ReceivePort = -1;
         Configured = false;
         Outlets = new ArrayList<OutletInfo>();
     }
@@ -54,7 +53,7 @@ public class DeviceInfo implements Parcelable {
         this();
         DeviceName = cx.getResources().getString(R.string.default_device_name);
         SendPort = DeviceQuery.getDefaultSendPort(cx);
-        RecvPort = DeviceQuery.getDefaultRecvPort(cx);
+        ReceivePort = DeviceQuery.getDefaultRecvPort(cx);
     }
 
     public DeviceInfo(DeviceInfo other) {
@@ -66,7 +65,7 @@ public class DeviceInfo implements Parcelable {
         Password = other.Password;
         DefaultPorts = other.DefaultPorts;
         SendPort = other.SendPort;
-        RecvPort = other.RecvPort;
+        ReceivePort = other.ReceivePort;
         Configured = other.Configured;
         Outlets = new ArrayList<OutletInfo>();
         for (OutletInfo oi : other.Outlets)
@@ -83,25 +82,25 @@ public class DeviceInfo implements Parcelable {
         return uuid.equals(uuid);
     }
 
-    public String getPrefname() {
-        return makePrefname(uuid);
+    public String getID() {
+        return uuidToString(uuid);
     }
 
     public int describeContents() {
         return 0;
     }
 
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(uuid.toString());
-        dest.writeString(DeviceName);
-        dest.writeString(HostName);
-        dest.writeString(MacAddress);
-        dest.writeString(UserName);
-        dest.writeString(Password);
-        dest.writeInt(DefaultPorts ? 1 : 0);
-        dest.writeInt(SendPort);
-        dest.writeInt(RecvPort);
-        dest.writeTypedList(Outlets);
+    public void writeToParcel(Parcel destination, int flags) {
+        destination.writeString(uuid.toString());
+        destination.writeString(DeviceName);
+        destination.writeString(HostName);
+        destination.writeString(MacAddress);
+        destination.writeString(UserName);
+        destination.writeString(Password);
+        destination.writeInt(DefaultPorts ? 1 : 0);
+        destination.writeInt(SendPort);
+        destination.writeInt(ReceivePort);
+        destination.writeTypedList(Outlets);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -126,7 +125,7 @@ public class DeviceInfo implements Parcelable {
         Password = in.readString();
         DefaultPorts = in.readInt() != 0;
         SendPort = in.readInt();
-        RecvPort = in.readInt();
+        ReceivePort = in.readInt();
         Configured = true;
         in.readTypedList(Outlets, OutletInfo.CREATOR);
     }

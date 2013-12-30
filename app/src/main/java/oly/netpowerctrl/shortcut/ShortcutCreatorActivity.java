@@ -17,18 +17,18 @@ import java.util.Calendar;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
-import oly.netpowerctrl.listadapter.OutledListAdapter;
+import oly.netpowerctrl.listadapter.OutletListAdapter;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.MenuConfigureEvent;
+import oly.netpowerctrl.utils.ListItemMenu;
 
-public class ShortcutCreatorActivity extends Activity implements MenuConfigureEvent {
-    ArrayList<DeviceInfo> alDevices;
-    OutledListAdapter adpOutlets;
-    ListView lvOutletSelect;
-    Switch show_mainwindow;
-    TextView shortcutName;
-    boolean shortcutname_changed = false;
-    final Context that = this;
+public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
+    private ArrayList<DeviceInfo> alDevices;
+    private OutletListAdapter adpOutlets;
+    private ListView lvOutletSelect;
+    private Switch show_mainWindow;
+    private TextView shortcutName;
+    private boolean shortcutName_changed = false;
+    private final Context that = this;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -36,16 +36,18 @@ public class ShortcutCreatorActivity extends Activity implements MenuConfigureEv
         setResult(RESULT_CANCELED, null);
         setContentView(R.layout.shortcut_activity);
 
+        // TODO use all devices from application
         alDevices = SharedPrefs.ReadConfiguredDevices(this);
-        adpOutlets = new OutledListAdapter(this, alDevices);
-        adpOutlets.setMenuConfigureEvent(this);
-        show_mainwindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
+        adpOutlets = new OutletListAdapter(this);
+        adpOutlets.setListItemMenu(this);
+        show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
         shortcutName = (TextView) findViewById(R.id.shortcut_name);
-        // if the shortkey name has changed, we disallow automatically changes to the name
+        // if the shortKey name has changed, we disallow automatically changes to the name
         shortcutName.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                shortcutname_changed = shortcutName.getText().length() != 0;
+                //noinspection ConstantConditions
+                shortcutName_changed = shortcutName.getText().length() != 0;
                 return false;
             }
         });
@@ -63,7 +65,7 @@ public class ShortcutCreatorActivity extends Activity implements MenuConfigureEv
         }
 
         if (isForGroups) {
-            show_mainwindow.setVisibility(View.GONE);
+            show_mainWindow.setVisibility(View.GONE);
             setTitle(R.string.title_scene);
         } else {
             setTitle(R.string.title_shortcut);
@@ -77,12 +79,13 @@ public class ShortcutCreatorActivity extends Activity implements MenuConfigureEv
             public void onClick(View v) {
                 // Generate list of checked items
                 OutletCommandGroup og = adpOutlets.getCheckedItems();
-                og.groupname = shortcutName.getText().toString();
-                if (og.groupname.isEmpty() || og.length() == 0)
+                //noinspection ConstantConditions
+                og.sceneName = shortcutName.getText().toString();
+                if (og.sceneName.isEmpty() || og.length() == 0)
                     return;
-                Intent extra = Shortcuts.createShortcutExecutionIntent(that, og, show_mainwindow.isChecked());
+                Intent extra = Shortcuts.createShortcutExecutionIntent(that, og, show_mainWindow.isChecked());
                 // Return result
-                setResult(RESULT_OK, Shortcuts.createShortcut(that, extra, og.groupname));
+                setResult(RESULT_OK, Shortcuts.createShortcut(that, extra, og.sceneName));
                 finish();
             }
         });
@@ -96,16 +99,17 @@ public class ShortcutCreatorActivity extends Activity implements MenuConfigureEv
     }
 
     @Override
-    public void onConfigure(View v, int position) {
+    public void onMenuItemClicked(View v, int position) {
         OutletCommandGroup og = adpOutlets.getCheckedItems();
-        if (!shortcutname_changed) {
+        if (!shortcutName_changed) {
             if (og.length() > 3) {
                 Calendar t = Calendar.getInstance();
-                String defname = DateFormat.getMediumDateFormat(that).format(t.getTime()) + " - " + DateFormat.getTimeFormat(that).format(t.getTime());
-                shortcutName.setText(getResources().getString(R.string.app_name) + " (" + og.length() + ") " + defname);
+                String default_name = DateFormat.getMediumDateFormat(that).format(t.getTime()) + " - " + DateFormat.getTimeFormat(that).format(t.getTime());
+                shortcutName.setText(getResources().getString(R.string.app_name) + " (" + og.length() + ") " + default_name);
             } else
                 shortcutName.setText(og.buildDetails(this));
         }
+        //noinspection ConstantConditions
         findViewById(R.id.btnAcceptShortcut).setEnabled(og.length() != 0 && shortcutName.getText().length() != 0);
     }
 }

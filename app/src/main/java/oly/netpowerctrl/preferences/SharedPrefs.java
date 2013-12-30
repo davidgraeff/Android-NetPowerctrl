@@ -37,15 +37,6 @@ public class SharedPrefs {
     public final static String PREF_OUTLET_NAME = "OUTLET_NAME";
     public final static String PREF_OUTLET_NUMBER = "OUTLET_NUMBER";
 
-    public static boolean getNextToggleState(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
-        boolean r = prefs.getBoolean("toggle", false);
-        SharedPreferences.Editor prefEditor = prefs.edit();
-        prefEditor.putBoolean("toggle", !r);
-        prefEditor.commit();
-        return r;
-    }
-
     public static int getFirstTab(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
         return prefs.getInt(PREF_FIRSTTAB, -1);
@@ -118,10 +109,10 @@ public class SharedPrefs {
         di.DefaultPorts = device_prefs.getBoolean(PREF_DEFAULTPORTS, true);
         if (di.DefaultPorts) {
             di.SendPort = DeviceQuery.getDefaultSendPort(context);
-            di.RecvPort = DeviceQuery.getDefaultRecvPort(context);
+            di.ReceivePort = DeviceQuery.getDefaultRecvPort(context);
         } else {
             di.SendPort = device_prefs.getInt(PREF_SENDPORT, DeviceQuery.getDefaultSendPort(context));
-            di.RecvPort = device_prefs.getInt(PREF_RECVPORT, DeviceQuery.getDefaultRecvPort(context));
+            di.ReceivePort = device_prefs.getInt(PREF_RECVPORT, DeviceQuery.getDefaultRecvPort(context));
         }
         di.Configured = true;
         di.Outlets = new ArrayList<OutletInfo>();
@@ -140,8 +131,8 @@ public class SharedPrefs {
         String configured_devices = "";
 
         for (DeviceInfo di : devices) {
-            configured_devices += di.getPrefname() + ":";
-            String prefname = getFullPrefname(di.getPrefname());
+            configured_devices += di.getID() + ":";
+            String prefname = getFullPrefname(di.getID());
             SaveDevice(context, prefname, di);
         }
 
@@ -165,7 +156,7 @@ public class SharedPrefs {
         device_editor.putString(PREF_PASSWORD, di.Password);
         device_editor.putBoolean(PREF_DEFAULTPORTS, di.DefaultPorts);
         device_editor.putInt(PREF_SENDPORT, di.SendPort);
-        device_editor.putInt(PREF_RECVPORT, di.RecvPort);
+        device_editor.putInt(PREF_RECVPORT, di.ReceivePort);
 
         device_editor.putInt(PREF_NUM_OUTLETS, di.Outlets.size());
         for (int i = 0; i < di.Outlets.size(); i++) {

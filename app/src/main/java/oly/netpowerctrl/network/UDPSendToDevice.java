@@ -6,70 +6,149 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.net.UnknownHostException;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletCommand;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
 public class UDPSendToDevice {
+    /**
+     * This class extracts the destination ip, user access data
+     * and provides outlet manipulation methods (on/off/toggle).
+     * The resulting data byte variable can be used to send a
+     * bulk-change udp packet.
+     */
+    static final class DeviceSwitch {
+        // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
+        // “Sw” + Steckdosen + User + Passwort
+        // Steckdosen = Zustand aller Steckdosen binär
+        // LSB = Steckdose 1, MSB (Bit 8)= Steckdose 8 (PRO, POWER), Bit 2 = Steckdose 3 (HOME).
+        // Soll nur 1 & 5 eingeschaltet werden=00010001 = 17 = 0x11 (HEX)
+        private byte data;
+        InetAddress dest;
+        int port;
+        String access;
+
+        DeviceSwitch(DeviceInfo di) {
+            this.data = 0;
+            this.port = di.SendPort;
+            try {
+                this.dest = InetAddress.getByName(di.HostName);
+            } catch (UnknownHostException e) {
+                this.dest = null;
+            }
+            this.access = di.UserName + di.Password;
+            for (int i = 0; i < di.Outlets.size(); ++i) {
+                if (di.Outlets.get(i).State)
+                    switchOn(i);
+            }
+        }
+
+        void switchOn(int outletNumber) {
+            data |= ((byte) (1 << outletNumber));
+        }
+
+        void switchOff(int outletNumber) {
+            data &= ~((byte) (1 << outletNumber));
+        }
+
+        void toggle(int outletNumber) {
+            if ((data & ((byte) (1 << outletNumber))) > 0) {
+                switchOff(outletNumber);
+            } else {
+                switchOn(outletNumber);
+            }
+        }
+
+        byte getSwitchByte() {
+            return data;
+        }
+    }
 
     /**
-     * Convenience version of sendOutlet for the extra bundle of a shortcut
-     * intent.
+     * Bulk version of sendOutlet. Send changes for each device in only one packet per device.
      *
      * @param context The context of the activity for showing toast messages and
      *                getResources
      * @param og      The OutletCommandGroup
      * @return Return true if all fields have been found
      */
-    static public boolean sendOutlet(final Context context, final OutletCommandGroup og) {
-        // Read configured devices, because we need the DeviceInfo objects that
-        // matches
-        // our stored mac addresses
-        final ArrayList<DeviceInfo> alDevices = SharedPrefs.ReadConfiguredDevices(context);
-        final boolean r = SharedPrefs.getNextToggleState(context);
-
+    static public void sendOutlet(final Context context, final OutletCommandGroup og) {
         // udp sending in own thread
         new Thread(new Runnable() {
             public void run() {
                 try {
                     DatagramSocket s = new DatagramSocket();
+
+                    TreeMap<String, DeviceSwitch> devices = new TreeMap<String, DeviceSwitch>();
                     for (OutletCommand c : og.commands) {
-                        // find DeviceInfo with matching mac address
-                        DeviceInfo device = null;
-                        for (DeviceInfo check : alDevices) {
-                            if (check.MacAddress.equals(c.device_mac)) {
-                                device = check;
+                        if (!devices.containsKey(c.device_mac)) {
+                            devices.put(c.device_mac, new DeviceSwitch(c.outletinfo.device));
+                        }
+                        switch (c.state) {
+                            case 0:
+                                devices.get(c.device_mac).switchOn(c.outletNumber);
                                 break;
-                            }
+                            case 1:
+                                devices.get(c.device_mac).switchOff(c.outletNumber);
+                                break;
+                            case 2:
+                                devices.get(c.device_mac).toggle(c.outletNumber);
+                                break;
                         }
-                        if (device != null) {
-                            boolean sw_state = (c.state == 2) ? r : (c.state == 1);
-                            String messageStr = String.format(Locale.US, "%s%d%s%s", sw_state ? "Sw_on" : "Sw_off",
-                                    c.outletNumber, device.UserName, device.Password);
-                            //Log.w("send",messageStr+" "+device.HostName+":"+Integer.valueOf(device.SendPort).toString());
-                            InetAddress host = InetAddress.getByName(device.HostName);
-                            s.send(new DatagramPacket(messageStr.getBytes(), messageStr.length(), host, device.SendPort));
-                            // wait for 20ms trying not to congest the line
-                            try {
-                                Thread.sleep(20);
-                            } catch (InterruptedException ignored) {
-                            }
-                        }
+
+                    }
+
+                    for (Map.Entry<String, DeviceSwitch> c : devices.entrySet()) {
+                        sendAllOutlets(c.getValue(), s);
                     }
                     s.close();
                 } catch (final IOException e) {
-                    ShowToast.ShowToast(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "
+                    ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "
                             + e.getMessage());
                 }
             }
         }).start();
-        return true;
+    }
+
+    /**
+     * Bulk version of sendOutlet. Send changes for multiple outlets of a device in only one packet.
+     *
+     * @param context The context
+     * @param device  The device and state
+     */
+    static public void sendAllOutlets(final Context context, final DeviceSwitch device) {
+        // udp sending in own thread
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    DatagramSocket s = new DatagramSocket();
+                    sendAllOutlets(device, s);
+                    s.close();
+                } catch (final IOException e) {
+                    ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "
+                            + e.getMessage());
+                }
+            }
+        }).start();
+    }
+
+    static private void sendAllOutlets(final DeviceSwitch device, DatagramSocket s) throws IOException {
+        if (device.dest != null) {
+            String messageStr = String.format(Locale.US, "Sw%d%s", device.getSwitchByte(), device.access);
+            s.send(new DatagramPacket(messageStr.getBytes(), messageStr.length(), device.dest, device.port));
+            // wait for 20ms trying not to congest the line
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException ignored) {
+            }
+        }
     }
 
     static public void sendOutlet(final Context context, final DeviceInfo device, final int OutletNumber,
@@ -88,7 +167,7 @@ public class UDPSendToDevice {
                     s.send(p);
                     s.close();
                 } catch (final IOException e) {
-                    ShowToast.ShowToast(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "
+                    ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "
                             + e.getMessage());
                 }
             }

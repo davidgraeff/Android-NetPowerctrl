@@ -16,11 +16,11 @@ import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.network.UDPSendToDevice;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.GreenFlasher;
-import oly.netpowerctrl.utils.MenuConfigureEvent;
+import oly.netpowerctrl.utils.ListItemMenu;
 
 public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
     private Context context;
-    private MenuConfigureEvent menuConfigureEvent = null;
+    private ListItemMenu listItemMenu = null;
     private ArrayList<OutletCommandGroup> scenes;
     private LayoutInflater inflater;
 
@@ -60,11 +60,11 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
         OutletCommandGroup data = scenes.get(position);
 
         TextView tvName = (TextView) convertView.findViewById(R.id.group_list_name);
-        tvName.setText(data.groupname);
+        tvName.setText(data.sceneName);
         tvName.setTag(position);
         tvName.setOnClickListener(this);
         tvName = (TextView) convertView.findViewById(R.id.group_list_details);
-        tvName.setText(data.groupdetails);
+        tvName.setText(data.sceneDetails);
         tvName.setTag(position);
         tvName.setOnClickListener(this);
         ImageButton btn = (ImageButton) convertView.findViewById(R.id.btnEditScene);
@@ -72,9 +72,9 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
         btn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (menuConfigureEvent != null) {
+                if (listItemMenu != null) {
                     int position = (Integer) view.getTag();
-                    menuConfigureEvent.onConfigure(view, position);
+                    listItemMenu.onMenuItemClicked(view, position);
                 }
             }
         });
@@ -82,7 +82,7 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
         return convertView;
     }
 
-    public void executeScene(int position) {
+    void executeScene(int position) {
         OutletCommandGroup og = (OutletCommandGroup) getItem(position);
         UDPSendToDevice.sendOutlet(context, og);
     }
@@ -108,7 +108,7 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
         notifyDataSetChanged();
     }
 
-    public void setMenuConfigureEvent(MenuConfigureEvent dce) {
-        menuConfigureEvent = dce;
+    public void setListItemMenu(ListItemMenu dce) {
+        listItemMenu = dce;
     }
 }

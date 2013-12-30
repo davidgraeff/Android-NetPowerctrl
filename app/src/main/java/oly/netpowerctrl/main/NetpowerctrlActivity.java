@@ -38,7 +38,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.listadapter.AdapterUpdateManager;
+import oly.netpowerctrl.listadapter.AdapterController;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -47,9 +47,6 @@ import oly.netpowerctrl.service.NetpowerctrlService;
 
 public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static NetpowerctrlActivity _this = null;
-
-    // NFC
-    private NfcAdapter mNfcAdapter;
 
     // Drawer
     private DrawerLayout mDrawerLayout;
@@ -60,7 +57,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     private CharSequence mTitle;
 
     // Core
-    public AdapterUpdateManager adapterUpdateManger;
+    public AdapterController adapterUpdateManger;
 
 
     @Override
@@ -103,6 +100,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
+        //noinspection ConstantConditions
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
 
@@ -138,18 +136,18 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         }
 
         // NFC
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (mNfcAdapter != null) {
             // Register callback
             mNfcAdapter.setNdefPushMessageCallback(this, this);
         }
 
         // Core
-        adapterUpdateManger = new AdapterUpdateManager(this);
+        adapterUpdateManger = new AdapterController(this);
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle icicle) {
+    protected void onSaveInstanceState(@SuppressWarnings("NullableProblems") Bundle icicle) {
         super.onSaveInstanceState(icicle);
         icicle.putInt("navigation", mDrawerList.getCheckedItemPosition());
     }
@@ -158,7 +156,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     protected void onPause() {
         super.onPause();
         SharedPrefs.setFirstTab(this, mDrawerList.getCheckedItemPosition());
-        adapterUpdateManger.stop();
+        NetpowerctrlApplication.instance.stopListener();
     }
 
     @Override
@@ -182,14 +180,15 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                     NfcAdapter.EXTRA_NDEF_MESSAGES);
             // only one message sent during the beam
+            assert rawMsgs != null;
             NdefMessage msg = (NdefMessage) rawMsgs[0];
+            @SuppressWarnings("unused")
             String beamedDeviceConfigurations = new String(msg.getRecords()[1].getPayload());
             //TODO nfc read
         }
 
         // we may be returning from a configure dialog
-        adapterUpdateManger.updateConfiguredDevices();
-        adapterUpdateManger.start();
+        NetpowerctrlApplication.instance.startListener();
 
         startService(new Intent(this, NetpowerctrlService.class));
         DeviceQuery.sendBroadcastQuery(this);
@@ -223,7 +222,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
         Fragment fragment = Fragment.instantiate(this, item.mClazz);
         FragmentManager fragmentManager = getFragmentManager();
-        if (item.mdialog) {
+        if (item.mDialog) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
             if (prev != null) {
@@ -244,6 +243,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     @Override
     public void setTitle(CharSequence title) {
         mTitle = title;
+        //noinspection ConstantConditions
         getActionBar().setTitle(mTitle);
     }
 
@@ -266,7 +266,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public static <T> int indexOf(T needle, T[] haystack) {
+    private static <T> int indexOf(T needle, T[] haystack) {
         for (int i = 0; i < haystack.length; i++) {
             if (haystack[i] != null && haystack[i].equals(needle)
                     || needle == null && haystack[i] == null) return i;

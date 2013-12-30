@@ -9,8 +9,8 @@ import oly.netpowerctrl.R;
 
 
 public class OutletCommandGroup {
-    public String groupname;
-    public String groupdetails;
+    public String sceneName;
+    public String sceneDetails;
     private String reserved = "";
     private UUID uuid;
     public ArrayList<OutletCommand> commands;
@@ -31,7 +31,7 @@ public class OutletCommandGroup {
     }
 
     public String toString() {
-        String result = groupname.replace("§§", "") + "§§" + reserved.replace("§§", "") + "§§" + uuid.toString();
+        String result = sceneName.replace("§§", "") + "§§" + reserved.replace("§§", "") + "§§" + uuid.toString();
         for (OutletCommand c : commands) {
             result += "§§" + c.toString();
         }
@@ -43,22 +43,22 @@ public class OutletCommandGroup {
             return null;
 
         OutletCommandGroup og = new OutletCommandGroup();
-        String listsrc[] = source.split("§§");
-        if (listsrc.length == 0)
+        String list_src[] = source.split("§§");
+        if (list_src.length == 0)
             return null;
 
-        // groupname is the first element, uuid the third
-        og.groupname = listsrc[0];
-        og.reserved = listsrc[1];
-        og.uuid = UUID.fromString(listsrc[2]);
+        // sceneName is the first element, uuid the third
+        og.sceneName = list_src[0];
+        og.reserved = list_src[1];
+        og.uuid = UUID.fromString(list_src[2]);
 
-        for (int i = 3; i < listsrc.length; ++i) {
-            OutletCommand c = OutletCommand.fromString(listsrc[i]);
+        for (int i = 3; i < list_src.length; ++i) {
+            OutletCommand c = OutletCommand.fromString(list_src[i]);
             if (c != null)
                 og.commands.add(c);
         }
 
-        og.groupdetails = og.buildDetails(context);
+        og.sceneDetails = og.buildDetails(context);
 
         return og;
     }
