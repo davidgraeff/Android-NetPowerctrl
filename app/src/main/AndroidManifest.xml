@@ -76,7 +76,7 @@
         <service
             android:label="@string/app_name"
             android:icon="@drawable/netpowerctrl"
-            android:name="oly.netpowerctrl.service.NetpowerctrlService"
+            android:name="oly.netpowerctrl.anelservice.NetpowerctrlService"
             android:permission="android.permission.INTERNET" />
 
     </application>

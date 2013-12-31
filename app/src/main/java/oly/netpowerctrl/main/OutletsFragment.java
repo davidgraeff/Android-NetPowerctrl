@@ -14,9 +14,9 @@ import android.widget.EditText;
 import android.widget.PopupMenu;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
-import oly.netpowerctrl.service.DeviceQuery;
 import oly.netpowerctrl.utils.GridOrListFragment;
 
 /**
@@ -87,7 +87,7 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
         popup.getMenu().findItem(R.id.menu_hide_outlet).setVisible(!oi.Hidden);
         popup.getMenu().findItem(R.id.menu_unhide_outlet).setVisible(oi.Hidden);
         popup.getMenu().findItem(R.id.menu_up).setVisible(position > 0);
-        popup.getMenu().findItem(R.id.menu_down).setVisible(position < adapter.getCount());
+        popup.getMenu().findItem(R.id.menu_down).setVisible(position < adapter.getCount() - 1);
 
         popup.setOnMenuItemClickListener(this);
         popup.show();
@@ -137,10 +137,12 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
             }
 
             case R.id.menu_up: {
+                adapter.swapPosition(position, position - 1);
                 return true;
             }
 
             case R.id.menu_down: {
+                adapter.swapPosition(position, position + 1);
                 return true;
             }
         }

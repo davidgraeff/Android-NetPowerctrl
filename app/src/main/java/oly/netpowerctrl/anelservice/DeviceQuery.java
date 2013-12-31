@@ -1,4 +1,4 @@
-package oly.netpowerctrl.service;
+package oly.netpowerctrl.anelservice;
 
 import android.content.Context;
 import android.content.SharedPreferences;

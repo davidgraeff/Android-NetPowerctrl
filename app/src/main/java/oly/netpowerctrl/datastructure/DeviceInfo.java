@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.service.DeviceQuery;
+import oly.netpowerctrl.anelservice.DeviceQuery;
 
 // this class holds all the info about one device
 public class DeviceInfo implements Parcelable {

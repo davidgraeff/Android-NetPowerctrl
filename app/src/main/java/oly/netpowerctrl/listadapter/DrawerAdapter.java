@@ -20,6 +20,27 @@ public class DrawerAdapter extends BaseAdapter {
     private List<Object> mItems = new ArrayList<Object>();
     private LayoutInflater inflater;
 
+    public void add(String[] mFragmentNames, String[] mFragmentDesc, String[] mFragmentClasses) {
+        for (int i = 0; i < mFragmentNames.length; ++i) {
+            if (mFragmentDesc[i].equals("-")) {
+                addHeader(mFragmentNames[i]);
+            } else {
+                addItem(mFragmentNames[i], mFragmentDesc[i], mFragmentClasses[i], mFragmentClasses[i].contains("Dialog"));
+            }
+        }
+    }
+
+    public int indexOf(String className) {
+        for (int i = 0; i < mItems.size(); i++) {
+            if (getItemViewType(i) == 1) {
+                DrawerItem item = (DrawerItem) mItems.get(i);
+                if (item.mClazz.equals(className)) return i;
+            }
+
+        }
+        return -1;
+    }
+
     public static class Header {
 
         String mTitle;

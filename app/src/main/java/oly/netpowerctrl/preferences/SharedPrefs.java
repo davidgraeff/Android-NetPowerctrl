@@ -10,10 +10,10 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.service.DeviceQuery;
 
 public class SharedPrefs {
 

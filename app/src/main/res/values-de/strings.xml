@@ -42,6 +42,7 @@
     <string name="device_password_summary">Passwort zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
     <string name="device_outlets">Steckdosen</string>
     <string name="device_outlets_summary">Konfiguration der einzelnen Steckdosen des Gerätes</string>
+    <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommened. Should I save nevertheless?</string>
 
     <string name="menu_add_device">Neues Gerät</string>
     <string name="menu_add_scene">Neue Szene</string>
@@ -73,9 +74,6 @@
     <string name="delete_all_groups">Alle Szenen löschen?</string>
     <string name="confirmation_delete_all_groups">Sind Sie sicher, dass Sie alle Szenen löschen wollen?</string>
 
-    <string name="bug_reports">Fehler melden / Quellcode</string>
-    <string name="rate_and_comment">In Google Play bewerten</string>
-
     <string name="off">Aus</string>
     <string name="on">An</string>
     <string name="toggle">Wechsel</string>
@@ -87,30 +85,59 @@
         <item>Umschalten</item>
     </string-array>
 
-    <string-array name="drawer_titles">
+    <string-array name="feedbackOptions">
+        <item>Fehler melden (E-Mail)</item>
+        <item>Fehler melden (Bugtracker)</item>
+        <item>Zum Quellcode</item>
+        <item>In Google Play bewerten</item>
+    </string-array>
+
+    <string-array name="drawer_titles_outlets">
         <item>Steckdosen</item>
         <item>Alle Steckdosen</item>
         <item>Szenen</item>
-        <item>Geräte</item>
-        <item>Neue Geräte einrichten</item>
-        <item>Eingerichtete Geräte</item>
-        <item>App</item>
-        <item>Einstellungen</item>
-        <item>Hilfe</item>
-        <item>Über</item>
     </string-array>
-    <string-array name="drawer_descriptions">
+
+    <string-array name="drawer_descriptions_outlets">
         <item>-</item>
         <item>Einzelne Steckdose schalten</item>
         <item>Mehrere Steckdosen zugleich schalten</item>
+    </string-array>
+
+    <string-array name="drawer_titles_devices">
+        <item>Geräte</item>
+        <item>Neue Geräte einrichten</item>
+        <item>Eingerichtete Geräte</item>
+    </string-array>
+
+    <string-array name="drawer_descriptions_devices">
         <item>-</item>
         <item />
         <item />
+    </string-array>
+
+    <string-array name="drawer_titles_plugins">
+        <item>Plugins</item>
+    </string-array>
+
+    <string-array name="drawer_descriptions_plugins">
+        <item>-</item>
+    </string-array>
+
+    <string-array name="drawer_titles_app">
+        <item>App</item>
+        <item>Einstellungen</item>
+        <item>Hilfe</item>
+        <item>Feedback</item>
+    </string-array>
+
+    <string-array name="drawer_descriptions_app">
         <item>-</item>
         <item />
         <item />
         <item />
     </string-array>
+
     <string name="drawer_open">Öffne Navigationsleiste</string>
     <string name="drawer_close">Schließe Navigationsleiste</string>
     <string name="empty">Kein Inhalt zum Anzeigen</string>
@@ -124,4 +151,5 @@
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
     <string name="outlet_rename_message">Der Name gilt nur für dieses Handy/Tablet und wird zurückgesetzt, sobald der Name auf der Anel Steckdosenleiste verändert wird. Nutzte einen leeren Text um den Namen zurückzusetzten.</string>
     <string name="name">Name</string>
+    <string name="Version">Version</string>
 </resources>
