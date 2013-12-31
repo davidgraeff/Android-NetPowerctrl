@@ -73,9 +73,10 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
-        mDrawerView = (View) findViewById(R.id.left_drawer);
+        mDrawerView = findViewById(R.id.left_drawer);
 
         try {
+            //noinspection ConstantConditions
             ((TextView) findViewById(R.id.version)).setText(getResources().getText(R.string.Version) + " " +
                     getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
         } catch (PackageManager.NameNotFoundException ignored) {
@@ -192,11 +193,11 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         String intentAction = getIntent().getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intentAction)) {
             Intent intent = getIntent();
-            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
+            Parcelable[] rawMessages = intent.getParcelableArrayExtra(
                     NfcAdapter.EXTRA_NDEF_MESSAGES);
             // only one message sent during the beam
-            assert rawMsgs != null;
-            NdefMessage msg = (NdefMessage) rawMsgs[0];
+            assert rawMessages != null;
+            NdefMessage msg = (NdefMessage) rawMessages[0];
             @SuppressWarnings("unused")
             String beamedDeviceConfigurations = new String(msg.getRecords()[1].getPayload());
             //TODO nfc read
@@ -277,7 +278,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggls
+        // Pass any configuration change to the drawer toggle
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 }

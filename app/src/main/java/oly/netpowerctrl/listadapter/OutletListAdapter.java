@@ -16,28 +16,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceUpdated;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletCommand;
-import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ListItemMenu;
 
-public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnItemSelectedListener, DeviceUpdated {
+public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnItemSelectedListener {
     private List<OutletCommand> all_outlets;
     private LayoutInflater inflater;
     private ArrayAdapter<CharSequence> spinner_adapter;
     private ListItemMenu listItemMenu = null;
 
-    public OutletListAdapter(Context context) {
+    public static OutletListAdapter createByConfiguredDevices(Context context) {
+        OutletListAdapter o = new OutletListAdapter(context);
+        for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
+            for (OutletInfo oi : device.Outlets) {
+                oi.device = device;
+                o.all_outlets.add(OutletCommand.fromOutletInfo(oi, false));
+            }
+        }
+        return o;
+    }
+
+    public static OutletListAdapter createByOutletCommands(Context context, List<OutletCommand> commands) {
+        OutletListAdapter o = new OutletListAdapter(context);
+        for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
+            for (OutletInfo oi : device.Outlets) {
+                oi.device = device;
+                OutletCommand c = OutletCommand.fromOutletInfo(oi, false);
+                int i = commands.indexOf(c);
+                if (i != -1) {
+                    c.enabled = true;
+                    c.state = commands.get(i).state;
+                }
+                o.all_outlets.add(c);
+            }
+        }
+        return o;
+    }
+
+    private OutletListAdapter(Context context) {
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<OutletCommand>();
-        NetpowerctrlApplication.instance.registerConfiguredObserver(this);
 
         spinner_adapter = ArrayAdapter.createFromResource(context, R.array.shortcutchoices, android.R.layout.simple_spinner_item);
         spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        update();
     }
 
     public int getCount() {
@@ -76,27 +100,15 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnIte
         return convertView;
     }
 
-    void update() {
-        all_outlets.clear();
-        for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
-            for (OutletInfo oi : device.Outlets) {
-                oi.device = device;
-                all_outlets.add(OutletCommand.fromOutletInfo(oi, false));
-            }
-        }
-        notifyDataSetChanged();
-    }
-
-    public OutletCommandGroup getCheckedItems() {
-        OutletCommandGroup og = new OutletCommandGroup();
+    public ArrayList<OutletCommand> getCheckedItems() {
+        ArrayList<OutletCommand> output = new ArrayList<OutletCommand>();
         for (OutletCommand c : all_outlets) {
             if (c.enabled) {
-                og.add(c);
+                output.add(c);
             }
         }
-        return og;
+        return output;
     }
-
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -117,10 +129,5 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnIte
 
     public void setListItemMenu(ListItemMenu dce) {
         listItemMenu = dce;
-    }
-
-    @Override
-    public void onDeviceUpdated(DeviceInfo di) {
-        update();
     }
 }

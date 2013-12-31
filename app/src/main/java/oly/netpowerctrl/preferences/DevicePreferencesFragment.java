@@ -213,6 +213,8 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
             if (di.HostName.equals(testDevice.HostName)) {
                 testDevice.MacAddress = di.MacAddress;
                 testDevice.DeviceName = di.DeviceName;
+                testDevice.Outlets.clear();
+                testDevice.Outlets.addAll(di.Outlets);
                 test_state = TestStates.TEST_ACCESS;
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
@@ -224,7 +226,8 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
                         }
                     }
                 }, 2000);
-                DeviceSend.sendAllOutlets(getActivity(), new DeviceSend.DeviceSwitch(testDevice));
+                DeviceSend.DeviceSwitch ds = new DeviceSend.DeviceSwitch(testDevice);
+                DeviceSend.sendAllOutlets(getActivity(), ds);
             }
         } else if (test_state == TestStates.TEST_ACCESS) {
             Toast.makeText(getActivity(), "Test OK", Toast.LENGTH_SHORT).show();
