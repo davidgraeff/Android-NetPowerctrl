@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_hide_outlet"
+        android:title="@string/menu_hide_outlet"></item>
+    <item
+        android:id="@+id/menu_unhide_outlet"
+        android:title="@string/menu_unhide_outlet"></item>
+    <item
+        android:id="@+id/menu_rename_outlet"
+        android:title="@string/menu_rename_outlet"></item>
+    <item
+        android:id="@+id/menu_up"
+        android:title="@string/menu_up"></item>
+    <item
+        android:id="@+id/menu_down"
+        android:title="@string/menu_down"></item>
+</menu>
