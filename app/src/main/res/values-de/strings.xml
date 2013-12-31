@@ -152,4 +152,5 @@
     <string name="outlet_rename_message">Der Name gilt nur für dieses Handy/Tablet und wird zurückgesetzt, sobald der Name auf der Anel Steckdosenleiste verändert wird. Nutzte einen leeren Text um den Namen zurückzusetzten.</string>
     <string name="name">Name</string>
     <string name="Version">Version</string>
+    <string name="title_scene_edit">Szene editieren</string>
 </resources>

@@ -180,8 +180,8 @@ public class SharedPrefs {
     }
 
     public static class UniqueOutlet {
-        String deviceMac;
-        int outletNumber;
+        public String deviceMac;
+        public int outletNumber;
     }
 
     public static UniqueOutlet LoadWidget(Context context, int widgetID) {

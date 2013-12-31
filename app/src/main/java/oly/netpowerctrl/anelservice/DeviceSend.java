@@ -1,6 +1,7 @@
 package oly.netpowerctrl.anelservice;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -45,21 +46,24 @@ public class DeviceSend {
             }
             this.access = di.UserName + di.Password;
             for (int i = 0; i < di.Outlets.size(); ++i) {
-                if (di.Outlets.get(i).State)
-                    switchOn(i);
+                Log.w("DeviceSwitch", Integer.valueOf(i).toString() + " " + di.DeviceName + " " + Integer.valueOf(di.Outlets.get(i).OutletNumber).toString() + " " + Boolean.valueOf(di.Outlets.get(i).State).toString());
+
+                if (!di.Outlets.get(i).Disabled && di.Outlets.get(i).State)
+                    switchOn(di.Outlets.get(i).OutletNumber);
             }
+
         }
 
         void switchOn(int outletNumber) {
-            data |= ((byte) (1 << outletNumber));
+            data |= ((byte) (1 << outletNumber - 1));
         }
 
         void switchOff(int outletNumber) {
-            data &= ~((byte) (1 << outletNumber));
+            data &= ~((byte) (1 << outletNumber - 1));
         }
 
         void toggle(int outletNumber) {
-            if ((data & ((byte) (1 << outletNumber))) > 0) {
+            if ((data & ((byte) (1 << outletNumber - 1))) > 0) {
                 switchOff(outletNumber);
             } else {
                 switchOn(outletNumber);
@@ -91,6 +95,9 @@ public class DeviceSend {
                         if (!devices.containsKey(c.device_mac)) {
                             devices.put(c.device_mac, new DeviceSwitch(c.outletinfo.device));
                         }
+
+                        //Log.w("sendOutlet",c.device_mac+" "+ Integer.valueOf(c.outletNumber).toString()+" "+Integer.valueOf(c.state).toString());
+
                         switch (c.state) {
                             case 0:
                                 devices.get(c.device_mac).switchOn(c.outletNumber);
@@ -109,6 +116,18 @@ public class DeviceSend {
                         sendAllOutlets(c.getValue(), s);
                     }
                     s.close();
+
+                    // wait 100ms
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ignored) {
+                    }
+
+                    // request new values from each device
+                    for (Map.Entry<String, DeviceSwitch> device : devices.entrySet()) {
+                        DeviceQuery.sendQuery(context, device.getValue().dest.getHostAddress(), device.getValue().port);
+                    }
+
                 } catch (final IOException e) {
                     ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "
                             + e.getMessage());
@@ -141,8 +160,15 @@ public class DeviceSend {
 
     static private void sendAllOutlets(final DeviceSwitch device, DatagramSocket s) throws IOException {
         if (device.dest != null) {
-            String messageStr = String.format(Locale.US, "Sw%d%s", device.getSwitchByte(), device.access);
-            s.send(new DatagramPacket(messageStr.getBytes(), messageStr.length(), device.dest, device.port));
+            byte[] data = new byte[3 + device.access.length()];
+            data[0] = 'S';
+            data[1] = 'w';
+            data[2] = device.getSwitchByte();
+            System.arraycopy(device.access.getBytes(), 0, data, 3, device.access.length());
+
+            //Log.w("sendAllOutlets", String.valueOf( (char)(device.getSwitchByte()+'0') ));
+
+            s.send(new DatagramPacket(data, data.length, device.dest, device.port));
             // wait for 20ms trying not to congest the line
             try {
                 Thread.sleep(20);

@@ -91,7 +91,12 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
         if (data == null)
             return;
 
-        scenes.add(data);
+        int i = scenes.indexOf(data);
+        if (i != -1) {
+            scenes.set(i, data);
+        } else
+            scenes.add(data);
+
         SharedPrefs.SaveGroups(scenes, context);
         notifyDataSetChanged();
     }

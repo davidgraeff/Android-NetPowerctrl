@@ -9,8 +9,8 @@ import oly.netpowerctrl.R;
 
 
 public class OutletCommandGroup {
-    public String sceneName;
-    public String sceneDetails;
+    public String sceneName = "";
+    public String sceneDetails = "";
     private String reserved = "";
     private UUID uuid;
     public ArrayList<OutletCommand> commands;

@@ -6,11 +6,11 @@ import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 public class OutletCommand {
     // This field is not saved and is filled by fromOutletInfo for cache purposes only
-    public String description;
+    public String description = "";
 
-    public String device_mac;
+    public String device_mac = "";
     public int outletNumber;
-    public int state; //0:off;1:on;2:toggle
+    public int state = -1; //0:off;1:on;2:toggle
     public boolean enabled = false;
     public OutletInfo outletinfo = null;
 
@@ -19,6 +19,12 @@ public class OutletCommand {
             return "";
         return description.replace("§", "$") + "§" + device_mac +
                 "§" + Integer.valueOf(outletNumber).toString() + "§" + Integer.valueOf(state).toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        OutletCommand other = (OutletCommand) o;
+        return other.device_mac.equals(device_mac) && other.outletNumber == outletNumber;
     }
 
     public static OutletCommand fromString(String source) {

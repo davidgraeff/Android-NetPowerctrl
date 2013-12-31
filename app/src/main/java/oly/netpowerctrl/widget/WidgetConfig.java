@@ -16,12 +16,13 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
-class WidgetConfig extends Activity {
+public class WidgetConfig extends Activity {
     private Context ctx;
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private List<DeviceInfo> devices;
     private List<OutletInfo> outlets;
     private String selectedDeviceMac;
+    private int[] outletNumbers;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,8 +64,11 @@ class WidgetConfig extends Activity {
             selectedDeviceMac = devices.get(item).MacAddress;
 
             CharSequence[] items = new String[outlets.size()];
-            for (int i = 0; i < outlets.size(); i++)
+            outletNumbers = new int[outlets.size()];
+            for (int i = 0; i < outlets.size(); i++) {
                 items[i] = outlets.get(i).Description;
+                outletNumbers[i] = outlets.get(i).OutletNumber;
+            }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
             builder.setTitle(R.string.choose_widget_outlet);
@@ -78,7 +82,7 @@ class WidgetConfig extends Activity {
     private DialogInterface.OnClickListener selectedOutletListener = new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int item) {
 
-            SharedPrefs.SaveWidget(ctx, widgetId, selectedDeviceMac, item);
+            SharedPrefs.SaveWidget(ctx, widgetId, selectedDeviceMac, outletNumbers[item]);
 
             WidgetUpdate.Update(ctx, widgetId);
 

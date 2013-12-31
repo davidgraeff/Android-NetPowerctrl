@@ -11,7 +11,7 @@
         android:layout_gravity="center_horizontal"
         android:contentDescription="@string/app_name"
         android:scaleType="centerInside"
-        android:src="@drawable/widgetunkown" />
+        android:src="@drawable/widgetunknown" />
 
     <TextView
         android:id="@+id/widget_name"

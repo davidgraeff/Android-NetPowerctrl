@@ -152,4 +152,5 @@
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommened. Should I save nevertheless?</string>
     <string name="Version">Version</string>
+    <string name="title_scene_edit">Edit scene</string>
 </resources>
