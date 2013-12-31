@@ -1,4 +1,4 @@
-package oly.netpowerctrl.service;
+package oly.netpowerctrl.anelservice;
 
 import android.app.Service;
 import android.content.Intent;
@@ -16,7 +16,7 @@ public class NetpowerctrlService extends Service {
     private final IBinder mBinder = new LocalBinder();
 
     private ArrayList<DeviceUpdated> observer = new ArrayList<DeviceUpdated>();
-    private ArrayList<DeviceError> errorobserver = new ArrayList<DeviceError>();
+    private ArrayList<DeviceError> errorObserver = new ArrayList<DeviceError>();
 
     public void registerDeviceUpdateObserver(DeviceUpdated o) {
         observer.add(o);
@@ -27,15 +27,16 @@ public class NetpowerctrlService extends Service {
     }
 
     public void registerDeviceErrorObserver(DeviceError o) {
-        errorobserver.add(o);
+        errorObserver.add(o);
     }
 
     public void unregisterDeviceErrorObserver(DeviceError o) {
-        errorobserver.remove(o);
+        errorObserver.remove(o);
     }
 
     public void notifyObservers(final DeviceInfo di) {
-        if (observer == null)
+        assert di != null;
+        if (observer.isEmpty())
             return;
 
         Handler h = new Handler(getMainLooper());
@@ -50,14 +51,14 @@ public class NetpowerctrlService extends Service {
     }
 
     public void notifyErrorObservers(final String deviceName, final String errMessage) {
-        if (observer == null)
+        if (errorObserver.isEmpty())
             return;
 
         Handler h = new Handler(getMainLooper());
 
         h.post(new Runnable() {
             public void run() {
-                for (DeviceError o : errorobserver) {
+                for (DeviceError o : errorObserver) {
                     o.onDeviceError(deviceName, errMessage);
                 }
             }
@@ -72,7 +73,7 @@ public class NetpowerctrlService extends Service {
     }
 
     @Override
-	public IBinder onBind(Intent intent) {
+    public IBinder onBind(Intent intent) {
         startDiscoveryThreads();
         return mBinder;
     }
@@ -85,24 +86,24 @@ public class NetpowerctrlService extends Service {
 
     private void startDiscoveryThreads() {
         // only start if not yet running
-    	if (discoveryThreads.size() == 0) {
-	    	for (int port: DeviceQuery.getAllReceivePorts(this)) {
-	        	DiscoveryThread thr = new DiscoveryThread(port, this);
-	        	thr.start();
-	        	discoveryThreads.add(thr);
-	        }
+        if (discoveryThreads.size() == 0) {
+            for (int port : DeviceQuery.getAllReceivePorts(this)) {
+                DiscoveryThread thr = new DiscoveryThread(port, this);
+                thr.start();
+                discoveryThreads.add(thr);
+            }
             // give the threads a chance to start
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ignored) {
             }
         }
-	}
-	
+    }
+
     public void restartDiscoveryThreads() {
         stopDiscoveryThreads();
         startDiscoveryThreads();
-	}
+    }
 
     private void stopDiscoveryThreads() {
         for (DiscoveryThread thr : discoveryThreads)

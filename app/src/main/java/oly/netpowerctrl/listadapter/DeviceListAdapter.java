@@ -12,9 +12,9 @@ import android.widget.TextView;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceUpdated;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
-import oly.netpowerctrl.service.DeviceUpdated;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class DeviceListAdapter extends BaseAdapter implements OnClickListener, DeviceUpdated {

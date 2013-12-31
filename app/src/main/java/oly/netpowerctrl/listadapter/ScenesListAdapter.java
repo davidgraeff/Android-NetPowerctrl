@@ -12,8 +12,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
-import oly.netpowerctrl.network.UDPSendToDevice;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.GreenFlasher;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -84,7 +84,7 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
 
     void executeScene(int position) {
         OutletCommandGroup og = (OutletCommandGroup) getItem(position);
-        UDPSendToDevice.sendOutlet(context, og);
+        DeviceSend.sendOutlet(context, og);
     }
 
     public void addScene(OutletCommandGroup data) {

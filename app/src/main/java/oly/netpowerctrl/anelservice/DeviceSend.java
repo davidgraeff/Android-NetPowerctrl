@@ -1,4 +1,4 @@
-package oly.netpowerctrl.network;
+package oly.netpowerctrl.anelservice;
 
 import android.content.Context;
 
@@ -17,14 +17,14 @@ import oly.netpowerctrl.datastructure.OutletCommand;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.utils.ShowToast;
 
-public class UDPSendToDevice {
+public class DeviceSend {
     /**
      * This class extracts the destination ip, user access data
      * and provides outlet manipulation methods (on/off/toggle).
      * The resulting data byte variable can be used to send a
      * bulk-change udp packet.
      */
-    static final class DeviceSwitch {
+    static final public class DeviceSwitch {
         // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
         // “Sw” + Steckdosen + User + Passwort
         // Steckdosen = Zustand aller Steckdosen binär
@@ -35,7 +35,7 @@ public class UDPSendToDevice {
         int port;
         String access;
 
-        DeviceSwitch(DeviceInfo di) {
+        public DeviceSwitch(DeviceInfo di) {
             this.data = 0;
             this.port = di.SendPort;
             try {

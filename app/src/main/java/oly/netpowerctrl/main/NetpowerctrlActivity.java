@@ -22,6 +22,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -32,18 +33,20 @@ import android.os.Parcelable;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
+import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.listadapter.AdapterController;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.service.DeviceQuery;
-import oly.netpowerctrl.service.NetpowerctrlService;
 
 public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static NetpowerctrlActivity _this = null;
@@ -51,6 +54,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     // Drawer
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+    private View mDrawerView;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerAdapter mDrawerAdapter;
     private CharSequence mDrawerTitle;
@@ -68,33 +72,32 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
+        mDrawerView = (View) findViewById(R.id.left_drawer);
+
+        try {
+            ((TextView) findViewById(R.id.version)).setText(getResources().getText(R.string.Version) + " " +
+                    getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
 
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
-        String[] mFragmentNames = getResources().getStringArray(R.array.drawer_titles);
-        String[] mFragmentDesc = getResources().getStringArray(R.array.drawer_descriptions);
-        String[] mFragmentClasses = {
-                "",
-                OutletsFragment.class.getName(),
-                ScenesFragment.class.getName(),
-                "",
-                NewDevicesListFragment.class.getName(),
-                ConfiguredDevicesListFragment.class.getName(),
-                "",
-                PreferencesFragment.class.getName(),
-                HelpFragment.class.getName(),
-                AboutDialog.class.getName()};
 
         mDrawerAdapter = new DrawerAdapter(this);
-        for (int i = 0; i < mFragmentNames.length; ++i) {
-            if (mFragmentDesc[i].equals("-")) {
-                mDrawerAdapter.addHeader(mFragmentNames[i]);
-            } else {
-                mDrawerAdapter.addItem(mFragmentNames[i], mFragmentDesc[i], mFragmentClasses[i], mFragmentClasses[i].contains("Dialog"));
-            }
-        }
+        mDrawerAdapter.add(getResources().getStringArray(R.array.drawer_titles_outlets),
+                getResources().getStringArray(R.array.drawer_descriptions_outlets),
+                new String[]{"", OutletsFragment.class.getName(), ScenesFragment.class.getName()});
+
+        mDrawerAdapter.add(getResources().getStringArray(R.array.drawer_titles_devices),
+                getResources().getStringArray(R.array.drawer_descriptions_devices),
+                new String[]{"", NewDevicesListFragment.class.getName(), ConfiguredDevicesListFragment.class.getName()});
+
+        mDrawerAdapter.add(getResources().getStringArray(R.array.drawer_titles_app),
+                getResources().getStringArray(R.array.drawer_descriptions_app),
+                new String[]{"", PreferencesFragment.class.getName(), HelpFragment.class.getName(), FeedbackDialog.class.getName()});
+
 
         mDrawerList.setAdapter(mDrawerAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -129,7 +132,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         if (savedInstanceState == null) {
             int pos = SharedPrefs.getFirstTab(this);
             if (pos == -1)
-                pos = indexOf(HelpFragment.class.getName(), mFragmentClasses);
+                pos = mDrawerAdapter.indexOf(HelpFragment.class.getName());
             selectItem(pos);
         } else {
             selectItem(savedInstanceState.getInt("navigation"));
@@ -144,6 +147,18 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
         // Core
         adapterUpdateManger = new AdapterController(this);
+    }
+
+    /* Called whenever we call invalidateOptionsMenu() */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // If the nav drawer is open, hide action items related to the content view
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerView);
+        if (drawerOpen)
+            for (int i = 0; i < menu.size(); i++) {
+                menu.getItem(i).setVisible(false);
+            }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -237,7 +252,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             setTitle(item.mTitle);
         }
 
-        mDrawerLayout.closeDrawer(mDrawerList);
+        mDrawerLayout.closeDrawer(mDrawerView);
     }
 
     @Override
@@ -264,14 +279,5 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggls
         mDrawerToggle.onConfigurationChanged(newConfig);
-    }
-
-    private static <T> int indexOf(T needle, T[] haystack) {
-        for (int i = 0; i < haystack.length; i++) {
-            if (haystack[i] != null && haystack[i].equals(needle)
-                    || needle == null && haystack[i] == null) return i;
-        }
-
-        return -1;
     }
 }

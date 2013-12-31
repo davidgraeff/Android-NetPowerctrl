@@ -72,9 +72,6 @@
     <string name="delete_all_groups">Delete all scenes?</string>
     <string name="confirmation_delete_all_groups">Are you sure you want to delete all scenes?</string>
 
-    <string name="bug_reports">Bug reports and Source code</string>
-    <string name="rate_and_comment">Rate in Google Play</string>
-
     <string name="off">Off</string>
     <string name="on">On</string>
     <string name="toggle">Toggle</string>
@@ -86,30 +83,59 @@
         <item>Toggle</item>
     </string-array>
 
-    <string-array name="drawer_titles">
+    <string-array name="feedbackOptions">
+        <item>Report a bug (E-Mail)</item>
+        <item>Report a bug (Bugtracker)</item>
+        <item>See the source code</item>
+        <item>Rate in Google Play</item>
+    </string-array>
+
+    <string-array name="drawer_titles_outlets">
         <item>Outlets</item>
         <item>Outlet list</item>
         <item>Scenes</item>
-        <item>Devices</item>
-        <item>Add new device</item>
-        <item>Configured devices</item>
-        <item>App</item>
-        <item>Settings</item>
-        <item>Help</item>
-        <item>About</item>
     </string-array>
-    <string-array name="drawer_descriptions">
+
+    <string-array name="drawer_descriptions_outlets">
         <item>-</item>
         <item>Switch single outlet</item>
         <item>Switch multiple grouped outlets</item>
+    </string-array>
+
+    <string-array name="drawer_titles_devices">
+        <item>Devices</item>
+        <item>Add new device</item>
+        <item>Configured devices</item>
+    </string-array>
+
+    <string-array name="drawer_descriptions_devices">
         <item>-</item>
         <item />
         <item />
+    </string-array>
+
+    <string-array name="drawer_titles_plugins">
+        <item>Plugins</item>
+    </string-array>
+
+    <string-array name="drawer_descriptions_plugins">
+        <item>-</item>
+    </string-array>
+
+    <string-array name="drawer_titles_app">
+        <item>App</item>
+        <item>Settings</item>
+        <item>Help</item>
+        <item>Feedback</item>
+    </string-array>
+
+    <string-array name="drawer_descriptions_app">
         <item>-</item>
         <item />
         <item />
         <item />
     </string-array>
+
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="empty">No content to show</string>
@@ -124,4 +150,6 @@
     <string name="outlet_rename_message">The name is local to this device only and will be reset if you rename this outlet on your anel device. Use an empty name to fall back to the default.</string>
     <string name="name">Name</string>
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
+    <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommened. Should I save nevertheless?</string>
+    <string name="Version">Version</string>
 </resources>

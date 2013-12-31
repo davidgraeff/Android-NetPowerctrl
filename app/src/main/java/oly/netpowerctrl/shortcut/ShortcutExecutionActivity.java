@@ -6,9 +6,9 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.network.UDPSendToDevice;
 
 class ShortcutExecutionActivity extends Activity {
     @Override
@@ -29,7 +29,7 @@ class ShortcutExecutionActivity extends Activity {
             return;
         }
 
-        UDPSendToDevice.sendOutlet(this, g);
+        DeviceSend.sendOutlet(this, g);
         setResult(RESULT_OK, null);
 
         if (extra.getBoolean("show_mainWindow")) {

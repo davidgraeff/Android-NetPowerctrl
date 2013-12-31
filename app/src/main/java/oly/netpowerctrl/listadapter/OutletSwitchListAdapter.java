@@ -11,14 +11,15 @@ import android.widget.ListAdapter;
 import android.widget.Switch;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceSend;
+import oly.netpowerctrl.anelservice.DeviceUpdated;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
-import oly.netpowerctrl.network.UDPSendToDevice;
-import oly.netpowerctrl.service.DeviceUpdated;
 import oly.netpowerctrl.utils.AfterSentHandler;
 
 public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter, OnCheckedChangeListener, DeviceUpdated {
@@ -78,8 +79,10 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
     }
 
     public void update() {
+        // Clear
         ash.removeMessages();
         all_outlets.clear();
+
         for (DeviceInfo device : all_devices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
@@ -88,7 +91,23 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
                     all_outlets.add(oi);
             }
         }
+
+        // Sort for positionRequest number or alphabetically
+        Collections.sort(all_outlets);
+
+        // Assign positionRequest numbers
+        for (int i = 0; i < all_outlets.size(); ++i) {
+            all_outlets.get(i).positionRequest = i;
+        }
         notifyDataSetChanged();
+    }
+
+    public void swapPosition(int itemPosition, int targetPosition) {
+        int t = all_outlets.get(itemPosition).positionRequest;
+        all_outlets.get(itemPosition).positionRequest = all_outlets.get(targetPosition).positionRequest;
+        all_outlets.get(targetPosition).positionRequest = t;
+
+        update();
     }
 
     @Override
@@ -102,7 +121,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         ash.setData(position, new_state);
         ash.removeMessages();
         ash.startDelayedCheck();
-        UDPSendToDevice.sendOutlet(context, oi.device, oi.OutletNumber, new_state);
+        DeviceSend.sendOutlet(context, oi.device, oi.OutletNumber, new_state);
     }
 
     public boolean getIsShowingHidden() {

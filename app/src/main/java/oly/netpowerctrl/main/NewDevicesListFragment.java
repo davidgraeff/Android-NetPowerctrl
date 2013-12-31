@@ -11,11 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
 import oly.netpowerctrl.preferences.DevicePreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.service.DeviceQuery;
 import oly.netpowerctrl.utils.GridOrListFragment;
 import oly.netpowerctrl.utils.ListItemMenu;
 

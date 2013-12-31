@@ -16,12 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceUpdated;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletCommand;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
-import oly.netpowerctrl.service.DeviceUpdated;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnItemSelectedListener, DeviceUpdated {

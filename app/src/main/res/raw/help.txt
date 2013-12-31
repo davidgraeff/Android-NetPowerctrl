@@ -58,3 +58,8 @@ then do the following:
 Android now want you to confirm to use the <i>beam</i> functionality.
 If this App is not installed on the destination device, Google Play will be started.
 If you confirm <i>beam</i>, the destination device will ask you which configurations should be transferred.</p>
+
+<h3>Authors</h3>
+© 2013 <b>David Gräff</b><br>
+© 2012 <b><a href="http://www.nittka.com">Oliver Nittka</a></b><br><br>
+Some icons von <a href="http://www.clker.com/">www.clker.com</a><br>(public domain)

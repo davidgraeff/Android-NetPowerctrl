@@ -6,9 +6,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
-import oly.netpowerctrl.network.UDPSendToDevice;
 
 public class AfterSentHandler extends Handler {
     private int list_position;
@@ -49,7 +49,7 @@ public class AfterSentHandler extends Handler {
             retries++;
             Log.w("DeviceControl", "Sending again, no response " + Integer.valueOf(list_position).toString());
             startDelayedCheck();
-            UDPSendToDevice.sendOutlet(ola.context, oi.device, oi.OutletNumber, state);
+            DeviceSend.sendOutlet(ola.context, oi.device, oi.OutletNumber, state);
         }
     }
 }
