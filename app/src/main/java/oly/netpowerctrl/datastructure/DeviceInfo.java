@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceQuery;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 // this class holds all the info about one device
 public class DeviceInfo implements Parcelable {
@@ -35,6 +35,15 @@ public class DeviceInfo implements Parcelable {
         return uuid.toString().replace(":", "-");
     }
 
+    public OutletInfo findOutlet(int outletNumber) {
+        for (OutletInfo oi : Outlets) {
+            if (oi.OutletNumber == outletNumber) {
+                return oi;
+            }
+        }
+        return null;
+    }
+
     private DeviceInfo() {
         uuid = UUID.randomUUID();
         DeviceName = "";
@@ -52,8 +61,8 @@ public class DeviceInfo implements Parcelable {
     public DeviceInfo(Context cx) {
         this();
         DeviceName = cx.getResources().getString(R.string.default_device_name);
-        SendPort = DeviceQuery.getDefaultSendPort(cx);
-        ReceivePort = DeviceQuery.getDefaultRecvPort(cx);
+        SendPort = SharedPrefs.getDefaultSendPort(cx);
+        ReceivePort = SharedPrefs.getDefaultRecvPort(cx);
     }
 
     public DeviceInfo(DeviceInfo other) {
@@ -138,4 +147,9 @@ public class DeviceInfo implements Parcelable {
         return Configured;
     }
 
+    public void updateByDeviceCommand(DeviceCommand c) {
+        for (OutletInfo oi : Outlets) {
+            oi.State = c.getIsOn(oi.OutletNumber);
+        }
+    }
 }

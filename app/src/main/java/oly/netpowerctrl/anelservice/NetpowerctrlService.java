@@ -10,19 +10,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 public class NetpowerctrlService extends Service {
     private List<DiscoveryThread> discoveryThreads = new ArrayList<DiscoveryThread>();
     private final IBinder mBinder = new LocalBinder();
 
-    private ArrayList<DeviceUpdated> observer = new ArrayList<DeviceUpdated>();
+    private ArrayList<DeviceUpdate> observer = new ArrayList<DeviceUpdate>();
     private ArrayList<DeviceError> errorObserver = new ArrayList<DeviceError>();
 
-    public void registerDeviceUpdateObserver(DeviceUpdated o) {
+    public void registerDeviceUpdateObserver(DeviceUpdate o) {
         observer.add(o);
     }
 
-    public void unregisterDeviceUpdateObserver(DeviceUpdated o) {
+    public void unregisterDeviceUpdateObserver(DeviceUpdate o) {
         observer.remove(o);
     }
 
@@ -43,7 +44,7 @@ public class NetpowerctrlService extends Service {
 
         h.post(new Runnable() {
             public void run() {
-                for (DeviceUpdated o : observer) {
+                for (DeviceUpdate o : observer) {
                     o.onDeviceUpdated(di);
                 }
             }
@@ -81,13 +82,14 @@ public class NetpowerctrlService extends Service {
     @Override
     public boolean onUnbind(Intent intent) {
         stopDiscoveryThreads();
+        stopSelf();
         return super.onUnbind(intent);
     }
 
     private void startDiscoveryThreads() {
         // only start if not yet running
         if (discoveryThreads.size() == 0) {
-            for (int port : DeviceQuery.getAllReceivePorts(this)) {
+            for (int port : SharedPrefs.getAllReceivePorts(this)) {
                 DiscoveryThread thr = new DiscoveryThread(port, this);
                 thr.start();
                 discoveryThreads.add(thr);

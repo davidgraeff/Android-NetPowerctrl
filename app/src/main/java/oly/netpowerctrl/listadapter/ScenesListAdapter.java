@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceSend;
+import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.GreenFlasher;
@@ -84,7 +85,7 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
 
     void executeScene(int position) {
         OutletCommandGroup og = (OutletCommandGroup) getItem(position);
-        DeviceSend.sendOutlet(context, og);
+        DeviceSend.sendOutlet(context, DeviceCommand.fromOutletCommandGroup(og), true);
     }
 
     public void addScene(OutletCommandGroup data) {

@@ -27,6 +27,7 @@ public class WidgetConfig extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setResult(RESULT_CANCELED);
         ctx = this;
         devices = SharedPrefs.ReadConfiguredDevices(this);
 
@@ -84,7 +85,7 @@ public class WidgetConfig extends Activity {
 
             SharedPrefs.SaveWidget(ctx, widgetId, selectedDeviceMac, outletNumbers[item]);
 
-            WidgetUpdate.Update(ctx, widgetId);
+            WidgetUpdateService.ForceUpdate(ctx, widgetId);
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);

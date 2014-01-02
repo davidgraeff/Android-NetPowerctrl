@@ -12,12 +12,12 @@ import android.widget.TextView;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceUpdated;
+import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ListItemMenu;
 
-public class DeviceListAdapter extends BaseAdapter implements OnClickListener, DeviceUpdated {
+public class DeviceListAdapter extends BaseAdapter implements OnClickListener, DevicesUpdate {
 
     private ListItemMenu listItemMenu = null;
 
@@ -81,7 +81,7 @@ public class DeviceListAdapter extends BaseAdapter implements OnClickListener, D
 
     public void setDevices(List<DeviceInfo> new_devices) {
         all_devices = new_devices;
-        update();
+        onDevicesUpdated();
     }
 
     public void setListItemMenu(ListItemMenu dce) {
@@ -96,12 +96,8 @@ public class DeviceListAdapter extends BaseAdapter implements OnClickListener, D
         }
     }
 
-    void update() {
-        notifyDataSetChanged();
-    }
-
     @Override
-    public void onDeviceUpdated(DeviceInfo di) {
+    public void onDevicesUpdated() {
         notifyDataSetChanged();
     }
 }

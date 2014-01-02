@@ -113,7 +113,7 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
                 alert.setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         oi.UserDescription = input.getText().toString();
-                        adapter.update();
+                        adapter.onDevicesUpdated();
                     }
                 });
 
@@ -127,12 +127,12 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
             }
             case R.id.menu_hide_outlet: {
                 oi.Hidden = true;
-                adapter.update();
+                adapter.onDevicesUpdated();
                 return true;
             }
             case R.id.menu_unhide_outlet: {
                 oi.Hidden = false;
-                adapter.update();
+                adapter.onDevicesUpdated();
                 return true;
             }
 
