@@ -3,6 +3,8 @@ package oly.netpowerctrl.datastructure;
 import android.content.Context;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
@@ -64,25 +66,25 @@ public class OutletCommandGroup {
     }
 
     public String buildDetails(Context context) {
-        String r;
-        String all = "";
+        int ons = 0;
+        int offs = 0;
+        int toggles = 0;
         for (OutletCommand c : commands) {
             switch (c.state) {
                 case 0:
-                    r = context.getResources().getString(R.string.off);
+                    ++offs;
                     break;
                 case 1:
-                    r = context.getResources().getString(R.string.on);
+                    ++ons;
                     break;
                 case 2:
-                    r = context.getResources().getString(R.string.toggle);
+                    ++toggles;
                     break;
-                default:
-                    r = "";
             }
-            all += c.description + " (" + r + ") ";
         }
-        return all;
+        return context.getResources().getString(R.string.off) + ": " + Integer.valueOf(offs) + ", " +
+                context.getResources().getString(R.string.on) + ": " + Integer.valueOf(ons) + ", " +
+                context.getResources().getString(R.string.toggle) + ": " + Integer.valueOf(toggles);
     }
 
     public void add(OutletCommand c) {
@@ -91,5 +93,15 @@ public class OutletCommandGroup {
 
     public int length() {
         return commands.size();
+    }
+
+    public Collection<DeviceInfo> getDevices() {
+        TreeMap<String, DeviceInfo> devices = new TreeMap<String, DeviceInfo>();
+        for (OutletCommand c : commands) {
+            if (!devices.containsKey(c.device_mac)) {
+                devices.put(c.device_mac, c.outletinfo.device);
+            }
+        }
+        return devices.values();
     }
 }

@@ -1,24 +1,67 @@
 package oly.netpowerctrl.anelservice;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.os.Handler;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.Iterator;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.ShowToast;
 
+/**
+ * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
+ * or all devices. If you want to issue a query and get notified on the result or get a
+ * timeout if no reaction can be received within 1.2s, create a DeviceQuery object with
+ * all devices to query.
+ */
 public class DeviceQuery {
+    private Collection<DeviceInfo> devices_to_observe;
+    private DeviceUpdateStateOrTimeout target;
+    private Handler timeoutHandler = new Handler();
+    private Runnable timeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            for (DeviceInfo di : devices_to_observe)
+                target.onDeviceTimeout(di);
+            freeSelf();
+        }
+    };
+
+    public DeviceQuery(Context context, DeviceUpdateStateOrTimeout target, Collection<DeviceInfo> devices_to_observe) {
+        this.target = target;
+        this.devices_to_observe = devices_to_observe;
+
+        timeoutHandler.postDelayed(timeoutRunnable, 1200);
+        // Send out broadcast
+        for (DeviceInfo di : devices_to_observe)
+            sendQuery(context, di.HostName, di.SendPort);
+    }
+
+    public void notifyAndRemove(DeviceInfo received_data) {
+        Iterator<DeviceInfo> it = devices_to_observe.iterator();
+        while (it.hasNext()) {
+            DeviceInfo device_to_observe = it.next();
+            if (device_to_observe.equals(received_data)) {
+                it.remove();
+                target.onDeviceUpdated(received_data);
+            }
+        }
+        if (devices_to_observe.isEmpty()) {
+            timeoutHandler.removeCallbacks(timeoutRunnable);
+            freeSelf();
+        }
+    }
+
+    private void freeSelf() {
+        NetpowerctrlApplication.instance.removeUpdateDeviceState(this);
+    }
 
     public static void sendQuery(final Context context, final String hostname, final int port) {
         new Thread(new Runnable() {
@@ -34,79 +77,14 @@ public class DeviceQuery {
                     s.send(p);
                     s.close();
                 } catch (final Exception e) {
-                    NetpowerctrlActivity._this.runOnUiThread(new Runnable() {
-                        public void run() {
-                            Toast.makeText(context, context.getResources().getString(R.string.error_sending_inquiry) + ": " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": " + e.getMessage());
                 }
             }
         }).start();
     }
 
     public static void sendBroadcastQuery(final Context context) {
-        for (int port : getAllSendPorts(context))
+        for (int port : SharedPrefs.getAllSendPorts(context))
             sendQuery(context, "255.255.255.255", port);
-    }
-
-
-    public static int getDefaultSendPort(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int send_udp = context.getResources().getInteger(R.integer.default_send_port);
-        try {
-            send_udp = Integer.parseInt(prefs.getString("standard_send_port", ""));
-        } catch (NumberFormatException e) { /*nop*/ }
-        return send_udp;
-    }
-
-    public static int getDefaultRecvPort(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int recv_udp = context.getResources().getInteger(R.integer.default_recv_port);
-        try {
-            recv_udp = Integer.parseInt(prefs.getString("standard_recv_port", ""));
-        } catch (NumberFormatException e) { /*nop*/ }
-        return recv_udp;
-    }
-
-    //! get a list of all send ports of all configured devices plus the default send port
-    private static ArrayList<Integer> getAllSendPorts(Context context) {
-        HashSet<Integer> ports = new HashSet<Integer>();
-        ports.add(getDefaultSendPort(context));
-
-        SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
-        String configured_devices_str = prefs.getString("configured_devices", "[]");
-        try {
-            JSONArray jdevices = new JSONArray(configured_devices_str);
-            for (int i = 0; i < jdevices.length(); i++) {
-                JSONObject jhost = jdevices.getJSONObject(i);
-                if (!jhost.getBoolean("default_ports"))
-                    ports.add(jhost.getInt("sendport"));
-            }
-        } catch (JSONException e) {
-            // nop
-        }
-
-        return new ArrayList<Integer>(ports);
-    }
-
-    //! get a list of all receive ports of all configured devices plus the default receive port
-    public static ArrayList<Integer> getAllReceivePorts(Context context) {
-        HashSet<Integer> ports = new HashSet<Integer>();
-        ports.add(getDefaultRecvPort(context));
-
-        SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
-        String configured_devices_str = prefs.getString("configured_devices", "[]");
-        try {
-            JSONArray jdevices = new JSONArray(configured_devices_str);
-            for (int i = 0; i < jdevices.length(); i++) {
-                JSONObject jhost = jdevices.getJSONObject(i);
-                if (!jhost.getBoolean("default_ports"))
-                    ports.add(jhost.getInt("recvport"));
-            }
-        } catch (JSONException e) {
-            // nop
-        }
-
-        return new ArrayList<Integer>(ports);
     }
 }

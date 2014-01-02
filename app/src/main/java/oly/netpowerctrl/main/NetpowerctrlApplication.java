@@ -8,12 +8,15 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceError;
 import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceUpdated;
+import oly.netpowerctrl.anelservice.DeviceUpdate;
+import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
@@ -24,46 +27,65 @@ import oly.netpowerctrl.utils.ShowToast;
  * Application state: We keep track of Anel device states via
  * the listener service.
  */
-public class NetpowerctrlApplication extends Application implements DeviceUpdated, DeviceError {
+public class NetpowerctrlApplication extends Application implements DeviceUpdate, DeviceError {
     public static NetpowerctrlApplication instance;
-    private boolean mDiscoverServiceStarted = false;
+    private int mDiscoverServiceRefCount = 0;
     private NetpowerctrlService mDiscoverService;
     public ArrayList<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
     public ArrayList<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
 
-    private ArrayList<DeviceUpdated> observersConfigured = new ArrayList<DeviceUpdated>();
-    private ArrayList<DeviceUpdated> observersNew = new ArrayList<DeviceUpdated>();
+    private ArrayList<DevicesUpdate> observersConfigured = new ArrayList<DevicesUpdate>();
+    private ArrayList<DevicesUpdate> observersNew = new ArrayList<DevicesUpdate>();
+
+    private ArrayList<DeviceQuery> updateDeviceStateList = new ArrayList<DeviceQuery>();
 
     @SuppressWarnings("unused")
-    public void registerConfiguredObserver(DeviceUpdated o) {
-        if (!observersConfigured.contains(o))
+    public boolean registerConfiguredObserver(DevicesUpdate o) {
+        if (!observersConfigured.contains(o)) {
             observersConfigured.add(o);
+            return true;
+        }
+        return false;
     }
 
     @SuppressWarnings("unused")
-    public void unregisterConfiguredObserver(DeviceUpdated o) {
+    public void unregisterConfiguredObserver(DevicesUpdate o) {
         observersConfigured.remove(o);
     }
 
     private void notifyConfiguredObservers() {
-        for (DeviceUpdated o : observersConfigured)
-            o.onDeviceUpdated(null);
+        for (DevicesUpdate o : observersConfigured)
+            o.onDevicesUpdated();
+
     }
 
     @SuppressWarnings("unused")
-    public void registerNewDeviceObserver(DeviceUpdated o) {
-        if (!observersNew.contains(o))
+    public boolean registerNewDeviceObserver(DevicesUpdate o) {
+        if (!observersNew.contains(o)) {
             observersNew.add(o);
+            return true;
+        }
+        return false;
     }
 
     @SuppressWarnings("unused")
-    public void unregisterNewDeviceObserver(DeviceUpdated o) {
+    public void unregisterNewDeviceObserver(DevicesUpdate o) {
         observersNew.remove(o);
     }
 
     private void notifyNewDeviceObservers() {
-        for (DeviceUpdated o : observersNew)
-            o.onDeviceUpdated(null);
+        for (DevicesUpdate o : observersNew)
+            o.onDevicesUpdated();
+    }
+
+    public void removeUpdateDeviceState(DeviceQuery o) {
+        updateDeviceStateList.remove(o);
+    }
+
+    @SuppressWarnings("unused")
+    public void updateDeviceState(DeviceUpdateStateOrTimeout target, Collection<DeviceInfo> devices_to_observe) {
+        // Create device query object (init timeout, send query packet)
+        updateDeviceStateList.add(new DeviceQuery(getApplicationContext(), target, devices_to_observe));
     }
 
     @Override
@@ -74,21 +96,26 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     }
 
     public void startListener() {
-        if (!mDiscoverServiceStarted) {
+        if (mDiscoverServiceRefCount == 0) {
             Intent intent = new Intent(this, NetpowerctrlService.class);
+            startService(intent);
             bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        }
+        ++mDiscoverServiceRefCount;
+    }
+
+    public void restartListener() {
+        if (mDiscoverServiceRefCount > 0) {
+            mDiscoverService.restartDiscoveryThreads();
         }
     }
 
-    public void restartListening() {
-        startListener();
-        mDiscoverService.restartDiscoveryThreads();
-    }
-
     public void stopListener() {
-        if (mDiscoverServiceStarted) {
+        if (mDiscoverServiceRefCount > 0) {
+            mDiscoverServiceRefCount--;
+        }
+        if (mDiscoverServiceRefCount == 0) {
             unbindService(mConnection);
-            mDiscoverServiceStarted = false;
         }
     }
 
@@ -105,13 +132,14 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             mDiscoverService = binder.getService();
             mDiscoverService.registerDeviceErrorObserver(instance);
             mDiscoverService.registerDeviceUpdateObserver(instance);
-            mDiscoverServiceStarted = true;
+            if (mDiscoverServiceRefCount == 0)
+                mDiscoverServiceRefCount = 1;
             DeviceQuery.sendBroadcastQuery(instance);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mDiscoverServiceStarted = false;
+            mDiscoverServiceRefCount = 0;
         }
     };
 
@@ -220,7 +248,13 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 }
             }
 
+            // notify all observers
             notifyConfiguredObservers();
+
+            //
+            for (DeviceQuery o : updateDeviceStateList)
+                o.notifyAndRemove(target);
+
             return;
         }
 

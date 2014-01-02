@@ -42,7 +42,6 @@ import android.widget.TextView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.listadapter.AdapterController;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
 import oly.netpowerctrl.preferences.PreferencesFragment;
@@ -172,6 +171,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     protected void onPause() {
         super.onPause();
         SharedPrefs.setFirstTab(this, mDrawerList.getCheckedItemPosition());
+        // Stop listener
         NetpowerctrlApplication.instance.stopListener();
     }
 
@@ -203,10 +203,8 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             //TODO nfc read
         }
 
-        // we may be returning from a configure dialog
+        // Start listener and request new device states
         NetpowerctrlApplication.instance.startListener();
-
-        startService(new Intent(this, NetpowerctrlService.class));
         DeviceQuery.sendBroadcastQuery(this);
     }
 

@@ -18,19 +18,19 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceError;
 import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceSend;
-import oly.netpowerctrl.anelservice.DeviceUpdated;
+import oly.netpowerctrl.anelservice.DeviceUpdate;
+import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 /**
  */
-public class DevicePreferencesFragment extends PreferenceFragment implements DeviceUpdated, DeviceError {
-    private static final String ARG_PARAM1 = "prefname";
-    private String prefname = null;
+public class DevicePreferencesFragment extends PreferenceFragment implements DeviceUpdate, DeviceError {
+    private static final String ARG_PARAM1 = "prefName";
+    private String prefName = null;
 
     private enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
 
-    ;
     private TestStates test_state = TestStates.TEST_INIT;
     private DeviceInfo testDevice;
 
@@ -56,7 +56,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_test_device: {
-                if (test_state != TestStates.TEST_INIT)
+                if (test_state != TestStates.TEST_INIT && test_state != TestStates.TEST_OK)
                     return true;
 
                 test_state = TestStates.TEST_REACHABLE;
@@ -67,6 +67,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
                     public void run() {
                         if (test_state == TestStates.TEST_REACHABLE) {
                             test_state = TestStates.TEST_INIT;
+                            //noinspection ConstantConditions
                             Toast.makeText(getActivity(), "Test reachable failed", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -77,6 +78,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
 
             case R.id.menu_save_device: {
                 if (test_state != TestStates.TEST_OK) {
+                    //noinspection ConstantConditions
                     new AlertDialog.Builder(getActivity())
                             .setTitle(R.string.device_test)
                             .setMessage(R.string.device_save_without_test)
@@ -117,10 +119,10 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
         setHasOptionsMenu(true);
 
         if (getArguments() != null) {
-            prefname = getArguments().getString(ARG_PARAM1);
+            prefName = getArguments().getString(ARG_PARAM1);
         }
 
-        if (prefname == null) {
+        if (prefName == null) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
                     getResources().getString(R.string.error_unknown_device),
@@ -134,7 +136,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
         NetpowerctrlApplication.instance.getService().registerDeviceErrorObserver(this);
 
         //noinspection ConstantConditions
-        getPreferenceManager().setSharedPreferencesName(prefname);
+        getPreferenceManager().setSharedPreferencesName(prefName);
 
 
         addPreferencesFromResource(R.xml.device_preferences);
@@ -194,7 +196,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
                         .edit().putInt(SharedPrefs.PREF_RECVPORT, port);
 
                 test_state = TestStates.TEST_INIT;
-                NetpowerctrlApplication.instance.restartListening();  // port may have changed
+                NetpowerctrlApplication.instance.restartListener();  // port may have changed
                 return true;
             }
         });
@@ -222,24 +224,27 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
                     public void run() {
                         if (test_state == TestStates.TEST_ACCESS) {
                             test_state = TestStates.TEST_INIT;
+                            //noinspection ConstantConditions
                             Toast.makeText(getActivity(), "Test access failed", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, 2000);
-                DeviceSend.DeviceSwitch ds = new DeviceSend.DeviceSwitch(testDevice);
-                DeviceSend.sendAllOutlets(getActivity(), ds);
+                DeviceCommand ds = new DeviceCommand(testDevice);
+                DeviceSend.sendAllOutlets(getActivity(), ds, false);
             }
         } else if (test_state == TestStates.TEST_ACCESS) {
+            //noinspection ConstantConditions
             Toast.makeText(getActivity(), "Test OK", Toast.LENGTH_SHORT).show();
             test_state = TestStates.TEST_OK;
         }
     }
 
     @Override
-    public void onDeviceError(String devicename, String errMessage) {
+    public void onDeviceError(String deviceName, String errMessage) {
         if (test_state == TestStates.TEST_REACHABLE) {
-            Log.w("onDeviceError", devicename + " " + testDevice.HostName);
-            if (devicename == testDevice.DeviceName) {
+            Log.w("onDeviceError", deviceName + " " + testDevice.HostName);
+            if (deviceName.equals(testDevice.DeviceName)) {
+                //noinspection ConstantConditions
                 Toast.makeText(getActivity(), "Test access failed: " + errMessage, Toast.LENGTH_SHORT).show();
                 test_state = TestStates.TEST_INIT;
             }

@@ -1,131 +1,51 @@
 package oly.netpowerctrl.anelservice;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.OutletCommand;
-import oly.netpowerctrl.datastructure.OutletCommandGroup;
 import oly.netpowerctrl.utils.ShowToast;
 
 public class DeviceSend {
-    /**
-     * This class extracts the destination ip, user access data
-     * and provides outlet manipulation methods (on/off/toggle).
-     * The resulting data byte variable can be used to send a
-     * bulk-change udp packet.
-     */
-    static final public class DeviceSwitch {
-        // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
-        // “Sw” + Steckdosen + User + Passwort
-        // Steckdosen = Zustand aller Steckdosen binär
-        // LSB = Steckdose 1, MSB (Bit 8)= Steckdose 8 (PRO, POWER), Bit 2 = Steckdose 3 (HOME).
-        // Soll nur 1 & 5 eingeschaltet werden=00010001 = 17 = 0x11 (HEX)
-        private byte data;
-        InetAddress dest;
-        int port;
-        String access;
-
-        public DeviceSwitch(DeviceInfo di) {
-            this.data = 0;
-            this.port = di.SendPort;
-            try {
-                this.dest = InetAddress.getByName(di.HostName);
-            } catch (UnknownHostException e) {
-                this.dest = null;
-            }
-            this.access = di.UserName + di.Password;
-            for (int i = 0; i < di.Outlets.size(); ++i) {
-                Log.w("DeviceSwitch", Integer.valueOf(i).toString() + " " + di.DeviceName + " " + Integer.valueOf(di.Outlets.get(i).OutletNumber).toString() + " " + Boolean.valueOf(di.Outlets.get(i).State).toString());
-
-                if (!di.Outlets.get(i).Disabled && di.Outlets.get(i).State)
-                    switchOn(di.Outlets.get(i).OutletNumber);
-            }
-
-        }
-
-        void switchOn(int outletNumber) {
-            data |= ((byte) (1 << outletNumber - 1));
-        }
-
-        void switchOff(int outletNumber) {
-            data &= ~((byte) (1 << outletNumber - 1));
-        }
-
-        void toggle(int outletNumber) {
-            if ((data & ((byte) (1 << outletNumber - 1))) > 0) {
-                switchOff(outletNumber);
-            } else {
-                switchOn(outletNumber);
-            }
-        }
-
-        byte getSwitchByte() {
-            return data;
-        }
-    }
-
     /**
      * Bulk version of sendOutlet. Send changes for each device in only one packet per device.
      *
      * @param context The context of the activity for showing toast messages and
      *                getResources
-     * @param og      The OutletCommandGroup
-     * @return Return true if all fields have been found
+     * @param device_commands   Bulk command per device
      */
-    static public void sendOutlet(final Context context, final OutletCommandGroup og) {
+    static public void sendOutlet(final Context context, final Collection<DeviceCommand> device_commands, final boolean requestNewValuesAfterSend) {
         // udp sending in own thread
         new Thread(new Runnable() {
             public void run() {
                 try {
                     DatagramSocket s = new DatagramSocket();
 
-                    TreeMap<String, DeviceSwitch> devices = new TreeMap<String, DeviceSwitch>();
-                    for (OutletCommand c : og.commands) {
-                        if (!devices.containsKey(c.device_mac)) {
-                            devices.put(c.device_mac, new DeviceSwitch(c.outletinfo.device));
-                        }
-
-                        //Log.w("sendOutlet",c.device_mac+" "+ Integer.valueOf(c.outletNumber).toString()+" "+Integer.valueOf(c.state).toString());
-
-                        switch (c.state) {
-                            case 0:
-                                devices.get(c.device_mac).switchOn(c.outletNumber);
-                                break;
-                            case 1:
-                                devices.get(c.device_mac).switchOff(c.outletNumber);
-                                break;
-                            case 2:
-                                devices.get(c.device_mac).toggle(c.outletNumber);
-                                break;
-                        }
-
-                    }
-
-                    for (Map.Entry<String, DeviceSwitch> c : devices.entrySet()) {
-                        sendAllOutlets(c.getValue(), s);
+                    for (DeviceCommand c : device_commands) {
+                        sendAllOutlets(c, s);
                     }
                     s.close();
 
-                    // wait 100ms
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ignored) {
-                    }
+                    if (requestNewValuesAfterSend) {
+                        // wait 100ms
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ignored) {
+                        }
 
-                    // request new values from each device
-                    for (Map.Entry<String, DeviceSwitch> device : devices.entrySet()) {
-                        DeviceQuery.sendQuery(context, device.getValue().dest.getHostAddress(), device.getValue().port);
+                        // request new values from each device
+
+                        for (DeviceCommand device_command : device_commands) {
+                            DeviceQuery.sendQuery(context, device_command.dest.getHostAddress(), device_command.port);
+                        }
                     }
 
                 } catch (final IOException e) {
@@ -142,7 +62,7 @@ public class DeviceSend {
      * @param context The context
      * @param device  The device and state
      */
-    static public void sendAllOutlets(final Context context, final DeviceSwitch device) {
+    static public void sendAllOutlets(final Context context, final DeviceCommand device, final boolean requestNewValuesAfterSend) {
         // udp sending in own thread
         new Thread(new Runnable() {
             public void run() {
@@ -150,6 +70,17 @@ public class DeviceSend {
                     DatagramSocket s = new DatagramSocket();
                     sendAllOutlets(device, s);
                     s.close();
+
+                    if (requestNewValuesAfterSend) {
+                        // wait 100ms
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ignored) {
+                        }
+
+                        // request new values
+                        DeviceQuery.sendQuery(context, device.dest.getHostAddress(), device.port);
+                    }
                 } catch (final IOException e) {
                     ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "
                             + e.getMessage());
@@ -158,7 +89,7 @@ public class DeviceSend {
         }).start();
     }
 
-    static private void sendAllOutlets(final DeviceSwitch device, DatagramSocket s) throws IOException {
+    static private void sendAllOutlets(final DeviceCommand device, DatagramSocket s) throws IOException {
         if (device.dest != null) {
             byte[] data = new byte[3 + device.access.length()];
             data[0] = 'S';

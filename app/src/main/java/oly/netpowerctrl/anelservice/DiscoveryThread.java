@@ -91,7 +91,7 @@ class DiscoveryThread extends Thread {
             String outlet[] = msg[6 + i].split(",");
             if (outlet.length < 1)
                 continue;
-            OutletInfo oi = new OutletInfo();
+            OutletInfo oi = new OutletInfo(di);
             oi.OutletNumber = i + 1; // 1-based
             oi.Description = outlet[0];
             if (outlet.length > 1)

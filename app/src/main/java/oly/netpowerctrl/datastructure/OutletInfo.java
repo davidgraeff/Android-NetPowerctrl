@@ -14,7 +14,8 @@ public class OutletInfo implements Parcelable, Comparable {
     public boolean Hidden;
     public int positionRequest;
 
-    public OutletInfo() {
+    public OutletInfo(DeviceInfo di) {
+        device = di;
         OutletNumber = -1;
         Description = "";
         UserDescription = "";
@@ -32,6 +33,7 @@ public class OutletInfo implements Parcelable, Comparable {
         Disabled = other.Disabled;
         Hidden = other.Hidden;
         positionRequest = other.positionRequest;
+        device = other.device;
     }
 
     public boolean equals(OutletInfo other) {
