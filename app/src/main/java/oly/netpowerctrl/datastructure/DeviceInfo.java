@@ -3,7 +3,10 @@ package oly.netpowerctrl.datastructure;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.JsonReader;
+import android.util.JsonWriter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -62,7 +65,7 @@ public class DeviceInfo implements Parcelable {
         this();
         DeviceName = cx.getResources().getString(R.string.default_device_name);
         SendPort = SharedPrefs.getDefaultSendPort(cx);
-        ReceivePort = SharedPrefs.getDefaultRecvPort(cx);
+        ReceivePort = SharedPrefs.getDefaultReceivePort(cx);
     }
 
     public DeviceInfo(DeviceInfo other) {
@@ -151,5 +154,64 @@ public class DeviceInfo implements Parcelable {
         for (OutletInfo oi : Outlets) {
             oi.State = c.getIsOn(oi.OutletNumber);
         }
+    }
+
+    public static DeviceInfo fromJSON(JsonReader reader) throws IOException {
+        reader.beginObject();
+        DeviceInfo di = new DeviceInfo();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            if (name.equals("uuid")) {
+                di.uuid = UUID.fromString(reader.nextString());
+            } else if (name.equals("DeviceName")) {
+                di.DeviceName = reader.nextString();
+            } else if (name.equals("HostName")) {
+                di.HostName = reader.nextString();
+            } else if (name.equals("MacAddress")) {
+                di.MacAddress = reader.nextString();
+            } else if (name.equals("UserName")) {
+                di.UserName = reader.nextString();
+            } else if (name.equals("Password")) {
+                di.Password = reader.nextString();
+            } else if (name.equals("DefaultPorts")) {
+                di.DefaultPorts = reader.nextBoolean();
+            } else if (name.equals("SendPort")) {
+                di.SendPort = reader.nextInt();
+            } else if (name.equals("ReceivePort")) {
+                di.ReceivePort = reader.nextInt();
+            } else if (name.equals("Outlets")) {
+                di.Outlets = new ArrayList<OutletInfo>();
+                reader.beginArray();
+                while (reader.hasNext()) {
+                    di.Outlets.add(OutletInfo.fromJSON(reader, di));
+                }
+                reader.endArray();
+            } else {
+                reader.skipValue();
+            }
+        }
+
+        di.Configured = true;
+        reader.endObject();
+        return di;
+    }
+
+    public void toJSON(JsonWriter writer) throws IOException {
+        writer.beginObject();
+        writer.name("uuid").value(uuid.toString());
+        writer.name("DeviceName").value(DeviceName);
+        writer.name("HostName").value(HostName);
+        writer.name("MacAddress").value(MacAddress);
+        writer.name("UserName").value(UserName);
+        writer.name("Password").value(Password);
+        writer.name("DefaultPorts").value(DefaultPorts);
+        writer.name("SendPort").value(SendPort);
+        writer.name("ReceivePort").value(ReceivePort);
+        writer.name("Outlets").beginArray();
+        for (OutletInfo oi : Outlets) {
+            oi.toJSON(writer);
+        }
+        writer.endArray();
+        writer.endObject();
     }
 }

@@ -9,6 +9,7 @@ import android.os.IBinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import oly.netpowerctrl.R;
@@ -38,6 +39,28 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     private ArrayList<DevicesUpdate> observersNew = new ArrayList<DevicesUpdate>();
 
     private ArrayList<DeviceQuery> updateDeviceStateList = new ArrayList<DeviceQuery>();
+
+    //! get a list of all send ports of all configured devices plus the default send port
+    public ArrayList<Integer> getAllSendPorts() {
+        HashSet<Integer> ports = new HashSet<Integer>();
+        ports.add(SharedPrefs.getDefaultSendPort(this));
+
+        for (DeviceInfo di : configuredDevices)
+            ports.add(di.SendPort);
+
+        return new ArrayList<Integer>(ports);
+    }
+
+    //! get a list of all receive ports of all configured devices plus the default receive port
+    public ArrayList<Integer> getAllReceivePorts() {
+        HashSet<Integer> ports = new HashSet<Integer>();
+        ports.add(SharedPrefs.getDefaultReceivePort(this));
+
+        for (DeviceInfo di : configuredDevices)
+            ports.add(di.ReceivePort);
+
+        return new ArrayList<Integer>(ports);
+    }
 
     @SuppressWarnings("unused")
     public boolean registerConfiguredObserver(DevicesUpdate o) {

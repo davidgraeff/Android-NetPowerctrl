@@ -12,7 +12,6 @@ import java.util.Iterator;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -84,7 +83,7 @@ public class DeviceQuery {
     }
 
     public static void sendBroadcastQuery(final Context context) {
-        for (int port : SharedPrefs.getAllSendPorts(context))
+        for (int port : NetpowerctrlApplication.instance.getAllSendPorts())
             sendQuery(context, "255.255.255.255", port);
     }
 }

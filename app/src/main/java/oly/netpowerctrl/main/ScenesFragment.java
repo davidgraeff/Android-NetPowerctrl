@@ -55,7 +55,7 @@ public class ScenesFragment extends GridOrListFragment implements ListItemMenu, 
 
             case R.id.menu_add_scene: {
                 Intent it = new Intent(getActivity(), ShortcutCreatorActivity.class);
-                it.putExtra("groups", true);
+                it.putExtra(ShortcutCreatorActivity.CREATE_SCENE, true);
                 startActivityForResult(it, ACTIVITY_REQUEST_ADDGROUP);
                 return true;
             }
@@ -114,8 +114,8 @@ public class ScenesFragment extends GridOrListFragment implements ListItemMenu, 
         switch (menuItem.getItemId()) {
             case R.id.menu_edit_scene: {
                 Intent it = new Intent(getActivity(), ShortcutCreatorActivity.class);
-                it.putExtra("groups", true);
-                it.putExtra("load", og.toString());
+                it.putExtra(ShortcutCreatorActivity.CREATE_SCENE, true);
+                it.putExtra(ShortcutCreatorActivity.LOAD_SCENE, og.toString());
                 startActivityForResult(it, ACTIVITY_REQUEST_ADDGROUP);
                 return true;
             }

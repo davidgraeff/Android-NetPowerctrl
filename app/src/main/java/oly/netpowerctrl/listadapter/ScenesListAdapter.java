@@ -28,7 +28,7 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
     public ScenesListAdapter(Context context) {
         this.context = context;
         inflater = LayoutInflater.from(context);
-        scenes = SharedPrefs.ReadGroups(context);
+        scenes = SharedPrefs.ReadScenes(context);
     }
 
     @Override
@@ -98,19 +98,19 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
         } else
             scenes.add(data);
 
-        SharedPrefs.SaveGroups(scenes, context);
+        SharedPrefs.SaveScenes(scenes, context);
         notifyDataSetChanged();
     }
 
     public void removeScene(int position) {
         scenes.remove(position);
-        SharedPrefs.SaveGroups(scenes, context);
+        SharedPrefs.SaveScenes(scenes, context);
         notifyDataSetChanged();
     }
 
     public void deleteAll() {
         scenes.clear();
-        SharedPrefs.SaveGroups(scenes, context);
+        SharedPrefs.SaveScenes(scenes, context);
         notifyDataSetChanged();
     }
 

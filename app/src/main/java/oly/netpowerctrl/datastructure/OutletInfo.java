@@ -2,6 +2,10 @@ package oly.netpowerctrl.datastructure;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.JsonReader;
+import android.util.JsonWriter;
+
+import java.io.IOException;
 
 //this class holds the info about a single outlet
 public class OutletInfo implements Parcelable, Comparable {
@@ -88,6 +92,46 @@ public class OutletInfo implements Parcelable, Comparable {
         } else {
             return positionRequest < other.positionRequest ? -1 : 1;
         }
+    }
+
+    public static OutletInfo fromJSON(JsonReader reader, DeviceInfo di) throws IOException {
+        reader.beginObject();
+        OutletInfo oi = new OutletInfo(di);
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            if (name.equals("OutletNumber")) {
+                oi.OutletNumber = reader.nextInt();
+            } else if (name.equals("Description")) {
+                oi.Description = reader.nextString();
+            } else if (name.equals("UserDescription")) {
+                oi.UserDescription = reader.nextString();
+            } else if (name.equals("State")) {
+                oi.State = reader.nextBoolean();
+            } else if (name.equals("Disabled")) {
+                oi.Disabled = reader.nextBoolean();
+            } else if (name.equals("Hidden")) {
+                oi.Hidden = reader.nextBoolean();
+            } else if (name.equals("positionRequest")) {
+                oi.positionRequest = reader.nextInt();
+            } else {
+                reader.skipValue();
+            }
+        }
+
+        reader.endObject();
+        return oi;
+    }
+
+    public void toJSON(JsonWriter writer) throws IOException {
+        writer.beginObject();
+        writer.name("OutletNumber").value(OutletNumber);
+        writer.name("Description").value(Description);
+        writer.name("UserDescription").value(UserDescription);
+        writer.name("State").value(State);
+        writer.name("Disabled").value(Disabled);
+        writer.name("Hidden").value(Hidden);
+        writer.name("positionRequest").value(positionRequest);
+        writer.endObject();
     }
 }
 

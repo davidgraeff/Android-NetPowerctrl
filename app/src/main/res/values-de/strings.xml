@@ -153,4 +153,6 @@
     <string name="name">Name</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Szene editieren</string>
+    <string name="nfc_failed">Android Beam ist fehlgeschlagen</string>
+    <string name="nfc_select_devices_title">Wähle zu installierende Geräte aus</string>
 </resources>

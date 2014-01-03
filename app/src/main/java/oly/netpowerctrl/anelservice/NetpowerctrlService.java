@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 public class NetpowerctrlService extends Service {
     private List<DiscoveryThread> discoveryThreads = new ArrayList<DiscoveryThread>();
@@ -89,7 +89,7 @@ public class NetpowerctrlService extends Service {
     private void startDiscoveryThreads() {
         // only start if not yet running
         if (discoveryThreads.size() == 0) {
-            for (int port : SharedPrefs.getAllReceivePorts(this)) {
+            for (int port : NetpowerctrlApplication.instance.getAllReceivePorts()) {
                 DiscoveryThread thr = new DiscoveryThread(port, this);
                 thr.start();
                 discoveryThreads.add(thr);
