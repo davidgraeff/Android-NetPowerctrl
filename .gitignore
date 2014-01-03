@@ -1,5 +1,6 @@
 # built application files
 *.apk
+app/app.apk
 *.ap_
 
 # files for the dex VM
@@ -20,7 +21,7 @@ local.properties
 .project
 
 # Android Studio
-# .idea/
+.idea/
 .gradle
 /*/local.properties
 /*/out
