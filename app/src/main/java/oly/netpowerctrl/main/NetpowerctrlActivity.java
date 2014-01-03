@@ -185,15 +185,14 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         String text = null;
         try {
             text = DeviceCollection.fromDevices(NetpowerctrlApplication.instance.configuredDevices).toJSON();
-            Log.w("json", text);
         } catch (IOException ignored) {
-            Log.w("json", ignored.toString());
+            Log.w("DeviceCollection.fromDevices", ignored.toString());
             return null;
         }
 
         return new NdefMessage(
-                NdefRecord.createApplicationRecord("oly.netpowerctrl"),
-                NdefRecord.createMime("application/oly.netpowerctrl", text.getBytes())
+                NdefRecord.createMime("application/oly.netpowerctrl", text.getBytes()),
+                NdefRecord.createApplicationRecord("oly.netpowerctrl")
         );
     }
 
@@ -201,14 +200,15 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     public void onResume() {
         super.onResume();
         // Check to see that the Activity started due to an Android Beam
-        String intentAction = getIntent().getAction();
+        Intent intent = getIntent();
+        String intentAction = intent.getAction();
+
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intentAction)) {
-            Intent intent = getIntent();
             Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
             // only one message sent during the beam
             assert rawMessages != null;
             NdefMessage msg = (NdefMessage) rawMessages[0];
-            NFC.showSelectionDialog(this, new String(msg.getRecords()[1].getPayload()));
+            NFC.showSelectionDialog(this, new String(msg.getRecords()[0].getPayload()));
         }
 
         // Start listener and request new device states
