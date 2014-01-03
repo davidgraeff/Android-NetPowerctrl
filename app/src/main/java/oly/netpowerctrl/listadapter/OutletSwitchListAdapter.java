@@ -118,8 +118,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         for (DeviceInfo device : all_devices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
-                oi.Disabled = false;
-                if (!oi.Hidden || showHidden)
+                if (!oi.Disabled && (!oi.Hidden || showHidden))
                     all_outlets.add(oi);
             }
         }
