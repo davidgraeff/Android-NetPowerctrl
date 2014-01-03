@@ -67,6 +67,7 @@ public class DeviceCollection {
 
         writer.beginObject();
         writer.name("version").value(PROTOCOLVERSION);
+        writer.name("source_device").value(android.os.Build.MODEL);
         writer.name("devices").beginArray();
         for (DeviceInfo di : devices) {
             di.toJSON(writer);
