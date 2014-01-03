@@ -19,6 +19,8 @@ import oly.netpowerctrl.listadapter.OutletListAdapter;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
+    public static final String CREATE_SCENE = "scenes";
+    public static final String LOAD_SCENE = "load";
     private OutletListAdapter adpOutlets = null;
     private ListView lvOutletSelect;
     private Switch show_mainWindow;
@@ -52,14 +54,15 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
         if (it != null) {
             Bundle extra = it.getExtras();
             if (extra != null) {
-                isForGroups = extra.getBoolean("groups");
-                og = OutletCommandGroup.fromString(extra.getString("load", null), this);
+                isForGroups = extra.getBoolean(CREATE_SCENE);
+                og = OutletCommandGroup.fromString(extra.getString(LOAD_SCENE, null), this);
                 if (og == null) {
                     finish();
                     return;
                 }
 
                 isLoaded = true;
+                shortcutName_changed = true;
                 adpOutlets = OutletListAdapter.createByOutletCommands(this, og.commands);
                 shortcutName.setText(og.sceneName);
             }

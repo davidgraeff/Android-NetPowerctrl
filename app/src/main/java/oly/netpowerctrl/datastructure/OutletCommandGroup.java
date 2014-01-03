@@ -22,14 +22,14 @@ public class OutletCommandGroup {
         commands = new ArrayList<OutletCommand>();
     }
 
-    @SuppressWarnings("unused")
-    public boolean equals(OutletCommandGroup other) {
-        return uuid.equals(other.uuid);
+    @Override
+    public boolean equals(Object other) {
+        return uuid.equals(((OutletCommandGroup) other).uuid);
     }
 
     @SuppressWarnings("unused")
-    public boolean equals(UUID uuid) {
-        return uuid.equals(uuid);
+    public boolean equals(OutletCommandGroup other) {
+        return uuid.equals(other.uuid);
     }
 
     public String toString() {

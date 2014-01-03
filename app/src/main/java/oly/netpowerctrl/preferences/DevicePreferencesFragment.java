@@ -40,7 +40,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
     public static DevicePreferencesFragment instantiate(Context ctx) {
         DevicePreferencesFragment fragment = (DevicePreferencesFragment) Fragment.instantiate(ctx, DevicePreferencesFragment.class.getName());
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, SharedPrefs.PREF_TEMPDEVICE);
+        args.putString(ARG_PARAM1, SharedPrefs.PREF_TEMP_DEVICE);
         fragment.setArguments(args);
         return fragment;
     }
@@ -155,7 +155,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
         findPreference(SharedPrefs.PREF_USERNAME).setOnPreferenceChangeListener(prefChanged);
 
         //noinspection ConstantConditions
-        findPreference(SharedPrefs.PREF_SENDPORT + "_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        findPreference(SharedPrefs.PREF_SEND_PORT + "_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 int port;
                 try {
@@ -170,7 +170,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
 
                 //noinspection ConstantConditions
                 getPreferenceManager().getSharedPreferences()
-                        .edit().putInt(SharedPrefs.PREF_SENDPORT, port);
+                        .edit().putInt(SharedPrefs.PREF_SEND_PORT, port);
 
                 test_state = TestStates.TEST_INIT;
                 return true;
@@ -178,7 +178,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
         });
 
         //noinspection ConstantConditions
-        findPreference(SharedPrefs.PREF_RECVPORT + "_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        findPreference(SharedPrefs.PREF_RECEIVE_PORT + "_str").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 int port;
                 try {
@@ -193,7 +193,7 @@ public class DevicePreferencesFragment extends PreferenceFragment implements Dev
 
                 //noinspection ConstantConditions
                 getPreferenceManager().getSharedPreferences()
-                        .edit().putInt(SharedPrefs.PREF_RECVPORT, port);
+                        .edit().putInt(SharedPrefs.PREF_RECEIVE_PORT, port);
 
                 test_state = TestStates.TEST_INIT;
                 NetpowerctrlApplication.instance.restartListener();  // port may have changed

@@ -153,4 +153,6 @@
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommened. Should I save nevertheless?</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Edit scene</string>
+    <string name="nfc_failed">Android Beam failed</string>
+    <string name="nfc_select_devices_title">Select devices to install</string>
 </resources>

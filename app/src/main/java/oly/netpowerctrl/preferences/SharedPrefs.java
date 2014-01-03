@@ -4,12 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,46 +17,52 @@ import oly.netpowerctrl.datastructure.OutletInfo;
 
 public class SharedPrefs {
 
-    public final static String PREF_TEMPDEVICE = "oly.netpowerctrl.tempdevice";
+    public final static String PREF_TEMP_DEVICE = "oly.netpowerctrl.tempdevice";
     public final static String PREF_BASENAME = "oly.netpowerctrl";
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
     public final static String PREF_GROUPS_BASENAME = "oly.netpowerctrl.groups";
     public final static String PREF_DEVICES = "CONFIGURED_DEVICES";
-    public final static String PREF_GROUPS = "GROUPS";
-    public final static String PREF_FIRSTTAB = "FIRST_TAB";
+    public final static String PREF_SCENES = "GROUPS";
+    public final static String PREF_FIRST_TAB = "FIRST_TAB";
     public final static String PREF_UUID = "UUID";
     public final static String PREF_NAME = "NAME";
     public final static String PREF_IP = "IP";
     public final static String PREF_MAC = "MAC";
     public final static String PREF_USERNAME = "USERNAME";
     public final static String PREF_PASSWORD = "PASSWORD";
-    public final static String PREF_DEFAULTPORTS = "DEFAULTPORTS";
-    public final static String PREF_SENDPORT = "SENDPORT";
-    public final static String PREF_RECVPORT = "RECVPORT";
+    public final static String PREF_DEFAULT_PORTS = "DEFAULTPORTS";
+    public final static String PREF_SEND_PORT = "SENDPORT";
+    public final static String PREF_RECEIVE_PORT = "RECVPORT";
     public final static String PREF_NUM_OUTLETS = "NUM_OUTLETS";
     public final static String PREF_OUTLET_NAME = "OUTLET_NAME";
     public final static String PREF_OUTLET_NUMBER = "OUTLET_NUMBER";
 
     public static int getFirstTab(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
-        return prefs.getInt(PREF_FIRSTTAB, -1);
+        int tab = 0;
+        try {
+            tab = prefs.getInt(PREF_FIRST_TAB, 0);
+        } catch (ClassCastException ignored) {
+
+        }
+        return tab;
     }
 
     public static void setFirstTab(Context context, int navigationPosition) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = prefs.edit();
-        prefEditor.putInt(PREF_FIRSTTAB, navigationPosition);
+        prefEditor.putInt(PREF_FIRST_TAB, navigationPosition);
         prefEditor.commit();
     }
 
-    public static ArrayList<OutletCommandGroup> ReadGroups(Context context) {
+    public static ArrayList<OutletCommandGroup> ReadScenes(Context context) {
         ArrayList<OutletCommandGroup> groups = new ArrayList<OutletCommandGroup>();
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
-        Set<String> groupSet = prefs.getStringSet(PREF_GROUPS, null);
-        if (groupSet == null)
+        Set<String> scenes_in_set = prefs.getStringSet(PREF_SCENES, null);
+        if (scenes_in_set == null)
             return groups;
 
-        for (String group_str : groupSet) {
+        for (String group_str : scenes_in_set) {
             OutletCommandGroup og = OutletCommandGroup.fromString(group_str, context);
             groups.add(og);
 
@@ -69,21 +70,21 @@ public class SharedPrefs {
         return groups;
     }
 
-    public static void SaveGroups(ArrayList<OutletCommandGroup> groups, Context context) {
-        Set<String> group_str = new TreeSet<String>();
+    public static void SaveScenes(ArrayList<OutletCommandGroup> scenes, Context context) {
+        Set<String> scenes_in_set = new TreeSet<String>();
 
-        for (OutletCommandGroup b : groups) {
-            group_str.add(b.toString());
+        for (OutletCommandGroup scene : scenes) {
+            scenes_in_set.add(scene.toString());
         }
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = prefs.edit();
-        prefEditor.putStringSet(PREF_GROUPS, group_str);
+        prefEditor.putStringSet(PREF_SCENES, scenes_in_set);
         prefEditor.commit();
     }
 
-    public static String getFullPrefname(String prefname) {
-        return PREF_BASENAME + "." + prefname;
+    public static String getFullPrefName(String prefName) {
+        return PREF_BASENAME + "." + prefName;
     }
 
     public static ArrayList<DeviceInfo> ReadConfiguredDevices(Context context) {
@@ -94,16 +95,16 @@ public class SharedPrefs {
         String configured_devices_str = prefs.getString(PREF_DEVICES, "");
         String[] configured_devices = configured_devices_str.split(":");
         for (String device : configured_devices)
-            devices.add(ReadDevice(context, getFullPrefname(device)));
+            devices.add(ReadDevice(context, getFullPrefName(device)));
         return devices;
     }
 
     public static DeviceInfo ReadTempDevice(Context context) {
-        return ReadDevice(context, PREF_TEMPDEVICE);
+        return ReadDevice(context, PREF_TEMP_DEVICE);
     }
 
-    public static DeviceInfo ReadDevice(Context context, String prefname) {
-        SharedPreferences device_prefs = context.getSharedPreferences(prefname, Context.MODE_PRIVATE);
+    public static DeviceInfo ReadDevice(Context context, String prefName) {
+        SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
         DeviceInfo di = new DeviceInfo(context);
         di.uuid = UUID.fromString(device_prefs.getString(PREF_UUID, UUID.randomUUID().toString()));
         di.DeviceName = device_prefs.getString(PREF_NAME, context.getResources().getText(R.string.default_device_name).toString());
@@ -111,13 +112,13 @@ public class SharedPrefs {
         di.MacAddress = device_prefs.getString(PREF_MAC, "");
         di.UserName = device_prefs.getString(PREF_USERNAME, "");
         di.Password = device_prefs.getString(PREF_PASSWORD, "");
-        di.DefaultPorts = device_prefs.getBoolean(PREF_DEFAULTPORTS, true);
+        di.DefaultPorts = device_prefs.getBoolean(PREF_DEFAULT_PORTS, true);
         if (di.DefaultPorts) {
             di.SendPort = getDefaultSendPort(context);
-            di.ReceivePort = getDefaultRecvPort(context);
+            di.ReceivePort = getDefaultReceivePort(context);
         } else {
-            di.SendPort = device_prefs.getInt(PREF_SENDPORT, getDefaultSendPort(context));
-            di.ReceivePort = device_prefs.getInt(PREF_RECVPORT, getDefaultRecvPort(context));
+            di.SendPort = device_prefs.getInt(PREF_SEND_PORT, getDefaultSendPort(context));
+            di.ReceivePort = device_prefs.getInt(PREF_RECEIVE_PORT, getDefaultReceivePort(context));
         }
         di.Configured = true;
         di.Outlets = new ArrayList<OutletInfo>();
@@ -137,8 +138,7 @@ public class SharedPrefs {
 
         for (DeviceInfo di : devices) {
             configured_devices += di.getID() + ":";
-            String prefname = getFullPrefname(di.getID());
-            SaveDevice(context, prefname, di);
+            SaveDevice(context, getFullPrefName(di.getID()), di);
         }
 
         if (configured_devices.endsWith(":"))
@@ -149,8 +149,8 @@ public class SharedPrefs {
         prefEditor.commit();
     }
 
-    public static void SaveDevice(Context context, String prefname, DeviceInfo di) {
-        SharedPreferences device_prefs = context.getSharedPreferences(prefname, Context.MODE_PRIVATE);
+    public static void SaveDevice(Context context, String prefName, DeviceInfo di) {
+        SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
         SharedPreferences.Editor device_editor = device_prefs.edit();
 
         device_editor.putString(PREF_UUID, di.uuid.toString());
@@ -159,9 +159,9 @@ public class SharedPrefs {
         device_editor.putString(PREF_MAC, di.MacAddress);
         device_editor.putString(PREF_USERNAME, di.UserName);
         device_editor.putString(PREF_PASSWORD, di.Password);
-        device_editor.putBoolean(PREF_DEFAULTPORTS, di.DefaultPorts);
-        device_editor.putInt(PREF_SENDPORT, di.SendPort);
-        device_editor.putInt(PREF_RECVPORT, di.ReceivePort);
+        device_editor.putBoolean(PREF_DEFAULT_PORTS, di.DefaultPorts);
+        device_editor.putInt(PREF_SEND_PORT, di.SendPort);
+        device_editor.putInt(PREF_RECEIVE_PORT, di.ReceivePort);
 
         device_editor.putInt(PREF_NUM_OUTLETS, di.Outlets.size());
         for (int i = 0; i < di.Outlets.size(); i++) {
@@ -172,12 +172,12 @@ public class SharedPrefs {
     }
 
     public static void SaveTempDevice(Context context, DeviceInfo di) {
-        SaveDevice(context, PREF_TEMPDEVICE, di);
+        SaveDevice(context, PREF_TEMP_DEVICE, di);
     }
 
     public static void SaveWidget(Context context, int widgetID, String deviceMac, int outletNumber) {
-        final String prefname = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
-        SharedPreferences device_prefs = context.getSharedPreferences(prefname, Context.MODE_PRIVATE);
+        final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
+        SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
         SharedPreferences.Editor device_editor = device_prefs.edit();
         device_editor.putString(PREF_MAC, deviceMac);
         device_editor.putInt(PREF_OUTLET_NUMBER, outletNumber);
@@ -185,8 +185,8 @@ public class SharedPrefs {
     }
 
     public static void DeleteWidgets(Context context, int appWidgetId) {
-        final String prefname = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-        SharedPreferences device_prefs = context.getSharedPreferences(prefname, Context.MODE_PRIVATE);
+        final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
+        SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
         device_prefs.edit().clear().commit();
     }
 
@@ -196,8 +196,8 @@ public class SharedPrefs {
     }
 
     public static UniqueOutlet LoadWidget(Context context, int widgetID) {
-        final String prefname = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
-        SharedPreferences device_prefs = context.getSharedPreferences(prefname, Context.MODE_PRIVATE);
+        final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
+        SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
 
         UniqueOutlet result = new UniqueOutlet();
         result.deviceMac = device_prefs.getString(PREF_MAC, null);
@@ -217,54 +217,13 @@ public class SharedPrefs {
         return send_udp;
     }
 
-    public static int getDefaultRecvPort(Context context) {
+    public static int getDefaultReceivePort(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int recv_udp = context.getResources().getInteger(R.integer.default_recv_port);
+        int receive_port_udp = context.getResources().getInteger(R.integer.default_recv_port);
         try {
-            recv_udp = Integer.parseInt(prefs.getString("standard_recv_port", ""));
+            receive_port_udp = Integer.parseInt(prefs.getString("standard_recv_port", ""));
         } catch (NumberFormatException e) { /*nop*/ }
-        return recv_udp;
+        return receive_port_udp;
     }
 
-    //! get a list of all send ports of all configured devices plus the default send port
-    public static ArrayList<Integer> getAllSendPorts(Context context) {
-        HashSet<Integer> ports = new HashSet<Integer>();
-        ports.add(getDefaultSendPort(context));
-
-        SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
-        String configured_devices_str = prefs.getString("configured_devices", "[]");
-        try {
-            JSONArray jdevices = new JSONArray(configured_devices_str);
-            for (int i = 0; i < jdevices.length(); i++) {
-                JSONObject jhost = jdevices.getJSONObject(i);
-                if (!jhost.getBoolean("default_ports"))
-                    ports.add(jhost.getInt("sendport"));
-            }
-        } catch (JSONException e) {
-            // nop
-        }
-
-        return new ArrayList<Integer>(ports);
-    }
-
-    //! get a list of all receive ports of all configured devices plus the default receive port
-    public static ArrayList<Integer> getAllReceivePorts(Context context) {
-        HashSet<Integer> ports = new HashSet<Integer>();
-        ports.add(getDefaultRecvPort(context));
-
-        SharedPreferences prefs = context.getSharedPreferences("oly.netpowerctrl", Context.MODE_PRIVATE);
-        String configured_devices_str = prefs.getString("configured_devices", "[]");
-        try {
-            JSONArray jdevices = new JSONArray(configured_devices_str);
-            for (int i = 0; i < jdevices.length(); i++) {
-                JSONObject jhost = jdevices.getJSONObject(i);
-                if (!jhost.getBoolean("default_ports"))
-                    ports.add(jhost.getInt("recvport"));
-            }
-        } catch (JSONException e) {
-            // nop
-        }
-
-        return new ArrayList<Integer>(ports);
-    }
 }

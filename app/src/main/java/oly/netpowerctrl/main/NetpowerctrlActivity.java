@@ -33,6 +33,7 @@ import android.os.Parcelable;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,12 +41,16 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
+import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.listadapter.AdapterController;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.NFC;
 
 public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static NetpowerctrlActivity _this = null;
@@ -177,9 +182,15 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
-        String text = ("Beam me up, Android!\n\n" +
-                "Beam Time: " + System.currentTimeMillis());
-        //TODO nfc send
+        String text = null;
+        try {
+            text = DeviceCollection.fromDevices(NetpowerctrlApplication.instance.configuredDevices).toJSON();
+            Log.w("json", text);
+        } catch (IOException ignored) {
+            Log.w("json", ignored.toString());
+            return null;
+        }
+
         return new NdefMessage(
                 NdefRecord.createApplicationRecord("oly.netpowerctrl"),
                 NdefRecord.createMime("application/oly.netpowerctrl", text.getBytes())
@@ -193,14 +204,11 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         String intentAction = getIntent().getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intentAction)) {
             Intent intent = getIntent();
-            Parcelable[] rawMessages = intent.getParcelableArrayExtra(
-                    NfcAdapter.EXTRA_NDEF_MESSAGES);
+            Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
             // only one message sent during the beam
             assert rawMessages != null;
             NdefMessage msg = (NdefMessage) rawMessages[0];
-            @SuppressWarnings("unused")
-            String beamedDeviceConfigurations = new String(msg.getRecords()[1].getPayload());
-            //TODO nfc read
+            NFC.showSelectionDialog(this, new String(msg.getRecords()[1].getPayload()));
         }
 
         // Start listener and request new device states
