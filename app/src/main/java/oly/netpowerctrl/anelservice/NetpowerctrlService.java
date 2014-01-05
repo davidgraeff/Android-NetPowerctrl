@@ -20,7 +20,8 @@ public class NetpowerctrlService extends Service {
     private ArrayList<DeviceError> errorObserver = new ArrayList<DeviceError>();
 
     public void registerDeviceUpdateObserver(DeviceUpdate o) {
-        observer.add(o);
+        if (!observer.contains(o))
+            observer.add(o);
     }
 
     public void unregisterDeviceUpdateObserver(DeviceUpdate o) {
@@ -28,7 +29,8 @@ public class NetpowerctrlService extends Service {
     }
 
     public void registerDeviceErrorObserver(DeviceError o) {
-        errorObserver.add(o);
+        if (!errorObserver.contains(o))
+            errorObserver.add(o);
     }
 
     public void unregisterDeviceErrorObserver(DeviceError o) {
@@ -36,6 +38,7 @@ public class NetpowerctrlService extends Service {
     }
 
     public void notifyObservers(final DeviceInfo di) {
+        //Log.w("LISTEN_SERVICE", "UPDATE "+di.HostName);
         assert di != null;
         if (observer.isEmpty())
             return;

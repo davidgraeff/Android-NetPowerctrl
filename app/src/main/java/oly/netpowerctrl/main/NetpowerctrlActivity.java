@@ -37,23 +37,29 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.datastructure.DeviceCollection;
-import oly.netpowerctrl.listadapter.AdapterController;
+import oly.netpowerctrl.datastructure.SceneCollection;
+import oly.netpowerctrl.listadapter.DeviceListAdapter;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
+import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
+import oly.netpowerctrl.listadapter.ScenesListAdapter;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.NFC;
 
 public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
-    public static NetpowerctrlActivity _this = null;
+    public static NetpowerctrlActivity instance = null;
 
     // Drawer
     private DrawerLayout mDrawerLayout;
@@ -65,19 +71,41 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     private CharSequence mTitle;
 
     // Core
-    public AdapterController adapterUpdateManger;
+    public DeviceListAdapter adpConfiguredDevices;
+    public DeviceListAdapter adpNewDevices;
+    public OutletSwitchListAdapter adpOutlets;
+    public ScenesListAdapter adpScenes;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        _this = this;
+        instance = this;
         setContentView(R.layout.activity_main);
+
+        adpConfiguredDevices = new DeviceListAdapter(this, false);
+        adpNewDevices = new DeviceListAdapter(this, true);
+        adpOutlets = new OutletSwitchListAdapter(this);
+        adpScenes = new ScenesListAdapter(this);
 
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
         mDrawerView = findViewById(R.id.left_drawer);
+
+        // Hack to always show the overflow of the actionbar instead of
+        // relying on the menu button that is only present on some devices
+        // and may cause confusion.
+        try {
+            ViewConfiguration config = ViewConfiguration.get(this);
+            Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+            if (menuKeyField != null) {
+                menuKeyField.setAccessible(true);
+                menuKeyField.setBoolean(config, false);
+            }
+        } catch (Exception ex) {
+            // Ignore
+        }
 
         try {
             //noinspection ConstantConditions
@@ -149,9 +177,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             // Register callback
             mNfcAdapter.setNdefPushMessageCallback(this, this);
         }
-
-        // Core
-        adapterUpdateManger = new AdapterController(this);
     }
 
     /* Called whenever we call invalidateOptionsMenu() */
@@ -182,11 +207,15 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
-        String text = null;
+        String text;
         try {
-            text = DeviceCollection.fromDevices(NetpowerctrlApplication.instance.configuredDevices).toJSON();
-        } catch (IOException ignored) {
-            Log.w("DeviceCollection.fromDevices", ignored.toString());
+            JSONHelper h = new JSONHelper();
+            NFC.NFC_Transfer.fromData(
+                    SceneCollection.fromScenes(adpScenes.getScenes()),
+                    DeviceCollection.fromDevices(NetpowerctrlApplication.instance.configuredDevices)).toJSON(h.createWriter());
+            text = h.getString();
+        } catch (IOException e) {
+            Log.w("createNdefMessage", e.getMessage());
             return null;
         }
 
@@ -208,7 +237,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             // only one message sent during the beam
             assert rawMessages != null;
             NdefMessage msg = (NdefMessage) rawMessages[0];
-            NFC.showSelectionDialog(this, new String(msg.getRecords()[0].getPayload()));
+            NFC.parseNFC(this, new String(msg.getRecords()[0].getPayload()));
         }
 
         // Start listener and request new device states

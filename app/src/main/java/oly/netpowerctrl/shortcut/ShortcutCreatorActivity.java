@@ -4,30 +4,29 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import java.util.Calendar;
+import java.io.IOException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.datastructure.OutletCommandGroup;
+import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.listadapter.OutletListAdapter;
+import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     public static final String CREATE_SCENE = "scenes";
     public static final String LOAD_SCENE = "load";
+    public static final String RESULT_SCENE = "commands";
     private OutletListAdapter adpOutlets = null;
-    private ListView lvOutletSelect;
     private Switch show_mainWindow;
     private TextView shortcutName;
-    private boolean shortcutName_changed = false;
     private final Context that = this;
-    private OutletCommandGroup og;
+    private Scene og;
     private boolean isLoaded = false;
 
     @Override
@@ -42,8 +41,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
         shortcutName.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                //noinspection ConstantConditions
-                shortcutName_changed = shortcutName.getText().length() != 0;
+                enableDisableAcceptButton();
                 return false;
             }
         });
@@ -55,22 +53,25 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
             Bundle extra = it.getExtras();
             if (extra != null) {
                 isForGroups = extra.getBoolean(CREATE_SCENE);
-                og = OutletCommandGroup.fromString(extra.getString(LOAD_SCENE, null), this);
-                if (og == null) {
-                    finish();
-                    return;
-                }
 
-                isLoaded = true;
-                shortcutName_changed = true;
-                adpOutlets = OutletListAdapter.createByOutletCommands(this, og.commands);
-                shortcutName.setText(og.sceneName);
+                String load_scene = extra.getString(LOAD_SCENE, null);
+                if (load_scene != null) {
+                    try {
+                        og = Scene.fromJSON(JSONHelper.getReader(load_scene));
+                    } catch (IOException ignored) {
+                        finish();
+                        return;
+                    }
+                    isLoaded = true;
+                    adpOutlets = OutletListAdapter.createByOutletCommands(this, og.commands);
+                    shortcutName.setText(og.sceneName);
+                }
             }
         }
 
         if (adpOutlets == null) {
             adpOutlets = OutletListAdapter.createByConfiguredDevices(this);
-            og = new OutletCommandGroup();
+            og = new Scene();
         }
         adpOutlets.setListItemMenu(this);
 
@@ -84,7 +85,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
             setTitle(R.string.title_shortcut);
         }
 
-        lvOutletSelect = (ListView) findViewById(R.id.lvOutletSelect);
+        ListView lvOutletSelect = (ListView) findViewById(R.id.lvOutletSelect);
         lvOutletSelect.setAdapter(adpOutlets);
 
         findViewById(R.id.btnAcceptShortcut).setOnClickListener(new View.OnClickListener() {
@@ -114,15 +115,12 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     @Override
     public void onMenuItemClicked(View v, int position) {
         og.commands = adpOutlets.getCheckedItems();
-        if (!shortcutName_changed) {
-            if (og.length() > 3) {
-                Calendar t = Calendar.getInstance();
-                String default_name = DateFormat.getMediumDateFormat(that).format(t.getTime()) + " - " + DateFormat.getTimeFormat(that).format(t.getTime());
-                shortcutName.setText(getResources().getString(R.string.app_name) + " (" + og.length() + ") " + default_name);
-            } else
-                shortcutName.setText(og.buildDetails(this));
-        }
+        enableDisableAcceptButton();
+    }
+
+    private void enableDisableAcceptButton() {
         //noinspection ConstantConditions
         findViewById(R.id.btnAcceptShortcut).setEnabled(og.length() != 0 && shortcutName.getText().length() != 0);
+
     }
 }

@@ -9,12 +9,12 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.datastructure.DeviceCommand;
-import oly.netpowerctrl.datastructure.OutletCommandGroup;
+import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.GreenFlasher;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -22,7 +22,7 @@ import oly.netpowerctrl.utils.ListItemMenu;
 public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
     private Context context;
     private ListItemMenu listItemMenu = null;
-    private ArrayList<OutletCommandGroup> scenes;
+    private List<Scene> scenes;
     private LayoutInflater inflater;
 
     public ScenesListAdapter(Context context) {
@@ -58,7 +58,7 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
             convertView = inflater.inflate(R.layout.scene_list_item, null);
         }
 
-        OutletCommandGroup data = scenes.get(position);
+        Scene data = scenes.get(position);
 
         TextView tvName = (TextView) convertView.findViewById(R.id.group_list_name);
         tvName.setText(data.sceneName);
@@ -84,11 +84,11 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
     }
 
     void executeScene(int position) {
-        OutletCommandGroup og = (OutletCommandGroup) getItem(position);
+        Scene og = (Scene) getItem(position);
         DeviceSend.sendOutlet(context, DeviceCommand.fromOutletCommandGroup(og), true);
     }
 
-    public void addScene(OutletCommandGroup data) {
+    public void addScene(Scene data) {
         if (data == null)
             return;
 
@@ -116,5 +116,9 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
 
     public void setListItemMenu(ListItemMenu dce) {
         listItemMenu = dce;
+    }
+
+    public List<Scene> getScenes() {
+        return scenes;
     }
 }

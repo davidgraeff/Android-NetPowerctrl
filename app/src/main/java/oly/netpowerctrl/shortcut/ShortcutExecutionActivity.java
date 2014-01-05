@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -13,9 +14,10 @@ import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.OutletCommandGroup;
+import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class ShortcutExecutionActivity extends Activity implements DeviceUpdateStateOrTimeout {
@@ -45,7 +47,12 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
         // Extract command group from intent extra
         Bundle extra = it.getExtras();
         assert extra != null;
-        OutletCommandGroup g = OutletCommandGroup.fromString(extra.getString("commands"), this);
+        Scene g = null;
+        try {
+            g = Scene.fromJSON(JSONHelper.getReader(extra.getString("commands")));
+        } catch (IOException ignored) {
+            g = null;
+        }
         if (g == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();

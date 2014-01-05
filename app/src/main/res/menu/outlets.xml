@@ -6,13 +6,21 @@
         android:showAsAction="always"
         android:icon="@drawable/ic_menu_refresh" />
     <item
+        android:id="@+id/menu_showdevicename"
+        android:title="@string/menu_showdevicename"
+        android:showAsAction="collapseActionView|withText" />
+
+    <item
+        android:id="@+id/menu_sortAlphabetically"
+        android:title="@string/menu_sortAlphabetically"
+        android:showAsAction="collapseActionView|withText" />
+
+    <item
         android:id="@+id/menu_showhidden"
         android:title="@string/show_hidden"
-        android:showAsAction="ifRoom"
-        android:icon="@drawable/ic_action_split" />
+        android:showAsAction="collapseActionView|withText" />
     <item
         android:id="@+id/menu_hidehidden"
         android:title="@string/hide_hidden"
-        android:showAsAction="ifRoom"
-        android:icon="@drawable/ic_action_merge" />
+        android:showAsAction="collapseActionView|withText" />
 </menu>

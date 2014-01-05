@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Net-PwrCtrl</string>
+    <string name="app_name_shortcut">Scene for Net-PwrCtrl</string>
+    <string name="app_name_shortcut_desc">Start a scene from your home screen</string>
+    <string name="app_name_widget">Net-PwrCtrl Outlet State</string>
 
     <string name="configure_device">Edit Device</string>
     <string name="copy_device">Copy Device</string>
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
 
-    <string name="add_to_configured_devices">Add to configured devices</string>
+    <string name="device_save">Save</string>
     <string name="error_reading_configured_devices">Error reading configured devices</string>
     <string name="error_saving_configured_devices">Error saving configured devices</string>
     <string name="error_sending_inquiry">Error sending inquiry packet</string>
     <string name="error_unknown_device">Internal program error: device unknown!</string>
-    <string name="error_packet_received">An error was received from the device: </string>
+    <string name="error_packet_received">Device reports an error</string>
     <string name="error_nopass">Invalid username / password combination</string>
     <string name="error_edited_device_not_found">Internal program error: edited device not found!</string>
     <string name="error_listen_thread_exception">Could not listen on port %d:\n</string>
@@ -147,7 +150,7 @@
     <string name="menu_down">Move down</string>
     <string name="menu_rename_outlet">Rename</string>
     <string name="outlet_rename_title">Rename outlet</string>
-    <string name="outlet_rename_message">The name is local to this device only and will be reset if you rename this outlet on your anel device. Use an empty name to fall back to the default.</string>
+    <string name="outlet_rename_message">The name is local to this device only and will be reset if you rename this outlet on your anel device. Use an empty name to fall back to the default name %s.</string>
     <string name="name">Name</string>
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommened. Should I save nevertheless?</string>
@@ -155,4 +158,23 @@
     <string name="title_scene_edit">Edit scene</string>
     <string name="nfc_failed">Android Beam failed</string>
     <string name="nfc_select_devices_title">Select devices to install</string>
+    <string name="menu_add_homescreen">Add to homescreen</string>
+    <string name="menu_showdevicename">Show device name</string>
+    <string name="error_reading_scenes">Error reading scenes</string>
+    <string name="error_saving_scenes">Error saving scenes</string>
+    <string name="nfc_failed_version">NFC failed, Version mismatch! Please update both apps.</string>
+    <string name="nfc_select_scenes_title">Select scenes to install</string>
+    <string name="shortcut_created">Shortcut created</string>
+    <string name="scene_backup_created">Backup created</string>
+    <string name="scene_backup_restored">Backup restored</string>
+    <string name="menu_backup_scenes">Backup all scenes</string>
+    <string name="menu_restore_scenes">Restore a backup</string>
+    <string name="scene_backup_failed">Backup failed</string>
+    <string name="error_device_not_reachable">Test reachable failed</string>
+    <string name="error_device_no_access">Test access failed</string>
+    <string name="device_test_ok">Test OK</string>
+    <string name="preference_keep_widget_service_running">Keep widget update service running?</string>
+    <string name="preference_keep_widget_service_running_summary">To guarantee accurate widget states a background service needs to run. This will reduce battery time.</string>
+    <string name="scene_replace">(Update)</string>
+    <string name="menu_sortAlphabetically">Sort alphabetically</string>
 </resources>

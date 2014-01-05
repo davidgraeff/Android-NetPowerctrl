@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="oly.netpowerctrl"
-    android:versionCode="5"
-    android:versionName="1.3a">
+    android:versionCode="8"
+    android:versionName="1.5">
 
     <!-- Api level 16: Android 4.1 27. Juni 2012 -->
     <uses-sdk
@@ -11,6 +11,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.launcher.permission.INSTALL_SHORTCUT" />
 
     <application
         android:name="oly.netpowerctrl.main.NetpowerctrlApplication"
@@ -26,6 +27,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/oly.netpowerctrl" />
             </intent-filter>
         </activity>
 
@@ -51,10 +57,10 @@
 
         <activity
             android:icon="@drawable/netpowerctrl"
-            android:label="@string/app_name"
-            android:launchMode="standard"
+            android:label="@string/app_name_shortcut"
+            android:description="@string/app_name_shortcut_desc"
             android:theme="@style/Theme.CustomLightTheme"
-            android:name=".shortcut.ShortcutCreatorActivity">
+            android:name="oly.netpowerctrl.shortcut.ShortcutCreatorActivity">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -62,8 +68,8 @@
         </activity>
 
         <receiver
-            android:icon="@drawable/netpowerctrl"
-            android:label="@string/app_name"
+            android:icon="@drawable/widget"
+            android:label="@string/app_name_widget"
             android:name="oly.netpowerctrl.widget.DeviceWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -76,6 +82,10 @@
 
         <service
             android:name="oly.netpowerctrl.anelservice.NetpowerctrlService"
+            android:permission="android.permission.INTERNET" />
+
+        <service
+            android:name="oly.netpowerctrl.test.TestService"
             android:permission="android.permission.INTERNET" />
 
         <service android:name="oly.netpowerctrl.widget.WidgetUpdateService" />

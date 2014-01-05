@@ -11,7 +11,6 @@ import android.widget.ListAdapter;
 import android.widget.Switch;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -20,23 +19,38 @@ import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.AfterSentHandler;
 
 public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter, OnCheckedChangeListener, DevicesUpdate {
-    private List<DeviceInfo> all_devices;
-    private List<OutletInfo> all_outlets;
+    private static class OutletInfoAdditional {
+        OutletInfo oi;
+        String displayText;
+
+        OutletInfoAdditional(OutletInfo oi, boolean showDevice) {
+            this.oi = oi;
+            if (showDevice)
+                displayText = oi.device.DeviceName + ": " + oi.getDescription();
+            else
+                displayText = oi.getDescription();
+        }
+    }
+
+    private List<OutletInfoAdditional> all_outlets;
     private LayoutInflater inflater;
     public final Context context;
     private boolean showHidden;
+    private boolean showDeviceNames;
     private AfterSentHandler ash = new AfterSentHandler(this);
+    private boolean temporary_ignore_positionRequest;
 
     public OutletSwitchListAdapter(Context context) {
         this.context = context;
         inflater = LayoutInflater.from(context);
-        all_outlets = new ArrayList<OutletInfo>();
-        showHidden = false;
+        all_outlets = new ArrayList<OutletInfoAdditional>();
+        showHidden = SharedPrefs.getShowHiddenOutlets(context);
+        showDeviceNames = SharedPrefs.getShowDeviceNames(context);
         NetpowerctrlApplication.instance.registerConfiguredObserver(this);
-        all_devices = NetpowerctrlApplication.instance.configuredDevices;
         onDevicesUpdated();
     }
 
@@ -67,21 +81,21 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
                 }
             });
         }
-        OutletInfo info = all_outlets.get(position);
+        OutletInfoAdditional info = all_outlets.get(position);
         Switch tv = (Switch) convertView.findViewById(R.id.outlet_list_switch);
-        tv.setAlpha(info.Hidden ? 0.6f : 1.0f);
+        tv.setAlpha(info.oi.Hidden ? 0.6f : 1.0f);
         tv.setTag(-1);
-        tv.setText(info.UserDescription.isEmpty() ? info.Description : info.UserDescription);
-        tv.setChecked(info.State);
-        tv.setEnabled(!info.Disabled);
+        tv.setText(info.displayText);
+        tv.setChecked(info.oi.State);
+        tv.setEnabled(!info.oi.Disabled);
         tv.setTag(position);
         return convertView;
     }
 
     public void swapPosition(int itemPosition, int targetPosition) {
-        int t = all_outlets.get(itemPosition).positionRequest;
-        all_outlets.get(itemPosition).positionRequest = all_outlets.get(targetPosition).positionRequest;
-        all_outlets.get(targetPosition).positionRequest = t;
+        int t = all_outlets.get(itemPosition).oi.positionRequest;
+        all_outlets.get(itemPosition).oi.positionRequest = all_outlets.get(targetPosition).oi.positionRequest;
+        all_outlets.get(targetPosition).oi.positionRequest = t;
 
         onDevicesUpdated();
     }
@@ -107,6 +121,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
     public void setShowHidden(boolean b) {
         showHidden = b;
         onDevicesUpdated();
+        SharedPrefs.setShowHiddenOutlets(showDeviceNames, context);
     }
 
     @Override
@@ -115,21 +130,55 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         ash.removeMessages();
         all_outlets.clear();
 
+        List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
         for (DeviceInfo device : all_devices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
-                if (!oi.Disabled && (!oi.Hidden || showHidden))
-                    all_outlets.add(oi);
+                if (oi.Disabled || (oi.Hidden && !showHidden))
+                    continue;
+
+                OutletInfoAdditional new_oi = new OutletInfoAdditional(oi, showDeviceNames);
+
+                boolean found = false;
+                for (int i = 0; i < all_outlets.size(); ++i) {
+                    boolean behind_current = temporary_ignore_positionRequest ?
+                            all_outlets.get(i).displayText.compareTo(new_oi.displayText) > 0 :
+                            all_outlets.get(i).oi.positionRequest > new_oi.oi.positionRequest;
+
+                    if (behind_current) {
+                        all_outlets.add(i, new_oi);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    all_outlets.add(new_oi);
             }
         }
 
         // Sort for positionRequest number or alphabetically
-        Collections.sort(all_outlets);
+        //Collections.sort(all_outlets);
 
         // Assign positionRequest numbers
         for (int i = 0; i < all_outlets.size(); ++i) {
-            all_outlets.get(i).positionRequest = i;
+            all_outlets.get(i).oi.positionRequest = i;
         }
         notifyDataSetChanged();
+    }
+
+    public void sortAlphabetically() {
+        temporary_ignore_positionRequest = true;
+        onDevicesUpdated();
+        temporary_ignore_positionRequest = false;
+    }
+
+    public boolean isShowDeviceNames() {
+        return showDeviceNames;
+    }
+
+    public void setShowDeviceNames(boolean showDeviceNames) {
+        this.showDeviceNames = showDeviceNames;
+        onDevicesUpdated();
+        SharedPrefs.setShowDeviceNames(showDeviceNames, context);
     }
 }
