@@ -84,6 +84,23 @@ public class DeviceInfo implements Parcelable {
             Outlets.add(new OutletInfo(oi));
     }
 
+    /**
+     * Return true if both DeviceInfo objects refer to the same device.
+     *
+     * @param other Compare to other DeviceInfo
+     * @return
+     */
+    @SuppressWarnings("unused")
+    public boolean equalsFuntional(DeviceInfo other) {
+        return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort;
+    }
+
+    /**
+     * Return true if this and the other DeviceInfo are the same configured DeviceInfo.
+     *
+     * @param other Compare to other DeviceInfo
+     * @return
+     */
     @SuppressWarnings("unused")
     public boolean equals(DeviceInfo other) {
         return uuid.equals(other.uuid);

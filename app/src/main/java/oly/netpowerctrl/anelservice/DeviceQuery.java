@@ -16,9 +16,9 @@ import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
- * or all devices. If you want to issue a query and get notified on the result or get a
+ * or all scenes. If you want to issue a query and get notified on the result or get a
  * timeout if no reaction can be received within 1.2s, create a DeviceQuery object with
- * all devices to query.
+ * all scenes to query.
  */
 public class DeviceQuery {
     private Collection<DeviceInfo> devices_to_observe;

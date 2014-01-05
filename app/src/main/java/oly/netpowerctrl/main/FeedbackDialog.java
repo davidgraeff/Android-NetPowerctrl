@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 
 import oly.netpowerctrl.R;
 
@@ -22,7 +21,6 @@ public class FeedbackDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
         builder.setIcon(R.drawable.netpowerctrl);
         builder.setTitle(R.string.app_name);
         builder.setItems(R.array.feedbackOptions, new DialogInterface.OnClickListener() {

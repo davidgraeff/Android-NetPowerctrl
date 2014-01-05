@@ -1,8 +1,10 @@
 package oly.netpowerctrl.main;
 
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,8 +18,6 @@ import android.widget.PopupMenu;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
-import oly.netpowerctrl.preferences.DevicePreferencesFragment;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.GridOrListFragment;
 import oly.netpowerctrl.utils.ListItemMenu;
 
@@ -32,6 +32,8 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        adapter = NetpowerctrlActivity.instance.adpConfiguredDevices;
+        adapter.setListItemMenu(this);
         setHasOptionsMenu(true);
     }
 
@@ -45,9 +47,6 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-
-        adapter = NetpowerctrlActivity._this.adapterUpdateManger.adpConfiguredDevices;
-        adapter.setListItemMenu(this);
 
         mListView.setAdapter(adapter);
         setAutoCheckDataAvailable(true);
@@ -66,7 +65,7 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                // Delete all devices
+                                // Delete all scenes
                                 NetpowerctrlApplication.instance.deleteAllConfiguredDevices();
                             }
                         })
@@ -86,12 +85,17 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
 
         switch (menuItem.getItemId()) {
             case R.id.menu_configure_device: {
-                SharedPrefs.SaveTempDevice(getActivity(), current_device);
-
-                Fragment fragment = DevicePreferencesFragment.instantiate(getActivity());
+                Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), current_device);
                 FragmentManager fragmentManager = getFragmentManager();
                 assert fragmentManager != null;
-                fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
+                FragmentTransaction ft = fragmentManager.beginTransaction();
+                Fragment prev = fragmentManager.findFragmentByTag("dialog");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+                ((DialogFragment) fragment).show(ft, "dialog");
+                //fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
                 return true;
             }
 

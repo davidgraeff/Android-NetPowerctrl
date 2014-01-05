@@ -57,7 +57,6 @@
             android:layout_height="wrap_content"
             android:text="@string/Version"
             android:background="#F3F3F4"
-            android:autoText="false"
             android:textSize="20sp"
             android:padding="5dp" />
     </LinearLayout>

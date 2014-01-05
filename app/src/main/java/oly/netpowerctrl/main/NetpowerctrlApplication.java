@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceError;
@@ -19,6 +20,7 @@ import oly.netpowerctrl.anelservice.DeviceUpdate;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
+import oly.netpowerctrl.anelservice.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -37,10 +39,11 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
 
     private ArrayList<DevicesUpdate> observersConfigured = new ArrayList<DevicesUpdate>();
     private ArrayList<DevicesUpdate> observersNew = new ArrayList<DevicesUpdate>();
+    private ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
 
     private ArrayList<DeviceQuery> updateDeviceStateList = new ArrayList<DeviceQuery>();
 
-    //! get a list of all send ports of all configured devices plus the default send port
+    //! get a list of all send ports of all configured scenes plus the default send port
     public ArrayList<Integer> getAllSendPorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
         ports.add(SharedPrefs.getDefaultSendPort(this));
@@ -51,7 +54,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         return new ArrayList<Integer>(ports);
     }
 
-    //! get a list of all receive ports of all configured devices plus the default receive port
+    //! get a list of all receive ports of all configured scenes plus the default receive port
     public ArrayList<Integer> getAllReceivePorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
         ports.add(SharedPrefs.getDefaultReceivePort(this));
@@ -100,6 +103,28 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         for (DevicesUpdate o : observersNew)
             o.onDevicesUpdated();
     }
+
+    @SuppressWarnings("unused")
+    public boolean registerServiceReadyObserver(ServiceReady o) {
+        if (!observersServiceReady.contains(o)) {
+            observersServiceReady.add(o);
+            if (mDiscoverService != null)
+                o.onServiceReady(mDiscoverService);
+            return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unused")
+    public void unregisterServiceReadyObserver(ServiceReady o) {
+        observersServiceReady.remove(o);
+    }
+
+    private void notifyServiceReady() {
+        for (ServiceReady o : observersServiceReady)
+            o.onServiceReady(mDiscoverService);
+    }
+
 
     public void removeUpdateDeviceState(DeviceQuery o) {
         updateDeviceStateList.remove(o);
@@ -157,6 +182,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             mDiscoverService.registerDeviceUpdateObserver(instance);
             if (mDiscoverServiceRefCount == 0)
                 mDiscoverServiceRefCount = 1;
+            instance.notifyServiceReady();
             DeviceQuery.sendBroadcastQuery(instance);
         }
 
@@ -167,7 +193,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     };
 
     public void reloadConfiguredDevices() {
-        ArrayList<DeviceInfo> newEntries = SharedPrefs.ReadConfiguredDevices(this);
+        List<DeviceInfo> newEntries = SharedPrefs.ReadConfiguredDevices(this);
         // This is somehow a more complicated way of alDevices := newEntries
         // because with an assignment we would lose the outlet states which are not stored in the SharedPref
         // and only with the next UDP update those states are restored. This
@@ -176,7 +202,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         // Therefore we update by hand without touching outlet states.
         Iterator<DeviceInfo> oldEntriesIt = configuredDevices.iterator();
         while (oldEntriesIt.hasNext()) {
-            // remove devices not existing anymore
+            // remove scenes not existing anymore
             DeviceInfo old_di = oldEntriesIt.next();
             DeviceInfo new_di = null;
             for (DeviceInfo it_di : newEntries) {
@@ -193,7 +219,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 oldEntriesIt.remove();
             }
         }
-        // add new devices
+        // add new scenes
         for (DeviceInfo new_di : newEntries) {
             DeviceInfo old_di = null;
             for (int i = 0; i < configuredDevices.size(); ++i) {
@@ -215,7 +241,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             if (i.next().Disabled)
                 i.remove();
 
-        // Already in configured devices?
+        // Already in configured scenes?
         for (int i = configuredDevices.size() - 1; i >= 0; --i) {
             if (current_device.MacAddress.equals(configuredDevices.get(i).MacAddress)) {
                 configuredDevices.set(i, current_device);
@@ -231,7 +257,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         DeviceQuery.sendBroadcastQuery(this);
         SaveConfiguredDevices();
 
-        // Remove from new devices
+        // Remove from new scenes
         for (int i = 0; i < newDevices.size(); ++i)
             if (newDevices.get(i).MacAddress.equals(current_device.MacAddress)) {
                 newDevices.remove(i);
@@ -266,6 +292,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                     if (target_oi.OutletNumber == source_oi.OutletNumber) {
                         target_oi.State = source_oi.State;
                         target_oi.Disabled = source_oi.Disabled;
+                        target_oi.setDescriptionByDevice(source_oi.getDescription());
                         break;
                     }
                 }
@@ -301,7 +328,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             desc = getResources().getString(R.string.error_nopass);
         else
             desc = errMessage;
-        String error = getResources().getString(R.string.error_packet_received) + desc;
+        String error = getResources().getString(R.string.error_packet_received) + ": " + desc;
         ShowToast.FromOtherThread(this, error);
     }
 
@@ -331,5 +358,9 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             }
         }
         return null;
+    }
+
+    public void saveConfiguredDevices() {
+        SharedPrefs.SaveConfiguredDevices(configuredDevices, this);
     }
 }

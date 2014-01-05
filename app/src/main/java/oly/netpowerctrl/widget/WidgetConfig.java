@@ -67,7 +67,7 @@ public class WidgetConfig extends Activity {
             CharSequence[] items = new String[outlets.size()];
             outletNumbers = new int[outlets.size()];
             for (int i = 0; i < outlets.size(); i++) {
-                items[i] = outlets.get(i).Description;
+                items[i] = outlets.get(i).getDescription();
                 outletNumbers[i] = outlets.get(i).OutletNumber;
             }
 
@@ -83,7 +83,7 @@ public class WidgetConfig extends Activity {
     private DialogInterface.OnClickListener selectedOutletListener = new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int item) {
 
-            SharedPrefs.SaveWidget(ctx, widgetId, selectedDeviceMac, outletNumbers[item]);
+            SharedPrefs.SaveWidget(ctx, widgetId, new SharedPrefs.WidgetOutlet(selectedDeviceMac, outletNumbers[item]));
 
             WidgetUpdateService.ForceUpdate(ctx, widgetId);
 

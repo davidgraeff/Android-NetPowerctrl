@@ -30,13 +30,16 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        adapter = NetpowerctrlActivity.instance.adpOutlets;
         setHasOptionsMenu(true);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.outlets, menu);
-        boolean hiddenShown = adapter.getIsShowingHidden();
+        boolean hiddenShown = false;
+        if (adapter != null)
+            hiddenShown = adapter.getIsShowingHidden();
         menu.findItem(R.id.menu_showhidden).setVisible(!hiddenShown);
         menu.findItem(R.id.menu_hidehidden).setVisible(hiddenShown);
     }
@@ -58,6 +61,15 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
                 getActivity().invalidateOptionsMenu();
                 return true;
             }
+            case R.id.menu_showdevicename: {
+                adapter.setShowDeviceNames(!adapter.isShowDeviceNames());
+                getActivity().invalidateOptionsMenu();
+                return true;
+            }
+            case R.id.menu_sortAlphabetically: {
+                adapter.sortAlphabetically();
+                NetpowerctrlApplication.instance.saveConfiguredDevices();
+            }
         }
         return false;
     }
@@ -67,9 +79,7 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        adapter = NetpowerctrlActivity._this.adapterUpdateManger.adpOutlets;
         mListView.setOnItemLongClickListener(this);
-
         mListView.setAdapter(adapter);
         setAutoCheckDataAvailable(true);
         return view;
@@ -104,15 +114,15 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
                 AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
                 alert.setTitle(getResources().getString(R.string.outlet_rename_title));
-                alert.setMessage(getResources().getString(R.string.outlet_rename_message));
+                alert.setMessage(getResources().getString(R.string.outlet_rename_message).replaceFirst("%s", oi.getDeviceDescription()));
 
                 final EditText input = new EditText(alert.getContext());
-                input.setText(oi.UserDescription.isEmpty() ? oi.Description : oi.UserDescription);
+                input.setText(oi.getDescription());
                 alert.setView(input);
 
                 alert.setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        oi.UserDescription = input.getText().toString();
+                        oi.setDescriptionByUser(input.getText().toString());
                         adapter.onDevicesUpdated();
                     }
                 });
@@ -128,21 +138,25 @@ public class OutletsFragment extends GridOrListFragment implements AdapterView.O
             case R.id.menu_hide_outlet: {
                 oi.Hidden = true;
                 adapter.onDevicesUpdated();
+                NetpowerctrlApplication.instance.saveConfiguredDevices();
                 return true;
             }
             case R.id.menu_unhide_outlet: {
                 oi.Hidden = false;
                 adapter.onDevicesUpdated();
+                NetpowerctrlApplication.instance.saveConfiguredDevices();
                 return true;
             }
 
             case R.id.menu_up: {
                 adapter.swapPosition(position, position - 1);
+                NetpowerctrlApplication.instance.saveConfiguredDevices();
                 return true;
             }
 
             case R.id.menu_down: {
                 adapter.swapPosition(position, position + 1);
+                NetpowerctrlApplication.instance.saveConfiguredDevices();
                 return true;
             }
         }

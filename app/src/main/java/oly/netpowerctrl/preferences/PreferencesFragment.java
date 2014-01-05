@@ -1,13 +1,14 @@
 package oly.netpowerctrl.preferences;
 
-import oly.netpowerctrl.R;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
 
-public class PreferencesFragment extends PreferenceFragment {
-	@Override
+import oly.netpowerctrl.R;
+
+public class PreferencesFragment extends PreferencesWithValuesFragment {
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
-	}
+    }
+
 }

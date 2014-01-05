@@ -10,6 +10,8 @@
     <item format="integer" name="menu_refresh" type="id">100054</item>
 
     <item format="integer" name="default_send_port" type="integer">1075</item>
-    <item format="integer" name="default_recv_port" type="integer">1077</item>
+    <item format="integer" name="default_receive_port" type="integer">1077</item>
+
+    <item format="boolean" name="keep_widget_service_running" type="bool">True</item>
 
 </resources>

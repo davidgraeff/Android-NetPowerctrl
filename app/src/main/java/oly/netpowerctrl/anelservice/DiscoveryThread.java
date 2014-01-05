@@ -58,7 +58,6 @@ class DiscoveryThread extends Thread {
     }
 
     void parsePacket(final String message, int receive_port) {
-
         String msg[] = message.split(":");
         if (msg.length < 3) {
             return;
@@ -93,7 +92,7 @@ class DiscoveryThread extends Thread {
                 continue;
             OutletInfo oi = new OutletInfo(di);
             oi.OutletNumber = i + 1; // 1-based
-            oi.Description = outlet[0];
+            oi.setDescriptionByDevice(outlet[0]);
             if (outlet.length > 1)
                 oi.State = outlet[1].equals("1");
             oi.Disabled = (disabledOutlets & (1 << i)) != 0;

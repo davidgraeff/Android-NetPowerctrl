@@ -10,13 +10,35 @@ import java.io.IOException;
 //this class holds the info about a single outlet
 public class OutletInfo implements Parcelable, Comparable {
     public int OutletNumber;
-    public String Description;
-    public String UserDescription;
+    private String Description;
+    private String UserDescription;
     public boolean State;
     public boolean Disabled;
     public DeviceInfo device;
     public boolean Hidden;
     public int positionRequest;
+
+    public String getDescription() {
+        return (this.UserDescription.isEmpty() ? this.Description : this.UserDescription);
+    }
+
+    /**
+     * Reset description set by the user, if the device propagates a new
+     * description.
+     *
+     * @param desc The new description received from the device
+     */
+    public void setDescriptionByDevice(String desc) {
+        if (!Description.equals(desc)) {
+            if (!Description.isEmpty())
+                UserDescription = "";
+            Description = desc;
+        }
+    }
+
+    public void setDescriptionByUser(String desc) {
+        UserDescription = desc;
+    }
 
     public OutletInfo(DeviceInfo di) {
         device = di;
@@ -87,8 +109,7 @@ public class OutletInfo implements Parcelable, Comparable {
             return 0;
 
         if (positionRequest == 0 && other.positionRequest == 0) {
-            return ((UserDescription.isEmpty() ? Description : UserDescription).compareTo(
-                    (other.UserDescription.isEmpty() ? other.Description : other.UserDescription)));
+            return getDescription().compareTo(other.getDescription());
         } else {
             return positionRequest < other.positionRequest ? -1 : 1;
         }
@@ -132,6 +153,10 @@ public class OutletInfo implements Parcelable, Comparable {
         writer.name("Hidden").value(Hidden);
         writer.name("positionRequest").value(positionRequest);
         writer.endObject();
+    }
+
+    public String getDeviceDescription() {
+        return Description;
     }
 }
 

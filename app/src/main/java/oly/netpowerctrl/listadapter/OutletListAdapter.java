@@ -17,13 +17,13 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.OutletCommand;
 import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnItemSelectedListener {
-    private List<OutletCommand> all_outlets;
+    private List<SceneOutlet> all_outlets;
     private LayoutInflater inflater;
     private ArrayAdapter<CharSequence> spinner_adapter;
     private ListItemMenu listItemMenu = null;
@@ -33,18 +33,18 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnIte
         for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
-                o.all_outlets.add(OutletCommand.fromOutletInfo(oi, false));
+                o.all_outlets.add(SceneOutlet.fromOutletInfo(oi, false));
             }
         }
         return o;
     }
 
-    public static OutletListAdapter createByOutletCommands(Context context, List<OutletCommand> commands) {
+    public static OutletListAdapter createByOutletCommands(Context context, List<SceneOutlet> commands) {
         OutletListAdapter o = new OutletListAdapter(context);
         for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
-                OutletCommand c = OutletCommand.fromOutletInfo(oi, false);
+                SceneOutlet c = SceneOutlet.fromOutletInfo(oi, false);
                 int i = commands.indexOf(c);
                 if (i != -1) {
                     c.enabled = true;
@@ -58,7 +58,7 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnIte
 
     private OutletListAdapter(Context context) {
         inflater = LayoutInflater.from(context);
-        all_outlets = new ArrayList<OutletCommand>();
+        all_outlets = new ArrayList<SceneOutlet>();
 
         spinner_adapter = ArrayAdapter.createFromResource(context, R.array.shortcutchoices, android.R.layout.simple_spinner_item);
         spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -84,7 +84,7 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnIte
             Spinner r = (Spinner) convertView.findViewById(R.id.outlet_list_spinner);
             r.setAdapter(spinner_adapter);
         }
-        OutletCommand command = all_outlets.get(position);
+        SceneOutlet command = all_outlets.get(position);
         TextView tv = (TextView) convertView.findViewById(R.id.outlet_list_text);
         tv.setText(command.description);
         tv.setTag(position);
@@ -100,9 +100,9 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnIte
         return convertView;
     }
 
-    public ArrayList<OutletCommand> getCheckedItems() {
-        ArrayList<OutletCommand> output = new ArrayList<OutletCommand>();
-        for (OutletCommand c : all_outlets) {
+    public ArrayList<SceneOutlet> getCheckedItems() {
+        ArrayList<SceneOutlet> output = new ArrayList<SceneOutlet>();
+        for (SceneOutlet c : all_outlets) {
             if (c.enabled) {
                 output.add(c);
             }
@@ -113,7 +113,7 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, OnIte
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         Spinner sp = (Spinner) parent;
-        OutletCommand info = all_outlets.get((Integer) parent.getTag());
+        SceneOutlet info = all_outlets.get((Integer) parent.getTag());
         int sel = sp.getSelectedItemPosition();
         info.enabled = (!(sel == 0 || sel == Spinner.INVALID_POSITION));
         if (info.enabled) {
