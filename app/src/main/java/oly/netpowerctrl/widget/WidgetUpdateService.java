@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.util.SparseArray;
 import android.widget.RemoteViews;
 
@@ -72,7 +71,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
     @Override
     public void onCreate() {
-        Log.w("WIDGET", "CREATE");
+        //noinspection ConstantConditions
+        appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
+
         /**
          * If the service is kept running, we will receive further device updates
          * and register on the listener service for this purpose.
@@ -97,14 +98,6 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent == null) {
-            stopSelf();
-            return START_NOT_STICKY;
-        }
-
-        //noinspection ConstantConditions
-        appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
-
         // Extract widget ids from intent
         //int[] allWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
         //assert allWidgetIds != null;
@@ -121,7 +114,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         }
 
         boolean noFetch = false;
-        if (intent.getExtras() != null)
+        if (intent != null && intent.getExtras() != null)
             noFetch = intent.getExtras().containsKey("noFetch");
 
         // Keep a list of scenes to fetch state updates
@@ -287,6 +280,8 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         if (widgetUpdateRequests.size() == 0) {
             ComponentName thisWidget = new ComponentName(getApplicationContext(),
                     DeviceWidgetProvider.class);
+            //noinspection ConstantConditions
+            appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
             int[] allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
             for (int appWidgetId : allWidgetIds) {
                 DeviceInfoOutletNumber widget_di = allWidgets.get(appWidgetId);

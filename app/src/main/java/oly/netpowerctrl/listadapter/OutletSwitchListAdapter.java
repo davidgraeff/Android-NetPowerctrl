@@ -24,7 +24,7 @@ import oly.netpowerctrl.utils.AfterSentHandler;
 
 public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter, OnCheckedChangeListener, DevicesUpdate {
     private static class OutletInfoAdditional {
-        OutletInfo oi;
+        public OutletInfo oi;
         String displayText;
 
         OutletInfoAdditional(OutletInfo oi, boolean showDevice) {
@@ -54,18 +54,21 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         onDevicesUpdated();
     }
 
+    @Override
     public int getCount() {
         return all_outlets.size();
     }
 
-    public Object getItem(int position) {
-        return all_outlets.get(position);
+    public OutletInfo getItem(int position) {
+        return all_outlets.get(position).oi;
     }
 
+    @Override
     public long getItemId(int position) {
         return position;
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.outlet_list_switch, null);
@@ -106,7 +109,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         if (position == -1)
             return;
         arg0.setEnabled(false);
-        OutletInfo oi = (OutletInfo) getItem(position);
+        OutletInfo oi = getItem(position);
         oi.Disabled = false;
         ash.setData(position, new_state);
         ash.removeMessages();

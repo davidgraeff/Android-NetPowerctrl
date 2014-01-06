@@ -13,6 +13,8 @@ public class DeviceWidgetProvider extends AppWidgetProvider {
         for (int appWidgetId : appWidgetIds) {
             SharedPrefs.DeleteWidgets(context, appWidgetId);
         }
+        Intent intent = new Intent(context.getApplicationContext(), WidgetUpdateService.class);
+        context.startService(intent);
     }
 
     @Override
