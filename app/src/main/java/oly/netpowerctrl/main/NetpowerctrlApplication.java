@@ -9,6 +9,7 @@ import android.os.IBinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +42,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     private ArrayList<DevicesUpdate> observersNew = new ArrayList<DevicesUpdate>();
     private ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
 
-    private ArrayList<DeviceQuery> updateDeviceStateList = new ArrayList<DeviceQuery>();
+    private List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
 
     //! get a list of all send ports of all configured scenes plus the default send port
     public ArrayList<Integer> getAllSendPorts() {

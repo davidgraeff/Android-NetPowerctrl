@@ -44,7 +44,7 @@ public class AfterSentHandler extends Handler {
             return;
         }
 
-        OutletInfo oi = (OutletInfo) ola.getItem(list_position);
+        OutletInfo oi = ola.getItem(list_position);
         if (oi.State != state) {
             retries++;
             Log.w("DeviceControl", "Sending again, no response " + Integer.valueOf(list_position).toString());
