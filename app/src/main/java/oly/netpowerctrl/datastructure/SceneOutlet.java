@@ -8,6 +8,9 @@ import java.io.IOException;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 public class SceneOutlet {
+    public static final int OFF = 0;
+    public static final int ON = 1;
+    public static final int TOGGLE = 2;
     // This field is not saved and is filled by fromOutletInfo for cache purposes only
     public String description = "";
     public OutletInfo outletinfo = null;
@@ -30,7 +33,7 @@ public class SceneOutlet {
         c.description = info.device.DeviceName + ": " + info.getDescription();
         c.device_mac = info.device.MacAddress;
         c.outletNumber = info.OutletNumber;
-        c.state = info.State ? 1 : 0;
+        c.state = info.State ? ON : OFF;
         return c;
     }
 
@@ -53,8 +56,8 @@ public class SceneOutlet {
         }
 
         reader.endObject();
-        oi.outletinfo = NetpowerctrlApplication.instance.findOutlet(oi.device_mac, oi.outletNumber);
-        oi.description = oi.outletinfo.device.DeviceName + ": " + oi.outletinfo.getDescription();
+        oi.updateDeviceAndOutletLinks();
+
         return oi;
     }
 
@@ -65,5 +68,14 @@ public class SceneOutlet {
         writer.name("enabled").value(enabled);
         writer.name("state").value(state);
         writer.endObject();
+    }
+
+    public boolean updateDeviceAndOutletLinks() {
+        outletinfo = NetpowerctrlApplication.instance.findOutlet(device_mac, outletNumber);
+        if (outletinfo != null) {
+            description = outletinfo.device.DeviceName + ": " + outletinfo.getDescription();
+            return true;
+        }
+        return false;
     }
 }

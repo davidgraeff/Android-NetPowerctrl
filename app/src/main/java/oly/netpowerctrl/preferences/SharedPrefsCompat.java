@@ -68,7 +68,7 @@ public class SharedPrefsCompat {
             for (int i = 3; i < list_src.length; ++i) {
                 SceneOutlet c = OutletCommandfromString(list_src[i]);
                 if (c != null)
-                    og.commands.add(c);
+                    og.sceneOutlets.add(c);
             }
 
             og.sceneDetails = og.buildDetails();
@@ -92,11 +92,12 @@ public class SharedPrefsCompat {
         }
 
         public static ArrayList<DeviceInfo> ReadConfiguredDevices(Context context) {
-
             ArrayList<DeviceInfo> devices = new ArrayList<DeviceInfo>();
 
             SharedPreferences prefs = context.getSharedPreferences(SharedPrefs.PREF_BASENAME, Context.MODE_PRIVATE);
             String configured_devices_str = prefs.getString(SharedPrefs.PREF_DEVICES, "");
+            if (configured_devices_str.length() == 0)
+                return devices;
             String[] configured_devices = configured_devices_str.split(":");
             for (String device : configured_devices)
                 devices.add(ReadDevice(context, getFullPrefName(device)));
@@ -120,7 +121,6 @@ public class SharedPrefsCompat {
                 di.SendPort = device_prefs.getInt(PREF_SEND_PORT, SharedPrefs.getDefaultSendPort(context));
                 di.ReceivePort = device_prefs.getInt(PREF_RECEIVE_PORT, SharedPrefs.getDefaultReceivePort(context));
             }
-            di.Configured = true;
             di.Outlets = new ArrayList<OutletInfo>();
 
             int num_outlets = device_prefs.getInt(PREF_NUM_OUTLETS, 0);

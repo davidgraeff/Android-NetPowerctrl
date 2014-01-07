@@ -6,6 +6,8 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -100,9 +102,6 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
             }
 
             case R.id.menu_delete_device: {
-                if (!current_device.isConfigured())
-                    return true;
-
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.delete_device)
@@ -116,6 +115,11 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
                         .setNegativeButton(android.R.string.no, null).show();
                 return true;
             }
+
+            case R.id.menu_device_website:
+                Intent browse = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://" + current_device.HostName + ":" + Integer.valueOf(current_device.HttpPort).toString()));
+                getActivity().startActivity(browse);
 
             default:
                 return false;

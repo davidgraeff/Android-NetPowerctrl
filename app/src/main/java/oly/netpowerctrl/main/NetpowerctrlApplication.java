@@ -8,11 +8,11 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceError;
@@ -45,25 +45,25 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     private List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
 
     //! get a list of all send ports of all configured scenes plus the default send port
-    public ArrayList<Integer> getAllSendPorts() {
+    public Set<Integer> getAllSendPorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
         ports.add(SharedPrefs.getDefaultSendPort(this));
 
         for (DeviceInfo di : configuredDevices)
             ports.add(di.SendPort);
 
-        return new ArrayList<Integer>(ports);
+        return ports;
     }
 
     //! get a list of all receive ports of all configured scenes plus the default receive port
-    public ArrayList<Integer> getAllReceivePorts() {
+    public Set<Integer> getAllReceivePorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
         ports.add(SharedPrefs.getDefaultReceivePort(this));
 
         for (DeviceInfo di : configuredDevices)
             ports.add(di.ReceivePort);
 
-        return new ArrayList<Integer>(ports);
+        return ports;
     }
 
     @SuppressWarnings("unused")
@@ -131,10 +131,8 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         updateDeviceStateList.remove(o);
     }
 
-    @SuppressWarnings("unused")
-    public void updateDeviceState(DeviceUpdateStateOrTimeout target, Collection<DeviceInfo> devices_to_observe) {
-        // Create device query object (init timeout, send query packet)
-        updateDeviceStateList.add(new DeviceQuery(getApplicationContext(), target, devices_to_observe));
+    public void addUpdateDeviceState(DeviceQuery o) {
+        updateDeviceStateList.add(o);
     }
 
     @Override
@@ -144,19 +142,36 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         reloadConfiguredDevices();
     }
 
-    public void startListener() {
+    public void startListener(boolean detectAllDevices) {
         if (mDiscoverServiceRefCount == 0) {
             Intent intent = new Intent(this, NetpowerctrlService.class);
             startService(intent);
             bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        }
+        } else if (detectAllDevices)
+            NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
         ++mDiscoverServiceRefCount;
     }
 
-    public void restartListener() {
-        if (mDiscoverServiceRefCount > 0) {
-            mDiscoverService.restartDiscoveryThreads();
-        }
+    /**
+     * Detect new devices and check reachability of configured devices
+     */
+    public void detectNewDevicesAndReachability() {
+        new DeviceQuery(this, new DeviceUpdateStateOrTimeout() {
+            @Override
+            public void onDeviceTimeout(DeviceInfo di) {
+                di.reachable = false;
+            }
+
+            @Override
+            public void onDeviceUpdated(DeviceInfo di) {
+            }
+
+            @Override
+            public void onDeviceQueryFinished(int timeout_devices) {
+                if (timeout_devices > 0)
+                    notifyConfiguredObservers();
+            }
+        }, configuredDevices, true);
     }
 
     public void stopListener() {
@@ -184,7 +199,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             if (mDiscoverServiceRefCount == 0)
                 mDiscoverServiceRefCount = 1;
             instance.notifyServiceReady();
-            DeviceQuery.sendBroadcastQuery(instance);
+            detectNewDevicesAndReachability();
         }
 
         @Override
@@ -236,27 +251,28 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         notifyConfiguredObservers();
     }
 
-    public void addToConfiguredDevices(DeviceInfo current_device) {
+    public void addToConfiguredDevices(DeviceInfo current_device, boolean write_to_disk) {
         // remove it's disabled outlets
         for (Iterator<OutletInfo> i = current_device.Outlets.iterator(); i.hasNext(); )
             if (i.next().Disabled)
                 i.remove();
 
-        // Already in configured scenes?
+        // Already in configured devices?
         for (int i = configuredDevices.size() - 1; i >= 0; --i) {
             if (current_device.MacAddress.equals(configuredDevices.get(i).MacAddress)) {
                 configuredDevices.set(i, current_device);
-                DeviceQuery.sendBroadcastQuery(this);
-                SaveConfiguredDevices();
+                if (write_to_disk) {
+                    saveConfiguredDevices(true);
+                }
                 return;
             }
         }
 
         DeviceInfo new_device = new DeviceInfo(current_device);
-        new_device.setConfigured(true);
         configuredDevices.add(new_device);
-        DeviceQuery.sendBroadcastQuery(this);
-        SaveConfiguredDevices();
+        if (write_to_disk) {
+            saveConfiguredDevices(true);
+        }
 
         // Remove from new scenes
         for (int i = 0; i < newDevices.size(); ++i)
@@ -267,19 +283,14 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             }
     }
 
-    private void SaveConfiguredDevices() {
-        SharedPrefs.SaveConfiguredDevices(configuredDevices, this);
-        notifyConfiguredObservers();
-    }
-
     public void deleteAllConfiguredDevices() {
         configuredDevices.clear();
-        SaveConfiguredDevices();
+        saveConfiguredDevices(true);
     }
 
     public void deleteConfiguredDevice(int position) {
         configuredDevices.remove(position);
-        SaveConfiguredDevices();
+        saveConfiguredDevices(true);
     }
 
     @Override
@@ -288,16 +299,8 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         for (DeviceInfo target : configuredDevices) {
             if (!device_info.MacAddress.equals(target.MacAddress))
                 continue;
-            for (OutletInfo source_oi : device_info.Outlets) {
-                for (OutletInfo target_oi : target.Outlets) {
-                    if (target_oi.OutletNumber == source_oi.OutletNumber) {
-                        target_oi.State = source_oi.State;
-                        target_oi.Disabled = source_oi.Disabled;
-                        target_oi.setDescriptionByDevice(source_oi.getDescription());
-                        break;
-                    }
-                }
-            }
+            target.copyFreshValues(device_info);
+            target.reachable = true;
 
             // notify all observers
             notifyConfiguredObservers();
@@ -309,8 +312,6 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             return;
         }
 
-        // Device is a new one, set configured to false
-        device_info.setConfigured(false);
         // Do we have this new device already in the list?
         for (DeviceInfo target : newDevices) {
             if (device_info.MacAddress.equals(target.MacAddress))
@@ -346,7 +347,6 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         return null;
     }
 
-
     public OutletInfo findOutlet(String mac_address, int outletNumber) {
         for (DeviceInfo di : configuredDevices) {
             if (di.MacAddress.equals(mac_address)) {
@@ -361,7 +361,9 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         return null;
     }
 
-    public void saveConfiguredDevices() {
+    public void saveConfiguredDevices(boolean updateObservers) {
         SharedPrefs.SaveConfiguredDevices(configuredDevices, this);
+        if (updateObservers)
+            notifyConfiguredObservers();
     }
 }

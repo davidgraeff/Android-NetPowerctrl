@@ -29,10 +29,13 @@ public class DeviceInfo implements Parcelable {
     public boolean DefaultPorts;
     public int SendPort;
     public int ReceivePort;
-
-    public boolean Configured;
+    public int HttpPort;
 
     public List<OutletInfo> Outlets;
+    public List<OutletInfo> IOs;
+    public String Temperature;
+    public String FirmwareVersion;
+    public boolean reachable;
 
     private static String uuidToString(UUID uuid) {
         return uuid.toString().replace(":", "-");
@@ -57,8 +60,12 @@ public class DeviceInfo implements Parcelable {
         DefaultPorts = true;
         SendPort = -1;
         ReceivePort = -1;
-        Configured = false;
+        HttpPort = 80;
+        Temperature = "";
+        FirmwareVersion = "";
+        reachable = false;
         Outlets = new ArrayList<OutletInfo>();
+        IOs = new ArrayList<OutletInfo>();
     }
 
     public DeviceInfo(Context cx) {
@@ -78,10 +85,43 @@ public class DeviceInfo implements Parcelable {
         DefaultPorts = other.DefaultPorts;
         SendPort = other.SendPort;
         ReceivePort = other.ReceivePort;
-        Configured = other.Configured;
+        HttpPort = other.HttpPort;
+        Temperature = other.Temperature;
+        FirmwareVersion = other.FirmwareVersion;
         Outlets = new ArrayList<OutletInfo>();
+        IOs = new ArrayList<OutletInfo>();
         for (OutletInfo oi : other.Outlets)
             Outlets.add(new OutletInfo(oi));
+        for (OutletInfo oi : other.IOs)
+            IOs.add(new OutletInfo(oi));
+    }
+
+    public void copyFreshValues(DeviceInfo di) {
+        for (OutletInfo source_oi : di.Outlets) {
+            for (OutletInfo target_oi : Outlets) {
+                if (target_oi.OutletNumber == source_oi.OutletNumber) {
+                    target_oi.State = source_oi.State;
+                    target_oi.Disabled = source_oi.Disabled;
+                    target_oi.setDescriptionByDevice(source_oi.getDescription());
+                    break;
+                }
+            }
+        }
+        for (OutletInfo source_oi : di.IOs) {
+            for (OutletInfo target_oi : IOs) {
+                if (target_oi.OutletNumber == source_oi.OutletNumber) {
+                    target_oi.State = source_oi.State;
+                    target_oi.Disabled = source_oi.Disabled;
+                    target_oi.setDescriptionByDevice(source_oi.getDescription());
+                    break;
+                }
+            }
+        }
+
+        HostName = di.HostName;
+        HttpPort = di.HttpPort;
+        Temperature = di.Temperature;
+        FirmwareVersion = di.FirmwareVersion;
     }
 
     /**
@@ -126,10 +166,14 @@ public class DeviceInfo implements Parcelable {
         destination.writeString(MacAddress);
         destination.writeString(UserName);
         destination.writeString(Password);
+        destination.writeString(Temperature);
+        destination.writeString(FirmwareVersion);
         destination.writeInt(DefaultPorts ? 1 : 0);
         destination.writeInt(SendPort);
         destination.writeInt(ReceivePort);
+        destination.writeInt(HttpPort);
         destination.writeTypedList(Outlets);
+        destination.writeTypedList(IOs);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -152,19 +196,14 @@ public class DeviceInfo implements Parcelable {
         MacAddress = in.readString();
         UserName = in.readString();
         Password = in.readString();
+        Temperature = in.readString();
+        FirmwareVersion = in.readString();
         DefaultPorts = in.readInt() != 0;
         SendPort = in.readInt();
         ReceivePort = in.readInt();
-        Configured = true;
+        HttpPort = in.readInt();
         in.readTypedList(Outlets, OutletInfo.CREATOR);
-    }
-
-    public void setConfigured(boolean b) {
-        Configured = b;
-    }
-
-    public boolean isConfigured() {
-        return Configured;
+        in.readTypedList(IOs, OutletInfo.CREATOR);
     }
 
     public void updateByDeviceCommand(DeviceCommand c) {
@@ -190,14 +229,27 @@ public class DeviceInfo implements Parcelable {
                 di.UserName = reader.nextString();
             } else if (name.equals("Password")) {
                 di.Password = reader.nextString();
+            } else if (name.equals("Temperature")) {
+                di.Temperature = reader.nextString();
+            } else if (name.equals("FirmwareVersion")) {
+                di.FirmwareVersion = reader.nextString();
             } else if (name.equals("DefaultPorts")) {
                 di.DefaultPorts = reader.nextBoolean();
             } else if (name.equals("SendPort")) {
                 di.SendPort = reader.nextInt();
             } else if (name.equals("ReceivePort")) {
                 di.ReceivePort = reader.nextInt();
+            } else if (name.equals("HttpPort")) {
+                di.HttpPort = reader.nextInt();
+            } else if (name.equals("IOs")) {
+                di.IOs.clear();
+                reader.beginArray();
+                while (reader.hasNext()) {
+                    di.IOs.add(OutletInfo.fromJSON(reader, di));
+                }
+                reader.endArray();
             } else if (name.equals("Outlets")) {
-                di.Outlets = new ArrayList<OutletInfo>();
+                di.Outlets.clear();
                 reader.beginArray();
                 while (reader.hasNext()) {
                     di.Outlets.add(OutletInfo.fromJSON(reader, di));
@@ -208,7 +260,6 @@ public class DeviceInfo implements Parcelable {
             }
         }
 
-        di.Configured = true;
         reader.endObject();
         return di;
     }
@@ -221,11 +272,21 @@ public class DeviceInfo implements Parcelable {
         writer.name("MacAddress").value(MacAddress);
         writer.name("UserName").value(UserName);
         writer.name("Password").value(Password);
+        writer.name("Temperature").value(Temperature);
+        writer.name("FirmwareVersion").value(FirmwareVersion);
         writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("SendPort").value(SendPort);
         writer.name("ReceivePort").value(ReceivePort);
+        writer.name("HttpPort").value(HttpPort);
         writer.name("Outlets").beginArray();
+        assert Outlets != null;
         for (OutletInfo oi : Outlets) {
+            oi.toJSON(writer);
+        }
+        writer.endArray();
+        writer.name("IOs").beginArray();
+        assert IOs != null;
+        for (OutletInfo oi : IOs) {
             oi.toJSON(writer);
         }
         writer.endArray();

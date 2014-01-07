@@ -77,14 +77,42 @@ class DiscoveryThread extends Thread {
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
 
-        if (msg.length > 14)
+        // Current firmware v4
+        if (msg.length > 14) {
             try {
                 disabledOutlets = Integer.parseInt(msg[14]);
             } catch (NumberFormatException ignored) {
             }
+            try {
+                di.HttpPort = Integer.parseInt(msg[15]);
+            } catch (NumberFormatException ignored) {
+                di.HttpPort = 80;
+            }
+            // IO ports
+            if (msg.length > 23) {
+                for (int i = 16; i <= 23; ++i) {
+                    String io_port[] = msg[i].split(",");
+                    if (io_port.length != 3) continue;
+                    // Filter out inputs
+                    if (io_port[1].equals("1"))
+                        continue;
 
-        if (msg.length < 14)
+                    OutletInfo oi = new OutletInfo(di);
+                    oi.OutletNumber = i - 16 + 1; // 1-based
+                    oi.setDescriptionByDevice(io_port[0]);
+                    oi.State = io_port[1].equals("1");
+                    di.IOs.add(oi);
+                }
+                di.Temperature = msg[24];
+                di.FirmwareVersion = msg[25];
+            }
+
+        }
+        // For old firmwares
+        else if (msg.length < 14) {
             numOutlets = msg.length - 6;
+            di.HttpPort = 80;
+        }
 
         for (int i = 0; i < numOutlets; i++) {
             String outlet[] = msg[6 + i].split(",");

@@ -17,13 +17,15 @@ import oly.netpowerctrl.anelservice.DeviceError;
 import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdate;
+import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceConfigurationAdapter;
 
 /**
  */
-public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpdate, DeviceError {
+public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpdateStateOrTimeout, DeviceUpdate, DeviceError {
     private static final String DEVICE_PARAMETER = "device";
 
     private enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
@@ -47,20 +49,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             return;
 
         test_state = TestStates.TEST_REACHABLE;
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (test_state == TestStates.TEST_REACHABLE) {
-                    test_state = TestStates.TEST_INIT;
-                    //noinspection ConstantConditions
-                    Toast.makeText(getActivity(),
-                            getActivity().getString(R.string.error_device_not_reachable) + ": " + device.HostName + ":" + Integer.valueOf(device.SendPort).toString(),
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-        }, 1100);
-        DeviceQuery.sendQuery(getActivity(), device.HostName, device.SendPort);
+        DeviceQuery dc = new DeviceQuery(getActivity(), this, device);
     }
 
     private void saveDevice() {
@@ -83,15 +72,23 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
     }
 
     private void saveAndFinish() {
-        NetpowerctrlApplication.instance.addToConfiguredDevices(device);
+        NetpowerctrlService listenService = NetpowerctrlApplication.instance.getService();
+        if (listenService != null) {
+            listenService.restartDiscoveryThreads();
+        }
+        NetpowerctrlApplication.instance.addToConfiguredDevices(device, true);
         //noinspection ConstantConditions
         getFragmentManager().popBackStack();
     }
 
     @Override
     public void onDestroy() {
-        NetpowerctrlApplication.instance.getService().unregisterDeviceUpdateObserver(this);
-        NetpowerctrlApplication.instance.getService().unregisterDeviceErrorObserver(this);
+        NetpowerctrlService listenService = NetpowerctrlApplication.instance.getService();
+        if (listenService != null) {
+            listenService.removeTemporaryDevice(device);
+            listenService.unregisterDeviceUpdateObserver(this);
+            listenService.unregisterDeviceErrorObserver(this);
+        }
         super.onDestroy();
     }
 
@@ -173,8 +170,23 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             return;
         }
 
-        NetpowerctrlApplication.instance.getService().registerDeviceUpdateObserver(this);
-        NetpowerctrlApplication.instance.getService().registerDeviceErrorObserver(this);
+        NetpowerctrlService listenService = NetpowerctrlApplication.instance.getService();
+        if (listenService != null) {
+            listenService.replaceTemporaryDevice(device);
+            listenService.registerDeviceUpdateObserver(this);
+            listenService.registerDeviceErrorObserver(this);
+        }
+    }
+
+    @Override
+    public void onDeviceTimeout(DeviceInfo di) {
+        if (test_state == TestStates.TEST_REACHABLE) {
+            test_state = TestStates.TEST_INIT;
+            //noinspection ConstantConditions
+            Toast.makeText(getActivity(),
+                    getActivity().getString(R.string.error_device_not_reachable) + ": " + device.HostName + ":" + Integer.valueOf(device.SendPort).toString(),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -188,19 +200,19 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             device.Outlets.clear();
             device.Outlets.addAll(di.Outlets);
             test_state = TestStates.TEST_ACCESS;
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (test_state == TestStates.TEST_ACCESS) {
-                            test_state = TestStates.TEST_INIT;
-                            //noinspection ConstantConditions
-                            Toast.makeText(getActivity(),
-                                    getActivity().getString(R.string.error_device_no_access) + ": " + device.UserName + " " + device.Password,
-                                    Toast.LENGTH_SHORT).show();
-                        }
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (test_state == TestStates.TEST_ACCESS) {
+                        test_state = TestStates.TEST_INIT;
+                        //noinspection ConstantConditions
+                        Toast.makeText(getActivity(),
+                                getActivity().getString(R.string.error_device_no_access) + ": " + device.UserName + " " + device.Password,
+                                Toast.LENGTH_SHORT).show();
                     }
-                }, 1100);
+                }
+            }, 1100);
             DeviceCommand ds = new DeviceCommand(device);
             DeviceSend.sendAllOutlets(getActivity(), ds, true);
         } else if (test_state == TestStates.TEST_ACCESS) {
@@ -208,6 +220,10 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             Toast.makeText(getActivity(), getActivity().getString(R.string.device_test_ok), Toast.LENGTH_SHORT).show();
             test_state = TestStates.TEST_OK;
         }
+    }
+
+    @Override
+    public void onDeviceQueryFinished(int timeout_devices) {
     }
 
     @Override

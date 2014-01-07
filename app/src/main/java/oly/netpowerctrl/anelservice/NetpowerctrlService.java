@@ -8,6 +8,7 @@ import android.os.IBinder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
@@ -18,6 +19,8 @@ public class NetpowerctrlService extends Service {
 
     private ArrayList<DeviceUpdate> observer = new ArrayList<DeviceUpdate>();
     private ArrayList<DeviceError> errorObserver = new ArrayList<DeviceError>();
+
+    private DeviceInfo temporary_device = null;
 
     public void registerDeviceUpdateObserver(DeviceUpdate o) {
         if (!observer.contains(o))
@@ -69,6 +72,15 @@ public class NetpowerctrlService extends Service {
         });
     }
 
+    public void removeTemporaryDevice(DeviceInfo device) {
+        if (temporary_device == device)
+            temporary_device = null;
+    }
+
+    public void replaceTemporaryDevice(DeviceInfo device) {
+        temporary_device = device;
+    }
+
     public class LocalBinder extends Binder {
         public NetpowerctrlService getService() {
             // Return this instance of LocalService so clients can call public methods
@@ -92,7 +104,11 @@ public class NetpowerctrlService extends Service {
     private void startDiscoveryThreads() {
         // only start if not yet running
         if (discoveryThreads.size() == 0) {
-            for (int port : NetpowerctrlApplication.instance.getAllReceivePorts()) {
+            Set<Integer> ports = NetpowerctrlApplication.instance.getAllReceivePorts();
+            if (temporary_device != null)
+                ports.add(temporary_device.ReceivePort);
+
+            for (int port : ports) {
                 DiscoveryThread thr = new DiscoveryThread(port, this);
                 thr.start();
                 discoveryThreads.add(thr);

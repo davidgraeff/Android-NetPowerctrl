@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceUpdate;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
@@ -163,8 +164,8 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
             finishServiceIfDone();
         } else {
             listener_started = true;
-            NetpowerctrlApplication.instance.startListener();
-            NetpowerctrlApplication.instance.updateDeviceState(this, devices_to_update);
+            NetpowerctrlApplication.instance.startListener(false);
+            new DeviceQuery(this, this, devices_to_update, false);
         }
 
         return START_STICKY;
@@ -297,6 +298,11 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         }
 
         finishServiceIfDone();
+    }
+
+    @Override
+    public void onDeviceQueryFinished(int timeout_devices) {
+
     }
 
     @Override

@@ -34,9 +34,9 @@ public class SharedPrefs {
 
     public static int getFirstTab(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
-        int tab = 0;
+        int tab = -1;
         try {
-            tab = prefs.getInt(PREF_FIRST_TAB, 0);
+            tab = prefs.getInt(PREF_FIRST_TAB, -1);
         } catch (ClassCastException ignored) {
 
         }

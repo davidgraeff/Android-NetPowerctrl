@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
 import oly.netpowerctrl.utils.GridOrListFragment;
@@ -46,7 +45,7 @@ public class NewDevicesListFragment extends GridOrListFragment implements ListIt
             }
 
             case R.id.menu_requery: {
-                DeviceQuery.sendBroadcastQuery(getActivity());
+                NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
                 return true;
             }
 
