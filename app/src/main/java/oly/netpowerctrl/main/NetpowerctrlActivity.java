@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
@@ -79,7 +78,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         instance = this;
         setContentView(R.layout.activity_main);
 
@@ -177,6 +175,8 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             // Register callback
             mNfcAdapter.setNdefPushMessageCallback(this, this);
         }
+
+        super.onCreate(savedInstanceState);
     }
 
     /* Called whenever we call invalidateOptionsMenu() */
@@ -241,8 +241,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         }
 
         // Start listener and request new device states
-        NetpowerctrlApplication.instance.startListener();
-        DeviceQuery.sendBroadcastQuery(this);
+        NetpowerctrlApplication.instance.startListener(true);
     }
 
     @Override

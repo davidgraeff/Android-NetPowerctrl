@@ -68,7 +68,7 @@ final public class DeviceCommand {
 
     static public Collection<DeviceCommand> fromOutletCommandGroup(Scene og) {
         TreeMap<String, DeviceCommand> deviceCommands = new TreeMap<String, DeviceCommand>();
-        for (SceneOutlet c : og.commands) {
+        for (SceneOutlet c : og.sceneOutlets) {
             if (!deviceCommands.containsKey(c.device_mac)) {
                 deviceCommands.put(c.device_mac, new DeviceCommand(c.outletinfo.device));
             }

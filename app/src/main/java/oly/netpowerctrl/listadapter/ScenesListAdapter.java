@@ -92,6 +92,8 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
         if (data == null)
             return;
 
+        data.updateDeviceAndOutletLinks();
+
         int i = scenes.indexOf(data);
         if (i != -1) {
             scenes.set(i, data);

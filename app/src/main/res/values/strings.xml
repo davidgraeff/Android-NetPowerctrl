@@ -80,9 +80,8 @@
     <string name="toggle">Toggle</string>
 
     <string-array name="shortcutchoices">
-        <item>No change</item>
-        <item>Switch off</item>
-        <item>Switch on</item>
+        <item>Off</item>
+        <item>On</item>
         <item>Toggle</item>
     </string-array>
 
@@ -177,4 +176,14 @@
     <string name="preference_keep_widget_service_running_summary">To guarantee accurate widget states a background service needs to run. This will reduce battery time.</string>
     <string name="scene_replace">(Update)</string>
     <string name="menu_sortAlphabetically">Sort alphabetically</string>
+    <string name="scene_backup_nobackups">No backups available</string>
+    <string name="scene_backup_restore_failed">Sicherungswiederherstellung fehlgeschlagen!</string>
+    <string name="menu_switch_all_on">All on</string>
+    <string name="menu_switch_all_off">All off</string>
+    <string name="menu_switch_all_toogle">All toggle</string>
+    <string name="menu_switch_all_ignore">Ignore all</string>
+    <string name="menu_help">Help</string>
+    <string name="shortcut_help">In this screen you can see a list of all your configured outlets. Initially no outlet has effect on the shortcut/scene you want to create and its name is striked through. Click on an entry and choose one of the icons from left to right: Switch off, on, toggle state. Enter a name for the shortcut/scene.</string>
+    <string name="menu_device_website">Goto website of device</string>
+    <string name="error_not_reachable">Not reachable</string>
 </resources>

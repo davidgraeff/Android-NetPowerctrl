@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,18 +15,14 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Calendar;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.listadapter.ScenesListAdapter;
 import oly.netpowerctrl.shortcut.ShortcutCreatorActivity;
 import oly.netpowerctrl.shortcut.Shortcuts;
+import oly.netpowerctrl.utils.Backup;
 import oly.netpowerctrl.utils.GridOrListFragment;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -73,27 +68,12 @@ public class ScenesFragment extends GridOrListFragment implements ListItemMenu, 
             }
 
             case R.id.menu_backup_scenes: {
-                SceneCollection sc = SceneCollection.fromScenes(adapter.getScenes());
-                JSONHelper jh = new JSONHelper();
-                Context context = getActivity();
-                try {
-                    sc.toJSON(jh.createWriter());
-                    Calendar t = Calendar.getInstance();
-                    String default_name = DateFormat.getMediumDateFormat(context).format(t.getTime()) + " - " + DateFormat.getTimeFormat(context).format(t.getTime());
-                    File file = new File(getActivity().getExternalFilesDir("backup"), default_name + ".json");
-                    OutputStream os = new FileOutputStream(file);
-                    String backupString = jh.getString();
-                    os.write(backupString.getBytes());
-                    os.close();
-                    Toast.makeText(context, context.getString(R.string.scene_backup_created) + ": " + default_name, Toast.LENGTH_SHORT).show();
-                } catch (IOException ignored) {
-                    Toast.makeText(context, context.getString(R.string.scene_backup_failed) + " " + ignored.getMessage(), Toast.LENGTH_LONG).show();
-                }
+                Backup.createScenesBackup(getActivity(), adapter.getScenes());
                 return true;
             }
 
             case R.id.menu_restore_scenes: {
-                Toast.makeText(getActivity(), getActivity().getString(R.string.scene_backup_restored), Toast.LENGTH_SHORT).show();
+                Backup.restoreScenesBackup(getActivity(), adapter);
                 return true;
             }
 
@@ -174,7 +154,6 @@ public class ScenesFragment extends GridOrListFragment implements ListItemMenu, 
                 Intent shortcutIntent = Shortcuts.createShortcut(getActivity(), extra, og.sceneName);
                 shortcutIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
                 context.getApplicationContext().sendBroadcast(shortcutIntent);
-                Toast.makeText(context, context.getString(R.string.shortcut_created), Toast.LENGTH_SHORT).show();
                 return true;
             }
         }

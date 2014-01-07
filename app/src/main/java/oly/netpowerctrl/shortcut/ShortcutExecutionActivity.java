@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.datastructure.DeviceCommand;
@@ -64,13 +65,13 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
             widgetId = extra.getInt("widgetId");
         }
 
-        // Convert to device commands
+        // Convert to device sceneOutlets
         deviceCommands = DeviceCommand.fromOutletCommandGroup(g);
 
         // Start listener and Update device state
         listener_started = true;
-        NetpowerctrlApplication.instance.startListener();
-        NetpowerctrlApplication.instance.updateDeviceState(this, g.getDevices());
+        NetpowerctrlApplication.instance.startListener(false);
+        new DeviceQuery(this, this, g.getDevices(), false);
 
         setResult(RESULT_OK);
 
@@ -93,12 +94,13 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
             }
 
         }
+    }
 
-        if (deviceCommands.isEmpty()) {
-            if (updateWidget)
-                WidgetUpdateService.updateWidgetWithoutDataFetch(widgetId, this);
-            finish();
-        }
+    @Override
+    public void onDeviceQueryFinished(int timeout_devices) {
+        if (updateWidget)
+            WidgetUpdateService.updateWidgetWithoutDataFetch(widgetId, this);
+        finish();
     }
 
     @Override

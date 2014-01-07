@@ -7,6 +7,7 @@ import android.util.JsonWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class Scene {
     public String sceneName = "";
     public String sceneDetails = "";
     public UUID uuid = UUID.randomUUID();
-    public ArrayList<SceneOutlet> commands = new ArrayList<SceneOutlet>();
+    public ArrayList<SceneOutlet> sceneOutlets = new ArrayList<SceneOutlet>();
 
     public Scene() {
     }
@@ -38,7 +39,7 @@ public class Scene {
         int ons = 0;
         int offs = 0;
         int toggles = 0;
-        for (SceneOutlet c : commands) {
+        for (SceneOutlet c : sceneOutlets) {
             switch (c.state) {
                 case 0:
                     ++offs;
@@ -58,16 +59,16 @@ public class Scene {
     }
 
     public void add(SceneOutlet c) {
-        commands.add(c);
+        sceneOutlets.add(c);
     }
 
     public int length() {
-        return commands.size();
+        return sceneOutlets.size();
     }
 
     public Collection<DeviceInfo> getDevices() {
         TreeMap<String, DeviceInfo> devices = new TreeMap<String, DeviceInfo>();
-        for (SceneOutlet c : commands) {
+        for (SceneOutlet c : sceneOutlets) {
             if (!devices.containsKey(c.device_mac)) {
                 devices.put(c.device_mac, c.outletinfo.device);
             }
@@ -110,10 +111,10 @@ public class Scene {
                 og.sceneName = reader.nextString();
             } else if (name.equals("uuid")) {
                 og.uuid = UUID.fromString(reader.nextString());
-            } else if (name.equals("commands")) {
+            } else if (name.equals("sceneOutlets") || name.equals("commands")) {
                 reader.beginArray();
                 while (reader.hasNext()) {
-                    og.commands.add(SceneOutlet.fromJSON(reader));
+                    og.sceneOutlets.add(SceneOutlet.fromJSON(reader));
                 }
                 reader.endArray();
             } else {
@@ -130,11 +131,26 @@ public class Scene {
         writer.beginObject();
         writer.name("sceneName").value(sceneName);
         writer.name("uuid").value(uuid.toString());
-        writer.name("commands").beginArray();
-        for (SceneOutlet c : commands) {
+        writer.name("sceneOutlets").beginArray();
+        for (SceneOutlet c : sceneOutlets) {
             c.toJSON(writer);
         }
         writer.endArray();
         writer.endObject();
+    }
+
+    /**
+     * Update all links to DeviceInfo and OutletInfo and remove
+     * SceneOutlets that do not have an OutletInfo counterpart.
+     * <p/>
+     * Call this before saving a scene.
+     */
+    public void updateDeviceAndOutletLinks() {
+        Iterator<SceneOutlet> i = sceneOutlets.iterator();
+        while (i.hasNext()) {
+            if (!i.next().updateDeviceAndOutletLinks()) {
+                i.remove();
+            }
+        }
     }
 }

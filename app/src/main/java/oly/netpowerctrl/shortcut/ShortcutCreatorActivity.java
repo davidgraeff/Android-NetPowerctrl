@@ -1,19 +1,25 @@
 package oly.netpowerctrl.shortcut;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.listadapter.OutletListAdapter;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -24,7 +30,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     public static final String RESULT_SCENE = "commands";
     private OutletListAdapter adpOutlets = null;
     private Switch show_mainWindow;
-    private TextView shortcutName;
+    private EditText shortcutName;
     private final Context that = this;
     private Scene og;
     private boolean isLoaded = false;
@@ -36,16 +42,23 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
         setContentView(R.layout.shortcut_activity);
 
         show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
-        shortcutName = (TextView) findViewById(R.id.shortcut_name);
-        // if the shortKey name has changed, we disallow automatically changes to the name
-        shortcutName.setOnKeyListener(new View.OnKeyListener() {
+        shortcutName = (EditText) findViewById(R.id.shortcut_name);
+        shortcutName.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
                 enableDisableAcceptButton();
-                return false;
             }
         });
-        // Initial default name for a shortcut is the app name and current date and time
 
         boolean isForGroups = false;
         Intent it = getIntent();
@@ -63,7 +76,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
                         return;
                     }
                     isLoaded = true;
-                    adpOutlets = OutletListAdapter.createByOutletCommands(this, og.commands);
+                    adpOutlets = OutletListAdapter.createByOutletCommands(this, og.sceneOutlets);
                     shortcutName.setText(og.sceneName);
                 }
             }
@@ -88,11 +101,13 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
         ListView lvOutletSelect = (ListView) findViewById(R.id.lvOutletSelect);
         lvOutletSelect.setAdapter(adpOutlets);
 
+        enableDisableAcceptButton();
+
         findViewById(R.id.btnAcceptShortcut).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Generate list of checked items
-                og.commands = adpOutlets.getCheckedItems();
+                og.sceneOutlets = adpOutlets.getCheckedItems();
                 //noinspection ConstantConditions
                 og.sceneName = shortcutName.getText().toString();
                 if (og.sceneName.isEmpty() || og.length() == 0)
@@ -112,15 +127,55 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
         });
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.shortcut_create_menu, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_sortAlphabetically:
+                adpOutlets.sortAlphabetically();
+                return true;
+            case R.id.menu_showdevicename:
+                adpOutlets.toggleShowDeviceName();
+                return true;
+            case R.id.menu_switch_all_on:
+                adpOutlets.switchAll(SceneOutlet.ON);
+                return true;
+            case R.id.menu_switch_all_off:
+                adpOutlets.switchAll(SceneOutlet.OFF);
+                return true;
+            case R.id.menu_switch_all_toogle:
+                adpOutlets.switchAll(SceneOutlet.TOGGLE);
+                return true;
+            case R.id.menu_switch_all_ignore:
+                adpOutlets.switchAll(-1);
+                return true;
+            case R.id.menu_help:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setIcon(R.drawable.netpowerctrl);
+                builder.setTitle(R.string.menu_help);
+                builder.setMessage(R.string.shortcut_help);
+                builder.create().show();
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     @Override
     public void onMenuItemClicked(View v, int position) {
-        og.commands = adpOutlets.getCheckedItems();
+        og.sceneOutlets = adpOutlets.getCheckedItems();
         enableDisableAcceptButton();
     }
 
     private void enableDisableAcceptButton() {
         //noinspection ConstantConditions
-        findViewById(R.id.btnAcceptShortcut).setEnabled(og.length() != 0 && shortcutName.getText().length() != 0);
+        findViewById(R.id.btnAcceptShortcut).setEnabled((og.length() != 0) &&
+                shortcutName.getText().length() > 0);
 
     }
 }

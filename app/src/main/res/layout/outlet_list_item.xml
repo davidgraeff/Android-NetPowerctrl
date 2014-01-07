@@ -6,11 +6,44 @@
     android:paddingLeft="16dip"
     android:paddingRight="12dip">
 
-    <Spinner
-        android:id="@+id/outlet_list_spinner"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.30" />
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radio0"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:background="@drawable/checkbox_off"
+            android:button="@android:color/transparent"
+            android:padding="2dp"
+            android:layout_marginRight="5dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:drawableLeft="@drawable/ic_action_flash_off" />
+
+        <RadioButton
+            android:id="@+id/radio1"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:background="@drawable/checkbox_on"
+            android:button="@android:color/transparent"
+            android:padding="2dp"
+            android:layout_marginRight="5dp"
+            android:drawableLeft="@drawable/ic_action_flash_on" />
+
+        <RadioButton
+            android:id="@+id/radio2"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:background="@drawable/checkbox_toggle"
+            android:button="@android:color/transparent"
+            android:padding="2dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:drawableLeft="@drawable/ic_action_repeat" />
+
+    </RadioGroup>
 
     <TextView
         android:id="@+id/outlet_list_text"
@@ -20,6 +53,7 @@
         android:gravity="center_vertical"
         android:layout_weight="0.70"
         android:paddingLeft="16dip"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="" />
 
 </LinearLayout>

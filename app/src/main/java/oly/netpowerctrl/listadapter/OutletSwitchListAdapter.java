@@ -26,9 +26,11 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
     private static class OutletInfoAdditional {
         public OutletInfo oi;
         String displayText;
+        public boolean enabled;
 
         OutletInfoAdditional(OutletInfo oi, boolean showDevice) {
             this.oi = oi;
+            this.enabled = oi.device.reachable;
             if (showDevice)
                 displayText = oi.device.DeviceName + ": " + oi.getDescription();
             else
@@ -43,6 +45,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
     private boolean showDeviceNames;
     private AfterSentHandler ash = new AfterSentHandler(this);
     private boolean temporary_ignore_positionRequest;
+    private NotReachableUpdate notReachableObserver;
 
     public OutletSwitchListAdapter(Context context) {
         this.context = context;
@@ -90,7 +93,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         tv.setTag(-1);
         tv.setText(info.displayText);
         tv.setChecked(info.oi.State);
-        tv.setEnabled(!info.oi.Disabled);
+        tv.setEnabled(info.enabled);
         tv.setTag(position);
         return convertView;
     }
@@ -110,21 +113,11 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
             return;
         arg0.setEnabled(false);
         OutletInfo oi = getItem(position);
-        oi.Disabled = false;
+        all_outlets.get(position).enabled = false;
         ash.setData(position, new_state);
         ash.removeMessages();
         ash.startDelayedCheck();
         DeviceSend.sendOutlet(context, oi.device, oi.OutletNumber, new_state);
-    }
-
-    public boolean getIsShowingHidden() {
-        return showHidden;
-    }
-
-    public void setShowHidden(boolean b) {
-        showHidden = b;
-        onDevicesUpdated();
-        SharedPrefs.setShowHiddenOutlets(showDeviceNames, context);
     }
 
     @Override
@@ -133,8 +126,12 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         ash.removeMessages();
         all_outlets.clear();
 
+        int not_reachable = 0;
         List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
         for (DeviceInfo device : all_devices) {
+            if (!device.reachable)
+                ++not_reachable;
+
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
                 if (oi.Disabled || (oi.Hidden && !showHidden))
@@ -167,12 +164,47 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
             all_outlets.get(i).oi.positionRequest = i;
         }
         notifyDataSetChanged();
+
+        if (notReachableObserver != null)
+            notReachableObserver.onNotReachableUpdate(not_reachable);
     }
 
     public void sortAlphabetically() {
         temporary_ignore_positionRequest = true;
         onDevicesUpdated();
         temporary_ignore_positionRequest = false;
+    }
+
+
+    public boolean getIsShowingHidden() {
+        return showHidden;
+    }
+
+    public void setShowHidden(boolean b) {
+        showHidden = b;
+        onDevicesUpdated();
+        SharedPrefs.setShowHiddenOutlets(showDeviceNames, context);
+    }
+
+    /**
+     * Inform the given object about not reachable devices
+     *
+     * @param notReachableObserver
+     */
+    public void setNotReachableObserver(NotReachableUpdate notReachableObserver) {
+        this.notReachableObserver = notReachableObserver;
+        if (notReachableObserver == null)
+            return;
+
+        int not_reachable = 0;
+        List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
+        for (DeviceInfo device : all_devices) {
+            if (!device.reachable)
+                ++not_reachable;
+
+        }
+
+        notReachableObserver.onNotReachableUpdate(not_reachable);
     }
 
     public boolean isShowDeviceNames() {

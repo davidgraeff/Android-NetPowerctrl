@@ -150,10 +150,16 @@ public class NFC {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         int i = 0;
+                        boolean devices_added = false;
                         for (DeviceInfo di : dc.devices) {
-                            if (seletedItems.contains(i))
-                                NetpowerctrlApplication.instance.addToConfiguredDevices(di);
+                            if (seletedItems.contains(i)) {
+                                NetpowerctrlApplication.instance.addToConfiguredDevices(di, false);
+                                devices_added = true;
+                            }
                             ++i;
+                        }
+                        if (devices_added) {
+                            NetpowerctrlApplication.instance.saveConfiguredDevices(true);
                         }
                         if (transfer.scenes != null)
                             showSelectionScenes(context, transfer.scenes);

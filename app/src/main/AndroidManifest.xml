@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="oly.netpowerctrl"
-    android:versionCode="10"
-    android:versionName="1.5b">
+    android:versionCode="12"
+    android:versionName="1.7">
 
-<!-- Api level 16: Android 4.1 27. Juni 2012 -->
+    <!-- Api level 16: Android 4.1 27. Juni 2012 -->
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.NFC" />
-    <uses-permission android:name="android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+
+    <permission
+        android:name="oly.netpowerctrl.plugins"
+        android:label="@string/app_name"
+        android:description="@string/app_name"
+        android:protectionLevel="signature" />
 
     <application
         android:name="oly.netpowerctrl.main.NetpowerctrlApplication"
@@ -22,11 +30,13 @@
             android:name="oly.netpowerctrl.main.NetpowerctrlActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/Theme.CustomLightTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
@@ -82,10 +92,6 @@
 
         <service
             android:name="oly.netpowerctrl.anelservice.NetpowerctrlService"
-            android:permission="android.permission.INTERNET" />
-
-        <service
-            android:name="oly.netpowerctrl.test.TestService"
             android:permission="android.permission.INTERNET" />
 
         <service android:name="oly.netpowerctrl.widget.WidgetUpdateService" />

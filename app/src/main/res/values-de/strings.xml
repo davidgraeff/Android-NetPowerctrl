@@ -82,13 +82,6 @@
     <string name="on">An</string>
     <string name="toggle">Wechsel</string>
 
-    <string-array name="shortcutchoices">
-        <item>Ignorieren</item>
-        <item>Aussschalten</item>
-        <item>Einschalten</item>
-        <item>Umschalten</item>
-    </string-array>
-
     <string-array name="feedbackOptions">
         <item>Fehler melden (E-Mail)</item>
         <item>Fehler melden (Bugtracker)</item>
@@ -177,4 +170,14 @@
     <string name="preference_keep_widget_service_running_summary">Um den Zustand der Widgets aktuell zu halten wird ein Hintergrunddienst benötigt. Das wird die Batterielaufzeit beeinträchtigen.</string>
     <string name="scene_replace">(Aktualisieren)</string>
     <string name="menu_sortAlphabetically">Alphabetisch anordnen</string>
+    <string name="scene_backup_nobackups">Keine Sicherungen gefunden</string>
+    <string name="scene_backup_restore_failed">Sicherungswiederherstellung fehlgeschlagen!</string>
+    <string name="menu_switch_all_on">Alle an</string>
+    <string name="menu_switch_all_off">Alle aus</string>
+    <string name="menu_switch_all_toogle">Alle auf Wechsel</string>
+    <string name="menu_switch_all_ignore">Alle ignorieren</string>
+    <string name="menu_help">Hilfe</string>
+    <string name="shortcut_help">Auf diesem Bildschirm siehst du alle eingerichteten Steckdosen. Anfangs hat keine eine Auswirkung auf die fertige Szene und der Name ist jeweils durchgestrichen. Klicke auf einen Namen und wähle eines der Icons aus. Von Links nach Rechts: Ausschalten, Einschalten, Umschalten. Gib einen Namen ein, danach kannst du die Szene speichern.</string>
+    <string name="menu_device_website">Webseite des Geräts aufrufen</string>
+    <string name="error_not_reachable">Not reachable</string>
 </resources>

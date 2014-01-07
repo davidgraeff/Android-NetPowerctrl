@@ -18,9 +18,9 @@ public class DeviceSend {
     /**
      * Bulk version of sendOutlet. Send changes for each device in only one packet per device.
      *
-     * @param context The context of the activity for showing toast messages and
-     *                getResources
-     * @param device_commands   Bulk command per device
+     * @param context         The context of the activity for showing toast messages and
+     *                        getResources
+     * @param device_commands Bulk command per device
      */
     static public void sendOutlet(final Context context, final Collection<DeviceCommand> device_commands, final boolean requestNewValuesAfterSend) {
         // udp sending in own thread
@@ -44,7 +44,7 @@ public class DeviceSend {
                         // request new values from each device
 
                         for (DeviceCommand device_command : device_commands) {
-                            DeviceQuery.sendQuery(context, device_command.dest.getHostAddress(), device_command.port);
+                            DeviceQuery.sendQuery(context, device_command);
                         }
                     }
 
@@ -79,7 +79,7 @@ public class DeviceSend {
                         }
 
                         // request new values
-                        DeviceQuery.sendQuery(context, device.dest.getHostAddress(), device.port);
+                        DeviceQuery.sendQuery(context, device);
                     }
                 } catch (final IOException e) {
                     ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": "

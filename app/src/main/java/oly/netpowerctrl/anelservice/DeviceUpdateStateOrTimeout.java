@@ -9,4 +9,6 @@ public interface DeviceUpdateStateOrTimeout {
     void onDeviceTimeout(DeviceInfo di);
 
     void onDeviceUpdated(DeviceInfo di);
+
+    void onDeviceQueryFinished(int timeout_devices);
 }
