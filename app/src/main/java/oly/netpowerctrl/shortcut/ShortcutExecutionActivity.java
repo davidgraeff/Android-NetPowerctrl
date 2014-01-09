@@ -22,7 +22,6 @@ import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class ShortcutExecutionActivity extends Activity implements DeviceUpdateStateOrTimeout {
-    private ShortcutExecutionActivity that = this;
     private boolean listener_started = false;
     private Collection<DeviceCommand> deviceCommands;
     private boolean updateWidget = false;
@@ -48,7 +47,7 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
         // Extract command group from intent extra
         Bundle extra = it.getExtras();
         assert extra != null;
-        Scene g = null;
+        Scene g;
         try {
             g = Scene.fromJSON(JSONHelper.getReader(extra.getString("commands")));
         } catch (IOException ignored) {

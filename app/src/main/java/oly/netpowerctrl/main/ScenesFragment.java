@@ -200,7 +200,7 @@ public class ScenesFragment extends GridOrListFragment implements ListItemMenu, 
             case R.id.menu_add_homescreen: {
                 @SuppressWarnings("ConstantConditions")
                 Context context = getActivity().getApplicationContext();
-                Intent extra = Shortcuts.createShortcutExecutionIntent(getActivity(), og, false);
+                Intent extra = Shortcuts.createShortcutExecutionIntent(getActivity(), og, false, false);
                 Intent shortcutIntent = Shortcuts.createShortcut(getActivity(), extra, og.sceneName);
                 shortcutIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
                 assert context != null;
