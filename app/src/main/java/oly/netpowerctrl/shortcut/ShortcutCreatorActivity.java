@@ -30,6 +30,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     public static final String RESULT_SCENE = "commands";
     private CreateSceneOutletsAdapter adpOutlets = null;
     private Switch show_mainWindow;
+    private Switch enable_feedback;
     private EditText shortcutName;
     private final Context that = this;
     private Scene og;
@@ -42,6 +43,8 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
         setContentView(R.layout.create_scene_activity);
 
         show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
+        enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
+
         shortcutName = (EditText) findViewById(R.id.shortcut_name);
         shortcutName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -90,6 +93,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
 
         if (isForGroups) {
             show_mainWindow.setVisibility(View.GONE);
+            enable_feedback.setVisibility(View.GONE);
             if (isLoaded)
                 setTitle(R.string.title_scene_edit);
             else
@@ -112,7 +116,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
                 og.sceneName = shortcutName.getText().toString();
                 if (og.sceneName.isEmpty() || og.length() == 0)
                     return;
-                Intent extra = Shortcuts.createShortcutExecutionIntent(that, og, show_mainWindow.isChecked());
+                Intent extra = Shortcuts.createShortcutExecutionIntent(that, og, show_mainWindow.isChecked(), enable_feedback.isChecked());
                 // Return result
                 setResult(RESULT_OK, Shortcuts.createShortcut(that, extra, og.sceneName));
                 finish();

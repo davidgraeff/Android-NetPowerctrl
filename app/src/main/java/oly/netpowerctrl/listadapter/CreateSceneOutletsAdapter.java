@@ -2,7 +2,6 @@ package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,11 +23,8 @@ import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapter, View.OnClickListener {
-    private final Animation slideinleft;
-    private final Animation slideinright;
     private final Context context;
     private List<SceneOutlet> all_outlets;
-    private List<Boolean> running = new ArrayList<Boolean>();
     private LayoutInflater inflater;
     private ListItemMenu listItemMenu = null;
 
@@ -69,7 +65,6 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
                 SceneOutlet so = SceneOutlet.fromOutletInfo(oi, false);
                 so.state = SceneOutlet.ON;
                 o.all_outlets.add(so);
-                o.running.add(false);
             }
         }
         return o;
@@ -96,8 +91,6 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
         this.context = context;
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<SceneOutlet>();
-        slideinleft = AnimationUtils.loadAnimation(context, R.anim.animate_in);
-        slideinright = AnimationUtils.loadAnimation(context, R.anim.animate_out);
     }
 
     public int getCount() {
@@ -116,10 +109,9 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.create_scene_outlet_list_item, null);
-            assert convertView != null;
-            RadioGroup r = (RadioGroup) convertView.findViewById(R.id.radioGroup);
         }
         SceneOutlet command = all_outlets.get(position);
+        assert convertView != null;
         TextView tv = (TextView) convertView.findViewById(R.id.outlet_list_text);
         tv.setOnClickListener(this);
         tv.setText(command.description);
@@ -144,11 +136,13 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
         if (r.getVisibility() == View.VISIBLE && !command.enabled) {
             r.clearAnimation();
             Animation a = AnimationUtils.loadAnimation(context, R.anim.animate_out);
+            assert a != null;
             a.setAnimationListener(new AnimationListenerWithRadioGroup(r, false));
             r.startAnimation(a);
         } else if (r.getVisibility() == View.INVISIBLE && command.enabled) {
             r.clearAnimation();
             Animation a = AnimationUtils.loadAnimation(context, R.anim.animate_in);
+            assert a != null;
             a.setAnimationListener(new AnimationListenerWithRadioGroup(r, true));
             r.startAnimation(a);
         }
@@ -172,9 +166,7 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
             int position = (Integer) view.getTag();
             SceneOutlet info = all_outlets.get(position);
             int buttonId = view.getId();
-            int sel = (buttonId == R.id.radio0) ? 0 : ((buttonId == R.id.radio1) ? 1 : 2);
-            Log.w("RADIO", "SEL" + Integer.valueOf(sel).toString());
-            info.state = sel; //1:off;2:on;3:toggle
+            info.state = (buttonId == R.id.radio0) ? 0 : ((buttonId == R.id.radio1) ? 1 : 2); //1:off;2:on;3:toggle
             if (listItemMenu != null)
                 listItemMenu.onMenuItemClicked(view, position);
         }

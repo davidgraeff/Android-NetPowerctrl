@@ -12,7 +12,8 @@ import oly.netpowerctrl.datastructure.Scene;
 public class Shortcuts {
     static public Intent createShortcutExecutionIntent(Context context,
                                                        Scene og,
-                                                       boolean show_mainWindow) {
+                                                       boolean show_mainWindow,
+                                                       boolean enable_feedback) {
         if (og.length() == 0) {
             return null;
         }
@@ -25,6 +26,10 @@ public class Shortcuts {
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);
+        }
+
+        if (enable_feedback) {
+            shortcutIntent.putExtra("enable_feedback", true);
         }
 
         return shortcutIntent;

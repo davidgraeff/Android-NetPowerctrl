@@ -188,5 +188,6 @@
     <string name="menu_showdragdrop">Enter move mode</string>
     <string name="menu_hidedragdrop">Leave move mode</string>
     <string name="scene_executed">Scene %1$s executed</string>
+    <string name="shortcut_enable_feedback">Notification on execution</string>
 
 </resources>

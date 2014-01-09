@@ -80,6 +80,12 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
             Intent mainIt = new Intent(this, NetpowerctrlActivity.class);
             startActivity(mainIt);
         }
+
+        if (extra.getBoolean("enable_feedback")) {
+            //noinspection ConstantConditions
+            Toast.makeText(this,
+                    this.getString(R.string.scene_executed, g.sceneName), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

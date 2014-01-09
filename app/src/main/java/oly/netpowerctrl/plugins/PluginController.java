@@ -61,6 +61,10 @@ public class PluginController {
         mDrawerAdapter = drawerAdapter;
     }
 
+    public void destroy() {
+        context.unregisterReceiver(onBroadcast);
+    }
+
     private void removePlugin() {
 
     }

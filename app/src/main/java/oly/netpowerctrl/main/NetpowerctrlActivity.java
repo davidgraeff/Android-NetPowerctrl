@@ -101,6 +101,12 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     };
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        pluginController.destroy();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         instance = this;
         setContentView(R.layout.activity_main);
