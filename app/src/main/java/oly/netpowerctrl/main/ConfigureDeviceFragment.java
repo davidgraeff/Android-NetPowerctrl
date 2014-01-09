@@ -49,7 +49,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             return;
 
         test_state = TestStates.TEST_REACHABLE;
-        DeviceQuery dc = new DeviceQuery(getActivity(), this, device);
+        DeviceQuery dc = new DeviceQuery(getActivity(), this, device, true);
     }
 
     private void saveDevice() {
@@ -218,6 +218,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
         } else if (test_state == TestStates.TEST_ACCESS) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(), getActivity().getString(R.string.device_test_ok), Toast.LENGTH_SHORT).show();
+            device.reachable = true;
             test_state = TestStates.TEST_OK;
         }
     }

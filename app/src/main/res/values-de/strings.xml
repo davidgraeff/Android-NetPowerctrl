@@ -5,9 +5,8 @@
     <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
     <string name="app_name_widget">Net-PwrCtrl Steckdose</string>
 
-    <string name="configure_device">Bearbeiten</string>
-    <string name="copy_device">Kopieren</string>
-    <string name="delete_device">Löschen</string>
+    <string name="configure_device">Gerät bearbeiten</string>
+    <string name="delete_device">Gerät löschen</string>
     <string name="delete_all_devices">Alle löschen</string>
 
     <string name="device_save">Speichern</string>
@@ -17,7 +16,7 @@
     <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
     <string name="error_packet_received">Fehler vom Gerät gemeldet</string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
-    <string name="error_edited_device_not_found">Interner Programmfehler: editiertes Gerät nicht gefunden!</string>
+    <string name="error_edited_device_not_found">Interner Programmfehler: Gerät nicht gefunden!</string>
     <string name="error_listen_thread_exception">Kann nicht Port %d zum Empfangen öffnen:\n</string>
     <string name="error_port_lt_1024">(Ports &lt; 1024 sind nur auf gerooteten Geräten möglich)</string>
     <string name="error_outlet_title">Fehler</string>
@@ -46,12 +45,13 @@
     <string name="device_password_summary">Passwort zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
     <string name="device_outlets">Steckdosen</string>
     <string name="device_outlets_summary">Konfiguration der einzelnen Steckdosen des Gerätes</string>
-    <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommened. Should I save nevertheless?</string>
+    <string name="device_save_without_test">Das Gerät ist mit diesen Einstellungen noch nicht getestet worden. Dennoch speichern?</string>
 
     <string name="menu_add_device">Neues Gerät</string>
     <string name="menu_add_scene">Neue Szene</string>
     <string name="menu_remove_scene">Entfernen</string>
-    <string name="menu_edit_scene">Bearbeiten</string>
+    <string name="menu_remove_all_scenes">Entferne alle Szenen</string>
+    <string name="menu_edit_scene">Szene bearbeiten</string>
     <string name="menu_backup_scene">Backup</string>
     <string name="menu_cancel">Abbruch</string>
     <string name="menu_delete_all">Alle löschen</string>
@@ -72,15 +72,14 @@
     <string name="title_shortcut">Erstelle Shortcut</string>
     <string name="title_scene">Erstelle Szene</string>
 
-    <string name="configure_scene">Szene editieren</string>
     <string name="scenename">Szenen Name</string>
-    <string name="shortcut_show_mainwindow">Zeige Hauptfenster</string>
+    <string name="shortcut_show_mainwindow">Öffne App beim Ausführen</string>
     <string name="delete_all_groups">Alle Szenen löschen?</string>
     <string name="confirmation_delete_all_groups">Sind Sie sicher, dass Sie alle Szenen löschen wollen?</string>
 
     <string name="off">Aus</string>
-    <string name="on">An</string>
-    <string name="toggle">Wechsel</string>
+    <string name="on">Ein</string>
+    <string name="toggle">Umschalten</string>
 
     <string-array name="feedbackOptions">
         <item>Fehler melden (E-Mail)</item>
@@ -113,14 +112,6 @@
         <item />
     </string-array>
 
-    <string-array name="drawer_titles_plugins">
-        <item>Plugins</item>
-    </string-array>
-
-    <string-array name="drawer_descriptions_plugins">
-        <item>-</item>
-    </string-array>
-
     <string-array name="drawer_titles_app">
         <item>App</item>
         <item>Einstellungen</item>
@@ -149,11 +140,12 @@
     <string name="outlet_rename_message">Der Name gilt nur für dieses Handy/Tablet und wird zurückgesetzt, sobald der Name auf der Anel Steckdosenleiste verändert wird. Nutzte einen leeren Text um den Namen auf "%s" zurückzusetzten.</string>
     <string name="name">Name</string>
     <string name="Version">Version</string>
-    <string name="title_scene_edit">Szene editieren</string>
+    <string name="title_scene_edit">Szene bearbeiten</string>
     <string name="nfc_failed">Android Beam ist fehlgeschlagen</string>
     <string name="nfc_select_devices_title">Wähle zu installierende Geräte aus</string>
     <string name="menu_add_homescreen">Zum Startbildschirm hinzufügen</string>
     <string name="menu_showdevicename">Zeige Gerätenamen</string>
+    <string name="menu_hidedevicename">Verstecke Gerätenamen</string>
     <string name="error_saving_scenes">Speichern der Szenen fehlgeschlagen</string>
     <string name="nfc_failed_version">NFC fehlgeschlagen: Version ungleich! Bitte beide Apps updaten.</string>
     <string name="nfc_select_scenes_title">Wähle eine Szene zum installieren</string>
@@ -172,12 +164,23 @@
     <string name="menu_sortAlphabetically">Alphabetisch anordnen</string>
     <string name="scene_backup_nobackups">Keine Sicherungen gefunden</string>
     <string name="scene_backup_restore_failed">Sicherungswiederherstellung fehlgeschlagen!</string>
-    <string name="menu_switch_all_on">Alle an</string>
-    <string name="menu_switch_all_off">Alle aus</string>
-    <string name="menu_switch_all_toogle">Alle auf Wechsel</string>
+    <string name="menu_switch_all_on">Alle auf Einschalten</string>
+    <string name="menu_switch_all_off">Alle auf Ausschalten</string>
+    <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
     <string name="menu_switch_all_ignore">Alle ignorieren</string>
     <string name="menu_help">Hilfe</string>
     <string name="shortcut_help">Auf diesem Bildschirm siehst du alle eingerichteten Steckdosen. Anfangs hat keine eine Auswirkung auf die fertige Szene und der Name ist jeweils durchgestrichen. Klicke auf einen Namen und wähle eines der Icons aus. Von Links nach Rechts: Ausschalten, Einschalten, Umschalten. Gib einen Namen ein, danach kannst du die Szene speichern.</string>
     <string name="menu_device_website">Webseite des Geräts aufrufen</string>
-    <string name="error_not_reachable">Not reachable</string>
+    <string name="error_not_reachable">Gerät nicht erreichbar</string>
+
+    <string name="plugin_drawer_title">Erweiterungen</string>
+    <string name="empty_no_scenes">Keine Szenen gefunden. Erstelle eine mit dem (+) Icon oben rechts.</string>
+    <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden. Richte zuerst ein Gerät ein.</string>
+    <string name="empty_no_configured_devices">Keine eingerichteten Geräte gefunden.</string>
+    <string name="empty_no_new_devices">Keine neuen Geräte gefunden. Entweder sind bereits alle eingerichtet oder du hast falsche Ports in den Einstellungen ausgewählt.</string>
+    <string name="devices_refreshed">Suche nach neuen Geräten beendet</string>
+    <string name="error_not_in_range">Gerät nicht in Reichweite</string>
+    <string name="menu_showdragdrop">Starte Verschiebemodus</string>
+    <string name="menu_hidedragdrop">Beende Verschiebemodus</string>
+    <string name="scene_executed">Szene %1$s ausgeführt</string>
 </resources>

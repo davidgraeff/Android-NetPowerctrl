@@ -1,5 +1,6 @@
 package oly.netpowerctrl.listadapter;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +10,12 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.main.PluginFragment;
 
 /**
  * Adapter with items and headers
@@ -19,6 +24,8 @@ public class DrawerAdapter extends BaseAdapter {
 
     private List<Object> mItems = new ArrayList<Object>();
     private LayoutInflater inflater;
+    private Map<String, Fragment> mCachedFragments = new TreeMap<String, Fragment>();
+    private int plugins_position = 0;
 
     public void add(String[] mFragmentNames, String[] mFragmentDesc, String[] mFragmentClasses) {
         for (int i = 0; i < mFragmentNames.length; ++i) {
@@ -41,6 +48,18 @@ public class DrawerAdapter extends BaseAdapter {
         return -1;
     }
 
+    public void usePositionForPlugins() {
+        plugins_position = mItems.size();
+    }
+
+    public void addCacheFragment(String name) {
+        mCachedFragments.put(name, Fragment.instantiate(NetpowerctrlActivity.instance, name));
+    }
+
+    public Fragment getCachedFragment(String name) {
+        return mCachedFragments.get(name);
+    }
+
     public static class Header {
 
         String mTitle;
@@ -56,12 +75,14 @@ public class DrawerAdapter extends BaseAdapter {
         public String mSummary;
         public String mClazz;
         public boolean mDialog;
+        public int mExtra;
 
-        public DrawerItem(String title, String summary, String clazz, boolean dialog) {
+        public DrawerItem(String title, String summary, String clazz, boolean dialog, int extra) {
             mTitle = title;
             mSummary = summary;
             mClazz = clazz;
             mDialog = dialog;
+            mExtra = extra;
         }
     }
 
@@ -73,8 +94,18 @@ public class DrawerAdapter extends BaseAdapter {
         mItems.add(new Header(title));
     }
 
+    public void addPluginHeader(String title) {
+        mItems.add(plugins_position, new Header(title));
+        ++plugins_position;
+    }
+
     public void addItem(String title, String summary, String clazz, boolean dialog) {
-        mItems.add(new DrawerItem(title, summary, clazz, dialog));
+        mItems.add(new DrawerItem(title, summary, clazz, dialog, -1));
+    }
+
+    public void addPluginItem(String title, String summary, int extra) {
+        mItems.add(plugins_position, new DrawerItem(title, summary, PluginFragment.class.getName(), false, extra));
+        ++plugins_position;
     }
 
     @Override

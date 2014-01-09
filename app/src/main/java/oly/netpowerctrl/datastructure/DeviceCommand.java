@@ -43,7 +43,7 @@ final public class DeviceCommand {
     }
 
     public boolean getIsOn(int outletNumber) {
-        return ((data & ((byte) (1 << outletNumber - 1))) > 0);
+        return ((data & ((byte) (1 << (outletNumber - 1)))) != 0);
     }
 
     private void switchOn(int outletNumber) {
@@ -55,7 +55,7 @@ final public class DeviceCommand {
     }
 
     private void toggle(int outletNumber) {
-        if ((data & ((byte) (1 << outletNumber - 1))) > 0) {
+        if (getIsOn(outletNumber)) {
             switchOff(outletNumber);
         } else {
             switchOn(outletNumber);

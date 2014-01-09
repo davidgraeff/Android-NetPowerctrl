@@ -7,6 +7,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -15,15 +16,18 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.dragdrop.DragDropEnabled;
+import oly.netpowerctrl.dragdrop.DropListener;
+import oly.netpowerctrl.dragdrop.RemoveListener;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.GreenFlasher;
 import oly.netpowerctrl.utils.ListItemMenu;
 
-public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
+public class ScenesListAdapter extends BaseAdapter implements DragDropEnabled, RemoveListener, DropListener {
     private Context context;
     private ListItemMenu listItemMenu = null;
     private List<Scene> scenes;
     private LayoutInflater inflater;
+    private boolean dragDropEnabled = false;
 
     public ScenesListAdapter(Context context) {
         this.context = context;
@@ -37,6 +41,11 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
     }
 
     @Override
+    public boolean isEnabled(int position) {
+        return true;
+    }
+
+    @Override
     public Object getItem(int position) {
         return scenes.get(position);
     }
@@ -44,12 +53,6 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
     @Override
     public long getItemId(int position) {
         return position;
-    }
-
-    @Override
-    public void onClick(View v) {
-        GreenFlasher.flashBgColor(v);
-        executeScene((Integer) v.getTag());
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -62,12 +65,8 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
 
         TextView tvName = (TextView) convertView.findViewById(R.id.group_list_name);
         tvName.setText(data.sceneName);
-        tvName.setTag(position);
-        tvName.setOnClickListener(this);
         tvName = (TextView) convertView.findViewById(R.id.group_list_details);
         tvName.setText(data.sceneDetails);
-        tvName.setTag(position);
-        tvName.setOnClickListener(this);
         ImageButton btn = (ImageButton) convertView.findViewById(R.id.btnEditScene);
         btn.setTag(position);
         btn.setOnClickListener(new OnClickListener() {
@@ -79,11 +78,13 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
                 }
             }
         });
+        ImageView handlerImage = (ImageView) convertView.findViewById(R.id.MoveHandler);
+        handlerImage.setVisibility(dragDropEnabled ? View.VISIBLE : View.GONE);
 
         return convertView;
     }
 
-    void executeScene(int position) {
+    public void executeScene(int position) {
         Scene og = (Scene) getItem(position);
         DeviceSend.sendOutlet(context, DeviceCommand.fromOutletCommandGroup(og), true);
     }
@@ -122,5 +123,34 @@ public class ScenesListAdapter extends BaseAdapter implements OnClickListener {
 
     public List<Scene> getScenes() {
         return scenes;
+    }
+
+    @Override
+    public void onDrop(int from, int to) {
+        Scene temp = scenes.get(from);
+        scenes.remove(from);
+        scenes.add(to, temp);
+    }
+
+    @Override
+    public void onRemove(int position) {
+        if (position < 0 || position > scenes.size()) return;
+        scenes.remove(position);
+        SharedPrefs.SaveScenes(scenes, context);
+    }
+
+    @Override
+    public void setDragDropEnabled(boolean d) {
+        dragDropEnabled = d;
+        notifyDataSetChanged();
+    }
+
+    public void saveScenes() {
+        SharedPrefs.SaveScenes(scenes, context);
+    }
+
+    @Override
+    public boolean isDragDropEnabled() {
+        return dragDropEnabled;
     }
 }

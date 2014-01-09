@@ -11,16 +11,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
 import oly.netpowerctrl.utils.GridOrListFragment;
-import oly.netpowerctrl.utils.ListItemMenu;
 
 /**
  */
-public class NewDevicesListFragment extends GridOrListFragment implements ListItemMenu {
+public class NewDevicesListFragment extends GridOrListFragment implements AdapterView.OnItemClickListener {
     private DeviceListAdapter adapter;
 
     public NewDevicesListFragment() {
@@ -36,16 +37,14 @@ public class NewDevicesListFragment extends GridOrListFragment implements ListIt
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_add_device: {
-                DeviceInfo di = new DeviceInfo(getActivity());
-                Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), di);
-                FragmentManager fragmentManager = getFragmentManager();
-                assert fragmentManager != null;
-                fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
+                show_configure_device_dialog(new DeviceInfo(getActivity()));
                 return true;
             }
 
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+                NetpowerctrlApplication.instance.detectNewDevicesAndReachability(false);
+                //noinspection ConstantConditions
+                Toast.makeText(getActivity(), R.string.devices_refreshed, Toast.LENGTH_SHORT).show();
                 return true;
             }
 
@@ -56,7 +55,7 @@ public class NewDevicesListFragment extends GridOrListFragment implements ListIt
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = NetpowerctrlActivity.instance.adpNewDevices;
+        adapter = new DeviceListAdapter(NetpowerctrlActivity.instance, true);
         setHasOptionsMenu(true);
     }
 
@@ -64,20 +63,23 @@ public class NewDevicesListFragment extends GridOrListFragment implements ListIt
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-
-        adapter.setListItemMenu(this);
+        emptyText.setText(R.string.empty_no_new_devices);
+        mListView.setOnItemClickListener(this);
         mListView.setAdapter(adapter);
         setAutoCheckDataAvailable(true);
         return view;
     }
 
     @Override
-    public void onMenuItemClicked(View v, int position) {
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
         DeviceInfo di = adapter.getItem(position);
         // Set default values for anel devices
         di.UserName = "admin";
         di.Password = "anel";
+        show_configure_device_dialog(di);
+    }
 
+    private void show_configure_device_dialog(DeviceInfo di) {
         Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), di);
         FragmentManager fragmentManager = getFragmentManager();
         assert fragmentManager != null;

@@ -1,12 +1,13 @@
 package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
-import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.RadioGroup;
@@ -22,22 +23,51 @@ import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ListItemMenu;
 
-public class OutletListAdapter extends BaseAdapter implements ListAdapter, View.OnClickListener {
+public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapter, View.OnClickListener {
+    private final Animation slideinleft;
+    private final Animation slideinright;
+    private final Context context;
     private List<SceneOutlet> all_outlets;
     private List<Boolean> running = new ArrayList<Boolean>();
     private LayoutInflater inflater;
-    private ArrayAdapter<CharSequence> spinner_adapter;
     private ListItemMenu listItemMenu = null;
 
-    public static OutletListAdapter createByConfiguredDevices(Context context) {
-        OutletListAdapter o = new OutletListAdapter(context);
+    private static class AnimationListenerWithRadioGroup implements Animation.AnimationListener {
+        private RadioGroup r;
+        private boolean showIt;
+
+        public AnimationListenerWithRadioGroup(RadioGroup r, boolean showIt) {
+            this.r = r;
+            this.showIt = showIt;
+        }
+
+        @Override
+        public void onAnimationStart(Animation animation) {
+            if (showIt)
+                r.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+            if (!showIt)
+                r.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
+        }
+    }
+
+    public static CreateSceneOutletsAdapter createByConfiguredDevices(Context context) {
+        CreateSceneOutletsAdapter o = new CreateSceneOutletsAdapter(context);
         // Enumerate all configured devices and outlets and create SceneOutlets
         for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
                 // Create SceneOutlet and set state to Toggle
                 SceneOutlet so = SceneOutlet.fromOutletInfo(oi, false);
-                so.state = SceneOutlet.TOGGLE;
+                so.state = SceneOutlet.ON;
                 o.all_outlets.add(so);
                 o.running.add(false);
             }
@@ -45,8 +75,8 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, View.
         return o;
     }
 
-    public static OutletListAdapter createByOutletCommands(Context context, List<SceneOutlet> commands) {
-        OutletListAdapter o = new OutletListAdapter(context);
+    public static CreateSceneOutletsAdapter createByOutletCommands(Context context, List<SceneOutlet> commands) {
+        CreateSceneOutletsAdapter o = new CreateSceneOutletsAdapter(context);
         for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
@@ -62,12 +92,12 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, View.
         return o;
     }
 
-    private OutletListAdapter(Context context) {
+    private CreateSceneOutletsAdapter(Context context) {
+        this.context = context;
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<SceneOutlet>();
-
-        spinner_adapter = ArrayAdapter.createFromResource(context, R.array.shortcutchoices, android.R.layout.simple_spinner_item);
-        spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        slideinleft = AnimationUtils.loadAnimation(context, R.anim.animate_in);
+        slideinright = AnimationUtils.loadAnimation(context, R.anim.animate_out);
     }
 
     public int getCount() {
@@ -85,43 +115,44 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, View.
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.outlet_list_item, null);
+            convertView = inflater.inflate(R.layout.create_scene_outlet_list_item, null);
             assert convertView != null;
-//            Spinner r = (Spinner) convertView.findViewById(R.id.outlet_list_spinner);
-//            r.setAdapter(spinner_adapter);
+            RadioGroup r = (RadioGroup) convertView.findViewById(R.id.radioGroup);
         }
         SceneOutlet command = all_outlets.get(position);
         TextView tv = (TextView) convertView.findViewById(R.id.outlet_list_text);
-        if (command.enabled)
-            tv.setPaintFlags(tv.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
-        else
-            tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         tv.setOnClickListener(this);
         tv.setText(command.description);
         tv.setTag(position);
+        tv.setTypeface(null, command.enabled ? Typeface.BOLD : Typeface.NORMAL);
 
-//        Spinner r = (Spinner) convertView.findViewById(R.id.outlet_list_spinner);
-//        r.setTag(position);
-//        r.setSelection(command.state);
-//        r.setEnabled(command.enabled);
-//        r.setOnItemSelectedListener(this);
         View v;
         v = convertView.findViewById(R.id.radio0);
         v.setOnClickListener(radioClick);
         v.setTag(position);
-        v.setVisibility(command.enabled ? View.VISIBLE : View.INVISIBLE);
 
         v = convertView.findViewById(R.id.radio1);
         v.setOnClickListener(radioClick);
         v.setTag(position);
-        v.setVisibility(command.enabled ? View.VISIBLE : View.INVISIBLE);
 
         v = convertView.findViewById(R.id.radio2);
+        v.setOnClickListener(radioClick);
         v.setTag(position);
-        v.setVisibility(command.enabled ? View.VISIBLE : View.INVISIBLE);
 
         RadioGroup r = (RadioGroup) convertView.findViewById(R.id.radioGroup);
-        r.check((command.state == 0) ? R.id.radio0 : (command.state == 1) ? R.id.radio1 : R.id.radio2);
+        //r.setVisibility(command.enabled ? View.VISIBLE : View.GONE);
+        if (r.getVisibility() == View.VISIBLE && !command.enabled) {
+            r.clearAnimation();
+            Animation a = AnimationUtils.loadAnimation(context, R.anim.animate_out);
+            a.setAnimationListener(new AnimationListenerWithRadioGroup(r, false));
+            r.startAnimation(a);
+        } else if (r.getVisibility() == View.INVISIBLE && command.enabled) {
+            r.clearAnimation();
+            Animation a = AnimationUtils.loadAnimation(context, R.anim.animate_in);
+            a.setAnimationListener(new AnimationListenerWithRadioGroup(r, true));
+            r.startAnimation(a);
+        }
+        r.check((command.state == 0) ? R.id.radio0 : ((command.state == 1) ? R.id.radio1 : R.id.radio2));
         return convertView;
     }
 
@@ -141,7 +172,7 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, View.
             int position = (Integer) view.getTag();
             SceneOutlet info = all_outlets.get(position);
             int buttonId = view.getId();
-            int sel = (buttonId == R.id.radio0) ? 0 : (buttonId == R.id.radio1) ? 1 : 2;
+            int sel = (buttonId == R.id.radio0) ? 0 : ((buttonId == R.id.radio1) ? 1 : 2);
             Log.w("RADIO", "SEL" + Integer.valueOf(sel).toString());
             info.state = sel; //1:off;2:on;3:toggle
             if (listItemMenu != null)
@@ -161,14 +192,6 @@ public class OutletListAdapter extends BaseAdapter implements ListAdapter, View.
         notifyDataSetChanged();
         if (listItemMenu != null)
             listItemMenu.onMenuItemClicked(view, position);
-    }
-
-    public void toggleShowDeviceName() {
-        //TODO toggleShowDeviceName
-    }
-
-    public void sortAlphabetically() {
-        //TODO sortAlphabetically
     }
 
     public void switchAll(int state) {

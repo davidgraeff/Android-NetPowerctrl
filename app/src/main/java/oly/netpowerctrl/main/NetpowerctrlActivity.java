@@ -21,19 +21,25 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.wifi.WifiManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -52,6 +58,7 @@ import oly.netpowerctrl.listadapter.DeviceListAdapter;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
 import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
 import oly.netpowerctrl.listadapter.ScenesListAdapter;
+import oly.netpowerctrl.plugins.PluginController;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -68,13 +75,30 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     private DrawerAdapter mDrawerAdapter;
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
+    private boolean drawerControllableByMenuKey = false;
+
+    // Plugins
+    private PluginController pluginController;
 
     // Core
-    public DeviceListAdapter adpConfiguredDevices;
-    public DeviceListAdapter adpNewDevices;
-    public OutletSwitchListAdapter adpOutlets;
-    public ScenesListAdapter adpScenes;
+    private DeviceListAdapter adpConfiguredDevices;
+    private OutletSwitchListAdapter adpOutlets;
+    private ScenesListAdapter adpScenes;
 
+    BroadcastReceiver wifiChangedListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (NetpowerctrlApplication.instance != null)
+                        NetpowerctrlApplication.instance.detectNewDevicesAndReachability(true);
+                }
+            }, 1500);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +106,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         setContentView(R.layout.activity_main);
 
         adpConfiguredDevices = new DeviceListAdapter(this, false);
-        adpNewDevices = new DeviceListAdapter(this, true);
         adpOutlets = new OutletSwitchListAdapter(this);
         adpScenes = new ScenesListAdapter(this);
 
@@ -95,11 +118,10 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         // relying on the menu button that is only present on some devices
         // and may cause confusion.
         try {
-            ViewConfiguration config = ViewConfiguration.get(this);
             Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
             if (menuKeyField != null) {
                 menuKeyField.setAccessible(true);
-                menuKeyField.setBoolean(config, false);
+                menuKeyField.setBoolean(ViewConfiguration.get(this), false);
             }
         } catch (Exception ex) {
             // Ignore
@@ -125,13 +147,18 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
                 getResources().getStringArray(R.array.drawer_descriptions_devices),
                 new String[]{"", NewDevicesListFragment.class.getName(), ConfiguredDevicesListFragment.class.getName()});
 
+        mDrawerAdapter.usePositionForPlugins();
         mDrawerAdapter.add(getResources().getStringArray(R.array.drawer_titles_app),
                 getResources().getStringArray(R.array.drawer_descriptions_app),
                 new String[]{"", PreferencesFragment.class.getName(), HelpFragment.class.getName(), FeedbackDialog.class.getName()});
 
+        mDrawerAdapter.addCacheFragment(OutletsFragment.class.getName());
 
         mDrawerList.setAdapter(mDrawerAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+        // Plugins
+        pluginController = new PluginController(this, mDrawerAdapter);
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         //noinspection ConstantConditions
@@ -184,6 +211,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerView);
+        drawerControllableByMenuKey = menu.size() <= 2;
         if (drawerOpen)
             for (int i = 0; i < menu.size(); i++) {
                 menu.getItem(i).setVisible(false);
@@ -198,11 +226,23 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     }
 
     @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_MENU && drawerControllableByMenuKey) {
+            if (mDrawerLayout.isDrawerOpen(mDrawerView))
+                mDrawerLayout.closeDrawer(mDrawerView);
+            else
+                mDrawerLayout.openDrawer(mDrawerView);
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         SharedPrefs.setFirstTab(this, mDrawerList.getCheckedItemPosition());
         // Stop listener
         NetpowerctrlApplication.instance.stopListener();
+        unregisterReceiver(wifiChangedListener);
     }
 
     @Override
@@ -240,8 +280,22 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             NFC.parseNFC(this, new String(msg.getRecords()[0].getPayload()));
         }
 
-        // Start listener and request new device states
-        NetpowerctrlApplication.instance.startListener(true);
+        // Listen for wifi changes
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.net.wifi.STATE_CHANGE");
+        filter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
+        registerReceiver(wifiChangedListener, filter);
+
+        // Start listener and request new device states after around 800ms
+        // Its better to request device state after the gui has established itself
+        // even on slower devices before starting the listener service.
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                NetpowerctrlApplication.instance.startListener(true);
+            }
+        }, 800);
     }
 
     @Override
@@ -254,6 +308,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     public boolean onOptionsItemSelected(MenuItem item) {
         return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
+
 
     /* The click listener for ListView in the navigation drawer */
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
@@ -270,7 +325,15 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         if (item.mClazz.equals(""))
             return;
 
-        Fragment fragment = Fragment.instantiate(this, item.mClazz);
+        Fragment fragment = mDrawerAdapter.getCachedFragment(item.mClazz);
+        if (fragment == null)
+            fragment = Fragment.instantiate(this, item.mClazz);
+
+        if (item.mExtra != -1) {
+            Bundle b = new Bundle();
+            b.putInt("extra", item.mExtra);
+            fragment.setArguments(b);
+        }
         FragmentManager fragmentManager = getFragmentManager();
         if (item.mDialog) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -287,7 +350,13 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             setTitle(item.mTitle);
         }
 
-        mDrawerLayout.closeDrawer(mDrawerView);
+        Handler mHandler = new Handler();
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mDrawerLayout.closeDrawer(mDrawerView);
+            }
+        }, 150);
     }
 
     @Override
@@ -296,11 +365,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         //noinspection ConstantConditions
         getActionBar().setTitle(mTitle);
     }
-
-    /**
-     * When using the ActionBarDrawerToggle, you must call it during
-     * onPostCreate() and onConfigurationChanged()...
-     */
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -314,5 +378,21 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggle
         mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    public DeviceListAdapter getConfiguredDevicesAdapter() {
+        return adpConfiguredDevices;
+    }
+
+    public OutletSwitchListAdapter getOutletsAdapter() {
+        return adpOutlets;
+    }
+
+    public ScenesListAdapter getScenesAdapter() {
+        return adpScenes;
+    }
+
+    public PluginController getPluginController() {
+        return pluginController;
     }
 }

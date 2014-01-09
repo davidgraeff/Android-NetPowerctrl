@@ -1,14 +1,17 @@
 package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +21,16 @@ import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.dragdrop.DragDropEnabled;
+import oly.netpowerctrl.dragdrop.DropListener;
+import oly.netpowerctrl.dragdrop.RemoveListener;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.AfterSentHandler;
 
-public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter, OnCheckedChangeListener, DevicesUpdate {
+public class OutletSwitchListAdapter extends BaseAdapter implements
+        ListAdapter, OnCheckedChangeListener, DragDropEnabled, DevicesUpdate, RemoveListener, DropListener {
+
     private static class OutletInfoAdditional {
         public OutletInfo oi;
         String displayText;
@@ -46,6 +54,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
     private AfterSentHandler ash = new AfterSentHandler(this);
     private boolean temporary_ignore_positionRequest;
     private NotReachableUpdate notReachableObserver;
+    private boolean dragDropEnabled = false;
 
     public OutletSwitchListAdapter(Context context) {
         this.context = context;
@@ -78,32 +87,41 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
             assert convertView != null;
             Switch tv = (Switch) convertView.findViewById(R.id.outlet_list_switch);
             tv.setOnCheckedChangeListener(this);
-            // We need this empty on long click handler, otherwise the listView's
-            // on long click handler does not work
-            tv.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    return false;
-                }
-            });
         }
         OutletInfoAdditional info = all_outlets.get(position);
         Switch tv = (Switch) convertView.findViewById(R.id.outlet_list_switch);
-        tv.setAlpha(info.oi.Hidden ? 0.6f : 1.0f);
         tv.setTag(-1);
-        tv.setText(info.displayText);
         tv.setChecked(info.oi.State);
         tv.setEnabled(info.enabled);
         tv.setTag(position);
+
+        TextView textView = (TextView) convertView.findViewById(R.id.outlet_list_text);
+        textView.setEnabled(info.enabled);
+        textView.setTypeface(null, info.oi.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+        textView.setAlpha(info.oi.Hidden ? 0.5f : 1.0f);
+        textView.setText(info.displayText);
+
+        ImageView handlerImage = (ImageView) convertView.findViewById(R.id.MoveHandler);
+        handlerImage.setVisibility(dragDropEnabled ? View.VISIBLE : View.GONE);
+
         return convertView;
     }
 
-    public void swapPosition(int itemPosition, int targetPosition) {
-        int t = all_outlets.get(itemPosition).oi.positionRequest;
-        all_outlets.get(itemPosition).oi.positionRequest = all_outlets.get(targetPosition).oi.positionRequest;
-        all_outlets.get(targetPosition).oi.positionRequest = t;
+    public void swapPosition(int from, int to) {
+        onDrop(from, to);
+    }
 
-        onDevicesUpdated();
+    @Override
+    public void onDrop(int from, int to) {
+        OutletInfoAdditional temp = all_outlets.get(from);
+        all_outlets.get(from).oi.positionRequest = all_outlets.get(to).oi.positionRequest;
+        all_outlets.get(to).oi.positionRequest = temp.oi.positionRequest;
+        all_outlets.remove(from);
+        all_outlets.add(to, temp);
+    }
+
+    @Override
+    public void onRemove(int ignored) {
     }
 
     @Override
@@ -126,11 +144,11 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         ash.removeMessages();
         all_outlets.clear();
 
-        int not_reachable = 0;
+        List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
         List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
         for (DeviceInfo device : all_devices) {
             if (!device.reachable)
-                ++not_reachable;
+                not_reachable.add(device);
 
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
@@ -189,18 +207,18 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
     /**
      * Inform the given object about not reachable devices
      *
-     * @param notReachableObserver
+     * @param notReachableObserver The object to notify
      */
     public void setNotReachableObserver(NotReachableUpdate notReachableObserver) {
         this.notReachableObserver = notReachableObserver;
         if (notReachableObserver == null)
             return;
 
-        int not_reachable = 0;
+        List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
         List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
         for (DeviceInfo device : all_devices) {
             if (!device.reachable)
-                ++not_reachable;
+                not_reachable.add(device);
 
         }
 
@@ -216,4 +234,16 @@ public class OutletSwitchListAdapter extends BaseAdapter implements ListAdapter,
         onDevicesUpdated();
         SharedPrefs.setShowDeviceNames(showDeviceNames, context);
     }
+
+    @Override
+    public void setDragDropEnabled(boolean d) {
+        dragDropEnabled = d;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean isDragDropEnabled() {
+        return dragDropEnabled;
+    }
+
 }

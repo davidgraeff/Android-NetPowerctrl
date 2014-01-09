@@ -180,7 +180,7 @@ public class NFC {
         String[] sceneNames = new String[sc.scenes.size()];
         int i = 0;
         for (Scene scene : sc.scenes) {
-            boolean already_installed = NetpowerctrlActivity.instance.adpScenes.getScenes().contains(scene);
+            boolean already_installed = NetpowerctrlActivity.instance.getScenesAdapter().getScenes().contains(scene);
             sceneNames[i] = scene.sceneName;
             if (already_installed)
                 sceneNames[i] += " " + context.getString(R.string.scene_replace);
@@ -213,7 +213,7 @@ public class NFC {
                         int i = 0;
                         for (Scene di : sc.scenes) {
                             if (seletedItems.contains(i))
-                                NetpowerctrlActivity.instance.adpScenes.addScene(di);
+                                NetpowerctrlActivity.instance.getScenesAdapter().addScene(di);
                             ++i;
                         }
                     }

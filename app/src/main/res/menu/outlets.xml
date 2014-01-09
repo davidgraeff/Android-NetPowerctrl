@@ -5,14 +5,23 @@
         android:title="@string/menu_refresh"
         android:showAsAction="always"
         android:icon="@drawable/ic_menu_refresh" />
+
     <item
         android:id="@+id/menu_showdevicename"
         android:title="@string/menu_showdevicename"
         android:showAsAction="collapseActionView|withText" />
+    <item
+        android:id="@+id/menu_hidedevicename"
+        android:title="@string/menu_hidedevicename"
+        android:showAsAction="collapseActionView|withText" />
 
     <item
-        android:id="@+id/menu_sortAlphabetically"
-        android:title="@string/menu_sortAlphabetically"
+        android:id="@+id/menu_showdragdrop"
+        android:title="@string/menu_showdragdrop"
+        android:showAsAction="collapseActionView|withText" />
+    <item
+        android:id="@+id/menu_hidedragdrop"
+        android:title="@string/menu_hidedragdrop"
         android:showAsAction="collapseActionView|withText" />
 
     <item
@@ -23,4 +32,10 @@
         android:id="@+id/menu_hidehidden"
         android:title="@string/hide_hidden"
         android:showAsAction="collapseActionView|withText" />
+
+    <item
+        android:id="@+id/menu_sortAlphabetically"
+        android:title="@string/menu_sortAlphabetically"
+        android:showAsAction="collapseActionView|withText" />
+
 </menu>

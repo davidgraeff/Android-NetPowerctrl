@@ -15,17 +15,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.PopupMenu;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
 import oly.netpowerctrl.utils.GridOrListFragment;
-import oly.netpowerctrl.utils.ListItemMenu;
 
 /**
  */
-public class ConfiguredDevicesListFragment extends GridOrListFragment implements PopupMenu.OnMenuItemClickListener, ListItemMenu {
+public class ConfiguredDevicesListFragment extends GridOrListFragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener {
     private DeviceListAdapter adapter;
 
     public ConfiguredDevicesListFragment() {
@@ -34,8 +34,7 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = NetpowerctrlActivity.instance.adpConfiguredDevices;
-        adapter.setListItemMenu(this);
+        adapter = NetpowerctrlActivity.instance.getConfiguredDevicesAdapter();
         setHasOptionsMenu(true);
     }
 
@@ -49,7 +48,8 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-
+        emptyText.setText(R.string.empty_no_configured_devices);
+        mListView.setOnItemClickListener(this);
         mListView.setAdapter(adapter);
         setAutoCheckDataAvailable(true);
         return view;
@@ -127,10 +127,10 @@ public class ConfiguredDevicesListFragment extends GridOrListFragment implements
     }
 
     @Override
-    public void onMenuItemClicked(View v, int position) {
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
         mListView.setTag(position);
         @SuppressWarnings("ConstantConditions")
-        PopupMenu popup = new PopupMenu(getActivity(), v);
+        PopupMenu popup = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.configured_device_item, popup.getMenu());
 

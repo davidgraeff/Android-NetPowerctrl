@@ -71,7 +71,7 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
         // Start listener and Update device state
         listener_started = true;
         NetpowerctrlApplication.instance.startListener(false);
-        new DeviceQuery(this, this, g.getDevices(), false);
+        new DeviceQuery(this, this, g.getDevices(), false, true);
 
         setResult(RESULT_OK);
 

@@ -6,7 +6,6 @@
     <string name="app_name_widget">Net-PwrCtrl Outlet State</string>
 
     <string name="configure_device">Edit Device</string>
-    <string name="copy_device">Copy Device</string>
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
 
@@ -48,6 +47,7 @@
     <string name="menu_add_device">Add device</string>
     <string name="menu_add_scene">Add scene</string>
     <string name="menu_remove_scene">Delete</string>
+    <string name="menu_remove_all_scenes">Delete all</string>
     <string name="menu_edit_scene">Edit</string>
     <string name="menu_backup_scene">Backup</string>
     <string name="menu_cancel">Cancel</string>
@@ -69,7 +69,6 @@
     <string name="title_shortcut">Create Shortcut</string>
     <string name="title_scene">Create scene</string>
 
-    <string name="configure_scene">Edit Scene</string>
     <string name="scenename">Group name</string>
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
     <string name="delete_all_groups">Delete all scenes?</string>
@@ -114,14 +113,6 @@
         <item>-</item>
         <item />
         <item />
-    </string-array>
-
-    <string-array name="drawer_titles_plugins">
-        <item>Plugins</item>
-    </string-array>
-
-    <string-array name="drawer_descriptions_plugins">
-        <item>-</item>
     </string-array>
 
     <string-array name="drawer_titles_app">
@@ -185,5 +176,17 @@
     <string name="menu_help">Help</string>
     <string name="shortcut_help">In this screen you can see a list of all your configured outlets. Initially no outlet has effect on the shortcut/scene you want to create and its name is striked through. Click on an entry and choose one of the icons from left to right: Switch off, on, toggle state. Enter a name for the shortcut/scene.</string>
     <string name="menu_device_website">Goto website of device</string>
-    <string name="error_not_reachable">Not reachable</string>
+    <string name="error_not_reachable">Devices not reachable</string>
+    <string name="plugin_drawer_title">Plugins</string>
+    <string name="empty_no_scenes">No scene found. Create one by clicking on the (+) icon located in the top-left bar.</string>
+    <string name="empty_no_outlets">No outlets to display. Configure devices first or get in range of configured devices.</string>
+    <string name="empty_no_configured_devices">No configured devices found. Configure one first.</string>
+    <string name="empty_no_new_devices">No new devices found. You may have configured all devices already or you have setup wrong ports in the preferences.</string>
+    <string name="devices_refreshed">Finished looking for devices</string>
+    <string name="error_not_in_range">Device not in range</string>
+    <string name="menu_hidedevicename">Hide device names</string>
+    <string name="menu_showdragdrop">Enter move mode</string>
+    <string name="menu_hidedragdrop">Leave move mode</string>
+    <string name="scene_executed">Scene %1$s executed</string>
+
 </resources>
