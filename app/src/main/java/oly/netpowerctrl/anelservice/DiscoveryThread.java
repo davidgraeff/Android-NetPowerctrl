@@ -73,6 +73,7 @@ class DiscoveryThread extends Thread {
         di.HostName = msg[2];
         di.MacAddress = msg[5];
         di.ReceivePort = receive_port;
+        di.reachable = true;
 
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped

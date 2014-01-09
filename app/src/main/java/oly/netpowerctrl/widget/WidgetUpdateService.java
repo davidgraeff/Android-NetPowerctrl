@@ -165,7 +165,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         } else {
             listener_started = true;
             NetpowerctrlApplication.instance.startListener(false);
-            new DeviceQuery(this, this, devices_to_update, false);
+            new DeviceQuery(this, this, devices_to_update, false, false);
         }
 
         return START_STICKY;

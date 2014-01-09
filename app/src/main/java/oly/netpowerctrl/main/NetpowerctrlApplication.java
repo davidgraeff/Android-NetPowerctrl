@@ -147,15 +147,15 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             Intent intent = new Intent(this, NetpowerctrlService.class);
             startService(intent);
             bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        } else if (detectAllDevices)
-            NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+        } else if (detectAllDevices) // if service is running and detectAllDevices
+            NetpowerctrlApplication.instance.detectNewDevicesAndReachability(false);
         ++mDiscoverServiceRefCount;
     }
 
     /**
      * Detect new devices and check reachability of configured devices
      */
-    public void detectNewDevicesAndReachability() {
+    public void detectNewDevicesAndReachability(boolean rangeCheck) {
         new DeviceQuery(this, new DeviceUpdateStateOrTimeout() {
             @Override
             public void onDeviceTimeout(DeviceInfo di) {
@@ -171,7 +171,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 if (timeout_devices > 0)
                     notifyConfiguredObservers();
             }
-        }, configuredDevices, true);
+        }, configuredDevices, true, rangeCheck);
     }
 
     public void stopListener() {
@@ -199,7 +199,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             if (mDiscoverServiceRefCount == 0)
                 mDiscoverServiceRefCount = 1;
             instance.notifyServiceReady();
-            detectNewDevicesAndReachability();
+            detectNewDevicesAndReachability(false);
         }
 
         @Override
@@ -252,11 +252,6 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     }
 
     public void addToConfiguredDevices(DeviceInfo current_device, boolean write_to_disk) {
-        // remove it's disabled outlets
-        for (Iterator<OutletInfo> i = current_device.Outlets.iterator(); i.hasNext(); )
-            if (i.next().Disabled)
-                i.remove();
-
         // Already in configured devices?
         for (int i = configuredDevices.size() - 1; i >= 0; --i) {
             if (current_device.MacAddress.equals(configuredDevices.get(i).MacAddress)) {
@@ -268,19 +263,23 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             }
         }
 
-        DeviceInfo new_device = new DeviceInfo(current_device);
-        configuredDevices.add(new_device);
+        configuredDevices.add(current_device);
         if (write_to_disk) {
             saveConfiguredDevices(true);
         }
 
-        // Remove from new scenes
-        for (int i = 0; i < newDevices.size(); ++i)
+        // Remove from new devices list
+        for (int i = 0; i < newDevices.size(); ++i) {
             if (newDevices.get(i).MacAddress.equals(current_device.MacAddress)) {
                 newDevices.remove(i);
                 notifyNewDeviceObservers();
                 break;
             }
+        }
+
+        // Initiate detect devices, if this added device is not flagged as reachable at the moment.
+        if (!current_device.reachable)
+            detectNewDevicesAndReachability(false);
     }
 
     public void deleteAllConfiguredDevices() {
@@ -305,9 +304,13 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             // notify all observers
             notifyConfiguredObservers();
 
-            //
-            for (DeviceQuery o : updateDeviceStateList)
-                o.notifyAndRemove(target);
+            // notify observers who are using the DeviceQuery class
+            Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
+            while (it.hasNext()) {
+                // Return true if the DeviceQuery object has finished its task.
+                if (it.next().notifyObservers(target))
+                    it.remove();
+            }
 
             return;
         }

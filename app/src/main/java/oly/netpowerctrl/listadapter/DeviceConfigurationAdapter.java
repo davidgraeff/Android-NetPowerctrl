@@ -19,7 +19,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 
 /**
- * Created by david on 05.01.14.
+ * For displaying DeviceInfo fields in a ListView
  */
 public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickListener {
     public static class ReviewItem {

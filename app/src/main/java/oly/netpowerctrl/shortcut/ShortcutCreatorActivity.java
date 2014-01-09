@@ -20,7 +20,7 @@ import java.io.IOException;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneOutlet;
-import oly.netpowerctrl.listadapter.OutletListAdapter;
+import oly.netpowerctrl.listadapter.CreateSceneOutletsAdapter;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
 
@@ -28,7 +28,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     public static final String CREATE_SCENE = "scenes";
     public static final String LOAD_SCENE = "load";
     public static final String RESULT_SCENE = "commands";
-    private OutletListAdapter adpOutlets = null;
+    private CreateSceneOutletsAdapter adpOutlets = null;
     private Switch show_mainWindow;
     private EditText shortcutName;
     private final Context that = this;
@@ -39,7 +39,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setResult(RESULT_CANCELED, null);
-        setContentView(R.layout.shortcut_activity);
+        setContentView(R.layout.create_scene_activity);
 
         show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
         shortcutName = (EditText) findViewById(R.id.shortcut_name);
@@ -76,14 +76,14 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
                         return;
                     }
                     isLoaded = true;
-                    adpOutlets = OutletListAdapter.createByOutletCommands(this, og.sceneOutlets);
+                    adpOutlets = CreateSceneOutletsAdapter.createByOutletCommands(this, og.sceneOutlets);
                     shortcutName.setText(og.sceneName);
                 }
             }
         }
 
         if (adpOutlets == null) {
-            adpOutlets = OutletListAdapter.createByConfiguredDevices(this);
+            adpOutlets = CreateSceneOutletsAdapter.createByConfiguredDevices(this);
             og = new Scene();
         }
         adpOutlets.setListItemMenu(this);
@@ -137,12 +137,6 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_sortAlphabetically:
-                adpOutlets.sortAlphabetically();
-                return true;
-            case R.id.menu_showdevicename:
-                adpOutlets.toggleShowDeviceName();
-                return true;
             case R.id.menu_switch_all_on:
                 adpOutlets.switchAll(SceneOutlet.ON);
                 return true;
