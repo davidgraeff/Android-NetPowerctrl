@@ -49,7 +49,7 @@ public class AfterSentHandler extends Handler {
             retries++;
             Log.w("DeviceControl", "Sending again, no response " + Integer.valueOf(list_position).toString());
             startDelayedCheck();
-            DeviceSend.sendOutlet(ola.context, oi.device, oi.OutletNumber, state);
+            DeviceSend.instance().sendOutlet(oi, state);
         }
     }
 }

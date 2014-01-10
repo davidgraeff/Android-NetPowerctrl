@@ -86,7 +86,7 @@ public class ScenesListAdapter extends BaseAdapter implements DragDropEnabled, R
 
     public void executeScene(int position) {
         Scene og = (Scene) getItem(position);
-        DeviceSend.sendOutlet(context, DeviceCommand.fromOutletCommandGroup(og), true);
+        DeviceSend.instance().sendOutlets(DeviceCommand.fromOutletCommandGroup(og), true);
     }
 
     public void addScene(Scene data) {

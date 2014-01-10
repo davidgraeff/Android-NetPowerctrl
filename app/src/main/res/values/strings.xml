@@ -189,5 +189,17 @@
     <string name="menu_hidedragdrop">Leave move mode</string>
     <string name="scene_executed">Scene %1$s executed</string>
     <string name="shortcut_enable_feedback">Notification on execution</string>
+    <string name="preference_change_the_title">Restart?</string>
+    <string name="preference_change_the_message">You have to restart the app for a theme change to take effect. Restart?</string>
+    <string name="preference_use_dark_theme">Dark theme</string>
+    <string name="preference_use_dark_theme_summary">Switch between dark and light theme.</string>
+    <string name="error_plugin_failed">Plugin failed: %1$s</string>
+    <string name="plugin_loaded">Plugin loaded %1$s</string>
+    <string name="preference_load_plugins">Allow extensions</string>
+    <string name="preference_load_plugins_summary">Show controls from supported applications in this app.</string>
+    <string name="error_widget_update">Internal error: Widget %1$d</string>
+    <string name="error_widget_device_removed">Device removed!</string>
+    <string name="widget_outlet_not_reachable">%1$s (not reachable)</string>
+    <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
 
 </resources>

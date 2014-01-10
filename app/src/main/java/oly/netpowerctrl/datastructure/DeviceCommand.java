@@ -24,22 +24,7 @@ final public class DeviceCommand {
     public DeviceInfo device;
 
     public DeviceCommand(DeviceInfo di) {
-        this.data = 0;
-        this.device = di;
-        this.port = di.SendPort;
-        try {
-            this.dest = InetAddress.getByName(di.HostName);
-        } catch (UnknownHostException e) {
-            this.dest = null;
-        }
-        this.access = di.UserName + di.Password;
-        for (int i = 0; i < di.Outlets.size(); ++i) {
-            //Log.w("DeviceSwitch", Integer.valueOf(i).toString() + " " + di.DeviceName + " " + Integer.valueOf(di.Outlets.get(i).OutletNumber).toString() + " " + Boolean.valueOf(di.Outlets.get(i).State).toString());
-
-            if (!di.Outlets.get(i).Disabled && di.Outlets.get(i).State)
-                switchOn(di.Outlets.get(i).OutletNumber);
-        }
-
+        updateByDeviceInfo(di);
     }
 
     public boolean getIsOn(int outletNumber) {
@@ -73,7 +58,7 @@ final public class DeviceCommand {
                 deviceCommands.put(c.device_mac, new DeviceCommand(c.outletinfo.device));
             }
 
-            //Log.w("sendOutlet",c.device_mac+" "+ Integer.valueOf(c.outletNumber).toString()+" "+Integer.valueOf(c.state).toString());
+            //Log.w("sendOutlets",c.device_mac+" "+ Integer.valueOf(c.outletNumber).toString()+" "+Integer.valueOf(c.state).toString());
 
             switch (c.state) {
                 case 0:
@@ -89,5 +74,23 @@ final public class DeviceCommand {
 
         }
         return deviceCommands.values();
+    }
+
+    public void updateByDeviceInfo(DeviceInfo di) {
+        this.data = 0;
+        this.device = di;
+        this.port = di.SendPort;
+        try {
+            this.dest = InetAddress.getByName(di.HostName);
+        } catch (UnknownHostException e) {
+            this.dest = null;
+        }
+        this.access = di.UserName + di.Password;
+        for (int i = 0; i < di.Outlets.size(); ++i) {
+            //Log.w("DeviceSwitch", Integer.valueOf(i).toString() + " " + di.DeviceName + " " + Integer.valueOf(di.Outlets.get(i).OutletNumber).toString() + " " + Boolean.valueOf(di.Outlets.get(i).State).toString());
+
+            if (!di.Outlets.get(i).Disabled && di.Outlets.get(i).State)
+                switchOn(di.Outlets.get(i).OutletNumber);
+        }
     }
 }

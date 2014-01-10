@@ -20,7 +20,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -35,11 +34,9 @@ public class DragNDropListView extends ListView implements DragDropEnabled {
     private int mDragPointOffset;        //Used to adjust drag view location
 
     private ImageView mDragView;
-    private GestureDetector mGestureDetector;
     private boolean dragDropEnabled = false;
 
     private DropListener mDropListener;
-    private RemoveListener mRemoveListener;
     private DragListener mDragListener;
 
     public DragNDropListView(Context context, AttributeSet attrs) {
@@ -59,10 +56,6 @@ public class DragNDropListView extends ListView implements DragDropEnabled {
 
     public void setDropListener(DropListener l) {
         mDropListener = l;
-    }
-
-    public void setRemoveListener(RemoveListener l) {
-        mRemoveListener = l;
     }
 
     public void setDragListener(DragListener l) {

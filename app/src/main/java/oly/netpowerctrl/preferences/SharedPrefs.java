@@ -8,6 +8,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceCollection;
@@ -31,22 +32,22 @@ public class SharedPrefs {
     public final static String PREF_standard_send_port = "standard_send_port";
     public final static String PREF_standard_receive_port = "standard_receive_port";
     public final static String PREF_keep_widget_service_running = "keep_widget_service_running";
+    public final static String PREF_use_dark_theme = "use_dark_theme";
 
-    public static int getFirstTab(Context context) {
+    public static String getFirstTab(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
-        int tab = -1;
+        String tab = "";
         try {
-            tab = prefs.getInt(PREF_FIRST_TAB, -1);
+            tab = prefs.getString(PREF_FIRST_TAB, "");
         } catch (ClassCastException ignored) {
-
         }
         return tab;
     }
 
-    public static void setFirstTab(Context context, int navigationPosition) {
+    public static void setFirstTab(Context context, String fragmentClassName) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = prefs.edit();
-        prefEditor.putInt(PREF_FIRST_TAB, navigationPosition);
+        prefEditor.putString(PREF_FIRST_TAB, fragmentClassName);
         prefEditor.commit();
     }
 
@@ -145,6 +146,15 @@ public class SharedPrefs {
         prefs.edit().putBoolean("showHiddenOutlets", showHiddenOutlets).commit();
     }
 
+    public static void savePlugins(Set<String> pluginServiceNameList, Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putStringSet("plugins", pluginServiceNameList).commit();
+    }
+
+    public static Set<String> readPlugins(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getStringSet("plugins", null);
+    }
 
     public static class WidgetOutlet {
         public String deviceMac;
@@ -204,8 +214,18 @@ public class SharedPrefs {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.keep_widget_service_running);
         try {
-            keep_widget_service_running = Boolean.parseBoolean(prefs.getString(PREF_keep_widget_service_running, ""));
+            keep_widget_service_running = prefs.getBoolean(PREF_keep_widget_service_running, false);
         } catch (Exception e) { /*nop*/ }
         return keep_widget_service_running;
     }
+
+    public static boolean isDarkTheme(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.use_dark_theme);
+        try {
+            value = prefs.getBoolean(PREF_use_dark_theme, false);
+        } catch (NumberFormatException e) { /*nop*/ }
+        return value;
+    }
+
 }

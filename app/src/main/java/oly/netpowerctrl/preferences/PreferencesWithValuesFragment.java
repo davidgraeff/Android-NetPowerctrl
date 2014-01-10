@@ -74,9 +74,9 @@ public class PreferencesWithValuesFragment extends PreferenceFragment implements
             // Retrieve values
             Set<String> values = mlistPref.getValues();
             for (String value : values) {
-                // For each value retrieve index
+                // For each value retrieve id
                 int index = mlistPref.findIndexOfValue(value);
-                // Retrieve entry from index
+                // Retrieve entry from id
                 CharSequence mEntry = index >= 0
                         && mlistPref.getEntries() != null ? mlistPref
                         .getEntries()[index] : null;

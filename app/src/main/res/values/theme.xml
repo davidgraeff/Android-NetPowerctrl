@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CustomLightTheme" parent="android:Theme.Holo.Light" />
+    <style name="Theme.CustomLightTheme" parent="android:Theme.Holo.Light">
+        <item name="drawer_item_background">#F3F3F4</item>
+        <item name="preferences_title_light">@color/text_light</item>
+    </style>
 
-    <style name="Theme.Transparent" parent="android:Theme">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowNoTitle">true</item>
+    <style name="Theme.CustomDarkTheme" parent="android:Theme.Holo">
+        <item name="drawer_item_background">#9958585a</item>
+        <item name="preferences_title_light">@android:color/secondary_text_dark</item>
+    </style>
+
+    <style name="Theme.Transparent" parent="android:Theme.Translucent.NoTitleBar">
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
-    <style name="Drawer" />
+    <style name="Drawer" parent="@android:style/Widget.TextView" />
 
-    <style name="Drawer.Category">
+    <style name="Drawer.Category" parent="@android:style/Widget.TextView">
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">true</item>

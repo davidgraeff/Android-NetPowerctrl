@@ -24,6 +24,7 @@ import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.anelservice.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.plugins.PluginController;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
@@ -43,6 +44,13 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     private ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
 
     private List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
+
+    // Plugins
+    public PluginController pluginController;
+
+    public PluginController getPluginController() {
+        return pluginController;
+    }
 
     //! get a list of all send ports of all configured scenes plus the default send port
     public Set<Integer> getAllSendPorts() {

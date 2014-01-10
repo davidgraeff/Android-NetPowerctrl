@@ -18,7 +18,7 @@
             android:id="@+id/hintText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/hint_background"
+            android:background="?drawer_item_background"
             android:textAppearance="@android:style/TextAppearance.Medium"
             android:gravity="left"
             android:padding="5dp"

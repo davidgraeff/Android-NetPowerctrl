@@ -131,8 +131,9 @@ public class DeviceInfo implements Parcelable {
      * @return
      */
     @SuppressWarnings("unused")
-    public boolean equalsFuntional(DeviceInfo other) {
-        return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort;
+    public boolean equalsFunctional(DeviceInfo other) {
+        return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort &&
+                Outlets.size() == other.Outlets.size();
     }
 
     /**

@@ -8,31 +8,25 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
+import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Created by david on 03.01.14.
  */
 public class PluginController {
     private static final String LOGNAME = "Plugins";
-    private static final String SCRIPT = "com.commonsware.SCRIPT";
-    private static final String BROADCAST_ACTION = "com.commonsware.BROADCAST_ACTION";
-    private static final String BROADCAST_PACKAGE = "com.commonsware.BROADCAST_PACKAGE";
-    private static final String PRIVATE_ACTION = "com.commonsware.PRIVATE_BROADCAST_ACTION";
-    private static final String PENDING_RESULT = "com.commonsware.PENDING_RESULT";
-    private static final String PAYLOAD_SERVICENAME = "com.commonsware.PAYLOAD_SERVICENAME";
-    private static final String PAYLOAD_LOCALIZED_NAME = "com.commonsware.PAYLOAD_LOCALIZED_NAME";
-    private static final String PAYLOAD_VALUENAMES = "com.commonsware.PAYLOAD_VALUENAMES";
-    private static final String PAYLOAD_INT_MIN_VALUES = "com.commonsware.PAYLOAD_INT_MIN_VALUES";
-    private static final String PAYLOAD_INT_MAX_VALUES = "com.commonsware.PAYLOAD_INT_MAX_VALUES";
-    private static final String PAYLOAD_INT_CURRENT_VALUES = "com.commonsware.PAYLOAD_INT_CURRENT_VALUES";
-    private static final String PAYLOAD_BOOLVALUES = "com.commonsware.PAYLOAD_BOOLVALUES";
-    private static final String RESULT_CODE = "com.commonsware.RESULT_CODE";
+    private static final String PLUGIN_RESPONSE_ACTION = "oly.netpowerctrl.plugins.PLUGIN_RESPONSE_ACTION";
+    private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.action.QUERY_CONDITION";
+    private static final String PAYLOAD_SERVICENAME = "SERVICENAME";
+    private static final String PAYLOAD_LOCALIZED_NAME = "LOCALIZED_NAME";
+    private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
-    private static final int UPDATE_INT_VALUES = 1338;
-    private static final int UPDATE_BOOL_VALUES = 1339;
 
     private Context context;
     private DrawerAdapter mDrawerAdapter;
@@ -41,32 +35,53 @@ public class PluginController {
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
         @Override
         public void onReceive(Context ctxt, Intent i) {
-            int resultCode = i.getIntExtra(RESULT_CODE, -1);
-            if (resultCode == INITIAL_VALUES)
+            if (i.getIntExtra(RESULT_CODE, -1) == INITIAL_VALUES)
                 initialPluginData(i.getStringExtra(PAYLOAD_SERVICENAME),
-                        i.getStringExtra(PAYLOAD_LOCALIZED_NAME),
-                        i.getStringArrayExtra(PAYLOAD_VALUENAMES),
-                        i.getIntArrayExtra(PAYLOAD_INT_MIN_VALUES),
-                        i.getIntArrayExtra(PAYLOAD_INT_MAX_VALUES),
-                        i.getIntArrayExtra(PAYLOAD_INT_CURRENT_VALUES),
-                        i.getBooleanArrayExtra(PAYLOAD_BOOLVALUES));
+                        i.getStringExtra(PAYLOAD_LOCALIZED_NAME));
             else
                 Log.w(LOGNAME, i.getStringExtra(PAYLOAD_LOCALIZED_NAME) + "failed");
         }
     };
 
     public PluginController(Context context, DrawerAdapter drawerAdapter) {
+        Log.w("PLUGINS", "create");
         this.context = context;
-        context.registerReceiver(onBroadcast, new IntentFilter(PRIVATE_ACTION));
+        context.registerReceiver(onBroadcast, new IntentFilter(PLUGIN_RESPONSE_ACTION));
         mDrawerAdapter = drawerAdapter;
+
+        // Use cache to try to bind to already found plugins
+        Set<String> pluginServiceNameList = SharedPrefs.readPlugins(context);
+        if (pluginServiceNameList != null) {
+            for (String serviceName : pluginServiceNameList) {
+                initialPluginData(serviceName, serviceName);
+            }
+        }
+
+        // Discover plugins
+        Intent i = new Intent(PLUGIN_QUERY_ACTION);
+        i.putExtra(PAYLOAD_SERVICENAME, NetpowerctrlActivity.class.getCanonicalName());
+        context.sendBroadcast(i);
     }
 
     public void destroy() {
-        context.unregisterReceiver(onBroadcast);
-    }
+        Log.w("PLUGINS", "destroy");
 
-    private void removePlugin() {
+        // Unregister receiver
+        try {
+            context.unregisterReceiver(onBroadcast);
+        } catch (IllegalArgumentException ignored) {
+            // We ignore failures of type "Receiver not registered"
+        }
 
+        // Save plugin service names (we use this cache on reload)
+        // Destroy plugins
+        Set<String> pluginServiceNameList = new TreeSet<String>();
+        for (PluginRemote r : plugins) {
+            pluginServiceNameList.add(r.serviceName);
+            r.destroy();
+        }
+        plugins.clear();
+        SharedPrefs.savePlugins(pluginServiceNameList, context);
     }
 
     public PluginRemote getPlugin(int pluginId) {
@@ -74,14 +89,20 @@ public class PluginController {
     }
 
     private void initialPluginData(String serviceName,
-                                   String localized_name,
-                                   String[] value_names,
-                                   int[] int_min_values,
-                                   int[] int_max_values,
-                                   int[] int_current_values,
-                                   boolean[] bool_values) {
-        Log.w(LOGNAME, "RESPONSE: " + serviceName);
-        PluginRemote plugin = new PluginRemote(plugins.size(), serviceName, localized_name);
+                                   String localized_name) {
+        for (PluginRemote existing_plugin : plugins) {
+            if (existing_plugin.serviceName.equals(serviceName)) {
+                existing_plugin.localized_name = localized_name;
+                mDrawerAdapter.updatePluginItem(existing_plugin.pluginId, localized_name);
+                return;
+            }
+        }
+
+        PluginRemote plugin = PluginRemote.createPluginRemote(context, plugins.size(), serviceName, localized_name);
+        if (plugin == null) {
+            return;
+        }
+
         if (plugins.isEmpty()) {
             mDrawerAdapter.addPluginHeader(context.getString(R.string.plugin_drawer_title));
         }
