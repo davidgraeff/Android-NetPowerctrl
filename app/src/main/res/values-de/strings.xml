@@ -184,4 +184,16 @@
     <string name="menu_hidedragdrop">Beende Verschiebemodus</string>
     <string name="scene_executed">Szene %1$s ausgeführt</string>
     <string name="shortcut_enable_feedback">Benachrichtigung bei Ausführung</string>
+    <string name="preference_change_the_title">Neustart benötigt</string>
+    <string name="preference_change_the_message">Du musst die App neu starten, um den Theme zu ändern. Soll neugestartet werden?</string>
+    <string name="preference_use_dark_theme">Dunkles Thema</string>
+    <string name="preference_use_dark_theme_summary">Zwischen hellem und dunklem Thema wechseln.</string>
+    <string name="error_plugin_failed">Plugin Fehler: %1$s</string>
+    <string name="plugin_loaded">Plugin geladen %1$s</string>
+    <string name="preference_load_plugins">Erlaube Erweiterungen</string>
+    <string name="preference_load_plugins_summary">Zeige Kontrollmöglichkeiten unterstützter Anwendungen in dieser App.</string>
+    <string name="error_widget_update">Interner Fehler: Widget %1$d</string>
+    <string name="error_widget_device_removed">Gerät entfernt!</string>
+    <string name="widget_outlet_not_reachable">%1$s (nicht erreichbar)</string>
+    <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
 </resources>

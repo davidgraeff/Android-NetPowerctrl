@@ -37,6 +37,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     private AppWidgetManager appWidgetManager;
     private boolean listener_started = false;
     private boolean keep_service_online;
+    Context context;
 
     public static class DeviceInfoOutletNumber {
         public final DeviceInfo di;
@@ -65,7 +66,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
             NetpowerctrlService service = NetpowerctrlApplication.instance.getService();
             if (service != null)
                 service.unregisterDeviceUpdateObserver(this);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.unregisterOnSharedPreferenceChangeListener(this);
         }
     }
@@ -73,16 +74,17 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     @Override
     public void onCreate() {
         //noinspection ConstantConditions
-        appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
+        context = getApplicationContext();
+        appWidgetManager = AppWidgetManager.getInstance(context);
 
         /**
          * If the service is kept running, we will receive further device updates
          * and register on the listener service for this purpose.
          */
-        keep_service_online = SharedPrefs.getKeepWidgetServiceOn(getApplicationContext());
+        keep_service_online = SharedPrefs.getKeepWidgetServiceOn(context);
         if (keep_service_online) {
             NetpowerctrlApplication.instance.registerServiceReadyObserver(this);
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.registerOnSharedPreferenceChangeListener(this);
         }
         super.onCreate();
@@ -104,7 +106,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         //assert allWidgetIds != null;
 
         // Only update widgets belonging to DeviceWidgetProvider
-        ComponentName thisWidget = new ComponentName(getApplicationContext(),
+        ComponentName thisWidget = new ComponentName(context,
                 DeviceWidgetProvider.class);
         int[] allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
 
@@ -114,10 +116,6 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
             return START_NOT_STICKY;
         }
 
-        boolean noFetch = false;
-        if (intent != null && intent.getExtras() != null)
-            noFetch = intent.getExtras().containsKey("noFetch");
-
         // Keep a list of scenes to fetch state updates
         Collection<DeviceInfo> devices_to_update = new ArrayList<DeviceInfo>();
 
@@ -126,14 +124,14 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
         // For all widget ids, update the corresponding device first
         for (int appWidgetId : allWidgetIds) {
-            SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(getApplicationContext(), appWidgetId);
+            SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(context, appWidgetId);
             DeviceInfo di = null;
             if (outlet != null) {
                 di = NetpowerctrlApplication.instance.findDevice(outlet.deviceMac);
             }
 
             if (outlet == null || di == null) {
-                setWidgetStateUnknown(appWidgetId);
+                setWidgetStateBroken(appWidgetId);
                 continue;
             }
 
@@ -149,24 +147,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
             return START_NOT_STICKY;
         }
 
-        if (noFetch) {
-            for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
-                int appWidgetId = widgetUpdateRequests.keyAt(i);
-                DeviceInfoOutletNumber widget_di = widgetUpdateRequests.get(appWidgetId);
-                widgetUpdateRequests.removeAt(i);
-                OutletInfo oi = widget_di.di.findOutlet(widget_di.outletNumber);
-                if (oi != null)
-                    setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true));
-                else
-                    setWidgetStateUnknown(appWidgetId);
-            }
-
-            finishServiceIfDone();
-        } else {
-            listener_started = true;
-            NetpowerctrlApplication.instance.startListener(false);
-            new DeviceQuery(this, this, devices_to_update, false, false);
-        }
+        listener_started = true;
+        NetpowerctrlApplication.instance.startListener(false);
+        new DeviceQuery(context, this, devices_to_update, false, false);
 
         return START_STICKY;
     }
@@ -179,32 +162,37 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
      * @param context
      */
     public static void updateWidgetWithoutDataFetch(int appWidgetId, Context context) {
-        // Build the intent to call the service
-        Intent intent = new Intent(context.getApplicationContext(), WidgetUpdateService.class);
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{appWidgetId});
-        intent.putExtra("noFetch", true);
+        SharedPrefs.WidgetOutlet widgetData = SharedPrefs.LoadWidget(context, appWidgetId);
+        DeviceInfo di = null;
+        if (widgetData != null) {
+            di = NetpowerctrlApplication.instance.findDevice(widgetData.deviceMac);
+        }
 
-        // Update the widgets via the service
-        context.startService(intent);
+        WidgetUpdateService a = new WidgetUpdateService();
+        a.appWidgetManager = AppWidgetManager.getInstance(context);
+        a.context = context;
+        if (widgetData == null || di == null) {
+            a.setWidgetStateBroken(appWidgetId);
+        } else {
+            OutletInfo oi = di.findOutlet(widgetData.outletNumber);
+            a.setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true), di.reachable);
+        }
     }
 
-    private void setWidgetStateUnknown(int appWidgetId) {
+    private void setWidgetStateBroken(int appWidgetId) {
         @SuppressWarnings("ConstantConditions")
-        RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget);
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
         views.setImageViewResource(R.id.widget_image, R.drawable.widgetunknown);
-        views.setTextViewText(R.id.widget_name, "Broken");
+        views.setTextViewText(R.id.widget_name, getString(R.string.error_widget_device_removed));
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    private void setWidgetState(int appWidgetId, SceneOutlet c) {
+    private void setWidgetState(int appWidgetId, SceneOutlet c, boolean reachable) {
         c.state = 2; // switch outlet
         OutletInfo oi = c.outletinfo;
         Scene og = new Scene();
         og.add(c);
-
-        Context context = getApplicationContext();
-        assert context != null;
 
         // This intent will be executed by a click on the widget
         Intent clickIntent = new Intent(context, ShortcutExecutionActivity.class);
@@ -214,8 +202,14 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
-        views.setImageViewResource(R.id.widget_image, oi.State ? R.drawable.widgeton : R.drawable.widgetoff);
-        views.setTextViewText(R.id.widget_name, oi.getDescription());
+        if (!reachable) {
+            views.setImageViewResource(R.id.widget_image, R.drawable.widgetunknown);
+            views.setTextViewText(R.id.widget_name,
+                    context.getString(R.string.widget_outlet_not_reachable, oi.getDescription()));
+        } else {
+            views.setImageViewResource(R.id.widget_image, oi.State ? R.drawable.widgeton : R.drawable.widgetoff);
+            views.setTextViewText(R.id.widget_name, oi.getDescription());
+        }
         views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -227,8 +221,8 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     }
 
     static public void ForceUpdate(Context ctx, int widgetId) {
-        Intent updateWidget = new Intent();
-        updateWidget.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
+                ctx, DeviceWidgetProvider.class);
         updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{widgetId});
         ctx.sendBroadcast(updateWidget);
     }
@@ -248,26 +242,36 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
     @Override
     public void onDeviceTimeout(DeviceInfo di) {
+        if (di == null)
+            return;
+
         for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
             int appWidgetId = widgetUpdateRequests.keyAt(i);
-            widgetUpdateRequests.removeAt(i);
-            setWidgetStateUnknown(appWidgetId);
+            DeviceInfoOutletNumber widget_di = widgetUpdateRequests.get(appWidgetId);
+            if (widget_di.di.equalsFunctional(di)) {
+                widgetUpdateRequests.removeAt(i);
+                OutletInfo oi = di.findOutlet(widget_di.outletNumber);
+                setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true), di.reachable);
+                finishServiceIfDone();
+                return;
+            }
         }
+
         finishServiceIfDone();
     }
 
     @Override
     public void onDeviceUpdated(DeviceInfo di) {
+        if (di == null)
+            return;
+
         for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
             int appWidgetId = widgetUpdateRequests.keyAt(i);
             DeviceInfoOutletNumber widget_di = widgetUpdateRequests.get(appWidgetId);
-            if (widget_di.di.equalsFuntional(di)) {
+            if (widget_di.di.equalsFunctional(di)) {
                 widgetUpdateRequests.removeAt(i);
                 OutletInfo oi = di.findOutlet(widget_di.outletNumber);
-                if (oi != null)
-                    setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true));
-                else
-                    setWidgetStateUnknown(appWidgetId);
+                setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true), di.reachable);
 
                 finishServiceIfDone();
                 return;
@@ -279,19 +283,22 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
          * and update the widgets here.
          */
         if (widgetUpdateRequests.size() == 0) {
-            ComponentName thisWidget = new ComponentName(getApplicationContext(),
+            ComponentName thisWidget = new ComponentName(context,
                     DeviceWidgetProvider.class);
             //noinspection ConstantConditions
-            appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
+            appWidgetManager = AppWidgetManager.getInstance(context);
             int[] allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
             for (int appWidgetId : allWidgetIds) {
                 DeviceInfoOutletNumber widget_di = allWidgets.get(appWidgetId);
-                if (widget_di.di.equalsFuntional(di)) {
+                if (widget_di == null) {
+//                    ShowToast.FromOtherThread(this,
+//                            getString(R.string.error_widget_update, appWidgetId ));
+                    continue;
+                }
+
+                if (widget_di.di.equalsFunctional(di)) {
                     OutletInfo oi = widget_di.di.findOutlet(widget_di.outletNumber);
-                    if (oi != null)
-                        setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true));
-                    else
-                        setWidgetStateUnknown(appWidgetId);
+                    setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true), di.reachable);
                     break;
                 }
             }
@@ -312,7 +319,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        keep_service_online = sharedPreferences.getBoolean(key, false);
+        if (!SharedPrefs.PREF_keep_widget_service_running.equals(key))
+            return;
+        keep_service_online = SharedPrefs.getKeepWidgetServiceOn(this);
         finishServiceIfDone();
     }
 

@@ -14,7 +14,7 @@
     <TextView
         android:id="@+id/titleText"
         style="?android:textAppearanceSmall"
-        android:textColor="?preferences_title_light"
+        android:textColor="@color/text_light"
         android:textAllCaps="true"
         android:textStyle="bold"
         android:ellipsize="end"
@@ -22,18 +22,19 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="16dp" />
 
-    <TextView
-        android:id="@+id/textOption"
-        style="?android:textAppearanceMedium"
-        android:layout_width="0dp"
+    <oly.netpowerctrl.utils.FlowLayout
+        android:id="@+id/remoteValueLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1" />
+        android:orientation="horizontal">
 
-    <CheckBox
-        android:id="@+id/checkboxOption"
-        style="?android:textAppearanceMedium"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
+        <!--
+        <Button
+            android:id="@+id/remoteValue"
+            style="?android:textAppearanceMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />-->
 
+    </oly.netpowerctrl.utils.FlowLayout>
 </LinearLayout>

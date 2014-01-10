@@ -13,5 +13,7 @@
     <item format="integer" name="default_receive_port" type="integer">1077</item>
 
     <item format="boolean" name="keep_widget_service_running" type="bool">True</item>
+    <item format="boolean" name="use_dark_theme" type="bool">False</item>
+    <item format="boolean" name="load_plugins" type="bool">False</item>
 
 </resources>

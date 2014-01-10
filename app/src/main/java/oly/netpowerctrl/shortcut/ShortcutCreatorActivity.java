@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -21,6 +22,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.listadapter.CreateSceneOutletsAdapter;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
 
@@ -39,6 +41,12 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (SharedPrefs.isDarkTheme(this)) {
+            setTheme(R.style.Theme_CustomDarkTheme);
+        } else {
+            setTheme(R.style.Theme_CustomLightTheme);
+        }
+
         setResult(RESULT_CANCELED, null);
         setContentView(R.layout.create_scene_activity);
 
@@ -46,6 +54,19 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
         enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
 
         shortcutName = (EditText) findViewById(R.id.shortcut_name);
+        enableDisableAcceptButton();
+
+        Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                loadContent();
+            }
+        }, 200);
+    }
+
+    private void loadContent() {
+
         shortcutName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -104,8 +125,6 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
 
         ListView lvOutletSelect = (ListView) findViewById(R.id.lvOutletSelect);
         lvOutletSelect.setAdapter(adpOutlets);
-
-        enableDisableAcceptButton();
 
         findViewById(R.id.btnAcceptShortcut).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -172,7 +191,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
 
     private void enableDisableAcceptButton() {
         //noinspection ConstantConditions
-        findViewById(R.id.btnAcceptShortcut).setEnabled((og.length() != 0) &&
+        findViewById(R.id.btnAcceptShortcut).setEnabled((og != null) && (og.length() != 0) &&
                 shortcutName.getText().length() > 0);
 
     }

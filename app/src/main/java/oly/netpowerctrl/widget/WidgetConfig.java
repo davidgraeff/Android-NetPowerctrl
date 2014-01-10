@@ -21,7 +21,6 @@ public class WidgetConfig extends Activity {
     private Context ctx;
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private List<DeviceInfo> devices;
-    private List<OutletInfo> outlets;
     private String selectedDeviceMac;
     private int[] outletNumbers;
 
@@ -62,7 +61,7 @@ public class WidgetConfig extends Activity {
         public void onClick(DialogInterface dialog, int item) {
 
             // Get outlets of device
-            outlets = devices.get(item).Outlets;
+            List<OutletInfo> outlets = devices.get(item).Outlets;
             selectedDeviceMac = devices.get(item).MacAddress;
 
             CharSequence[] items = new String[outlets.size()];
@@ -86,13 +85,12 @@ public class WidgetConfig extends Activity {
 
             SharedPrefs.SaveWidget(ctx, widgetId, new SharedPrefs.WidgetOutlet(selectedDeviceMac, outletNumbers[item]));
 
-            WidgetUpdateService.ForceUpdate(ctx, widgetId);
-
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
             setResult(RESULT_OK, resultValue);
-
             finish();
+
+            WidgetUpdateService.ForceUpdate(ctx, widgetId);
         }
     };
 

@@ -1,15 +1,12 @@
 package oly.netpowerctrl.main;
 
-import android.app.Fragment;
+import android.app.ListFragment;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.plugins.PluginRemote;
 
-public class PluginFragment extends Fragment {
+public class PluginFragment extends ListFragment {
     private PluginRemote plugin;
 
     public PluginFragment() {
@@ -20,15 +17,14 @@ public class PluginFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             int pluginId = getArguments().getInt("extra");
-            plugin = NetpowerctrlActivity.instance.getPluginController().getPlugin(pluginId);
+            plugin = NetpowerctrlApplication.instance.getPluginController().getPlugin(pluginId);
+            setListAdapter(plugin.valuesAdapter);
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item, container);
-
-        return view;
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getListView().setDivider(null);
     }
 }

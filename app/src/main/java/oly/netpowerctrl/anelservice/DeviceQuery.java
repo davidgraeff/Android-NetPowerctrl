@@ -3,23 +3,13 @@ package oly.netpowerctrl.anelservice;
 import android.content.Context;
 import android.os.Handler;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
-import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -51,7 +41,7 @@ public class DeviceQuery {
 
 
         // Send out broadcast
-        if (!sendQuery(context, device_to_observe.HostName, device_to_observe.SendPort, rangeCheck)) {
+        if (!DeviceSend.instance().sendQuery(context, device_to_observe.HostName, device_to_observe.SendPort, rangeCheck)) {
             // Device not in range, immediately timeout
             timeoutHandler.postDelayed(timeoutRunnable, 0);
         } else
@@ -73,14 +63,14 @@ public class DeviceQuery {
             sendBroadcastQuery(context);
         else
             for (DeviceInfo di : devices_to_observe)
-                sendQuery(context, di.HostName, di.SendPort, rangeCheck);
+                DeviceSend.instance().sendQuery(context, di.HostName, di.SendPort, rangeCheck);
     }
 
     /**
      * Return true if all devices responded and this DeviceQuery object
      * have to be removed.
      *
-     * @param received_data
+     * @param received_data The DeviceInfo object all observes should be notified of.
      */
     public boolean notifyObservers(DeviceInfo received_data) {
         Iterator<DeviceInfo> it = devices_to_observe.iterator();
@@ -103,71 +93,15 @@ public class DeviceQuery {
      * Used to be used only from the DeviceSend class for requesting an update
      * after a command has been send
      *
-     * @param context
-     * @param device_command
+     * @param context        Context
+     * @param device_command A DeviceCommand object containing destination IP, Port and commands
      */
     static void sendQuery(final Context context, DeviceCommand device_command) {
-        sendQuery(context, device_command.dest.getHostAddress(), device_command.port, false);
-    }
-
-    private static boolean sendQuery(final Context context, final String hostname, final int port, boolean rangeCheck) {
-        if (rangeCheck) {
-            try {
-                if (!isIPinNetworkAddressPool(InetAddress.getByName(hostname))) {
-                    ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_not_in_range) + ": " + hostname);
-                    return false;
-                }
-            } catch (final Exception e) {
-                ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_not_in_range) + ": " + hostname);
-                return false;
-            }
-        }
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    String messageStr = "wer da?\r\n";
-                    DatagramSocket s = new DatagramSocket();
-                    s.setBroadcast(true);
-                    InetAddress host = InetAddress.getByName(hostname);
-                    int msg_length = messageStr.length();
-                    byte[] message = messageStr.getBytes();
-                    DatagramPacket p = new DatagramPacket(message, msg_length, host, port);
-                    s.send(p);
-                    s.close();
-                } catch (final Exception e) {
-                    ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_sending_inquiry) + ": " + e.getMessage());
-                }
-            }
-        }).start();
-        return true;
+        DeviceSend.instance().sendQuery(context, device_command.dest.getHostAddress(), device_command.port, false);
     }
 
     private static void sendBroadcastQuery(final Context context) {
         for (int port : NetpowerctrlApplication.instance.getAllSendPorts())
-            sendQuery(context, "255.255.255.255", port, false);
-    }
-
-    static private boolean isIPinNetworkAddressPool(InetAddress ip) throws SocketException {
-        byte[] ipAddressBytes = ip.getAddress();
-        // Iterate all NICs (network interface cards)...
-        for (Enumeration networkInterfaceEnumerator = NetworkInterface.getNetworkInterfaces(); networkInterfaceEnumerator.hasMoreElements(); ) {
-            NetworkInterface networkInterface = (NetworkInterface) networkInterfaceEnumerator.nextElement();
-            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                InetAddress interfaceIPAddress = interfaceAddress.getAddress();
-                byte[] interfaceIPBytes = interfaceIPAddress.getAddress();
-                if (ipAddressBytes.length != interfaceIPBytes.length)
-                    continue; // different ip versions
-
-                byte[] subNetMaskBytes = ByteBuffer.allocate(4).putInt(interfaceAddress.getNetworkPrefixLength()).array();
-                // check each byte of both addresses while applying the subNet mask
-                for (int i = 0; i < interfaceIPBytes.length; ++i) {
-                    if ((ipAddressBytes[i] & subNetMaskBytes[i]) !=
-                            (interfaceIPBytes[i] & subNetMaskBytes[i]))
-                        continue; // byte not identical, the ip is not for this network interface
-                }
-                return true;
-            }
-        }
-        return false;
+            DeviceSend.instance().sendQuery(context, "255.255.255.255", port, false);
     }
 }

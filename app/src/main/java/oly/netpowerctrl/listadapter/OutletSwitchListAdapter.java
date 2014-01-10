@@ -135,7 +135,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         ash.setData(position, new_state);
         ash.removeMessages();
         ash.startDelayedCheck();
-        DeviceSend.sendOutlet(context, oi.device, oi.OutletNumber, new_state);
+        DeviceSend.instance().sendOutlet(oi, new_state);
     }
 
     @Override

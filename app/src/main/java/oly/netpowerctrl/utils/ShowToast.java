@@ -19,4 +19,13 @@ public class ShowToast {
         });
     }
 
+    public static void FromOtherThread(final Context ctx, final int resID) {
+        Handler h = new Handler(ctx.getMainLooper());
+
+        h.post(new Runnable() {
+            public void run() {
+                Toast.makeText(ctx, resID, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
 }

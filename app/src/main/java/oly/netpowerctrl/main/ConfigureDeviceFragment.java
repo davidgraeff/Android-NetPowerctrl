@@ -214,7 +214,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
                 }
             }, 1100);
             DeviceCommand ds = new DeviceCommand(device);
-            DeviceSend.sendAllOutlets(getActivity(), ds, true);
+            DeviceSend.instance().sendOutlets(ds, true);
         } else if (test_state == TestStates.TEST_ACCESS) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(), getActivity().getString(R.string.device_test_ok), Toast.LENGTH_SHORT).show();

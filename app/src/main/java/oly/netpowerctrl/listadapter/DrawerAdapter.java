@@ -60,6 +60,20 @@ public class DrawerAdapter extends BaseAdapter {
         return mCachedFragments.get(name);
     }
 
+    public void updatePluginItem(int pluginId, String name) {
+        for (int i = 0; i < mItems.size(); i++) {
+            if (getItemViewType(i) == 1) {
+                DrawerItem item = (DrawerItem) mItems.get(i);
+                if (item.mExtra == pluginId) {
+                    item.mTitle = name;
+                    notifyDataSetChanged();
+                    return;
+                }
+            }
+
+        }
+    }
+
     public static class Header {
 
         String mTitle;
@@ -97,6 +111,7 @@ public class DrawerAdapter extends BaseAdapter {
     public void addPluginHeader(String title) {
         mItems.add(plugins_position, new Header(title));
         ++plugins_position;
+        notifyDataSetChanged();
     }
 
     public void addItem(String title, String summary, String clazz, boolean dialog) {
@@ -106,6 +121,7 @@ public class DrawerAdapter extends BaseAdapter {
     public void addPluginItem(String title, String summary, int extra) {
         mItems.add(plugins_position, new DrawerItem(title, summary, PluginFragment.class.getName(), false, extra));
         ++plugins_position;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -134,22 +150,22 @@ public class DrawerAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View v, ViewGroup parent) {
         if (getItemViewType(position) == 0) {
-            View v = convertView;
+            Header header = (Header) getItem(position);
+
             if (v == null) {
                 v = inflater.inflate(R.layout.drawer_list_header, parent, false);
             }
 
             assert v != null;
-            ((TextView) v.findViewById(R.id.headertitle)).setText(((Header) getItem(position)).mTitle);
+            ((TextView) v.findViewById(R.id.headerTitle)).setText(header.mTitle);
 
             return v;
 
         } else {
             DrawerItem sample = (DrawerItem) getItem(position);
 
-            View v = convertView;
             if (v == null) {
                 v = inflater.inflate(R.layout.drawer_list_item, parent, false);
             }

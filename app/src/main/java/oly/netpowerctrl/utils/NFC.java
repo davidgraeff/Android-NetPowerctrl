@@ -5,13 +5,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.util.JsonReader;
 import android.util.JsonWriter;
+import android.util.SparseIntArray;
 import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceCollection;
@@ -34,7 +34,7 @@ public class NFC {
     }
 
     public static class NFC_Transfer {
-        public static final int PROTOCOLVERSION = 2;
+        public static final int PROTOCOL_VERSION = 2;
         public SceneCollection scenes = null;
         public DeviceCollection devices = null;
         public String source_device;
@@ -57,19 +57,20 @@ public class NFC {
             } catch (UnsupportedEncodingException ignored) {
                 return null;
             }
-            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-            JsonReader reader = new JsonReader(new InputStreamReader(bais));
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+            JsonReader reader = new JsonReader(new InputStreamReader(byteArrayInputStream));
 
             reader.beginObject();
             while (reader.hasNext()) {
                 String name = reader.nextName();
+                assert name != null;
                 if (name.equals("scenes_collection")) {
                     dc.scenes = SceneCollection.fromJSON(reader);
                 } else if (name.equals("devices_collection")) {
                     dc.devices = DeviceCollection.fromJSON(reader);
                 } else if (name.equals("version")) {
                     dc.version = reader.nextInt();
-                    if (dc.version != PROTOCOLVERSION) {
+                    if (dc.version != PROTOCOL_VERSION) {
                         throw new VersionException(dc.version);
                     }
                 } else if (name.equals("source_device")) {
@@ -84,7 +85,7 @@ public class NFC {
 
         public void toJSON(JsonWriter writer) throws IOException {
             writer.beginObject();
-            writer.name("version").value(PROTOCOLVERSION);
+            writer.name("version").value(PROTOCOL_VERSION);
             writer.name("source_device").value(android.os.Build.MODEL);
             writer.name("scenes_collection");
             scenes.toJSON(writer);
@@ -126,8 +127,8 @@ public class NFC {
             ++i;
         }
 
-        // arraylist to keep the selected items
-        final ArrayList seletedItems = new ArrayList();
+        // ArrayList to keep the selected items
+        final SparseIntArray selectedItems = new SparseIntArray();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(context.getString(R.string.nfc_select_devices_title));
@@ -138,10 +139,10 @@ public class NFC {
                                         boolean isChecked) {
                         if (isChecked) {
                             // If the user checked the item, add it to the selected items
-                            seletedItems.add(indexSelected);
-                        } else if (seletedItems.contains(indexSelected)) {
+                            selectedItems.put(indexSelected, indexSelected);
+                        } else if (selectedItems.get(indexSelected, -1) != -1) {
                             // Else, if the item is already in the array, remove it
-                            seletedItems.remove(Integer.valueOf(indexSelected));
+                            selectedItems.delete(indexSelected);
                         }
                     }
                 })
@@ -152,7 +153,7 @@ public class NFC {
                         int i = 0;
                         boolean devices_added = false;
                         for (DeviceInfo di : dc.devices) {
-                            if (seletedItems.contains(i)) {
+                            if (selectedItems.get(i, -1) != -1) {
                                 NetpowerctrlApplication.instance.addToConfiguredDevices(di, false);
                                 devices_added = true;
                             }
@@ -187,8 +188,8 @@ public class NFC {
             ++i;
         }
 
-        // arraylist to keep the selected items
-        final ArrayList seletedItems = new ArrayList();
+        // ArrayList to keep the selected items
+        final SparseIntArray selectedItems = new SparseIntArray();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(context.getString(R.string.nfc_select_scenes_title));
@@ -199,10 +200,10 @@ public class NFC {
                                         boolean isChecked) {
                         if (isChecked) {
                             // If the user checked the item, add it to the selected items
-                            seletedItems.add(indexSelected);
-                        } else if (seletedItems.contains(indexSelected)) {
+                            selectedItems.put(indexSelected, indexSelected);
+                        } else if (selectedItems.get(indexSelected, -1) != -1) {
                             // Else, if the item is already in the array, remove it
-                            seletedItems.remove(Integer.valueOf(indexSelected));
+                            selectedItems.delete(indexSelected);
                         }
                     }
                 })
@@ -212,7 +213,7 @@ public class NFC {
                     public void onClick(DialogInterface dialog, int id) {
                         int i = 0;
                         for (Scene di : sc.scenes) {
-                            if (seletedItems.contains(i))
+                            if (selectedItems.get(i, -1) != -1)
                                 NetpowerctrlActivity.instance.getScenesAdapter().addScene(di);
                             ++i;
                         }
