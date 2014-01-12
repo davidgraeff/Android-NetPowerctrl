@@ -109,4 +109,13 @@ public class PluginController {
         plugins.add(plugin);
         mDrawerAdapter.addPluginItem(localized_name, "", plugin.pluginId);
     }
+
+    public void recreate() {
+        if (plugins.isEmpty()) {
+            mDrawerAdapter.addPluginHeader(context.getString(R.string.plugin_drawer_title));
+        }
+        for (PluginRemote r : plugins) {
+            mDrawerAdapter.addPluginItem(r.localized_name, "", r.pluginId);
+        }
+    }
 }
