@@ -187,7 +187,10 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             mDiscoverServiceRefCount--;
         }
         if (mDiscoverServiceRefCount == 0) {
-            unbindService(mConnection);
+            try {
+                unbindService(mConnection);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
     }
 

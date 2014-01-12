@@ -173,6 +173,8 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         // Plugins
         if (NetpowerctrlApplication.instance.pluginController == null)
             NetpowerctrlApplication.instance.pluginController = new PluginController(this, mDrawerAdapter);
+        else
+            NetpowerctrlApplication.instance.pluginController.recreate();
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         //noinspection ConstantConditions
