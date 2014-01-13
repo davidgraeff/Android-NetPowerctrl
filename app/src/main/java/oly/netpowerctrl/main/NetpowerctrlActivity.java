@@ -82,6 +82,14 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     private OutletSwitchListAdapter adpOutlets;
     private ScenesListAdapter adpScenes;
 
+    // Plugins
+    public PluginController pluginController;
+    private int drawerLastItemPosition = 0;
+
+    public PluginController getPluginController() {
+        return pluginController;
+    }
+
     BroadcastReceiver wifiChangedListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -100,8 +108,8 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (isFinishing())
-            NetpowerctrlApplication.instance.pluginController.destroy();
+        if (isFinishing() && pluginController != null)
+            pluginController.destroy();
     }
 
     @Override
@@ -171,10 +179,9 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // Plugins
-        if (NetpowerctrlApplication.instance.pluginController == null)
-            NetpowerctrlApplication.instance.pluginController = new PluginController(this, mDrawerAdapter);
-        else
-            NetpowerctrlApplication.instance.pluginController.recreate();
+        if (SharedPrefs.getLoadExtensions(this))
+            pluginController = new PluginController(mDrawerAdapter);
+
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
         //noinspection ConstantConditions
@@ -196,21 +203,17 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             }
 
             public void onDrawerOpened(View drawerView) {
-                getActionBar().setTitle(mDrawerTitle);
+                //getActionBar().setTitle(mDrawerTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         // Restore the last visited screen
-        int pos;
-        if (savedInstanceState == null) {
-            pos = mDrawerAdapter.indexOf(SharedPrefs.getFirstTab(this));
-        } else {
-            pos = mDrawerAdapter.indexOf(savedInstanceState.getString("lastFragment"));
-        }
-        if (pos == -1)
+        int pos = mDrawerAdapter.indexOf(SharedPrefs.getFirstTab(this));
+        if (pos == -1) {
             pos = mDrawerAdapter.indexOf(HelpFragment.class.getName());
+        }
         selectItem(pos);
 
         // NFC
@@ -235,18 +238,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     }
 
     @Override
-    protected void onSaveInstanceState(@SuppressWarnings("NullableProblems") Bundle icicle) {
-        super.onSaveInstanceState(icicle);
-        // Save current tab
-        final int currentPosition = mDrawerList.getCheckedItemPosition();
-        if (mDrawerAdapter.getItemViewType(currentPosition) != 0) {
-            DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(currentPosition);
-            if (!item.mClazz.equals(""))
-                icicle.putString("lastFragment", item.mClazz);
-        }
-    }
-
-    @Override
     public boolean onKeyUp(int keyCode, @SuppressWarnings("NullableProblems") KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU && drawerControllableByMenuKey) {
             if (mDrawerLayout.isDrawerOpen(mDrawerView))
@@ -263,9 +254,10 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
         // Save current tab
         final int currentPosition = mDrawerList.getCheckedItemPosition();
-        if (mDrawerAdapter.getItemViewType(currentPosition) != 0) {
+        if (currentPosition < mDrawerAdapter.getCount() &&
+                mDrawerAdapter.getItemViewType(currentPosition) != 0) {
             DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(currentPosition);
-            if (!item.mClazz.equals(""))
+            if (!item.mClazz.equals("") && !item.mClazz.contains("Dialog"))
                 SharedPrefs.setFirstTab(this, item.mClazz);
         }
 
@@ -357,11 +349,11 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         }
     }
 
-    private void selectItem(int position) {
+    private void selectItem(final int position) {
         if (mDrawerAdapter.getItemViewType(position) == 0)
             return;
         DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(position);
-        if (item.mClazz.equals(""))
+        if (item.mClazz.isEmpty())
             return;
 
         Fragment fragment = mDrawerAdapter.getCachedFragment(item.mClazz);
@@ -382,11 +374,18 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             }
             ft.addToBackStack(null);
             ((DialogFragment) fragment).show(ft, "dialog");
+            mDrawerList.post(new Runnable() {
+                @Override
+                public void run() {
+                    mDrawerList.setItemChecked(drawerLastItemPosition, true);
+                }
+            });
         } else {
             fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
             // update selected item and title, then close the drawer
             mDrawerList.setItemChecked(position, true);
             setTitle(item.mTitle);
+            drawerLastItemPosition = position;
         }
 
         Handler mHandler = new Handler();

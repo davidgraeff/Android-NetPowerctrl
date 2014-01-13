@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.listadapter.DrawerAdapter;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
@@ -43,29 +43,15 @@ public class PluginController {
         }
     };
 
-    public PluginController(Context context, DrawerAdapter drawerAdapter) {
-        Log.w("PLUGINS", "create");
-        this.context = context;
+    public PluginController(DrawerAdapter drawerAdapter) {
+        this.context = NetpowerctrlApplication.instance;
         context.registerReceiver(onBroadcast, new IntentFilter(PLUGIN_RESPONSE_ACTION));
         mDrawerAdapter = drawerAdapter;
 
-        // Use cache to try to bind to already found plugins
-        Set<String> pluginServiceNameList = SharedPrefs.readPlugins(context);
-        if (pluginServiceNameList != null) {
-            for (String serviceName : pluginServiceNameList) {
-                initialPluginData(serviceName, serviceName);
-            }
-        }
-
-        // Discover plugins
-        Intent i = new Intent(PLUGIN_QUERY_ACTION);
-        i.putExtra(PAYLOAD_SERVICENAME, NetpowerctrlActivity.class.getCanonicalName());
-        context.sendBroadcast(i);
+        recreate();
     }
 
     public void destroy() {
-        Log.w("PLUGINS", "destroy");
-
         // Unregister receiver
         try {
             context.unregisterReceiver(onBroadcast);
@@ -90,32 +76,48 @@ public class PluginController {
 
     private void initialPluginData(String serviceName,
                                    String localized_name) {
+
         for (PluginRemote existing_plugin : plugins) {
             if (existing_plugin.serviceName.equals(serviceName)) {
                 existing_plugin.localized_name = localized_name;
-                mDrawerAdapter.updatePluginItem(existing_plugin.pluginId, localized_name);
+                mDrawerAdapter.updatePluginItem(existing_plugin.localized_name, "", existing_plugin.pluginId);
                 return;
             }
         }
 
         PluginRemote plugin = PluginRemote.createPluginRemote(context, plugins.size(), serviceName, localized_name);
+
         if (plugin == null) {
             return;
         }
 
-        if (plugins.isEmpty()) {
-            mDrawerAdapter.addPluginHeader(context.getString(R.string.plugin_drawer_title));
-        }
         plugins.add(plugin);
-        mDrawerAdapter.addPluginItem(localized_name, "", plugin.pluginId);
+        mDrawerAdapter.updatePluginItem(plugin.localized_name, "", plugin.pluginId);
     }
 
     public void recreate() {
+        // Use cache to try to bind to already found plugins
         if (plugins.isEmpty()) {
-            mDrawerAdapter.addPluginHeader(context.getString(R.string.plugin_drawer_title));
+            Set<String> pluginServiceNameList = SharedPrefs.readPlugins(context);
+            if (pluginServiceNameList != null) {
+                for (String serviceName : pluginServiceNameList) {
+                    initialPluginData(serviceName, serviceName);
+                }
+            }
+        } else {
+            for (PluginRemote r : plugins) {
+                mDrawerAdapter.updatePluginItem(r.localized_name, "", r.pluginId);
+            }
         }
-        for (PluginRemote r : plugins) {
-            mDrawerAdapter.addPluginItem(r.localized_name, "", r.pluginId);
-        }
+
+        // Discover plugins
+        Intent i = new Intent(PLUGIN_QUERY_ACTION);
+        i.putExtra(PAYLOAD_SERVICENAME, NetpowerctrlActivity.class.getCanonicalName());
+        context.sendBroadcast(i);
+    }
+
+    public void remove(PluginRemote plugin) {
+        plugins.remove(plugin);
+        mDrawerAdapter.removePluginItem(plugin.pluginId);
     }
 }
