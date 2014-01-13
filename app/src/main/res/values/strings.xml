@@ -12,7 +12,8 @@
     <string name="device_save">Save</string>
     <string name="error_reading_configured_devices">Error reading configured devices</string>
     <string name="error_saving_configured_devices">Error saving configured devices</string>
-    <string name="error_sending_inquiry">Error sending inquiry packet</string>
+    <string name="error_sending_inquiry">Error sending inquiry packet to %1$s</string>
+    <string name="error_sending_broadcast_inquiry">Error sending broadcast inquiry packet on port %d</string>
     <string name="error_unknown_device">Internal program error: device unknown!</string>
     <string name="error_packet_received">Device reports an error</string>
     <string name="error_nopass">Invalid username / password combination</string>
@@ -183,7 +184,7 @@
     <string name="empty_no_configured_devices">No configured devices found. Configure one first.</string>
     <string name="empty_no_new_devices">No new devices found. You may have configured all devices already or you have setup wrong ports in the preferences.</string>
     <string name="devices_refreshed">Finished looking for devices</string>
-    <string name="error_not_in_range">Device not in range</string>
+    <string name="error_not_in_range">Destination network %1$s not in range</string>
     <string name="menu_hidedevicename">Hide device names</string>
     <string name="menu_showdragdrop">Enter move mode</string>
     <string name="menu_hidedragdrop">Leave move mode</string>
@@ -201,5 +202,6 @@
     <string name="error_widget_device_removed">Device removed!</string>
     <string name="widget_outlet_not_reachable">%1$s (not reachable)</string>
     <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
+    <string name="devices_no_new_on_network">Hint: This network does not allow new-device recognition</string>
 
 </resources>

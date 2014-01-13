@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 
@@ -39,9 +38,7 @@ public class DeviceQuery {
         // Register on main application object to receive device updates
         NetpowerctrlApplication.instance.addUpdateDeviceState(this);
 
-
-        // Send out broadcast
-        if (!DeviceSend.instance().sendQuery(context, device_to_observe.HostName, device_to_observe.SendPort, rangeCheck)) {
+        if (!DeviceSend.instance().sendQuery(device_to_observe.HostName, device_to_observe.SendPort, rangeCheck)) {
             // Device not in range, immediately timeout
             timeoutHandler.postDelayed(timeoutRunnable, 0);
         } else
@@ -60,10 +57,10 @@ public class DeviceQuery {
 
         // Send out broadcast
         if (queryForNewDevices)
-            sendBroadcastQuery(context);
+            DeviceSend.instance().sendBroadcastQuery();
         else
             for (DeviceInfo di : devices_to_observe)
-                DeviceSend.instance().sendQuery(context, di.HostName, di.SendPort, rangeCheck);
+                DeviceSend.instance().sendQuery(di.HostName, di.SendPort, rangeCheck);
     }
 
     /**
@@ -87,21 +84,5 @@ public class DeviceQuery {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Used to be used only from the DeviceSend class for requesting an update
-     * after a command has been send
-     *
-     * @param context        Context
-     * @param device_command A DeviceCommand object containing destination IP, Port and commands
-     */
-    static void sendQuery(final Context context, DeviceCommand device_command) {
-        DeviceSend.instance().sendQuery(context, device_command.dest.getHostAddress(), device_command.port, false);
-    }
-
-    private static void sendBroadcastQuery(final Context context) {
-        for (int port : NetpowerctrlApplication.instance.getAllSendPorts())
-            DeviceSend.instance().sendQuery(context, "255.255.255.255", port, false);
     }
 }

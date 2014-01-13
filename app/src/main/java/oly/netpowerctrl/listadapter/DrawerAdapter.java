@@ -26,6 +26,33 @@ public class DrawerAdapter extends BaseAdapter {
     private LayoutInflater inflater;
     private Map<String, Fragment> mCachedFragments = new TreeMap<String, Fragment>();
     private int plugins_position = 0;
+    private boolean mHasPlugins = false;
+
+    public static class DrawerItem {
+
+        public String mTitle;
+        public String mSummary;
+        public String mClazz;
+        public boolean mDialog;
+        public int mExtra;
+
+        public DrawerItem(String title, String summary, String clazz, boolean dialog, int extra) {
+            mTitle = title;
+            mSummary = summary;
+            mClazz = clazz;
+            mDialog = dialog;
+            mExtra = extra;
+        }
+    }
+
+    public static class Header {
+
+        String mTitle;
+
+        public Header(String title) {
+            mTitle = title;
+        }
+    }
 
     public void add(String[] mFragmentNames, String[] mFragmentDesc, String[] mFragmentClasses) {
         for (int i = 0; i < mFragmentNames.length; ++i) {
@@ -60,43 +87,49 @@ public class DrawerAdapter extends BaseAdapter {
         return mCachedFragments.get(name);
     }
 
-    public void updatePluginItem(int pluginId, String name) {
+    public void updatePluginItem(String title, String summary, int pluginId) {
+        if (!hasPlugins())
+            addPluginHeader(NetpowerctrlActivity.instance.getString(R.string.plugin_drawer_title));
+
         for (int i = 0; i < mItems.size(); i++) {
             if (getItemViewType(i) == 1) {
                 DrawerItem item = (DrawerItem) mItems.get(i);
                 if (item.mExtra == pluginId) {
-                    item.mTitle = name;
+                    item.mTitle = title;
+                    item.mSummary = summary;
+                    notifyDataSetChanged();
+                    return;
+                }
+            }
+        }
+
+        mItems.add(plugins_position, new DrawerItem(title, summary, PluginFragment.class.getName(), false, pluginId));
+        ++plugins_position;
+        notifyDataSetChanged();
+    }
+
+    public boolean hasPlugins() {
+        return mHasPlugins;
+    }
+
+    public void removePluginItem(int pluginId) {
+        for (int i = 0; i < mItems.size(); i++) {
+            if (getItemViewType(i) == 1) {
+                DrawerItem item = (DrawerItem) mItems.get(i);
+                if (item.mExtra == pluginId) {
+                    mItems.remove(i);
+                    --i; // go one item back
+                    // If preceding item is the "plugin" header, remove it, too.
+                    if (getItemViewType(i) == 0) {
+                        mItems.remove(i);
+                        mHasPlugins = false;
+                        plugins_position = i;
+                    }
                     notifyDataSetChanged();
                     return;
                 }
             }
 
-        }
-    }
-
-    public static class Header {
-
-        String mTitle;
-
-        public Header(String title) {
-            mTitle = title;
-        }
-    }
-
-    public static class DrawerItem {
-
-        public String mTitle;
-        public String mSummary;
-        public String mClazz;
-        public boolean mDialog;
-        public int mExtra;
-
-        public DrawerItem(String title, String summary, String clazz, boolean dialog, int extra) {
-            mTitle = title;
-            mSummary = summary;
-            mClazz = clazz;
-            mDialog = dialog;
-            mExtra = extra;
         }
     }
 
@@ -111,17 +144,12 @@ public class DrawerAdapter extends BaseAdapter {
     public void addPluginHeader(String title) {
         mItems.add(plugins_position, new Header(title));
         ++plugins_position;
+        mHasPlugins = true;
         notifyDataSetChanged();
     }
 
     public void addItem(String title, String summary, String clazz, boolean dialog) {
         mItems.add(new DrawerItem(title, summary, clazz, dialog, -1));
-    }
-
-    public void addPluginItem(String title, String summary, int extra) {
-        mItems.add(plugins_position, new DrawerItem(title, summary, PluginFragment.class.getName(), false, extra));
-        ++plugins_position;
-        notifyDataSetChanged();
     }
 
     @Override

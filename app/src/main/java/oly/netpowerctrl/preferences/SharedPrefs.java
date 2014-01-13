@@ -33,6 +33,7 @@ public class SharedPrefs {
     public final static String PREF_standard_receive_port = "standard_receive_port";
     public final static String PREF_keep_widget_service_running = "keep_widget_service_running";
     public final static String PREF_use_dark_theme = "use_dark_theme";
+    public final static String PREF_load_plugins = "load_plugins";
 
     public static String getFirstTab(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
@@ -154,6 +155,15 @@ public class SharedPrefs {
     public static Set<String> readPlugins(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getStringSet("plugins", null);
+    }
+
+    public static boolean getLoadExtensions(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.load_plugins);
+        try {
+            keep_widget_service_running = prefs.getBoolean(PREF_load_plugins, false);
+        } catch (Exception e) { /*nop*/ }
+        return keep_widget_service_running;
     }
 
     public static class WidgetOutlet {

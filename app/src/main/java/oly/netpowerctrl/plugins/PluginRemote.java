@@ -7,9 +7,11 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.listadapter.PluginValuesAdapter;
+import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -31,14 +33,19 @@ public class PluginRemote implements PluginValuesAdapter.OnValueChanged {
                                        IBinder binder) {
             service = INetPwrCtrlPlugin.Stub.asInterface(binder);
             try {
-                service.requestValues(callback);
+                service.init(callback);
             } catch (android.os.RemoteException e) {
-                ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+                ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            } catch (Exception e) {
+                ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
+                Log.w("PluginRemote,onServiceConnected", e.getMessage() == null ? "" : e.getMessage());
+                e.printStackTrace();
             }
         }
 
         public void onServiceDisconnected(ComponentName className) {
             service = null;
+            NetpowerctrlActivity.instance.getPluginController().remove(PluginRemote.this);
         }
     };
 
@@ -69,31 +76,42 @@ public class PluginRemote implements PluginValuesAdapter.OnValueChanged {
     @Override
     public void onIntValueChanged(int id, int value) {
         try {
-            service.updateIntValue(id, value, callback);
+            service.updateIntValue(id, value);
         } catch (android.os.RemoteException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         }
     }
 
     @Override
     public void onBooleanValueChanged(int id, boolean value) {
         try {
-            service.updateBooleanValue(id, value, callback);
+            service.updateBooleanValue(id, value);
         } catch (android.os.RemoteException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         }
     }
 
     @Override
     public void onAction(int id) {
         try {
-            service.executeAction(id, callback);
+            if (service != null)
+                service.executeAction(id);
         } catch (android.os.RemoteException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         }
     }
 
     private final INetPwrCtrlPluginResult.Stub callback = new INetPwrCtrlPluginResult.Stub() {
+        @Override
+        public void ready() {
+            try {
+                if (service != null)
+                    service.requestValues();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
         @Override
         public void intValue(final int id, final String name, final int min, final int max, final int value) throws RemoteException {
             valuesAdapter.addRemoteIntValue(id, name, min, max, value);
@@ -124,5 +142,4 @@ public class PluginRemote implements PluginValuesAdapter.OnValueChanged {
             });
         }
     };
-
 }

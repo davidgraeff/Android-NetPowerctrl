@@ -12,7 +12,8 @@
     <string name="device_save">Speichern</string>
     <string name="error_reading_configured_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
     <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
-    <string name="error_sending_inquiry">Fehler beim Senden des Erkennungs-Pakets</string>
+    <string name="error_sending_inquiry">Anfrage an Gerät %1$s konnte nicht gesendet werden</string>
+    <string name="error_sending_broadcast_inquiry">Anfrage an Netzwerk auf Port %d fehlgeschlagen</string>
     <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
     <string name="error_packet_received">Fehler vom Gerät gemeldet</string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
@@ -179,7 +180,7 @@
     <string name="empty_no_configured_devices">Keine eingerichteten Geräte gefunden.</string>
     <string name="empty_no_new_devices">Keine neuen Geräte gefunden. Entweder sind bereits alle eingerichtet oder du hast falsche Ports in den Einstellungen ausgewählt.</string>
     <string name="devices_refreshed">Suche nach neuen Geräten beendet</string>
-    <string name="error_not_in_range">Gerät nicht in Reichweite</string>
+    <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
     <string name="menu_showdragdrop">Starte Verschiebemodus</string>
     <string name="menu_hidedragdrop">Beende Verschiebemodus</string>
     <string name="scene_executed">Szene %1$s ausgeführt</string>
@@ -196,4 +197,5 @@
     <string name="error_widget_device_removed">Gerät entfernt!</string>
     <string name="widget_outlet_not_reachable">%1$s (nicht erreichbar)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
+    <string name="devices_no_new_on_network">Hinweis: Dieses Netwerk erlaubt keine Geräte Erkennung</string>
 </resources>

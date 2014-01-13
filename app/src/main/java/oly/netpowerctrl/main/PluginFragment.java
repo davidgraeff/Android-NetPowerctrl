@@ -17,7 +17,7 @@ public class PluginFragment extends ListFragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             int pluginId = getArguments().getInt("extra");
-            plugin = NetpowerctrlApplication.instance.getPluginController().getPlugin(pluginId);
+            plugin = NetpowerctrlActivity.instance.getPluginController().getPlugin(pluginId);
             setListAdapter(plugin.valuesAdapter);
         }
     }
