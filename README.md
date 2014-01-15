@@ -34,7 +34,8 @@ You may create shortcuts for single outlets to toggle the state or switch it on/
 This way you can for instance switch on lights if your mobile gets in range of your wifi network.
 
 ### Building
-To compile, you need the [Android SDK](http://developer.android.com/sdk).
+To compile, you need the [Android SDK](http://developer.android.com/sdk) and [Android Studio](http://developer.android.com/sdk/installing/studio.html). This project is not for
+the eclipse based SDK!
 
 ### Authors
 * david.graeff(at)web_de
