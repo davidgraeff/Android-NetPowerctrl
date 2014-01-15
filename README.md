@@ -6,22 +6,21 @@ You can find a ready to install apk at [Github Releases](https://github.com/davi
 and on [Google Play](https://play.google.com/store/apps/details?id=oly.netpowerctrl).
 For bugs and feature requests please use [Github Issues](https://github.com/davidgraeff/Android-NetPowerctrl/issues).
 
-This is an (extended) github mirror of http://sourceforge.net/projects/netpowerctrl/.
-
 ## Features
 * Devices are detected automatically on the network.
 * Username/password and individual ports can be configured for every device.
-* Create a homescreen widget for a particular (previously configured) device.
-* Overview of all outlets for all configured devices. ²
-* Create switch-groups to switch multiple outlets at once. ²
-* Use Shortcuts for toggling, switching on/off individual outlets. ²
-
-²: Features, you can find on this repository only
+* Create a homescreen widget for a particular outlet with life visualisation of the current state.
+* Use your own icons for on/off/unreachable widget states.
+* Dark and light app theme.
+* Overview of all outlets for all configured devices. Reorder and hide outlets.
+* Tablets supported.
+* Create switch-groups (scenes) to switch multiple outlets at once.
+* Use Shortcuts for toggling, switching on/off individual outlets.
 
 <table><tr valign="top"><td>
-<img src="doc/devices.png" />
+<img width="200px" src="doc/devices.png" />
 </td><td>
-<img src="doc/outlets.png" />
+<img width="200px" src="doc/outlets.png" />
 </td></tr></table>
 
 ### Automatic device detection
@@ -38,8 +37,8 @@ This way you can for instance switch on lights if your mobile gets in range of y
 To compile, you need the [Android SDK](http://developer.android.com/sdk).
 
 ### Authors
-* oly(at)nittka_com
-* david.graeff(at)web_de (github mirror maintainer)
+* david.graeff(at)web_de
+* Based on http://sourceforge.net/projects/netpowerctrl/ (oly(at)nittka_com)
 
 ### License
 GPLv2
