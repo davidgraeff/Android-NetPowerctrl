@@ -49,7 +49,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             return;
 
         test_state = TestStates.TEST_REACHABLE;
-        DeviceQuery dc = new DeviceQuery(getActivity(), this, device, true);
+        new DeviceQuery(this, device);
     }
 
     private void saveDevice() {

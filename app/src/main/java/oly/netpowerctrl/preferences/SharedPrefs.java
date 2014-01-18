@@ -34,6 +34,8 @@ public class SharedPrefs {
     public final static String PREF_keep_widget_service_running = "keep_widget_service_running";
     public final static String PREF_use_dark_theme = "use_dark_theme";
     public final static String PREF_load_plugins = "load_plugins";
+    public final static String PREF_widgets = "pref_widgets";
+    public final static String PREF_widgets_list = "pref_widgets_list";
 
     public static String getFirstTab(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);

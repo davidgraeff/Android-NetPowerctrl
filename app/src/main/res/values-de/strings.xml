@@ -159,8 +159,8 @@
     <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
-    <string name="preference_keep_widget_service_running">Halte Widgets immer aktuell</string>
-    <string name="preference_keep_widget_service_running_summary">Um den Zustand der Widgets aktuell zu halten wird ein Hintergrunddienst benötigt. Das wird die Batterielaufzeit beeinträchtigen.</string>
+    <string name="preference_keep_widget_service_running">Aktuell halten</string>
+    <string name="preference_keep_widget_service_running_summary">Für diesen Zweck wird ein Hintergrunddienst benötigt. Die Batterielaufzeit kann beeinträchtigt werden.</string>
     <string name="scene_replace">(Aktualisieren)</string>
     <string name="menu_sortAlphabetically">Alphabetisch anordnen</string>
     <string name="scene_backup_nobackups">Keine Sicherungen gefunden</string>
@@ -179,7 +179,7 @@
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden. Richte zuerst ein Gerät ein.</string>
     <string name="empty_no_configured_devices">Keine eingerichteten Geräte gefunden.</string>
     <string name="empty_no_new_devices">Keine neuen Geräte gefunden. Entweder sind bereits alle eingerichtet oder du hast falsche Ports in den Einstellungen ausgewählt.</string>
-    <string name="devices_refreshed">Suche nach neuen Geräten beendet</string>
+    <string name="devices_refreshed">Es wurden %1$d Geräte im Netzwerk gefunden</string>
     <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
     <string name="menu_showdragdrop">Starte Verschiebemodus</string>
     <string name="menu_hidedragdrop">Beende Verschiebemodus</string>
@@ -198,4 +198,9 @@
     <string name="widget_outlet_not_reachable">%1$s (nicht erreichbar)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
     <string name="devices_no_new_on_network">Hinweis: Dieses Netwerk erlaubt keine Geräte Erkennung</string>
+    <string name="pref_widgets">Widgets</string>
+    <string name="widget_image_on">Widget Aussehen: An</string>
+    <string name="widget_image_off">Widget Aussehen: Aus</string>
+    <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
+    <string name="crash_toast_text">Ooooops! Ich bin leider abgestürzt :( Aber ein Absturzbericht wird automatisch angefertigt und abgesendet.</string>
 </resources>

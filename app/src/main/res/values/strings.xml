@@ -164,7 +164,7 @@
     <string name="error_device_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
     <string name="device_test_ok">Test OK</string>
-    <string name="preference_keep_widget_service_running">Keep widget update service running?</string>
+    <string name="preference_keep_widget_service_running">Keep update service running?</string>
     <string name="preference_keep_widget_service_running_summary">To guarantee accurate widget states a background service needs to run. This will reduce battery time.</string>
     <string name="scene_replace">(Update)</string>
     <string name="menu_sortAlphabetically">Sort alphabetically</string>
@@ -183,7 +183,7 @@
     <string name="empty_no_outlets">No outlets to display. Configure devices first or get in range of configured devices.</string>
     <string name="empty_no_configured_devices">No configured devices found. Configure one first.</string>
     <string name="empty_no_new_devices">No new devices found. You may have configured all devices already or you have setup wrong ports in the preferences.</string>
-    <string name="devices_refreshed">Finished looking for devices</string>
+    <string name="devices_refreshed">Found %1$d devices on this network</string>
     <string name="error_not_in_range">Destination network %1$s not in range</string>
     <string name="menu_hidedevicename">Hide device names</string>
     <string name="menu_showdragdrop">Enter move mode</string>
@@ -203,5 +203,10 @@
     <string name="widget_outlet_not_reachable">%1$s (not reachable)</string>
     <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
     <string name="devices_no_new_on_network">Hint: This network does not allow new-device recognition</string>
+    <string name="pref_widgets">Widgets</string>
+    <string name="widget_image_on">Widget image: On state</string>
+    <string name="widget_image_off">Widget image: Off state</string>
+    <string name="widget_image_not_reachable">Widget image: Not available</string>
+    <string name="crash_toast_text">Ooooops ! I crashed, but a report has been sent to my developer to help fix the issue!</string>
 
 </resources>

@@ -21,12 +21,8 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -89,21 +85,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     public PluginController getPluginController() {
         return pluginController;
     }
-
-    BroadcastReceiver wifiChangedListener = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            //WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (NetpowerctrlApplication.instance != null)
-                        NetpowerctrlApplication.instance.detectNewDevicesAndReachability(true);
-                }
-            }, 1500);
-        }
-    };
 
     @Override
     protected void onDestroy() {
@@ -262,8 +243,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         }
 
         // Stop listener
-        NetpowerctrlApplication.instance.stopListener();
-        unregisterReceiver(wifiChangedListener);
+        NetpowerctrlApplication.instance.stopUseListener();
     }
 
     @Override
@@ -311,22 +291,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             NFC.parseNFC(this, new String(msg.getRecords()[0].getPayload()));
         }
 
-        // Listen for wifi changes
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("android.net.wifi.STATE_CHANGE");
-        filter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
-        registerReceiver(wifiChangedListener, filter);
-
-        // Start listener and request new device states after around 800ms
-        // Its better to request device state after the gui has established itself
-        // even on slower devices before starting the listener service.
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                NetpowerctrlApplication.instance.startListener(true);
-            }
-        }, 800);
+        NetpowerctrlApplication.instance.useListener();
     }
 
     @Override
@@ -411,12 +376,12 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawerToggle.syncState();
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggle
-        mDrawerToggle.onConfigurationChanged(newConfig);
-    }
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//        // Pass any configuration change to the drawer toggle
+//        mDrawerToggle.onConfigurationChanged(newConfig);
+//    }
 
     public DeviceListAdapter getConfiguredDevicesAdapter() {
         return adpConfiguredDevices;

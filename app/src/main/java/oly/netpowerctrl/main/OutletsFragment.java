@@ -19,6 +19,8 @@ import android.widget.Toast;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
+import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.dragdrop.DragDropEnabled;
@@ -91,9 +93,26 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.detectNewDevicesAndReachability(false);
-                //noinspection ConstantConditions
-                Toast.makeText(getActivity(), R.string.devices_refreshed, Toast.LENGTH_SHORT).show();
+                new DeviceQuery(new DeviceUpdateStateOrTimeout() {
+                    private int detected_devices = 0;
+
+                    @Override
+                    public void onDeviceTimeout(DeviceInfo di) {
+                    }
+
+                    @Override
+                    public void onDeviceUpdated(DeviceInfo di) {
+                        ++detected_devices;
+                    }
+
+                    @Override
+                    public void onDeviceQueryFinished(int timeout_devices) {
+                        //noinspection ConstantConditions
+                        Toast.makeText(getActivity(),
+                                getActivity().getString(R.string.devices_refreshed, detected_devices),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
                 return true;
             }
             case R.id.menu_showhidden: {

@@ -14,7 +14,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -45,11 +44,10 @@ public class DeviceSend {
     /**
      * Call this to stop the send thread.
      */
-    public void interrupt() {
-        if (sendThread.isAlive())
-            q.add(new KillJob());
-    }
-
+//    public void interrupt() {
+//        if (sendThread.isAlive())
+//            q.add(new KillJob());
+//    }
     public void addSendJob(String hostname, int port, byte[] message, boolean broadcast, int errorID) throws UnknownHostException {
         if (!sendThread.isAlive())
             sendThread.start();
@@ -192,7 +190,7 @@ public class DeviceSend {
         return data;
     }
 
-    void sendBroadcastQuery() {
+    boolean sendBroadcastQuery() {
         Set<Integer> ports = NetpowerctrlApplication.instance.getAllSendPorts();
         boolean foundBroadcastAddresses = false;
 
@@ -206,10 +204,7 @@ public class DeviceSend {
                 if (iface == null) continue;
 
                 if (!iface.isLoopback() && iface.isUp()) {
-
-                    Iterator it = iface.getInterfaceAddresses().iterator();
-                    while (it.hasNext()) {
-                        InterfaceAddress address = (InterfaceAddress) it.next();
+                    for (InterfaceAddress address : iface.getInterfaceAddresses()) {
                         //System.out.println("Found address: " + address);
                         if (address == null) continue;
                         InetAddress broadcast = address.getBroadcast();
@@ -234,29 +229,18 @@ public class DeviceSend {
             // Query all existing devices directly
             ArrayList<DeviceInfo> devices = NetpowerctrlApplication.instance.configuredDevices;
             for (DeviceInfo di : devices) {
-                sendQuery(di.HostName, di.SendPort, false);
+                sendQuery(di.HostName, di.SendPort);
             }
         }
+        return foundBroadcastAddresses;
     }
 
-    boolean sendQuery(final String hostname, final int port, boolean rangeCheck) {
-        if (rangeCheck) {
-//            try {
-//                if (!isIPinNetworkAddressPool(InetAddress.getByName(hostname))) {
-//                    ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_not_in_range) + ": " + hostname);
-//                    return false;
-//                }
-//            } catch (final SocketException e) {
-//                ShowToast.FromOtherThread(context, context.getResources().getString(R.string.error_not_in_range) + ": " + hostname+" "+e.getMessage());
-//                return false;
-//            }
-        }
+    void sendQuery(final String hostname, final int port) {
         try {
             addSendJob(hostname, port, "wer da?\r\n".getBytes(), true, INQUERY_REQUEST);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        return true;
     }
 
     public void sendOutlet(final OutletInfo oi, boolean new_state) {

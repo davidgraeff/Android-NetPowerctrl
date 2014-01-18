@@ -25,26 +25,33 @@
     </shared>
   </component>
   <component name="AndroidLogFilters">
-    <option name="TOOL_WINDOW_LOG_LEVEL" value="INFO" />
+    <option name="TOOL_WINDOW_LOG_LEVEL" value="WARN" />
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="oly.netpowerctrl" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="30621369-1261-4dd8-85ba-7e435b5a013d" name="Default" comment="Version 1.9c&#10;* Fix crashes caused by PluginController&#10;* Only load PluginController if enabled&#10;* PluginController works reliable now&#10;* Support unloaded/vanished plugins&#10;* Do not restore Activity with Feedback Dialog&#10;* Fix problem with InetAddress.getByName in gui thread">
+    <list default="true" id="30621369-1261-4dd8-85ba-7e435b5a013d" name="Default" comment="Version 1.9c&#10;* Fix crashes caused by PluginController&#10;* Only load PluginController if enabled&#10;* PluginController works reliable now&#10;* Support unloaded/vanished plugins&#10;* Do not restore Activity with Feedback Dialog&#10;* Fix problem with InetAddress.getByName in gui thread&#10;* Send broadcast packets to all network interfaces&#10;* Show better error messages if network is not reachable&#10;* Query existing devices only, if network does not support broadcasts (2G, 3G)">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/support_v4_19_0_0.xml" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfigureDeviceFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfigureDeviceFragment.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceQuery.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceQuery.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceSend.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceSend.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/aidl/oly/netpowerctrl/plugins/INetPwrCtrlPlugin.aidl" afterPath="$PROJECT_DIR$/app/src/main/aidl/oly/netpowerctrl/plugins/INetPwrCtrlPlugin.aidl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/aidl/oly/netpowerctrl/plugins/INetPwrCtrlPluginResult.aidl" afterPath="$PROJECT_DIR$/app/src/main/aidl/oly/netpowerctrl/plugins/INetPwrCtrlPluginResult.aidl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlApplication.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlApplication.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginController.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/PluginFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/PluginFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginRemote.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginRemote.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/NetpowerctrlService.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/NetpowerctrlService.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/plugin_action.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/plugin_action.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/app.iml" afterPath="$PROJECT_DIR$/app/app.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build.gradle" afterPath="$PROJECT_DIR$/app/build.gradle" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/xml/preferences.xml" afterPath="$PROJECT_DIR$/app/src/main/res/xml/preferences.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/theme.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/theme.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Android-NetPowerctrl.iws" />
@@ -108,7 +115,7 @@
     </breakpoint_any>
     <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
-      <breakpoint url="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" line="206" class="oly.netpowerctrl.datastructure.DeviceInfo" package="oly.netpowerctrl.datastructure">
+      <breakpoint url="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" line="212" class="oly.netpowerctrl.datastructure.DeviceInfo" package="oly.netpowerctrl.datastructure">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -124,29 +131,7 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </line_breakpoints>
-    <field_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
-      <breakpoint url="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" line="37" class="oly.netpowerctrl.datastructure.DeviceInfo" package="oly.netpowerctrl.datastructure" field_name="reachable">
-        <option name="WATCH_MODIFICATION" value="true" />
-        <option name="WATCH_ACCESS" value="false" />
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="true" />
-        <option name="CONDITION" value="" />
-        <instance_id>
-          <option name="PATTERN" value="830044164552" />
-          <option name="ENABLED" value="true" />
-        </instance_id>
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-    </field_breakpoints>
+    <field_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -156,10 +141,67 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="PluginController.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginController.java">
+      <file leaf-file-name="PreferencesFragment.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="123" column="5" selection-start="4504" selection-end="4504" vertical-scroll-proportion="0.0" vertical-offset="1252" max-vertical-offset="2128">
+            <state line="52" column="89" selection-start="2469" selection-end="2531" vertical-scroll-proportion="0.0" vertical-offset="305" max-vertical-offset="1520">
+              <folding>
+                <element signature="e#1313#1349#0" expanded="true" />
+                <element signature="e#1387#1425#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="WidgetUpdateService.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="203" column="0" selection-start="8307" selection-end="8307" vertical-scroll-proportion="0.0" vertical-offset="2849" max-vertical-offset="5548">
+              <folding>
+                <element signature="e#5633#6557#0" expanded="true" />
+                <element signature="e#6546#6547#0" expanded="true" />
+                <element signature="e#6671#6710#1" expanded="true" />
+                <element signature="e#6928#6975#0" expanded="true" />
+                <element signature="e#8039#8115#0" expanded="true" />
+                <element signature="e#8965#8992#0" expanded="true" />
+                <element signature="e#9251#9290#1" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NetpowerctrlApplication.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlApplication.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="131" column="5" selection-start="4569" selection-end="4569" vertical-scroll-proportion="0.0" vertical-offset="1678" max-vertical-offset="7638">
+              <folding>
+                <element signature="e#1557#1582#0" expanded="true" />
+                <element signature="e#3195#3222#0" expanded="true" />
+                <element signature="e#3444#3471#0" expanded="true" />
+                <element signature="e#3727#3754#0" expanded="true" />
+                <element signature="e#3961#3988#0" expanded="true" />
+                <element signature="e#4227#4254#0" expanded="true" />
+                <element signature="e#4575#4602#0" expanded="true" />
+                <element signature="e#14297#14344#0" expanded="true" />
+                <element signature="e#14413#14469#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NetpowerctrlActivity.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="66" column="28" selection-start="2379" selection-end="2379" vertical-scroll-proportion="0.22937626" vertical-offset="0" max-vertical-offset="6308">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="theme.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/res/values/theme.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="3" column="73" selection-start="101" selection-end="125" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="741">
               <folding />
             </state>
           </provider>
@@ -168,38 +210,31 @@
       <file leaf-file-name="AndroidManifest.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="0" selection-start="200" selection-end="200" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2128">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DeviceSend.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceSend.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="234" column="0" selection-start="7881" selection-end="7881" vertical-scroll-proportion="0.5566038" vertical-offset="3678" max-vertical-offset="5871">
+            <state line="84" column="29" selection-start="3688" selection-end="3688" vertical-scroll-proportion="0.0" vertical-offset="1292" max-vertical-offset="2090">
               <folding>
-                <element signature="e#5204#5288#0" expanded="true" />
-                <element signature="e#5700#5782#0" expanded="true" />
+                <element signature="e#948#966#0" expanded="true" />
+                <element signature="e#995#1013#0" expanded="true" />
+                <element signature="e#1216#1234#0" expanded="true" />
+                <element signature="e#1385#1403#0" expanded="true" />
+                <element signature="e#2279#2297#0" expanded="true" />
+                <element signature="e#2705#2723#0" expanded="true" />
+                <element signature="e#2756#2788#0" expanded="true" />
+                <element signature="e#3146#3173#0" expanded="true" />
+                <element signature="e#3206#3238#0" expanded="true" />
+                <element signature="e#3729#3754#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="strings.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/res/values-de/strings.xml">
+      <file leaf-file-name="WidgetPreferenceFragment.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/WidgetPreferenceFragment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="186" column="28" selection-start="12025" selection-end="12025" vertical-scroll-proportion="0.0" vertical-offset="3350" max-vertical-offset="3914">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DeviceQuery.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceQuery.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="60" column="46" selection-start="2533" selection-end="2533" vertical-scroll-proportion="0.0" vertical-offset="553" max-vertical-offset="1577">
-              <folding />
+            <state line="103" column="27" selection-start="4732" selection-end="4732" vertical-scroll-proportion="0.0" vertical-offset="1184" max-vertical-offset="2375">
+              <folding>
+                <element signature="e#1320#2208#0" expanded="true" />
+                <element signature="e#2193#2194#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -588,57 +623,57 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/CreateSceneOutletsAdapter.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/create_scene_activity.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/Shortcuts.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ScenesFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/plugin_header.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/drawer_list_header.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/plugin_boolean.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/plugin_int.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/INetPwrCrtlPluginResult.aidl" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/INetPwrCrtlPlugin.aidl" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/INetPwrCtrlPluginResult.aidl" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/INetPwrCtrlPlugin.aidl" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/attrs.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/device_configuration_item.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/NFC.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/values/theme.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/ScenesListAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutletSwitchListAdapter.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfigureDeviceFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/dragdrop/DragNDropListView.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutCreatorActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/xml/preferences.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/resources.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/PluginValuesAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/ShowToast.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceCommand.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/xml/appwidget_provider.xml" />
-        <option value="$PROJECT_DIR$/app/build.gradle" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/plugin_action.xml" />
         <option value="$PROJECT_DIR$/app/src/main/aidl/oly/netpowerctrl/plugins/INetPwrCtrlPluginResult.aidl" />
         <option value="$PROJECT_DIR$/app/src/main/aidl/oly/netpowerctrl/plugins/INetPwrCtrlPlugin.aidl" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlApplication.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/PluginFragment.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginController.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginRemote.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceQuery.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/xml/preferences.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/IntEditTextPreference.java" />
+        <option value="$PROJECT_DIR$/app/build.gradle" />
+        <option value="$PROJECT_DIR$/app/src/main/res/xml/preferences_widget.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfigureDeviceFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/NetpowerctrlService.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceQuery.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceSend.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/WidgetPreferenceFragment.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlApplication.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/values/theme.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
       </list>
     </option>
   </component>
@@ -699,10 +734,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="PackagesPane">
-        <subPane />
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -844,66 +875,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="values" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Android-NetPowerctrl" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Android-NetPowerctrl12" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="res" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="layout" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Android-NetPowerctrl" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Android-NetPowerctrl12" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="res" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="anim" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1208,6 +1179,10 @@
               <option name="myItemId" value="netpowerctrl" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="datastructure" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -1275,6 +1250,10 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
+      <pane id="PackagesPane">
+        <subPane />
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1288,7 +1267,7 @@
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
-    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="recentsLimit" value="5" />
@@ -1310,16 +1289,17 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="oly.netpowerctrl.preferences" />
       <recent name="oly.netpowerctrl.listadapter" />
       <recent name="oly.netpowerctrl.main" />
       <recent name="oly.netpowerctrl.anelservice" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/res/xml" />
       <recent name="$PROJECT_DIR$/app/src/main/res/layout" />
       <recent name="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils" />
       <recent name="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins" />
       <recent name="$PROJECT_DIR$/app/src/main/res/drawable" />
-      <recent name="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/dragdrop" />
     </key>
     <key name="ExtractSuperBase.RECENT_KEYS">
       <recent name="oly.netpowerctrl.preferences" />
@@ -1434,6 +1414,26 @@
       <setting name="debug" value="false" />
       <method />
     </configuration>
+    <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Tests">
+      <module name="" />
+      <option name="TESTING_TYPE" value="0" />
+      <option name="INSTRUMENTATION_RUNNER_CLASS" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="TARGET_SELECTION_MODE" value="EMULATOR" />
+      <option name="USE_LAST_SELECTED_DEVICE" value="false" />
+      <option name="PREFERRED_AVD" value="" />
+      <option name="USE_COMMAND_LINE" value="true" />
+      <option name="COMMAND_LINE" value="" />
+      <option name="WIPE_USER_DATA" value="false" />
+      <option name="DISABLE_BOOT_ANIMATION" value="false" />
+      <option name="NETWORK_SPEED" value="full" />
+      <option name="NETWORK_LATENCY" value="none" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
+      <method />
+    </configuration>
     <configuration default="true" type="MavenRunConfiguration" factoryName="Maven">
       <MavenSettings>
         <option name="myGeneralSettings" />
@@ -1454,26 +1454,6 @@
           </MavenRunnerParameters>
         </option>
       </MavenSettings>
-      <method />
-    </configuration>
-    <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Tests">
-      <module name="" />
-      <option name="TESTING_TYPE" value="0" />
-      <option name="INSTRUMENTATION_RUNNER_CLASS" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="PACKAGE_NAME" value="" />
-      <option name="TARGET_SELECTION_MODE" value="EMULATOR" />
-      <option name="USE_LAST_SELECTED_DEVICE" value="false" />
-      <option name="PREFERRED_AVD" value="" />
-      <option name="USE_COMMAND_LINE" value="true" />
-      <option name="COMMAND_LINE" value="" />
-      <option name="WIPE_USER_DATA" value="false" />
-      <option name="DISABLE_BOOT_ANIMATION" value="false" />
-      <option name="NETWORK_SPEED" value="full" />
-      <option name="NETWORK_LATENCY" value="none" />
-      <option name="CLEAR_LOGCAT" value="false" />
-      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
       <method />
     </configuration>
     <configuration default="true" type="GriffonRunConfigurationType" factoryName="Griffon">
@@ -1507,6 +1487,19 @@
       </ExternalSystemSettings>
       <method />
     </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method />
+    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -1532,19 +1525,6 @@
       <envs />
       <properties />
       <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -1751,7 +1731,11 @@
       <created>1389559789319</created>
       <updated>1389559789319</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="Version 1.9c&#10;* Fix crashes caused by PluginController&#10;* Only load PluginController if enabled&#10;* PluginController works reliable now&#10;* Support unloaded/vanished plugins&#10;* Do not restore Activity with Feedback Dialog&#10;* Fix problem with InetAddress.getByName in gui thread&#10;* Send broadcast packets to all network interfaces&#10;* Show better error messages if network is not reachable&#10;* Query existing devices only, if network does not support broadcasts (2G, 3G)">
+      <created>1389627499323</created>
+      <updated>1389627499323</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1781,31 +1765,31 @@
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.40828404" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32986537" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2852071" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3983353" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.38343194" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23561811" sideWeight="0.5009141" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20095125" sideWeight="0.15483476" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2" sideWeight="0.15483476" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26280892" sideWeight="0.16666667" order="3" side_tool="true" content_ui="tabs" />
+      <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26556778" sideWeight="0.18994413" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3325444" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Android" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4189349" sideWeight="0.84516525" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.252071" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Android" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.36449704" sideWeight="0.84516525" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22949816" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936978" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.249694" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32986537" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3294753" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23382173" sideWeight="0.8333333" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26556778" sideWeight="0.81005585" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.15029585" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Documentation" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="FLOATING" visible="false" weight="0.27229488" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" x="2389" y="80" width="653" height="177" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32986537" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28365386" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39952436" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -1843,228 +1827,19 @@
     <MESSAGE value="Notify on shortcut click, if option is set&#10;" />
     <MESSAGE value="Version 1.9a&#10;* Fix many widget problems and a crash&#10;* Move all send code to DeviceSend&#10;* Sending is in one worker thread with a queue now&#10;* Delay work in onCreate-Activity for a smoother gui&#10;* Plugins working&#10;&#10;Problems:&#10;* PluginController does not update DrawerAdapter on a second Activity start&#10;  (when PluginController object already exists)" />
     <MESSAGE value="Version 1.9b&#10;* Fix crash if listen service unbind is called while the service is not bound&#10;* Recreate plugin menu" />
-    <option name="LAST_COMMIT_MESSAGE" value="Version 1.9b&#10;* Fix crash if listen service unbind is called while the service is not bound&#10;* Recreate plugin menu" />
+    <MESSAGE value="Version 1.9c&#10;* Fix crashes caused by PluginController&#10;* Only load PluginController if enabled&#10;* PluginController works reliable now&#10;* Support unloaded/vanished plugins&#10;* Do not restore Activity with Feedback Dialog&#10;* Fix problem with InetAddress.getByName in gui thread&#10;* Send broadcast packets to all network interfaces&#10;* Show better error messages if network is not reachable&#10;* Query existing devices only, if network does not support broadcasts (2G, 3G)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 1.9c&#10;* Fix crashes caused by PluginController&#10;* Only load PluginController if enabled&#10;* PluginController works reliable now&#10;* Support unloaded/vanished plugins&#10;* Do not restore Activity with Feedback Dialog&#10;* Fix problem with InetAddress.getByName in gui thread&#10;* Send broadcast packets to all network interfaces&#10;* Show better error messages if network is not reachable&#10;* Query existing devices only, if network does not support broadcasts (2G, 3G)" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <breakpoints-dialog>
+        <breakpoints-dialog />
+      </breakpoints-dialog>
+    </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-16/data/res/color/secondary_text_dark.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="627" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_item_list.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="36" selection-start="378" selection-end="378" vertical-scroll-proportion="0.33158812" vertical-offset="0" max-vertical-offset="798">
-          <folding>
-            <element signature="e#1066#1081#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesWithValuesFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="5" selection-start="690" selection-end="1405" vertical-scroll-proportion="0.75396824" vertical-offset="114" max-vertical-offset="2470">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/device_configuration_item.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="44" selection-start="617" selection-end="617" vertical-scroll-proportion="0.40032414" vertical-offset="38" max-vertical-offset="836">
-          <folding>
-            <element signature="e#800#824#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/NFC.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="44" selection-start="410" selection-end="410" vertical-scroll-proportion="0.44584838" vertical-offset="0" max-vertical-offset="4294">
-          <folding>
-            <element signature="e#3692#3730#0" expanded="false" />
-            <element signature="e#3893#3931#0" expanded="false" />
-            <element signature="e#4118#4164#0" expanded="false" />
-            <element signature="e#4961#5013#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-16/data/res/values/themes.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="570" column="34" selection-start="36607" selection-end="36618" vertical-scroll-proportion="0.18949343" vertical-offset="10729" max-vertical-offset="33630" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DiscoveryThread.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="33" selection-start="374" selection-end="403" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2527">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/OutletInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="13" selection-start="254" selection-end="254" vertical-scroll-proportion="0.073076926" vertical-offset="57" max-vertical-offset="3021">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/AfterSentHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="328" selection-end="328" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="988">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/ScenesListAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="89" column="5" selection-start="2954" selection-end="2954" vertical-scroll-proportion="0.0" vertical-offset="1001" max-vertical-offset="2527">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/OutletSwitchListAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="131" column="31" selection-start="4706" selection-end="4706" vertical-scroll-proportion="0.42857143" vertical-offset="1761" max-vertical-offset="4237">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfigureDeviceFragment.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="202" column="44" selection-start="7816" selection-end="7816" vertical-scroll-proportion="0.0" vertical-offset="3095" max-vertical-offset="3971">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/dragdrop/DragNDropListView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="60" column="0" selection-start="1867" selection-end="1867" vertical-scroll-proportion="0.455914" vertical-offset="434" max-vertical-offset="3496">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values-sw600dp/refs.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="12" selection-start="363" selection-end="363" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="323">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-16/android.jar!/android/view/View.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="148" column="16" selection-start="8327" selection-end="8327" vertical-scroll-proportion="0.3321492" vertical-offset="2606" max-vertical-offset="20786" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/resources.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="12" selection-start="1045" selection-end="1045" vertical-scroll-proportion="0.6627907" vertical-offset="0" max-vertical-offset="516">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/preferences.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="42" selection-start="1676" selection-end="1676" vertical-scroll-proportion="0.6686047" vertical-offset="339" max-vertical-offset="855">
-          <folding>
-            <element signature="e#234#273#0" expanded="false" />
-            <element signature="e#338#366#0" expanded="false" />
-            <element signature="e#397#444#0" expanded="false" />
-            <element signature="e#469#516#0" expanded="false" />
-            <element signature="e#545#584#0" expanded="false" />
-            <element signature="e#679#718#0" expanded="false" />
-            <element signature="e#783#814#0" expanded="false" />
-            <element signature="e#845#892#0" expanded="false" />
-            <element signature="e#917#964#0" expanded="false" />
-            <element signature="e#993#1032#0" expanded="false" />
-            <element signature="e#1133#1181#0" expanded="false" />
-            <element signature="e#1271#1327#0" expanded="false" />
-            <element signature="e#1415#1450#0" expanded="false" />
-            <element signature="e#1527#1570#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/FlowLayout.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="23" selection-start="1611" selection-end="1622" vertical-scroll-proportion="0.0" vertical-offset="3715" max-vertical-offset="6270">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/ShowToast.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="1" selection-start="855" selection-end="855" vertical-scroll-proportion="0.7319933" vertical-offset="0" max-vertical-offset="597">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="228" column="0" selection-start="9088" selection-end="9088" vertical-scroll-proportion="0.0" vertical-offset="4332" max-vertical-offset="6441">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="209" column="16" selection-start="6789" selection-end="6789" vertical-scroll-proportion="0.3326572" vertical-offset="3579" max-vertical-offset="5510">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/appwidget_provider.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="20" selection-start="434" selection-end="434" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="304">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="1" selection-start="379" selection-end="379" vertical-scroll-proportion="0.8212181" vertical-offset="0" max-vertical-offset="532">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/Backup.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="31" selection-start="2865" selection-end="2865" vertical-scroll-proportion="0.27217743" vertical-offset="720" max-vertical-offset="1444">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceCommand.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="5" selection-start="2590" selection-end="2590" vertical-scroll-proportion="1.0342742" vertical-offset="836" max-vertical-offset="1843" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/plugin_boolean.xml">
-      <provider editor-type-id="android-designer">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-0.1901566" vertical-offset="85" max-vertical-offset="703">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="108" column="5" selection-start="3532" selection-end="3532" vertical-scroll-proportion="0.0" vertical-offset="1101" max-vertical-offset="1919">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/create_scene_activity.xml">
       <provider editor-type-id="android-designer">
         <state />
@@ -2075,23 +1850,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="95" column="0" selection-start="3556" selection-end="3556" vertical-scroll-proportion="0.0" vertical-offset="974" max-vertical-offset="1558">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values/attrs.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="18" column="12" selection-start="848" selection-end="848" vertical-scroll-proportion="0.5728643" vertical-offset="0" max-vertical-offset="597">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/theme.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="12" selection-start="1402" selection-end="1402" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="741">
           <folding />
         </state>
       </provider>
@@ -2125,9 +1886,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/build/source/aidl/debug/oly/netpowerctrl/plugins/INetPwrCtrlPlugin.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="117" column="0" selection-start="3300" selection-end="3300" vertical-scroll-proportion="0.35076252" vertical-offset="1948" max-vertical-offset="3762">
-          <folding />
-        </state>
+        <state line="117" column="0" selection-start="3300" selection-end="3300" vertical-scroll-proportion="0.35076252" vertical-offset="1948" max-vertical-offset="3762" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/PluginFragment.java">
@@ -2144,27 +1903,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlApplication.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="0" selection-start="1909" selection-end="1909" vertical-scroll-proportion="0.45041323" vertical-offset="181" max-vertical-offset="6726">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="0" selection-start="1721" selection-end="1721" vertical-scroll-proportion="0.69008267" vertical-offset="65" max-vertical-offset="4408">
-          <folding>
-            <element signature="e#3002#3050#0" expanded="false" />
-            <element signature="e#3731#3778#0" expanded="false" />
-            <element signature="e#4495#4555#0" expanded="false" />
-            <element signature="e#5054#5113#0" expanded="false" />
-            <element signature="e#9273#9335#0" expanded="false" />
-            <element signature="e#9708#9773#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DrawerAdapter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="57" column="16" selection-start="1473" selection-end="1473" vertical-scroll-proportion="0.33333334" vertical-offset="601" max-vertical-offset="3819">
@@ -2174,9 +1912,7 @@
     </entry>
     <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-19/android.jar!/android/widget/AbsListView.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="16" selection-start="1730" selection-end="1730" vertical-scroll-proportion="0.33333334" vertical-offset="506" max-vertical-offset="6080">
-          <folding />
-        </state>
+        <state line="37" column="16" selection-start="1730" selection-end="1730" vertical-scroll-proportion="0.33333334" vertical-offset="506" max-vertical-offset="6080" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
@@ -2193,66 +1929,336 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="99" column="33" selection-start="4023" selection-end="4023" vertical-scroll-proportion="0.31835207" vertical-offset="1464" max-vertical-offset="2546">
           <folding>
-            <element signature="e#1491#1554#0" expanded="true" />
-            <element signature="e#1663#1726#0" expanded="true" />
-            <element signature="e#2854#2917#0" expanded="true" />
-            <element signature="e#3009#3066#0" expanded="true" />
-            <element signature="e#3409#3472#0" expanded="true" />
-            <element signature="e#3749#3812#0" expanded="true" />
-            <element signature="e#4086#4149#0" expanded="true" />
+            <element signature="e#1437#1500#0" expanded="false" />
+            <element signature="e#1613#1676#0" expanded="false" />
+            <element signature="e#2808#2871#0" expanded="false" />
+            <element signature="e#2963#3020#0" expanded="false" />
+            <element signature="e#3363#3426#0" expanded="false" />
+            <element signature="e#3707#3770#0" expanded="false" />
+            <element signature="e#4048#4111#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java">
+    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-19/android.jar!/android/preference/PreferenceScreen.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="25" selection-start="696" selection-end="702" vertical-scroll-proportion="0.18737672" vertical-offset="0" max-vertical-offset="7600">
-          <folding />
-        </state>
+        <state line="7" column="4" selection-start="342" selection-end="342" vertical-scroll-proportion="0.24307036" vertical-offset="0" max-vertical-offset="627" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/plugins/PluginController.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="123" column="5" selection-start="4504" selection-end="4504" vertical-scroll-proportion="0.0" vertical-offset="1594" max-vertical-offset="2128">
+        <state line="121" column="5" selection-start="4435" selection-end="4435" vertical-scroll-proportion="0.0" vertical-offset="1252" max-vertical-offset="2128">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="0" selection-start="200" selection-end="200" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2128">
+        <state line="29" column="66" selection-start="1257" selection-end="1270" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4446">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesWithValuesFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="13" selection-start="569" selection-end="569" vertical-scroll-proportion="-0.418" vertical-offset="342" max-vertical-offset="2470">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/IntEditTextPreference.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="21" column="0" selection-start="577" selection-end="577" vertical-scroll-proportion="0.5185185" vertical-offset="133" max-vertical-offset="703">
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/preferences.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="3" column="0" selection-start="146" selection-end="146" vertical-scroll-proportion="0.11111111" vertical-offset="0" max-vertical-offset="1007" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_menu_edit.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/scene_list_item.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="43" selection-start="1117" selection-end="1129" vertical-scroll-proportion="0.0" vertical-offset="285" max-vertical-offset="1463">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/ScenesListAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="27" selection-start="1306" selection-end="1306" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2527">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/Scene.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="13" selection-start="438" selection-end="438" vertical-scroll-proportion="0.0" vertical-offset="1824" max-vertical-offset="2831">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/listadapter/DeviceConfigurationAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="175" column="8" selection-start="6557" selection-end="6557" vertical-scroll-proportion="0.0" vertical-offset="2943" max-vertical-offset="4123">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="1" selection-start="416" selection-end="416" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="551">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/preferences_widget.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="29" selection-start="1015" selection-end="1015" vertical-scroll-proportion="0.8012048" vertical-offset="0" max-vertical-offset="684">
+          <folding>
+            <element signature="e#832#857#0" expanded="false" />
+            <element signature="e#939#965#0" expanded="false" />
+            <element signature="e#1057#1093#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/NFC.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="176" column="22" selection-start="4872" selection-end="7382" vertical-scroll-proportion="0.0" vertical-offset="2289" max-vertical-offset="3800">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfig.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="95" column="0" selection-start="3556" selection-end="3556" vertical-scroll-proportion="1.3901438" vertical-offset="729" max-vertical-offset="1558">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DiscoveryThread.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="87" column="56" selection-start="2953" selection-end="2953" vertical-scroll-proportion="2.637478" vertical-offset="14" max-vertical-offset="2527">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/datastructure/DeviceInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="40" column="26" selection-start="1148" selection-end="1155" vertical-scroll-proportion="0.0" vertical-offset="321" max-vertical-offset="5624">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="189" column="55" selection-start="11373" selection-end="11373" vertical-scroll-proportion="0.46698114" vertical-offset="3393" max-vertical-offset="4009">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceQuery.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="60" column="46" selection-start="2533" selection-end="2533" vertical-scroll-proportion="0.0" vertical-offset="553" max-vertical-offset="1577">
+        <state line="185" column="47" selection-start="11070" selection-end="11070" vertical-scroll-proportion="0.42905405" vertical-offset="3261" max-vertical-offset="4123">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values-de/strings.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="186" column="28" selection-start="12025" selection-end="12025" vertical-scroll-proportion="0.0" vertical-offset="3350" max-vertical-offset="3914">
+        <state line="182" column="53" selection-start="11733" selection-end="11733" vertical-scroll-proportion="0.36486486" vertical-offset="3242" max-vertical-offset="4009">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NewDevicesListFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="63" column="19" selection-start="2220" selection-end="2220" vertical-scroll-proportion="0.7809365" vertical-offset="369" max-vertical-offset="1843">
+          <folding>
+            <element signature="e#2048#2117#0" expanded="false" />
+            <element signature="e#2788#2817#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ConfigureDeviceFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="53" column="0" selection-start="1898" selection-end="1898" vertical-scroll-proportion="-3.736752" vertical-offset="2794" max-vertical-offset="3971">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/DeviceWidgetProvider.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="58" selection-start="648" selection-end="648" vertical-scroll-proportion="0.34949833" vertical-offset="0" max-vertical-offset="627">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="91" column="13" selection-start="3357" selection-end="3357" vertical-scroll-proportion="0.20683761" vertical-offset="1057" max-vertical-offset="4845">
+          <folding>
+            <element signature="e#4121#4190#0" expanded="false" />
+            <element signature="e#6394#6419#0" expanded="false" />
+            <element signature="e#7278#7332#0" expanded="false" />
+            <element signature="e#7368#7424#0" expanded="false" />
+            <element signature="e#9143#9215#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-19/android.jar!/android/os/Handler.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="77" column="5" selection-start="3378" selection-end="3378" vertical-scroll-proportion="0.6658291" vertical-offset="1179" max-vertical-offset="1577">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceQuery.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="94" column="39" selection-start="3749" selection-end="3749" vertical-scroll-proportion="0.0" vertical-offset="1321" max-vertical-offset="2223">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/DeviceSend.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="234" column="0" selection-start="7881" selection-end="7881" vertical-scroll-proportion="0.5566038" vertical-offset="3678" max-vertical-offset="5871">
+        <state line="61" column="53" selection-start="1984" selection-end="1984" vertical-scroll-proportion="0.0" vertical-offset="403" max-vertical-offset="5605">
           <folding>
-            <element signature="e#5204#5288#0" expanded="true" />
-            <element signature="e#5700#5782#0" expanded="true" />
+            <element signature="e#5160#5245#0" expanded="true" />
+            <element signature="e#5414#5494#0" expanded="true" />
+            <element signature="e#5657#5739#0" expanded="true" />
+            <element signature="e#7602#7680#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/shortcut/ShortcutExecutionActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="97" column="22" selection-start="3542" selection-end="3542" vertical-scroll-proportion="0.8295964" vertical-offset="1017" max-vertical-offset="1748">
+          <folding>
+            <element signature="e#1844#1888#0" expanded="true" />
+            <element signature="e#3040#3096#0" expanded="true" />
+            <element signature="e#3841#3896#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anelservice/NetpowerctrlService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="50" column="0" selection-start="1508" selection-end="1508" vertical-scroll-proportion="0.44947734" vertical-offset="692" max-vertical-offset="2698">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-19/android.jar!/android/content/Context.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="118" column="54" selection-start="6071" selection-end="6071" vertical-scroll-proportion="0.33333334" vertical-offset="2027" max-vertical-offset="5700">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="52" column="89" selection-start="2469" selection-end="2531" vertical-scroll-proportion="0.0" vertical-offset="305" max-vertical-offset="1520">
+          <folding>
+            <element signature="e#1313#1349#0" expanded="true" />
+            <element signature="e#1387#1425#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../android-sdk-linux/platforms/android-19/android.jar!/android/preference/Preference.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="55" column="16" selection-start="2158" selection-end="2158" vertical-scroll-proportion="0.33333334" vertical-offset="830" max-vertical-offset="3667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/drawable/widgeton.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/WidgetPreferenceFragment.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="103" column="27" selection-start="4732" selection-end="4732" vertical-scroll-proportion="0.0" vertical-offset="1184" max-vertical-offset="2375">
+          <folding>
+            <element signature="e#1320#2208#0" expanded="true" />
+            <element signature="e#2193#2194#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="203" column="0" selection-start="8307" selection-end="8307" vertical-scroll-proportion="0.0" vertical-offset="2849" max-vertical-offset="5548">
+          <folding>
+            <element signature="e#5633#6557#0" expanded="true" />
+            <element signature="e#6546#6547#0" expanded="true" />
+            <element signature="e#6671#6710#1" expanded="true" />
+            <element signature="e#6928#6975#0" expanded="true" />
+            <element signature="e#8039#8115#0" expanded="true" />
+            <element signature="e#8965#8992#0" expanded="true" />
+            <element signature="e#9251#9290#1" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlApplication.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="131" column="5" selection-start="4569" selection-end="4569" vertical-scroll-proportion="0.0" vertical-offset="1678" max-vertical-offset="7638">
+          <folding>
+            <element signature="e#1557#1582#0" expanded="true" />
+            <element signature="e#3195#3222#0" expanded="true" />
+            <element signature="e#3444#3471#0" expanded="true" />
+            <element signature="e#3727#3754#0" expanded="true" />
+            <element signature="e#3961#3988#0" expanded="true" />
+            <element signature="e#4227#4254#0" expanded="true" />
+            <element signature="e#4575#4602#0" expanded="true" />
+            <element signature="e#14297#14344#0" expanded="true" />
+            <element signature="e#14413#14469#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/values/theme.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="3" column="73" selection-start="101" selection-end="125" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="741">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="84" column="29" selection-start="3688" selection-end="3688" vertical-scroll-proportion="0.0" vertical-offset="1292" max-vertical-offset="2090">
+          <folding>
+            <element signature="e#948#966#0" expanded="true" />
+            <element signature="e#995#1013#0" expanded="true" />
+            <element signature="e#1216#1234#0" expanded="true" />
+            <element signature="e#1385#1403#0" expanded="true" />
+            <element signature="e#2279#2297#0" expanded="true" />
+            <element signature="e#2705#2723#0" expanded="true" />
+            <element signature="e#2756#2788#0" expanded="true" />
+            <element signature="e#3146#3173#0" expanded="true" />
+            <element signature="e#3206#3238#0" expanded="true" />
+            <element signature="e#3729#3754#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/NetpowerctrlActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="66" column="28" selection-start="2379" selection-end="2379" vertical-scroll-proportion="0.22937626" vertical-offset="0" max-vertical-offset="6308">
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2332,7 +2338,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>support-v4-19.0.0</last-edited>
+          <last-edited>Gradle: support-v4-19.0.1</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
