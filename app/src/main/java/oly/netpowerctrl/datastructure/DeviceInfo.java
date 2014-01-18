@@ -35,7 +35,10 @@ public class DeviceInfo implements Parcelable {
     public List<OutletInfo> IOs;
     public String Temperature;
     public String FirmwareVersion;
-    public boolean reachable;
+
+    // Temporary state variables
+    public boolean reachable = false;
+    public boolean updated = false;
 
     private static String uuidToString(UUID uuid) {
         return uuid.toString().replace(":", "-");
@@ -63,7 +66,6 @@ public class DeviceInfo implements Parcelable {
         HttpPort = 80;
         Temperature = "";
         FirmwareVersion = "";
-        reachable = false;
         Outlets = new ArrayList<OutletInfo>();
         IOs = new ArrayList<OutletInfo>();
     }
@@ -125,15 +127,19 @@ public class DeviceInfo implements Parcelable {
     }
 
     /**
-     * Return true if both DeviceInfo objects refer to the same device.
+     * Return true if both DeviceInfo objects refer to the same device, preferable if both
+     * have a mac address set.
      *
      * @param other Compare to other DeviceInfo
      * @return
      */
     @SuppressWarnings("unused")
     public boolean equalsFunctional(DeviceInfo other) {
-        return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort &&
-                Outlets.size() == other.Outlets.size();
+        if (MacAddress.isEmpty() || other.MacAddress.isEmpty())
+            return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort &&
+                    Outlets.size() == other.Outlets.size();
+        else
+            return MacAddress.equals(other.MacAddress);
     }
 
     /**

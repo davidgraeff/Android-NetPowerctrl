@@ -1,11 +1,20 @@
 package oly.netpowerctrl.preferences;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceScreen;
+import android.util.Log;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment {
     @Override
@@ -30,5 +39,57 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 return true;
             }
         });
+
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
+        ComponentName deviceWidgetWidget = new ComponentName(getActivity(),
+                DeviceWidgetProvider.class);
+        int[] allWidgetIds = appWidgetManager.getAppWidgetIds(deviceWidgetWidget);
+        CharSequence[] entries = new CharSequence[allWidgetIds.length];
+        String[] entryValues = new String[allWidgetIds.length];
+        int index = 0;
+        for (int appWidgetId : allWidgetIds) {
+            String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
+            SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(getActivity(), appWidgetId);
+            DeviceInfo di = null;
+            if (outlet == null) {
+                Log.w("PREFERENCES", "Strange widget ID!");
+                continue;
+            }
+            di = NetpowerctrlApplication.instance.findDevice(outlet.deviceMac);
+            if (di == null)
+                entries[index] = outlet.deviceMac + ", " + outlet.outletNumber;
+            else
+                entries[index] = di.DeviceName + ", " + di.findOutlet(outlet.outletNumber).getDescription();
+            entryValues[index] = prefName;
+            ++index;
+        }
+
+        PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.PREF_widgets);
+        if (entries.length == 0) {
+            getPreferenceScreen().removePreference(lp);
+            return;
+        } else {
+            for (int i = 0; i < entries.length; ++i) {
+                PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
+                s.setKey(entryValues[i]);
+                s.setFragment(WidgetPreferenceFragment.class.getName());
+                s.setTitle(entries[i]);
+                lp.addPreference(s);
+                s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        if (preference.getKey() == null || preference.getKey().isEmpty())
+                            return true;
+                        Fragment fragment = Fragment.instantiate(getActivity(), preference.getFragment());
+                        Bundle b = new Bundle();
+                        b.putString("key", preference.getKey());
+                        fragment.setArguments(b);
+                        getFragmentManager().beginTransaction().addToBackStack(null).
+                                replace(R.id.content_frame, fragment).commit();
+                        return true;
+                    }
+                });
+            }
+        }
     }
 }

@@ -7,7 +7,7 @@
     </style>
 
     <style name="Theme.CustomDarkTheme" parent="android:Theme.Holo">
-        <item name="drawer_item_background">#9958585a</item>
+        <item name="drawer_item_background">#58585a</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>
     </style>
 

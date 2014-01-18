@@ -13,30 +13,29 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.anelservice.NetpowerctrlService;
+import oly.netpowerctrl.anelservice.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
-import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class ShortcutExecutionActivity extends Activity implements DeviceUpdateStateOrTimeout {
-    private boolean listener_started = false;
     private Scene scene;
-    private boolean updateWidget = false;
-    private int widgetId = 0;
+//    private boolean updateWidget = false;
 
     @Override
     protected void onDestroy() {
-        if (listener_started)
-            NetpowerctrlApplication.instance.stopListener();
+        NetpowerctrlApplication.instance.stopUseListener();
         super.onDestroy();
     }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        NetpowerctrlApplication.instance.useListener();
         setResult(RESULT_CANCELED);
         Intent it = getIntent();
         if (it == null) {
@@ -58,17 +57,17 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
             return;
         }
 
-        updateWidget = extra.containsKey("widgetId");
-        if (updateWidget) {
-            widgetId = extra.getInt("widgetId");
-        }
-
-        // Convert to device sceneOutlets
-
-        // Start listener and Update device state
-        listener_started = true;
-        NetpowerctrlApplication.instance.startListener(false);
-        new DeviceQuery(this, this, scene.getDevices(), false, true);
+        NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
+            @Override
+            public void onServiceReady(NetpowerctrlService mDiscoverService) {
+                NetpowerctrlApplication.instance.unregisterServiceReadyObserver(this);
+                // Suspend widget updates for two update requests
+                // (The first one is a refresh-value-request response, the
+                // other one is for the automatic new-values broadcast of the anel devices)
+                NetpowerctrlApplication.suspendWidgetUpdate = 2;
+                new DeviceQuery(ShortcutExecutionActivity.this, scene.getDevices());
+            }
+        });
 
         setResult(RESULT_OK);
 
@@ -87,7 +86,6 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
 
     @Override
     public void onDeviceUpdated(DeviceInfo di) {
-
     }
 
     @Override
@@ -99,12 +97,9 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
             if (!c.device.reachable)
                 continue;
             c.device.updateByDeviceCommand(c);
-            DeviceSend.instance().sendOutlets(c, true);
-            it.remove();
+            DeviceSend.instance().sendOutlets(c, false);
+            //it.remove();
         }
-
-        if (updateWidget)
-            WidgetUpdateService.updateWidgetWithoutDataFetch(widgetId, this);
         finish();
     }
 

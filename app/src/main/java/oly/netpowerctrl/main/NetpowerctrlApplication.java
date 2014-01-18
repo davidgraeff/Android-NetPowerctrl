@@ -1,11 +1,18 @@
 package oly.netpowerctrl.main;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
+
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,10 +38,17 @@ import oly.netpowerctrl.utils.ShowToast;
  * Application state: We keep track of Anel device states via
  * the listener service.
  */
+@ReportsCrashes(formKey = "dGVacG0ydVHnaNHjRjVTUTEtb3FPWGc6MQ",
+        mode = ReportingInteractionMode.TOAST,
+        mailTo = "david.graeff@web.de",
+        forceCloseDialogAfterToast = false, // optional, default false
+        resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application implements DeviceUpdate, DeviceError {
     public static NetpowerctrlApplication instance;
+    public static int suspendWidgetUpdate = 0;
     private int mDiscoverServiceRefCount = 0;
     private NetpowerctrlService mDiscoverService;
+    private boolean mWaitForService;
     public ArrayList<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
     public ArrayList<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
 
@@ -122,7 +136,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     }
 
     private void notifyServiceReady() {
-        for (ServiceReady o : observersServiceReady)
+        for (ServiceReady o : (ArrayList<ServiceReady>) observersServiceReady.clone())
             o.onServiceReady(mDiscoverService);
     }
 
@@ -138,28 +152,84 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     @Override
     public void onCreate() {
         super.onCreate();
+        // The following line triggers the initialization of ACRA
+        ACRA.init(this);
         instance = this;
         reloadConfiguredDevices();
+
+        // Start listen service and listener for wifi changes
+        mWaitForService = true;
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(instance, NetpowerctrlService.class);
+                startService(intent);
+            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+                // Listen for wifi changes
+                IntentFilter filter = new IntentFilter();
+                filter.addAction("android.net.wifi.STATE_CHANGE");
+                filter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
+                registerReceiver(wifiChangedListener, filter);
+            }
+        }, 300);
     }
 
-    public void startListener(boolean detectAllDevices) {
-        if (mDiscoverServiceRefCount == 0) {
-            Intent intent = new Intent(this, NetpowerctrlService.class);
+    private boolean firstWifiChange = true;
+    BroadcastReceiver wifiChangedListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (firstWifiChange) {
+                firstWifiChange = false;
+                return;
+            }
+            //WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    instance.detectNewDevicesAndReachability();
+                }
+            }, 1500);
+        }
+    };
+
+    public void useListener() {
+        ++mDiscoverServiceRefCount;
+        // Service is not running anymore, restart it
+        if (mDiscoverService == null && !mWaitForService) {
+            mWaitForService = true;
+            Intent intent = new Intent(instance, NetpowerctrlService.class);
             startService(intent);
             bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        } else if (detectAllDevices) // if service is running and detectAllDevices
-            NetpowerctrlApplication.instance.detectNewDevicesAndReachability(false);
-        ++mDiscoverServiceRefCount;
+        }
+    }
+
+    public void stopUseListener() {
+        if (mDiscoverServiceRefCount > 0) {
+            mDiscoverServiceRefCount--;
+        }
+        if (mDiscoverServiceRefCount == 0) {
+            try {
+                mDiscoverServiceRefCount = 0;
+                mDiscoverService = null;
+                mWaitForService = false;
+                unbindService(mConnection);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
     }
 
     /**
      * Detect new devices and check reachability of configured devices
      */
-    public void detectNewDevicesAndReachability(boolean rangeCheck) {
-        new DeviceQuery(this, new DeviceUpdateStateOrTimeout() {
+    private void detectNewDevicesAndReachability() {
+        // First try a broadcast
+        new DeviceQuery(new DeviceUpdateStateOrTimeout() {
             @Override
             public void onDeviceTimeout(DeviceInfo di) {
-                di.reachable = false;
+                di.updated = true;
             }
 
             @Override
@@ -171,19 +241,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 if (timeout_devices > 0)
                     notifyConfiguredObservers();
             }
-        }, configuredDevices, true, rangeCheck);
-    }
-
-    public void stopListener() {
-        if (mDiscoverServiceRefCount > 0) {
-            mDiscoverServiceRefCount--;
-        }
-        if (mDiscoverServiceRefCount == 0) {
-            try {
-                unbindService(mConnection);
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
+        });
     }
 
     /**
@@ -202,12 +260,17 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             if (mDiscoverServiceRefCount == 0)
                 mDiscoverServiceRefCount = 1;
             instance.notifyServiceReady();
-            detectNewDevicesAndReachability(false);
+            mWaitForService = false;
+            // We do a device detection in the wifi change listener already
+            detectNewDevicesAndReachability();
         }
 
+        // Service crashed
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mDiscoverServiceRefCount = 0;
+            mDiscoverService = null;
+            mWaitForService = false;
         }
     };
 
@@ -282,7 +345,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
         if (!current_device.reachable)
-            detectNewDevicesAndReachability(false);
+            new DeviceQuery(null, current_device);
     }
 
     public void deleteAllConfiguredDevices() {
@@ -303,6 +366,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 continue;
             target.copyFreshValues(device_info);
             target.reachable = true;
+            target.updated = true;
 
             // notify all observers
             notifyConfiguredObservers();
