@@ -69,7 +69,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     private View mDrawerView;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerAdapter mDrawerAdapter;
-    private CharSequence mDrawerTitle;
     private CharSequence mTitle;
     private boolean drawerControllableByMenuKey = false;
 
@@ -111,7 +110,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         adpScenes = new ScenesListAdapter(this);
 
         // References for the drawer
-        mTitle = mDrawerTitle = getTitle();
+        mTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
         mDrawerView = findViewById(R.id.left_drawer);

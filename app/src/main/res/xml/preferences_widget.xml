@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Widget">
+
+    <EditTextPreference
+        android:key="MAC"
+        android:title="@string/device_mac"
+        android:dialogMessage="@string/device_mac_summary"
+        android:summary="@string/device_mac_summary"
+        android:dialogTitle="@string/device_mac" />
+
+    <oly.netpowerctrl.preferences.IntEditTextPreference
+        android:key="OUTLET_NUMBER"
+        android:title="@string/device_outlets"
+        android:inputType="number"
+        android:dialogMessage="@string/device_password_summary"
+        android:summary="@string/device_password_summary"
+        android:dialogTitle="@string/device_outlets" />
+
+    <Preference
+        android:key="widget_image_on"
+        android:title="@string/widget_image_on" />
+
+    <Preference
+        android:key="widget_image_off"
+        android:title="@string/widget_image_off" />
+
+    <Preference
+        android:key="widget_image_not_reachable"
+        android:title="@string/widget_image_not_reachable" />
+</PreferenceScreen>
