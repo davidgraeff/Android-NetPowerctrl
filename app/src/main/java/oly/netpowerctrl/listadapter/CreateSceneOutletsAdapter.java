@@ -60,6 +60,8 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
         // Enumerate all configured devices and outlets and create SceneOutlets
         for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
+                if (oi.Disabled)
+                    continue;
                 oi.device = device;
                 // Create SceneOutlet and set state to Toggle
                 SceneOutlet so = SceneOutlet.fromOutletInfo(oi, false);
@@ -75,6 +77,8 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
         for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
+                if (oi.Disabled)
+                    continue;
                 SceneOutlet c = SceneOutlet.fromOutletInfo(oi, false);
                 int i = commands.indexOf(c);
                 if (i != -1) {
@@ -106,9 +110,10 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
-
+        boolean newValue = false;
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.create_scene_outlet_list_item, null);
+            newValue = true;
         }
         SceneOutlet command = all_outlets.get(position);
         assert convertView != null;
@@ -140,11 +145,15 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
             a.setAnimationListener(new AnimationListenerWithRadioGroup(r, false));
             r.startAnimation(a);
         } else if (r.getVisibility() == View.INVISIBLE && command.enabled) {
-            r.clearAnimation();
-            Animation a = AnimationUtils.loadAnimation(context, R.anim.animate_in);
-            assert a != null;
-            a.setAnimationListener(new AnimationListenerWithRadioGroup(r, true));
-            r.startAnimation(a);
+            if (!newValue) {
+                r.clearAnimation();
+                Animation a = AnimationUtils.loadAnimation(context, R.anim.animate_in);
+                assert a != null;
+                a.setAnimationListener(new AnimationListenerWithRadioGroup(r, true));
+                r.startAnimation(a);
+            } else {
+                r.setVisibility(View.VISIBLE);
+            }
         }
         r.check((command.state == 0) ? R.id.radio0 : ((command.state == 1) ? R.id.radio1 : R.id.radio2));
         return convertView;

@@ -7,6 +7,12 @@
         android:icon="@drawable/ic_menu_refresh" />
 
     <item
+        android:id="@+id/menu_add_scene"
+        android:title="@string/menu_add_scene"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_menu_add" />
+
+    <item
         android:id="@+id/menu_showdevicename"
         android:title="@string/menu_showdevicename"
         android:showAsAction="collapseActionView|withText" />

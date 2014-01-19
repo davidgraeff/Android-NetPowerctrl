@@ -83,10 +83,11 @@
     <string name="toggle">Umschalten</string>
 
     <string-array name="feedbackOptions">
-        <item>Fehler melden (E-Mail)</item>
-        <item>Fehler melden (Bugtracker)</item>
+        <item>Kontakt zu Entwickler</item>
+        <item>Fehler melden (Ticket System)</item>
         <item>Zum Quellcode</item>
         <item>In Google Play bewerten</item>
+        <item>Spenden per %s</item>
     </string-array>
 
     <string-array name="drawer_titles_outlets">
@@ -170,7 +171,7 @@
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
     <string name="menu_switch_all_ignore">Alle ignorieren</string>
     <string name="menu_help">Hilfe</string>
-    <string name="shortcut_help">Auf diesem Bildschirm siehst du alle eingerichteten Steckdosen. Anfangs hat keine eine Auswirkung auf die fertige Szene und der Name ist jeweils durchgestrichen. Klicke auf einen Namen und wähle eines der Icons aus. Von Links nach Rechts: Ausschalten, Einschalten, Umschalten. Gib einen Namen ein, danach kannst du die Szene speichern.</string>
+    <string name="shortcut_help">Auf diesem Bildschirm siehst du alle eingerichteten Steckdosen. Anfangs hat keine eine Auswirkung auf die fertige Szene. Klicke auf einen Namen und wähle eines der Icons aus. Von Links nach Rechts: Ausschalten, Einschalten, Umschalten. Gib einen Namen ein, danach kannst du die Szene speichern.</string>
     <string name="menu_device_website">Webseite des Geräts aufrufen</string>
     <string name="error_not_reachable">Gerät nicht erreichbar</string>
 
@@ -202,5 +203,7 @@
     <string name="widget_image_on">Widget Aussehen: An</string>
     <string name="widget_image_off">Widget Aussehen: Aus</string>
     <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
-    <string name="crash_toast_text">Ooooops! Ich bin leider abgestürzt :( Aber ein Absturzbericht wird automatisch angefertigt und abgesendet.</string>
+    <string name="crash_toast_text">Ooooops! Ich bin leider abgestürzt :( Aber ein Absturzbericht wird automatisch angefertigt.</string>
+    <string name="outlet_to_scene_title">Erstelle Szene</string>
+    <string name="outlet_to_scene_message">Eine Szene mit allen aktuellen Zuständen der nicht-versteckten Steckdosen erstellen? Bitte einen Namen für die Szene eingeben.</string>
 </resources>

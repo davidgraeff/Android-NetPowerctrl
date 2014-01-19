@@ -165,7 +165,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             public void run() {
                 Intent intent = new Intent(instance, NetpowerctrlService.class);
                 startService(intent);
-            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+                bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
                 // Listen for wifi changes
                 IntentFilter filter = new IntentFilter();
