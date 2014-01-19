@@ -23,6 +23,8 @@ import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.dragdrop.DragDropEnabled;
 import oly.netpowerctrl.dragdrop.DragListener;
 import oly.netpowerctrl.dragdrop.DragNDropListView;
@@ -115,6 +117,37 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                 });
                 return true;
             }
+            case R.id.menu_add_scene:
+                //noinspection ConstantConditions
+                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                alert.setTitle(getResources().getString(R.string.outlet_to_scene_title));
+                alert.setMessage(getResources().getString(R.string.outlet_to_scene_message));
+
+                final EditText input = new EditText(alert.getContext());
+                input.setText("");
+                alert.setView(input);
+
+                alert.setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Scene og = new Scene();
+                        og.sceneName = input.getText().toString();
+                        if (og.sceneName.trim().isEmpty())
+                            return;
+                        for (int i = 0; i < adapter.getCount(); ++i) {
+                            og.add(SceneOutlet.fromOutletInfo(adapter.getItem(i), true));
+                        }
+                        NetpowerctrlActivity.instance.getScenesAdapter().addScene(og);
+                    }
+                });
+
+                alert.setNegativeButton(getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                    }
+                });
+
+                alert.show();
+                return true;
             case R.id.menu_showhidden: {
                 adapter.setShowHidden(true);
                 //noinspection ConstantConditions
@@ -188,7 +221,7 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                 AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
                 alert.setTitle(getResources().getString(R.string.outlet_rename_title));
-                alert.setMessage(getResources().getString(R.string.outlet_rename_message).replaceFirst("%s", oi.getDeviceDescription()));
+                alert.setMessage(getResources().getString(R.string.outlet_rename_message, oi.getDeviceDescription()));
 
                 final EditText input = new EditText(alert.getContext());
                 input.setText(oi.getDescription());

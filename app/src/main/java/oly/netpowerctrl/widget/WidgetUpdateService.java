@@ -14,6 +14,7 @@ import android.util.SparseArray;
 import android.widget.RemoteViews;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceUpdate;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
@@ -153,7 +154,10 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
                     }
 
                     allWidgets.append(appWidgetId, new DeviceInfoOutletNumber(di, outlet.outletNumber));
-                    onDeviceUpdated(di);
+                    if (di.updated)
+                        onDeviceUpdated(di);
+                    else
+                        new DeviceQuery(WidgetUpdateService.this, di);
                 }
 
             }

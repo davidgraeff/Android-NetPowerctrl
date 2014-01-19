@@ -94,6 +94,7 @@ public class ScenesListAdapter extends BaseAdapter implements DragDropEnabled, R
             return;
 
         data.updateDeviceAndOutletLinks();
+        data.sceneDetails = data.buildDetails();
 
         int i = scenes.indexOf(data);
         if (i != -1) {

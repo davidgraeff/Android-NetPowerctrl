@@ -86,10 +86,11 @@
     </string-array>
 
     <string-array name="feedbackOptions">
-        <item>Report a bug (E-Mail)</item>
-        <item>Report a bug (Bugtracker)</item>
-        <item>See the source code</item>
+        <item>Contact developer</item>
+        <item>Report a bug (Ticket system)</item>
+        <item>Go to source code</item>
         <item>Rate in Google Play</item>
+        <item>Donate via %s</item>
     </string-array>
 
     <string-array name="drawer_titles_outlets">
@@ -175,8 +176,8 @@
     <string name="menu_switch_all_toogle">All toggle</string>
     <string name="menu_switch_all_ignore">Ignore all</string>
     <string name="menu_help">Help</string>
-    <string name="shortcut_help">In this screen you can see a list of all your configured outlets. Initially no outlet has effect on the shortcut/scene you want to create and its name is striked through. Click on an entry and choose one of the icons from left to right: Switch off, on, toggle state. Enter a name for the shortcut/scene.</string>
-    <string name="menu_device_website">Goto website of device</string>
+    <string name="shortcut_help">In this screen you can see a list of all your configured outlets. Initially no outlet has effect on the shortcut/scene. Click on an entry and choose one of the icons, from left to right: Switch off, on, toggle state. Enter a name for the shortcut/scene.</string>
+    <string name="menu_device_website">Visit website of the device</string>
     <string name="error_not_reachable">Devices not reachable</string>
     <string name="plugin_drawer_title">Plugins</string>
     <string name="empty_no_scenes">No scene found. Create one by clicking on the (+) icon located in the top-left bar.</string>
@@ -208,5 +209,7 @@
     <string name="widget_image_off">Widget image: Off state</string>
     <string name="widget_image_not_reachable">Widget image: Not available</string>
     <string name="crash_toast_text">Ooooops ! I crashed, but a report has been sent to my developer to help fix the issue!</string>
+    <string name="outlet_to_scene_title">Create scene</string>
+    <string name="outlet_to_scene_message">A scene is created with the current state of all listed, non-hidden outlets. Please enter a scene name.</string>
 
 </resources>
