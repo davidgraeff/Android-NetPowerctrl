@@ -208,7 +208,7 @@
     <string name="widget_image_on">Widget image: On state</string>
     <string name="widget_image_off">Widget image: Off state</string>
     <string name="widget_image_not_reachable">Widget image: Not available</string>
-    <string name="crash_toast_text">Ooooops ! I crashed, but a report has been sent to my developer to help fix the issue!</string>
+    <string name="crash_toast_text">Ooooops ! I crashed, but a report can be sent to my developer to help fix the issue!</string>
     <string name="outlet_to_scene_title">Create scene</string>
     <string name="outlet_to_scene_message">A scene is created with the current state of all listed, non-hidden outlets. Please enter a scene name.</string>
 

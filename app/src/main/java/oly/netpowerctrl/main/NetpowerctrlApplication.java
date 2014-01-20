@@ -42,6 +42,7 @@ import oly.netpowerctrl.utils.ShowToast;
         mode = ReportingInteractionMode.TOAST,
         mailTo = "david.graeff@web.de",
         forceCloseDialogAfterToast = false, // optional, default false
+        additionalSharedPreferences = {SharedPrefs.PREF_BASENAME, SharedPrefs.PREF_GROUPS_BASENAME, SharedPrefs.PREF_WIDGET_BASENAME},
         resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application implements DeviceUpdate, DeviceError {
     public static NetpowerctrlApplication instance;

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="oly.netpowerctrl"
-    android:versionCode="20"
-    android:versionName="2.2">
+    android:versionCode="22"
+    android:versionName="2.2b">
 
-    <!-- Api level 14: Android 4.0 15. Dezember 2011 -->
+<!-- Api level 14: Android 4.0 15. Dezember 2011 -->
     <!-- Api level 16: Android 4.1 27. Juni 2012 -->
     <!--<uses-sdk
         android:minSdkVersion="14"
