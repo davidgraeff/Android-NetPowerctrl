@@ -33,6 +33,7 @@ public class DeviceSend {
     private static final int INQUERY_REQUEST = 0;
     private static final int INQUERY_BROADCAST_REQUEST = 1;
     private static final int NETWORK_UNREACHABLE = 2;
+    private static final int NETWORK_UNKNOWN_HOSTNAME = 3;
 
     // Singleton
     static DeviceSend mInstance = new DeviceSend();
@@ -126,6 +127,7 @@ public class DeviceSend {
 
         SendJob(InetAddress ip, int port, byte[] message, boolean broadcast, int errorID) {
             this.ip = ip;
+            this.hostname = ip.getHostAddress();
             this.message = message;
             this.port = port;
             this.broadcast = broadcast;
@@ -143,40 +145,47 @@ public class DeviceSend {
         @Override
         void process() {
             try {
-                if (hostname != null && hostname.length() > 0) {
+                if (ip == null) {
                     ip = InetAddress.getByName(hostname);
-                    hostname = "";
                 }
                 datagramSocket.setBroadcast(broadcast);
                 datagramSocket.send(new DatagramPacket(message, message.length, ip, port));
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))
-                    onError(NETWORK_UNREACHABLE, ip, port, e);
+                    onError(NETWORK_UNREACHABLE, ip.getHostAddress(), port, e);
                 else {
-                    e.printStackTrace();
-                    onError(errorID, ip, port, e);
+                    onError(errorID, ip.getHostAddress(), port, e);
                 }
+            } catch (final UnknownHostException e) {
+                onError(NETWORK_UNKNOWN_HOSTNAME, hostname, port, e);
             } catch (final Exception e) {
                 e.printStackTrace();
-                onError(errorID, ip, port, e);
+                onError(errorID, hostname, port, e);
             }
         }
     }
 
-    private void onError(int errorID, InetAddress ip, int port, Exception e) {
+    private void onError(int errorID, String ip, int port, Exception e) {
         Context context = NetpowerctrlApplication.instance;
+        if (context == null)
+            return;
+        String exceptionString = (e == null || e.getMessage() == null) ? "" : e.getMessage();
         switch (errorID) {
             case INQUERY_REQUEST:
                 ShowToast.FromOtherThread(context,
-                        context.getResources().getString(R.string.error_sending_inquiry, ip.getHostAddress()) + ": " + e.getMessage());
+                        context.getResources().getString(R.string.error_sending_inquiry, ip) + ": " + exceptionString);
                 break;
             case INQUERY_BROADCAST_REQUEST:
                 ShowToast.FromOtherThread(context,
-                        context.getResources().getString(R.string.error_sending_broadcast_inquiry, port) + ": " + e.getMessage());
+                        context.getResources().getString(R.string.error_sending_broadcast_inquiry, port) + ": " + exceptionString);
                 break;
             case NETWORK_UNREACHABLE:
                 ShowToast.FromOtherThread(context,
-                        context.getResources().getString(R.string.error_not_in_range, ip.getHostAddress()));
+                        context.getResources().getString(R.string.error_not_in_range, ip));
+                break;
+            case NETWORK_UNKNOWN_HOSTNAME:
+                ShowToast.FromOtherThread(context,
+                        context.getResources().getString(R.string.error_not_in_range, ip) + ": " + exceptionString);
                 break;
         }
     }
