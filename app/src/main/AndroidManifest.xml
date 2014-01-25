@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="oly.netpowerctrl"
-    android:versionCode="22"
-    android:versionName="2.2b">
+    android:versionCode="25"
+    android:versionName="2.3b">
 
-<!-- Api level 14: Android 4.0 15. Dezember 2011 -->
+    <!-- Api level 14: Android 4.0 15. Dezember 2011 -->
     <!-- Api level 16: Android 4.1 27. Juni 2012 -->
     <!--<uses-sdk
         android:minSdkVersion="14"
@@ -32,6 +32,7 @@
             android:name="oly.netpowerctrl.main.NetpowerctrlActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
+            android:theme="@style/Theme.StartTheme"
             android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -70,11 +71,12 @@
         </activity>
 
         <activity
+            android:name="oly.netpowerctrl.shortcut.ShortcutCreatorActivity"
             android:icon="@drawable/netpowerctrl"
             android:label="@string/app_name_shortcut"
             android:description="@string/app_name_shortcut_desc"
-            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
-            android:name="oly.netpowerctrl.shortcut.ShortcutCreatorActivity">
+            android:theme="@style/Theme.StartTheme"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
                 <category android:name="android.intent.category.DEFAULT" />

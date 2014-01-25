@@ -1,11 +1,9 @@
 package oly.netpowerctrl.main;
 
 import android.app.Application;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
@@ -24,6 +22,7 @@ import java.util.Set;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceError;
 import oly.netpowerctrl.anelservice.DeviceQuery;
+import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdate;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.DevicesUpdate;
@@ -62,7 +61,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     //! get a list of all send ports of all configured scenes plus the default send port
     public Set<Integer> getAllSendPorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
-        ports.add(SharedPrefs.getDefaultSendPort(this));
+        ports.add(SharedPrefs.getDefaultSendPort());
 
         for (DeviceInfo di : configuredDevices)
             ports.add(di.SendPort);
@@ -73,7 +72,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     //! get a list of all receive ports of all configured scenes plus the default receive port
     public Set<Integer> getAllReceivePorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
-        ports.add(SharedPrefs.getDefaultReceivePort(this));
+        ports.add(SharedPrefs.getDefaultReceivePort());
 
         for (DeviceInfo di : configuredDevices)
             ports.add(di.ReceivePort);
@@ -95,9 +94,9 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         observersConfigured.remove(o);
     }
 
-    private void notifyConfiguredObservers() {
+    private void notifyConfiguredObservers(List<DeviceInfo> changed_devices) {
         for (DevicesUpdate o : observersConfigured)
-            o.onDevicesUpdated();
+            o.onDevicesUpdated(changed_devices);
 
     }
 
@@ -115,9 +114,9 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         observersNew.remove(o);
     }
 
-    private void notifyNewDeviceObservers() {
+    private void notifyNewDeviceObservers(List<DeviceInfo> new_devices) {
         for (DevicesUpdate o : observersNew)
-            o.onDevicesUpdated();
+            o.onDevicesUpdated(new_devices);
     }
 
     @SuppressWarnings("unused")
@@ -137,8 +136,11 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     }
 
     private void notifyServiceReady() {
-        for (ServiceReady o : (ArrayList<ServiceReady>) observersServiceReady.clone())
-            o.onServiceReady(mDiscoverService);
+        Iterator<ServiceReady> it = observersServiceReady.iterator();
+        while (it.hasNext()) {
+            if (!it.next().onServiceReady(mDiscoverService))
+                it.remove();
+        }
     }
 
 
@@ -167,34 +169,9 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 Intent intent = new Intent(instance, NetpowerctrlService.class);
                 startService(intent);
                 bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
-                // Listen for wifi changes
-                IntentFilter filter = new IntentFilter();
-                filter.addAction("android.net.wifi.STATE_CHANGE");
-                filter.addAction("android.net.wifi.supplicant.CONNECTION_CHANGE");
-                registerReceiver(wifiChangedListener, filter);
             }
         }, 300);
     }
-
-    private boolean firstWifiChange = true;
-    BroadcastReceiver wifiChangedListener = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (firstWifiChange) {
-                firstWifiChange = false;
-                return;
-            }
-            //WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    instance.detectNewDevicesAndReachability();
-                }
-            }, 1500);
-        }
-    };
 
     public void useListener() {
         ++mDiscoverServiceRefCount;
@@ -213,11 +190,33 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         }
         if (mDiscoverServiceRefCount == 0) {
             try {
-                mDiscoverServiceRefCount = 0;
                 mDiscoverService = null;
                 mWaitForService = false;
                 unbindService(mConnection);
             } catch (IllegalArgumentException ignored) {
+            }
+
+//            Log.w("stopUseListener","ObserverConfigured: "+Integer.valueOf(observersConfigured.size()).toString() +
+//                    " ObserverNew: "+Integer.valueOf(observersNew.size()).toString()+
+//                    " updateDevices: "+Integer.valueOf(updateDeviceStateList.size()).toString());
+//            for (DevicesUpdate dq: observersConfigured)
+//                Log.w("ObserverConfigured_",dq.getClass().toString());
+
+            // There shouldn't be any device-listen observers anymore,
+            // but we clear the list here nevertheless.
+            for (DeviceQuery dq : updateDeviceStateList)
+                dq.finishWithTimeouts();
+            updateDeviceStateList.clear();
+
+            // stop send queue
+            DeviceSend.instance().interrupt();
+
+            // reset flags
+            suspendWidgetUpdate = 0;
+            newDevices.clear();
+
+            if (SharedPrefs.notifyOnStop()) {
+                ShowToast.FromOtherThread(this, getString(R.string.service_stopped));
             }
         }
     }
@@ -225,12 +224,12 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     /**
      * Detect new devices and check reachability of configured devices
      */
-    private void detectNewDevicesAndReachability() {
+    public void detectNewDevicesAndReachability() {
         // First try a broadcast
         new DeviceQuery(new DeviceUpdateStateOrTimeout() {
             @Override
             public void onDeviceTimeout(DeviceInfo di) {
-                di.updated = true;
+                di.updated = System.currentTimeMillis();
             }
 
             @Override
@@ -238,9 +237,9 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             }
 
             @Override
-            public void onDeviceQueryFinished(int timeout_devices) {
-                if (timeout_devices > 0)
-                    notifyConfiguredObservers();
+            public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+                if (timeout_devices.size() > 0)
+                    notifyConfiguredObservers(timeout_devices);
             }
         });
     }
@@ -315,7 +314,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 configuredDevices.add(new_di);
             }
         }
-        notifyConfiguredObservers();
+        notifyConfiguredObservers(newEntries);
     }
 
     public void addToConfiguredDevices(DeviceInfo current_device, boolean write_to_disk) {
@@ -339,7 +338,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         for (int i = 0; i < newDevices.size(); ++i) {
             if (newDevices.get(i).MacAddress.equals(current_device.MacAddress)) {
                 newDevices.remove(i);
-                notifyNewDeviceObservers();
+                notifyNewDeviceObservers(newDevices);
                 break;
             }
         }
@@ -367,10 +366,12 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 continue;
             target.copyFreshValues(device_info);
             target.reachable = true;
-            target.updated = true;
+            target.updated = System.currentTimeMillis();
 
             // notify all observers
-            notifyConfiguredObservers();
+            List<DeviceInfo> updates_devices = new ArrayList<DeviceInfo>();
+            updates_devices.add(target);
+            notifyConfiguredObservers(updates_devices);
 
             // notify observers who are using the DeviceQuery class
             Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
@@ -390,7 +391,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         }
         // No: Add device to new_device list
         newDevices.add(device_info);
-        notifyNewDeviceObservers();
+        notifyNewDeviceObservers(newDevices);
     }
 
     @Override
@@ -398,10 +399,10 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         // error packet received
         String desc;
         if (errMessage.trim().equals("NoPass"))
-            desc = getResources().getString(R.string.error_nopass);
+            desc = getString(R.string.error_nopass);
         else
             desc = errMessage;
-        String error = getResources().getString(R.string.error_packet_received) + ": " + desc;
+        String error = getString(R.string.error_packet_received) + ": " + desc;
         ShowToast.FromOtherThread(this, error);
     }
 
@@ -412,6 +413,15 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     public DeviceInfo findDevice(String mac_address) {
         for (DeviceInfo di : configuredDevices) {
             if (di.MacAddress.equals(mac_address)) {
+                return di;
+            }
+        }
+        return null;
+    }
+
+    public DeviceInfo findDeviceByHostnameAndIP(String hostname, int port) {
+        for (DeviceInfo di : configuredDevices) {
+            if (di.HostName.equals(hostname) && di.SendPort == port) {
                 return di;
             }
         }
@@ -435,6 +445,6 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     public void saveConfiguredDevices(boolean updateObservers) {
         SharedPrefs.SaveConfiguredDevices(configuredDevices, this);
         if (updateObservers)
-            notifyConfiguredObservers();
+            notifyConfiguredObservers(configuredDevices);
     }
 }

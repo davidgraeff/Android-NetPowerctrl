@@ -12,6 +12,7 @@ import android.util.Log;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.listadapter.PluginValuesAdapter;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -58,7 +59,8 @@ public class PluginRemote implements PluginValuesAdapter.OnValueChanged {
         valuesAdapter.setOnValueChanged(this);
     }
 
-    static PluginRemote createPluginRemote(Context context, int pluginId, String serviceName, String localized_name) {
+    static PluginRemote createPluginRemote(int pluginId, String serviceName, String localized_name) {
+        Context context = NetpowerctrlApplication.instance;
         PluginRemote r = new PluginRemote(context, pluginId, serviceName, localized_name);
         if (!context.bindService(new Intent(INetPwrCtrlPlugin_NAME), r.svcConn, Context.BIND_AUTO_CREATE)) {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));

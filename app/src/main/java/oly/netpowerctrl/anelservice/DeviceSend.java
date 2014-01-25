@@ -2,7 +2,6 @@ package oly.netpowerctrl.anelservice;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -45,41 +44,67 @@ public class DeviceSend {
     /**
      * Call this to stop the send thread.
      */
-//    public void interrupt() {
-//        if (sendThread.isAlive())
-//            q.add(new KillJob());
-//    }
-    public void addSendJob(String hostname, int port, byte[] message, boolean broadcast, int errorID) throws UnknownHostException {
-        if (!sendThread.isAlive())
-            sendThread.start();
-        q.add(new SendJob(hostname, port, message, broadcast, errorID));
+    public void interrupt() {
+        if (sendThread.isAlive()) {
+            sendThread.add(new KillJob());
+            try {
+                sendThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            sendThread = new SendThread();
+        }
+
     }
 
-    public void addSendJob(InetAddress ip, int port, byte[] message, boolean broadcast, int errorID) {
-        if (!sendThread.isAlive())
-            sendThread.start();
-        q.add(new SendJob(ip, port, message, broadcast, errorID));
+    public void addSendJob(DeviceInfo di, byte[] message, int errorID, boolean retryIfFail) {
+        if (!sendThread.isAlive()) {
+            try {
+                sendThread.start();
+            } catch (IllegalThreadStateException ignored) {
+                ignored.printStackTrace();
+            }
+        }
+        SendJob job = new SendJob(di, message, errorID);
+        if (retryIfFail) {
+            new SendJobRepeater(job);
+        }
+        sendThread.add(job);
     }
 
-    private LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<Job>();
-    Runnable qProcessor = new Runnable() {
+    public void addJob(Job job) {
+        if (!sendThread.isAlive()) {
+            try {
+                sendThread.start();
+            } catch (IllegalThreadStateException ignored) {
+                ignored.printStackTrace();
+            }
+        }
+        sendThread.add(job);
+    }
+
+    private static class SendThread extends Thread {
+        private LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<Job>();
+
+        public void add(Job job) {
+            q.add(job);
+        }
+
+        @Override
         public void run() {
             while (true) {
                 try {
                     Job j = q.take();
-
-                    if (j.stopThread()) {
-                        break;
-                    } else {
-                        j.process();
-                    }
+                    j.process(DeviceSend.instance());
                 } catch (InterruptedException e) {
-                    break;
+                    q.clear();
+                    return;
                 }
             }
         }
-    };
-    Thread sendThread = new Thread(qProcessor);
+    }
+
+    SendThread sendThread = new SendThread();
     DatagramSocket datagramSocket;
 
     public DeviceSend() {
@@ -90,25 +115,20 @@ public class DeviceSend {
         }
     }
 
-    static class Job {
-        boolean stopThread() {
-            return (false);
-        }
+    static interface Job {
+        void process(DeviceSend deviceSend) throws InterruptedException;
+    }
 
-        void process() {
+    static class KillJob implements Job {
+        @Override
+        public void process(DeviceSend deviceSend) throws InterruptedException {
+            throw new InterruptedException();
         }
     }
 
-    static class KillJob extends Job {
+    static class WaitJob implements Job {
         @Override
-        boolean stopThread() {
-            return (true);
-        }
-    }
-
-    static class WaitJob extends Job {
-        @Override
-        void process() {
+        public void process(DeviceSend deviceSend) {
             // wait 100ms
             try {
                 Thread.sleep(100);
@@ -117,55 +137,118 @@ public class DeviceSend {
         }
     }
 
-    class SendJob extends Job {
+    static public class SendJob implements Job {
         InetAddress ip = null;
-        String hostname;
-        int port;
+        DeviceInfo di;
         byte[] message;
-        boolean broadcast;
         int errorID;
 
-        SendJob(InetAddress ip, int port, byte[] message, boolean broadcast, int errorID) {
-            this.ip = ip;
-            this.hostname = ip.getHostAddress();
-            this.message = message;
-            this.port = port;
-            this.broadcast = broadcast;
-            this.errorID = errorID;
-        }
+        // References to objects
+        SendJobRepeater sendJobRepeater = null;
 
-        SendJob(String hostname, int port, byte[] message, boolean broadcast, int errorID) {
-            this.hostname = hostname;
+        SendJob(DeviceInfo di, byte[] message, int errorID) {
             this.message = message;
-            this.port = port;
-            this.broadcast = broadcast;
             this.errorID = errorID;
+            this.di = di;
         }
 
         @Override
-        void process() {
+        public void process(DeviceSend deviceSend) {
             try {
                 if (ip == null) {
-                    ip = InetAddress.getByName(hostname);
+                    ip = InetAddress.getByName(di.HostName);
                 }
-                datagramSocket.setBroadcast(broadcast);
-                datagramSocket.send(new DatagramPacket(message, message.length, ip, port));
+                //deviceSend.datagramSocket.setBroadcast(broadcast);
+                deviceSend.datagramSocket.send(new DatagramPacket(message, message.length, ip, di.SendPort));
+                //Log.w("SendJob",ip.getHostAddress());
+                if (sendJobRepeater != null)
+                    sendJobRepeater.startDelayedCheck();
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))
-                    onError(NETWORK_UNREACHABLE, ip.getHostAddress(), port, e);
+                    DeviceSend.onError(NETWORK_UNREACHABLE, ip.getHostAddress(), di.SendPort, e);
                 else {
-                    onError(errorID, ip.getHostAddress(), port, e);
+                    DeviceSend.onError(errorID, ip.getHostAddress(), di.SendPort, e);
                 }
             } catch (final UnknownHostException e) {
-                onError(NETWORK_UNKNOWN_HOSTNAME, hostname, port, e);
+                DeviceSend.onError(NETWORK_UNKNOWN_HOSTNAME, di.HostName, di.SendPort, e);
             } catch (final Exception e) {
                 e.printStackTrace();
-                onError(errorID, hostname, port, e);
+                DeviceSend.onError(errorID, di.HostName, di.SendPort, e);
+            }
+
+            sendJobRepeater = null;
+        }
+
+        public void setRepeater(SendJobRepeater sendJobRepeater) {
+            this.sendJobRepeater = sendJobRepeater;
+        }
+    }
+
+    static public class BroadcastSendJob implements Job {
+        private void sendPacket(DeviceSend deviceSend, InetAddress ip, int SendPort, byte[] message) {
+            try {
+                deviceSend.datagramSocket.setBroadcast(true);
+                deviceSend.datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
+                //Log.w("BroadcastSendJob",ip.getHostAddress());
+            } catch (final SocketException e) {
+                if (e.getMessage().contains("ENETUNREACH"))
+                    DeviceSend.onError(NETWORK_UNREACHABLE, ip.getHostAddress(), SendPort, e);
+                else {
+                    DeviceSend.onError(INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
+                }
+            } catch (final Exception e) {
+                e.printStackTrace();
+                DeviceSend.onError(INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
+            }
+        }
+
+        @Override
+        public void process(DeviceSend deviceSend) {
+            Set<Integer> ports = NetpowerctrlApplication.instance.getAllSendPorts();
+            boolean foundBroadcastAddresses = false;
+
+            Enumeration list;
+            try {
+                list = NetworkInterface.getNetworkInterfaces();
+
+                while (list.hasMoreElements()) {
+                    NetworkInterface iface = (NetworkInterface) list.nextElement();
+
+                    if (iface == null) continue;
+
+                    if (!iface.isLoopback() && iface.isUp()) {
+                        for (InterfaceAddress address : iface.getInterfaceAddresses()) {
+                            //System.out.println("Found address: " + address);
+                            if (address == null) continue;
+                            InetAddress broadcast = address.getBroadcast();
+                            if (broadcast == null) continue;
+                            for (int port : ports)
+                                sendPacket(deviceSend, broadcast, port, "wer da?\r\n".getBytes());
+                            foundBroadcastAddresses = true;
+                        }
+                    }
+                }
+            } catch (SocketException ex) {
+                Log.w("sendBroadcastQuery", "Error while getting network interfaces");
+                ex.printStackTrace();
+            }
+
+            if (!foundBroadcastAddresses) {
+                // Broadcast not allowed on this network. Show hint to user
+//                Toast.makeText(NetpowerctrlApplication.instance,
+//                        NetpowerctrlApplication.instance.getString(R.string.devices_no_new_on_network),
+//                        Toast.LENGTH_SHORT).show();
+
+                // Query all existing devices directly
+                ArrayList<DeviceInfo> devices = NetpowerctrlApplication.instance.configuredDevices;
+                for (DeviceInfo di : devices) {
+                    deviceSend.addSendJob(di, "wer da?\r\n".getBytes(), INQUERY_REQUEST, false);
+                }
             }
         }
     }
 
-    private void onError(int errorID, String ip, int port, Exception e) {
+    private static void onError(int errorID, String ip, int port, Exception e) {
         Context context = NetpowerctrlApplication.instance;
         if (context == null)
             return;
@@ -173,19 +256,19 @@ public class DeviceSend {
         switch (errorID) {
             case INQUERY_REQUEST:
                 ShowToast.FromOtherThread(context,
-                        context.getResources().getString(R.string.error_sending_inquiry, ip) + ": " + exceptionString);
+                        context.getString(R.string.error_sending_inquiry, ip) + ": " + exceptionString);
                 break;
             case INQUERY_BROADCAST_REQUEST:
                 ShowToast.FromOtherThread(context,
-                        context.getResources().getString(R.string.error_sending_broadcast_inquiry, port) + ": " + exceptionString);
+                        context.getString(R.string.error_sending_broadcast_inquiry, port) + ": " + exceptionString);
                 break;
             case NETWORK_UNREACHABLE:
                 ShowToast.FromOtherThread(context,
-                        context.getResources().getString(R.string.error_not_in_range, ip));
+                        context.getString(R.string.error_not_in_range, ip));
                 break;
             case NETWORK_UNKNOWN_HOSTNAME:
                 ShowToast.FromOtherThread(context,
-                        context.getResources().getString(R.string.error_not_in_range, ip) + ": " + exceptionString);
+                        context.getString(R.string.error_not_in_range, ip) + ": " + exceptionString);
                 break;
         }
     }
@@ -199,82 +282,28 @@ public class DeviceSend {
         return data;
     }
 
-    boolean sendBroadcastQuery() {
-        Set<Integer> ports = NetpowerctrlApplication.instance.getAllSendPorts();
-        boolean foundBroadcastAddresses = false;
-
-        Enumeration list;
-        try {
-            list = NetworkInterface.getNetworkInterfaces();
-
-            while (list.hasMoreElements()) {
-                NetworkInterface iface = (NetworkInterface) list.nextElement();
-
-                if (iface == null) continue;
-
-                if (!iface.isLoopback() && iface.isUp()) {
-                    for (InterfaceAddress address : iface.getInterfaceAddresses()) {
-                        //System.out.println("Found address: " + address);
-                        if (address == null) continue;
-                        InetAddress broadcast = address.getBroadcast();
-                        if (broadcast == null) continue;
-                        for (int port : ports)
-                            addSendJob(broadcast, port, "wer da?\r\n".getBytes(), true, INQUERY_BROADCAST_REQUEST);
-                        foundBroadcastAddresses = true;
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            Log.w("sendBroadcastQuery", "Error while getting network interfaces");
-            ex.printStackTrace();
-        }
-
-        if (!foundBroadcastAddresses) {
-            // Broadcast not allowed on this network. Show hint to user
-            Toast.makeText(NetpowerctrlApplication.instance,
-                    NetpowerctrlApplication.instance.getString(R.string.devices_no_new_on_network),
-                    Toast.LENGTH_SHORT).show();
-
-            // Query all existing devices directly
-            ArrayList<DeviceInfo> devices = NetpowerctrlApplication.instance.configuredDevices;
-            for (DeviceInfo di : devices) {
-                sendQuery(di.HostName, di.SendPort);
-            }
-        }
-        return foundBroadcastAddresses;
+    void sendBroadcastQuery() {
+        addJob(new BroadcastSendJob());
     }
 
-    void sendQuery(final String hostname, final int port) {
-        try {
-            addSendJob(hostname, port, "wer da?\r\n".getBytes(), true, INQUERY_REQUEST);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+    void sendQuery(DeviceInfo di) {
+        addSendJob(di, "wer da?\r\n".getBytes(), INQUERY_REQUEST, false);
     }
 
-    public void sendOutlet(final OutletInfo oi, boolean new_state) {
+    public void sendOutlet(final OutletInfo oi, boolean new_state, boolean retryIfFail) {
         String messageStr = String.format(Locale.US, "%s%d%s%s", new_state ? "Sw_on" : "Sw_off",
                 oi.OutletNumber, oi.device.UserName, oi.device.Password);
-        try {
-            addSendJob(oi.device.HostName, oi.device.SendPort, messageStr.getBytes(), true, INQUERY_REQUEST);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        addSendJob(oi.device, messageStr.getBytes(), INQUERY_REQUEST, retryIfFail);
     }
 
     /**
-     * Bulk version of sendOutlets. Send changes for multiple outlets of a device in only one packet.
+     * Bulk version of sendOutlets. Send changes for multiple outlets of one device in only one packet.
      *
-     * @param device The device and state
+     * @param device_command The device command
      */
-    public void sendOutlets(final DeviceCommand device, final boolean requestNewValuesAfterSend) {
-        addSendJob(device.dest, device.port, generateAllOutletsDatagramBytes(device), false, INQUERY_REQUEST);
-
-        if (requestNewValuesAfterSend) {
-            q.add(new WaitJob());
-            // request new values
-            addSendJob(device.dest, device.port, "wer da?\r\n".getBytes(), true, INQUERY_REQUEST);
-        }
+    public void sendOutlets(final DeviceCommand device_command, boolean retryIfFail) {
+        addSendJob(device_command.device, generateAllOutletsDatagramBytes(device_command),
+                INQUERY_REQUEST, retryIfFail);
     }
 
     /**
@@ -282,41 +311,18 @@ public class DeviceSend {
      *
      * @param device_commands Bulk command per device
      */
-    public void sendOutlets(final Collection<DeviceCommand> device_commands, final boolean requestNewValuesAfterSend) {
-        for (DeviceCommand c : device_commands) {
-            addSendJob(c.dest, c.port, generateAllOutletsDatagramBytes(c), false, INQUERY_REQUEST);
-        }
-
-        if (requestNewValuesAfterSend) {
-            q.add(new WaitJob());
-            // request new values from each device
-            for (DeviceCommand device_command : device_commands) {
-                addSendJob(device_command.dest, device_command.port, "wer da?\r\n".getBytes(), true, INQUERY_REQUEST);
-            }
+    public void sendOutlets(final Collection<DeviceCommand> device_commands, boolean retryIfFail) {
+        for (DeviceCommand device_command : device_commands) {
+            addSendJob(device_command.device, generateAllOutletsDatagramBytes(device_command),
+                    INQUERY_REQUEST, retryIfFail);
         }
     }
-//
-//    static private boolean isIPinNetworkAddressPool(InetAddress ip) throws SocketException {
-//        byte[] ipAddressBytes = ip.getAddress();
-//        // Iterate all NICs (network interface cards)...
-//        for (Enumeration networkInterfaceEnumerator = NetworkInterface.getNetworkInterfaces(); networkInterfaceEnumerator.hasMoreElements(); ) {
-//            NetworkInterface networkInterface = (NetworkInterface) networkInterfaceEnumerator.nextElement();
-//            for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-//                InetAddress interfaceIPAddress = interfaceAddress.getAddress();
-//                byte[] interfaceIPBytes = interfaceIPAddress.getAddress();
-//                if (ipAddressBytes.length != interfaceIPBytes.length)
-//                    continue; // different ip versions
-//
-//                byte[] subNetMaskBytes = ByteBuffer.allocate(4).putInt(interfaceAddress.getNetworkPrefixLength()).array();
-//                // check each byte of both addresses while applying the subNet mask
-//                for (int i = 0; i < interfaceIPBytes.length; ++i) {
-//                    if ((ipAddressBytes[i] & subNetMaskBytes[i]) !=
-//                            (interfaceIPBytes[i] & subNetMaskBytes[i]))
-//                        continue; // byte not identical, the ip is not for this network interface
-//                }
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+
+    public void sendQueries(final Collection<DeviceCommand> device_commands) {
+        // request new values from each device
+        for (DeviceCommand device_command : device_commands) {
+            addSendJob(device_command.device, "wer da?\r\n".getBytes(),
+                    INQUERY_REQUEST, false);
+        }
+    }
 }

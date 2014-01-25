@@ -53,9 +53,9 @@ public class Scene {
             }
         }
         Context context = NetpowerctrlApplication.instance;
-        return context.getResources().getString(R.string.off) + ": " + Integer.valueOf(offs).toString() + ", " +
-                context.getResources().getString(R.string.on) + ": " + Integer.valueOf(ons).toString() + ", " +
-                context.getResources().getString(R.string.toggle) + ": " + Integer.valueOf(toggles).toString();
+        return context.getString(R.string.off) + ": " + Integer.valueOf(offs).toString() + ", " +
+                context.getString(R.string.on) + ": " + Integer.valueOf(ons).toString() + ", " +
+                context.getString(R.string.toggle) + ": " + Integer.valueOf(toggles).toString();
     }
 
     public void add(SceneOutlet c) {

@@ -41,7 +41,7 @@ public class ShortcutCreatorActivity extends Activity implements ListItemMenu {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (SharedPrefs.isDarkTheme(this)) {
+        if (SharedPrefs.isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
         } else {
             setTheme(R.style.Theme_CustomLightTheme);

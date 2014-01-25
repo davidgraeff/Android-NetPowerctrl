@@ -1,6 +1,5 @@
 package oly.netpowerctrl.datastructure;
 
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.JsonReader;
@@ -12,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 // this class holds all the info about one device
@@ -38,7 +38,7 @@ public class DeviceInfo implements Parcelable {
 
     // Temporary state variables
     public boolean reachable = false;
-    public boolean updated = false;
+    public long updated = 0;
 
     private static String uuidToString(UUID uuid) {
         return uuid.toString().replace(":", "-");
@@ -70,11 +70,25 @@ public class DeviceInfo implements Parcelable {
         IOs = new ArrayList<OutletInfo>();
     }
 
-    public DeviceInfo(Context cx) {
-        this();
-        DeviceName = cx.getResources().getString(R.string.default_device_name);
-        SendPort = SharedPrefs.getDefaultSendPort(cx);
-        ReceivePort = SharedPrefs.getDefaultReceivePort(cx);
+    public static DeviceInfo createNewDevice() {
+        DeviceInfo di = new DeviceInfo();
+        di.DeviceName = NetpowerctrlApplication.instance.getString(R.string.default_device_name);
+        di.SendPort = SharedPrefs.getDefaultSendPort();
+        di.ReceivePort = SharedPrefs.getDefaultReceivePort();
+        return di;
+    }
+
+    public static DeviceInfo createReceivedDevice(String DeviceName, String HostName,
+                                                  String MacAddress, int receive_port) {
+        DeviceInfo di = new DeviceInfo();
+        di.DeviceName = DeviceName;
+        di.HostName = HostName;
+        di.MacAddress = MacAddress;
+        di.ReceivePort = receive_port;
+
+        di.SendPort = SharedPrefs.getDefaultSendPort();
+        di.reachable = true;
+        return di;
     }
 
     public DeviceInfo(DeviceInfo other) {
@@ -298,5 +312,19 @@ public class DeviceInfo implements Parcelable {
         }
         writer.endArray();
         writer.endObject();
+    }
+
+    /**
+     * Return true if the updated timestamp is after the given timestamp
+     *
+     * @param current_time A timestamp (milliseconds since Jan. 1, 1970)
+     * @return Return true if the updated timestamp is after the given timestamp
+     */
+    public boolean updatedAfter(long current_time) {
+        return updated > current_time;
+    }
+
+    public long getUpdatedTime() {
+        return updated;
     }
 }

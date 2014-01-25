@@ -88,32 +88,25 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        adpConfiguredDevices.finish();
+        adpConfiguredDevices = null;
+        adpOutlets.finish();
+        adpOutlets = null;
         if (isFinishing() && pluginController != null)
             pluginController.destroy();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        instance = this;
+        super.onCreate(savedInstanceState);
         // Set theme, call super onCreate and set content view
-        if (SharedPrefs.isDarkTheme(this)) {
+        if (SharedPrefs.isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
         } else {
             setTheme(R.style.Theme_CustomLightTheme);
         }
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        instance = this;
-
-        // Create view adapters
-        adpConfiguredDevices = new DeviceListAdapter(this, false);
-        adpOutlets = new OutletSwitchListAdapter(this);
-        adpScenes = new ScenesListAdapter(this);
-
-        // References for the drawer
-        mTitle = getTitle();
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
-        mDrawerView = findViewById(R.id.left_drawer);
 
         // Hack to always show the overflow of the actionbar instead of
         // relying on the menu button that is only present on some devices
@@ -134,6 +127,45 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
                     getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
         } catch (PackageManager.NameNotFoundException ignored) {
         }
+
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        //noinspection ConstantConditions
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setHomeButtonEnabled(true);
+
+        // Delayed loading of drawer, plugins and nfc
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                createDrawer();
+
+                // Plugins
+                if (SharedPrefs.getLoadExtensions())
+                    pluginController = new PluginController(mDrawerAdapter);
+
+                // NFC
+                NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(NetpowerctrlActivity.this);
+                if (mNfcAdapter != null) {
+                    // Register callback
+                    mNfcAdapter.setNdefPushMessageCallback(NetpowerctrlActivity.this,
+                            NetpowerctrlActivity.this);
+                }
+            }
+        }, 100);
+    }
+
+    private void createDrawer() {
+
+        // Create view adapters
+        adpConfiguredDevices = new DeviceListAdapter(this, false);
+        adpOutlets = new OutletSwitchListAdapter(this);
+        adpScenes = new ScenesListAdapter(this);
+
+        // References for the drawer
+        mTitle = getTitle();
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer_list);
+        mDrawerView = findViewById(R.id.left_drawer);
 
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -158,15 +190,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawerList.setAdapter(mDrawerAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        // Plugins
-        if (SharedPrefs.getLoadExtensions(this))
-            pluginController = new PluginController(mDrawerAdapter);
-
-
-        // enable ActionBar app icon to behave as action to toggle nav drawer
-        //noinspection ConstantConditions
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
@@ -190,23 +213,21 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         // Restore the last visited screen
-        int pos = mDrawerAdapter.indexOf(SharedPrefs.getFirstTab(this));
+        int pos = mDrawerAdapter.indexOf(SharedPrefs.getFirstTab());
         if (pos == -1) {
             pos = mDrawerAdapter.indexOf(HelpFragment.class.getName());
         }
         selectItem(pos);
 
-        // NFC
-        NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        if (mNfcAdapter != null) {
-            // Register callback
-            mNfcAdapter.setNdefPushMessageCallback(this, this);
-        }
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
     }
 
     /* Called whenever we call invalidateOptionsMenu() */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mDrawerLayout == null)
+            return super.onPrepareOptionsMenu(menu);
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerView);
         drawerControllableByMenuKey = menu.size() <= 2;
@@ -219,6 +240,9 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
     @Override
     public boolean onKeyUp(int keyCode, @SuppressWarnings("NullableProblems") KeyEvent event) {
+        if (mDrawerLayout == null)
+            return super.onKeyUp(keyCode, event);
+
         if (keyCode == KeyEvent.KEYCODE_MENU && drawerControllableByMenuKey) {
             if (mDrawerLayout.isDrawerOpen(mDrawerView))
                 mDrawerLayout.closeDrawer(mDrawerView);
@@ -233,12 +257,14 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         super.onPause();
 
         // Save current tab
-        final int currentPosition = mDrawerList.getCheckedItemPosition();
-        if (currentPosition < mDrawerAdapter.getCount() &&
-                mDrawerAdapter.getItemViewType(currentPosition) != 0) {
-            DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(currentPosition);
-            if (!item.mClazz.equals("") && !item.mClazz.contains("Dialog"))
-                SharedPrefs.setFirstTab(this, item.mClazz);
+        if (mDrawerLayout != null) {
+            final int currentPosition = mDrawerList.getCheckedItemPosition();
+            if (currentPosition < mDrawerAdapter.getCount() &&
+                    mDrawerAdapter.getItemViewType(currentPosition) != 0) {
+                DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(currentPosition);
+                if (!item.mClazz.isEmpty() && !item.mClazz.contains("Dialog"))
+                    SharedPrefs.setFirstTab(item.mClazz);
+            }
         }
 
         // Stop listener
@@ -367,20 +393,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         //noinspection ConstantConditions
         getActionBar().setTitle(mTitle);
     }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
-    }
-
-//    @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig);
-//        // Pass any configuration change to the drawer toggle
-//        mDrawerToggle.onConfigurationChanged(newConfig);
-//    }
 
     public DeviceListAdapter getConfiguredDevicesAdapter() {
         return adpConfiguredDevices;

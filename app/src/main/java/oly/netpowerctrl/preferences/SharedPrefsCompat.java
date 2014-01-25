@@ -106,20 +106,20 @@ public class SharedPrefsCompat {
 
         public static DeviceInfo ReadDevice(Context context, String prefName) {
             SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
-            DeviceInfo di = new DeviceInfo(context);
+            DeviceInfo di = DeviceInfo.createNewDevice();
             di.uuid = UUID.fromString(device_prefs.getString(PREF_UUID, UUID.randomUUID().toString()));
-            di.DeviceName = device_prefs.getString(PREF_NAME, context.getResources().getText(R.string.default_device_name).toString());
+            di.DeviceName = device_prefs.getString(PREF_NAME, context.getString(R.string.default_device_name));
             di.HostName = device_prefs.getString(PREF_IP, "");
             di.MacAddress = device_prefs.getString(PREF_MAC, "");
             di.UserName = device_prefs.getString(PREF_USERNAME, "");
             di.Password = device_prefs.getString(PREF_PASSWORD, "");
             di.DefaultPorts = device_prefs.getBoolean(PREF_DEFAULT_PORTS, true);
             if (di.DefaultPorts) {
-                di.SendPort = SharedPrefs.getDefaultSendPort(context);
-                di.ReceivePort = SharedPrefs.getDefaultReceivePort(context);
+                di.SendPort = SharedPrefs.getDefaultSendPort();
+                di.ReceivePort = SharedPrefs.getDefaultReceivePort();
             } else {
-                di.SendPort = device_prefs.getInt(PREF_SEND_PORT, SharedPrefs.getDefaultSendPort(context));
-                di.ReceivePort = device_prefs.getInt(PREF_RECEIVE_PORT, SharedPrefs.getDefaultReceivePort(context));
+                di.SendPort = device_prefs.getInt(PREF_SEND_PORT, SharedPrefs.getDefaultSendPort());
+                di.ReceivePort = device_prefs.getInt(PREF_RECEIVE_PORT, SharedPrefs.getDefaultReceivePort());
             }
             di.Outlets = new ArrayList<OutletInfo>();
 

@@ -11,7 +11,7 @@ public class DeviceWidgetProvider extends AppWidgetProvider {
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
-            SharedPrefs.DeleteWidgets(context, appWidgetId);
+            SharedPrefs.DeleteWidgets(appWidgetId);
         }
         Intent intent = new Intent(context.getApplicationContext(), WidgetUpdateService.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);

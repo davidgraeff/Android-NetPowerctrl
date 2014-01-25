@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.List;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceError;
 import oly.netpowerctrl.anelservice.DeviceQuery;
@@ -163,7 +165,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
         if (device == null) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
-                    getResources().getString(R.string.error_unknown_device),
+                    getString(R.string.error_unknown_device),
                     Toast.LENGTH_LONG).show();
             //noinspection ConstantConditions
             getFragmentManager().popBackStack();
@@ -224,7 +226,8 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
     }
 
     @Override
-    public void onDeviceQueryFinished(int timeout_devices) {
+    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+
     }
 
     @Override

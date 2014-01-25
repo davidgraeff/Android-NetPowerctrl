@@ -26,7 +26,6 @@ import oly.netpowerctrl.dragdrop.DropListener;
 import oly.netpowerctrl.dragdrop.RemoveListener;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.AfterSentHandler;
 
 public class OutletSwitchListAdapter extends BaseAdapter implements
         ListAdapter, OnCheckedChangeListener, DragDropEnabled, DevicesUpdate, RemoveListener, DropListener {
@@ -48,22 +47,27 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
 
     private List<OutletInfoAdditional> all_outlets;
     private LayoutInflater inflater;
-    public final Context context;
     private boolean showHidden;
     private boolean showDeviceNames;
-    private AfterSentHandler ash = new AfterSentHandler(this);
     private boolean temporary_ignore_positionRequest;
     private NotReachableUpdate notReachableObserver;
     private boolean dragDropEnabled = false;
 
     public OutletSwitchListAdapter(Context context) {
-        this.context = context;
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<OutletInfoAdditional>();
         showHidden = SharedPrefs.getShowHiddenOutlets(context);
         showDeviceNames = SharedPrefs.getShowDeviceNames(context);
         NetpowerctrlApplication.instance.registerConfiguredObserver(this);
-        onDevicesUpdated();
+        onDevicesUpdated(null);
+    }
+
+    /**
+     * Call this "Destructor" while your activity is destroyed.
+     * This will remove all remaining references to this object.
+     */
+    public void finish() {
+        NetpowerctrlApplication.instance.unregisterConfiguredObserver(this);
     }
 
     @Override
@@ -132,16 +136,12 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         arg0.setEnabled(false);
         OutletInfo oi = getItem(position);
         all_outlets.get(position).enabled = false;
-        ash.setData(position, new_state);
-        ash.removeMessages();
-        ash.startDelayedCheck();
-        DeviceSend.instance().sendOutlet(oi, new_state);
+        DeviceSend.instance().sendOutlet(oi, new_state, true);
     }
 
     @Override
-    public void onDevicesUpdated() {
+    public void onDevicesUpdated(List<DeviceInfo> ignored) {
         // Clear
-        ash.removeMessages();
         all_outlets.clear();
 
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
@@ -189,7 +189,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
 
     public void sortAlphabetically() {
         temporary_ignore_positionRequest = true;
-        onDevicesUpdated();
+        onDevicesUpdated(null);
         temporary_ignore_positionRequest = false;
     }
 
@@ -200,8 +200,8 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
 
     public void setShowHidden(boolean b) {
         showHidden = b;
-        onDevicesUpdated();
-        SharedPrefs.setShowHiddenOutlets(showDeviceNames, context);
+        onDevicesUpdated(null);
+        SharedPrefs.setShowHiddenOutlets(showDeviceNames);
     }
 
     /**
@@ -231,8 +231,8 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
 
     public void setShowDeviceNames(boolean showDeviceNames) {
         this.showDeviceNames = showDeviceNames;
-        onDevicesUpdated();
-        SharedPrefs.setShowDeviceNames(showDeviceNames, context);
+        onDevicesUpdated(null);
+        SharedPrefs.setShowDeviceNames(showDeviceNames);
     }
 
     @Override

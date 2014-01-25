@@ -15,6 +15,7 @@ import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
+import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class SharedPrefs {
@@ -34,10 +35,11 @@ public class SharedPrefs {
     public final static String PREF_keep_widget_service_running = "keep_widget_service_running";
     public final static String PREF_use_dark_theme = "use_dark_theme";
     public final static String PREF_load_plugins = "load_plugins";
-    public final static String PREF_widgets = "pref_widgets";
-    public final static String PREF_widgets_list = "pref_widgets_list";
+    public final static String PREF_widgets = "widgets";
+    public final static String PREF_notify_on_stop = "notify_on_stop";
 
-    public static String getFirstTab(Context context) {
+    public static String getFirstTab() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
         String tab = "";
         try {
@@ -47,14 +49,16 @@ public class SharedPrefs {
         return tab;
     }
 
-    public static void setFirstTab(Context context, String fragmentClassName) {
+    public static void setFirstTab(String fragmentClassName) {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = prefs.edit();
         prefEditor.putString(PREF_FIRST_TAB, fragmentClassName);
         prefEditor.commit();
     }
 
-    public static List<Scene> ReadScenes(Context context) {
+    public static List<Scene> ReadScenes() {
+        Context context = NetpowerctrlApplication.instance;
         // Read deprecated scenes
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
         int prefVersion = prefs.getInt(PREF_VERSION_SCENES, 0);
@@ -72,7 +76,8 @@ public class SharedPrefs {
         return null;
     }
 
-    public static void SaveScenes(List<Scene> scenes, Context context) {
+    public static void SaveScenes(List<Scene> scenes) {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = prefs.edit();
         try {
@@ -139,27 +144,32 @@ public class SharedPrefs {
         }
     }
 
-    public static void setShowDeviceNames(boolean showDeviceNames, Context context) {
+    public static void setShowDeviceNames(boolean showDeviceNames) {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("showDeviceNames", showDeviceNames).commit();
     }
 
-    public static void setShowHiddenOutlets(boolean showHiddenOutlets, Context context) {
+    public static void setShowHiddenOutlets(boolean showHiddenOutlets) {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("showHiddenOutlets", showHiddenOutlets).commit();
     }
 
-    public static void savePlugins(Set<String> pluginServiceNameList, Context context) {
+    public static void savePlugins(Set<String> pluginServiceNameList) {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putStringSet("plugins", pluginServiceNameList).commit();
     }
 
-    public static Set<String> readPlugins(Context context) {
+    public static Set<String> readPlugins() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getStringSet("plugins", null);
     }
 
-    public static boolean getLoadExtensions(Context context) {
+    public static boolean getLoadExtensions() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.load_plugins);
         try {
@@ -178,7 +188,8 @@ public class SharedPrefs {
         }
     }
 
-    public static void SaveWidget(Context context, int widgetID, WidgetOutlet wo) {
+    public static void SaveWidget(int widgetID, WidgetOutlet wo) {
+        Context context = NetpowerctrlApplication.instance;
         final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
         SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
         SharedPreferences.Editor device_editor = device_prefs.edit();
@@ -187,13 +198,15 @@ public class SharedPrefs {
         device_editor.commit();
     }
 
-    public static void DeleteWidgets(Context context, int appWidgetId) {
+    public static void DeleteWidgets(int appWidgetId) {
+        Context context = NetpowerctrlApplication.instance;
         final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
         SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
         device_prefs.edit().clear().commit();
     }
 
-    public static WidgetOutlet LoadWidget(Context context, int widgetID) {
+    public static WidgetOutlet LoadWidget(int widgetID) {
+        Context context = NetpowerctrlApplication.instance;
         final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
         SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
 
@@ -204,38 +217,54 @@ public class SharedPrefs {
         return result;
     }
 
-    public static int getDefaultSendPort(Context context) {
+    public static int getDefaultSendPort() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int send_udp = context.getResources().getInteger(R.integer.default_send_port);
         try {
-            send_udp = Integer.parseInt(prefs.getString(PREF_standard_send_port, ""));
+            send_udp = Integer.parseInt(prefs.getString(PREF_standard_send_port, Integer.valueOf(send_udp).toString()));
         } catch (NumberFormatException e) { /*nop*/ }
         return send_udp;
     }
 
-    public static int getDefaultReceivePort(Context context) {
+    public static int getDefaultReceivePort() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int receive_port_udp = context.getResources().getInteger(R.integer.default_receive_port);
         try {
-            receive_port_udp = Integer.parseInt(prefs.getString(PREF_standard_receive_port, ""));
+            receive_port_udp = Integer.parseInt(prefs.getString(PREF_standard_receive_port, Integer.valueOf(receive_port_udp).toString()));
         } catch (NumberFormatException e) { /*nop*/ }
         return receive_port_udp;
     }
 
-    public static boolean getKeepWidgetServiceOn(Context context) {
+    public static boolean getKeepWidgetServiceOn() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.keep_widget_service_running);
         try {
-            keep_widget_service_running = prefs.getBoolean(PREF_keep_widget_service_running, false);
-        } catch (Exception e) { /*nop*/ }
+            keep_widget_service_running = prefs.getBoolean(PREF_keep_widget_service_running, keep_widget_service_running);
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
         return keep_widget_service_running;
     }
 
-    public static boolean isDarkTheme(Context context) {
+    public static boolean isDarkTheme() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.use_dark_theme);
         try {
-            value = prefs.getBoolean(PREF_use_dark_theme, false);
+            value = prefs.getBoolean(PREF_use_dark_theme, value);
+        } catch (NumberFormatException e) { /*nop*/ }
+        return value;
+    }
+
+    public static boolean notifyOnStop() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.notify_on_stop);
+        try {
+            value = prefs.getBoolean(PREF_notify_on_stop, value);
         } catch (NumberFormatException e) { /*nop*/ }
         return value;
     }

@@ -23,16 +23,14 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class ScenesListAdapter extends BaseAdapter implements DragDropEnabled, RemoveListener, DropListener {
-    private Context context;
     private ListItemMenu listItemMenu = null;
     private List<Scene> scenes;
     private LayoutInflater inflater;
     private boolean dragDropEnabled = false;
 
     public ScenesListAdapter(Context context) {
-        this.context = context;
         inflater = LayoutInflater.from(context);
-        scenes = SharedPrefs.ReadScenes(context);
+        scenes = SharedPrefs.ReadScenes();
     }
 
     @Override
@@ -102,19 +100,19 @@ public class ScenesListAdapter extends BaseAdapter implements DragDropEnabled, R
         } else
             scenes.add(data);
 
-        SharedPrefs.SaveScenes(scenes, context);
+        SharedPrefs.SaveScenes(scenes);
         notifyDataSetChanged();
     }
 
     public void removeScene(int position) {
         scenes.remove(position);
-        SharedPrefs.SaveScenes(scenes, context);
+        SharedPrefs.SaveScenes(scenes);
         notifyDataSetChanged();
     }
 
     public void deleteAll() {
         scenes.clear();
-        SharedPrefs.SaveScenes(scenes, context);
+        SharedPrefs.SaveScenes(scenes);
         notifyDataSetChanged();
     }
 
@@ -137,7 +135,7 @@ public class ScenesListAdapter extends BaseAdapter implements DragDropEnabled, R
     public void onRemove(int position) {
         if (position < 0 || position > scenes.size()) return;
         scenes.remove(position);
-        SharedPrefs.SaveScenes(scenes, context);
+        SharedPrefs.SaveScenes(scenes);
     }
 
     @Override
@@ -147,7 +145,7 @@ public class ScenesListAdapter extends BaseAdapter implements DragDropEnabled, R
     }
 
     public void saveScenes() {
-        SharedPrefs.SaveScenes(scenes, context);
+        SharedPrefs.SaveScenes(scenes);
     }
 
     @Override

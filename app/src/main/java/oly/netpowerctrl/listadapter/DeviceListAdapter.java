@@ -19,11 +19,9 @@ public class DeviceListAdapter extends BaseAdapter implements DevicesUpdate {
     private List<DeviceInfo> all_devices;
     private LayoutInflater inflater;
     private boolean showNewDevices;
-    private Context context;
 
     public DeviceListAdapter(Context context, boolean showNewDevices) {
         this.showNewDevices = showNewDevices;
-        this.context = context;
         inflater = LayoutInflater.from(context);
         if (showNewDevices) {
             all_devices = NetpowerctrlApplication.instance.newDevices;
@@ -31,7 +29,18 @@ public class DeviceListAdapter extends BaseAdapter implements DevicesUpdate {
         } else {
             all_devices = NetpowerctrlApplication.instance.configuredDevices;
             NetpowerctrlApplication.instance.registerConfiguredObserver(this);
+        }
+    }
 
+    /**
+     * Call this "Destructor" while your activity is destroyed.
+     * This will remove all remaining references to this object.
+     */
+    public void finish() {
+        if (showNewDevices) {
+            NetpowerctrlApplication.instance.unregisterNewDeviceObserver(this);
+        } else {
+            NetpowerctrlApplication.instance.unregisterConfiguredObserver(this);
         }
     }
 
@@ -68,7 +77,7 @@ public class DeviceListAdapter extends BaseAdapter implements DevicesUpdate {
         if (di.FirmwareVersion.length() > 0)
             subtext += ", " + di.FirmwareVersion;
         if (!di.reachable && !showNewDevices)
-            subtext += ", " + context.getString(R.string.error_not_reachable);
+            subtext += ", " + NetpowerctrlApplication.instance.getString(R.string.error_not_reachable);
         tvIP.setText(subtext);
         if (di.reachable || showNewDevices)
             tvIP.setPaintFlags(tvIP.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
@@ -83,11 +92,11 @@ public class DeviceListAdapter extends BaseAdapter implements DevicesUpdate {
 
     public void setDevices(List<DeviceInfo> new_devices) {
         all_devices = new_devices;
-        onDevicesUpdated();
+        onDevicesUpdated(null);
     }
 
     @Override
-    public void onDevicesUpdated() {
+    public void onDevicesUpdated(List<DeviceInfo> changed_devices) {
         notifyDataSetChanged();
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Net-PwrCtrl</string>
-    <string name="app_name_shortcut">Scene for Net-PwrCtrl</string>
+    <string name="app_name_shortcut">Net-PwrCtrl Scene</string>
     <string name="app_name_shortcut_desc">Start a scene from your home screen</string>
     <string name="app_name_widget">Net-PwrCtrl Outlet State</string>
 
@@ -211,5 +211,8 @@
     <string name="crash_toast_text">Ooooops ! I crashed, but a report can be sent to my developer to help fix the issue!</string>
     <string name="outlet_to_scene_title">Create scene</string>
     <string name="outlet_to_scene_message">A scene is created with the current state of all listed, non-hidden outlets. Please enter a scene name.</string>
+    <string name="service_stopped">Service stopped</string>
+    <string name="preference_notify_on_stop">Notify on app shutdown</string>
+    <string name="preference_notify_on_stop_summary">Activate this to see if really all parts of the app are shutdown on close.</string>
 
 </resources>

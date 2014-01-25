@@ -7,16 +7,19 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.util.SparseArray;
 import android.widget.RemoteViews;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceUpdate;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.anelservice.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
@@ -26,12 +29,12 @@ import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.preferences.WidgetPreferenceFragment;
-import oly.netpowerctrl.shortcut.ShortcutExecutionActivity;
+import oly.netpowerctrl.shortcut.Shortcuts;
 
 /**
  * Widget Update Service
  */
-public class WidgetUpdateService extends Service implements DeviceUpdateStateOrTimeout, DeviceUpdate, ServiceReady, SharedPreferences.OnSharedPreferenceChangeListener {
+public class WidgetUpdateService extends Service implements DeviceUpdateStateOrTimeout, DevicesUpdate, ServiceReady, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String LOG = "WidgetUpdateService";
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
@@ -43,38 +46,39 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         public final DeviceInfo di;
         public final int outletNumber;
         public int lastState = -1;
+        public boolean reachable;
 
         boolean isSameAsLastState(int newState) {
             boolean temp = (lastState != -1) ? newState == lastState : false;
             lastState = newState;
-            return temp;
+            boolean temp2 = di.reachable == reachable;
+            reachable = di.reachable;
+            return temp && temp2;
         }
 
         public DeviceInfoOutletNumber(DeviceInfo di, int outletNumber) {
             this.di = di;
+            this.reachable = di.reachable;
             this.outletNumber = outletNumber;
         }
     }
 
-    private SparseArray<DeviceInfoOutletNumber> widgetUpdateRequests = new SparseArray<DeviceInfoOutletNumber>();
+    private List<Integer> widgetUpdateRequests = new ArrayList<Integer>();
     private SparseArray<DeviceInfoOutletNumber> allWidgets = new SparseArray<DeviceInfoOutletNumber>();
 
     @Override
     public void onDestroy() {
-        NetpowerctrlApplication.instance.stopUseListener();
-
         /**
          * If the service is kept running but now should be finished (preferences changed,
          * system ends service) unregister from the listener service and from the shared preferences
          * changed signal.
          */
         if (keep_service_online) {
-            NetpowerctrlService service = NetpowerctrlApplication.instance.getService();
-            if (service != null)
-                service.unregisterDeviceUpdateObserver(this);
+            NetpowerctrlApplication.instance.unregisterConfiguredObserver(this);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.unregisterOnSharedPreferenceChangeListener(this);
         }
+        NetpowerctrlApplication.instance.stopUseListener();
     }
 
     @Override
@@ -88,9 +92,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
          * If the service is kept running, we will receive further device updates
          * and register on the listener service for this purpose.
          */
-        keep_service_online = SharedPrefs.getKeepWidgetServiceOn(context);
+        keep_service_online = SharedPrefs.getKeepWidgetServiceOn();
+        NetpowerctrlApplication.instance.registerServiceReadyObserver(this);
         if (keep_service_online) {
-            NetpowerctrlApplication.instance.registerServiceReadyObserver(this);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.registerOnSharedPreferenceChangeListener(this);
         }
@@ -115,15 +119,20 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        final int[] allWidgetIds;
+        int command = UPDATE_WIDGET;
+
+        // Empty intent: System recreated the service after low mem situation
         if (intent == null) {
-            Log.w("WidgetUpdateService", "No intent! onStartCommand");
-            return START_NOT_STICKY;
+            allWidgetIds = getAllWidgetIDs();
+        } else {
+            // Extract widget ids from intent
+            allWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+            command = intent.getIntExtra("command", UPDATE_WIDGET);
         }
-        // Extract widget ids from intent
-        final int[] allWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-        int command = intent.getIntExtra("command", 0);
 
         // Exit if no widgets
+        assert allWidgetIds != null;
         if (allWidgetIds.length == 0) {
             return finishServiceIfDone();
         }
@@ -138,11 +147,10 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
         NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
             @Override
-            public void onServiceReady(NetpowerctrlService mDiscoverService) {
-                NetpowerctrlApplication.instance.unregisterServiceReadyObserver(this);
-
+            public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
+                List<DeviceInfo> devicesToUpdate = new ArrayList<DeviceInfo>();
                 for (int appWidgetId : allWidgetIds) {
-                    SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(context, appWidgetId);
+                    SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(appWidgetId);
                     DeviceInfo di = null;
                     if (outlet != null) {
                         di = NetpowerctrlApplication.instance.findDevice(outlet.deviceMac);
@@ -154,12 +162,19 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
                     }
 
                     allWidgets.append(appWidgetId, new DeviceInfoOutletNumber(di, outlet.outletNumber));
-                    if (di.updated)
+                    if (di.updated > 0)
                         onDeviceUpdated(di);
-                    else
-                        new DeviceQuery(WidgetUpdateService.this, di);
+                    else {
+                        devicesToUpdate.add(di);
+                        widgetUpdateRequests.add(appWidgetId);
+                    }
                 }
 
+                if (devicesToUpdate.size() > 0)
+                    new DeviceQuery(WidgetUpdateService.this, devicesToUpdate);
+
+                // Remove the service ready observer
+                return false;
             }
         });
 
@@ -175,21 +190,20 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    private void setWidgetState(int appWidgetId, SceneOutlet c, boolean reachable) {
+    private void setWidgetState(int appWidgetId, OutletInfo oi) {
+        SceneOutlet c = SceneOutlet.fromOutletInfo(oi, true);
         c.state = 2; // switch outlet
-        OutletInfo oi = c.outletinfo;
         Scene og = new Scene();
         og.add(c);
+        og.sceneName = oi.getDescription();
 
         // This intent will be executed by a click on the widget
-        Intent clickIntent = new Intent(context, ShortcutExecutionActivity.class);
-        clickIntent.putExtra("commands", og.toString());
-        //clickIntent.putExtra("widgetId", appWidgetId);
+        Intent clickIntent = Shortcuts.createShortcutExecutionIntent(context, og, false, true);
         clickIntent.setAction(Intent.ACTION_MAIN);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
-        if (!reachable) {
+        if (!oi.device.reachable) {
             views.setImageViewUri(R.id.widget_image,
                     WidgetPreferenceFragment.getURI(this, appWidgetId, "widget_image_not_reachable"));
             views.setTextViewText(R.id.widget_name,
@@ -236,12 +250,12 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
             return;
 
         for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
-            int appWidgetId = widgetUpdateRequests.keyAt(i);
-            DeviceInfoOutletNumber widget_di = widgetUpdateRequests.get(appWidgetId);
+            int appWidgetId = widgetUpdateRequests.get(i);
+            DeviceInfoOutletNumber widget_di = allWidgets.get(appWidgetId);
             if (widget_di.di.equalsFunctional(di)) {
-                widgetUpdateRequests.removeAt(i);
+                widgetUpdateRequests.remove(i);
                 OutletInfo oi = di.findOutlet(widget_di.outletNumber);
-                setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true), di.reachable);
+                setWidgetState(appWidgetId, oi);
                 finishServiceIfDone();
                 return;
             }
@@ -272,15 +286,14 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         for (int appWidgetId : allWidgetIds) {
             DeviceInfoOutletNumber widget_di = allWidgets.get(appWidgetId);
             if (widget_di == null) {
-//                    ShowToast.FromOtherThread(this,
-//                            getString(R.string.error_widget_update, appWidgetId ));
+                setWidgetStateBroken(appWidgetId);
                 continue;
             }
 
             if (widget_di.di.equalsFunctional(di)) {
                 OutletInfo oi = widget_di.di.findOutlet(widget_di.outletNumber);
                 if (!widget_di.isSameAsLastState(oi.State ? 1 : 0)) {
-                    setWidgetState(appWidgetId, SceneOutlet.fromOutletInfo(oi, true), di.reachable);
+                    setWidgetState(appWidgetId, oi);
                 }
             }
         }
@@ -289,26 +302,42 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     }
 
     @Override
-    public void onDeviceQueryFinished(int timeout_devices) {
-
+    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+        for (DeviceInfo di : timeout_devices)
+            onDeviceUpdated(di);
     }
 
     @Override
-    public void onServiceReady(NetpowerctrlService mDiscoverService) {
-        mDiscoverService.registerDeviceUpdateObserver(this);
+    public void onDevicesUpdated(List<DeviceInfo> changed_devices) {
+        for (DeviceInfo di : changed_devices)
+            onDeviceUpdated(di);
+    }
+
+    @Override
+    public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
+        NetpowerctrlApplication.instance.registerConfiguredObserver(this);
+        return true;
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (!SharedPrefs.PREF_keep_widget_service_running.equals(key))
             return;
-        keep_service_online = SharedPrefs.getKeepWidgetServiceOn(this);
+        keep_service_online = SharedPrefs.getKeepWidgetServiceOn();
         finishServiceIfDone();
     }
 
     private int finishServiceIfDone() {
-        if (widgetUpdateRequests.size() == 0 && !keep_service_online) {
+        if (getAllWidgetIDs().length == 0) {
             stopSelf();
+        } else if (widgetUpdateRequests.size() == 0 && !keep_service_online) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (widgetUpdateRequests.size() == 0)
+                        stopSelf();
+                }
+            }, 2000);
         }
         return keep_service_online ? START_STICKY : START_NOT_STICKY;
     }

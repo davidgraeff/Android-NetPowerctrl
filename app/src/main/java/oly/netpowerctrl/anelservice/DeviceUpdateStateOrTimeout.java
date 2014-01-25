@@ -1,5 +1,7 @@
 package oly.netpowerctrl.anelservice;
 
+import java.util.List;
+
 import oly.netpowerctrl.datastructure.DeviceInfo;
 
 /**
@@ -10,5 +12,5 @@ public interface DeviceUpdateStateOrTimeout {
 
     void onDeviceUpdated(DeviceInfo di);
 
-    void onDeviceQueryFinished(int timeout_devices);
+    void onDeviceQueryFinished(List<DeviceInfo> timeout_devices);
 }

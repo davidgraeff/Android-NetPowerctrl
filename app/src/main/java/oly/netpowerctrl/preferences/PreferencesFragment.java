@@ -49,7 +49,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
         int index = 0;
         for (int appWidgetId : allWidgetIds) {
             String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-            SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(getActivity(), appWidgetId);
+            SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(appWidgetId);
             DeviceInfo di = null;
             if (outlet == null) {
                 Log.w("PREFERENCES", "Strange widget ID!");
