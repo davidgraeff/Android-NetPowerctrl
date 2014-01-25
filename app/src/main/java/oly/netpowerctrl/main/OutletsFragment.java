@@ -108,7 +108,7 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                     }
 
                     @Override
-                    public void onDeviceQueryFinished(int timeout_devices) {
+                    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
                         //noinspection ConstantConditions
                         Toast.makeText(getActivity(),
                                 getActivity().getString(R.string.devices_refreshed, detected_devices),
@@ -121,14 +121,14 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                 //noinspection ConstantConditions
                 AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-                alert.setTitle(getResources().getString(R.string.outlet_to_scene_title));
-                alert.setMessage(getResources().getString(R.string.outlet_to_scene_message));
+                alert.setTitle(getString(R.string.outlet_to_scene_title));
+                alert.setMessage(getString(R.string.outlet_to_scene_message));
 
                 final EditText input = new EditText(alert.getContext());
                 input.setText("");
                 alert.setView(input);
 
-                alert.setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                alert.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         Scene og = new Scene();
                         og.sceneName = input.getText().toString();
@@ -141,7 +141,7 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                     }
                 });
 
-                alert.setNegativeButton(getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+                alert.setNegativeButton(getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                     }
                 });
@@ -220,22 +220,22 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                 //noinspection ConstantConditions
                 AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-                alert.setTitle(getResources().getString(R.string.outlet_rename_title));
-                alert.setMessage(getResources().getString(R.string.outlet_rename_message, oi.getDeviceDescription()));
+                alert.setTitle(getString(R.string.outlet_rename_title));
+                alert.setMessage(getString(R.string.outlet_rename_message, oi.getDeviceDescription()));
 
                 final EditText input = new EditText(alert.getContext());
                 input.setText(oi.getDescription());
                 alert.setView(input);
 
-                alert.setPositiveButton(getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+                alert.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         //noinspection ConstantConditions
                         oi.setDescriptionByUser(input.getText().toString());
-                        adapter.onDevicesUpdated();
+                        adapter.onDevicesUpdated(null);
                     }
                 });
 
-                alert.setNegativeButton(getResources().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+                alert.setNegativeButton(getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                     }
                 });

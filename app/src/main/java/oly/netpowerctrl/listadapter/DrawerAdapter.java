@@ -10,8 +10,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
@@ -24,7 +23,7 @@ public class DrawerAdapter extends BaseAdapter {
 
     private List<Object> mItems = new ArrayList<Object>();
     private LayoutInflater inflater;
-    private Map<String, Fragment> mCachedFragments = new TreeMap<String, Fragment>();
+    private WeakHashMap<String, Fragment> mCachedFragments = new WeakHashMap<String, Fragment>();
     private int plugins_position = 0;
     private boolean mHasPlugins = false;
 

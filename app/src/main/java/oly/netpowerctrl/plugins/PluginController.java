@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,8 +29,7 @@ public class PluginController {
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
 
-    private Context context;
-    private DrawerAdapter mDrawerAdapter;
+    private WeakReference<DrawerAdapter> mDrawerAdapter;
     private List<PluginRemote> plugins = new ArrayList<PluginRemote>();
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
@@ -44,9 +44,9 @@ public class PluginController {
     };
 
     public PluginController(DrawerAdapter drawerAdapter) {
-        this.context = NetpowerctrlApplication.instance;
-        context.registerReceiver(onBroadcast, new IntentFilter(PLUGIN_RESPONSE_ACTION));
-        mDrawerAdapter = drawerAdapter;
+        NetpowerctrlApplication.instance.registerReceiver(onBroadcast,
+                new IntentFilter(PLUGIN_RESPONSE_ACTION));
+        mDrawerAdapter = new WeakReference<DrawerAdapter>(drawerAdapter);
 
         recreate();
     }
@@ -54,7 +54,7 @@ public class PluginController {
     public void destroy() {
         // Unregister receiver
         try {
-            context.unregisterReceiver(onBroadcast);
+            NetpowerctrlApplication.instance.unregisterReceiver(onBroadcast);
         } catch (IllegalArgumentException ignored) {
             // We ignore failures of type "Receiver not registered"
         }
@@ -67,7 +67,7 @@ public class PluginController {
             r.destroy();
         }
         plugins.clear();
-        SharedPrefs.savePlugins(pluginServiceNameList, context);
+        SharedPrefs.savePlugins(pluginServiceNameList);
     }
 
     public PluginRemote getPlugin(int pluginId) {
@@ -80,25 +80,25 @@ public class PluginController {
         for (PluginRemote existing_plugin : plugins) {
             if (existing_plugin.serviceName.equals(serviceName)) {
                 existing_plugin.localized_name = localized_name;
-                mDrawerAdapter.updatePluginItem(existing_plugin.localized_name, "", existing_plugin.pluginId);
+                mDrawerAdapter.get().updatePluginItem(existing_plugin.localized_name, "", existing_plugin.pluginId);
                 return;
             }
         }
 
-        PluginRemote plugin = PluginRemote.createPluginRemote(context, plugins.size(), serviceName, localized_name);
+        PluginRemote plugin = PluginRemote.createPluginRemote(plugins.size(), serviceName, localized_name);
 
         if (plugin == null) {
             return;
         }
 
         plugins.add(plugin);
-        mDrawerAdapter.updatePluginItem(plugin.localized_name, "", plugin.pluginId);
+        mDrawerAdapter.get().updatePluginItem(plugin.localized_name, "", plugin.pluginId);
     }
 
     public void recreate() {
         // Use cache to try to bind to already found plugins
         if (plugins.isEmpty()) {
-            Set<String> pluginServiceNameList = SharedPrefs.readPlugins(context);
+            Set<String> pluginServiceNameList = SharedPrefs.readPlugins();
             if (pluginServiceNameList != null) {
                 for (String serviceName : pluginServiceNameList) {
                     initialPluginData(serviceName, serviceName);
@@ -106,18 +106,18 @@ public class PluginController {
             }
         } else {
             for (PluginRemote r : plugins) {
-                mDrawerAdapter.updatePluginItem(r.localized_name, "", r.pluginId);
+                mDrawerAdapter.get().updatePluginItem(r.localized_name, "", r.pluginId);
             }
         }
 
         // Discover plugins
         Intent i = new Intent(PLUGIN_QUERY_ACTION);
         i.putExtra(PAYLOAD_SERVICENAME, NetpowerctrlActivity.class.getCanonicalName());
-        context.sendBroadcast(i);
+        NetpowerctrlApplication.instance.sendBroadcast(i);
     }
 
     public void remove(PluginRemote plugin) {
         plugins.remove(plugin);
-        mDrawerAdapter.removePluginItem(plugin.pluginId);
+        mDrawerAdapter.get().removePluginItem(plugin.pluginId);
     }
 }

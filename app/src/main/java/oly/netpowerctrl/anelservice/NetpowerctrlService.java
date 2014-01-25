@@ -1,7 +1,11 @@
 package oly.netpowerctrl.anelservice;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -101,9 +105,31 @@ public class NetpowerctrlService extends Service {
         return super.onUnbind(intent);
     }
 
+    private int lastNetworkType = 0;
+    BroadcastReceiver networkChangedListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            int type = (cm.getActiveNetworkInfo() == null) ? 0 : cm.getActiveNetworkInfo().getType();
+            if (type == lastNetworkType)
+                return;
+            lastNetworkType = type;
+            //Log.w("NETWORK",Integer.valueOf(lastNetworkType).toString());
+            NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+        }
+    };
+
     private void startDiscoveryThreads() {
         // only start if not yet running
         if (discoveryThreads.size() == 0) {
+            // Listen for wifi changes
+            ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            lastNetworkType = (cm.getActiveNetworkInfo() == null) ? 0 : cm.getActiveNetworkInfo().getType();
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+            registerReceiver(networkChangedListener, filter);
+
             Set<Integer> ports = NetpowerctrlApplication.instance.getAllReceivePorts();
             if (temporary_device != null)
                 ports.add(temporary_device.ReceivePort);
@@ -127,9 +153,13 @@ public class NetpowerctrlService extends Service {
     }
 
     private void stopDiscoveryThreads() {
+        if (discoveryThreads.size() == 0)
+            return;
+
         for (DiscoveryThread thr : discoveryThreads)
             thr.interrupt();
         discoveryThreads.clear();
+        unregisterReceiver(networkChangedListener);
         // socket needs minimal time to really go away
         try {
             Thread.sleep(100);

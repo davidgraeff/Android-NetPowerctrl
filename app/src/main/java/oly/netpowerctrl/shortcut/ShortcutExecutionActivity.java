@@ -8,6 +8,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
@@ -21,6 +22,7 @@ import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
+import oly.netpowerctrl.utils.ShowToast;
 
 public class ShortcutExecutionActivity extends Activity implements DeviceUpdateStateOrTimeout {
     private Scene scene;
@@ -59,13 +61,13 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
 
         NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
             @Override
-            public void onServiceReady(NetpowerctrlService mDiscoverService) {
-                NetpowerctrlApplication.instance.unregisterServiceReadyObserver(this);
+            public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
                 // Suspend widget updates for two update requests
                 // (The first one is a refresh-value-request response, the
                 // other one is for the automatic new-values broadcast of the anel devices)
                 NetpowerctrlApplication.suspendWidgetUpdate = 2;
                 new DeviceQuery(ShortcutExecutionActivity.this, scene.getDevices());
+                return false;
             }
         });
 
@@ -79,8 +81,8 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
 
         if (extra.getBoolean("enable_feedback")) {
             //noinspection ConstantConditions
-            Toast.makeText(this,
-                    this.getString(R.string.scene_executed, scene.sceneName), Toast.LENGTH_SHORT).show();
+            ShowToast.showToast(this,
+                    this.getString(R.string.scene_executed, scene.sceneName), 800);
         }
     }
 
@@ -89,7 +91,7 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
     }
 
     @Override
-    public void onDeviceQueryFinished(int timeout_devices) {
+    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
         Collection<DeviceCommand> deviceCommands = DeviceCommand.fromOutletCommandGroup(scene);
         Iterator<DeviceCommand> it = deviceCommands.iterator();
         while (it.hasNext()) {
@@ -97,7 +99,7 @@ public class ShortcutExecutionActivity extends Activity implements DeviceUpdateS
             if (!c.device.reachable)
                 continue;
             c.device.updateByDeviceCommand(c);
-            DeviceSend.instance().sendOutlets(c, false);
+            DeviceSend.instance().sendOutlets(c, true);
             //it.remove();
         }
         finish();

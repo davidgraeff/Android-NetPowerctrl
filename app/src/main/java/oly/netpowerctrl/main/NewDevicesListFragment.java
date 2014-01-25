@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import java.util.List;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
@@ -39,7 +41,7 @@ public class NewDevicesListFragment extends GridOrListFragment implements Adapte
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_add_device: {
-                show_configure_device_dialog(new DeviceInfo(getActivity()));
+                show_configure_device_dialog(DeviceInfo.createNewDevice());
                 return true;
             }
 
@@ -57,7 +59,7 @@ public class NewDevicesListFragment extends GridOrListFragment implements Adapte
                     }
 
                     @Override
-                    public void onDeviceQueryFinished(int timeout_devices) {
+                    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
                         //noinspection ConstantConditions
                         Toast.makeText(getActivity(),
                                 getActivity().getString(R.string.devices_refreshed, detected_devices),

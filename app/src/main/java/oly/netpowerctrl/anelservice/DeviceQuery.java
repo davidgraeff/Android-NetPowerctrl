@@ -5,6 +5,7 @@ import android.os.Handler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.NetpowerctrlApplication;
@@ -16,10 +17,9 @@ import oly.netpowerctrl.main.NetpowerctrlApplication;
  * all scenes to query.
  */
 public class DeviceQuery {
-    private Collection<DeviceInfo> devices_to_observe;
+    private List<DeviceInfo> devices_to_observe;
     private DeviceUpdateStateOrTimeout target;
     private Handler timeoutHandler = new Handler();
-    private boolean foundBroudcastQueries = false;
 
     private Runnable timeoutRunnable = new Runnable() {
         @Override
@@ -29,26 +29,17 @@ public class DeviceQuery {
                 return;
 
             if (devices_to_observe.isEmpty()) {
-                target.onDeviceQueryFinished(devices_to_observe.size());
+                target.onDeviceQueryFinished(devices_to_observe);
+                NetpowerctrlApplication.instance.removeUpdateDeviceState(DeviceQuery.this);
                 return;
             }
 
-            // Special case: We are able to send broadcasts, but nevertheless not all
-            // configured devices responded, we will send specific queries now
-            if (foundBroudcastQueries) {
-                foundBroudcastQueries = false;
-                for (DeviceInfo di : devices_to_observe) {
-                    DeviceSend.instance().sendQuery(di.HostName, di.SendPort);
-                }
-                // New timeout
-                timeoutHandler.postDelayed(timeoutRunnable, 1200);
-            } else {
-                for (DeviceInfo di : devices_to_observe) {
-                    di.reachable = false;
-                    target.onDeviceTimeout(di);
-                }
-                target.onDeviceQueryFinished(devices_to_observe.size());
+            for (DeviceInfo di : devices_to_observe) {
+                di.reachable = false;
+                target.onDeviceTimeout(di);
             }
+            NetpowerctrlApplication.instance.removeUpdateDeviceState(DeviceQuery.this);
+            target.onDeviceQueryFinished(devices_to_observe);
         }
     };
 
@@ -60,7 +51,7 @@ public class DeviceQuery {
         // Register on main application object to receive device updates
         NetpowerctrlApplication.instance.addUpdateDeviceState(this);
 
-        DeviceSend.instance().sendQuery(device_to_observe.HostName, device_to_observe.SendPort);
+        DeviceSend.instance().sendQuery(device_to_observe);
         timeoutHandler.postDelayed(timeoutRunnable, 1200);
     }
 
@@ -75,7 +66,7 @@ public class DeviceQuery {
 
         // Send out broadcast
         for (DeviceInfo di : devices_to_observe)
-            DeviceSend.instance().sendQuery(di.HostName, di.SendPort);
+            DeviceSend.instance().sendQuery(di);
     }
 
     /**
@@ -92,7 +83,7 @@ public class DeviceQuery {
         NetpowerctrlApplication.instance.addUpdateDeviceState(this);
 
         timeoutHandler.postDelayed(timeoutRunnable, 1200);
-        foundBroudcastQueries = DeviceSend.instance().sendBroadcastQuery();
+        DeviceSend.instance().sendBroadcastQuery();
     }
 
     /**
@@ -114,9 +105,23 @@ public class DeviceQuery {
         if (devices_to_observe.isEmpty()) {
             timeoutHandler.removeCallbacks(timeoutRunnable);
             if (target != null)
-                target.onDeviceQueryFinished(devices_to_observe.size());
+                target.onDeviceQueryFinished(devices_to_observe);
             return true;
         }
         return false;
+    }
+
+    /**
+     * Called right before this object is removed from the Application list
+     * of DeviceQueries because the listener service has been shutdown. All
+     * remaining device queries of this object have to timeout now.
+     */
+    public void finishWithTimeouts() {
+        timeoutHandler.removeCallbacks(timeoutRunnable);
+        for (DeviceInfo di : devices_to_observe) {
+            di.reachable = false;
+            target.onDeviceTimeout(di);
+        }
+        target.onDeviceQueryFinished(devices_to_observe);
     }
 }

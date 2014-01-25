@@ -59,16 +59,24 @@ public class WidgetConfig extends Activity {
 
     private DialogInterface.OnClickListener selectedDeviceListener = new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int item) {
-
             // Get outlets of device
             List<OutletInfo> outlets = devices.get(item).Outlets;
             selectedDeviceMac = devices.get(item).MacAddress;
 
-            CharSequence[] items = new String[outlets.size()];
-            outletNumbers = new int[outlets.size()];
-            for (int i = 0; i < outlets.size(); i++) {
-                items[i] = outlets.get(i).getDescription();
-                outletNumbers[i] = outlets.get(i).OutletNumber;
+            int countDisabled = 0;
+            for (OutletInfo oi : outlets)
+                if (oi.Disabled)
+                    ++countDisabled;
+
+            CharSequence[] items = new String[outlets.size() - countDisabled];
+            outletNumbers = new int[outlets.size() - countDisabled];
+            int i = 0;
+            for (OutletInfo oi : outlets) {
+                if (oi.Disabled)
+                    continue;
+                items[i] = oi.getDescription();
+                outletNumbers[i] = oi.OutletNumber;
+                ++i;
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
@@ -83,7 +91,7 @@ public class WidgetConfig extends Activity {
     private DialogInterface.OnClickListener selectedOutletListener = new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface dialog, int item) {
 
-            SharedPrefs.SaveWidget(ctx, widgetId, new SharedPrefs.WidgetOutlet(selectedDeviceMac, outletNumbers[item]));
+            SharedPrefs.SaveWidget(widgetId, new SharedPrefs.WidgetOutlet(selectedDeviceMac, outletNumbers[item]));
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);

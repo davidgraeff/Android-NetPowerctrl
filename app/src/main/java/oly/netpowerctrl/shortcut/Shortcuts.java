@@ -21,8 +21,8 @@ public class Shortcuts {
         // Create shortcut intent
         Intent shortcutIntent = new Intent(context, ShortcutExecutionActivity.class);
         shortcutIntent.putExtra(ShortcutCreatorActivity.RESULT_SCENE, og.toJSON());
-        shortcutIntent.setClass(context, ShortcutExecutionActivity.class);
-        shortcutIntent.setAction(Intent.ACTION_MAIN);
+        //shortcutIntent.setClass(context, ShortcutExecutionActivity.class);
+        //shortcutIntent.setAction(Intent.ACTION_MAIN);
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);

@@ -4,6 +4,7 @@
     <style name="Theme.CustomLightTheme" parent="android:Theme.Holo.Light">
         <item name="drawer_item_background">#F3F3F4</item>
         <item name="preferences_title_light">@color/text_light</item>
+        <item name="android:windowIsTranslucent">false</item>
     </style>
 
     <style name="Theme.CustomDarkTheme" parent="android:Theme.Holo">
@@ -14,6 +15,14 @@
     <style name="Theme.Transparent" parent="android:Theme.Translucent.NoTitleBar">
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <style name="Theme.StartTheme" parent="android:Theme.Holo">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
     </style>
 
     <style name="Drawer" parent="@android:style/Widget.TextView" />

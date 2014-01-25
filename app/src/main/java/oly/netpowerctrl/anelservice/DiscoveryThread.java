@@ -68,12 +68,8 @@ class DiscoveryThread extends Thread {
             return;
         }
 
-        final DeviceInfo di = new DeviceInfo(service);
-        di.DeviceName = msg[1].trim();
-        di.HostName = msg[2];
-        di.MacAddress = msg[5];
-        di.ReceivePort = receive_port;
-        di.reachable = true;
+        final DeviceInfo di = DeviceInfo.createReceivedDevice(msg[1].trim(),
+                msg[2], msg[5], receive_port);
 
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped

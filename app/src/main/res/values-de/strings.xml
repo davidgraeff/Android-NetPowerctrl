@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Net-PwrCtrl</string>
-    <string name="app_name_shortcut">Szene für Net-PwrCtrl</string>
+    <string name="app_name_shortcut">Net-PwrCtrl Szene</string>
     <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
     <string name="app_name_widget">Net-PwrCtrl Steckdose</string>
 
@@ -22,8 +22,8 @@
     <string name="error_port_lt_1024">(Ports &lt; 1024 sind nur auf gerooteten Geräten möglich)</string>
     <string name="error_outlet_title">Fehler</string>
     <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
-    <string name="error_getting_first_packet">Keine Antwort vom Gerät. Entweder die Ports sind falsch konfiguriert oder das Gerät ist nicht erreichbar. Sie können versuchen, Kommandos zu schicken, aber ob\'s was nützt, ist nicht sicher.</string>
-    <string name="error_setting_outlet">Keine Antwort vom Gerät oder Sie haben keine Berechtigung, diese Steckdose zu schalten.</string>
+    <string name="error_getting_first_packet">Keine Antwort vom Gerät. Entweder die Ports sind falsch konfiguriert oder das Gerät ist nicht erreichbar.</string>
+    <string name="error_setting_outlet">Keine Antwort vom Gerät nach %1$d Versuchen</string>
     <string name="error_shortcut_not_valid">Verknüpfung beschädigt!</string>
     <string name="error_reading_scenes">Szenen konnten nicht geladen werden</string>
 
@@ -206,4 +206,7 @@
     <string name="crash_toast_text">Ooooops! Ich bin leider abgestürzt :( Aber ein Absturzbericht wird automatisch angefertigt.</string>
     <string name="outlet_to_scene_title">Erstelle Szene</string>
     <string name="outlet_to_scene_message">Eine Szene mit allen aktuellen Zuständen der nicht-versteckten Steckdosen erstellen? Bitte einen Namen für die Szene eingeben.</string>
+    <string name="service_stopped">Service beendet</string>
+    <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
+    <string name="preference_notify_on_stop_summary">Diese Option hilft zu überprüfen ob wirklich alles beendet wurde.</string>
 </resources>
