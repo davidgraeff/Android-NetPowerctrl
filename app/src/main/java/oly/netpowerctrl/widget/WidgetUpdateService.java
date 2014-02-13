@@ -208,11 +208,17 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
                     WidgetPreferenceFragment.getURI(this, appWidgetId, "widget_image_not_reachable"));
             views.setTextViewText(R.id.widget_name,
                     context.getString(R.string.widget_outlet_not_reachable, oi.getDescription()));
-        } else {
+        } else if (oi.State) { // On
             views.setImageViewUri(R.id.widget_image, WidgetPreferenceFragment.getURI(this, appWidgetId,
-                    oi.State ? "widget_image_on" : "widget_image_off"));
+                    "widget_image_on"));
+            views.setTextViewText(R.id.widget_name,
+                    context.getString(R.string.widget_outlet_on, oi.getDescription()));
+        } else { // Off
+            views.setImageViewUri(R.id.widget_image, WidgetPreferenceFragment.getURI(this, appWidgetId,
+                    "widget_image_off"));
 
-            views.setTextViewText(R.id.widget_name, oi.getDescription());
+            views.setTextViewText(R.id.widget_name,
+                    context.getString(R.string.widget_outlet_off, oi.getDescription()));
         }
         views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
 

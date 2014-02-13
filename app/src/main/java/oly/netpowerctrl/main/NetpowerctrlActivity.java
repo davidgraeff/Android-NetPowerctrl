@@ -73,9 +73,9 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     private boolean drawerControllableByMenuKey = false;
 
     // Core
-    private DeviceListAdapter adpConfiguredDevices;
-    private OutletSwitchListAdapter adpOutlets;
-    private ScenesListAdapter adpScenes;
+    private DeviceListAdapter adpConfiguredDevices = null;
+    private OutletSwitchListAdapter adpOutlets = null;
+    private ScenesListAdapter adpScenes = null;
 
     // Plugins
     public PluginController pluginController;
@@ -88,12 +88,18 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        adpConfiguredDevices.finish();
-        adpConfiguredDevices = null;
-        adpOutlets.finish();
-        adpOutlets = null;
+        if (adpConfiguredDevices != null) {
+            adpConfiguredDevices.finish();
+            adpConfiguredDevices = null;
+        }
+        if (adpOutlets != null) {
+            adpOutlets.finish();
+            adpOutlets = null;
+        }
+        adpScenes = null;
         if (isFinishing() && pluginController != null)
             pluginController.destroy();
+        instance = null;
     }
 
     @Override
@@ -155,12 +161,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     }
 
     private void createDrawer() {
-
-        // Create view adapters
-        adpConfiguredDevices = new DeviceListAdapter(this, false);
-        adpOutlets = new OutletSwitchListAdapter(this);
-        adpScenes = new ScenesListAdapter(this);
-
         // References for the drawer
         mTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -395,14 +395,29 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     }
 
     public DeviceListAdapter getConfiguredDevicesAdapter() {
+        if (adpConfiguredDevices == null) {
+            adpConfiguredDevices = new DeviceListAdapter(this, false);
+            // update network state
+            NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+        }
         return adpConfiguredDevices;
     }
 
     public OutletSwitchListAdapter getOutletsAdapter() {
+        if (adpOutlets == null) {
+            adpOutlets = new OutletSwitchListAdapter(this);
+            // update network state
+            NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+        }
         return adpOutlets;
     }
 
     public ScenesListAdapter getScenesAdapter() {
+        if (adpScenes == null) {
+            adpScenes = new ScenesListAdapter(this);
+            // update network state
+            NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+        }
         return adpScenes;
     }
 }

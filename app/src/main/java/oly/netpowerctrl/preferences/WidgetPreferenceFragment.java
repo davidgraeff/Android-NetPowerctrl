@@ -5,18 +5,18 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.preference.Preference;
-import android.provider.MediaStore;
-import android.util.Log;
 
-import java.io.File;
+import java.io.FileDescriptor;
+import java.io.IOException;
 
 import oly.netpowerctrl.R;
 
@@ -33,12 +33,12 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment {
                         getPreferenceManager().getSharedPreferences().edit().putString(preference.getKey(), "").commit();
                         preference.setIcon(loadIcon(preference.getKey()));
                     } else {
-                        Intent intent = new Intent();
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                         intent.setType("image/*");
-                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
                         int PICK_IMAGE = 1;
                         current_preference = preference;
-                        startActivityForResult(Intent.createChooser(intent, "Select Widget Icon"), PICK_IMAGE);
+                        startActivityForResult(intent, PICK_IMAGE);
                     }
                     dialogInterface.dismiss();
                 }
@@ -86,43 +86,35 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment {
         preference.setOnPreferenceClickListener(selectImage);
     }
 
+    private Drawable getDrawableFromUri(Uri uri) throws IOException {
+        ParcelFileDescriptor parcelFileDescriptor =
+                getActivity().getContentResolver().openFileDescriptor(uri, "r");
+        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+        parcelFileDescriptor.close();
+        return new BitmapDrawable(getResources(), image);
+    }
+
     public Drawable loadIcon(String key) {
         String uriString = getPreferenceManager().getSharedPreferences().getString(key, null);
-        String filePath = "";
+        Drawable dest = null;
         if (uriString != null && uriString.length() > 0) {
-            Uri selectedImage = Uri.parse(uriString);
-            String[] filePathColumn = {MediaStore.Images.Media.DATA};
-            Cursor cursor = getActivity().getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            filePath = cursor.getString(columnIndex);
-            cursor.close();
+            try {
+                dest = getDrawableFromUri(Uri.parse(uriString));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        if (filePath == null || filePath.isEmpty() || !new File(filePath).exists()) {
+        if (dest == null) {
             if (key.equals("widget_image_on"))
                 return (getResources().getDrawable(R.drawable.widgeton));
             else if (key.equals("widget_image_off"))
                 return (getResources().getDrawable(R.drawable.widgetoff));
             else if (key.equals("widget_image_not_reachable"))
                 return (getResources().getDrawable(R.drawable.widgetunknown));
-            else
-                return null;
-        } else {
-            Bitmap bg;
-            int cvwidth = 128;
-            int cvheight = 128;
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            //options.inJustDecodeBounds = true;
-            bg = BitmapFactory.decodeFile(filePath, options);
-            if (bg == null) {
-                Log.w("WidgetPreferenceFragment", "bg not found: " + filePath);
-                getPreferenceManager().getSharedPreferences().edit().putString(key, "").commit();
-                return loadIcon(key);
-            }
-            bg = Bitmap.createScaledBitmap(bg, cvwidth, cvheight, true);
-            return new BitmapDrawable(getResources(), bg);
         }
+        return dest;
     }
 
     @Override
@@ -131,6 +123,13 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment {
 
         if (resultCode == Activity.RESULT_OK) {
             Uri selectedImage = imageReturnedIntent.getData();
+            final int takeFlags = imageReturnedIntent.getFlags()
+                    & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            // Check for the freshest data.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+                getActivity().getContentResolver().takePersistableUriPermission(selectedImage, takeFlags);
+
             getPreferenceManager().getSharedPreferences().edit().putString(current_preference.getKey(),
                     selectedImage.toString()).commit();
             current_preference.setIcon(loadIcon(current_preference.getKey()));
