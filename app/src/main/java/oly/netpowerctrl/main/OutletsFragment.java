@@ -96,22 +96,21 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
         switch (item.getItemId()) {
             case R.id.menu_requery: {
                 new DeviceQuery(new DeviceUpdateStateOrTimeout() {
-                    private int detected_devices = 0;
-
                     @Override
                     public void onDeviceTimeout(DeviceInfo di) {
                     }
 
                     @Override
                     public void onDeviceUpdated(DeviceInfo di) {
-                        ++detected_devices;
                     }
 
                     @Override
                     public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
                         //noinspection ConstantConditions
                         Toast.makeText(getActivity(),
-                                getActivity().getString(R.string.devices_refreshed, detected_devices),
+                                getActivity().getString(R.string.devices_refreshed,
+                                        NetpowerctrlApplication.instance.getReachableConfiguredDevices(),
+                                        NetpowerctrlApplication.instance.newDevices.size()),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

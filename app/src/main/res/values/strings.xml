@@ -184,7 +184,7 @@
     <string name="empty_no_outlets">No outlets to display. Configure devices first or get in range of configured devices.</string>
     <string name="empty_no_configured_devices">No configured devices found. Configure one first.</string>
     <string name="empty_no_new_devices">No new devices found. You may have configured all devices already or you have setup wrong ports in the preferences.</string>
-    <string name="devices_refreshed">Found %1$d devices on this network</string>
+    <string name="devices_refreshed">Found %1$d known and %2$d unknown devices on this network</string>
     <string name="error_not_in_range">Destination network %1$s not in range</string>
     <string name="menu_hidedevicename">Hide device names</string>
     <string name="menu_showdragdrop">Enter move mode</string>
@@ -202,6 +202,8 @@
     <string name="error_widget_update">Internal error: Widget %1$d</string>
     <string name="error_widget_device_removed">Device removed!</string>
     <string name="widget_outlet_not_reachable">%1$s (not reachable)</string>
+    <string name="widget_outlet_on">%1$s (on)</string>
+    <string name="widget_outlet_off">%1$s (off)</string>
     <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
     <string name="devices_no_new_on_network">Hint: This network does not allow new-device recognition</string>
     <string name="pref_widgets">Widgets</string>

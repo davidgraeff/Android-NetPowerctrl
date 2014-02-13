@@ -28,12 +28,6 @@ public class DeviceQuery {
             if (target == null)
                 return;
 
-            if (devices_to_observe.isEmpty()) {
-                target.onDeviceQueryFinished(devices_to_observe);
-                NetpowerctrlApplication.instance.removeUpdateDeviceState(DeviceQuery.this);
-                return;
-            }
-
             for (DeviceInfo di : devices_to_observe) {
                 di.reachable = false;
                 target.onDeviceTimeout(di);

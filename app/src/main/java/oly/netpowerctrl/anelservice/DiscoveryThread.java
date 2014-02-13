@@ -1,5 +1,7 @@
 package oly.netpowerctrl.anelservice;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -89,6 +91,7 @@ class DiscoveryThread extends Thread {
             if (msg.length > 23) {
                 for (int i = 16; i <= 23; ++i) {
                     String io_port[] = msg[i].split(",");
+                    Log.w("RECEIVE io", msg[i]);
                     if (io_port.length != 3) continue;
                     // Filter out inputs
                     if (io_port[1].equals("1"))
@@ -101,7 +104,7 @@ class DiscoveryThread extends Thread {
                     di.IOs.add(oi);
                 }
                 di.Temperature = msg[24];
-                di.FirmwareVersion = msg[25];
+                di.FirmwareVersion = msg[25].trim();
             }
 
         }

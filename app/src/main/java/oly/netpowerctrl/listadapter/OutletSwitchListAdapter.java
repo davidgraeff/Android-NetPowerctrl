@@ -139,6 +139,29 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         DeviceSend.instance().sendOutlet(oi, new_state, true);
     }
 
+    private void addOutlet(DeviceInfo device, OutletInfo oi) {
+        oi.device = device;
+        if (oi.Disabled || (oi.Hidden && !showHidden))
+            return;
+
+        OutletInfoAdditional new_oi = new OutletInfoAdditional(oi, showDeviceNames);
+
+        boolean found = false;
+        for (int i = 0; i < all_outlets.size(); ++i) {
+            boolean behind_current = temporary_ignore_positionRequest ?
+                    all_outlets.get(i).displayText.compareTo(new_oi.displayText) > 0 :
+                    all_outlets.get(i).oi.positionRequest > new_oi.oi.positionRequest;
+
+            if (behind_current) {
+                all_outlets.add(i, new_oi);
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            all_outlets.add(new_oi);
+    }
+
     @Override
     public void onDevicesUpdated(List<DeviceInfo> ignored) {
         // Clear
@@ -147,30 +170,17 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
         List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
         for (DeviceInfo device : all_devices) {
-            if (!device.reachable)
+            if (!device.reachable) {
                 not_reachable.add(device);
+                continue;
+            }
 
             for (OutletInfo oi : device.Outlets) {
-                oi.device = device;
-                if (oi.Disabled || (oi.Hidden && !showHidden))
-                    continue;
+                addOutlet(device, oi);
+            }
 
-                OutletInfoAdditional new_oi = new OutletInfoAdditional(oi, showDeviceNames);
-
-                boolean found = false;
-                for (int i = 0; i < all_outlets.size(); ++i) {
-                    boolean behind_current = temporary_ignore_positionRequest ?
-                            all_outlets.get(i).displayText.compareTo(new_oi.displayText) > 0 :
-                            all_outlets.get(i).oi.positionRequest > new_oi.oi.positionRequest;
-
-                    if (behind_current) {
-                        all_outlets.add(i, new_oi);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                    all_outlets.add(new_oi);
+            for (OutletInfo oi : device.IOs) {
+                addOutlet(device, oi);
             }
         }
 
@@ -192,7 +202,6 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         onDevicesUpdated(null);
         temporary_ignore_positionRequest = false;
     }
-
 
     public boolean getIsShowingHidden() {
         return showHidden;

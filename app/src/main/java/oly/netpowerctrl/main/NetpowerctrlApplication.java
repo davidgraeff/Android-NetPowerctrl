@@ -224,7 +224,24 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     /**
      * Detect new devices and check reachability of configured devices
      */
+    private boolean isDetecting = false;
+
     public void detectNewDevicesAndReachability() {
+
+        // The following mechanism allows only one update request within a
+        // 1sec timeframe.
+        if (isDetecting)
+            return;
+
+        isDetecting = true;
+        Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isDetecting = false;
+            }
+        }, 1000);
+
         // First try a broadcast
         new DeviceQuery(new DeviceUpdateStateOrTimeout() {
             @Override
@@ -446,5 +463,13 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         SharedPrefs.SaveConfiguredDevices(configuredDevices, this);
         if (updateObservers)
             notifyConfiguredObservers(configuredDevices);
+    }
+
+    public int getReachableConfiguredDevices() {
+        int r = 0;
+        for (DeviceInfo di : configuredDevices)
+            if (di.reachable)
+                ++r;
+        return r;
     }
 }

@@ -180,7 +180,7 @@
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden. Richte zuerst ein Gerät ein.</string>
     <string name="empty_no_configured_devices">Keine eingerichteten Geräte gefunden.</string>
     <string name="empty_no_new_devices">Keine neuen Geräte gefunden. Entweder sind bereits alle eingerichtet oder du hast falsche Ports in den Einstellungen ausgewählt.</string>
-    <string name="devices_refreshed">Es wurden %1$d Geräte im Netzwerk gefunden</string>
+    <string name="devices_refreshed">Es wurden %1$d bekannte und %2$d unbekannte Geräte gefunden</string>
     <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
     <string name="menu_showdragdrop">Starte Verschiebemodus</string>
     <string name="menu_hidedragdrop">Beende Verschiebemodus</string>
@@ -197,6 +197,8 @@
     <string name="error_widget_update">Interner Fehler: Widget %1$d</string>
     <string name="error_widget_device_removed">Gerät entfernt!</string>
     <string name="widget_outlet_not_reachable">%1$s (nicht erreichbar)</string>
+    <string name="widget_outlet_on">%1$s (An)</string>
+    <string name="widget_outlet_off">%1$s (Aus)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
     <string name="devices_no_new_on_network">Hinweis: Dieses Netwerk erlaubt keine Geräte Erkennung</string>
     <string name="pref_widgets">Widgets</string>
