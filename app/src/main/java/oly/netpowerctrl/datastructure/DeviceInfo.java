@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 // this class holds all the info about one device
@@ -39,6 +39,7 @@ public class DeviceInfo implements Parcelable {
     // Temporary state variables
     public boolean reachable = false;
     public long updated = 0;
+    public boolean configured = false;
 
     private static String uuidToString(UUID uuid) {
         return uuid.toString().replace(":", "-");
@@ -104,6 +105,7 @@ public class DeviceInfo implements Parcelable {
         HttpPort = other.HttpPort;
         Temperature = other.Temperature;
         FirmwareVersion = other.FirmwareVersion;
+        configured = other.configured;
         Outlets = new ArrayList<OutletInfo>();
         IOs = new ArrayList<OutletInfo>();
         for (OutletInfo oi : other.Outlets)
@@ -236,6 +238,7 @@ public class DeviceInfo implements Parcelable {
     public static DeviceInfo fromJSON(JsonReader reader) throws IOException {
         reader.beginObject();
         DeviceInfo di = new DeviceInfo();
+        di.configured = true;
         while (reader.hasNext()) {
             String name = reader.nextName();
             if (name.equals("uuid")) {

@@ -17,4 +17,6 @@
     <item format="boolean" name="notify_on_stop" type="bool">False</item>
     <item format="boolean" name="load_plugins" type="bool">False</item>
 
+    <item format="integer" name="grid_columns_outlets" type="integer">1</item>
+    <item format="integer" name="grid_columns_scenes" type="integer">3</item>
 </resources>

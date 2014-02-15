@@ -10,9 +10,8 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.listadapter.PluginValuesAdapter;
-import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -46,7 +45,7 @@ public class PluginRemote implements PluginValuesAdapter.OnValueChanged {
 
         public void onServiceDisconnected(ComponentName className) {
             service = null;
-            NetpowerctrlActivity.instance.getPluginController().remove(PluginRemote.this);
+            NetpowerctrlApplication.instance.getPluginController().remove(PluginRemote.this);
         }
     };
 

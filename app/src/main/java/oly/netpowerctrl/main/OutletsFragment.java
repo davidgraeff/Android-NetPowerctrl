@@ -1,8 +1,10 @@
 package oly.netpowerctrl.main;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -10,8 +12,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,21 +23,20 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceQuery;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneOutlet;
-import oly.netpowerctrl.dragdrop.DragDropEnabled;
-import oly.netpowerctrl.dragdrop.DragListener;
-import oly.netpowerctrl.dragdrop.DragNDropListView;
-import oly.netpowerctrl.dragdrop.DropListener;
+import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.NotReachableUpdate;
 import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
-import oly.netpowerctrl.utils.GridOrListFragment;
+import oly.netpowerctrl.utils.OnBackButton;
 
 /**
  */
-public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnMenuItemClickListener, NotReachableUpdate, AdapterView.OnItemClickListener {
+public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
+        NotReachableUpdate, AdapterView.OnItemClickListener, OnBackButton {
     private OutletSwitchListAdapter adapter;
     private TextView hintText;
 
@@ -45,13 +46,14 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = NetpowerctrlActivity.instance.getOutletsAdapter();
+        adapter = new OutletSwitchListAdapter(getActivity());
+        NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
         setHasOptionsMenu(true);
     }
 
     @Override
     public void onDestroy() {
-        adapter.setNotReachableObserver(null);
+        adapter.finish();
         super.onDestroy();
     }
 
@@ -59,36 +61,14 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.outlets, menu);
         boolean hiddenShown = false;
-        boolean devicesShown = false;
-        boolean dragDropEnabled = false;
         if (adapter != null) {
             hiddenShown = adapter.getIsShowingHidden();
-            devicesShown = adapter.isShowDeviceNames();
-            if (mListView instanceof DragDropEnabled) {
-                dragDropEnabled = ((DragDropEnabled) mListView).isDragDropEnabled();
-            }
         }
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_showhidden).setVisible(!hiddenShown);
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_hidehidden).setVisible(hiddenShown);
 
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_showdevicename).setVisible(!devicesShown);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_hidedevicename).setVisible(devicesShown);
-
-        if (mListView instanceof DragDropEnabled) {
-            //noinspection ConstantConditions
-            menu.findItem(R.id.menu_showdragdrop).setVisible(!dragDropEnabled);
-            //noinspection ConstantConditions
-            menu.findItem(R.id.menu_hidedragdrop).setVisible(dragDropEnabled);
-        } else {
-            //noinspection ConstantConditions
-            menu.findItem(R.id.menu_showdragdrop).setVisible(false);
-            //noinspection ConstantConditions
-            menu.findItem(R.id.menu_hidedragdrop).setVisible(false);
-        }
     }
 
     @Override
@@ -109,8 +89,8 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                         //noinspection ConstantConditions
                         Toast.makeText(getActivity(),
                                 getActivity().getString(R.string.devices_refreshed,
-                                        NetpowerctrlApplication.instance.getReachableConfiguredDevices(),
-                                        NetpowerctrlApplication.instance.newDevices.size()),
+                                        NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
+                                        NetpowerctrlApplication.getDataController().newDevices.size()),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -159,53 +139,53 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
                 getActivity().invalidateOptionsMenu();
                 return true;
             }
-            case R.id.menu_showdevicename: {
-                adapter.setShowDeviceNames(true);
-                //noinspection ConstantConditions
-                getActivity().invalidateOptionsMenu();
-                return true;
-            }
-            case R.id.menu_hidedevicename: {
-                adapter.setShowDeviceNames(false);
-                //noinspection ConstantConditions
-                getActivity().invalidateOptionsMenu();
-                return true;
-            }
-            case R.id.menu_showdragdrop: {
-                ((DragDropEnabled) mListView).setDragDropEnabled(true);
-                //noinspection ConstantConditions
-                getActivity().invalidateOptionsMenu();
-                return true;
-            }
-            case R.id.menu_hidedragdrop: {
-                ((DragDropEnabled) mListView).setDragDropEnabled(false);
-                //noinspection ConstantConditions
-                getActivity().invalidateOptionsMenu();
-                return true;
-            }
+
             case R.id.menu_sortAlphabetically: {
                 adapter.sortAlphabetically();
-                NetpowerctrlApplication.instance.saveConfiguredDevices(false);
+                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
             }
         }
         return false;
     }
 
+    private DynamicGridView mListView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-        assert view != null;
-        hintText = (TextView) view.findViewById(R.id.hintText);
-        emptyText.setText(R.string.empty_no_outlets);
-        adapter.setNotReachableObserver(this);
-        mListView.setAdapter(adapter);
+        final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
+        mListView = (DynamicGridView) view.findViewById(android.R.id.list);
         mListView.setOnItemClickListener(this);
-        if (mListView instanceof DragNDropListView) {
-            ((DragNDropListView) mListView).setDropListener(mDropListener);
-            ((DragNDropListView) mListView).setDragListener(mDragListener);
-        }
-        setAutoCheckDataAvailable(true);
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getActivity(), getActivity().getString(R.string.hint_stop_edit), Toast.LENGTH_SHORT).show();
+                mListView.startEditMode();
+                return false;
+            }
+        });
+        mListView.setAdapter(adapter);
+        hintText = (TextView) view.findViewById(R.id.hintText);
+        adapter.setNotReachableObserver(this);
+        mListView.setAutomaticNumColumns(true, 350);
+        mListView.setEmptyView(view.findViewById(R.id.loading));
+        // We assign the empty view after a short delay time,
+        // to reduce visual flicker on app start, where data
+        // is loaded with a high chance within the first 500ms.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mListView.setEmptyView(view.findViewById(android.R.id.empty));
+            }
+        }, 1000);
+
+        Button btn = (Button) view.findViewById(R.id.btnChangeToDevices);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NetpowerctrlActivity.instance.changeToFragment(DevicesListFragment.class.getName());
+            }
+        });
         return view;
     }
 
@@ -244,12 +224,12 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
             }
             case R.id.menu_hide_outlet: {
                 oi.Hidden = true;
-                NetpowerctrlApplication.instance.saveConfiguredDevices(true);
+                NetpowerctrlApplication.getDataController().saveConfiguredDevices(true);
                 return true;
             }
             case R.id.menu_unhide_outlet: {
                 oi.Hidden = false;
-                NetpowerctrlApplication.instance.saveConfiguredDevices(true);
+                NetpowerctrlApplication.getDataController().saveConfiguredDevices(true);
                 return true;
             }
         }
@@ -289,28 +269,12 @@ public class OutletsFragment extends GridOrListFragment implements PopupMenu.OnM
         popup.show();
     }
 
-    private DropListener mDropListener = new DropListener() {
-        public void onDrop(int from, int to) {
-            adapter.onDrop(from, to);
-            mListView.invalidateViews();
+    @Override
+    public boolean onBackButton() {
+        if (mListView.isEditMode()) {
+            mListView.stopEditMode();
+            return true;
         }
-    };
-
-    private DragListener mDragListener = new DragListener() {
-        public void onStartDrag(View itemView) {
-            ImageView iv = (ImageView) itemView.findViewById(R.id.MoveHandler);
-            if (iv != null) iv.setVisibility(View.INVISIBLE);
-        }
-
-        /**
-         * Drag/Drop operation finished: Save devices/outlets.
-         * @param itemView - the view of the item to be dragged i.e. the drag view
-         */
-        public void onStopDrag(View itemView) {
-            ImageView iv = (ImageView) itemView.findViewById(R.id.MoveHandler);
-            if (iv != null) iv.setVisibility(View.VISIBLE);
-            NetpowerctrlApplication.instance.saveConfiguredDevices(false);
-        }
-
-    };
+        return false;
+    }
 }

@@ -9,15 +9,9 @@
     android:paddingRight="12dip"
     android:clickable="false"
     android:descendantFocusability="blocksDescendants"
+    android:background="@drawable/item_selector"
     android:focusable="false"
     android:focusableInTouchMode="false">
-
-    <ImageView
-        android:id="@+id/MoveHandler"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/move_handler"
-        android:layout_gravity="center_vertical"></ImageView>
 
     <TextView
         android:id="@+id/outlet_list_text"

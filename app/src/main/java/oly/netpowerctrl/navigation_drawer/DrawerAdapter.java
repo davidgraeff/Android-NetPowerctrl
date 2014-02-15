@@ -1,4 +1,4 @@
-package oly.netpowerctrl.listadapter;
+package oly.netpowerctrl.navigation_drawer;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -14,7 +14,6 @@ import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.main.PluginFragment;
 
 /**
  * Adapter with items and headers
@@ -32,6 +31,7 @@ public class DrawerAdapter extends BaseAdapter {
         public String mTitle;
         public String mSummary;
         public String mClazz;
+        public String mAccompanyClazz;
         public boolean mDialog;
         public int mExtra;
 
@@ -63,6 +63,15 @@ public class DrawerAdapter extends BaseAdapter {
         }
     }
 
+
+    public void setAccompanyFragment(String existingFragment, String accompanyFragment) {
+        int i = indexOf(existingFragment);
+        if (i == -1)
+            return;
+        DrawerItem item = (DrawerItem) mItems.get(i);
+        item.mAccompanyClazz = accompanyFragment;
+    }
+
     public int indexOf(String className) {
         for (int i = 0; i < mItems.size(); i++) {
             if (getItemViewType(i) == 1) {
@@ -86,26 +95,26 @@ public class DrawerAdapter extends BaseAdapter {
         return mCachedFragments.get(name);
     }
 
-    public void updatePluginItem(String title, String summary, int pluginId) {
-        if (!hasPlugins())
-            addPluginHeader(NetpowerctrlActivity.instance.getString(R.string.plugin_drawer_title));
-
-        for (int i = 0; i < mItems.size(); i++) {
-            if (getItemViewType(i) == 1) {
-                DrawerItem item = (DrawerItem) mItems.get(i);
-                if (item.mExtra == pluginId) {
-                    item.mTitle = title;
-                    item.mSummary = summary;
-                    notifyDataSetChanged();
-                    return;
-                }
-            }
-        }
-
-        mItems.add(plugins_position, new DrawerItem(title, summary, PluginFragment.class.getName(), false, pluginId));
-        ++plugins_position;
-        notifyDataSetChanged();
-    }
+//    public void updatePluginItem(String title, String summary, int pluginId) {
+//        if (!hasPlugins())
+//            addPluginHeader(NetpowerctrlActivity.instance.getString(R.string.plugin_drawer_title));
+//
+//        for (int i = 0; i < mItems.size(); i++) {
+//            if (getItemViewType(i) == 1) {
+//                DrawerItem item = (DrawerItem) mItems.get(i);
+//                if (item.mExtra == pluginId) {
+//                    item.mTitle = title;
+//                    item.mSummary = summary;
+//                    notifyDataSetChanged();
+//                    return;
+//                }
+//            }
+//        }
+//
+//        mItems.add(plugins_position, new DrawerItem(title, summary, PluginFragment.class.getName(), false, pluginId));
+//        ++plugins_position;
+//        notifyDataSetChanged();
+//    }
 
     public boolean hasPlugins() {
         return mHasPlugins;

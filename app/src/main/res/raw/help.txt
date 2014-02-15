@@ -1,52 +1,9 @@
-﻿<h2>NET-PwrCtrl Help</h2>
-If you are using this app for the first time, take a moment
-and read this introduction text. We begin with
-configuring a NET-PwrCtrl device, go on with an explanation
-of the outlet list view and after that we show you how to
-create <i>scenes</i> to switch
-a group of outlets at the same time with only a single action.
-Scenes can be stored on your favorite launcher as an icon.
-This tutorial ends with some information about how to
-exchange NET-PwrCtrl device configurations between android
-mobiles and tablets and configuration backups.
-
-<h3>Navigation</h3>
-Move your finger to the left screen edge and swipe to the right to see
-the navigation menu. Actions, specific to one of the screen, reachable from there,
-are listed in the top right corner next to the title.
-
-<h3>Configuration</h3>
-<blockquote>Move your finger to the left screen edge and swipe to the right to see
-the navigation menu. Choose <b>"Add new device"</b>.</blockquote>
-
-Lorep ipsum dolor set...
-
-<h3>Switching outlets</h3>
-<blockquote>Move your finger to the left screen edge and swipe to the right to see
-the navigation menu. Choose <b>"Outlet list"</b>.</blockquote>
-If you use a mobile, you see a list of all outlets from all configured devices. If you use
-a tablet you will see a grid of those outlets. If you click on one of them, its state will be toggled
-immediately.
-
-<h3>Scenes and launcher shortcuts</h3>
-<blockquote>Move your finger to the left screen edge and swipe to the right to see
-the navigation menu. Choose <b>"Scenes"</b>.</blockquote>
-<p>To create a scene, click on the plus icon of the action area. In the following screen, you may
-choose an action for each outlet. An action is on of these: Switch on, off, toggle.
-Additionally you may name the scene now. You can always rename a scene from the list of scenes, by
-making a long tap on a scene's name.</p>
-
-<p>
-To create a launcher shortcut the actual operation depends on your launcher. Usually you long press
-on a free space of your launcher and choose the "Shortcut" menu entry. A list pops up with all applications
-which support shortcuts. Select this app. From here on it is the same procedure as with creating a scene.
-</p>
-
-<h3>Exchange/Backup device configuration</h3>
+﻿<h3>Exchange/Backup device configuration</h3>
 <p>Your devices configuration is automatically backed up by the Google app-data Backup Service.
 If you uninstall and reinstall the application, your configuration should be restored.
 At the moment there is no way to manually save and restore configurations.</p>
 
+<h3>Exchange configurations and scenes with other devices</h3>
 <p>If you would like to transfer your configuration to another device (for instance from a
 mobile to a tablet, or from your phone to a friend's one) and both devices have NFC capability,
 then do the following:
@@ -58,8 +15,3 @@ then do the following:
 Android now want you to confirm to use the <i>beam</i> functionality.
 If this App is not installed on the destination device, Google Play will be started.
 If you confirm <i>beam</i>, the destination device will ask you which configurations should be transferred.</p>
-
-<h3>Authors</h3>
-© 2013 <b>David Gräff</b><br>
-© 2012 <b><a href="http://www.nittka.com">Oliver Nittka</a></b><br><br>
-Some icons von <a href="http://www.clker.com/">www.clker.com</a><br>(public domain)

@@ -1,71 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:baselineAligned="true"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingLeft="16dip"
-    android:paddingRight="12dip"
-    android:clickable="false"
-    android:descendantFocusability="blocksDescendants"
-    android:focusable="false"
-    android:focusableInTouchMode="false">
+    android:orientation="vertical"
+    android:paddingLeft="5dip"
+    android:paddingRight="5dip"
+    android:background="@drawable/item_selector">
 
     <ImageView
-        android:id="@+id/MoveHandler"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/move_handler"
-        android:layout_gravity="center_vertical"></ImageView>
-
-    <ImageButton
         android:id="@+id/btnEditScene"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:background="@android:drawable/list_selector_background"
-        android:contentDescription="@string/menu_edit_scene"
-        android:paddingLeft="5dp"
-        android:src="@drawable/ic_menu_edit"
-        android:focusable="false"
-        android:focusableInTouchMode="false" />
+        android:src="@drawable/widgeton" />
 
-    <View
-        android:layout_width="1dp"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:background="#80808080"
-        android:focusable="false"
-        android:focusableInTouchMode="false" />
-
-    <LinearLayout
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/group_list_name"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_weight="1"
-        android:padding="5dp"
-        android:orientation="vertical"
-        android:focusable="false"
-        android:focusableInTouchMode="false">
-
-        <TextView
-            android:id="@+id/group_list_name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:focusable="false"
-            android:focusableInTouchMode="false" />
-
-        <TextView
-            android:id="@+id/group_list_details"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:focusable="false"
-            android:focusableInTouchMode="false" />
-    </LinearLayout>
+        android:gravity="center_horizontal"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

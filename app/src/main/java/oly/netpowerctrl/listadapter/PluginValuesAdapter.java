@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
@@ -15,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.FlowLayout;
 
 /**
  * For displaying DeviceInfo fields in a ListView
@@ -182,28 +180,28 @@ public class PluginValuesAdapter extends BaseAdapter {
                 last_value_was_action = false;
 
             } else if (entry.type == RemoteAction.TYPE_ACTION) {
-                RemoteAction value = (RemoteAction) entry;
-                FlowLayout buttonLayout;
-
-                // If last entry was an action, too, we add a button to the FlowLayout of the last entry.
-                if (last_value_was_action) {
-                    View plugin_value_row_view = adapterData.get(adapterData.size() - 1);
-                    buttonLayout = (FlowLayout) plugin_value_row_view.findViewById(R.id.remoteValueLayout);
-                } else {
-                    View plugin_value_row_view = inflater.inflate(R.layout.plugin_action, null);
-                    addView = plugin_value_row_view;
-                    buttonLayout = (FlowLayout) plugin_value_row_view.findViewById(R.id.remoteValueLayout);
-                }
-
-                Button s = new Button(inflater.getContext());
-                s.setText(entry.name);
-                s.setOnClickListener(value);
-                buttonLayout.addView(s);
-
-                if (last_value_was_action) {
-                    continue;
-                }
-                last_value_was_action = true;
+//                RemoteAction value = (RemoteAction) entry;
+//                FlowLayout buttonLayout;
+//
+//                // If last entry was an action, too, we add a button to the FlowLayout of the last entry.
+//                if (last_value_was_action) {
+//                    View plugin_value_row_view = adapterData.get(adapterData.size() - 1);
+//                    buttonLayout = (FlowLayout) plugin_value_row_view.findViewById(R.id.remoteValueLayout);
+//                } else {
+//                    View plugin_value_row_view = inflater.inflate(R.layout.plugin_action, null);
+//                    addView = plugin_value_row_view;
+//                    buttonLayout = (FlowLayout) plugin_value_row_view.findViewById(R.id.remoteValueLayout);
+//                }
+//
+//                Button s = new Button(inflater.getContext());
+//                s.setText(entry.name);
+//                s.setOnClickListener(value);
+//                buttonLayout.addView(s);
+//
+//                if (last_value_was_action) {
+//                    continue;
+//                }
+//                last_value_was_action = true;
 
             } else if (entry.type == RemoteBooleanValue.TYPE_BOOLEAN) {
                 RemoteBooleanValue value = (RemoteBooleanValue) entry;

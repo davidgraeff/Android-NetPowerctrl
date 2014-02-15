@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
 
 

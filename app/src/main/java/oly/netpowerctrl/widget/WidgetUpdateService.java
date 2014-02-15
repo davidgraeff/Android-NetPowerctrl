@@ -22,11 +22,11 @@ import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.anelservice.ServiceReady;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneOutlet;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.preferences.WidgetPreferenceFragment;
 import oly.netpowerctrl.shortcut.Shortcuts;
@@ -74,7 +74,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
          * changed signal.
          */
         if (keep_service_online) {
-            NetpowerctrlApplication.instance.unregisterConfiguredObserver(this);
+            NetpowerctrlApplication.getDataController().unregisterConfiguredObserver(this);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.unregisterOnSharedPreferenceChangeListener(this);
         }
@@ -153,7 +153,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
                     SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(appWidgetId);
                     DeviceInfo di = null;
                     if (outlet != null) {
-                        di = NetpowerctrlApplication.instance.findDevice(outlet.deviceMac);
+                        di = NetpowerctrlApplication.getDataController().findDevice(outlet.deviceMac);
                     }
 
                     if (outlet == null || di == null) {
@@ -321,7 +321,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
     @Override
     public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
-        NetpowerctrlApplication.instance.registerConfiguredObserver(this);
+        NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
         return true;
     }
 

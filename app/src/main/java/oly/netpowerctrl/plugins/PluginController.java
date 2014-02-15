@@ -6,15 +6,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import oly.netpowerctrl.listadapter.DrawerAdapter;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
@@ -29,7 +27,6 @@ public class PluginController {
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
 
-    private WeakReference<DrawerAdapter> mDrawerAdapter;
     private List<PluginRemote> plugins = new ArrayList<PluginRemote>();
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
@@ -43,10 +40,9 @@ public class PluginController {
         }
     };
 
-    public PluginController(DrawerAdapter drawerAdapter) {
+    public PluginController() {
         NetpowerctrlApplication.instance.registerReceiver(onBroadcast,
                 new IntentFilter(PLUGIN_RESPONSE_ACTION));
-        mDrawerAdapter = new WeakReference<DrawerAdapter>(drawerAdapter);
 
         recreate();
     }
@@ -80,7 +76,7 @@ public class PluginController {
         for (PluginRemote existing_plugin : plugins) {
             if (existing_plugin.serviceName.equals(serviceName)) {
                 existing_plugin.localized_name = localized_name;
-                mDrawerAdapter.get().updatePluginItem(existing_plugin.localized_name, "", existing_plugin.pluginId);
+                //mDrawerAdapter.get().updatePluginItem(existing_plugin.localized_name, "", existing_plugin.pluginId);
                 return;
             }
         }
@@ -92,7 +88,7 @@ public class PluginController {
         }
 
         plugins.add(plugin);
-        mDrawerAdapter.get().updatePluginItem(plugin.localized_name, "", plugin.pluginId);
+        //mDrawerAdapter.get().updatePluginItem(plugin.localized_name, "", plugin.pluginId);
     }
 
     public void recreate() {
@@ -106,7 +102,7 @@ public class PluginController {
             }
         } else {
             for (PluginRemote r : plugins) {
-                mDrawerAdapter.get().updatePluginItem(r.localized_name, "", r.pluginId);
+                //mDrawerAdapter.get().updatePluginItem(r.localized_name, "", r.pluginId);
             }
         }
 
@@ -118,6 +114,6 @@ public class PluginController {
 
     public void remove(PluginRemote plugin) {
         plugins.remove(plugin);
-        mDrawerAdapter.get().removePluginItem(plugin.pluginId);
+        //mDrawerAdapter.get().removePluginItem(plugin.pluginId);
     }
 }

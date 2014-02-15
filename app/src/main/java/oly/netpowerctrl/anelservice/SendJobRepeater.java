@@ -6,7 +6,7 @@ import android.os.Message;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
 /**
  * Use this class on an OutletInfo object right before you
@@ -40,7 +40,9 @@ public class SendJobRepeater extends Handler {
         NetpowerctrlApplication context = NetpowerctrlApplication.instance;
         if (!job.di.reachable || retries >= 3) {
             //give up
-            Toast.makeText(context, context.getString(R.string.error_setting_outlet, retries), Toast.LENGTH_LONG).show();
+            Toast.makeText(context,
+                    context.getString(R.string.error_setting_outlet, job.di.DeviceName, current_time - job.di.getUpdatedTime() / 1000),
+                    Toast.LENGTH_LONG).show();
             return;
         }
 

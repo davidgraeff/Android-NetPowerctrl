@@ -8,10 +8,12 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <oly.netpowerctrl.dragdrop.DragNDropListView
+        <ExpandableListView
             android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:dividerHeight="0dp"
+            android:divider="@null"
             android:layout_weight="1" />
 
         <TextView
@@ -25,13 +27,26 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <TextView
+    <LinearLayout
         android:id="@android:id/empty"
-        android:text="@string/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:padding="5dp"
-        android:gravity="center_vertical|fill_horizontal" />
+        android:gravity="center"
+        android:padding="10dp"
+        android:orientation="vertical">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:background="@drawable/item_selector"
+            android:padding="5dp"
+            android:text="@string/empty_no_devices" />
+
+        <Button
+            android:id="@+id/btnChangeToPreferences"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/preferences" />
+    </LinearLayout>
 </FrameLayout>

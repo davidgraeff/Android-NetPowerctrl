@@ -1,14 +1,15 @@
 package oly.netpowerctrl.anelservice;
 
 import android.os.Handler;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -24,7 +25,7 @@ public class DeviceQuery {
     private Runnable timeoutRunnable = new Runnable() {
         @Override
         public void run() {
-            NetpowerctrlApplication.instance.removeUpdateDeviceState(DeviceQuery.this);
+            NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceQuery.this);
             if (target == null)
                 return;
 
@@ -32,8 +33,18 @@ public class DeviceQuery {
                 di.reachable = false;
                 target.onDeviceTimeout(di);
             }
-            NetpowerctrlApplication.instance.removeUpdateDeviceState(DeviceQuery.this);
+            NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceQuery.this);
             target.onDeviceQueryFinished(devices_to_observe);
+        }
+    };
+
+    private Runnable requeryRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.w("Query", "requery");
+            for (DeviceInfo di : devices_to_observe) {
+                DeviceSend.instance().sendQuery(di);
+            }
         }
     };
 
@@ -43,10 +54,13 @@ public class DeviceQuery {
         devices_to_observe.add(device_to_observe);
 
         // Register on main application object to receive device updates
-        NetpowerctrlApplication.instance.addUpdateDeviceState(this);
+        NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
 
         DeviceSend.instance().sendQuery(device_to_observe);
-        timeoutHandler.postDelayed(timeoutRunnable, 1200);
+        timeoutHandler.postDelayed(requeryRunnable, 300);
+        timeoutHandler.postDelayed(requeryRunnable, 600);
+        timeoutHandler.postDelayed(requeryRunnable, 1200);
+        timeoutHandler.postDelayed(timeoutRunnable, 1500);
     }
 
     public DeviceQuery(DeviceUpdateStateOrTimeout target, Collection<DeviceInfo> devices_to_observe) {
@@ -54,9 +68,12 @@ public class DeviceQuery {
         this.devices_to_observe = new ArrayList<DeviceInfo>(devices_to_observe);
 
         // Register on main application object to receive device updates
-        NetpowerctrlApplication.instance.addUpdateDeviceState(this);
+        NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
 
-        timeoutHandler.postDelayed(timeoutRunnable, 1200);
+        timeoutHandler.postDelayed(requeryRunnable, 300);
+        timeoutHandler.postDelayed(requeryRunnable, 600);
+        timeoutHandler.postDelayed(requeryRunnable, 1200);
+        timeoutHandler.postDelayed(timeoutRunnable, 1500);
 
         // Send out broadcast
         for (DeviceInfo di : devices_to_observe)
@@ -71,12 +88,13 @@ public class DeviceQuery {
      */
     public DeviceQuery(DeviceUpdateStateOrTimeout target) {
         this.target = target;
-        this.devices_to_observe = new ArrayList<DeviceInfo>(NetpowerctrlApplication.instance.configuredDevices);
+        this.devices_to_observe = new ArrayList<DeviceInfo>(NetpowerctrlApplication.getDataController().configuredDevices);
 
         // Register on main application object to receive device updates
-        NetpowerctrlApplication.instance.addUpdateDeviceState(this);
+        NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
 
-        timeoutHandler.postDelayed(timeoutRunnable, 1200);
+        timeoutHandler.postDelayed(requeryRunnable, 600);
+        timeoutHandler.postDelayed(timeoutRunnable, 1500);
         DeviceSend.instance().sendBroadcastQuery();
     }
 
@@ -98,6 +116,7 @@ public class DeviceQuery {
         }
         if (devices_to_observe.isEmpty()) {
             timeoutHandler.removeCallbacks(timeoutRunnable);
+            timeoutHandler.removeCallbacks(requeryRunnable);
             if (target != null)
                 target.onDeviceQueryFinished(devices_to_observe);
             return true;

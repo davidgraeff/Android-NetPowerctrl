@@ -1,80 +1,11 @@
-﻿<h2>NET-PwrCtrl Hilfe</h2>
-Wenn du diese Anwendung zum ersten Mal verwendest, nimm
-dir etwas Zeit dieses kleine Tutorial zu lesen.
-
-<h3>Navigation</h3>
-Bewege deinen Finger zur linken Seite des Bildschirms, fasse auf den Touchscreen
-und ziehe deinen Finger nach rechts. Mit dieser Geste öffnest du das Navigationsmenü.
-
-<h3>Geräteeinrichtung</h3>
-<blockquote>Wähle <b>"Neues Gerät einrichten"</b> aus dem Navigationsmenü.</blockquote>
-
-<p>Damit deine Steckdosenleisten automatisch entdeckt werden, musst du auf der
-Konfigurationswebseite jeder Leiste UDP einschalten. Die UDP Ports ab der Firmware Version 4 sind bereits richtig
-voreingestellt und passen zu den Einstellungen dieser Anwendung.</p>
-
-<p>Deine Steckdosenleisten sollten nun auftauchen. Klicke auf das Icon nebem dem Namen
-der Leiste. Im folgenden Bildschirm kannst du den Namen, den Nutzernamen, das Passwort und
-gfs. individuelle UDP Ports einstellen, sowie die IP Adresse kontrollieren. Vor dem Speichern
-ist ein Klick auf den <b>"Test"</b> Knopf empfohlen.</p>
-
-<h3>Steckdosen umschalten</h3>
-<blockquote>Wähle <b>"Alle Steckdosen"</b> aus dem Navigationsmenü.</blockquote>
-Wenn du auf den Schalter eines Steckdoseneintrags klickst,
-ändert dieser sofort seinen Status (Aus nach An, oder von An nach Aus).
-Klickst du auf den Namen eines Eintrags erscheint ein Auswahlmenü. Hier kannst du einzelne
-Steckdosen umbenennen oder verstecken. Das Aktionsmenü oben rechts ermöglicht dir
-das Neuanordnen der Steckdosen und das Anzeigen von versteckten Einträgen.
-Klickst du auf das Plus-Icon im oberen, rechten Bereich, so kannst du die aktuellen
-Steckdosenzustände als Szene abspeichern.
-
-<h3>Szenen und Startbildschirm Verknüpfungen</h3>
-<blockquote>Wähle <b>"Szenen"</b> aus dem Navigationsmenü.</blockquote>
-
-<p>
-Eine Szene fasst Aktionen für mehrere Steckdosen zusammen. Aktionen können sein: An, Aus, Umschalten.
-</p>
-
-<p>
-Klicke auf das Plus Icon in der oberen, rechten Ecke. Im folgenden Bildschirm kannst du für mehrere
-Steckdosen Aktionen angeben und die Szene benennen. Nach dem Klick auf OK taucht die Szene in der
-Szenen-Liste auf.
-</p>
-
-<p>
-Wähle das Icon neben dem Szenennamen für eine Auswahl: Du kannst hier eine Szene entfernen, bearbeiten
-oder eine Kopie auf dem Startbildschirm anlegen. Diese Kopie wird nicht verändert, wenn du die ursprüngliche
-Szene entfernst oder bearbeitest.
-</p>
-
-<p>
-Bei vielen Startbildschirmen kannst du auch direkt eine Szene erstellen, welche gar nicht erst in der Szenen-Liste
-der App auftaucht. Wie genau du eine Verknüpfung einrichtest,
-hängt von deiner Startbildschirm-Anwendung ab. Normalerweise klickst du lange auf eine freie Fläche und
-ein Dialog oder eine Auswahl taucht auf. Dort wählst du "Verknüpfung" oder "Shortcut". In der anschließenden Liste wählst du
-"Szene für Net-PwrCtrl" aus.
-</p>
-
-<h3>Widget für eine Steckdose auf dem Startbildschirm</h3>
-<p>Du kannst auf dem Startbildschirm ein Widget
-(Icon und Text, welcher von dieser Anwendung jederzeit verändert werden darf) anlegen. Wir bieten ein
-Widget an, welches den Zustand einer zuvor ausgewählten Steckdose anzeigt. Der Zustand kann sein: An,
-Aus, Nicht erreichbar. Du kannst mehrere Widgets für gleiche und unterschiedliche Steckdosen anlegen.</p>
-
-<p>In den Einstellungen muss die Option "Aktuell halten" eingeschaltet sein, wenn du möchtest, dass das
-   Widget so gut es geht versucht den aktuellen Zustand anzuzeigen. Das kostet allerdings etwas mehr Energie.
-   Außerdem kannst du für jedes angelegte Widget die Icons für den Zustand An, Aus, Nicht erreichbar
-   gegen eigene Icons austauschen.
-</p>
-
-<h3>Backup der Einstellungen</h3>
+﻿<h3>Backup der Einstellungen</h3>
 <p>Deine Geräte Einstellungen werden automatisch mit dem Google Backup Service gesichert.
 Bei einer Neuinstallation oder Aktualisierung der Anwendung oder des Mobiltelefons werden die Daten wiederhergestellt.
 Im Moment ist es nicht möglich, die Einstellungen manuell zu sichern und wiederherzustellen. Diese
 Funktion ist geplant.</p>
 
-<h3>Austausch von Steckdosenleisten-Einstellungen über mehrere Geräte</h3>
 
+<h3>Austausch von Steckdosenleisten-Einstellungen über mehrere Geräte</h3>
 <p>Sofern dein Gerät und ein anderes Gerät (z.B. Mobiltelefon und Tablet oder das eigene Telefon und
 das eines Freundes) NFC beherrschen, können die Steckdosenleisten-Einstellungen einfach übertragen
 werden:
@@ -87,8 +18,3 @@ Android wird nun nach einer Bestätigung fragen, ob <i>Beam</i> genutzt werden s
 Sofern das Zielgerät diese App noch nicht installiert hat, wird Google Play aufgerufen.
 Wenn <i>Beam</i> bestätigt worden ist, dann können auf dem Zielgerät die gewünschten Konfigurationen
 eingerichtet werden.</p>
-
-<h3>Autoren</h3>
-© 2013-2014 <b>David Gräff</b><br>
-© 2012 <b><a href="http://www.nittka.com">Oliver Nittka</a></b><br><br>
-Einige Bilder von <a href="http://www.clker.com/">www.clker.com</a> (public domain)

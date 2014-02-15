@@ -18,10 +18,10 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -204,7 +204,7 @@ public class DeviceSend {
 
         @Override
         public void process(DeviceSend deviceSend) {
-            Set<Integer> ports = NetpowerctrlApplication.instance.getAllSendPorts();
+            Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllSendPorts();
             boolean foundBroadcastAddresses = false;
 
             Enumeration list;
@@ -240,7 +240,7 @@ public class DeviceSend {
 //                        Toast.LENGTH_SHORT).show();
 
                 // Query all existing devices directly
-                ArrayList<DeviceInfo> devices = NetpowerctrlApplication.instance.configuredDevices;
+                ArrayList<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
                 for (DeviceInfo di : devices) {
                     deviceSend.addSendJob(di, "wer da?\r\n".getBytes(), INQUERY_REQUEST, false);
                 }

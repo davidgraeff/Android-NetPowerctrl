@@ -12,9 +12,9 @@ import android.os.Bundle;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 public class WidgetConfig extends Activity {
@@ -29,7 +29,7 @@ public class WidgetConfig extends Activity {
         super.onCreate(savedInstanceState);
         setResult(RESULT_CANCELED);
         ctx = this;
-        devices = NetpowerctrlApplication.instance.configuredDevices;
+        devices = NetpowerctrlApplication.getDataController().configuredDevices;
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();

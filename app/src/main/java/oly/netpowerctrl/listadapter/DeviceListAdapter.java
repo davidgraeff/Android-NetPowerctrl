@@ -5,30 +5,27 @@ import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DevicesUpdate;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 
-public class DeviceListAdapter extends BaseAdapter implements DevicesUpdate {
-    private List<DeviceInfo> all_devices;
+public class DeviceListAdapter extends BaseExpandableListAdapter implements DevicesUpdate {
     private LayoutInflater inflater;
     private boolean showNewDevices;
 
     public DeviceListAdapter(Context context, boolean showNewDevices) {
         this.showNewDevices = showNewDevices;
         inflater = LayoutInflater.from(context);
+        NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
         if (showNewDevices) {
-            all_devices = NetpowerctrlApplication.instance.newDevices;
-            NetpowerctrlApplication.instance.registerNewDeviceObserver(this);
-        } else {
-            all_devices = NetpowerctrlApplication.instance.configuredDevices;
-            NetpowerctrlApplication.instance.registerConfiguredObserver(this);
+            NetpowerctrlApplication.getDataController().registerNewDeviceObserver(this);
         }
     }
 
@@ -37,36 +34,19 @@ public class DeviceListAdapter extends BaseAdapter implements DevicesUpdate {
      * This will remove all remaining references to this object.
      */
     public void finish() {
+        NetpowerctrlApplication.getDataController().unregisterConfiguredObserver(this);
         if (showNewDevices) {
-            NetpowerctrlApplication.instance.unregisterNewDeviceObserver(this);
-        } else {
-            NetpowerctrlApplication.instance.unregisterConfiguredObserver(this);
+            NetpowerctrlApplication.getDataController().unregisterNewDeviceObserver(this);
         }
     }
 
-    public List<DeviceInfo> getDevices() {
-        return all_devices;
-    }
-
-    public int getCount() {
-        return all_devices.size();
-    }
-
-    public DeviceInfo getItem(int position) {
-        return all_devices.get(position);
-    }
-
-    public long getItemId(int position) {
-        return position;
-    }
-
-    public View getView(int position, View convertView, ViewGroup parent) {
+    private View getView(int position, View convertView, List<DeviceInfo> devices) {
 
         if (convertView == null)
             convertView = inflater.inflate(R.layout.device_list_item, null);
         assert convertView != null;
 
-        DeviceInfo di = all_devices.get(position);
+        DeviceInfo di = devices.get(position);
         TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
         tvName.setText(di.DeviceName);
 
@@ -90,13 +70,98 @@ public class DeviceListAdapter extends BaseAdapter implements DevicesUpdate {
         return convertView;
     }
 
-    public void setDevices(List<DeviceInfo> new_devices) {
-        all_devices = new_devices;
-        onDevicesUpdated(null);
-    }
-
     @Override
     public void onDevicesUpdated(List<DeviceInfo> changed_devices) {
         notifyDataSetChanged();
+    }
+
+    @Override
+    public int getGroupCount() {
+        int c = NetpowerctrlApplication.getDataController().configuredDevices.size() > 0 ? 1 : 0;
+        if (showNewDevices && NetpowerctrlApplication.getDataController().newDevices.size() > 0)
+            ++c;
+
+        return c;
+    }
+
+    @Override
+    public int getChildrenCount(int groupPosition) {
+        // The groupPosition of new_devices is always 1
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupPosition == 0)
+            groupPosition = 1;
+
+        return (groupPosition == 0) ? NetpowerctrlApplication.getDataController().configuredDevices.size() :
+                NetpowerctrlApplication.getDataController().newDevices.size();
+    }
+
+    @Override
+    public Object getGroup(int i) {
+        return null;
+    }
+
+    @Override
+    public Object getChild(int groupPosition, int device) {
+        // The groupPosition of new_devices is always 1
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupPosition == 0)
+            groupPosition = 1;
+        return (groupPosition == 0) ? NetpowerctrlApplication.getDataController().configuredDevices.get(device) :
+                NetpowerctrlApplication.getDataController().newDevices.get(device);
+    }
+
+    @Override
+    public long getGroupId(int groupPosition) {
+        // The groupID of new_devices is always 1
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupPosition == 0)
+            groupPosition = 1;
+        return groupPosition;
+    }
+
+    @Override
+    public long getChildId(int groupPosition, int childID) {
+        // The groupID of new_devices is always 1
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupPosition == 0)
+            groupPosition = 1;
+        return groupPosition * 0xffff + childID;
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return true;
+    }
+
+    @Override
+    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        if (convertView == null)
+            convertView = inflater.inflate(R.layout.device_group_header, null);
+        assert convertView != null;
+
+        // The groupPosition of new_devices is always 1
+        int groupP = groupPosition;
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupP == 0)
+            groupP = 1;
+
+        TextView tvName = (TextView) convertView.findViewById(R.id.lblListItem);
+        tvName.setText((groupP == 0) ? R.string.configured_devices : R.string.new_devices);
+
+        ExpandableListView mExpandableListView = (ExpandableListView) parent;
+        mExpandableListView.expandGroup(groupPosition);
+
+        return convertView;
+    }
+
+    @Override
+    public View getChildView(int groupPosition, int position, boolean b, View view, ViewGroup viewGroup) {
+        // The groupPosition of new_devices is always 1
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupPosition == 0)
+            groupPosition = 1;
+
+        return getView(position, view,
+                (groupPosition == 0) ? NetpowerctrlApplication.getDataController().configuredDevices :
+                        NetpowerctrlApplication.getDataController().newDevices);
+    }
+
+    @Override
+    public boolean isChildSelectable(int i, int i2) {
+        return true;
     }
 }

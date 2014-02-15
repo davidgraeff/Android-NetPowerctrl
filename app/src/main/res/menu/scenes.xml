@@ -11,23 +11,4 @@
         android:title="@string/menu_remove_all_scenes"
         android:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_delete"></item>
-
-    <item
-        android:id="@+id/menu_showdragdrop"
-        android:title="@string/menu_showdragdrop"
-        android:showAsAction="collapseActionView|withText" />
-    <item
-        android:id="@+id/menu_hidedragdrop"
-        android:title="@string/menu_hidedragdrop"
-        android:showAsAction="collapseActionView|withText" />
-
-    <item
-        android:id="@+id/menu_backup_scenes"
-        android:title="@string/menu_backup_scenes"
-        android:showAsAction="never|withText"></item>
-
-    <item
-        android:id="@+id/menu_restore_scenes"
-        android:title="@string/menu_restore_scenes"
-        android:showAsAction="never|withText"></item>
 </menu>

@@ -8,29 +8,38 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <GridView
+        <oly.netpowerctrl.dynamicgid.DynamicGridView
             android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:numColumns="2" />
+            android:numColumns="@integer/grid_columns_scenes" />
 
         <TextView
             android:id="@+id/hintText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/hint_background"
+            android:background="?drawer_item_background"
+            android:textAppearance="@android:style/TextAppearance.Medium"
             android:gravity="left"
+            android:padding="5dp"
             android:visibility="gone" />
     </LinearLayout>
 
-    <TextView
+    <LinearLayout
         android:id="@android:id/empty"
-        android:text="@string/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:padding="5dp"
-        android:gravity="center_vertical|fill_horizontal" />
+        android:padding="10dp"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:background="@drawable/item_selector"
+            android:padding="5dp"
+            android:text="@string/empty_no_scenes" />
+    </LinearLayout>
 
 </FrameLayout>
