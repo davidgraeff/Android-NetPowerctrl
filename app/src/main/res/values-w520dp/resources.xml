@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item format="integer" name="grid_columns" type="integer">2</item>
+    <item format="integer" name="grid_columns_scenes" type="integer">6</item>
+</resources>

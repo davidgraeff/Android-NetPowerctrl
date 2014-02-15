@@ -3,8 +3,15 @@ package oly.netpowerctrl.utils;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.os.Build;
+import android.os.Parcelable;
 import android.util.JsonReader;
 import android.util.JsonWriter;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.widget.Toast;
 
@@ -14,17 +21,60 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
+import oly.netpowerctrl.listadapter.ScenesListAdapter;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 /**
  * NFC related
  */
 public class NFC {
+    public static NdefMessage createNdefMessage(ScenesListAdapter adpScenes) {
+        String text;
+        try {
+            JSONHelper h = new JSONHelper();
+            NFC.NFC_Transfer.fromData(
+                    SceneCollection.fromScenes(adpScenes.getScenes()),
+                    DeviceCollection.fromDevices(NetpowerctrlApplication.getDataController().configuredDevices)).toJSON(h.createWriter());
+            text = h.getString();
+        } catch (IOException e) {
+            Log.w("createNdefMessage", e.getMessage());
+            return null;
+        }
+
+        if (Build.VERSION.SDK_INT < 14) {
+            NdefRecord mimeRecord = new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+                    "application/oly.netpowerctrl".getBytes(),
+                    new byte[0], text.getBytes());
+            return new NdefMessage(new NdefRecord[]{
+                    mimeRecord,
+                    NdefRecord.createApplicationRecord("oly.netpowerctrl")
+            });
+        } else {
+            return new NdefMessage(
+                    NdefRecord.createMime("application/oly.netpowerctrl", text.getBytes()),
+                    NdefRecord.createApplicationRecord("oly.netpowerctrl")
+            );
+        }
+    }
+
+    // Check to see that the Activity started due to an Android Beam
+    public static void checkIntentForNFC(Context context, Intent intent) {
+        String intentAction = intent.getAction();
+
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intentAction)) {
+            Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            // only one message sent during the beam
+            assert rawMessages != null;
+            NdefMessage msg = (NdefMessage) rawMessages[0];
+            NFC.parseNFC(context, new String(msg.getRecords()[0].getPayload()));
+        }
+    }
+
     public static class VersionException extends Exception {
         public int version;
 
@@ -154,13 +204,13 @@ public class NFC {
                         boolean devices_added = false;
                         for (DeviceInfo di : dc.devices) {
                             if (selectedItems.get(i, -1) != -1) {
-                                NetpowerctrlApplication.instance.addToConfiguredDevices(di, false);
+                                NetpowerctrlApplication.getDataController().addToConfiguredDevices(di, false);
                                 devices_added = true;
                             }
                             ++i;
                         }
                         if (devices_added) {
-                            NetpowerctrlApplication.instance.saveConfiguredDevices(true);
+                            NetpowerctrlApplication.getDataController().saveConfiguredDevices(true);
                         }
                         if (transfer.scenes != null)
                             showSelectionScenes(context, transfer.scenes);

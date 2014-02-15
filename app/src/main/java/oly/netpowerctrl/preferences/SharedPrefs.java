@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Set;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class SharedPrefs {
@@ -92,7 +92,8 @@ public class SharedPrefs {
         }
     }
 
-    public static List<DeviceInfo> ReadConfiguredDevices(Context context) {
+    public static List<DeviceInfo> ReadConfiguredDevices() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(SharedPrefs.PREF_BASENAME, Context.MODE_PRIVATE);
 
         // Read deprecated configurations
@@ -111,7 +112,8 @@ public class SharedPrefs {
         return new ArrayList<DeviceInfo>();
     }
 
-    public static void SaveConfiguredDevices(List<DeviceInfo> devices, Context context) {
+    public static void SaveConfiguredDevices(List<DeviceInfo> devices) {
+        Context context = NetpowerctrlApplication.instance;
         String configured_devices = null;
         try {
             JSONHelper h = new JSONHelper();
@@ -120,6 +122,9 @@ public class SharedPrefs {
         } catch (IOException e) {
             Toast.makeText(context, context.getString(R.string.error_saving_configured_devices), Toast.LENGTH_SHORT).show();
         }
+
+        for (DeviceInfo di : devices)
+            di.configured = true;
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_BASENAME, Context.MODE_PRIVATE);
         prefs.edit().putInt(PREF_VERSION_DEVICES, PREF_CURRENT_VERSION)

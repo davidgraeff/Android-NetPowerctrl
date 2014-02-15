@@ -1,16 +1,4 @@
-package oly.netpowerctrl.main;
-
-import android.app.Application;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.Handler;
-import android.os.IBinder;
-
-import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
+package oly.netpowerctrl.application_state;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,41 +10,26 @@ import java.util.Set;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceError;
 import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdate;
-import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.DevicesUpdate;
-import oly.netpowerctrl.anelservice.NetpowerctrlService;
-import oly.netpowerctrl.anelservice.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
- * Application state: We keep track of Anel device states via
- * the listener service.
+ * All configured/new devices are listed here, together with
+ * observers.
  */
-@ReportsCrashes(formKey = "dGVacG0ydVHnaNHjRjVTUTEtb3FPWGc6MQ",
-        mode = ReportingInteractionMode.TOAST,
-        mailTo = "david.graeff@web.de",
-        forceCloseDialogAfterToast = false, // optional, default false
-        additionalSharedPreferences = {SharedPrefs.PREF_BASENAME, SharedPrefs.PREF_GROUPS_BASENAME, SharedPrefs.PREF_WIDGET_BASENAME},
-        resToastText = R.string.crash_toast_text)
-public class NetpowerctrlApplication extends Application implements DeviceUpdate, DeviceError {
-    public static NetpowerctrlApplication instance;
-    public static int suspendWidgetUpdate = 0;
-    private int mDiscoverServiceRefCount = 0;
-    private NetpowerctrlService mDiscoverService;
-    private boolean mWaitForService;
+public class RuntimeDataController implements DeviceUpdate, DeviceError {
     public ArrayList<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
     public ArrayList<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
 
     private ArrayList<DevicesUpdate> observersConfigured = new ArrayList<DevicesUpdate>();
     private ArrayList<DevicesUpdate> observersNew = new ArrayList<DevicesUpdate>();
-    private ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
 
     private List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
+
 
     //! get a list of all send ports of all configured scenes plus the default send port
     public Set<Integer> getAllSendPorts() {
@@ -94,7 +67,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         observersConfigured.remove(o);
     }
 
-    private void notifyConfiguredObservers(List<DeviceInfo> changed_devices) {
+    void notifyConfiguredObservers(List<DeviceInfo> changed_devices) {
         for (DevicesUpdate o : observersConfigured)
             o.onDevicesUpdated(changed_devices);
 
@@ -119,30 +92,6 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
             o.onDevicesUpdated(new_devices);
     }
 
-    @SuppressWarnings("unused")
-    public boolean registerServiceReadyObserver(ServiceReady o) {
-        if (!observersServiceReady.contains(o)) {
-            observersServiceReady.add(o);
-            if (mDiscoverService != null)
-                o.onServiceReady(mDiscoverService);
-            return true;
-        }
-        return false;
-    }
-
-    @SuppressWarnings("unused")
-    public void unregisterServiceReadyObserver(ServiceReady o) {
-        observersServiceReady.remove(o);
-    }
-
-    private void notifyServiceReady() {
-        Iterator<ServiceReady> it = observersServiceReady.iterator();
-        while (it.hasNext()) {
-            if (!it.next().onServiceReady(mDiscoverService))
-                it.remove();
-        }
-    }
-
 
     public void removeUpdateDeviceState(DeviceQuery o) {
         updateDeviceStateList.remove(o);
@@ -152,147 +101,24 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         updateDeviceStateList.add(o);
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        // The following line triggers the initialization of ACRA
-        ACRA.init(this);
-        instance = this;
-        reloadConfiguredDevices();
-
-        // Start listen service and listener for wifi changes
-        mWaitForService = true;
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(instance, NetpowerctrlService.class);
-                startService(intent);
-                bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-            }
-        }, 300);
-    }
-
-    public void useListener() {
-        ++mDiscoverServiceRefCount;
-        // Service is not running anymore, restart it
-        if (mDiscoverService == null && !mWaitForService) {
-            mWaitForService = true;
-            Intent intent = new Intent(instance, NetpowerctrlService.class);
-            startService(intent);
-            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        }
-    }
-
-    public void stopUseListener() {
-        if (mDiscoverServiceRefCount > 0) {
-            mDiscoverServiceRefCount--;
-        }
-        if (mDiscoverServiceRefCount == 0) {
-            try {
-                mDiscoverService = null;
-                mWaitForService = false;
-                unbindService(mConnection);
-            } catch (IllegalArgumentException ignored) {
-            }
-
-//            Log.w("stopUseListener","ObserverConfigured: "+Integer.valueOf(observersConfigured.size()).toString() +
+    public void clear() {
+        //            Log.w("stopUseListener","ObserverConfigured: "+Integer.valueOf(observersConfigured.size()).toString() +
 //                    " ObserverNew: "+Integer.valueOf(observersNew.size()).toString()+
 //                    " updateDevices: "+Integer.valueOf(updateDeviceStateList.size()).toString());
 //            for (DevicesUpdate dq: observersConfigured)
 //                Log.w("ObserverConfigured_",dq.getClass().toString());
 
-            // There shouldn't be any device-listen observers anymore,
-            // but we clear the list here nevertheless.
-            for (DeviceQuery dq : updateDeviceStateList)
-                dq.finishWithTimeouts();
-            updateDeviceStateList.clear();
-
-            // stop send queue
-            DeviceSend.instance().interrupt();
-
-            // reset flags
-            suspendWidgetUpdate = 0;
-            newDevices.clear();
-
-            if (SharedPrefs.notifyOnStop()) {
-                ShowToast.FromOtherThread(this, getString(R.string.service_stopped));
-            }
-        }
+        // There shouldn't be any device-listen observers anymore,
+        // but we clear the list here nevertheless.
+        for (DeviceQuery dq : updateDeviceStateList)
+            dq.finishWithTimeouts();
+        updateDeviceStateList.clear();
+        newDevices.clear();
     }
 
-    /**
-     * Detect new devices and check reachability of configured devices
-     */
-    private boolean isDetecting = false;
-
-    public void detectNewDevicesAndReachability() {
-
-        // The following mechanism allows only one update request within a
-        // 1sec timeframe.
-        if (isDetecting)
-            return;
-
-        isDetecting = true;
-        Handler h = new Handler();
-        h.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                isDetecting = false;
-            }
-        }, 1000);
-
-        // First try a broadcast
-        new DeviceQuery(new DeviceUpdateStateOrTimeout() {
-            @Override
-            public void onDeviceTimeout(DeviceInfo di) {
-                di.updated = System.currentTimeMillis();
-            }
-
-            @Override
-            public void onDeviceUpdated(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
-                if (timeout_devices.size() > 0)
-                    notifyConfiguredObservers(timeout_devices);
-            }
-        });
-    }
-
-    /**
-     * Defines callbacks for service binding, passed to bindService()
-     */
-    private ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            NetpowerctrlService.LocalBinder binder = (NetpowerctrlService.LocalBinder) service;
-            mDiscoverService = binder.getService();
-            mDiscoverService.registerDeviceErrorObserver(instance);
-            mDiscoverService.registerDeviceUpdateObserver(instance);
-            if (mDiscoverServiceRefCount == 0)
-                mDiscoverServiceRefCount = 1;
-            instance.notifyServiceReady();
-            mWaitForService = false;
-            // We do a device detection in the wifi change listener already
-            detectNewDevicesAndReachability();
-        }
-
-        // Service crashed
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mDiscoverServiceRefCount = 0;
-            mDiscoverService = null;
-            mWaitForService = false;
-        }
-    };
 
     public void reloadConfiguredDevices() {
-        List<DeviceInfo> newEntries = SharedPrefs.ReadConfiguredDevices(this);
+        List<DeviceInfo> newEntries = SharedPrefs.ReadConfiguredDevices();
         // This is somehow a more complicated way of alDevices := newEntries
         // because with an assignment we would lose the outlet states which are not stored in the SharedPref
         // and only with the next UDP update those states are restored. This
@@ -416,16 +242,13 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
         // error packet received
         String desc;
         if (errMessage.trim().equals("NoPass"))
-            desc = getString(R.string.error_nopass);
+            desc = NetpowerctrlApplication.instance.getString(R.string.error_nopass);
         else
             desc = errMessage;
-        String error = getString(R.string.error_packet_received) + ": " + desc;
-        ShowToast.FromOtherThread(this, error);
+        String error = NetpowerctrlApplication.instance.getString(R.string.error_packet_received) + ": " + desc;
+        ShowToast.FromOtherThread(NetpowerctrlApplication.instance, error);
     }
 
-    public NetpowerctrlService getService() {
-        return mDiscoverService;
-    }
 
     public DeviceInfo findDevice(String mac_address) {
         for (DeviceInfo di : configuredDevices) {
@@ -460,7 +283,7 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
     }
 
     public void saveConfiguredDevices(boolean updateObservers) {
-        SharedPrefs.SaveConfiguredDevices(configuredDevices, this);
+        SharedPrefs.SaveConfiguredDevices(configuredDevices);
         if (updateObservers)
             notifyConfiguredObservers(configuredDevices);
     }
@@ -472,4 +295,5 @@ public class NetpowerctrlApplication extends Application implements DeviceUpdate
                 ++r;
         return r;
     }
+
 }

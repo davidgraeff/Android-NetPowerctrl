@@ -12,8 +12,8 @@ import android.preference.PreferenceScreen;
 import android.util.Log;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment {
@@ -55,7 +55,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 Log.w("PREFERENCES", "Strange widget ID!");
                 continue;
             }
-            di = NetpowerctrlApplication.instance.findDevice(outlet.deviceMac);
+            di = NetpowerctrlApplication.getDataController().findDevice(outlet.deviceMac);
             if (di == null)
                 entries[index] = outlet.deviceMac + ", " + outlet.outletNumber;
             else

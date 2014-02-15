@@ -5,7 +5,7 @@ import android.util.JsonWriter;
 
 import java.io.IOException;
 
-import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
 public class SceneOutlet {
     public static final int OFF = 0;
@@ -71,7 +71,7 @@ public class SceneOutlet {
     }
 
     public boolean updateDeviceAndOutletLinks() {
-        outletinfo = NetpowerctrlApplication.instance.findOutlet(device_mac, outletNumber);
+        outletinfo = NetpowerctrlApplication.getDataController().findOutlet(device_mac, outletNumber);
         if (outletinfo != null) {
             description = outletinfo.device.DeviceName + ": " + outletinfo.getDescription();
             return true;

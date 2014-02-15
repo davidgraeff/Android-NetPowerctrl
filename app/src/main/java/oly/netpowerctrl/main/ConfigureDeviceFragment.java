@@ -21,6 +21,7 @@ import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdate;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceConfigurationAdapter;
@@ -78,7 +79,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
         if (listenService != null) {
             listenService.restartDiscoveryThreads();
         }
-        NetpowerctrlApplication.instance.addToConfiguredDevices(device, true);
+        NetpowerctrlApplication.getDataController().addToConfiguredDevices(device, true);
         //noinspection ConstantConditions
         getFragmentManager().popBackStack();
     }

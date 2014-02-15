@@ -13,24 +13,6 @@
         android:icon="@drawable/ic_menu_add" />
 
     <item
-        android:id="@+id/menu_showdevicename"
-        android:title="@string/menu_showdevicename"
-        android:showAsAction="collapseActionView|withText" />
-    <item
-        android:id="@+id/menu_hidedevicename"
-        android:title="@string/menu_hidedevicename"
-        android:showAsAction="collapseActionView|withText" />
-
-    <item
-        android:id="@+id/menu_showdragdrop"
-        android:title="@string/menu_showdragdrop"
-        android:showAsAction="collapseActionView|withText" />
-    <item
-        android:id="@+id/menu_hidedragdrop"
-        android:title="@string/menu_hidedragdrop"
-        android:showAsAction="collapseActionView|withText" />
-
-    <item
         android:id="@+id/menu_showhidden"
         android:title="@string/show_hidden"
         android:showAsAction="collapseActionView|withText" />

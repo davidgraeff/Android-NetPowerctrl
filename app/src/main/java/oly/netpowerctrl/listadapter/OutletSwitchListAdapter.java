@@ -5,11 +5,8 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -19,23 +16,23 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DevicesUpdate;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.dragdrop.DragDropEnabled;
-import oly.netpowerctrl.dragdrop.DropListener;
-import oly.netpowerctrl.dragdrop.RemoveListener;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
+import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
-public class OutletSwitchListAdapter extends BaseAdapter implements
-        ListAdapter, OnCheckedChangeListener, DragDropEnabled, DevicesUpdate, RemoveListener, DropListener {
+public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implements
+        OnCheckedChangeListener, DevicesUpdate {
 
     private static class OutletInfoAdditional {
         public OutletInfo oi;
         String displayText;
         public boolean enabled;
+        public long id;
 
-        OutletInfoAdditional(OutletInfo oi, boolean showDevice) {
+        OutletInfoAdditional(OutletInfo oi, boolean showDevice, long id) {
+            this.id = id;
             this.oi = oi;
             this.enabled = oi.device.reachable;
             if (showDevice)
@@ -51,14 +48,13 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
     private boolean showDeviceNames;
     private boolean temporary_ignore_positionRequest;
     private NotReachableUpdate notReachableObserver;
-    private boolean dragDropEnabled = false;
 
     public OutletSwitchListAdapter(Context context) {
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<OutletInfoAdditional>();
         showHidden = SharedPrefs.getShowHiddenOutlets(context);
         showDeviceNames = SharedPrefs.getShowDeviceNames(context);
-        NetpowerctrlApplication.instance.registerConfiguredObserver(this);
+        NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
         onDevicesUpdated(null);
     }
 
@@ -67,7 +63,8 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
      * This will remove all remaining references to this object.
      */
     public void finish() {
-        NetpowerctrlApplication.instance.unregisterConfiguredObserver(this);
+        setNotReachableObserver(null);
+        NetpowerctrlApplication.getDataController().unregisterConfiguredObserver(this);
     }
 
     @Override
@@ -81,7 +78,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return all_outlets.get(position).id;
     }
 
     @Override
@@ -105,27 +102,26 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         textView.setAlpha(info.oi.Hidden ? 0.5f : 1.0f);
         textView.setText(info.displayText);
 
-        ImageView handlerImage = (ImageView) convertView.findViewById(R.id.MoveHandler);
-        handlerImage.setVisibility(dragDropEnabled ? View.VISIBLE : View.GONE);
-
         return convertView;
     }
 
-    public void swapPosition(int from, int to) {
-        onDrop(from, to);
+
+    @Override
+    public void reorderItems(int originalPosition, int newPosition) {
+        if (newPosition >= getCount()) {
+            return;
+        }
+        OutletInfoAdditional temp = all_outlets.get(originalPosition);
+        all_outlets.get(originalPosition).oi.positionRequest = all_outlets.get(newPosition).oi.positionRequest;
+        all_outlets.get(newPosition).oi.positionRequest = temp.oi.positionRequest;
+        all_outlets.remove(originalPosition);
+        all_outlets.add(newPosition, temp);
+        notifyDataSetChanged();
     }
 
     @Override
-    public void onDrop(int from, int to) {
-        OutletInfoAdditional temp = all_outlets.get(from);
-        all_outlets.get(from).oi.positionRequest = all_outlets.get(to).oi.positionRequest;
-        all_outlets.get(to).oi.positionRequest = temp.oi.positionRequest;
-        all_outlets.remove(from);
-        all_outlets.add(to, temp);
-    }
-
-    @Override
-    public void onRemove(int ignored) {
+    public void finishedReordering() {
+        NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
     }
 
     @Override
@@ -144,7 +140,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         if (oi.Disabled || (oi.Hidden && !showHidden))
             return;
 
-        OutletInfoAdditional new_oi = new OutletInfoAdditional(oi, showDeviceNames);
+        OutletInfoAdditional new_oi = new OutletInfoAdditional(oi, showDeviceNames, all_outlets.size());
 
         boolean found = false;
         for (int i = 0; i < all_outlets.size(); ++i) {
@@ -168,7 +164,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
         all_outlets.clear();
 
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
-        List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
+        List<DeviceInfo> all_devices = NetpowerctrlApplication.getDataController().configuredDevices;
         for (DeviceInfo device : all_devices) {
             if (!device.reachable) {
                 not_reachable.add(device);
@@ -224,7 +220,7 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
             return;
 
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
-        List<DeviceInfo> all_devices = NetpowerctrlApplication.instance.configuredDevices;
+        List<DeviceInfo> all_devices = NetpowerctrlApplication.getDataController().configuredDevices;
         for (DeviceInfo device : all_devices) {
             if (!device.reachable)
                 not_reachable.add(device);
@@ -233,26 +229,4 @@ public class OutletSwitchListAdapter extends BaseAdapter implements
 
         notReachableObserver.onNotReachableUpdate(not_reachable);
     }
-
-    public boolean isShowDeviceNames() {
-        return showDeviceNames;
-    }
-
-    public void setShowDeviceNames(boolean showDeviceNames) {
-        this.showDeviceNames = showDeviceNames;
-        onDevicesUpdated(null);
-        SharedPrefs.setShowDeviceNames(showDeviceNames);
-    }
-
-    @Override
-    public void setDragDropEnabled(boolean d) {
-        dragDropEnabled = d;
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean isDragDropEnabled() {
-        return dragDropEnabled;
-    }
-
 }

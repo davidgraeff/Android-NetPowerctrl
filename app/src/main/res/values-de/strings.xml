@@ -23,7 +23,7 @@
     <string name="error_outlet_title">Fehler</string>
     <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
     <string name="error_getting_first_packet">Keine Antwort vom Gerät. Entweder die Ports sind falsch konfiguriert oder das Gerät ist nicht erreichbar.</string>
-    <string name="error_setting_outlet">Keine Antwort vom Gerät nach %1$d Versuchen</string>
+    <string name="error_setting_outlet">Keine Antwort von Gerät %1$s. Zuletzt vor %2$d Sekunden Kontakt.</string>
     <string name="error_shortcut_not_valid">Verknüpfung beschädigt!</string>
     <string name="error_reading_scenes">Szenen konnten nicht geladen werden</string>
 
@@ -102,29 +102,19 @@
         <item>Mehrere Steckdosen zugleich schalten</item>
     </string-array>
 
-    <string-array name="drawer_titles_devices">
-        <item>Geräte</item>
-        <item>Neue Geräte einrichten</item>
-        <item>Eingerichtete Geräte</item>
-    </string-array>
-
-    <string-array name="drawer_descriptions_devices">
-        <item>-</item>
-        <item />
-        <item />
-    </string-array>
-
     <string-array name="drawer_titles_app">
         <item>App</item>
+        <item>Geräte</item>
         <item>Einstellungen</item>
-        <item>Hilfe</item>
+        <item>Übertragen/Backup</item>
         <item>Feedback</item>
     </string-array>
 
     <string-array name="drawer_descriptions_app">
         <item>-</item>
+        <item>Neue/eingerichte Geräte</item>
         <item />
-        <item />
+        <item>Kopiere konfigurierte Geräte</item>
         <item />
     </string-array>
 
@@ -176,10 +166,11 @@
     <string name="error_not_reachable">Gerät nicht erreichbar</string>
 
     <string name="plugin_drawer_title">Erweiterungen</string>
-    <string name="empty_no_scenes">Keine Szenen gefunden. Erstelle eine mit dem (+) Icon oben rechts.</string>
-    <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden. Richte zuerst ein Gerät ein.</string>
-    <string name="empty_no_configured_devices">Keine eingerichteten Geräte gefunden.</string>
-    <string name="empty_no_new_devices">Keine neuen Geräte gefunden. Entweder sind bereits alle eingerichtet oder du hast falsche Ports in den Einstellungen ausgewählt.</string>
+    <string name="empty_no_scenes">Keine Szenen gefunden. Erstelle eine mit dem (+) Icon oben rechts.\n\n
+Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
+    <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
+Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</string>
+    <string name="empty_no_devices">Keine Geräte gefunden. Vielleicht hast du falsche Ports in den Einstellungen ausgewählt?</string>
     <string name="devices_refreshed">Es wurden %1$d bekannte und %2$d unbekannte Geräte gefunden</string>
     <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
     <string name="menu_showdragdrop">Starte Verschiebemodus</string>
@@ -211,4 +202,9 @@
     <string name="service_stopped">Service beendet</string>
     <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
     <string name="preference_notify_on_stop_summary">Diese Option hilft zu überprüfen ob wirklich alles beendet wurde.</string>
+    <string name="new_devices">Unbekannte Geräte</string>
+    <string name="configured_devices">Konfigurierte Geräte</string>
+    <string name="devices">Zum Gerätebildschirm</string>
+    <string name="preferences">Zu den Einstellungen</string>
+    <string name="hint_stop_edit">Zurück drücken um das Editieren zu beenden</string>
 </resources>

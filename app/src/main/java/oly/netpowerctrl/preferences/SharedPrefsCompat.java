@@ -8,11 +8,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneOutlet;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 /**
  * Old device read config
@@ -85,7 +85,7 @@ public class SharedPrefsCompat {
             c.outletNumber = Integer.valueOf(src[2]);
             c.state = Integer.valueOf(src[3]);
             c.description = c.device_mac + ":" + Integer.valueOf(c.outletNumber).toString();
-            c.outletinfo = NetpowerctrlApplication.instance.findOutlet(c.device_mac, c.outletNumber);
+            c.outletinfo = NetpowerctrlApplication.getDataController().findOutlet(c.device_mac, c.outletNumber);
             if (c.outletinfo != null)
                 c.description = c.outletinfo.device.DeviceName + ": " + c.outletinfo.getDescription();
             return c;

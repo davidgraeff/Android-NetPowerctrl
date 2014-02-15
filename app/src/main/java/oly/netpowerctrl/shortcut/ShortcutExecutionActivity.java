@@ -16,11 +16,11 @@ import oly.netpowerctrl.anelservice.DeviceSend;
 import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.anelservice.NetpowerctrlService;
 import oly.netpowerctrl.anelservice.ServiceReady;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceCommand;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ShowToast;
 

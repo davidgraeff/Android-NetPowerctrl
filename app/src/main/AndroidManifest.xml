@@ -24,7 +24,7 @@
         android:protectionLevel="signature" />
 
     <application
-        android:name="oly.netpowerctrl.main.NetpowerctrlApplication"
+        android:name=".application_state.NetpowerctrlApplication"
         android:icon="@drawable/netpowerctrl"
         android:label="@string/app_name"
         android:allowBackup="true">

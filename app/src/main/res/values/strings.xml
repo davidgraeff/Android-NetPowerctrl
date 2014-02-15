@@ -23,7 +23,7 @@
     <string name="error_outlet_title">Outlet data error</string>
     <string name="error_port_config_number">Please enter only valid port numbers.</string>
     <string name="error_getting_first_packet">No answer from the device. Either the ports are not configured correctly or it is out of reach. You may try sending comands, but the result is uncertain.</string>
-    <string name="error_setting_outlet">No answer from the device or you don\'t gave the required permission to switch the outlet.</string>
+    <string name="error_setting_outlet">No answer from the device %1$s. Last seen: %2$d seconds ago</string>
 
     <string name="device_test">Test</string>
     <string name="device_settings">Device Settings</string>
@@ -105,29 +105,19 @@
         <item>Switch multiple grouped outlets</item>
     </string-array>
 
-    <string-array name="drawer_titles_devices">
-        <item>Devices</item>
-        <item>Add new device</item>
-        <item>Configured devices</item>
-    </string-array>
-
-    <string-array name="drawer_descriptions_devices">
-        <item>-</item>
-        <item />
-        <item />
-    </string-array>
-
     <string-array name="drawer_titles_app">
-        <item>App</item>
-        <item>Settings</item>
-        <item>Help</item>
+        <item>App and Devices</item>
+        <item>Devices</item>
+        <item>Preferences</item>
+        <item>Transfer/Backup</item>
         <item>Feedback</item>
     </string-array>
 
     <string-array name="drawer_descriptions_app">
         <item>-</item>
+        <item>New and configured devices</item>
         <item />
-        <item />
+        <item>Copy configured devices/outlets</item>
         <item />
     </string-array>
 
@@ -180,10 +170,11 @@
     <string name="menu_device_website">Visit website of the device</string>
     <string name="error_not_reachable">Devices not reachable</string>
     <string name="plugin_drawer_title">Plugins</string>
-    <string name="empty_no_scenes">No scene found. Create one by clicking on the (+) icon located in the top-left bar.</string>
-    <string name="empty_no_outlets">No outlets to display. Configure devices first or get in range of configured devices.</string>
-    <string name="empty_no_configured_devices">No configured devices found. Configure one first.</string>
-    <string name="empty_no_new_devices">No new devices found. You may have configured all devices already or you have setup wrong ports in the preferences.</string>
+    <string name="empty_no_scenes">No scene found. Create one by clicking on the (+) icon located in the top-left bar.\n\n
+A scene combines multiple actions and execute them at once.</string>
+    <string name="empty_no_outlets">No outlets to display.\n\n
+If you would like to configure new devices, change to the Devices screen.</string>
+    <string name="empty_no_devices">No devices found. You may have setup wrong ports in the preferences.</string>
     <string name="devices_refreshed">Found %1$d known and %2$d unknown devices on this network</string>
     <string name="error_not_in_range">Destination network %1$s not in range</string>
     <string name="menu_hidedevicename">Hide device names</string>
@@ -216,5 +207,10 @@
     <string name="service_stopped">Service stopped</string>
     <string name="preference_notify_on_stop">Notify on app shutdown</string>
     <string name="preference_notify_on_stop_summary">Activate this to see if really all parts of the app are shutdown on close.</string>
+    <string name="new_devices">New devices</string>
+    <string name="configured_devices">Configured devices</string>
+    <string name="devices">Change to Devices screen</string>
+    <string name="preferences">Change to Preferences screen</string>
+    <string name="hint_stop_edit">Press back to stop editing</string>
 
 </resources>

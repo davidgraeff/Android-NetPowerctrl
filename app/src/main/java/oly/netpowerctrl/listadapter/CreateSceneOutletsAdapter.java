@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
 import oly.netpowerctrl.datastructure.SceneOutlet;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapter, View.OnClickListener {
@@ -58,7 +58,7 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
     public static CreateSceneOutletsAdapter createByConfiguredDevices(Context context) {
         CreateSceneOutletsAdapter o = new CreateSceneOutletsAdapter(context);
         // Enumerate all configured devices and outlets and create SceneOutlets
-        for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
+        for (DeviceInfo device : NetpowerctrlApplication.getDataController().configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 if (oi.Disabled)
                     continue;
@@ -74,7 +74,7 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
 
     public static CreateSceneOutletsAdapter createByOutletCommands(Context context, List<SceneOutlet> commands) {
         CreateSceneOutletsAdapter o = new CreateSceneOutletsAdapter(context);
-        for (DeviceInfo device : NetpowerctrlApplication.instance.configuredDevices) {
+        for (DeviceInfo device : NetpowerctrlApplication.getDataController().configuredDevices) {
             for (OutletInfo oi : device.Outlets) {
                 oi.device = device;
                 if (oi.Disabled)

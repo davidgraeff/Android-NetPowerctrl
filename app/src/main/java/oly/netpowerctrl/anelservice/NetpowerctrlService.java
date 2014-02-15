@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.main.NetpowerctrlApplication;
 
 public class NetpowerctrlService extends Service {
     private List<DiscoveryThread> discoveryThreads = new ArrayList<DiscoveryThread>();
@@ -130,7 +130,7 @@ public class NetpowerctrlService extends Service {
             filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
             registerReceiver(networkChangedListener, filter);
 
-            Set<Integer> ports = NetpowerctrlApplication.instance.getAllReceivePorts();
+            Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllReceivePorts();
             if (temporary_device != null)
                 ports.add(temporary_device.ReceivePort);
 
