@@ -161,7 +161,6 @@
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
     <string name="menu_switch_all_ignore">Alle ignorieren</string>
     <string name="menu_help">Hilfe</string>
-    <string name="shortcut_help">Auf diesem Bildschirm siehst du alle eingerichteten Steckdosen. Anfangs hat keine eine Auswirkung auf die fertige Szene. Klicke auf einen Namen und wähle eines der Icons aus. Von Links nach Rechts: Ausschalten, Einschalten, Umschalten. Gib einen Namen ein, danach kannst du die Szene speichern.</string>
     <string name="menu_device_website">Webseite des Geräts aufrufen</string>
     <string name="error_not_reachable">Gerät nicht erreichbar</string>
 
@@ -173,8 +172,6 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="empty_no_devices">Keine Geräte gefunden. Vielleicht hast du falsche Ports in den Einstellungen ausgewählt?</string>
     <string name="devices_refreshed">Es wurden %1$d bekannte und %2$d unbekannte Geräte gefunden</string>
     <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
-    <string name="menu_showdragdrop">Starte Verschiebemodus</string>
-    <string name="menu_hidedragdrop">Beende Verschiebemodus</string>
     <string name="scene_executed">Szene %1$s ausgeführt</string>
     <string name="shortcut_enable_feedback">Benachrichtigung bei Ausführung</string>
     <string name="preference_change_the_title">Neustart benötigt</string>
@@ -207,4 +204,16 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="devices">Zum Gerätebildschirm</string>
     <string name="preferences">Zu den Einstellungen</string>
     <string name="hint_stop_edit">Zurück drücken um das Editieren zu beenden</string>
+    <string name="scene_set_name">Namen setzen</string>
+    <string name="scene_set_icon">Bild setzen</string>
+    <string name="widget_icon">Widget Icon</string>
+    <string name="widget_default_icon">Vordefiniertes Bild</string>
+    <string name="widget_icon_select">Bild auswählen…</string>
+    <string name="scene_icon_title">Scene Icon</string>
+    <string name="scene_icon_default">Default Icon</string>
+    <string name="scene_icon_select">Select Scene Icon…</string>
+    <string name="error_icon">Icon konnte nicht genutzt werden</string>
+    <string name="scene_create_helptext">Noch keine Aktionen. Ziehe den Bildschirm nach rechts um die verfügbaren Aktionen zu sehen. Klicke eine an um diese der Szene hinzuzufügen.</string>
+    <string name="error_scene_no_actions">Keine Aktion zugewiesen. Speichern nicht erlaubt!</string>
+    <string name="error_scene_no_name">Keinen Namen vergeben. Speichern nicht erlaubt!</string>
 </resources>

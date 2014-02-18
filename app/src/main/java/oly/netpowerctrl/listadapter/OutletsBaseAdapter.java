@@ -5,36 +5,37 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceSend;
-import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.ListItemMenu;
 
-public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implements
-        OnCheckedChangeListener, DevicesUpdate {
+public class OutletsBaseAdapter extends AbstractDynamicGridAdapter {
 
-    private static class OutletInfoAdditional {
+    protected ListItemMenu mListItemMenu = null;
+    protected int nextId = 0; // we need stable IDs for the gridView
+    protected int outlet_res_id = R.layout.outlet_list_switch;
+    protected boolean showHidden = true;
+
+    protected static class OutletInfoAdditional {
         public OutletInfo oi;
         String displayText;
         public boolean enabled;
         public long id;
 
-        OutletInfoAdditional(OutletInfo oi, boolean showDevice, long id) {
+        OutletInfoAdditional(OutletInfo oi, boolean showDevice, boolean enabled, long id) {
             this.id = id;
             this.oi = oi;
-            this.enabled = oi.device.reachable;
+            this.enabled = enabled; //oi.device.reachable;
             if (showDevice)
                 displayText = oi.device.DeviceName + ": " + oi.getDescription();
             else
@@ -42,29 +43,40 @@ public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implemen
         }
     }
 
-    private List<OutletInfoAdditional> all_outlets;
-    private LayoutInflater inflater;
-    private boolean showHidden;
-    private boolean showDeviceNames;
+    protected List<OutletInfoAdditional> all_outlets;
+    protected LayoutInflater inflater;
     private boolean temporary_ignore_positionRequest;
-    private NotReachableUpdate notReachableObserver;
 
-    public OutletSwitchListAdapter(Context context) {
+    protected OutletsBaseAdapter(Context context) {
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<OutletInfoAdditional>();
-        showHidden = SharedPrefs.getShowHiddenOutlets(context);
-        showDeviceNames = SharedPrefs.getShowDeviceNames(context);
-        NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
-        onDevicesUpdated(null);
     }
 
     /**
-     * Call this "Destructor" while your activity is destroyed.
-     * This will remove all remaining references to this object.
+     * Call this to load OutletInfo data from a scene.
+     *
+     * @param scene
      */
-    public void finish() {
-        setNotReachableObserver(null);
-        NetpowerctrlApplication.getDataController().unregisterConfiguredObserver(this);
+    public void loadByScene(Scene scene) {
+        for (SceneOutlet scene_outlet : scene.sceneOutlets) {
+            if (!scene_outlet.updateDeviceAndOutletLinks()) {
+                continue;
+            }
+            addOutlet(scene_outlet.outletinfo);
+        }
+        notifyDataSetChanged();
+    }
+
+    public List<SceneOutlet> getDeviceCommands() {
+        List<SceneOutlet> list_of_scene_outlets = new ArrayList<SceneOutlet>();
+        for (OutletInfoAdditional info : all_outlets) {
+            list_of_scene_outlets.add(SceneOutlet.fromOutletInfo(info.oi, true));
+        }
+        return list_of_scene_outlets;
+    }
+
+    public void setListItemMenu(ListItemMenu listItemMenu) {
+        this.mListItemMenu = listItemMenu;
     }
 
     @Override
@@ -84,17 +96,9 @@ public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implemen
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.outlet_list_switch, null);
-            assert convertView != null;
-            Switch tv = (Switch) convertView.findViewById(R.id.outlet_list_switch);
-            tv.setOnCheckedChangeListener(this);
+            convertView = inflater.inflate(outlet_res_id, null);
         }
         OutletInfoAdditional info = all_outlets.get(position);
-        Switch tv = (Switch) convertView.findViewById(R.id.outlet_list_switch);
-        tv.setTag(-1);
-        tv.setChecked(info.oi.State);
-        tv.setEnabled(info.enabled);
-        tv.setTag(position);
 
         TextView textView = (TextView) convertView.findViewById(R.id.outlet_list_text);
         textView.setEnabled(info.enabled);
@@ -104,7 +108,6 @@ public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implemen
 
         return convertView;
     }
-
 
     @Override
     public void reorderItems(int originalPosition, int newPosition) {
@@ -124,23 +127,12 @@ public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implemen
         NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
     }
 
-    @Override
-    public void onCheckedChanged(CompoundButton arg0, boolean new_state) {
-        int position = (Integer) arg0.getTag();
-        if (position == -1)
-            return;
-        arg0.setEnabled(false);
-        OutletInfo oi = getItem(position);
-        all_outlets.get(position).enabled = false;
-        DeviceSend.instance().sendOutlet(oi, new_state, true);
-    }
-
-    private void addOutlet(DeviceInfo device, OutletInfo oi) {
-        oi.device = device;
+    public void addOutlet(OutletInfo oi) {
+        assert oi.device != null;
         if (oi.Disabled || (oi.Hidden && !showHidden))
             return;
 
-        OutletInfoAdditional new_oi = new OutletInfoAdditional(oi, showDeviceNames, all_outlets.size());
+        OutletInfoAdditional new_oi = new OutletInfoAdditional(oi, true, true, nextId++);
 
         boolean found = false;
         for (int i = 0; i < all_outlets.size(); ++i) {
@@ -158,13 +150,11 @@ public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implemen
             all_outlets.add(new_oi);
     }
 
-    @Override
-    public void onDevicesUpdated(List<DeviceInfo> ignored) {
+    public List<DeviceInfo> update(List<DeviceInfo> all_devices) {
         // Clear
         all_outlets.clear();
 
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
-        List<DeviceInfo> all_devices = NetpowerctrlApplication.getDataController().configuredDevices;
         for (DeviceInfo device : all_devices) {
             if (!device.reachable) {
                 not_reachable.add(device);
@@ -172,11 +162,11 @@ public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implemen
             }
 
             for (OutletInfo oi : device.Outlets) {
-                addOutlet(device, oi);
+                addOutlet(oi);
             }
 
             for (OutletInfo oi : device.IOs) {
-                addOutlet(device, oi);
+                addOutlet(oi);
             }
         }
 
@@ -188,45 +178,16 @@ public class OutletSwitchListAdapter extends AbstractDynamicGridAdapter implemen
             all_outlets.get(i).oi.positionRequest = i;
         }
         notifyDataSetChanged();
-
-        if (notReachableObserver != null)
-            notReachableObserver.onNotReachableUpdate(not_reachable);
+        return not_reachable;
     }
 
-    public void sortAlphabetically() {
-        temporary_ignore_positionRequest = true;
-        onDevicesUpdated(null);
-        temporary_ignore_positionRequest = false;
+    public void clear() {
+        all_outlets.clear();
+        notifyDataSetChanged();
     }
 
-    public boolean getIsShowingHidden() {
-        return showHidden;
-    }
-
-    public void setShowHidden(boolean b) {
-        showHidden = b;
-        onDevicesUpdated(null);
-        SharedPrefs.setShowHiddenOutlets(showDeviceNames);
-    }
-
-    /**
-     * Inform the given object about not reachable devices
-     *
-     * @param notReachableObserver The object to notify
-     */
-    public void setNotReachableObserver(NotReachableUpdate notReachableObserver) {
-        this.notReachableObserver = notReachableObserver;
-        if (notReachableObserver == null)
-            return;
-
-        List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
-        List<DeviceInfo> all_devices = NetpowerctrlApplication.getDataController().configuredDevices;
-        for (DeviceInfo device : all_devices) {
-            if (!device.reachable)
-                not_reachable.add(device);
-
-        }
-
-        notReachableObserver.onNotReachableUpdate(not_reachable);
+    public void removeAt(int position) {
+        all_outlets.remove(position);
+        notifyDataSetChanged();
     }
 }

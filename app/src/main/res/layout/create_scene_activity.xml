@@ -4,15 +4,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ListView
-        android:id="@+id/lvOutletSelect"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_weight="1">
+        android:layout_height="fill_parent">
 
-    </ListView>
+        <android.support.v4.view.PagerTitleStrip
+            android:id="@+id/pager_title_strip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:background="#33b5e5"
+            android:textColor="#fff"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp" />
+
+    </android.support.v4.view.ViewPager>
 
     <Switch
         android:id="@+id/shortcut_show_mainwindow"
@@ -21,6 +28,7 @@
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
         android:paddingLeft="16dip"
+        android:visibility="gone"
         android:text="@string/shortcut_show_mainwindow" />
 
     <Switch
@@ -30,60 +38,17 @@
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
         android:paddingLeft="16dip"
+        android:visibility="gone"
         android:text="@string/shortcut_enable_feedback" />
 
-    <LinearLayout
-        android:paddingLeft="16dip"
+    <TextView
+        android:id="@+id/hintText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-            android:text="@string/name"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="5dp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:gravity="center_vertical" />
-
-        <EditText
-            android:id="@+id/shortcut_name"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@android:string/unknownName"
-            android:imeOptions="actionNext"
-            android:singleLine="true" />
-    </LinearLayout>
-
-    <LinearLayout
-        style="?android:attr/buttonBarStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="bottom|right"
+        android:background="?drawer_item_background"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:gravity="left"
         android:padding="5dp"
-        android:orientation="horizontal">
-
-        <Button
-            style="?android:attr/buttonBarButtonStyle"
-            android:id="@+id/btnCancelShortcut"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@android:string/cancel"
-            android:drawableLeft="@drawable/ic_menu_close_clear_cancel" />
-
-        <Button
-            style="?android:attr/buttonBarButtonStyle"
-            android:id="@+id/btnAcceptShortcut"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@android:string/ok"
-            android:drawableLeft="@android:drawable/ic_menu_save" />
-
-    </LinearLayout>
+        android:visibility="gone" />
 
 </LinearLayout>

@@ -28,6 +28,7 @@ import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.listadapter.ScenesListAdapter;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * NFC related
@@ -38,7 +39,7 @@ public class NFC {
         try {
             JSONHelper h = new JSONHelper();
             NFC.NFC_Transfer.fromData(
-                    SceneCollection.fromScenes(adpScenes.getScenes()),
+                    SceneCollection.fromScenes(SharedPrefs.ReadScenes()),
                     DeviceCollection.fromDevices(NetpowerctrlApplication.getDataController().configuredDevices)).toJSON(h.createWriter());
             text = h.getString();
         } catch (IOException e) {
@@ -227,11 +228,11 @@ public class NFC {
         dialog.show();
     }
 
-    private static void showSelectionScenes(Context context, final SceneCollection sc) {
+    private static void showSelectionScenes(final Context context, final SceneCollection sc) {
         String[] sceneNames = new String[sc.scenes.size()];
         int i = 0;
         for (Scene scene : sc.scenes) {
-            boolean already_installed = NetpowerctrlActivity.instance.getScenesAdapter().getScenes().contains(scene);
+            boolean already_installed = NetpowerctrlActivity.instance.getScenesAdapter().contains(scene);
             sceneNames[i] = scene.sceneName;
             if (already_installed)
                 sceneNames[i] += " " + context.getString(R.string.scene_replace);
@@ -262,9 +263,9 @@ public class NFC {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         int i = 0;
-                        for (Scene di : sc.scenes) {
+                        for (Scene scene : sc.scenes) {
                             if (selectedItems.get(i, -1) != -1)
-                                NetpowerctrlActivity.instance.getScenesAdapter().addScene(di);
+                                NetpowerctrlActivity.instance.getScenesAdapter().addScene(context, scene);
                             ++i;
                         }
                     }

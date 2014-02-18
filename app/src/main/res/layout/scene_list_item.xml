@@ -6,12 +6,13 @@
     android:orientation="vertical"
     android:paddingLeft="5dip"
     android:paddingRight="5dip"
-    android:background="@drawable/item_selector">
+    android:background="?item_selector">
 
     <ImageView
-        android:id="@+id/btnEditScene"
+        android:id="@+id/scene_icon_bitmap"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
+        android:maxWidth="128dp"
         android:src="@drawable/widgeton" />
 
     <TextView

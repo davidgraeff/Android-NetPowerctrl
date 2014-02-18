@@ -9,13 +9,13 @@
     android:paddingRight="12dip"
     android:clickable="false"
     android:descendantFocusability="blocksDescendants"
-    android:background="@drawable/item_selector"
+    android:background="?item_selector"
     android:focusable="false"
     android:focusableInTouchMode="false">
 
     <TextView
         android:id="@+id/outlet_list_text"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center_vertical"

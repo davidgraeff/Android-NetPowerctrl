@@ -5,44 +5,43 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.preference.Preference;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.Scenes;
 
 public class WidgetPreferenceFragment extends PreferencesWithValuesFragment {
     private Preference current_preference;
     private Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
         public boolean onPreferenceClick(final Preference preference) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Widget Icon");
-            builder.setItems(new String[]{"Default Icon", "Select Widget Icon"}, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    if (i == 0) {
-                        getPreferenceManager().getSharedPreferences().edit().putString(preference.getKey(), "").commit();
-                        preference.setIcon(loadIcon(preference.getKey()));
-                    } else {
-                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                        intent.setType("image/*");
-                        intent.addCategory(Intent.CATEGORY_OPENABLE);
-                        int PICK_IMAGE = 1;
-                        current_preference = preference;
-                        startActivityForResult(intent, PICK_IMAGE);
-                    }
-                    dialogInterface.dismiss();
-                }
-            });
+            builder.setTitle(getActivity().getString(R.string.widget_icon));
+            builder.setItems(new String[]{
+                    getActivity().getString(R.string.widget_default_icon),
+                    getActivity().getString(R.string.widget_icon_select)},
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (i == 0) {
+                                getPreferenceManager().getSharedPreferences().edit().putString(preference.getKey(), "").commit();
+                                preference.setIcon(loadIcon(preference.getKey()));
+                            } else {
+                                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                                intent.setType("image/*");
+                                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                                int PICK_IMAGE = 1;
+                                current_preference = preference;
+                                startActivityForResult(intent, PICK_IMAGE);
+                            }
+                            dialogInterface.dismiss();
+                        }
+                    });
             builder.create().show();
             return true;
         }
@@ -86,21 +85,12 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment {
         preference.setOnPreferenceClickListener(selectImage);
     }
 
-    private Drawable getDrawableFromUri(Uri uri) throws IOException {
-        ParcelFileDescriptor parcelFileDescriptor =
-                getActivity().getContentResolver().openFileDescriptor(uri, "r");
-        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-        parcelFileDescriptor.close();
-        return new BitmapDrawable(getResources(), image);
-    }
-
     public Drawable loadIcon(String key) {
         String uriString = getPreferenceManager().getSharedPreferences().getString(key, null);
         Drawable dest = null;
         if (uriString != null && uriString.length() > 0) {
             try {
-                dest = getDrawableFromUri(Uri.parse(uriString));
+                dest = Scenes.getDrawableFromUri(getActivity(), Uri.parse(uriString));
             } catch (IOException e) {
                 e.printStackTrace();
             }

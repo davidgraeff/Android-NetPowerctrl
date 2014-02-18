@@ -77,7 +77,7 @@ public class Backup {
                             Toast.makeText(context, context.getString(R.string.scene_backup_restored), Toast.LENGTH_SHORT).show();
                             if (sc.scenes != null)
                                 for (Scene scene : sc.scenes)
-                                    adapter.addScene(scene);
+                                    adapter.addScene(context, scene);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                             Toast.makeText(context, context.getString(R.string.scene_backup_restore_failed), Toast.LENGTH_SHORT).show();

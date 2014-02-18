@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class Scene {
     public String sceneName = "";
     public String sceneDetails = "";
     public UUID uuid = UUID.randomUUID();
-    public ArrayList<SceneOutlet> sceneOutlets = new ArrayList<SceneOutlet>();
+    public List<SceneOutlet> sceneOutlets = new ArrayList<SceneOutlet>();
 
     public Scene() {
     }

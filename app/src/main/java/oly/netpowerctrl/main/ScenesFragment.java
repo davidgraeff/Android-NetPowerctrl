@@ -1,6 +1,5 @@
 package oly.netpowerctrl.main;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -66,30 +65,11 @@ public class ScenesFragment extends Fragment implements
             case R.id.menu_add_scene: {
                 Intent it = new Intent(getActivity(), ShortcutCreatorActivity.class);
                 it.putExtra(ShortcutCreatorActivity.CREATE_SCENE, true);
-                startActivityForResult(it, ACTIVITY_REQUEST_ADD_GROUP);
+                startActivity(it);
                 return true;
             }
         }
         return false;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == ACTIVITY_REQUEST_ADD_GROUP && resultCode == Activity.RESULT_OK) {
-            Bundle shortcut_bundle = data.getExtras();
-            assert shortcut_bundle != null;
-            Intent groupIntent = shortcut_bundle.getParcelable(Intent.EXTRA_SHORTCUT_INTENT);
-            assert groupIntent != null;
-            shortcut_bundle = groupIntent.getExtras();
-            try {
-                assert shortcut_bundle != null;
-                Scene og = Scene.fromJSON(JSONHelper.getReader(shortcut_bundle.getString(ShortcutCreatorActivity.RESULT_SCENE)));
-                adapter.addScene(og);
-            } catch (IOException ignored) {
-                //noinspection ConstantConditions
-                Toast.makeText(getActivity(), R.string.error_saving_scenes, Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     @Override
@@ -125,7 +105,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         final int position = (Integer) mListView.getTag();
-        Scene og = (Scene) adapter.getItem(position);
+        Scene og = adapter.getScene(position);
 
         switch (menuItem.getItemId()) {
             case R.id.menu_edit_scene: {
@@ -173,7 +153,7 @@ public class ScenesFragment extends Fragment implements
             adapter.executeScene(position);
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
-                    getActivity().getString(R.string.scene_executed, adapter.getScenes().get(position).sceneName),
+                    getActivity().getString(R.string.scene_executed, adapter.getScene(position).sceneName),
                     Toast.LENGTH_SHORT).show();
         }
     }

@@ -5,11 +5,13 @@
         <item name="drawer_item_background">#F3F3F4</item>
         <item name="preferences_title_light">@color/text_light</item>
         <item name="android:windowIsTranslucent">false</item>
+        <item name="item_selector">@drawable/item_selector_light</item>
     </style>
 
     <style name="Theme.CustomDarkTheme" parent="android:Theme.Holo">
         <item name="drawer_item_background">#58585a</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>
+        <item name="item_selector">@drawable/item_selector_dark</item>
     </style>
 
     <style name="Theme.Transparent" parent="android:Theme.Translucent.NoTitleBar">
