@@ -9,13 +9,15 @@ For bugs and feature requests please use [Github Issues](https://github.com/davi
 ## Features
 * Devices are detected automatically on the network.
 * Username/password and individual ports can be configured for every device.
-* Create a homescreen widget for a particular outlet with life visualisation of the current state.
+* Create a homescreen widget for a particular outlet and always see the current state of that outlet.
 * Use your own icons for on/off/unreachable widget states.
-* Dark and light app theme.
 * Overview of all outlets for all configured devices. Reorder and hide outlets.
-* Tablets supported.
-* Create switch-groups (scenes) to switch multiple outlets at once.
-* Use Shortcuts for toggling, switching on/off individual outlets.
+* Create switch-groups (scenes) to switch multiple outlets at once. Use own icons for scenes.
+* Create homescreen shortcuts for scenes.
+* Dark and light app theme.
+* Tablet layout included to use your screen real estate efficiently.
+* Outlets and IO ports of Anel devices are supported.
+* Supports plugins to use functionality of other (related) apps.
 
 <table><tr valign="top"><td>
 <img width="200px" src="doc/devices.png" />
@@ -29,13 +31,19 @@ Default send port 1077 / receive port 1075 (can be configured). Please be aware
 that you cannot use port numbers < 1024 because of android restrictions!
 
 ### Support for automation apps like Tasker/Llama
-Most of the automation apps support creating shortcuts for invoking other applications.
-You may create shortcuts for single outlets to toggle the state or switch it on/off.
-This way you can for instance switch on lights if your mobile gets in range of your wifi network.
+Most of the automation apps support shortcuts of other applications.
+Because a shortcut of this app refers to a scene, you may easily switch multiple
+outlets as an action within the automation app.
+
+Cool examples:
+* This way you can for instance switch on lights if your mobile gets in range of your wifi network.
+* You may turn on your amplifier or radio and some lights in the morning.
 
 ### Building
-To compile, you need the [Android SDK](http://developer.android.com/sdk) and [Android Studio](http://developer.android.com/sdk/installing/studio.html). This project is not for
-the eclipse based SDK!
+To compile, you need the [Android SDK](http://developer.android.com/sdk)
+and [Android Studio](http://developer.android.com/sdk/installing/studio.html).
+This project is not for the (old) eclipse based SDK! It depends on the
+support libraries (v13) and need at least android 4.0 (sdk version 14, released 19. Oct 2011).
 
 ### Authors
 * david.graeff(at)web_de

@@ -8,6 +8,7 @@ import java.util.List;
  */
 public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamicGridAdapter {
     private HashMap<Object, Integer> mIdMap = new HashMap<Object, Integer>();
+    int nextID = 0; // always incrementing id counter
 
     /**
      * Adapter must have stable id
@@ -25,9 +26,7 @@ public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamic
      * @param item
      */
     protected void addStableId(Object item) {
-        int newId = (int) getItemId(getCount() - 1);
-        newId++;
-        mIdMap.put(item, newId);
+        mIdMap.put(item, nextID++);
     }
 
     /**
@@ -36,10 +35,8 @@ public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamic
      * @param items
      */
     protected void addAllStableId(List<?> items) {
-        int startId = (int) getItemId(getCount() - 1);
-        startId++;
-        for (int i = startId; i < items.size(); i++) {
-            mIdMap.put(items.get(i), i);
+        for (int i = 0; i < items.size(); i++) {
+            mIdMap.put(items.get(i), nextID++);
         }
     }
 
@@ -74,4 +71,5 @@ public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamic
     protected void removeStableID(Object item) {
         mIdMap.remove(item);
     }
+
 }

@@ -2,4 +2,9 @@
 <resources>
     <attr format="color" name="drawer_item_background" />
     <attr format="color" name="preferences_title_light" />
+    <attr format="reference" name="item_selector" />
+
+    <declare-styleable name="CompoundButton">
+        <attr name="android:button" />
+    </declare-styleable>
 </resources>

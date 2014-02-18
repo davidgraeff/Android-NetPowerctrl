@@ -2,29 +2,45 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:paddingLeft="16dip"
     android:paddingRight="12dip">
 
-    <TextView
-        android:id="@+id/outlet_list_text"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="fill"
-        android:gravity="center_vertical"
-        android:layout_weight="1"
-        android:paddingLeft="16dip"
-        android:singleLine="true"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-    <RadioGroup
+        <ImageView
+            android:id="@+id/outlet_list_close"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:gravity="center_vertical"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:focusableInTouchMode="false"
+            android:src="@android:drawable/btn_dialog" />
+
+        <TextView
+            android:id="@+id/outlet_list_text"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="fill"
+            android:gravity="center_vertical"
+            android:layout_weight="1"
+            android:paddingLeft="16dip"
+            android:singleLine="true"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    </LinearLayout>
+
+    <oly.netpowerctrl.utils.SegmentedRadioGroup
         android:id="@+id/radioGroup"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:orientation="horizontal"
-        android:visibility="invisible">
+        android:visibility="gone">
 
-        <RadioButton
+    <RadioButton
             android:id="@+id/radio0"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
@@ -54,6 +70,6 @@
             android:padding="2dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:drawableLeft="@drawable/ic_action_repeat" />
-    </RadioGroup>
+    </oly.netpowerctrl.utils.SegmentedRadioGroup>
 
 </LinearLayout>

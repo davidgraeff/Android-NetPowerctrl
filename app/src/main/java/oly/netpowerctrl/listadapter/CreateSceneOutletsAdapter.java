@@ -91,7 +91,7 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
         return o;
     }
 
-    private CreateSceneOutletsAdapter(Context context) {
+    public CreateSceneOutletsAdapter(Context context) {
         this.context = context;
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<SceneOutlet>();
@@ -112,7 +112,7 @@ public class CreateSceneOutletsAdapter extends BaseAdapter implements ListAdapte
     public View getView(int position, View convertView, ViewGroup parent) {
         boolean newValue = false;
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.create_scene_outlet_list_item, null);
+            convertView = inflater.inflate(R.layout.create_scene_outlet_list_switch, null);
             newValue = true;
         }
         SceneOutlet command = all_outlets.get(position);

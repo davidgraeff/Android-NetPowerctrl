@@ -19,6 +19,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:19.0.+'
     compile 'ch.acra:acra:4.5.0@jar'
+    compile 'com.android.support:support-v13:+'
 }

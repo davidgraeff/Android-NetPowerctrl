@@ -17,7 +17,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -414,9 +413,6 @@ public class DynamicGridView extends GridView {
                     if (clickDuration < MAX_CLICK_DURATION) {
 
                         View view = getChildAt(mCurrentPosition - getFirstVisiblePosition());
-                        Log.w("TOUCH", "UP " + Float.valueOf(event.getX()).toString() + " " +
-                                Float.valueOf(event.getY()).toString() + " " +
-                                Integer.valueOf(mCurrentPosition).toString());
                         if (view == null) {
                             return false;
                         } else {

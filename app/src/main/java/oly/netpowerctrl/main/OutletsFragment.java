@@ -26,18 +26,17 @@ import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.OutletInfo;
-import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.datastructure.SceneOutlet;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.NotReachableUpdate;
-import oly.netpowerctrl.listadapter.OutletSwitchListAdapter;
+import oly.netpowerctrl.listadapter.OutletsExecuteAdapter;
 import oly.netpowerctrl.utils.OnBackButton;
+import oly.netpowerctrl.utils.Scenes;
 
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         NotReachableUpdate, AdapterView.OnItemClickListener, OnBackButton {
-    private OutletSwitchListAdapter adapter;
+    private OutletsExecuteAdapter adapter;
     private TextView hintText;
 
     public OutletsFragment() {
@@ -46,7 +45,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new OutletSwitchListAdapter(getActivity());
+        adapter = new OutletsExecuteAdapter(getActivity());
+
         NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
         setHasOptionsMenu(true);
     }
@@ -97,35 +97,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_add_scene:
-                //noinspection ConstantConditions
-                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-
-                alert.setTitle(getString(R.string.outlet_to_scene_title));
-                alert.setMessage(getString(R.string.outlet_to_scene_message));
-
-                final EditText input = new EditText(alert.getContext());
-                input.setText("");
-                alert.setView(input);
-
-                alert.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Scene og = new Scene();
-                        og.sceneName = input.getText().toString();
-                        if (og.sceneName.trim().isEmpty())
-                            return;
-                        for (int i = 0; i < adapter.getCount(); ++i) {
-                            og.add(SceneOutlet.fromOutletInfo(adapter.getItem(i), true));
-                        }
-                        NetpowerctrlActivity.instance.getScenesAdapter().addScene(og);
-                    }
-                });
-
-                alert.setNegativeButton(getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
-                });
-
-                alert.show();
+                Scenes.createScene(getActivity(), adapter);
                 return true;
             case R.id.menu_showhidden: {
                 adapter.setShowHidden(true);
@@ -175,6 +147,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                mListView.getEmptyView().setVisibility(View.GONE);
                 mListView.setEmptyView(view.findViewById(android.R.id.empty));
             }
         }, 1000);
@@ -186,6 +159,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 NetpowerctrlActivity.instance.changeToFragment(DevicesListFragment.class.getName());
             }
         });
+
         return view;
     }
 

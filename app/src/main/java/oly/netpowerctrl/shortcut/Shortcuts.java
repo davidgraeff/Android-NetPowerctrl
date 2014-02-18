@@ -2,6 +2,7 @@ package oly.netpowerctrl.shortcut;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
@@ -41,6 +42,15 @@ public class Shortcuts {
         intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, name);
         intent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
                 Intent.ShortcutIconResource.fromContext(context, R.drawable.netpowerctrl));
+
+        return intent;
+    }
+
+    static public Intent createShortcut(Intent extra, String name, Bitmap icon) {
+        Intent intent = new Intent();
+        intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, extra);
+        intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, name);
+        intent.putExtra(Intent.EXTRA_SHORTCUT_ICON, icon);
 
         return intent;
     }
