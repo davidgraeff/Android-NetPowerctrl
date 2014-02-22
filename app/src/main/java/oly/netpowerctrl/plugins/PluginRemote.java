@@ -11,7 +11,6 @@ import android.util.Log;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.listadapter.PluginValuesAdapter;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -141,6 +140,7 @@ public class PluginRemote implements PluginValuesAdapter.OnValueChanged {
                     valuesAdapter.addDataFinished();
                 }
             });
+            ShowToast.FromOtherThread(context, "plugin data");
         }
     };
 }

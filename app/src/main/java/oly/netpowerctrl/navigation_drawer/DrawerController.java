@@ -108,6 +108,7 @@ public class DrawerController {
             public void onDrawerOpened(View drawerView) {
                 //getActionBar().setTitle(mDrawerTitle);
                 context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                onBackPressed();
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Net-PwrCtrl</string>
-    <string name="app_name_shortcut">Net-PwrCtrl Szene</string>
+    <string name="app_name">Power Control</string>
+    <string name="app_name_shortcut">Power-Control Szene</string>
     <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
-    <string name="app_name_widget">Net-PwrCtrl Steckdose</string>
+    <string name="app_name_widget">Power-Control Steckdose</string>
 
     <string name="configure_device">Gerät bearbeiten</string>
     <string name="delete_device">Gerät löschen</string>
@@ -159,7 +159,7 @@
     <string name="menu_switch_all_on">Alle auf Einschalten</string>
     <string name="menu_switch_all_off">Alle auf Ausschalten</string>
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
-    <string name="menu_switch_all_ignore">Alle ignorieren</string>
+    <string name="menu_switch_all_ignore">Alle von Szene entfernen</string>
     <string name="menu_help">Hilfe</string>
     <string name="menu_device_website">Webseite des Geräts aufrufen</string>
     <string name="error_not_reachable">Gerät nicht erreichbar</string>
@@ -206,14 +206,16 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="hint_stop_edit">Zurück drücken um das Editieren zu beenden</string>
     <string name="scene_set_name">Namen setzen</string>
     <string name="scene_set_icon">Bild setzen</string>
-    <string name="widget_icon">Widget Icon</string>
+    <string name="widget_icon">Widget Bild</string>
     <string name="widget_default_icon">Vordefiniertes Bild</string>
     <string name="widget_icon_select">Bild auswählen…</string>
-    <string name="scene_icon_title">Scene Icon</string>
-    <string name="scene_icon_default">Default Icon</string>
-    <string name="scene_icon_select">Select Scene Icon…</string>
-    <string name="error_icon">Icon konnte nicht genutzt werden</string>
+    <string name="dialog_icon_title">Bild</string>
+    <string name="dialog_icon_default">Bild zurücksetzen</string>
+    <string name="dialog_icon_select">Wähle Bild aus…</string>
+    <string name="error_icon">Bild konnte nicht genutzt werden</string>
     <string name="scene_create_helptext">Noch keine Aktionen. Ziehe den Bildschirm nach rechts um die verfügbaren Aktionen zu sehen. Klicke eine an um diese der Szene hinzuzufügen.</string>
     <string name="error_scene_no_actions">Keine Aktion zugewiesen. Speichern nicht erlaubt!</string>
     <string name="error_scene_no_name">Keinen Namen vergeben. Speichern nicht erlaubt!</string>
+    <string name="scene_create_helptext_available">Keine weiteren Aktionen vorhanden! Entweder nutzt du bereits alle oder es gibt einfach keine.</string>
+    <string name="error_reading_scenes_old">Die Datenstruktur hat sich geändert. Das Importieren deiner Szenen ist fehlgeschlagen :(</string>
 </resources>

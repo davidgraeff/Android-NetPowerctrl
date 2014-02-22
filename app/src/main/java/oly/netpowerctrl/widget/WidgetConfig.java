@@ -1,35 +1,42 @@
 package oly.netpowerctrl.widget;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.Fragment;
 import android.appwidget.AppWidgetManager;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
-
-import java.util.List;
+import android.view.View;
+import android.widget.AdapterView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.dynamicgid.DynamicGridView;
+import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
+import oly.netpowerctrl.main.OutletsSceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.shortcut.OutletsManipulator;
 
-public class WidgetConfig extends Activity {
-    private Context ctx;
+public class WidgetConfig extends Activity implements OutletsManipulator {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    private List<DeviceInfo> devices;
-    private String selectedDeviceMac;
-    private int[] outletNumbers;
+    DevicePortsBaseAdapter adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setResult(RESULT_CANCELED);
-        ctx = this;
-        devices = NetpowerctrlApplication.getDataController().configuredDevices;
+        // Set theme, call super onCreate and set content view
+        if (SharedPrefs.isDarkTheme()) {
+            setTheme(R.style.Theme_CustomDarkTheme);
+        } else {
+            setTheme(R.style.Theme_CustomLightTheme);
+        }
+        setContentView(R.layout.activity_main);
+
+        Fragment f = new OutletsSceneEditFragment(this,
+                OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
+                this);
+
+        getFragmentManager().beginTransaction().replace(R.id.content_frame, f).commit();
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -38,68 +45,26 @@ public class WidgetConfig extends Activity {
                     AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-
-        CharSequence[] items = new String[devices.size()];
-        for (int i = 0; i < devices.size(); i++)
-            items[i] = devices.get(i).DeviceName;
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.choose_widget_device);
-        builder.setItems(items, selectedDeviceListener);
-        AlertDialog alert = builder.create();
-        alert.setOnCancelListener(cancelListener);
-        alert.show();
     }
 
-    private DialogInterface.OnCancelListener cancelListener = new OnCancelListener() {
-        public void onCancel(DialogInterface dialog) {
-            finish();
-        }
-    };
-
-    private DialogInterface.OnClickListener selectedDeviceListener = new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int item) {
-            // Get outlets of device
-            List<OutletInfo> outlets = devices.get(item).Outlets;
-            selectedDeviceMac = devices.get(item).MacAddress;
-
-            int countDisabled = 0;
-            for (OutletInfo oi : outlets)
-                if (oi.Disabled)
-                    ++countDisabled;
-
-            CharSequence[] items = new String[outlets.size() - countDisabled];
-            outletNumbers = new int[outlets.size() - countDisabled];
-            int i = 0;
-            for (OutletInfo oi : outlets) {
-                if (oi.Disabled)
-                    continue;
-                items[i] = oi.getDescription();
-                outletNumbers[i] = oi.OutletNumber;
-                ++i;
-            }
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
-            builder.setTitle(R.string.choose_widget_outlet);
-            builder.setItems(items, selectedOutletListener);
-            AlertDialog alert = builder.create();
-            alert.setOnCancelListener(cancelListener);
-            alert.show();
-        }
-    };
-
-    private DialogInterface.OnClickListener selectedOutletListener = new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int item) {
-
-            SharedPrefs.SaveWidget(widgetId, new SharedPrefs.WidgetOutlet(selectedDeviceMac, outletNumbers[item]));
+    private AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            SharedPrefs.SaveWidget(widgetId, adapter.getItem(position).uuid.toString());
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
             setResult(RESULT_OK, resultValue);
             finish();
 
-            WidgetUpdateService.ForceUpdate(ctx, widgetId);
+            WidgetUpdateService.ForceUpdate(WidgetConfig.this, widgetId);
         }
     };
 
+    @Override
+    public void setManipulatorObjects(int tag, DynamicGridView view, DevicePortsBaseAdapter adapter) {
+        view.setOnItemClickListener(selectedOutletListener);
+        adapter.update(NetpowerctrlApplication.getDataController().configuredDevices);
+        this.adapter = adapter;
+    }
 }

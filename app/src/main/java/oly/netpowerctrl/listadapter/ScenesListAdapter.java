@@ -12,12 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceSend;
-import oly.netpowerctrl.datastructure.DeviceCommand;
+import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.Scenes;
+import oly.netpowerctrl.utils.Icons;
 
 public class ScenesListAdapter extends AbstractDynamicGridAdapter {
     private class Item {
@@ -40,7 +39,8 @@ public class ScenesListAdapter extends AbstractDynamicGridAdapter {
         inflater = LayoutInflater.from(context);
         List<Scene> list_of_scenes = SharedPrefs.ReadScenes();
         for (Scene scene : list_of_scenes) {
-            scenes.add(new Item(scene, Scenes.loadIcon(context, scene), nextId++));
+            scenes.add(new Item(scene,
+                    Icons.loadIcon(context, scene.uuid, Icons.IconType.SceneIcon), nextId++));
         }
     }
 
@@ -82,15 +82,12 @@ public class ScenesListAdapter extends AbstractDynamicGridAdapter {
     }
 
     public void executeScene(int position) {
-        Scene og = getScene(position);
-        DeviceSend.instance().sendOutlets(DeviceCommand.fromOutletCommandGroup(og), true);
+        Executor.execute(getScene(position));
     }
 
     public void addScene(Context context, Scene data) {
         if (data == null)
             return;
-
-        data.updateDeviceAndOutletLinks();
 
         // scenes.indexOf(--data--)
         int position = -1;
@@ -104,9 +101,9 @@ public class ScenesListAdapter extends AbstractDynamicGridAdapter {
         if (position != -1) {
             Item item = scenes.get(position);
             item.scene = data;
-            item.icon = Scenes.loadIcon(context, data);
+            item.icon = Icons.loadIcon(context, data.uuid, Icons.IconType.SceneIcon);
         } else { // Add new item
-            Item item = new Item(data, Scenes.loadIcon(context, data), nextId++);
+            Item item = new Item(data, Icons.loadIcon(context, data.uuid, Icons.IconType.SceneIcon), nextId++);
             scenes.add(item);
         }
 

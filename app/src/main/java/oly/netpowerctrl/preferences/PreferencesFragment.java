@@ -1,19 +1,19 @@
 package oly.netpowerctrl.preferences;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.util.Log;
 
+import java.util.UUID;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment {
@@ -26,16 +26,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
         findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.preference_change_the_title)
-                        .setMessage(R.string.preference_change_the_message)
-                        .setIcon(android.R.drawable.ic_dialog_info)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                getActivity().recreate();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null).show();
+                getActivity().recreate();
                 return true;
             }
         });
@@ -43,23 +34,20 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
         ComponentName deviceWidgetWidget = new ComponentName(getActivity(),
                 DeviceWidgetProvider.class);
-        int[] allWidgetIds = appWidgetManager.getAppWidgetIds(deviceWidgetWidget);
+        final int[] allWidgetIds = appWidgetManager.getAppWidgetIds(deviceWidgetWidget);
         CharSequence[] entries = new CharSequence[allWidgetIds.length];
         String[] entryValues = new String[allWidgetIds.length];
         int index = 0;
         for (int appWidgetId : allWidgetIds) {
             String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-            SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(appWidgetId);
-            DeviceInfo di = null;
-            if (outlet == null) {
+            String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
+            DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(
+                    port_uuid == null ? null : UUID.fromString(port_uuid));
+            if (port == null) {
                 Log.w("PREFERENCES", "Strange widget ID!");
                 continue;
             }
-            di = NetpowerctrlApplication.getDataController().findDevice(outlet.deviceMac);
-            if (di == null)
-                entries[index] = outlet.deviceMac + ", " + outlet.outletNumber;
-            else
-                entries[index] = di.DeviceName + ", " + di.findOutlet(outlet.outletNumber).getDescription();
+            entries[index] = port.device.DeviceName + ", " + port.getDescription();
             entryValues[index] = prefName;
             ++index;
         }
@@ -75,6 +63,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 s.setFragment(WidgetPreferenceFragment.class.getName());
                 s.setTitle(entries[i]);
                 lp.addPreference(s);
+                final int finalI = i;
                 s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
@@ -83,6 +72,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                         Fragment fragment = Fragment.instantiate(getActivity(), preference.getFragment());
                         Bundle b = new Bundle();
                         b.putString("key", preference.getKey());
+                        b.putInt("widgetId", allWidgetIds[finalI]);
                         fragment.setArguments(b);
                         getFragmentManager().beginTransaction().addToBackStack(null).
                                 replace(R.id.content_frame, fragment).commit();

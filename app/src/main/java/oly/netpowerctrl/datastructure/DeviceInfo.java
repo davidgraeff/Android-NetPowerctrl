@@ -1,21 +1,21 @@
 package oly.netpowerctrl.datastructure;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.JSONHelper;
 
-// this class holds all the info about one device
-public class DeviceInfo implements Parcelable {
+// An object of this class contains all the info about a specific device
+public class DeviceInfo implements Comparable<DeviceInfo> {
 
     public UUID uuid;
 
@@ -31,8 +31,7 @@ public class DeviceInfo implements Parcelable {
     public int ReceivePort;
     public int HttpPort;
 
-    public List<OutletInfo> Outlets;
-    public List<OutletInfo> IOs;
+    public List<DevicePort> DevicePorts;
     public String Temperature;
     public String FirmwareVersion;
 
@@ -41,21 +40,22 @@ public class DeviceInfo implements Parcelable {
     public long updated = 0;
     public boolean configured = false;
 
-    private static String uuidToString(UUID uuid) {
-        return uuid.toString().replace(":", "-");
+    @Override
+    public int compareTo(DeviceInfo deviceInfo) {
+        if (deviceInfo.uuid.equals(uuid))
+            return 0;
+        return 1;
     }
 
-    public OutletInfo findOutlet(int outletNumber) {
-        for (OutletInfo oi : Outlets) {
-            if (oi.OutletNumber == outletNumber) {
-                return oi;
-            }
-        }
-        return null;
+    public enum DeviceType {
+        UnknownDevice, AnelDevice, PluginDevice
     }
 
-    private DeviceInfo() {
+    public DeviceType deviceType = DeviceType.UnknownDevice;
+
+    private DeviceInfo(DeviceType type) {
         uuid = UUID.randomUUID();
+        deviceType = type;
         DeviceName = "";
         HostName = "";
         MacAddress = "";
@@ -67,28 +67,14 @@ public class DeviceInfo implements Parcelable {
         HttpPort = 80;
         Temperature = "";
         FirmwareVersion = "";
-        Outlets = new ArrayList<OutletInfo>();
-        IOs = new ArrayList<OutletInfo>();
+        DevicePorts = new ArrayList<DevicePort>();
     }
 
-    public static DeviceInfo createNewDevice() {
-        DeviceInfo di = new DeviceInfo();
+    public static DeviceInfo createNewDevice(DeviceType type) {
+        DeviceInfo di = new DeviceInfo(type);
         di.DeviceName = NetpowerctrlApplication.instance.getString(R.string.default_device_name);
         di.SendPort = SharedPrefs.getDefaultSendPort();
         di.ReceivePort = SharedPrefs.getDefaultReceivePort();
-        return di;
-    }
-
-    public static DeviceInfo createReceivedDevice(String DeviceName, String HostName,
-                                                  String MacAddress, int receive_port) {
-        DeviceInfo di = new DeviceInfo();
-        di.DeviceName = DeviceName;
-        di.HostName = HostName;
-        di.MacAddress = MacAddress;
-        di.ReceivePort = receive_port;
-
-        di.SendPort = SharedPrefs.getDefaultSendPort();
-        di.reachable = true;
         return di;
     }
 
@@ -106,40 +92,49 @@ public class DeviceInfo implements Parcelable {
         Temperature = other.Temperature;
         FirmwareVersion = other.FirmwareVersion;
         configured = other.configured;
-        Outlets = new ArrayList<OutletInfo>();
-        IOs = new ArrayList<OutletInfo>();
-        for (OutletInfo oi : other.Outlets)
-            Outlets.add(new OutletInfo(oi));
-        for (OutletInfo oi : other.IOs)
-            IOs.add(new OutletInfo(oi));
+        DevicePorts = new ArrayList<DevicePort>();
+        for (DevicePort oi : other.DevicePorts) {
+            DevicePort p = new DevicePort(this, oi.ui_type);
+            p.clone(oi);
+            DevicePorts.add(oi);
+        }
     }
 
-    public void copyFreshValues(DeviceInfo di) {
-        for (OutletInfo source_oi : di.Outlets) {
-            for (OutletInfo target_oi : Outlets) {
-                if (target_oi.OutletNumber == source_oi.OutletNumber) {
-                    target_oi.State = source_oi.State;
-                    target_oi.Disabled = source_oi.Disabled;
-                    target_oi.setDescriptionByDevice(source_oi.getDescription());
+    public void copyFreshValues(DeviceInfo other) {
+        // Add all devicePorts from DeviceInfo other to a new list (so that we can modify)
+        List<DevicePort> new_devicePorts = new ArrayList<DevicePort>();
+        new_devicePorts.addAll(other.DevicePorts);
+        // Iterators
+        Iterator<DevicePort> current_iterator = DevicePorts.iterator();
+        Iterator<DevicePort> new_iterator;
+
+        // Update each current devicePort.
+        while (current_iterator.hasNext()) {
+            DevicePort current_devicePort = current_iterator.next();
+            // Iterate over all new devicePorts to find the matching one.
+            new_iterator = other.DevicePorts.iterator();
+            boolean found = false;
+            while (new_iterator.hasNext()) {
+                DevicePort new_devicePort = new_iterator.next();
+                // If update succeeded, remove entry from new_devicePorts list.
+                if (current_devicePort.copyValuesIfMatching(new_devicePort)) {
+                    found = true;
+                    new_iterator.remove();
                     break;
                 }
             }
-        }
-        for (OutletInfo source_oi : di.IOs) {
-            for (OutletInfo target_oi : IOs) {
-                if (target_oi.OutletNumber == source_oi.OutletNumber) {
-                    target_oi.State = source_oi.State;
-                    target_oi.Disabled = source_oi.Disabled;
-                    target_oi.setDescriptionByDevice(source_oi.getDescription());
-                    break;
-                }
-            }
+            // If update failed because no matching devicePort can be found,
+            // remove entry from the current list of devicePorts.
+            if (!found)
+                current_iterator.remove();
         }
 
-        HostName = di.HostName;
-        HttpPort = di.HttpPort;
-        Temperature = di.Temperature;
-        FirmwareVersion = di.FirmwareVersion;
+        HostName = other.HostName;
+        HttpPort = other.HttpPort;
+        Temperature = other.Temperature;
+        FirmwareVersion = other.FirmwareVersion;
+        reachable = other.reachable;
+        updated = other.updated;
     }
 
     /**
@@ -153,7 +148,7 @@ public class DeviceInfo implements Parcelable {
     public boolean equalsFunctional(DeviceInfo other) {
         if (MacAddress.isEmpty() || other.MacAddress.isEmpty())
             return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort &&
-                    Outlets.size() == other.Outlets.size();
+                    DevicePorts.size() == other.DevicePorts.size();
         else
             return MacAddress.equals(other.MacAddress);
     }
@@ -169,75 +164,14 @@ public class DeviceInfo implements Parcelable {
         return uuid.equals(other.uuid);
     }
 
-    @SuppressWarnings("unused")
-    public boolean equals(UUID uuid) {
-        return uuid.equals(uuid);
+    @Override
+    public boolean equals(Object other) {
+        return uuid.equals(((DeviceInfo) other).uuid);
     }
 
-    public String getID() {
-        return uuidToString(uuid);
-    }
-
-    public int describeContents() {
-        return 0;
-    }
-
-    public void writeToParcel(Parcel destination, int flags) {
-        destination.writeString(uuid.toString());
-        destination.writeString(DeviceName);
-        destination.writeString(HostName);
-        destination.writeString(MacAddress);
-        destination.writeString(UserName);
-        destination.writeString(Password);
-        destination.writeString(Temperature);
-        destination.writeString(FirmwareVersion);
-        destination.writeInt(DefaultPorts ? 1 : 0);
-        destination.writeInt(SendPort);
-        destination.writeInt(ReceivePort);
-        destination.writeInt(HttpPort);
-        destination.writeTypedList(Outlets);
-        destination.writeTypedList(IOs);
-    }
-
-    // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
-    public static final Parcelable.Creator<DeviceInfo> CREATOR = new Parcelable.Creator<DeviceInfo>() {
-        public DeviceInfo createFromParcel(Parcel in) {
-            return new DeviceInfo(in);
-        }
-
-        public DeviceInfo[] newArray(int size) {
-            return new DeviceInfo[size];
-        }
-    };
-
-    // example constructor that takes a Parcel and gives you an object populated with it's values
-    private DeviceInfo(Parcel in) {
-        this();
-        uuid = UUID.fromString(in.readString());
-        DeviceName = in.readString();
-        HostName = in.readString();
-        MacAddress = in.readString();
-        UserName = in.readString();
-        Password = in.readString();
-        Temperature = in.readString();
-        FirmwareVersion = in.readString();
-        DefaultPorts = in.readInt() != 0;
-        SendPort = in.readInt();
-        ReceivePort = in.readInt();
-        HttpPort = in.readInt();
-        in.readTypedList(Outlets, OutletInfo.CREATOR);
-        in.readTypedList(IOs, OutletInfo.CREATOR);
-    }
-
-    public void updateByDeviceCommand(DeviceCommand c) {
-        for (OutletInfo oi : Outlets) {
-            oi.State = c.getIsOn(oi.OutletNumber);
-        }
-    }
-
-    public static DeviceInfo fromJSON(JsonReader reader) throws IOException {
+    public static DeviceInfo fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
-        DeviceInfo di = new DeviceInfo();
+        DeviceInfo di = new DeviceInfo(DeviceType.UnknownDevice);
         di.configured = true;
         while (reader.hasNext()) {
             String name = reader.nextName();
@@ -261,22 +195,24 @@ public class DeviceInfo implements Parcelable {
                 di.DefaultPorts = reader.nextBoolean();
             } else if (name.equals("SendPort")) {
                 di.SendPort = reader.nextInt();
+            } else if (name.equals("Type")) {
+                int t = reader.nextInt();
+                if (t > DeviceType.values().length)
+                    throw new ClassNotFoundException();
+                di.deviceType = DeviceType.values()[t];
             } else if (name.equals("ReceivePort")) {
                 di.ReceivePort = reader.nextInt();
             } else if (name.equals("HttpPort")) {
                 di.HttpPort = reader.nextInt();
-            } else if (name.equals("IOs")) {
-                di.IOs.clear();
+            } else if (name.equals("DevicePorts")) {
+                di.DevicePorts.clear();
                 reader.beginArray();
                 while (reader.hasNext()) {
-                    di.IOs.add(OutletInfo.fromJSON(reader, di));
-                }
-                reader.endArray();
-            } else if (name.equals("Outlets")) {
-                di.Outlets.clear();
-                reader.beginArray();
-                while (reader.hasNext()) {
-                    di.Outlets.add(OutletInfo.fromJSON(reader, di));
+                    try {
+                        di.DevicePorts.add(DevicePort.fromJSON(reader, di));
+                    } catch (ClassNotFoundException e) {
+                        reader.skipValue();
+                    }
                 }
                 reader.endArray();
             } else {
@@ -285,13 +221,32 @@ public class DeviceInfo implements Parcelable {
         }
 
         reader.endObject();
+
+        if (di.deviceType == DeviceType.UnknownDevice)
+            throw new ClassNotFoundException();
         return di;
+    }
+
+    /**
+     * Return the json representation of this scene
+     *
+     * @return JSON String
+     */
+    public String toJSON() {
+        try {
+            JSONHelper h = new JSONHelper();
+            toJSON(h.createWriter());
+            return h.getString();
+        } catch (IOException ignored) {
+            return null;
+        }
     }
 
     public void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("uuid").value(uuid.toString());
         writer.name("DeviceName").value(DeviceName);
+        writer.name("Type").value(deviceType.ordinal());
         writer.name("HostName").value(HostName);
         writer.name("MacAddress").value(MacAddress);
         writer.name("UserName").value(UserName);
@@ -302,18 +257,14 @@ public class DeviceInfo implements Parcelable {
         writer.name("SendPort").value(SendPort);
         writer.name("ReceivePort").value(ReceivePort);
         writer.name("HttpPort").value(HttpPort);
-        writer.name("Outlets").beginArray();
-        assert Outlets != null;
-        for (OutletInfo oi : Outlets) {
+
+        writer.name("DevicePorts").beginArray();
+        assert DevicePorts != null;
+        for (DevicePort oi : DevicePorts) {
             oi.toJSON(writer);
         }
         writer.endArray();
-        writer.name("IOs").beginArray();
-        assert IOs != null;
-        for (OutletInfo oi : IOs) {
-            oi.toJSON(writer);
-        }
-        writer.endArray();
+
         writer.endObject();
     }
 

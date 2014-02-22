@@ -15,21 +15,21 @@ import android.widget.RemoteViews;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
-import oly.netpowerctrl.anelservice.DevicesUpdate;
-import oly.netpowerctrl.anelservice.NetpowerctrlService;
-import oly.netpowerctrl.anelservice.ServiceReady;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.datastructure.SceneOutlet;
+import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.network.DevicesUpdate;
+import oly.netpowerctrl.network.NetpowerctrlService;
+import oly.netpowerctrl.network.ServiceReady;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.preferences.WidgetPreferenceFragment;
 import oly.netpowerctrl.shortcut.Shortcuts;
+import oly.netpowerctrl.utils.Icons;
 
 /**
  * Widget Update Service
@@ -43,23 +43,21 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     Context context;
 
     public static class DeviceInfoOutletNumber {
-        public final DeviceInfo di;
-        public final int outletNumber;
+        public final DevicePort port;
         public int lastState = -1;
         public boolean reachable;
 
-        boolean isSameAsLastState(int newState) {
-            boolean temp = (lastState != -1) ? newState == lastState : false;
-            lastState = newState;
-            boolean temp2 = di.reachable == reachable;
-            reachable = di.reachable;
+        boolean isSameAsLastState() {
+            boolean temp = (lastState != -1) ? port.current_value == lastState : false;
+            lastState = port.current_value;
+            boolean temp2 = port.device.reachable == reachable;
+            reachable = port.device.reachable;
             return temp && temp2;
         }
 
-        public DeviceInfoOutletNumber(DeviceInfo di, int outletNumber) {
-            this.di = di;
-            this.reachable = di.reachable;
-            this.outletNumber = outletNumber;
+        public DeviceInfoOutletNumber(DevicePort port) {
+            this.port = port;
+            this.reachable = port.device.reachable;
         }
     }
 
@@ -150,22 +148,19 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
             public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
                 List<DeviceInfo> devicesToUpdate = new ArrayList<DeviceInfo>();
                 for (int appWidgetId : allWidgetIds) {
-                    SharedPrefs.WidgetOutlet outlet = SharedPrefs.LoadWidget(appWidgetId);
-                    DeviceInfo di = null;
-                    if (outlet != null) {
-                        di = NetpowerctrlApplication.getDataController().findDevice(outlet.deviceMac);
-                    }
-
-                    if (outlet == null || di == null) {
+                    String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
+                    DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(
+                            port_uuid == null ? null : UUID.fromString(port_uuid));
+                    if (port == null) {
                         setWidgetStateBroken(appWidgetId);
                         continue;
                     }
 
-                    allWidgets.append(appWidgetId, new DeviceInfoOutletNumber(di, outlet.outletNumber));
-                    if (di.updated > 0)
-                        onDeviceUpdated(di);
+                    allWidgets.append(appWidgetId, new DeviceInfoOutletNumber(port));
+                    if (port.device.updated > 0)
+                        onDeviceUpdated(port.device);
                     else {
-                        devicesToUpdate.add(di);
+                        devicesToUpdate.add(port.device);
                         widgetUpdateRequests.add(appWidgetId);
                     }
                 }
@@ -190,32 +185,28 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    private void setWidgetState(int appWidgetId, OutletInfo oi) {
-        SceneOutlet c = SceneOutlet.fromOutletInfo(oi, true);
-        c.state = 2; // switch outlet
-        Scene og = new Scene();
-        og.add(c);
-        og.sceneName = oi.getDescription();
+    private void setWidgetState(int appWidgetId, DevicePort oi) {
+        Scene.SceneItem item = new Scene.SceneItem(oi.uuid, DevicePort.TOGGLE);
 
         // This intent will be executed by a click on the widget
-        Intent clickIntent = Shortcuts.createShortcutExecutionIntent(context, og, false, true);
+        Intent clickIntent = Shortcuts.createShortcutExecutionIntent(context, item, false, true);
         clickIntent.setAction(Intent.ACTION_MAIN);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
         if (!oi.device.reachable) {
-            views.setImageViewUri(R.id.widget_image,
-                    WidgetPreferenceFragment.getURI(this, appWidgetId, "widget_image_not_reachable"));
+            views.setImageViewBitmap(R.id.widget_image,
+                    Icons.loadWidgetIconBitmap(this, Icons.WidgetState.WidgetUnknown, appWidgetId));
             views.setTextViewText(R.id.widget_name,
                     context.getString(R.string.widget_outlet_not_reachable, oi.getDescription()));
-        } else if (oi.State) { // On
-            views.setImageViewUri(R.id.widget_image, WidgetPreferenceFragment.getURI(this, appWidgetId,
-                    "widget_image_on"));
+        } else if (oi.current_value > 0) { // On
+            views.setImageViewBitmap(R.id.widget_image,
+                    Icons.loadWidgetIconBitmap(this, Icons.WidgetState.WidgetOn, appWidgetId));
             views.setTextViewText(R.id.widget_name,
                     context.getString(R.string.widget_outlet_on, oi.getDescription()));
         } else { // Off
-            views.setImageViewUri(R.id.widget_image, WidgetPreferenceFragment.getURI(this, appWidgetId,
-                    "widget_image_off"));
+            views.setImageViewBitmap(R.id.widget_image,
+                    Icons.loadWidgetIconBitmap(this, Icons.WidgetState.WidgetOff, appWidgetId));
 
             views.setTextViewText(R.id.widget_name,
                     context.getString(R.string.widget_outlet_off, oi.getDescription()));
@@ -258,10 +249,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
             int appWidgetId = widgetUpdateRequests.get(i);
             DeviceInfoOutletNumber widget_di = allWidgets.get(appWidgetId);
-            if (widget_di.di.equalsFunctional(di)) {
+            if (widget_di.port.device.equalsFunctional(di)) {
                 widgetUpdateRequests.remove(i);
-                OutletInfo oi = di.findOutlet(widget_di.outletNumber);
-                setWidgetState(appWidgetId, oi);
+                setWidgetState(appWidgetId, widget_di.port);
                 finishServiceIfDone();
                 return;
             }
@@ -274,11 +264,6 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     public void onDeviceUpdated(DeviceInfo di) {
         if (di == null)
             return;
-
-        if (NetpowerctrlApplication.suspendWidgetUpdate > 0) {
-            --NetpowerctrlApplication.suspendWidgetUpdate;
-            return;
-        }
 
         /**
          * If the service is kept running, we will receive further device updates
@@ -296,10 +281,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
                 continue;
             }
 
-            if (widget_di.di.equalsFunctional(di)) {
-                OutletInfo oi = widget_di.di.findOutlet(widget_di.outletNumber);
-                if (!widget_di.isSameAsLastState(oi.State ? 1 : 0)) {
-                    setWidgetState(appWidgetId, oi);
+            if (widget_di.port.device.equalsFunctional(di)) {
+                if (!widget_di.isSameAsLastState()) {
+                    setWidgetState(appWidgetId, widget_di.port);
                 }
             }
         }

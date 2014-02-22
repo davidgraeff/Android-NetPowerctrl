@@ -1,128 +1,72 @@
 package oly.netpowerctrl.preferences;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.Preference;
 
-import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.Scenes;
+import oly.netpowerctrl.utils.Icons;
 
-public class WidgetPreferenceFragment extends PreferencesWithValuesFragment {
-    private Preference current_preference;
+public class WidgetPreferenceFragment extends PreferencesWithValuesFragment implements Icons.IconSelected {
+    int widgetId = -1;
+    Preference current;
+    Map<Preference, Icons.WidgetState> preference_to_state = new TreeMap<Preference, Icons.WidgetState>();
+
     private Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
         public boolean onPreferenceClick(final Preference preference) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle(getActivity().getString(R.string.widget_icon));
-            builder.setItems(new String[]{
-                    getActivity().getString(R.string.widget_default_icon),
-                    getActivity().getString(R.string.widget_icon_select)},
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            if (i == 0) {
-                                getPreferenceManager().getSharedPreferences().edit().putString(preference.getKey(), "").commit();
-                                preference.setIcon(loadIcon(preference.getKey()));
-                            } else {
-                                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                                intent.setType("image/*");
-                                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                                int PICK_IMAGE = 1;
-                                current_preference = preference;
-                                startActivityForResult(intent, PICK_IMAGE);
-                            }
-                            dialogInterface.dismiss();
-                        }
-                    });
-            builder.create().show();
+            current = preference;
+            Icons.show_select_icon_dialog(getActivity(), "widget_icons", WidgetPreferenceFragment.this);
             return true;
         }
     };
-
-    public static Uri getURI(Context context, int appWidgetId, String state) {
-        String stringUri = context.getSharedPreferences(SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId),
-                Context.MODE_PRIVATE).getString(state, null);
-        if (stringUri == null || stringUri.isEmpty()) {
-            if (state.equals("widget_image_on"))
-                return Uri.parse("android.resource://" + context.getApplicationInfo().packageName + "/" + R.drawable.widgeton);
-            else if (state.equals("widget_image_off"))
-                return Uri.parse("android.resource://" + context.getApplicationInfo().packageName + "/" + R.drawable.widgetoff);
-            else if (state.equals("widget_image_not_reachable"))
-                return Uri.parse("android.resource://" + context.getApplicationInfo().packageName + "/" + R.drawable.widgetunknown);
-            return null;
-        }
-
-        return Uri.parse(stringUri);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        widgetId = getArguments().getInt("widgetId");
         getPreferenceManager().setSharedPreferencesName(getArguments().getString("key"));
         addPreferencesFromResource(R.xml.preferences_widget);
 
         Preference preference;
 
         preference = findPreference("widget_image_on");
-        preference.setIcon(loadIcon(preference.getKey()));
+        preference_to_state.put(preference, Icons.WidgetState.WidgetOn);
+        preference.setIcon(Icons.loadWidgetIcon(getActivity(), Icons.WidgetState.WidgetOn, widgetId));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_off");
-        preference.setIcon(loadIcon(preference.getKey()));
+        preference_to_state.put(preference, Icons.WidgetState.WidgetOff);
+        preference.setIcon(Icons.loadWidgetIcon(getActivity(), Icons.WidgetState.WidgetOff, widgetId));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_not_reachable");
-        preference.setIcon(loadIcon(preference.getKey()));
+        preference_to_state.put(preference, Icons.WidgetState.WidgetUnknown);
+        preference.setIcon(Icons.loadWidgetIcon(getActivity(), Icons.WidgetState.WidgetUnknown, widgetId));
         preference.setOnPreferenceClickListener(selectImage);
     }
 
-    public Drawable loadIcon(String key) {
-        String uriString = getPreferenceManager().getSharedPreferences().getString(key, null);
-        Drawable dest = null;
-        if (uriString != null && uriString.length() > 0) {
-            try {
-                dest = Scenes.getDrawableFromUri(getActivity(), Uri.parse(uriString));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    @Override
+    public void setIcon(Bitmap bitmap) {
+        Icons.WidgetState state = preference_to_state.get(current);
+        Icons.saveIcon(getActivity(), Icons.uuidFromWidgetID(widgetId, state), bitmap, Icons.IconType.WidgetIcon);
+        if (bitmap == null) {
+            current.setIcon(Icons.loadWidgetIconFromRes(state));
+        } else {
+            current.setIcon(new BitmapDrawable(getResources(), bitmap));
         }
-
-        if (dest == null) {
-            if (key.equals("widget_image_on"))
-                return (getResources().getDrawable(R.drawable.widgeton));
-            else if (key.equals("widget_image_off"))
-                return (getResources().getDrawable(R.drawable.widgetoff));
-            else if (key.equals("widget_image_not_reachable"))
-                return (getResources().getDrawable(R.drawable.widgetunknown));
-        }
-        return dest;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        if (resultCode == Activity.RESULT_OK) {
-            Uri selectedImage = imageReturnedIntent.getData();
-            final int takeFlags = imageReturnedIntent.getFlags()
-                    & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            // Check for the freshest data.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-                getActivity().getContentResolver().takePersistableUriPermission(selectedImage, takeFlags);
-
-            getPreferenceManager().getSharedPreferences().edit().putString(current_preference.getKey(),
-                    selectedImage.toString()).commit();
-            current_preference.setIcon(loadIcon(current_preference.getKey()));
-        }
+        Icons.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
     }
+
 }
