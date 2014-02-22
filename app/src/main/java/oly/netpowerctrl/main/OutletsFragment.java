@@ -3,6 +3,7 @@ package oly.netpowerctrl.main;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -21,22 +22,23 @@ import android.widget.Toast;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
+import oly.netpowerctrl.listadapter.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.listadapter.NotReachableUpdate;
-import oly.netpowerctrl.listadapter.OutletsExecuteAdapter;
+import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.shortcut.EditShortcutActivity;
 import oly.netpowerctrl.utils.OnBackButton;
-import oly.netpowerctrl.utils.Scenes;
 
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         NotReachableUpdate, AdapterView.OnItemClickListener, OnBackButton {
-    private OutletsExecuteAdapter adapter;
+    private DevicePortsExecuteAdapter adapter;
     private TextView hintText;
 
     public OutletsFragment() {
@@ -45,7 +47,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new OutletsExecuteAdapter(getActivity());
+        adapter = new DevicePortsExecuteAdapter(getActivity());
 
         NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
         setHasOptionsMenu(true);
@@ -97,7 +99,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_add_scene:
-                Scenes.createScene(getActivity(), adapter);
+                Scene scene = new Scene();
+                scene.sceneItems = adapter.getScene();
+                final String sceneJSON = scene.toJSON();
+                Intent it = new Intent(getActivity(), EditShortcutActivity.class);
+                it.putExtra(EditShortcutActivity.EDIT_SCENE_NOT_SHORTCUT, true);
+                it.putExtra(EditShortcutActivity.LOAD_SCENE, sceneJSON);
+                startActivity(it);
                 return true;
             case R.id.menu_showhidden: {
                 adapter.setShowHidden(true);
@@ -166,7 +174,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         final int position = (Integer) mListView.getTag();
-        final OutletInfo oi = adapter.getItem(position);
+        final DevicePort oi = adapter.getItem(position);
 
         switch (menuItem.getItemId()) {
             case R.id.menu_rename_outlet: {
@@ -227,7 +235,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
         mListView.setTag(position);
-        OutletInfo oi = adapter.getItem(position);
+        DevicePort oi = adapter.getItem(position);
 
         //noinspection ConstantConditions
         PopupMenu popup = new PopupMenu(getActivity(), view);

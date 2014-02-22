@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Net-PwrCtrl</string>
-    <string name="app_name_shortcut">Net-PwrCtrl Scene</string>
+    <string name="app_name">Power Control</string>
+    <string name="app_name_shortcut">Power-Control Scene</string>
     <string name="app_name_shortcut_desc">Start a scene from your home screen</string>
-    <string name="app_name_widget">Net-PwrCtrl Outlet State</string>
+    <string name="app_name_widget">Power-Control Outlet State</string>
 
     <string name="configure_device">Edit Device</string>
     <string name="delete_device">Delete Device</string>
@@ -164,7 +164,7 @@
     <string name="menu_switch_all_on">All on</string>
     <string name="menu_switch_all_off">All off</string>
     <string name="menu_switch_all_toogle">All toggle</string>
-    <string name="menu_switch_all_ignore">Ignore all</string>
+    <string name="menu_switch_all_ignore">Remove all from scene</string>
     <string name="menu_help">Help</string>
     <string name="menu_device_website">Visit website of the device</string>
     <string name="error_not_reachable">Devices not reachable</string>
@@ -213,12 +213,13 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="widget_icon">Widget Icon</string>
     <string name="widget_default_icon">Default Icon</string>
     <string name="widget_icon_select">Select Widget Icon…</string>
-    <string name="scene_icon_title">Scene Icon</string>
-    <string name="scene_icon_default">Default Icon</string>
-    <string name="scene_icon_select">Select Scene Icon…</string>
+    <string name="dialog_icon_title">Icon</string>
+    <string name="dialog_icon_default">Default Icon</string>
+    <string name="dialog_icon_select">Select Scene Icon…</string>
     <string name="error_icon">Failed to set icon</string>
     <string name="scene_create_helptext">No actions so far! Swipe the screen to the right to unveil available actions. Click on one of them to add that to the scene.</string>
     <string name="error_scene_no_actions">No actions defined. Saving disabled!</string>
     <string name="error_scene_no_name">No name set. Saving disabled!</string>
-
+    <string name="scene_create_helptext_available">No more actions. You already have used all available or there are no one available.</string>
+    <string name="error_reading_scenes_old">The internal structure changed. Importing your scenes failed :(</string>
 </resources>

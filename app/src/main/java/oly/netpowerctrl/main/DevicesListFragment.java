@@ -23,11 +23,12 @@ import android.widget.Toast;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.anel.ConfigureDeviceFragment;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
+import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 
 /**
@@ -54,7 +55,9 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_add_device: {
-                show_configure_device_dialog(DeviceInfo.createNewDevice());
+                // At the moment we always create an anel device
+                DeviceInfo di = DeviceInfo.createNewDevice(DeviceInfo.DeviceType.AnelDevice);
+                show_configure_device_dialog(di);
                 return true;
             }
 

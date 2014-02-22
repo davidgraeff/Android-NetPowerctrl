@@ -10,13 +10,15 @@ import android.view.ViewGroup;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
-import oly.netpowerctrl.listadapter.OutletsCreateSceneAdapter;
+import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
+import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
+import oly.netpowerctrl.listadapter.DevicePortsCreateSceneAdapter;
 import oly.netpowerctrl.shortcut.OutletsManipulator;
 
 /**
  */
 public class OutletsSceneEditFragment extends Fragment {
-    private OutletsCreateSceneAdapter adapter;
+    private DevicePortsBaseAdapter adapter;
     private OutletsManipulator manipulator = null;
     private int manipulator_tag;
     public static final int MANIPULATOR_TAG_INCLUDED = 0;
@@ -29,7 +31,11 @@ public class OutletsSceneEditFragment extends Fragment {
         // We use the constructor that is dedicated to scene editing
         this.manipulator_tag = tag;
         this.manipulator = manipulator;
-        adapter = new OutletsCreateSceneAdapter(context);
+        if (tag == OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE) {
+            adapter = new DevicePortsAvailableAdapter(context);
+        } else if (tag == OutletsSceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
+            adapter = new DevicePortsCreateSceneAdapter(context);
+        }
     }
 
     private DynamicGridView mListView;
@@ -49,7 +55,10 @@ public class OutletsSceneEditFragment extends Fragment {
             @Override
             public void run() {
                 mListView.getEmptyView().setVisibility(View.GONE);
-                mListView.setEmptyView(view.findViewById(android.R.id.empty));
+                if (manipulator_tag == MANIPULATOR_TAG_AVAILABLE)
+                    mListView.setEmptyView(view.findViewById(R.id.empty_available));
+                else if (manipulator_tag == MANIPULATOR_TAG_INCLUDED)
+                    mListView.setEmptyView(view.findViewById(R.id.empty_included));
             }
         }, 1000);
 

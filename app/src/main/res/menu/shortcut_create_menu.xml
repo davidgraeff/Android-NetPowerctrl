@@ -5,13 +5,13 @@
         android:id="@+id/menu_name"
         android:title="@string/scene_set_name"
         android:icon="@android:drawable/ic_menu_edit"
-        android:showAsAction="always" />
+        android:showAsAction="always|withText" />
 
     <item
         android:id="@+id/menu_icon"
         android:title="@string/scene_set_icon"
         android:icon="@android:drawable/ic_menu_gallery"
-        android:showAsAction="always" />
+        android:showAsAction="always|withText" />
 
     <item
         android:id="@+id/menu_switch_all_on"

@@ -6,14 +6,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceError;
-import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceUpdate;
-import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.OutletInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.network.DeviceError;
+import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.network.DevicesUpdate;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
@@ -138,7 +139,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
             }
             if (new_di == null) {
                 oldEntriesIt.remove();
-            } else if (old_di.Outlets.size() != new_di.Outlets.size()) {
+            } else if (old_di.DevicePorts.size() != new_di.DevicePorts.size()) {
                 // Number of outlets have changed. This is a reason to forget about
                 // outlet states and replace the old device with the new one.
                 oldEntriesIt.remove();
@@ -208,8 +209,6 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
             if (!device_info.MacAddress.equals(target.MacAddress))
                 continue;
             target.copyFreshValues(device_info);
-            target.reachable = true;
-            target.updated = System.currentTimeMillis();
 
             // notify all observers
             List<DeviceInfo> updates_devices = new ArrayList<DeviceInfo>();
@@ -250,38 +249,6 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     }
 
 
-    public DeviceInfo findDevice(String mac_address) {
-        for (DeviceInfo di : configuredDevices) {
-            if (di.MacAddress.equals(mac_address)) {
-                return di;
-            }
-        }
-        return null;
-    }
-
-    public DeviceInfo findDeviceByHostnameAndIP(String hostname, int port) {
-        for (DeviceInfo di : configuredDevices) {
-            if (di.HostName.equals(hostname) && di.SendPort == port) {
-                return di;
-            }
-        }
-        return null;
-    }
-
-    public OutletInfo findOutlet(String mac_address, int outletNumber) {
-        for (DeviceInfo di : configuredDevices) {
-            if (di.MacAddress.equals(mac_address)) {
-                for (OutletInfo oi : di.Outlets) {
-                    if (oi.OutletNumber == outletNumber) {
-                        return oi;
-                    }
-                }
-                return null;
-            }
-        }
-        return null;
-    }
-
     public void saveConfiguredDevices(boolean updateObservers) {
         SharedPrefs.SaveConfiguredDevices(configuredDevices);
         if (updateObservers)
@@ -296,4 +263,25 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         return r;
     }
 
+    public DeviceInfo findDevice(UUID uuid) {
+        for (DeviceInfo di : configuredDevices) {
+            if (di.uuid.equals(uuid)) {
+                return di;
+            }
+        }
+        return null;
+    }
+
+    public DevicePort findDevicePort(UUID uuid) {
+        if (uuid == null)
+            return null;
+        for (DeviceInfo di : configuredDevices) {
+            for (DevicePort port : di.DevicePorts) {
+                if (port.uuid.equals(uuid)) {
+                    return port;
+                }
+            }
+        }
+        return null;
+    }
 }

@@ -26,7 +26,13 @@ public class DeviceCollection {
 
         reader.beginArray();
         while (reader.hasNext()) {
-            dc.devices.add(DeviceInfo.fromJSON(reader));
+            try {
+                dc.devices.add(DeviceInfo.fromJSON(reader));
+            } catch (ClassNotFoundException e) {
+                // If we read a device description, where we do not support that device type,
+                // we just ignore that device and go on. Nevertheless print a backtrace.
+                e.printStackTrace();
+            }
         }
         reader.endArray();
         return dc;

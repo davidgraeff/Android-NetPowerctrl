@@ -1,5 +1,5 @@
 # netpowerctrl
-	netpowerctrl is an Android App for controlling ANEL NET-PwrCtrl's (http://www.anel-elektronik.de)
+	netpowerctrl is an Android App for controlling ANEL (http://www.anel-elektronik.de)
 	switchable network outlets.
 
 You can find a ready to install apk at [Github Releases](https://github.com/davidgraeff/Android-NetPowerctrl/releases)
@@ -28,12 +28,12 @@ For bugs and feature requests please use [Github Issues](https://github.com/davi
 ### Automatic device detection
 Devices are detected automatically if they are configured for UDP communication.
 Default send port 1077 / receive port 1075 (can be configured). Please be aware
-that you cannot use port numbers < 1024 because of android restrictions!
+that you cannot use port numbers < 1024!
 
 ### Support for automation apps like Tasker/Llama
 Most of the automation apps support shortcuts of other applications.
 Because a shortcut of this app refers to a scene, you may easily switch multiple
-outlets as an action within the automation app.
+outlets as an action within an automation app.
 
 Cool examples:
 * This way you can for instance switch on lights if your mobile gets in range of your wifi network.
@@ -47,7 +47,6 @@ support libraries (v13) and need at least android 4.0 (sdk version 14, released 
 
 ### Authors
 * david.graeff(at)web_de
-* Based on http://sourceforge.net/projects/netpowerctrl/ (oly(at)nittka_com)
 
 ### License
-GPLv2
+Dual licensed: GPLv2+GPLv3

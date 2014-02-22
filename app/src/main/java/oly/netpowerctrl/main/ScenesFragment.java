@@ -22,7 +22,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.ScenesListAdapter;
-import oly.netpowerctrl.shortcut.ShortcutCreatorActivity;
+import oly.netpowerctrl.shortcut.EditShortcutActivity;
 import oly.netpowerctrl.shortcut.Shortcuts;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.OnBackButton;
@@ -31,7 +31,6 @@ import oly.netpowerctrl.utils.OnBackButton;
  */
 public class ScenesFragment extends Fragment implements
         PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnBackButton {
-    private final static int ACTIVITY_REQUEST_ADD_GROUP = 12;
     private ScenesListAdapter adapter;
 
     public ScenesFragment() {
@@ -56,6 +55,7 @@ public class ScenesFragment extends Fragment implements
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
                                 adapter.deleteAll();
+                                mListView.stopEditMode();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -63,8 +63,8 @@ public class ScenesFragment extends Fragment implements
             }
 
             case R.id.menu_add_scene: {
-                Intent it = new Intent(getActivity(), ShortcutCreatorActivity.class);
-                it.putExtra(ShortcutCreatorActivity.CREATE_SCENE, true);
+                Intent it = new Intent(getActivity(), EditShortcutActivity.class);
+                it.putExtra(EditShortcutActivity.EDIT_SCENE_NOT_SHORTCUT, true);
                 startActivity(it);
                 return true;
             }
@@ -111,17 +111,19 @@ public class ScenesFragment extends Fragment implements
             case R.id.menu_edit_scene: {
                 JSONHelper h = new JSONHelper();
                 try {
-                    Intent it = new Intent(getActivity(), ShortcutCreatorActivity.class);
-                    it.putExtra(ShortcutCreatorActivity.CREATE_SCENE, true);
+                    Intent it = new Intent(getActivity(), EditShortcutActivity.class);
+                    it.putExtra(EditShortcutActivity.EDIT_SCENE_NOT_SHORTCUT, true);
                     og.toJSON(h.createWriter());
-                    it.putExtra(ShortcutCreatorActivity.LOAD_SCENE, h.getString());
-                    startActivityForResult(it, ACTIVITY_REQUEST_ADD_GROUP);
+                    it.putExtra(EditShortcutActivity.LOAD_SCENE, h.getString());
+                    startActivity(it);
                 } catch (IOException ignored) {
                 }
                 return true;
             }
             case R.id.menu_remove_scene: {
                 adapter.removeScene(position);
+                if (adapter.getCount() == 0)
+                    mListView.stopEditMode();
                 return true;
             }
             case R.id.menu_add_homescreen: {

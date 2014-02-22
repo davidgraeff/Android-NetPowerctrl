@@ -17,12 +17,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DeviceQuery;
-import oly.netpowerctrl.anelservice.DeviceSend;
-import oly.netpowerctrl.anelservice.DeviceUpdateStateOrTimeout;
-import oly.netpowerctrl.anelservice.NetpowerctrlService;
-import oly.netpowerctrl.anelservice.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceSend;
+import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.network.NetpowerctrlService;
+import oly.netpowerctrl.network.ServiceReady;
 import oly.netpowerctrl.plugins.PluginController;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
@@ -40,7 +40,6 @@ import oly.netpowerctrl.utils.ShowToast;
         resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application {
     public static NetpowerctrlApplication instance;
-    public static int suspendWidgetUpdate = 0;
 
     private RuntimeDataController dataController = new RuntimeDataController();
     private int mDiscoverServiceRefCount = 0;
@@ -126,9 +125,6 @@ public class NetpowerctrlApplication extends Application {
 
             // stop send queue
             DeviceSend.instance().interrupt();
-
-            // reset flags
-            suspendWidgetUpdate = 0;
 
             if (SharedPrefs.notifyOnStop()) {
                 ShowToast.FromOtherThread(this, getString(R.string.service_stopped));

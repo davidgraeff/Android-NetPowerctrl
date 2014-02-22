@@ -20,10 +20,29 @@ public class Shortcuts {
         }
 
         // Create shortcut intent
-        Intent shortcutIntent = new Intent(context, ShortcutExecutionActivity.class);
-        shortcutIntent.putExtra(ShortcutCreatorActivity.RESULT_SCENE, og.toJSON());
-        //shortcutIntent.setClass(context, ShortcutExecutionActivity.class);
-        //shortcutIntent.setAction(Intent.ACTION_MAIN);
+        Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
+        shortcutIntent.putExtra(EditShortcutActivity.RESULT_SCENE, og.toJSON());
+
+        if (show_mainWindow) {
+            shortcutIntent.putExtra("show_mainWindow", true);
+        }
+
+        if (enable_feedback) {
+            shortcutIntent.putExtra("enable_feedback", true);
+        }
+
+        return shortcutIntent;
+    }
+
+
+    public static Intent createShortcutExecutionIntent(Context context,
+                                                       Scene.SceneItem item,
+                                                       boolean show_mainWindow,
+                                                       boolean enable_feedback) {
+        // Create shortcut intent
+        Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
+        shortcutIntent.putExtra(EditShortcutActivity.RESULT_ACTION_UUID, item.uuid.toString());
+        shortcutIntent.putExtra(EditShortcutActivity.RESULT_ACTION_COMMAND, item.command);
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);
@@ -54,4 +73,5 @@ public class Shortcuts {
 
         return intent;
     }
+
 }

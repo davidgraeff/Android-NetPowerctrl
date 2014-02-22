@@ -1,27 +1,37 @@
 package oly.netpowerctrl.datastructure;
 
-import android.content.Context;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
 
 
 public class Scene {
     public String sceneName = "";
-    public String sceneDetails = "";
     public UUID uuid = UUID.randomUUID();
-    public List<SceneOutlet> sceneOutlets = new ArrayList<SceneOutlet>();
+
+    public static class SceneItem {
+        public UUID uuid = UUID.randomUUID();
+        public int command;
+
+        public SceneItem() {
+        }
+
+        public SceneItem(UUID uuid, int command) {
+            this.uuid = uuid;
+            this.command = command;
+        }
+    }
+
+    public List<SceneItem> sceneItems = new ArrayList<SceneItem>();
 
     public Scene() {
     }
@@ -36,45 +46,21 @@ public class Scene {
         return uuid.equals(other.uuid);
     }
 
-    public String buildDetails() {
-        int ons = 0;
-        int offs = 0;
-        int toggles = 0;
-        for (SceneOutlet c : sceneOutlets) {
-            switch (c.state) {
-                case 0:
-                    ++offs;
-                    break;
-                case 1:
-                    ++ons;
-                    break;
-                case 2:
-                    ++toggles;
-                    break;
-            }
-        }
-        Context context = NetpowerctrlApplication.instance;
-        return context.getString(R.string.off) + ": " + Integer.valueOf(offs).toString() + ", " +
-                context.getString(R.string.on) + ": " + Integer.valueOf(ons).toString() + ", " +
-                context.getString(R.string.toggle) + ": " + Integer.valueOf(toggles).toString();
-    }
-
-    public void add(SceneOutlet c) {
-        sceneOutlets.add(c);
+    public void add(UUID action_uuid, int command) {
+        sceneItems.add(new SceneItem(action_uuid, command));
     }
 
     public int length() {
-        return sceneOutlets.size();
+        return sceneItems.size();
     }
 
     public Collection<DeviceInfo> getDevices() {
-        TreeMap<String, DeviceInfo> devices = new TreeMap<String, DeviceInfo>();
-        for (SceneOutlet c : sceneOutlets) {
-            if (!devices.containsKey(c.device_mac)) {
-                devices.put(c.device_mac, c.outletinfo.device);
-            }
+        TreeSet<DeviceInfo> devices = new TreeSet<DeviceInfo>();
+        for (SceneItem c : sceneItems) {
+            DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(c.uuid);
+            devices.add(port.device);
         }
-        return devices.values();
+        return devices;
     }
 
     /**
@@ -102,20 +88,36 @@ public class Scene {
         }
     }
 
+    private static void readSceneItem(JsonReader reader, Scene scene) throws IOException {
+        reader.beginObject();
+        SceneItem item = new SceneItem();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            if (name.equals("command")) {
+                item.command = reader.nextInt();
+            } else if (name.equals("uuid")) {
+                item.uuid = UUID.fromString(reader.nextString());
+            } else
+                reader.skipValue();
+        }
+        reader.endObject();
+        scene.sceneItems.add(item);
+    }
+
     public static Scene fromJSON(JsonReader reader) throws IOException {
-        Scene og = new Scene();
+        Scene scene = new Scene();
 
         reader.beginObject();
         while (reader.hasNext()) {
             String name = reader.nextName();
             if (name.equals("sceneName")) {
-                og.sceneName = reader.nextString();
+                scene.sceneName = reader.nextString();
             } else if (name.equals("uuid")) {
-                og.uuid = UUID.fromString(reader.nextString());
-            } else if (name.equals("sceneOutlets") || name.equals("commands")) {
+                scene.uuid = UUID.fromString(reader.nextString());
+            } else if (name.equals("sceneItems")) {
                 reader.beginArray();
                 while (reader.hasNext()) {
-                    og.sceneOutlets.add(SceneOutlet.fromJSON(reader));
+                    readSceneItem(reader, scene);
                 }
                 reader.endArray();
             } else {
@@ -123,35 +125,22 @@ public class Scene {
             }
         }
         reader.endObject();
-
-        og.sceneDetails = og.buildDetails();
-        return og;
+        return scene;
     }
 
     public void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("sceneName").value(sceneName);
         writer.name("uuid").value(uuid.toString());
-        writer.name("sceneOutlets").beginArray();
-        for (SceneOutlet c : sceneOutlets) {
-            c.toJSON(writer);
+        writer.name("sceneItems").beginArray();
+        for (SceneItem c : sceneItems) {
+            writer.beginObject();
+            writer.name("uuid").value(c.uuid.toString());
+            writer.name("command").value(c.command);
+            writer.endObject();
         }
         writer.endArray();
         writer.endObject();
     }
 
-    /**
-     * Update all links to DeviceInfo and OutletInfo and remove
-     * SceneOutlets that do not have an OutletInfo counterpart.
-     * <p/>
-     * Call this before saving a scene.
-     */
-    public void updateDeviceAndOutletLinks() {
-        Iterator<SceneOutlet> i = sceneOutlets.iterator();
-        while (i.hasNext()) {
-            if (!i.next().updateDeviceAndOutletLinks()) {
-                i.remove();
-            }
-        }
-    }
 }

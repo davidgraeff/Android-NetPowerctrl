@@ -12,9 +12,9 @@ import android.widget.TextView;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anelservice.DevicesUpdate;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.network.DevicesUpdate;
 
 public class DeviceListAdapter extends BaseExpandableListAdapter implements DevicesUpdate {
     private LayoutInflater inflater;

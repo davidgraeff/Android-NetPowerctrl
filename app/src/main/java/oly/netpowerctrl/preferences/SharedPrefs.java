@@ -19,7 +19,7 @@ import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class SharedPrefs {
-    public final static int PREF_CURRENT_VERSION = 1;
+    public final static int PREF_CURRENT_VERSION = 2;
     public final static String PREF_VERSION_DEVICES = "version_devices";
     public final static String PREF_VERSION_SCENES = "version_scenes";
     public final static String PREF_BASENAME = "oly.netpowerctrl";
@@ -28,8 +28,7 @@ public class SharedPrefs {
     public final static String PREF_DEVICES = "CONFIGURED_DEVICES";
     public final static String PREF_SCENES = "GROUPS";
     public final static String PREF_FIRST_TAB = "FIRST_TAB";
-    public final static String PREF_OUTLET_NUMBER = "OUTLET_NUMBER";
-    public final static String PREF_MAC = "MAC";
+    public final static String PREF_UUID = "UUID";
     public final static String PREF_standard_send_port = "standard_send_port";
     public final static String PREF_standard_receive_port = "standard_receive_port";
     public final static String PREF_keep_widget_service_running = "keep_widget_service_running";
@@ -62,8 +61,9 @@ public class SharedPrefs {
         // Read deprecated scenes
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
         int prefVersion = prefs.getInt(PREF_VERSION_SCENES, 0);
-        if (prefVersion == 0) {
-            return SharedPrefsCompat.v0.ReadScenes(context);
+        if (prefVersion < PREF_CURRENT_VERSION) {
+            Toast.makeText(context, context.getString(R.string.error_reading_scenes_old), Toast.LENGTH_LONG).show();
+            return new ArrayList<Scene>();
         }
 
         String scenes_str = prefs.getString(PREF_SCENES, "");
@@ -98,8 +98,8 @@ public class SharedPrefs {
 
         // Read deprecated configurations
         int prefVersion = prefs.getInt(PREF_VERSION_DEVICES, 0);
-        if (prefVersion == 0) {
-            return SharedPrefsCompat.v0.ReadConfiguredDevices(context);
+        if (prefVersion < PREF_CURRENT_VERSION) {
+            return new ArrayList<DeviceInfo>();
         }
 
         String configured_devices_str = prefs.getString(PREF_DEVICES, "");
@@ -183,23 +183,12 @@ public class SharedPrefs {
         return keep_widget_service_running;
     }
 
-    public static class WidgetOutlet {
-        public String deviceMac;
-        public int outletNumber;
-
-        public WidgetOutlet(String deviceMac, int outletNumber) {
-            this.deviceMac = deviceMac;
-            this.outletNumber = outletNumber;
-        }
-    }
-
-    public static void SaveWidget(int widgetID, WidgetOutlet wo) {
+    public static void SaveWidget(int widgetID, String devicePortUuid) {
         Context context = NetpowerctrlApplication.instance;
         final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
         SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
         SharedPreferences.Editor device_editor = device_prefs.edit();
-        device_editor.putString(PREF_MAC, wo.deviceMac);
-        device_editor.putInt(PREF_OUTLET_NUMBER, wo.outletNumber);
+        device_editor.putString(PREF_UUID, devicePortUuid);
         device_editor.commit();
     }
 
@@ -210,16 +199,12 @@ public class SharedPrefs {
         device_prefs.edit().clear().commit();
     }
 
-    public static WidgetOutlet LoadWidget(int widgetID) {
+    public static String LoadWidget(int widgetID) {
         Context context = NetpowerctrlApplication.instance;
         final String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(widgetID);
         SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
 
-        WidgetOutlet result = new WidgetOutlet(device_prefs.getString(PREF_MAC, null),
-                device_prefs.getInt(PREF_OUTLET_NUMBER, -1));
-        if (result.deviceMac == null)
-            return null;
-        return result;
+        return device_prefs.getString(PREF_UUID, null);
     }
 
     public static int getDefaultSendPort() {
