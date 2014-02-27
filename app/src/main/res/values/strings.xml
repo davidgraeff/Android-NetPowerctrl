@@ -9,7 +9,7 @@
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
 
-    <string name="device_save">Save</string>
+    <string name="save">Save</string>
     <string name="error_reading_configured_devices">Error reading configured devices</string>
     <string name="error_saving_configured_devices">Error saving configured devices</string>
     <string name="error_sending_inquiry">Error sending inquiry packet to %1$s</string>
@@ -93,32 +93,23 @@
         <item>Donate via %s</item>
     </string-array>
 
-    <string-array name="drawer_titles_outlets">
-        <item>Outlets</item>
-        <item>Outlet list</item>
-        <item>Scenes</item>
-    </string-array>
-
-    <string-array name="drawer_descriptions_outlets">
-        <item>-</item>
-        <item>Switch single outlet</item>
-        <item>Switch multiple grouped outlets</item>
-    </string-array>
+    <string name="drawer_single_title">Trigger one action</string>
+    <string name="drawer_overview">Overview</string>
+    <string name="drawer_multiple_title">Multiple actions</string>
+    <string name="drawer_scenes">Scene Overview</string>
 
     <string-array name="drawer_titles_app">
         <item>App and Devices</item>
         <item>Devices</item>
         <item>Preferences</item>
         <item>Transfer/Backup</item>
-        <item>Feedback</item>
     </string-array>
 
     <string-array name="drawer_descriptions_app">
         <item>-</item>
         <item>New and configured devices</item>
-        <item />
+        <item>Ports, Widgets, Theme, …</item>
         <item>Copy configured devices/outlets</item>
-        <item />
     </string-array>
 
     <string name="drawer_open">Open navigation drawer</string>
@@ -188,9 +179,7 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="preference_load_plugins_summary">Show controls from supported applications in this app.</string>
     <string name="error_widget_update">Internal error: Widget %1$d</string>
     <string name="error_widget_device_removed">Device removed!</string>
-    <string name="widget_outlet_not_reachable">%1$s (not reachable)</string>
-    <string name="widget_outlet_on">%1$s (on)</string>
-    <string name="widget_outlet_off">%1$s (off)</string>
+    <string name="widget_outlet_not_reachable">(not reachable)</string>
     <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
     <string name="devices_no_new_on_network">Hint: This network does not allow new-device recognition</string>
     <string name="pref_widgets">Widgets</string>
@@ -200,7 +189,7 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="crash_toast_text">Ooooops ! I crashed, but a report can be sent to my developer to help fix the issue!</string>
     <string name="outlet_to_scene_title">Create scene</string>
     <string name="outlet_to_scene_message">A scene is created with the current state of all listed, non-hidden outlets. Please enter a scene name.</string>
-    <string name="service_stopped">Service stopped</string>
+    <string name="service_stopped">Power-Control Background Service stopped</string>
     <string name="preference_notify_on_stop">Notify on app shutdown</string>
     <string name="preference_notify_on_stop_summary">Activate this to see if really all parts of the app are shutdown on close.</string>
     <string name="new_devices">New devices</string>
@@ -222,4 +211,41 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="error_scene_no_name">No name set. Saving disabled!</string>
     <string name="scene_create_helptext_available">No more actions. You already have used all available or there are no one available.</string>
     <string name="error_reading_scenes_old">The internal structure changed. Importing your scenes failed :(</string>
+    <string name="scene_no_name">No name!</string>
+    <string name="widget_on">(On)</string>
+    <string name="widget_off">(Off)</string>
+    <string name="preference_widget_show_text">Show title</string>
+    <string name="preference_widget_show_text_summary">Show the name and state below the widgets icon</string>
+    <string name="energy_saving_mode">App is in energy saving mode!</string>
+    <string name="device_createGroup">Create group with device outlets</string>
+    <string name="menu_outlet_createGroup">Add to group</string>
+    <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
+    <string name="preference_max_favourite_scenes">Scenes in navigation list</string>
+    <string name="preference_max_favourite_scenes_summary">Maximum scenes in navigation list</string>
+    <string name="preference_max_favourites_groups">Groups in navigation list</string>
+    <string name="preference_max_favourites_groups_summary">Maximum groups in navigation list</string>
+    <string name="help_nfc_title">Exchange configurations and scenes with other devices</string>
+    <string name="help_nfc"><![CDATA[If you would like to transfer your configuration to another device (
+        for instance from a mobile to a tablet, or from your phone to a friend\'s one) and both devices have NFC capability, then do the following:<br />
+        <ul><li>Unlock both devices</li><br />
+        <li>Enable NFC on both</li><br />
+        <li>Hold them together</li></ul><br />
+    <br />
+    Android now want you to confirm to use the <i>beam</i> functionality.
+    If this App is not installed on the destination device, Google Play will be started.
+    If you confirm <i>beam</i>, the destination device will ask you which configurations should be transferred.]]></string>
+    <string name="help_backup_title">Exchange/Backup device configuration</string>
+    <string name="help_backup"><![CDATA[
+    Your devices configuration is automatically backed up by the Google app-data Backup Service.
+        If you uninstall and reinstall the application, your configuration should be restored.
+        At the moment there is no way to manually save and restore configurations.]]></string>
+    <string name="createGroup">Create group</string>
+    <string name="outlet_added_to_groups">Added to %1$d groups</string>
+    <string name="outlet_to_group_title">Add to groups</string>
+    <string name="menu_outlet_removeFromGroup">Remove from group</string>
+    <string name="group_create">Create a new group. Enter a name please.</string>
+    <string name="empty_group">This group is empty. Either no items belong to this group anymore or relevant devices are not in range at the moment.</string>
+    <string name="menu_remove_group">Remove group</string>
+    <string name="menu_rename_group">Rename group</string>
+    <string name="drawer_feedback">Feedback</string>
 </resources>

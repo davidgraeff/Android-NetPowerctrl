@@ -67,4 +67,10 @@ public class WidgetConfig extends Activity implements OutletsManipulator {
         adapter.update(NetpowerctrlApplication.getDataController().configuredDevices);
         this.adapter = adapter;
     }
+
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        finish();
+    }
 }

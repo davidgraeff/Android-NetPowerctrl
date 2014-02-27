@@ -41,7 +41,7 @@ import oly.netpowerctrl.utils.ShowToast;
 public class NetpowerctrlApplication extends Application {
     public static NetpowerctrlApplication instance;
 
-    private RuntimeDataController dataController = new RuntimeDataController();
+    private RuntimeDataController dataController = null;
     private int mDiscoverServiceRefCount = 0;
     private NetpowerctrlService mDiscoverService;
     private boolean mWaitForService;
@@ -78,12 +78,7 @@ public class NetpowerctrlApplication extends Application {
         // The following line triggers the initialization of ACRA
         ACRA.init(this);
         instance = this;
-        dataController.reloadConfiguredDevices();
-
-        // Plugins
-        if (SharedPrefs.getLoadExtensions())
-            pluginController = new PluginController();
-
+        dataController = new RuntimeDataController();
 
         // Start listen service and listener for wifi changes
         mWaitForService = true;
@@ -98,8 +93,37 @@ public class NetpowerctrlApplication extends Application {
         }, 180);
     }
 
+    private Handler stopServiceHandler = new Handler();
+    private Runnable stopRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                mDiscoverService = null;
+                mWaitForService = false;
+                unbindService(mConnection);
+            } catch (IllegalArgumentException ignored) {
+            }
+
+            dataController.clear();
+
+            // stop send queue
+            DeviceSend.instance().interrupt();
+
+            if (pluginController != null) {
+                pluginController.finish();
+                pluginController = null;
+            }
+
+            if (SharedPrefs.notifyOnStop()) {
+                ShowToast.FromOtherThread(NetpowerctrlApplication.this, getString(R.string.service_stopped));
+            }
+        }
+    };
+
     public void useListener() {
         ++mDiscoverServiceRefCount;
+        // Stop delayed stop-service
+        stopServiceHandler.removeCallbacks(stopRunnable);
         // Service is not running anymore, restart it
         if (mDiscoverService == null && !mWaitForService) {
             mWaitForService = true;
@@ -114,21 +138,7 @@ public class NetpowerctrlApplication extends Application {
             mDiscoverServiceRefCount--;
         }
         if (mDiscoverServiceRefCount == 0) {
-            try {
-                mDiscoverService = null;
-                mWaitForService = false;
-                unbindService(mConnection);
-            } catch (IllegalArgumentException ignored) {
-            }
-
-            dataController.clear();
-
-            // stop send queue
-            DeviceSend.instance().interrupt();
-
-            if (SharedPrefs.notifyOnStop()) {
-                ShowToast.FromOtherThread(this, getString(R.string.service_stopped));
-            }
+            stopServiceHandler.postDelayed(stopRunnable, 2000);
         }
     }
 
@@ -140,8 +150,8 @@ public class NetpowerctrlApplication extends Application {
     public void detectNewDevicesAndReachability() {
 
         // The following mechanism allows only one update request within a
-        // 1sec timeframe.
-        if (isDetecting)
+        // 1sec timeframe and only if the service is available and not in reduced mode.
+        if (isDetecting || mWaitForService || mDiscoverService.isNetworkReducedMode)
             return;
 
         isDetecting = true;
@@ -166,8 +176,23 @@ public class NetpowerctrlApplication extends Application {
 
             @Override
             public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
-                if (timeout_devices.size() > 0)
-                    dataController.notifyConfiguredObservers(timeout_devices);
+                if (timeout_devices.size() == 0)
+                    return;
+
+                // Do we need to go into network reduced mode?
+                List<DeviceInfo> remaining = new ArrayList<DeviceInfo>(dataController.configuredDevices);
+                remaining.removeAll(timeout_devices);
+                boolean containsNetworkReachableDevices = false;
+                for (DeviceInfo di : remaining) {
+                    if (di.deviceType == DeviceInfo.DeviceType.AnelDevice) {
+                        containsNetworkReachableDevices = true;
+                        break;
+                    }
+                }
+                if (!containsNetworkReachableDevices)
+                    mDiscoverService.setNetworkReducedMode();
+
+                dataController.notifyConfiguredObservers(timeout_devices);
             }
         });
     }
@@ -187,10 +212,17 @@ public class NetpowerctrlApplication extends Application {
             mDiscoverService.registerDeviceUpdateObserver(dataController);
             if (mDiscoverServiceRefCount == 0)
                 mDiscoverServiceRefCount = 1;
-            instance.notifyServiceReady();
             mWaitForService = false;
+
+            // Plugins
+            if (SharedPrefs.getLoadExtensions())
+                pluginController = new PluginController();
+
             // We do a device detection in the wifi change listener already
             detectNewDevicesAndReachability();
+
+            // Notify all observers that we are ready
+            instance.notifyServiceReady();
         }
 
         // Service crashed

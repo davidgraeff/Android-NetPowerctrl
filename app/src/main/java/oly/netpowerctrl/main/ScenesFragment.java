@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,25 +14,29 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.ScenesListAdapter;
 import oly.netpowerctrl.shortcut.EditShortcutActivity;
 import oly.netpowerctrl.shortcut.Shortcuts;
+import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.OnBackButton;
 
 /**
  */
 public class ScenesFragment extends Fragment implements
-        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnBackButton {
-    private ScenesListAdapter adapter;
+        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnBackButton, ScenesListAdapter.IEditSceneRequest {
+    SceneCollection scenes;
 
     public ScenesFragment() {
     }
@@ -54,7 +59,7 @@ public class ScenesFragment extends Fragment implements
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
-                                adapter.deleteAll();
+                                scenes.deleteAll();
                                 mListView.stopEditMode();
                             }
                         })
@@ -75,11 +80,12 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = NetpowerctrlActivity.instance.getScenesAdapter();
+        scenes = NetpowerctrlApplication.getDataController().scenes;
         setHasOptionsMenu(true);
     }
 
     private DynamicGridView mListView;
+    private ScenesListAdapter scenesListAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -91,12 +97,16 @@ public class ScenesFragment extends Fragment implements
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(getActivity(), getActivity().getString(R.string.hint_stop_edit), Toast.LENGTH_SHORT).show();
+                scenesListAdapter.setDisableEditing(true);
                 mListView.startEditMode();
                 return false;
             }
         });
-        mListView.setAdapter(adapter);
-        mListView.setAutomaticNumColumns(true, 200);
+        mListView.setMinimumColumnWidth(150);
+        mListView.setNumColumns(GridView.AUTO_FIT, container.getWidth());
+        scenesListAdapter = new ScenesListAdapter(getActivity(), scenes);
+        scenesListAdapter.setObserver(this);
+        mListView.setAdapter(scenesListAdapter);
         mListView.setEmptyView(view.findViewById(android.R.id.empty));
         onConfigurationChanged(getResources().getConfiguration());
         return view;
@@ -105,7 +115,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         final int position = (Integer) mListView.getTag();
-        Scene og = adapter.getScene(position);
+        Scene scene = scenes.getScene(position);
 
         switch (menuItem.getItemId()) {
             case R.id.menu_edit_scene: {
@@ -113,7 +123,7 @@ public class ScenesFragment extends Fragment implements
                 try {
                     Intent it = new Intent(getActivity(), EditShortcutActivity.class);
                     it.putExtra(EditShortcutActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                    og.toJSON(h.createWriter());
+                    scene.toJSON(h.createWriter());
                     it.putExtra(EditShortcutActivity.LOAD_SCENE, h.getString());
                     startActivity(it);
                 } catch (IOException ignored) {
@@ -121,16 +131,24 @@ public class ScenesFragment extends Fragment implements
                 return true;
             }
             case R.id.menu_remove_scene: {
-                adapter.removeScene(position);
-                if (adapter.getCount() == 0)
+                scenes.removeScene(position);
+                if (scenes.length() == 0)
                     mListView.stopEditMode();
                 return true;
             }
             case R.id.menu_add_homescreen: {
                 @SuppressWarnings("ConstantConditions")
                 Context context = getActivity().getApplicationContext();
-                Intent extra = Shortcuts.createShortcutExecutionIntent(getActivity(), og, false, false);
-                Intent shortcutIntent = Shortcuts.createShortcut(getActivity(), extra, og.sceneName);
+                Intent extra = Shortcuts.createShortcutExecutionIntent(getActivity(), scene, false, false);
+                Bitmap bitmap = Icons.loadIcon(getActivity(), scene.uuid, Icons.IconType.SceneIcon, 0);
+                Intent shortcutIntent;
+                if (bitmap != null) {
+                    shortcutIntent = Shortcuts.createShortcut(extra, scene.sceneName,
+                            Icons.resizeBitmap(getActivity(), bitmap));
+                } else
+                    shortcutIntent = Shortcuts.createShortcut(extra, scene.sceneName,
+                            getActivity());
+
                 shortcutIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
                 assert context != null;
                 context.sendBroadcast(shortcutIntent);
@@ -142,20 +160,11 @@ public class ScenesFragment extends Fragment implements
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-        if (mListView.isEditMode()) {
-            mListView.setTag(position);
-            @SuppressWarnings("ConstantConditions")
-            PopupMenu popup = new PopupMenu(getActivity(), view);
-            MenuInflater inflater = popup.getMenuInflater();
-            inflater.inflate(R.menu.scenes_item, popup.getMenu());
-
-            popup.setOnMenuItemClickListener(this);
-            popup.show();
-        } else {
-            adapter.executeScene(position);
+        if (!mListView.isEditMode()) {
+            scenes.executeScene(position);
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
-                    getActivity().getString(R.string.scene_executed, adapter.getScene(position).sceneName),
+                    getActivity().getString(R.string.scene_executed, scenes.getScene(position).sceneName),
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -164,8 +173,21 @@ public class ScenesFragment extends Fragment implements
     public boolean onBackButton() {
         if (mListView.isEditMode()) {
             mListView.stopEditMode();
+            scenesListAdapter.setDisableEditing(false);
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void editScene(int position, View view) {
+        mListView.setTag(position);
+        @SuppressWarnings("ConstantConditions")
+        PopupMenu popup = new PopupMenu(getActivity(), view);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.scenes_item, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(this);
+        popup.show();
     }
 }

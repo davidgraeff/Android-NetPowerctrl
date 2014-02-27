@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_configure_device"
+        android:id="@+id/menu_device_configure"
         android:title="@string/configure_device" />
     <item
-        android:id="@+id/menu_delete_device"
+        android:id="@+id/menu_device_delete"
         android:title="@string/delete_device" />
+    <item
+        android:id="@+id/menu_device_createGroup"
+        android:title="@string/device_createGroup" />
 
     <item
         android:id="@+id/menu_device_website"

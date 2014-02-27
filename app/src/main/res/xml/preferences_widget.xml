@@ -2,20 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="Widget">
 
-    <EditTextPreference
-        android:key="MAC"
-        android:title="@string/device_mac"
-        android:dialogMessage="@string/device_mac_summary"
-        android:summary="@string/device_mac_summary"
-        android:dialogTitle="@string/device_mac" />
-
-    <oly.netpowerctrl.preferences.IntEditTextPreference
-        android:key="OUTLET_NUMBER"
-        android:title="@string/device_outlets"
-        android:inputType="number"
-        android:dialogMessage="@string/device_password_summary"
-        android:summary="@string/device_password_summary"
-        android:dialogTitle="@string/device_outlets" />
+    <CheckBoxPreference
+        android:key="widget_show_text"
+        android:title="@string/preference_widget_show_text"
+        android:summary="@string/preference_widget_show_text_summary"
+        android:defaultValue="@bool/widget_show_text" />
 
     <Preference
         android:key="widget_image_on"

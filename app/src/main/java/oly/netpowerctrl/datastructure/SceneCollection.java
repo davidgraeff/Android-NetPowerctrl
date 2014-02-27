@@ -1,5 +1,6 @@
 package oly.netpowerctrl.datastructure;
 
+import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -7,20 +8,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.utils.Icons;
+
 /**
  * List of scenes
  */
 public class SceneCollection {
     public List<Scene> scenes;
+    public IScenesSave storage;
+    private ArrayList<IScenesUpdated> observers = new ArrayList<IScenesUpdated>();
 
-    public static SceneCollection fromScenes(List<Scene> scenes) {
-        SceneCollection dc = new SceneCollection();
+    public SceneCollection(IScenesSave storage) {
+        this.storage = storage;
+        this.scenes = new ArrayList<Scene>();
+    }
+
+    public static SceneCollection fromScenes(List<Scene> scenes, IScenesSave storage) {
+        SceneCollection dc = new SceneCollection(storage);
         dc.scenes = scenes;
+        if (dc.scenes == null)
+            dc.scenes = new ArrayList<Scene>();
         return dc;
     }
 
-    public static SceneCollection fromJSON(JsonReader reader) throws IOException {
-        SceneCollection dc = new SceneCollection();
+    public static SceneCollection fromJSON(JsonReader reader, IScenesSave storage) throws IOException {
+        SceneCollection dc = new SceneCollection(storage);
         dc.scenes = new ArrayList<Scene>();
 
         reader.beginArray();
@@ -31,11 +44,119 @@ public class SceneCollection {
         return dc;
     }
 
+    @SuppressWarnings("unused")
+    public boolean registerObserver(IScenesUpdated o) {
+        if (!observers.contains(o)) {
+            observers.add(o);
+            return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unused")
+    public void unregisterObserver(IScenesUpdated o) {
+        observers.remove(o);
+    }
+
+    @SuppressWarnings("unused")
+    private void notifyObservers(boolean addedOrRemoved) {
+        for (IScenesUpdated o : observers)
+            o.scenesUpdated(addedOrRemoved);
+    }
+
+    public int length() {
+        return scenes.size();
+    }
+
     public void toJSON(JsonWriter writer) throws IOException {
         writer.beginArray();
         for (Scene di : scenes) {
             di.toJSON(writer);
         }
         writer.endArray();
+    }
+
+    public void setBitmap(Scene item, Bitmap bitmap) {
+        if (item == null)
+            return;
+        item.bitmap = bitmap;
+        Icons.saveIcon(NetpowerctrlApplication.instance, item.uuid, bitmap, Icons.IconType.GroupIcon);
+        notifyObservers(false);
+    }
+
+    public void executeScene(int position) {
+        Executor.execute(getScene(position));
+    }
+
+    public void addScene(Scene data) {
+        if (data == null)
+            return;
+
+        // scenes.indexOf(--data--)
+        int position = -1;
+        for (int i = 0; i < scenes.size(); ++i)
+            if (scenes.get(i).equals(data)) {
+                position = i;
+                break;
+            }
+
+        // Replace existing item
+        if (position != -1) {
+            scenes.set(position, data);
+        } else { // Add new item
+            scenes.add(data);
+        }
+
+        if (storage != null)
+            storage.scenesSave(this);
+        notifyObservers(true);
+    }
+
+    public void removeScene(int position) {
+        if (position < 0 || position > scenes.size()) return;
+        scenes.remove(position);
+        storage.scenesSave(this);
+        notifyObservers(true);
+    }
+
+    public void deleteAll() {
+        scenes.clear();
+        storage.scenesSave(this);
+        notifyObservers(true);
+    }
+
+    public void reorderItems(int originalPosition, int newPosition, boolean saveReordering) {
+        if (newPosition >= scenes.size()) {
+            return;
+        }
+        Scene temp = scenes.get(originalPosition);
+        scenes.remove(originalPosition);
+        scenes.add(newPosition, temp);
+        notifyObservers(true);
+        if (saveReordering)
+            storage.scenesSave(this);
+    }
+
+    public void saveScenes() {
+        storage.scenesSave(this);
+    }
+
+    public boolean contains(Scene scene) {
+        for (Scene s : scenes)
+            if (s.equals(scene))
+                return true;
+        return false;
+    }
+
+    public Scene getScene(int position) {
+        return scenes.get(position);
+    }
+
+    public interface IScenesUpdated {
+        void scenesUpdated(boolean addedOrRemoved);
+    }
+
+    public interface IScenesSave {
+        void scenesSave(SceneCollection scenes);
     }
 }

@@ -105,7 +105,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.configure_device);
         builder.setView(view);
-        builder.setPositiveButton(R.string.device_save, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
             }
@@ -202,7 +202,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
 
         if (test_state == TestStates.TEST_REACHABLE) {
             // Update stored device with received values
-            device.MacAddress = di.MacAddress;
+            device.UniqueDeviceID = di.UniqueDeviceID;
             device.DeviceName = di.DeviceName;
             device.copyFreshValues(di);
             // Test user+password by setting a device port.

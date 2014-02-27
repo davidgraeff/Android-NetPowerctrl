@@ -32,7 +32,16 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
     };
 
     public DevicePortsCreateSceneAdapter(Context context) {
-        super(context);
+        super(context, null);
+    }
+
+    public int getViewTypeCount() {
+        return DevicePort.DevicePortType.values().length;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return all_outlets.get(position).port.getType().ordinal();
     }
 
     @Override
@@ -62,12 +71,12 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
                     break;
             }
 
-        } else if (type == DevicePort.DevicePortType.TypeButton) {
-            outlet_res_id = R.layout.create_scene_outlet_list_button;
-            convertView = super.getView(position, convertView, parent);
-
         } else if (type == DevicePort.DevicePortType.TypeRangedValue) {
             outlet_res_id = R.layout.create_scene_outlet_list_ranged;
+            convertView = super.getView(position, convertView, parent);
+
+        } else if (type == DevicePort.DevicePortType.TypeButton) {
+            outlet_res_id = R.layout.create_scene_outlet_list_item;
             convertView = super.getView(position, convertView, parent);
 
         } else {

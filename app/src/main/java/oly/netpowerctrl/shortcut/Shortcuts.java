@@ -55,7 +55,7 @@ public class Shortcuts {
         return shortcutIntent;
     }
 
-    static public Intent createShortcut(Context context, Intent extra, String name) {
+    static public Intent createShortcut(Intent extra, String name, Context context) {
         Intent intent = new Intent();
         intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, extra);
         intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, name);

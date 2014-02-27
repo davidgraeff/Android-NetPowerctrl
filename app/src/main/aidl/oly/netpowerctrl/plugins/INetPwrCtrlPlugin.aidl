@@ -4,6 +4,7 @@ import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
 
 interface INetPwrCtrlPlugin {
 	void init(INetPwrCtrlPluginResult cb);
+	void finish();
     void requestValues();
     void updateIntValue(int id, int value);
     void updateBooleanValue(int id, boolean value);

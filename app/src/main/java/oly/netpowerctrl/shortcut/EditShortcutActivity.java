@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -35,7 +34,6 @@ import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsCreateSceneAdapter;
-import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.main.OutletsSceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
@@ -133,21 +131,42 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
         enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
 
         //set the actionbar to use the custom view (can also be done with a style)
-        getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
+        ActionBar bar = getActionBar();
+        bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                 ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
+        bar.setHomeButtonEnabled(true);
+        bar.setCustomView(R.layout.create_scene_done);
 
-        getActionBar().setCustomView(R.layout.create_scene_done);
-        btnDone = (LinearLayout) findViewById(R.id.action_mode_close_button);
+        btnDone = findViewById(R.id.action_mode_save_button);
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 save_and_close();
             }
         });
+        View btnCancel = findViewById(R.id.action_mode_close_button);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
 
         // ViewPager init
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(new Available_Added_Adapter(getFragmentManager()));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NetpowerctrlApplication.instance.useListener();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        NetpowerctrlApplication.instance.stopUseListener();
     }
 
     private void loadContent() {
@@ -191,7 +210,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 DevicePort oi = adapter_available.getItem(position);
                 adapter_available.removeAt(position);
-                adapter_included.addOutlet(oi, DevicePort.TOGGLE);
+                adapter_included.addItem(oi, DevicePort.TOGGLE);
                 adapter_included.notifyDataSetChanged();
                 invalidateOptionsMenu();
             }
@@ -200,7 +219,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
         if (isSceneNotShortcut) {
             if (isLoaded) {
                 setTitle(R.string.title_scene_edit);
-                setIcon(Icons.loadIcon(this, scene.uuid, Icons.IconType.SceneIcon));
+                setIcon(Icons.loadIcon(this, scene.uuid, Icons.IconType.SceneIcon, 0));
             } else
                 setTitle(R.string.title_scene);
         } else {
@@ -232,7 +251,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
                         Icons.resizeBitmap(this, scene_icon, 128, 128), Icons.IconType.SceneIcon);
             else
                 Icons.saveIcon(this, scene.uuid, null, Icons.IconType.SceneIcon);
-            NetpowerctrlActivity.instance.getScenesAdapter().addScene(this, scene);
+            NetpowerctrlApplication.getDataController().scenes.addScene(scene);
         } else {
             Intent extra = Shortcuts.createShortcutExecutionIntent(EditShortcutActivity.this,
                     scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
@@ -242,8 +261,8 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
                 shortcut = Shortcuts.createShortcut(extra, scene.sceneName,
                         Icons.resizeBitmap(this, scene_icon));
             } else
-                shortcut = Shortcuts.createShortcut(EditShortcutActivity.this,
-                        extra, scene.sceneName);
+                shortcut = Shortcuts.createShortcut(extra, scene.sceneName,
+                        EditShortcutActivity.this);
             setResult(RESULT_OK, shortcut);
         }
         finish();
@@ -254,6 +273,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
      */
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
             case R.id.menu_icon:
                 Icons.show_select_icon_dialog(this, "scene_icons", this);
                 return true;
@@ -312,7 +332,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
      * user for a new scene name after a name has been chosen.
      */
     public void sceneNameChanged() {
-        getActionBar().setSubtitle(scene.sceneName);
+        getActionBar().setSubtitle(scene.sceneName.length() == 0 ? getString(R.string.scene_no_name) : scene.sceneName);
         invalidateOptionsMenu();
     }
 
@@ -339,7 +359,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
      */
     @Override
     public void onMenuItemClicked(View v, int position) {
-        adapter_available.addOutlet(adapter_included.getItem(position), DevicePort.TOGGLE);
+        adapter_available.addItem(adapter_included.getItem(position), DevicePort.TOGGLE);
         adapter_available.notifyDataSetChanged();
         adapter_included.removeAt(position);
         invalidateOptionsMenu();
@@ -353,12 +373,13 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
             return super.onPrepareOptionsMenu(menu);
 
         boolean en = (adapter_included.getCount() != 0) && scene.sceneName.length() > 0;
-        btnDone.setEnabled(en);
+        btnDone.setVisibility(en ? View.VISIBLE : View.GONE);
         TextView text = (TextView) findViewById(R.id.hintText);
         if (adapter_included.getCount() == 0)
             text.setText(getString(R.string.error_scene_no_actions));
-        else if (scene.sceneName.length() == 0)
+        else if (scene.sceneName.length() == 0) {
             text.setText(getString(R.string.error_scene_no_name));
+        }
         text.setVisibility(en ? View.GONE : View.VISIBLE);
 
         return super.onPrepareOptionsMenu(menu);

@@ -1,52 +1,41 @@
 package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.Icons;
 
-public class ScenesListAdapter extends AbstractDynamicGridAdapter {
-    private class Item {
-        Scene scene;
-        Bitmap icon;
-        long id;
+public class ScenesListAdapter extends AbstractDynamicGridAdapter implements SceneCollection.IScenesUpdated {
+    SceneCollection scenes;
+    private LayoutInflater inflater;
+    private boolean disableEditing;
+    private IEditSceneRequest observer = null;
 
-        Item(Scene scene, Bitmap bitmap, long id) {
-            this.scene = scene;
-            this.icon = bitmap;
-            this.id = id;
-        }
+    public ScenesListAdapter(Context context, SceneCollection data) {
+        inflater = LayoutInflater.from(context);
+        scenes = data;
+        scenes.registerObserver(this);
     }
 
-    private List<Item> scenes = new ArrayList<Item>();
-    private LayoutInflater inflater;
-    private long nextId = 0;
+    public void setDisableEditing(boolean disableEditing) {
+        this.disableEditing = disableEditing;
+        notifyDataSetChanged();
+    }
 
-    public ScenesListAdapter(Context context) {
-        inflater = LayoutInflater.from(context);
-        List<Scene> list_of_scenes = SharedPrefs.ReadScenes();
-        for (Scene scene : list_of_scenes) {
-            scenes.add(new Item(scene,
-                    Icons.loadIcon(context, scene.uuid, Icons.IconType.SceneIcon), nextId++));
-        }
+    public void setObserver(IEditSceneRequest observer) {
+        this.observer = observer;
     }
 
     @Override
     public int getCount() {
-        return scenes.size();
+        return scenes.length();
     }
 
     @Override
@@ -56,110 +45,57 @@ public class ScenesListAdapter extends AbstractDynamicGridAdapter {
 
     @Override
     public Object getItem(int position) {
-        return scenes.get(position);
+        return scenes.getScene(position);
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
+    @Override
+    public long getItemId(int position) {
+        return scenes.getScene(position).id;
+    }
+
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.scene_list_item, null);
         }
 
-        Scene data = scenes.get(position).scene;
+        final Scene data = scenes.getScene(position);
 
         assert convertView != null;
-        TextView tvName = (TextView) convertView.findViewById(R.id.group_list_name);
+        final TextView tvName = (TextView) convertView.findViewById(R.id.scene_list_name);
         tvName.setText(data.sceneName);
 
         ImageView image = (ImageView) convertView.findViewById(R.id.scene_icon_bitmap);
-        Bitmap b = scenes.get(position).icon;
-        if (b != null) {
-            image.setImageBitmap(b);
-        } else {
-            image.setImageResource(R.drawable.widgeton);
-        }
-        return convertView;
-    }
+        image.setImageBitmap(data.getBitmap());
 
-    public void executeScene(int position) {
-        Executor.execute(getScene(position));
-    }
-
-    public void addScene(Context context, Scene data) {
-        if (data == null)
-            return;
-
-        // scenes.indexOf(--data--)
-        int position = -1;
-        for (int i = 0; i < scenes.size(); ++i)
-            if (scenes.get(i).scene.equals(data)) {
-                position = i;
-                break;
+        image = (ImageView) convertView.findViewById(R.id.scene_icon_edit);
+        image.setVisibility(disableEditing ? View.GONE : View.VISIBLE);
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (observer != null)
+                    observer.editScene(position, view);
             }
-
-        // Replace existing item
-        if (position != -1) {
-            Item item = scenes.get(position);
-            item.scene = data;
-            item.icon = Icons.loadIcon(context, data.uuid, Icons.IconType.SceneIcon);
-        } else { // Add new item
-            Item item = new Item(data, Icons.loadIcon(context, data.uuid, Icons.IconType.SceneIcon), nextId++);
-            scenes.add(item);
-        }
-
-        saveScenes();
-        notifyDataSetChanged();
-    }
-
-    public void removeScene(int position) {
-        if (position < 0 || position > scenes.size()) return;
-        scenes.remove(position);
-        saveScenes();
-        notifyDataSetChanged();
-    }
-
-    public void deleteAll() {
-        scenes.clear();
-        saveScenes();
-        notifyDataSetChanged();
-    }
-
-    public void saveScenes() {
-        List<Scene> list_of_scenes = new ArrayList<Scene>();
-        for (Item s : scenes)
-            list_of_scenes.add(s.scene);
-        SharedPrefs.SaveScenes(list_of_scenes);
+        });
+        return convertView;
     }
 
     @Override
     public void reorderItems(int originalPosition, int newPosition) {
-        if (newPosition >= getCount()) {
-            return;
-        }
-        Item temp = scenes.get(originalPosition);
-        scenes.remove(originalPosition);
-        scenes.add(newPosition, temp);
-        notifyDataSetChanged();
+        scenes.reorderItems(originalPosition, newPosition, false);
     }
 
     @Override
     public void finishedReordering() {
-        saveScenes();
+        scenes.saveScenes();
     }
 
     @Override
-    public long getItemId(int position) {
-        return scenes.get(position).id;
+    public void scenesUpdated(boolean addedOrRemoved) {
+        notifyDataSetChanged();
     }
 
-    public boolean contains(Scene scene) {
-        for (Item s : scenes)
-            if (s.scene.equals(scene))
-                return true;
-        return false;
-    }
-
-    public Scene getScene(int position) {
-        return scenes.get(position).scene;
+    public interface IEditSceneRequest {
+        void editScene(int position, View view);
     }
 }

@@ -4,6 +4,8 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,8 +23,9 @@ public final class DevicePort implements Comparable {
     public boolean Hidden = false;
     public boolean Disabled = false;
     public UUID uuid = UUID.randomUUID(); // unique identity among all device ports
+    public List<UUID> groups = new ArrayList<UUID>();
     public long id = 0; // unique identity among device ports on this device
-    // last_command_timecode: Updated after command has been send.
+    // last_command_timecode: Updated after name has been send.
     // Used to disable control in list until ack from device has been received.
     public long last_command_timecode = 0;
     // UI specific
@@ -75,6 +78,13 @@ public final class DevicePort implements Comparable {
                 oi.id = reader.nextLong();
             } else if (name.equals("uuid")) {
                 oi.uuid = UUID.fromString(reader.nextString());
+            } else if (name.equals("groups")) {
+                oi.groups.clear();
+                reader.beginArray();
+                while (reader.hasNext()) {
+                    oi.groups.add(UUID.fromString(reader.nextString()));
+                }
+                reader.endArray();
             } else {
                 reader.skipValue();
             }
@@ -104,6 +114,8 @@ public final class DevicePort implements Comparable {
     public boolean copyValuesIfMatching(DevicePort source_oi) {
         if (equals(source_oi)) {
             current_value = source_oi.current_value;
+            max_value = source_oi.max_value;
+            min_value = source_oi.min_value;
             Disabled = source_oi.Disabled;
             setDescriptionByDevice(source_oi.getDescription());
             return true;
@@ -139,6 +151,10 @@ public final class DevicePort implements Comparable {
         writer.name("positionRequest").value(positionRequest);
         writer.name("id").value(id);
         writer.name("uuid").value(uuid.toString());
+        writer.name("groups").beginArray();
+        for (UUID group_uuid : groups)
+            writer.value(group_uuid.toString());
+        writer.endArray();
         writer.endObject();
     }
 
@@ -166,6 +182,11 @@ public final class DevicePort implements Comparable {
 
     public void setDescriptionByUser(String desc) {
         UserDescription = desc;
+    }
+
+    public void addToGroup(UUID uuid) {
+        if (!groups.contains(uuid))
+            groups.add(uuid);
     }
 
     public enum DevicePortType {

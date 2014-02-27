@@ -26,20 +26,17 @@ import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
-import oly.netpowerctrl.listadapter.ScenesListAdapter;
-import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * NFC related
  */
 public class NFC {
-    public static NdefMessage createNdefMessage(ScenesListAdapter adpScenes) {
+    public static NdefMessage createNdefMessage() {
         String text;
         try {
             JSONHelper h = new JSONHelper();
             NFC.NFC_Transfer.fromData(
-                    SceneCollection.fromScenes(SharedPrefs.ReadScenes()),
+                    NetpowerctrlApplication.getDataController().scenes,
                     DeviceCollection.fromDevices(NetpowerctrlApplication.getDataController().configuredDevices)).toJSON(h.createWriter());
             text = h.getString();
         } catch (IOException e) {
@@ -116,7 +113,7 @@ public class NFC {
                 String name = reader.nextName();
                 assert name != null;
                 if (name.equals("scenes_collection")) {
-                    dc.scenes = SceneCollection.fromJSON(reader);
+                    dc.scenes = SceneCollection.fromJSON(reader, null);
                 } else if (name.equals("devices_collection")) {
                     dc.devices = DeviceCollection.fromJSON(reader);
                 } else if (name.equals("version")) {
@@ -232,7 +229,7 @@ public class NFC {
         String[] sceneNames = new String[sc.scenes.size()];
         int i = 0;
         for (Scene scene : sc.scenes) {
-            boolean already_installed = NetpowerctrlActivity.instance.getScenesAdapter().contains(scene);
+            boolean already_installed = NetpowerctrlApplication.getDataController().scenes.contains(scene);
             sceneNames[i] = scene.sceneName;
             if (already_installed)
                 sceneNames[i] += " " + context.getString(R.string.scene_replace);
@@ -265,7 +262,7 @@ public class NFC {
                         int i = 0;
                         for (Scene scene : sc.scenes) {
                             if (selectedItems.get(i, -1) != -1)
-                                NetpowerctrlActivity.instance.getScenesAdapter().addScene(context, scene);
+                                NetpowerctrlApplication.getDataController().scenes.addScene(scene);
                             ++i;
                         }
                     }

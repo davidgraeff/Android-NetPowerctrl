@@ -1,5 +1,6 @@
 package oly.netpowerctrl.datastructure;
 
+import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -10,13 +11,26 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 
-
 public class Scene {
+    public static long nextStableID = 0;
+
     public String sceneName = "";
     public UUID uuid = UUID.randomUUID();
+    public Bitmap bitmap = null;
+    public long id = nextStableID++;
+
+    public Bitmap getBitmap() {
+        if (bitmap == null) {
+            bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, uuid,
+                    Icons.IconType.SceneIcon, R.drawable.netpowerctrl);
+        }
+        return bitmap;
+    }
 
     public static class SceneItem {
         public UUID uuid = UUID.randomUUID();
@@ -93,7 +107,7 @@ public class Scene {
         SceneItem item = new SceneItem();
         while (reader.hasNext()) {
             String name = reader.nextName();
-            if (name.equals("command")) {
+            if (name.equals("name")) {
                 item.command = reader.nextInt();
             } else if (name.equals("uuid")) {
                 item.uuid = UUID.fromString(reader.nextString());
@@ -114,7 +128,7 @@ public class Scene {
                 scene.sceneName = reader.nextString();
             } else if (name.equals("uuid")) {
                 scene.uuid = UUID.fromString(reader.nextString());
-            } else if (name.equals("sceneItems")) {
+            } else if (name.equals("groupItems")) {
                 reader.beginArray();
                 while (reader.hasNext()) {
                     readSceneItem(reader, scene);
@@ -132,11 +146,11 @@ public class Scene {
         writer.beginObject();
         writer.name("sceneName").value(sceneName);
         writer.name("uuid").value(uuid.toString());
-        writer.name("sceneItems").beginArray();
+        writer.name("groupItems").beginArray();
         for (SceneItem c : sceneItems) {
             writer.beginObject();
             writer.name("uuid").value(c.uuid.toString());
-            writer.name("command").value(c.command);
+            writer.name("name").value(c.command);
             writer.endObject();
         }
         writer.endArray();

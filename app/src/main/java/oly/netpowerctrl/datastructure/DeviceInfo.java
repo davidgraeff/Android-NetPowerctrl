@@ -21,7 +21,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
     public String DeviceName; // name of the device as reported by UDP or configured by the user
     public String HostName;   // the hostname or ip address used to reach the device
-    public String MacAddress; // the mac address as sent from the device
+    public String UniqueDeviceID; // the mac address as sent from the device
 
     public String UserName;
     public String Password;
@@ -58,7 +58,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         deviceType = type;
         DeviceName = "";
         HostName = "";
-        MacAddress = "";
+        UniqueDeviceID = "";
         UserName = "";
         Password = "";
         DefaultPorts = true;
@@ -82,7 +82,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         uuid = UUID.randomUUID();
         DeviceName = other.DeviceName;
         HostName = other.HostName;
-        MacAddress = other.MacAddress;
+        UniqueDeviceID = other.UniqueDeviceID;
         UserName = other.UserName;
         Password = other.Password;
         DefaultPorts = other.DefaultPorts;
@@ -101,6 +101,9 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     }
 
     public void copyFreshValues(DeviceInfo other) {
+        if (other.equals(this)) {
+            return;
+        }
         // Add all devicePorts from DeviceInfo other to a new list (so that we can modify)
         List<DevicePort> new_devicePorts = new ArrayList<DevicePort>();
         new_devicePorts.addAll(other.DevicePorts);
@@ -146,11 +149,11 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
      */
     @SuppressWarnings("unused")
     public boolean equalsFunctional(DeviceInfo other) {
-        if (MacAddress.isEmpty() || other.MacAddress.isEmpty())
+        if (UniqueDeviceID.isEmpty() || other.UniqueDeviceID.isEmpty())
             return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort &&
                     DevicePorts.size() == other.DevicePorts.size();
         else
-            return MacAddress.equals(other.MacAddress);
+            return UniqueDeviceID.equals(other.UniqueDeviceID);
     }
 
     /**
@@ -173,6 +176,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         reader.beginObject();
         DeviceInfo di = new DeviceInfo(DeviceType.UnknownDevice);
         di.configured = true;
+        di.reachable = false;
         while (reader.hasNext()) {
             String name = reader.nextName();
             if (name.equals("uuid")) {
@@ -181,8 +185,8 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
                 di.DeviceName = reader.nextString();
             } else if (name.equals("HostName")) {
                 di.HostName = reader.nextString();
-            } else if (name.equals("MacAddress")) {
-                di.MacAddress = reader.nextString();
+            } else if (name.equals("UniqueDeviceID") || name.equals("MacAddress")) {
+                di.UniqueDeviceID = reader.nextString();
             } else if (name.equals("UserName")) {
                 di.UserName = reader.nextString();
             } else if (name.equals("Password")) {
@@ -248,7 +252,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.name("DeviceName").value(DeviceName);
         writer.name("Type").value(deviceType.ordinal());
         writer.name("HostName").value(HostName);
-        writer.name("MacAddress").value(MacAddress);
+        writer.name("UniqueDeviceID").value(UniqueDeviceID);
         writer.name("UserName").value(UserName);
         writer.name("Password").value(Password);
         writer.name("Temperature").value(Temperature);

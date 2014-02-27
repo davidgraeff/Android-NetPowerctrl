@@ -14,6 +14,7 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment {
@@ -58,12 +59,13 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
             return;
         } else {
             for (int i = 0; i < entries.length; ++i) {
+                final int widgetID = allWidgetIds[i];
                 PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
                 s.setKey(entryValues[i]);
                 s.setFragment(WidgetPreferenceFragment.class.getName());
                 s.setTitle(entries[i]);
+                s.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateOn, Icons.uuidFromWidgetID(widgetID, Icons.IconState.StateOn)));
                 lp.addPreference(s);
-                final int finalI = i;
                 s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
@@ -72,7 +74,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                         Fragment fragment = Fragment.instantiate(getActivity(), preference.getFragment());
                         Bundle b = new Bundle();
                         b.putString("key", preference.getKey());
-                        b.putInt("widgetId", allWidgetIds[finalI]);
+                        b.putInt("widgetId", widgetID);
                         fragment.setArguments(b);
                         getFragmentManager().beginTransaction().addToBackStack(null).
                                 replace(R.id.content_frame, fragment).commit();

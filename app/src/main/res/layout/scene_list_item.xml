@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:baselineAligned="true"
-    android:orientation="vertical"
+    android:gravity="center_horizontal"
     android:paddingLeft="5dip"
     android:paddingRight="5dip"
     android:background="?item_selector">
@@ -11,16 +10,25 @@
     <ImageView
         android:id="@+id/scene_icon_bitmap"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:maxWidth="128dp"
-        android:src="@drawable/widgeton" />
+        android:layout_height="128dp"
+        android:gravity="center_horizontal" />
+
+    <ImageView
+        android:id="@+id/scene_icon_edit"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@android:drawable/ic_menu_edit"
+        android:layout_alignBottom="@id/scene_icon_bitmap"
+        android:layout_alignRight="@id/scene_icon_bitmap" />
 
     <TextView
-        android:id="@+id/group_list_name"
+        android:id="@+id/scene_list_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:singleLine="true"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_below="@id/scene_icon_bitmap" />
 
-</LinearLayout>
+</RelativeLayout>

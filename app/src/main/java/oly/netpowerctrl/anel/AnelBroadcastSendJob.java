@@ -76,7 +76,8 @@ public class AnelBroadcastSendJob implements DeviceSend.Job {
             // Query all existing devices directly
             ArrayList<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
             for (DeviceInfo di : devices) {
-                deviceSend.addSendJob(di, "wer da?\r\n".getBytes(), DeviceSend.INQUERY_REQUEST, false);
+                if (di.deviceType == DeviceInfo.DeviceType.AnelDevice)
+                    AnelExecutor.sendQuery(di);
             }
         }
     }

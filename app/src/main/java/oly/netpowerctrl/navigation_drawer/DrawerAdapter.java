@@ -2,54 +2,143 @@ package oly.netpowerctrl.navigation_drawer;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.datastructure.Executor;
+import oly.netpowerctrl.datastructure.Groups;
+import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.main.OutletsFragment;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Adapter with items and headers
  */
-public class DrawerAdapter extends BaseAdapter {
+public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated, SceneCollection.IScenesUpdated {
 
-    private List<Object> mItems = new ArrayList<Object>();
+    private List<DrawerItem> mItems = new ArrayList<DrawerItem>();
     private LayoutInflater inflater;
     private WeakHashMap<String, Fragment> mCachedFragments = new WeakHashMap<String, Fragment>();
-    private int plugins_position = 0;
-    private boolean mHasPlugins = false;
+    private UUID groups_position = null;
+    private int groups_size = 0;
+    private UUID scenes_position = null;
+    private int scenes_size = 0;
 
-    public static class DrawerItem {
+    public DrawerAdapter(Context context) {
+        inflater = LayoutInflater.from(context);
+    }
 
-        public String mTitle;
-        public String mSummary;
-        public String mClazz;
-        public String mAccompanyClazz;
-        public boolean mDialog;
-        public int mExtra;
+    @Override
+    public void groupsUpdated(boolean addedOrRemoved) {
+        if (groups_position == null)
+            return;
+        int startPosition = indexOf(groups_position);
+        if (startPosition == -1)
+            return;
+        ++startPosition; // Add 1, otherwise we point to the item before the first group item
 
-        public DrawerItem(String title, String summary, String clazz, boolean dialog, int extra) {
-            mTitle = title;
-            mSummary = summary;
-            mClazz = clazz;
-            mDialog = dialog;
-            mExtra = extra;
+        Groups g = NetpowerctrlApplication.getDataController().groups;
+        int maxLength = SharedPrefs.getMaxFavGroups();
+        if (g.length() < maxLength) maxLength = g.length();
+
+        if (addedOrRemoved || groups_size != maxLength) {
+            // Remove all groups first
+            for (int i = 0; i < groups_size; ++i)
+                mItems.remove(startPosition);
+            groups_size = 0;
+
+            // Readd groups
+            for (int i = 0; i < maxLength; ++i) {
+                Groups.GroupItem groupItem = g.groupItems.get(i);
+                DrawerItem item = new DrawerItem(groupItem.name, "");
+                item.uuid = groupItem.uuid;
+                item.bitmap = groupItem.getBitmap();
+                item.fragmentClassName = OutletsFragment.class.getName();
+                item.mExtra = new Bundle();
+                item.mExtra.putString("filter", groupItem.uuid.toString());
+                item.intendLevel = 1;
+                mItems.add(startPosition + i, item);
+            }
+            groups_size = maxLength;
+            notifyDataSetChanged();
+        } else { // just update names
+            for (int i = 0; i < groups_size; ++i) {
+                Groups.GroupItem groupItem = g.groupItems.get(i);
+                DrawerItem item = mItems.get(i + startPosition);
+                item.bitmap = groupItem.getBitmap();
+                item.mTitle = groupItem.name;
+            }
+            notifyDataSetChanged();
         }
     }
 
-    public static class Header {
 
-        String mTitle;
+    @Override
+    public void scenesUpdated(boolean addedOrRemoved) {
+        if (scenes_position == null)
+            return;
+        int startPosition = indexOf(scenes_position);
+        if (startPosition == -1)
+            return;
+        ++startPosition; // Add 1, otherwise we point to the item before the first scene item
 
-        public Header(String title) {
-            mTitle = title;
+        SceneCollection g = NetpowerctrlApplication.getDataController().scenes;
+        int maxLength = SharedPrefs.getMaxFavScenes();
+        if (g.length() < maxLength) maxLength = g.length();
+
+        if (addedOrRemoved || scenes_size != maxLength) {
+            // Remove all groups first
+            for (int i = 0; i < scenes_size; ++i)
+                mItems.remove(startPosition);
+            scenes_size = 0;
+
+            // Readd groups
+            for (int i = 0; i < maxLength; ++i) {
+                final Scene sceneItem = g.scenes.get(i);
+                DrawerItem item = new DrawerItem(sceneItem.sceneName, "");
+                item.uuid = sceneItem.uuid;
+                item.bitmap = sceneItem.getBitmap();
+                item.intendLevel = 1;
+                item.clickHandler = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Executor.execute(sceneItem);
+                    }
+                };
+                mItems.add(startPosition + i, item);
+            }
+            scenes_size = maxLength;
+            notifyDataSetChanged();
+        } else { // just update names
+            for (int i = 0; i < scenes_size; ++i) {
+                final Scene sceneItem = g.scenes.get(i);
+                DrawerItem item = mItems.get(i + startPosition);
+                item.uuid = sceneItem.uuid;
+                item.bitmap = sceneItem.getBitmap();
+                item.mTitle = sceneItem.sceneName;
+                item.clickHandler = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Executor.execute(sceneItem);
+                    }
+                };
+            }
+            notifyDataSetChanged();
         }
     }
 
@@ -63,28 +152,44 @@ public class DrawerAdapter extends BaseAdapter {
         }
     }
 
-
     public void setAccompanyFragment(String existingFragment, String accompanyFragment) {
         int i = indexOf(existingFragment);
         if (i == -1)
             return;
-        DrawerItem item = (DrawerItem) mItems.get(i);
+        DrawerItem item = mItems.get(i);
         item.mAccompanyClazz = accompanyFragment;
     }
 
     public int indexOf(String className) {
         for (int i = 0; i < mItems.size(); i++) {
-            if (getItemViewType(i) == 1) {
-                DrawerItem item = (DrawerItem) mItems.get(i);
-                if (item.mClazz.equals(className)) return i;
+            DrawerItem item = mItems.get(i);
+            if (!item.isHeader) {
+                if (item.fragmentClassName != null && item.fragmentClassName.equals(className))
+                    return i;
             }
+        }
+        return -1;
+    }
+
+    private int indexOf(UUID uuid) {
+        for (int i = 0; i < mItems.size(); i++) {
+            DrawerItem item = mItems.get(i);
+            if (item.uuid.equals(uuid)) return i;
 
         }
         return -1;
     }
 
-    public void usePositionForPlugins() {
-        plugins_position = mItems.size();
+    public void usePositionForGroups() {
+        groups_position = mItems.get(mItems.size() - 1).uuid;
+        NetpowerctrlApplication.getDataController().groups.registerObserver(this);
+        groupsUpdated(true);
+    }
+
+    public void usePositionForScenes() {
+        scenes_position = mItems.get(mItems.size() - 1).uuid;
+        NetpowerctrlApplication.getDataController().scenes.registerObserver(this);
+        scenesUpdated(true);
     }
 
     public void addCacheFragment(String name) {
@@ -95,69 +200,36 @@ public class DrawerAdapter extends BaseAdapter {
         return mCachedFragments.get(name);
     }
 
-//    public void updatePluginItem(String title, String summary, int pluginId) {
-//        if (!hasPlugins())
-//            addPluginHeader(NetpowerctrlActivity.instance.getString(R.string.plugin_drawer_title));
-//
-//        for (int i = 0; i < mItems.size(); i++) {
-//            if (getItemViewType(i) == 1) {
-//                DrawerItem item = (DrawerItem) mItems.get(i);
-//                if (item.mExtra == pluginId) {
-//                    item.mTitle = title;
-//                    item.mSummary = summary;
-//                    notifyDataSetChanged();
-//                    return;
-//                }
-//            }
-//        }
-//
-//        mItems.add(plugins_position, new DrawerItem(title, summary, PluginFragment.class.getName(), false, pluginId));
-//        ++plugins_position;
-//        notifyDataSetChanged();
-//    }
-
-    public boolean hasPlugins() {
-        return mHasPlugins;
-    }
-
-    public void removePluginItem(int pluginId) {
+    public void remove(UUID id) {
         for (int i = 0; i < mItems.size(); i++) {
-            if (getItemViewType(i) == 1) {
-                DrawerItem item = (DrawerItem) mItems.get(i);
-                if (item.mExtra == pluginId) {
-                    mItems.remove(i);
-                    --i; // go one item back
-                    // If preceding item is the "plugin" header, remove it, too.
-                    if (getItemViewType(i) == 0) {
-                        mItems.remove(i);
-                        mHasPlugins = false;
-                        plugins_position = i;
-                    }
-                    notifyDataSetChanged();
-                    return;
-                }
+            DrawerItem item = mItems.get(i);
+            if (item.uuid.equals(id)) {
+                mItems.remove(i);
+                notifyDataSetChanged();
+                return;
             }
-
         }
     }
 
-    public DrawerAdapter(Context context) {
-        inflater = LayoutInflater.from(context);
+    public DrawerItem get(UUID id) {
+        for (int i = 0; i < mItems.size(); i++) {
+            DrawerItem item = mItems.get(i);
+            if (item.uuid.equals(id)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     public void addHeader(String title) {
-        mItems.add(new Header(title));
-    }
-
-    public void addPluginHeader(String title) {
-        mItems.add(plugins_position, new Header(title));
-        ++plugins_position;
-        mHasPlugins = true;
-        notifyDataSetChanged();
+        mItems.add(new DrawerItem(title));
     }
 
     public void addItem(String title, String summary, String clazz, boolean dialog) {
-        mItems.add(new DrawerItem(title, summary, clazz, dialog, -1));
+        DrawerItem item = new DrawerItem(title, summary);
+        item.fragmentClassName = clazz;
+        item.mDialog = dialog;
+        mItems.add(item);
     }
 
     @Override
@@ -177,7 +249,7 @@ public class DrawerAdapter extends BaseAdapter {
 
     @Override
     public int getItemViewType(int position) {
-        return getItem(position) instanceof Header ? 0 : 1;
+        return mItems.get(position).isHeader ? 0 : 1;
     }
 
     @Override
@@ -187,32 +259,70 @@ public class DrawerAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View v, ViewGroup parent) {
-        if (getItemViewType(position) == 0) {
-            Header header = (Header) getItem(position);
+        DrawerItem item = (DrawerItem) getItem(position);
+
+        if (item.isHeader) {
 
             if (v == null) {
                 v = inflater.inflate(R.layout.drawer_list_header, parent, false);
             }
 
             assert v != null;
-            ((TextView) v.findViewById(R.id.headerTitle)).setText(header.mTitle);
+            ((TextView) v.findViewById(R.id.headerTitle)).setText(item.mTitle);
 
             return v;
 
         } else {
-            DrawerItem sample = (DrawerItem) getItem(position);
-
             if (v == null) {
                 v = inflater.inflate(R.layout.drawer_list_item, parent, false);
             }
 
             assert v != null;
-            ((TextView) v.findViewById(R.id.title)).setText(sample.mTitle);
+            View layout_item = v.findViewById(R.id.drawer_list_item);
+            layout_item.setPadding(v.getPaddingRight() + layout_item.getPaddingRight() * item.intendLevel, v.getPaddingTop(),
+                    v.getPaddingRight(), v.getPaddingBottom());
+
+            ImageView image = (ImageView) v.findViewById(R.id.drawer_icon_bitmap);
+            if (item.bitmap != null) {
+                image.setImageBitmap(item.bitmap);
+                image.setVisibility(View.VISIBLE);
+            } else
+                image.setVisibility(View.GONE);
+
+            TextView title = ((TextView) v.findViewById(R.id.title));
+            title.setText(item.mTitle);
+
             TextView summary = ((TextView) v.findViewById(R.id.summary));
-            summary.setVisibility(sample.mSummary.isEmpty() ? View.GONE : View.VISIBLE);
-            summary.setText(sample.mSummary);
+            summary.setVisibility(item.mSummary.isEmpty() ? View.GONE : View.VISIBLE);
+            summary.setText(item.mSummary);
 
             return v;
+        }
+    }
+
+    public static class DrawerItem {
+
+        public String mTitle;
+        public String mSummary;
+        public String fragmentClassName;
+        public String mAccompanyClazz;
+        public boolean mDialog;
+        public Bundle mExtra = null;
+        public UUID uuid = UUID.randomUUID();
+        public Bitmap bitmap = null;
+        public boolean isHeader;
+        public int intendLevel = 0;
+        public View.OnClickListener clickHandler = null;
+
+        public DrawerItem(String title) {
+            mTitle = title;
+            isHeader = true;
+        }
+
+        public DrawerItem(String title, String summary) {
+            mTitle = title;
+            mSummary = summary;
+            isHeader = false;
         }
     }
 }

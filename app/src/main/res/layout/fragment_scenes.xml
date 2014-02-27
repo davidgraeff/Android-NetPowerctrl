@@ -12,9 +12,8 @@
         <oly.netpowerctrl.dynamicgid.DynamicGridView
             android:id="@android:id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:numColumns="@integer/grid_columns_scenes" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <TextView
             android:id="@+id/hintText"

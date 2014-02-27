@@ -1,64 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/outlet_bg">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <oly.netpowerctrl.dynamicgid.DynamicGridView
+        android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-        <oly.netpowerctrl.dynamicgid.DynamicGridView
-            android:id="@android:id/list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:numColumns="1" />
-
-        <TextView
-            android:id="@+id/hintText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?drawer_item_background"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:gravity="left"
-            android:padding="5dp"
-            android:visibility="gone" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/loading"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="10dp"
+    <ProgressBar
         android:visibility="gone"
-        android:orientation="vertical">
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"></ProgressBar>
-    </LinearLayout>
+        android:id="@+id/loading"
+        android:layout_gravity="center"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <LinearLayout
         android:id="@android:id/empty"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:gravity="center"
         android:padding="10dp"
         android:visibility="gone"
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/empty_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@android:style/TextAppearance.Medium"
             android:background="?item_selector"
-            android:padding="5dp"
-            android:text="@string/empty_no_outlets" />
+            android:padding="5dp" />
 
         <Button
             android:id="@+id/btnChangeToDevices"
@@ -67,4 +44,15 @@
             android:text="@string/devices" />
     </LinearLayout>
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/hintText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?item_selector"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:gravity="left"
+        android:layout_margin="5dp"
+        android:padding="5dp"
+        android:visibility="gone" />
+
+</LinearLayout>

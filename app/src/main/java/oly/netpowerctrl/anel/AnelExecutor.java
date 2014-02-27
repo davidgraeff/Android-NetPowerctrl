@@ -11,7 +11,7 @@ import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.network.DeviceSend;
 
 /**
- * For executing a command on a DevicePort or commands for multiple DevicePorts (bulk).
+ * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
  * This is a specialized class for Anel devices.
  */
 final public class AnelExecutor {
@@ -127,18 +127,19 @@ final public class AnelExecutor {
         // Thirst step: Send data
         String access = di.UserName + di.Password;
         byte[] data = new byte[3 + access.length()];
-        data[0] = 'S';
-        data[1] = 'w';
-        data[2] = data_outlet;
         System.arraycopy(access.getBytes(), 0, data, 3, access.length());
 
         if (containsOutlets) {
-            DeviceSend.instance().addSendJob(di, data, DeviceSend.INQUERY_REQUEST, false);
-        } else if (containsIO) {
+            data[0] = 'S';
+            data[1] = 'w';
+            data[2] = data_outlet;
+            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST, true));
+        }
+        if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            DeviceSend.instance().addSendJob(di, data, DeviceSend.INQUERY_REQUEST, false);
+            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST, true));
         }
     }
 
@@ -168,6 +169,15 @@ final public class AnelExecutor {
             data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                     port.id, port.device.UserName, port.device.Password).getBytes();
         }
-        DeviceSend.instance().addSendJob(port.device, data, DeviceSend.INQUERY_REQUEST, false);
+
+        DeviceSend.instance().addJob(new DeviceSend.SendJob(port.device, data, DeviceSend.INQUERY_REQUEST, true));
+    }
+
+    public static void sendBroadcastQuery() {
+        DeviceSend.instance().addJob(new AnelBroadcastSendJob());
+    }
+
+    public static void sendQuery(DeviceInfo di) {
+        DeviceSend.instance().addJob(new DeviceSend.SendJob(di, "wer da?\r\n".getBytes(), DeviceSend.INQUERY_REQUEST, true));
     }
 }

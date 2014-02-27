@@ -7,6 +7,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +18,7 @@ import android.util.Base64;
 import java.io.UnsupportedEncodingException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.Icons;
 
 public class FeedbackDialog extends DialogFragment {
 
@@ -24,7 +28,9 @@ public class FeedbackDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setIcon(R.drawable.netpowerctrl);
+        Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.netpowerctrl);
+
+        builder.setIcon(new BitmapDrawable(getResources(), Icons.resizeBitmap(getActivity(), b)));
         builder.setTitle(R.string.app_name);
 
         // Support this app by a donations.

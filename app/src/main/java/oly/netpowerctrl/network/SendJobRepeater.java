@@ -38,11 +38,15 @@ public class SendJobRepeater extends Handler {
     @Override
     public void handleMessage(Message m) {
         NetpowerctrlApplication context = NetpowerctrlApplication.instance;
-        if (!job.di.reachable || retries >= 3) {
+        if (retries >= 3) { //!job.di.reachable ||
             //give up
-            Toast.makeText(context,
-                    context.getString(R.string.error_setting_outlet, job.di.DeviceName, current_time - job.di.getUpdatedTime() / 1000),
-                    Toast.LENGTH_LONG).show();
+            if (job.di.getUpdatedTime() > 0) // if the device got updated at some time
+                Toast.makeText(context,
+                        context.getString(R.string.error_setting_outlet, job.di.DeviceName,
+                                current_time - job.di.getUpdatedTime() / 1000),
+                        Toast.LENGTH_LONG).show();
+            // if the device never responded so far or the updated counter has been reseted by
+            // e.g. the network change listener, we just do nothing here
             return;
         }
 

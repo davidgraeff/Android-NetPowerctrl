@@ -47,6 +47,7 @@ support libraries (v13) and need at least android 4.0 (sdk version 14, released 
 
 ### Authors
 * david.graeff(at)web_de
+* Some icons from http://www.clker.com/
 
 ### License
 Dual licensed: GPLv2+GPLv3

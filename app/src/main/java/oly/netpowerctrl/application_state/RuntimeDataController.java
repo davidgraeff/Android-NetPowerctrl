@@ -1,5 +1,7 @@
 package oly.netpowerctrl.application_state;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -11,6 +13,8 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.datastructure.Groups;
+import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.network.DeviceError;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
@@ -25,12 +29,19 @@ import oly.netpowerctrl.utils.ShowToast;
 public class RuntimeDataController implements DeviceUpdate, DeviceError {
     public ArrayList<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
     public ArrayList<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
+    public Groups groups;
+    public SceneCollection scenes;
 
     private ArrayList<DevicesUpdate> observersConfigured = new ArrayList<DevicesUpdate>();
     private ArrayList<DevicesUpdate> observersNew = new ArrayList<DevicesUpdate>();
 
     private List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
 
+    RuntimeDataController() {
+        groups = SharedPrefs.readGroups();
+        scenes = SharedPrefs.ReadScenes();
+        reloadConfiguredDevices();
+    }
 
     //! get a list of all send ports of all configured scenes plus the default send port
     public Set<Integer> getAllSendPorts() {
@@ -71,7 +82,6 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     void notifyConfiguredObservers(List<DeviceInfo> changed_devices) {
         for (DevicesUpdate o : observersConfigured)
             o.onDevicesUpdated(changed_devices);
-
     }
 
     @SuppressWarnings("unused")
@@ -132,7 +142,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
             DeviceInfo old_di = oldEntriesIt.next();
             DeviceInfo new_di = null;
             for (DeviceInfo it_di : newEntries) {
-                if (it_di.MacAddress.equals(old_di.MacAddress)) {
+                if (it_di.UniqueDeviceID.equals(old_di.UniqueDeviceID)) {
                     new_di = it_di;
                     break;
                 }
@@ -149,7 +159,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         for (DeviceInfo new_di : newEntries) {
             DeviceInfo old_di = null;
             for (int i = 0; i < configuredDevices.size(); ++i) {
-                if (configuredDevices.get(i).MacAddress.equals(new_di.MacAddress)) {
+                if (configuredDevices.get(i).UniqueDeviceID.equals(new_di.UniqueDeviceID)) {
                     old_di = newEntries.get(i);
                     break;
                 }
@@ -161,10 +171,15 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         notifyConfiguredObservers(newEntries);
     }
 
+    public void clearNewDevices() {
+        newDevices.clear();
+        notifyNewDeviceObservers(newDevices);
+    }
+
     public void addToConfiguredDevices(DeviceInfo current_device, boolean write_to_disk) {
         // Already in configured devices?
         for (int i = configuredDevices.size() - 1; i >= 0; --i) {
-            if (current_device.MacAddress.equals(configuredDevices.get(i).MacAddress)) {
+            if (current_device.UniqueDeviceID.equals(configuredDevices.get(i).UniqueDeviceID)) {
                 configuredDevices.set(i, current_device);
                 if (write_to_disk) {
                     saveConfiguredDevices(true);
@@ -180,7 +195,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
 
         // Remove from new devices list
         for (int i = 0; i < newDevices.size(); ++i) {
-            if (newDevices.get(i).MacAddress.equals(current_device.MacAddress)) {
+            if (newDevices.get(i).UniqueDeviceID.equals(current_device.UniqueDeviceID)) {
                 newDevices.remove(i);
                 notifyNewDeviceObservers(newDevices);
                 break;
@@ -198,6 +213,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     }
 
     public void deleteConfiguredDevice(int position) {
+        configuredDevices.get(position).configured = false;
         configuredDevices.remove(position);
         saveConfiguredDevices(true);
     }
@@ -206,7 +222,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     public void onDeviceUpdated(DeviceInfo device_info) {
         // if it matches a configured device, update it's outlet states
         for (DeviceInfo target : configuredDevices) {
-            if (!device_info.MacAddress.equals(target.MacAddress))
+            if (!device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
                 continue;
             target.copyFreshValues(device_info);
 
@@ -228,7 +244,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
 
         // Do we have this new device already in the list?
         for (DeviceInfo target : newDevices) {
-            if (device_info.MacAddress.equals(target.MacAddress))
+            if (device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
                 return;
         }
         // No: Add device to new_device list
@@ -283,5 +299,33 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
             }
         }
         return null;
+    }
+
+    public DeviceInfo findDeviceByMac(String mac) {
+        for (DeviceInfo di : configuredDevices) {
+            if (di.UniqueDeviceID.equals(mac)) {
+                return di;
+            }
+        }
+        return null;
+    }
+
+    public boolean onlyLinkLocalDevices() {
+        boolean linkLocals = true;
+        for (DeviceInfo di : configuredDevices) {
+            if (di.deviceType != DeviceInfo.DeviceType.AnelDevice)
+                continue;
+
+            try {
+                InetAddress address = InetAddress.getByName(di.HostName);
+                linkLocals &= (address.isLinkLocalAddress() || address.isSiteLocalAddress());
+            } catch (UnknownHostException e) {
+                // we couldn't resolve the device hostname to an IP address. One reason is, that
+                // the user entered a dns name instead of an IP (and the dns server is not reachable
+                // at the moment). Therefore we assume that there not only link local addresses.
+                return false;
+            }
+        }
+        return linkLocals;
     }
 }

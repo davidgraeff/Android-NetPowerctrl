@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/outlet_list_entry"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:descendantFocusability="blocksDescendants"
+    android:background="?item_selector"
+    android:clickable="false"
+    android:focusable="false"
+    android:focusableInTouchMode="false">
+
+    <ImageView
+        android:id="@+id/outlet_list_bitmap"
+        android:src="@drawable/netpowerctrl"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:paddingRight="5dp" />
+
+    <TextView
+        android:id="@+id/outlet_list_portname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="5dp"
+        android:layout_centerVertical="true"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:layout_toRightOf="@id/outlet_list_bitmap" />
+
+    <TextView
+        android:id="@+id/outlet_list_text_devicename"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:textAppearance="@android:style/TextAppearance.Small"
+        android:layout_toRightOf="@id/outlet_list_portname"
+        android:layout_centerVertical="true"
+        android:paddingTop="2dp" />
+
+    <SeekBar
+        android:id="@+id/outlet_list_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:focusable="false"
+        android:thumb="@android:color/transparent"
+        android:focusableInTouchMode="false"
+        android:layout_below="@id/outlet_list_bitmap" />
+
+</RelativeLayout>

@@ -9,7 +9,7 @@
     <string name="delete_device">Gerät löschen</string>
     <string name="delete_all_devices">Alle löschen</string>
 
-    <string name="device_save">Speichern</string>
+    <string name="save">Speichern</string>
     <string name="error_reading_configured_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
     <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
     <string name="error_sending_inquiry">Anfrage an Gerät %1$s konnte nicht gesendet werden</string>
@@ -22,7 +22,7 @@
     <string name="error_port_lt_1024">(Ports &lt; 1024 sind nur auf gerooteten Geräten möglich)</string>
     <string name="error_outlet_title">Fehler</string>
     <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
-    <string name="error_getting_first_packet">Keine Antwort vom Gerät. Entweder die Ports sind falsch konfiguriert oder das Gerät ist nicht erreichbar.</string>
+    <string name="error_getting_first_packet">Keine Antwort vom Gerät %1$s!</string>
     <string name="error_setting_outlet">Keine Antwort von Gerät %1$s. Zuletzt vor %2$d Sekunden Kontakt.</string>
     <string name="error_shortcut_not_valid">Verknüpfung beschädigt!</string>
     <string name="error_reading_scenes">Szenen konnten nicht geladen werden</string>
@@ -90,32 +90,23 @@
         <item>Spenden per %s</item>
     </string-array>
 
-    <string-array name="drawer_titles_outlets">
-        <item>Steckdosen</item>
-        <item>Alle Steckdosen</item>
-        <item>Szenen</item>
-    </string-array>
-
-    <string-array name="drawer_descriptions_outlets">
-        <item>-</item>
-        <item>Einzelne Steckdose schalten</item>
-        <item>Mehrere Steckdosen zugleich schalten</item>
-    </string-array>
+    <string name="drawer_single_title">Einzeln schalten</string>
+    <string name="drawer_overview">Übersicht</string>
+    <string name="drawer_multiple_title">Mehrere schalten</string>
+    <string name="drawer_scenes">Szenenübersicht</string>
 
     <string-array name="drawer_titles_app">
         <item>App</item>
         <item>Geräte</item>
         <item>Einstellungen</item>
         <item>Übertragen/Backup</item>
-        <item>Feedback</item>
     </string-array>
 
     <string-array name="drawer_descriptions_app">
         <item>-</item>
         <item>Neue/eingerichte Geräte</item>
-        <item />
+        <item>Ports, Widgets, Theme, …</item>
         <item>Kopiere konfigurierte Geräte</item>
-        <item />
     </string-array>
 
     <string name="drawer_open">Öffne Navigationsleiste</string>
@@ -129,7 +120,7 @@
     <string name="menu_down">Runter</string>
     <string name="menu_rename_outlet">Umbenennen</string>
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
-    <string name="outlet_rename_message">Der Name gilt nur für dieses Handy/Tablet und wird zurückgesetzt, sobald der Name auf der Anel Steckdosenleiste verändert wird. Nutzte einen leeren Text um den Namen auf "%s" zurückzusetzten.</string>
+    <string name="outlet_rename_message">Der Name gilt nur für dieses Handy/Tablet und wird zurückgesetzt, sobald der Name auf dem Gerät verändert wird. Nutzte einen leeren Text um den Namen auf "%s" zurückzusetzten.</string>
     <string name="name">Name</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Szene bearbeiten</string>
@@ -184,9 +175,7 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="preference_load_plugins_summary">Zeige Kontrollmöglichkeiten unterstützter Anwendungen in dieser App.</string>
     <string name="error_widget_update">Interner Fehler: Widget %1$d</string>
     <string name="error_widget_device_removed">Gerät entfernt!</string>
-    <string name="widget_outlet_not_reachable">%1$s (nicht erreichbar)</string>
-    <string name="widget_outlet_on">%1$s (An)</string>
-    <string name="widget_outlet_off">%1$s (Aus)</string>
+    <string name="widget_outlet_not_reachable">(nicht erreichbar)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
     <string name="devices_no_new_on_network">Hinweis: Dieses Netwerk erlaubt keine Geräte Erkennung</string>
     <string name="pref_widgets">Widgets</string>
@@ -196,7 +185,7 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="crash_toast_text">Ooooops! Ich bin leider abgestürzt :( Aber ein Absturzbericht wird automatisch angefertigt.</string>
     <string name="outlet_to_scene_title">Erstelle Szene</string>
     <string name="outlet_to_scene_message">Eine Szene mit allen aktuellen Zuständen der nicht-versteckten Steckdosen erstellen? Bitte einen Namen für die Szene eingeben.</string>
-    <string name="service_stopped">Service beendet</string>
+    <string name="service_stopped">Power-Control Hintergrunddienst beendet</string>
     <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
     <string name="preference_notify_on_stop_summary">Diese Option hilft zu überprüfen ob wirklich alles beendet wurde.</string>
     <string name="new_devices">Unbekannte Geräte</string>
@@ -218,4 +207,44 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="error_scene_no_name">Keinen Namen vergeben. Speichern nicht erlaubt!</string>
     <string name="scene_create_helptext_available">Keine weiteren Aktionen vorhanden! Entweder nutzt du bereits alle oder es gibt einfach keine.</string>
     <string name="error_reading_scenes_old">Die Datenstruktur hat sich geändert. Das Importieren deiner Szenen ist fehlgeschlagen :(</string>
+    <string name="scene_no_name">Kein Name!</string>
+    <string name="widget_on">(An)</string>
+    <string name="widget_off">(Aus)</string>
+    <string name="preference_widget_show_text">Zeige Titel</string>
+    <string name="preference_widget_show_text_summary">Zeige Namen und Status unter dem Icon</string>
+    <string name="energy_saving_mode">Im Energiesparmodus!</string>
+    <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
+    <string name="menu_outlet_createGroup">Zu Gruppe hinzufügen</string>
+    <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
+    <string name="preference_max_favourite_scenes">Maximale Szenen</string>
+    <string name="preference_max_favourite_scenes_summary">Anzahl Szenen in Seitenleiste</string>
+    <string name="preference_max_favourites_groups">Maximale Gruppen</string>
+    <string name="preference_max_favourites_groups_summary">Anzahl Gruppen in Seitenleiste</string>
+    <string name="help_nfc_title">Austausch von Steckdosenleisten-Einstellungen über mehrere Geräte</string>
+    <string name="help_nfc"><![CDATA[
+    Sofern dein Gerät und ein anderes Gerät (z.B. Mobiltelefon und Tablet oder das eigene Telefon und
+    das eines Freundes) NFC beherrschen, können die Steckdosenleisten-Einstellungen einfach übertragen
+    werden:<br /><ul>
+    <li>Beide Geräte entsperren</li><br />
+    <li>NFC einschalten</li><br />
+    <li>Geräte aneinander halten</li></ul><br />
+    Android wird nun nach einer Bestätigung fragen, ob <i>Beam</i> genutzt werden soll.
+    Sofern das Zielgerät diese App noch nicht installiert hat, wird Google Play aufgerufen.
+    Wenn <i>Beam</i> bestätigt worden ist, dann können auf dem Zielgerät die gewünschten Konfigurationen
+    eingerichtet werden.]]></string>
+    <string name="help_backup_title">Backup der Einstellungen</string>
+    <string name="help_backup"><![CDATA[
+    Deine Geräte Einstellungen werden automatisch mit dem Google Backup Service gesichert.
+    Bei einer Neuinstallation oder Aktualisierung der Anwendung oder des Mobiltelefons werden die Daten wiederhergestellt.
+    Im Moment ist es nicht möglich, die Einstellungen manuell zu sichern und wiederherzustellen. Diese
+    Funktion ist geplant.]]></string>
+    <string name="createGroup">Gruppe erstellen</string>
+    <string name="outlet_added_to_groups">Zu %1$d Gruppen hinzugefügt</string>
+    <string name="outlet_to_group_title">Zu Gruppen hinzufügen</string>
+    <string name="menu_outlet_removeFromGroup">Von Gruppe entfernen</string>
+    <string name="group_create">Erstelle eine neue Gruppe. Bitte den Namen eingeben.</string>
+    <string name="empty_group">Diese Gruppe ist leer! Entweder enthält die Gruppe keine Einträge mehr oder es sind nicht alle relevanten Geräte in Reichweite</string>
+    <string name="menu_remove_group">Gruppe entfernen</string>
+    <string name="menu_rename_group">Gruppe umbenennen</string>
+    <string name="drawer_feedback">Feedback</string>
 </resources>

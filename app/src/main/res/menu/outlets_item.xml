@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_hide_outlet"
+        android:id="@+id/menu_outlet_hide"
         android:title="@string/menu_hide_outlet"></item>
     <item
-        android:id="@+id/menu_unhide_outlet"
+        android:id="@+id/menu_outlet_unhide"
         android:title="@string/menu_unhide_outlet"></item>
     <item
-        android:id="@+id/menu_rename_outlet"
+        android:id="@+id/menu_outlet_rename"
         android:title="@string/menu_rename_outlet"></item>
+    <item
+        android:id="@+id/menu_outlet_createGroup"
+        android:title="@string/menu_outlet_createGroup" />
+    <item
+        android:id="@+id/menu_outlet_removeFromGroup"
+        android:title="@string/menu_outlet_removeFromGroup" />
 </menu>
