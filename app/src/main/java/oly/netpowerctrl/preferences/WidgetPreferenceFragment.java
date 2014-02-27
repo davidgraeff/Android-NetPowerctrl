@@ -11,11 +11,12 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.utils.Icons;
+import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class WidgetPreferenceFragment extends PreferencesWithValuesFragment implements Icons.IconSelected {
     int widgetId = -1;
     Preference current;
-    Map<Preference, Icons.WidgetState> preference_to_state = new TreeMap<Preference, Icons.WidgetState>();
+    Map<Preference, Icons.IconState> preference_to_state = new TreeMap<Preference, Icons.IconState>();
 
     private Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
         public boolean onPreferenceClick(final Preference preference) {
@@ -29,37 +30,57 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        widgetId = getArguments().getInt("widgetId");
-        getPreferenceManager().setSharedPreferencesName(getArguments().getString("key"));
+        final Bundle arguments = getArguments();
+        assert arguments != null;
+        widgetId = arguments.getInt("widgetId");
+        //noinspection ConstantConditions
+        getPreferenceManager().setSharedPreferencesName(arguments.getString("key"));
         addPreferencesFromResource(R.xml.preferences_widget);
 
         Preference preference;
 
         preference = findPreference("widget_image_on");
-        preference_to_state.put(preference, Icons.WidgetState.WidgetOn);
-        preference.setIcon(Icons.loadWidgetIcon(getActivity(), Icons.WidgetState.WidgetOn, widgetId));
+        assert preference != null;
+        preference_to_state.put(preference, Icons.IconState.StateOn);
+        preference.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateOn,
+                Icons.uuidFromWidgetID(widgetId, Icons.IconState.StateOn)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_off");
-        preference_to_state.put(preference, Icons.WidgetState.WidgetOff);
-        preference.setIcon(Icons.loadWidgetIcon(getActivity(), Icons.WidgetState.WidgetOff, widgetId));
+        assert preference != null;
+        preference_to_state.put(preference, Icons.IconState.StateOff);
+        preference.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateOff,
+                Icons.uuidFromWidgetID(widgetId, Icons.IconState.StateOff)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_not_reachable");
-        preference_to_state.put(preference, Icons.WidgetState.WidgetUnknown);
-        preference.setIcon(Icons.loadWidgetIcon(getActivity(), Icons.WidgetState.WidgetUnknown, widgetId));
+        assert preference != null;
+        preference_to_state.put(preference, Icons.IconState.StateUnknown);
+        preference.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateUnknown,
+                Icons.uuidFromWidgetID(widgetId, Icons.IconState.StateUnknown)));
         preference.setOnPreferenceClickListener(selectImage);
+
+        preference = findPreference("widget_show_text");
+        assert preference != null;
+        preference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                WidgetUpdateService.ForceUpdate(getActivity(), widgetId);
+                return false;
+            }
+        });
     }
 
     @Override
     public void setIcon(Bitmap bitmap) {
-        Icons.WidgetState state = preference_to_state.get(current);
+        Icons.IconState state = preference_to_state.get(current);
         Icons.saveIcon(getActivity(), Icons.uuidFromWidgetID(widgetId, state), bitmap, Icons.IconType.WidgetIcon);
         if (bitmap == null) {
-            current.setIcon(Icons.loadWidgetIconFromRes(state));
+            current.setIcon(Icons.getResIdForState(state));
         } else {
             current.setIcon(new BitmapDrawable(getResources(), bitmap));
         }
+        WidgetUpdateService.ForceUpdate(getActivity(), widgetId);
     }
 
     @Override

@@ -32,5 +32,22 @@ public class Executor {
     public static void execute(DevicePort port, int command) {
         if (port.device.deviceType == DeviceInfo.DeviceType.AnelDevice)
             AnelExecutor.execute(port, command);
+        else if (port.device.deviceType == DeviceInfo.DeviceType.PluginDevice)
+            NetpowerctrlApplication.instance.getPluginController().execute(port, command);
     }
+
+
+    public static void sendQuery(DeviceInfo di) {
+        if (di.deviceType == DeviceInfo.DeviceType.AnelDevice)
+            AnelExecutor.sendQuery(di);
+        else if (NetpowerctrlApplication.instance.getPluginController() != null)
+            NetpowerctrlApplication.instance.getPluginController().sendQuery(di);
+    }
+
+    public static void sendBroadcastQuery() {
+        AnelExecutor.sendBroadcastQuery();
+        if (NetpowerctrlApplication.instance.getPluginController() != null)
+            NetpowerctrlApplication.instance.getPluginController().sendBroadcastQuery();
+    }
+
 }

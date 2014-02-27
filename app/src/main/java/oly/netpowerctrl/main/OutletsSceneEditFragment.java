@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
@@ -45,8 +46,9 @@ public class OutletsSceneEditFragment extends Fragment {
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_outlets_sceneedit, container, false);
         mListView = (DynamicGridView) view.findViewById(android.R.id.list);
+        mListView.setMinimumColumnWidth(350);
+        mListView.setNumColumns(GridView.AUTO_FIT, container.getWidth());
         mListView.setAdapter(adapter);
-        mListView.setAutomaticNumColumns(true, 350);
         mListView.setEmptyView(view.findViewById(R.id.loading));
         // We assign the empty view after a short delay time,
         // to reduce visual flicker on app start, where data

@@ -49,6 +49,10 @@ public class DeviceListAdapter extends BaseExpandableListAdapter implements Devi
         DeviceInfo di = devices.get(position);
         TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
         tvName.setText(di.DeviceName);
+        if (di.reachable)
+            tvName.setPaintFlags(tvName.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
+        else
+            tvName.setPaintFlags(tvName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
         TextView tvIP = (TextView) convertView.findViewById(R.id.device_ip);
         String subtext = di.HostName;
@@ -56,13 +60,9 @@ public class DeviceListAdapter extends BaseExpandableListAdapter implements Devi
             subtext += ", " + di.Temperature;
         if (di.FirmwareVersion.length() > 0)
             subtext += ", " + di.FirmwareVersion;
-        if (!di.reachable && !showNewDevices)
+        if (!di.reachable)
             subtext += ", " + NetpowerctrlApplication.instance.getString(R.string.error_not_reachable);
         tvIP.setText(subtext);
-        if (di.reachable || showNewDevices)
-            tvIP.setPaintFlags(tvIP.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
-        else
-            tvIP.setPaintFlags(tvIP.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
         tvIP.setTag(position);
 

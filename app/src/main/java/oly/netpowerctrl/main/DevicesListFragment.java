@@ -26,6 +26,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.ConfigureDeviceFragment;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.listadapter.DeviceListAdapter;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
@@ -79,6 +80,13 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
             }
 
             case R.id.menu_requery: {
+                if (NetpowerctrlApplication.instance.getService().isNetworkReducedMode) {
+                    //noinspection ConstantConditions
+                    Toast.makeText(getActivity(),
+                            getActivity().getString(R.string.energy_saving_mode),
+                            Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 new DeviceQuery(new DeviceUpdateStateOrTimeout() {
                     @Override
                     public void onDeviceTimeout(DeviceInfo di) {
@@ -138,25 +146,35 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-        DeviceInfo current_device = (DeviceInfo) adapter.getChild(currentGroup, currentGroupDevice);
+        final DeviceInfo current_device = (DeviceInfo) adapter.getChild(currentGroup, currentGroupDevice);
 
         switch (menuItem.getItemId()) {
-            case R.id.menu_configure_device: {
-                Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), current_device);
-                FragmentManager fragmentManager = getFragmentManager();
-                assert fragmentManager != null;
-                FragmentTransaction ft = fragmentManager.beginTransaction();
-                Fragment prev = fragmentManager.findFragmentByTag("dialog");
-                if (prev != null) {
-                    ft.remove(prev);
-                }
-                ft.addToBackStack(null);
-                ((DialogFragment) fragment).show(ft, "dialog");
-                //fragmentManager.beginTransaction().addToBackStack(null).replace(R.id.content_frame, fragment).commit();
+            case R.id.menu_device_configure: {
+                show_configure_device_dialog(current_device);
                 return true;
             }
 
-            case R.id.menu_delete_device: {
+            case R.id.menu_device_createGroup: {
+                //noinspection ConstantConditions
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.device_createGroup)
+                        .setMessage(R.string.confirmation_device_createGroup)
+                        .setIcon(android.R.drawable.ic_dialog_info)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                assert current_device != null;
+                                for (DevicePort port : current_device.DevicePorts) {
+                                    port.addToGroup(current_device.uuid);
+                                }
+                                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                                NetpowerctrlApplication.getDataController().groups.edit(current_device.uuid, current_device.DeviceName);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null).show();
+                return true;
+            }
+
+            case R.id.menu_device_delete: {
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.delete_device)
@@ -181,18 +199,22 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
         }
     }
 
-
     private void show_configure_device_dialog(DeviceInfo di) {
-        Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), di);
-        FragmentManager fragmentManager = getFragmentManager();
-        assert fragmentManager != null;
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        Fragment prev = fragmentManager.findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
+        if (di.deviceType == DeviceInfo.DeviceType.AnelDevice) {
+            Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), di);
+            FragmentManager fragmentManager = getFragmentManager();
+            assert fragmentManager != null;
+            FragmentTransaction ft = fragmentManager.beginTransaction();
+            Fragment prev = fragmentManager.findFragmentByTag("dialog");
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
+            ((DialogFragment) fragment).show(ft, "dialog");
+        } else { // for now: We just add the device to the configured devices
+            if (NetpowerctrlApplication.getDataController().findDevice(di.uuid) == null)
+                NetpowerctrlApplication.getDataController().addToConfiguredDevices(di, true);
         }
-        ft.addToBackStack(null);
-        ((DialogFragment) fragment).show(ft, "dialog");
     }
 
     @Override
@@ -210,8 +232,6 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
             popup.show();
         } else {
             // Set default values for anel devices
-            di.UserName = "admin";
-            di.Password = "anel";
             show_configure_device_dialog(di);
         }
         return true;

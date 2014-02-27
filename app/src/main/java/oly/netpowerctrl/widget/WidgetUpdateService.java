@@ -10,7 +10,9 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.util.SparseArray;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import java.util.ArrayList;
@@ -42,27 +44,8 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     private boolean keep_service_online;
     Context context;
 
-    public static class DeviceInfoOutletNumber {
-        public final DevicePort port;
-        public int lastState = -1;
-        public boolean reachable;
-
-        boolean isSameAsLastState() {
-            boolean temp = (lastState != -1) ? port.current_value == lastState : false;
-            lastState = port.current_value;
-            boolean temp2 = port.device.reachable == reachable;
-            reachable = port.device.reachable;
-            return temp && temp2;
-        }
-
-        public DeviceInfoOutletNumber(DevicePort port) {
-            this.port = port;
-            this.reachable = port.device.reachable;
-        }
-    }
-
     private List<Integer> widgetUpdateRequests = new ArrayList<Integer>();
-    private SparseArray<DeviceInfoOutletNumber> allWidgets = new SparseArray<DeviceInfoOutletNumber>();
+    private SparseArray<DevicePort> allWidgets = new SparseArray<DevicePort>();
 
     @Override
     public void onDestroy() {
@@ -117,7 +100,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final int[] allWidgetIds;
+        int[] allWidgetIds;
         int command = UPDATE_WIDGET;
 
         // Empty intent: System recreated the service after low mem situation
@@ -126,7 +109,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         } else {
             // Extract widget ids from intent
             allWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-            command = intent.getIntExtra("command", UPDATE_WIDGET);
+            command = intent.getIntExtra("name", UPDATE_WIDGET);
         }
 
         // Exit if no widgets
@@ -147,6 +130,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
             @Override
             public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
                 List<DeviceInfo> devicesToUpdate = new ArrayList<DeviceInfo>();
+                int[] allWidgetIds = getAllWidgetIDs();
                 for (int appWidgetId : allWidgetIds) {
                     String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
                     DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(
@@ -156,7 +140,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
                         continue;
                     }
 
-                    allWidgets.append(appWidgetId, new DeviceInfoOutletNumber(port));
+                    allWidgets.append(appWidgetId, port);
                     if (port.device.updated > 0)
                         onDeviceUpdated(port.device);
                     else {
@@ -168,19 +152,22 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
                 if (devicesToUpdate.size() > 0)
                     new DeviceQuery(WidgetUpdateService.this, devicesToUpdate);
 
+                finishServiceIfDone();
+
                 // Remove the service ready observer
                 return false;
             }
         });
 
-        return finishServiceIfDone();
+        return START_STICKY;
     }
 
     private void setWidgetStateBroken(int appWidgetId) {
         @SuppressWarnings("ConstantConditions")
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
-        views.setImageViewResource(R.id.widget_image, R.drawable.widgetunknown);
+        views.setImageViewResource(R.id.widget_image, R.drawable.stateunknown);
         views.setTextViewText(R.id.widget_name, getString(R.string.error_widget_device_removed));
+        views.setTextViewText(R.id.widget_status, "");
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
@@ -193,25 +180,44 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         clickIntent.setAction(Intent.ACTION_MAIN);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
+        // Load preferences
+        String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
+        boolean widget_show_text = getSharedPreferences(prefName, MODE_PRIVATE).getBoolean("widget_show_text", true);
+
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
+
+        views.setViewVisibility(R.id.widget_name, widget_show_text ? View.VISIBLE : View.GONE);
+
+        // Do not show a status text line ("on"/"off") for a simple trigger
+        if (oi.getType() == DevicePort.DevicePortType.TypeButton)
+            widget_show_text = false;
+        views.setViewVisibility(R.id.widget_status, widget_show_text ? View.VISIBLE : View.GONE);
+
         if (!oi.device.reachable) {
+            // If device is not rechable: No click action is assigned to it.
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadWidgetIconBitmap(this, Icons.WidgetState.WidgetUnknown, appWidgetId));
-            views.setTextViewText(R.id.widget_name,
-                    context.getString(R.string.widget_outlet_not_reachable, oi.getDescription()));
+                    Icons.loadStateIconBitmap(this, Icons.IconState.StateUnknown,
+                            Icons.uuidFromWidgetID(appWidgetId, Icons.IconState.StateUnknown)));
+            views.setTextViewText(R.id.widget_name, oi.getDescription());
+            views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_outlet_not_reachable));
+
         } else if (oi.current_value > 0) { // On
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadWidgetIconBitmap(this, Icons.WidgetState.WidgetOn, appWidgetId));
-            views.setTextViewText(R.id.widget_name,
-                    context.getString(R.string.widget_outlet_on, oi.getDescription()));
+                    Icons.loadStateIconBitmap(this, Icons.IconState.StateOn,
+                            Icons.uuidFromWidgetID(appWidgetId, Icons.IconState.StateOn)));
+            views.setTextViewText(R.id.widget_name, oi.getDescription());
+            views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_on));
+            views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
+
         } else { // Off
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadWidgetIconBitmap(this, Icons.WidgetState.WidgetOff, appWidgetId));
+                    Icons.loadStateIconBitmap(this, Icons.IconState.StateOff,
+                            Icons.uuidFromWidgetID(appWidgetId, Icons.IconState.StateOff)));
 
-            views.setTextViewText(R.id.widget_name,
-                    context.getString(R.string.widget_outlet_off, oi.getDescription()));
+            views.setTextViewText(R.id.widget_name, oi.getDescription());
+            views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_off));
+            views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
         }
-        views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
@@ -248,10 +254,10 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
         for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
             int appWidgetId = widgetUpdateRequests.get(i);
-            DeviceInfoOutletNumber widget_di = allWidgets.get(appWidgetId);
-            if (widget_di.port.device.equalsFunctional(di)) {
+            DevicePort devicePort = allWidgets.get(appWidgetId);
+            if (devicePort.device.equalsFunctional(di)) {
                 widgetUpdateRequests.remove(i);
-                setWidgetState(appWidgetId, widget_di.port);
+                setWidgetState(appWidgetId, devicePort);
                 finishServiceIfDone();
                 return;
             }
@@ -262,6 +268,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
     @Override
     public void onDeviceUpdated(DeviceInfo di) {
+        Log.w("widget", di != null ? di.DeviceName : "empty di");
         if (di == null)
             return;
 
@@ -275,16 +282,14 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         appWidgetManager = AppWidgetManager.getInstance(context);
         int[] allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
         for (int appWidgetId : allWidgetIds) {
-            DeviceInfoOutletNumber widget_di = allWidgets.get(appWidgetId);
-            if (widget_di == null) {
+            DevicePort devicePort = allWidgets.get(appWidgetId);
+            if (devicePort == null) {
                 setWidgetStateBroken(appWidgetId);
                 continue;
             }
 
-            if (widget_di.port.device.equalsFunctional(di)) {
-                if (!widget_di.isSameAsLastState()) {
-                    setWidgetState(appWidgetId, widget_di.port);
-                }
+            if (devicePort.device.equalsFunctional(di)) {
+                setWidgetState(appWidgetId, devicePort);
             }
         }
 
@@ -319,13 +324,15 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
     private int finishServiceIfDone() {
         if (getAllWidgetIDs().length == 0) {
+            Log.w("WidgetUpdateService", "finish");
             stopSelf();
         } else if (widgetUpdateRequests.size() == 0 && !keep_service_online) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     if (widgetUpdateRequests.size() == 0)
-                        stopSelf();
+                        Log.w("WidgetUpdateService", "finish timed");
+                    stopSelf();
                 }
             }, 2000);
         }

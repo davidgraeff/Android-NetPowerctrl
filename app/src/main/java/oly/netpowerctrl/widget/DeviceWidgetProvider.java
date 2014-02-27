@@ -15,7 +15,7 @@ public class DeviceWidgetProvider extends AppWidgetProvider {
         }
         Intent intent = new Intent(context.getApplicationContext(), WidgetUpdateService.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
-        intent.putExtra("command", WidgetUpdateService.DELETE_WIDGET);
+        intent.putExtra("name", WidgetUpdateService.DELETE_WIDGET);
         context.startService(intent);
     }
 
@@ -24,7 +24,7 @@ public class DeviceWidgetProvider extends AppWidgetProvider {
         // Build the intent to call the service
         Intent intent = new Intent(context.getApplicationContext(), WidgetUpdateService.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
-        intent.putExtra("command", WidgetUpdateService.UPDATE_WIDGET);
+        intent.putExtra("name", WidgetUpdateService.UPDATE_WIDGET);
         // Update the widgets via the service
         context.startService(intent);
     }

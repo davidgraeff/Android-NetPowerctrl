@@ -14,9 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelDeviceDiscoveryThread;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.ShowToast;
 
 public class NetpowerctrlService extends Service {
     private List<AnelDeviceDiscoveryThread> discoveryThreads = new ArrayList<AnelDeviceDiscoveryThread>();
@@ -95,12 +98,55 @@ public class NetpowerctrlService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        startDiscoveryThreads();
+        // Listen for wifi/network changes
+        ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        lastNetworkType = (cm.getActiveNetworkInfo() == null) ? 0 : cm.getActiveNetworkInfo().getType();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(networkChangedListener, filter);
+
+        // Start listen and send threads
+        checkIfNetworkReachable();
         return mBinder;
+    }
+
+    /**
+     * If the listen and send thread are shutdown because the devices destination networks are
+     * not in range, this variable is set to true.
+     */
+    public boolean isNetworkReducedMode;
+
+    /**
+     * Will be set if no one of the network DeviceInfo's is reachable at the moment.
+     */
+    public void setNetworkReducedMode() {
+        isNetworkReducedMode = true;
+        boolean alreadyRunning = DeviceSend.instance().isRunning();
+        if (!alreadyRunning)
+            return; // Nothing to do.
+
+        // Stop send and listen threads
+        DeviceSend.instance().interrupt();
+        stopDiscoveryThreads();
+
+        if (SharedPrefs.notifyOnStop()) {
+            ShowToast.FromOtherThread(this, getString(R.string.energy_saving_mode));
+        }
+    }
+
+    private void checkIfNetworkReachable() {
+        isNetworkReducedMode = false;
+        boolean alreadyRunning = DeviceSend.instance().isRunning();
+        if (!alreadyRunning) { // Start send and listen threads
+            DeviceSend.instance().start();
+            startDiscoveryThreads();
+        }
+        NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+        unregisterReceiver(networkChangedListener);
         stopDiscoveryThreads();
         stopSelf();
         return super.onUnbind(intent);
@@ -113,24 +159,29 @@ public class NetpowerctrlService extends Service {
             //WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
             ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             int type = (cm.getActiveNetworkInfo() == null) ? 0 : cm.getActiveNetworkInfo().getType();
-            if (type == lastNetworkType)
-                return;
-            lastNetworkType = type;
+            // Reset all lastUpdated counter. We will output no error message to the user if a device
+            // is not reachable and the lastUpdated counter is zero.
+            List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
+            for (DeviceInfo di : devices) {
+                di.updated = 0;
+            }
+
+            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected())
+                checkIfNetworkReachable();
+            else
+                setNetworkReducedMode();
+//            if (type == lastNetworkType)
+//                return;
+//            lastNetworkType = type;
+
             //Log.w("NETWORK",Integer.valueOf(lastNetworkType).toString());
-            NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+
         }
     };
 
     private void startDiscoveryThreads() {
         // only start if not yet running
         if (discoveryThreads.size() == 0) {
-            // Listen for wifi changes
-            ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            lastNetworkType = (cm.getActiveNetworkInfo() == null) ? 0 : cm.getActiveNetworkInfo().getType();
-            IntentFilter filter = new IntentFilter();
-            filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
-            registerReceiver(networkChangedListener, filter);
-
             Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllReceivePorts();
             if (temporary_device != null)
                 ports.add(temporary_device.ReceivePort);
@@ -160,7 +211,6 @@ public class NetpowerctrlService extends Service {
         for (AnelDeviceDiscoveryThread thr : discoveryThreads)
             thr.interrupt();
         discoveryThreads.clear();
-        unregisterReceiver(networkChangedListener);
         // socket needs minimal time to really go away
         try {
             Thread.sleep(100);

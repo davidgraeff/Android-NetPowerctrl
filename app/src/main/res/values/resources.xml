@@ -16,7 +16,12 @@
     <item format="boolean" name="use_dark_theme" type="bool">False</item>
     <item format="boolean" name="notify_on_stop" type="bool">False</item>
     <item format="boolean" name="load_plugins" type="bool">False</item>
+    <item format="boolean" name="widget_show_text" type="bool">True</item>
 
     <item format="integer" name="grid_columns_outlets" type="integer">1</item>
     <item format="integer" name="grid_columns_scenes" type="integer">3</item>
+
+    <item format="integer" name="max_favourites_scenes" type="integer">2</item>
+    <item format="integer" name="max_favourites_groups" type="integer">6</item>
+
 </resources>

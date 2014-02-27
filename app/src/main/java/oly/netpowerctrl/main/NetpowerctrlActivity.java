@@ -18,7 +18,6 @@ package oly.netpowerctrl.main;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
@@ -29,13 +28,11 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewConfiguration;
-import android.widget.TextView;
 
 import java.lang.reflect.Field;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.listadapter.ScenesListAdapter;
 import oly.netpowerctrl.navigation_drawer.DrawerController;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.NFC;
@@ -46,13 +43,9 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     // Drawer
     private DrawerController mDrawer = new DrawerController();
 
-    // Core
-    private ScenesListAdapter adpScenes = null;
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        adpScenes = null;
         instance = null;
     }
 
@@ -79,13 +72,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
             }
         } catch (Exception ex) {
             // Ignore
-        }
-
-        try {
-            //noinspection ConstantConditions
-            ((TextView) findViewById(R.id.version)).setText(getResources().getText(R.string.Version) + " " +
-                    getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
-        } catch (PackageManager.NameNotFoundException ignored) {
         }
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
@@ -140,7 +126,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
 
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
-        return NFC.createNdefMessage(adpScenes);
+        return NFC.createNdefMessage();
     }
 
     @Override
@@ -148,6 +134,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         super.onResume();
         NFC.checkIntentForNFC(this, getIntent());
         NetpowerctrlApplication.instance.useListener();
+        NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
     }
 
     @Override
@@ -173,13 +160,6 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         mDrawer.setTitle(title);
         //noinspection ConstantConditions
         getActionBar().setTitle(title);
-    }
-
-    public ScenesListAdapter getScenesAdapter() {
-        if (adpScenes == null) {
-            adpScenes = new ScenesListAdapter(this);
-        }
-        return adpScenes;
     }
 
     public void changeToFragment(String fragmentClassName) {

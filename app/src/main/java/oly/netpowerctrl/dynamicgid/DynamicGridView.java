@@ -117,10 +117,10 @@ public class DynamicGridView extends GridView {
             }
         }
     };
-    private boolean isAutomaticNumColumns = false;
-    private int mAutomaticNumColumnItemWidth = 200;
+    private float mMinimumColumnWidth = 200;
     private long mStartClickTime;
     private int mCurrentPosition;
+    private int mNumColumns = -1;
 
     public DynamicGridView(Context context) {
         super(context);
@@ -141,20 +141,31 @@ public class DynamicGridView extends GridView {
         this.mDropListener = dropListener;
     }
 
+    public void setNumColumns(int numColumns, int widthIfMissing) {
+        mNumColumns = numColumns;
+        if (numColumns == AUTO_FIT) {
+            int w = getWidth();
+            if (w == 0) w = widthIfMissing;
+            int numColumnsAuto = (int) (w / mMinimumColumnWidth);
+            if (numColumnsAuto == 0) numColumnsAuto = 1;
+            setColumnWidth(w / numColumnsAuto);
+        }
+        super.setNumColumns(numColumns);
+    }
+
+    public void setMinimumColumnWidth(int minimumWidth) {
+        this.mMinimumColumnWidth = getContext().getResources().getDisplayMetrics().density * minimumWidth + 0.5f;
+    }
+
     @Override
     public void onSizeChanged(int w, int h, int oldw, int oldh) {
-        if (!isAutomaticNumColumns)
-            return;
-        DisplayMetrics m = getResources().getDisplayMetrics();
-        final int n = (int) Math.round(w / m.density / mAutomaticNumColumnItemWidth);
-        if (getNumColumns() != n) {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
+        if (mNumColumns == AUTO_FIT) {
+            new Handler().post(new Runnable() {
                 @Override
                 public void run() {
-                    setNumColumns(n);
+                    setNumColumns(GridView.AUTO_FIT, AUTO_FIT);
                 }
-            }, 10);
+            });
         }
     }
 
@@ -234,7 +245,6 @@ public class DynamicGridView extends GridView {
         setOnScrollListener(mScrollListener);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         mSmoothScrollAmountAtEdge = (int) (SMOOTH_SCROLL_AMOUNT_AT_EDGE * metrics.density + 0.5f);
-
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -761,11 +771,6 @@ public class DynamicGridView extends GridView {
         if (mHoverCell != null) {
             mHoverCell.draw(canvas);
         }
-    }
-
-    public void setAutomaticNumColumns(boolean isAutomaticNumColumns, int itemWidth) {
-        this.isAutomaticNumColumns = isAutomaticNumColumns;
-        this.mAutomaticNumColumnItemWidth = itemWidth;
     }
 
     /**

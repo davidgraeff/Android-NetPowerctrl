@@ -20,7 +20,6 @@ import java.util.Scanner;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
-import oly.netpowerctrl.listadapter.ScenesListAdapter;
 
 /**
  * For backup and restore
@@ -28,7 +27,7 @@ import oly.netpowerctrl.listadapter.ScenesListAdapter;
 public class Backup {
 
     public static void createScenesBackup(Context context, List<Scene> scenes) {
-        SceneCollection sc = SceneCollection.fromScenes(scenes);
+        SceneCollection sc = SceneCollection.fromScenes(scenes, null);
         JSONHelper jh = new JSONHelper();
         try {
             sc.toJSON(jh.createWriter());
@@ -48,7 +47,7 @@ public class Backup {
         }
     }
 
-    public static void restoreScenesBackup(final Context context, final ScenesListAdapter adapter) {
+    public static void restoreScenesBackup(final Context context, final SceneCollection sceneCollection) {
         final File backup_directory = new File(context.getExternalFilesDir(null), "backup/");
         if (backup_directory == null) {
             Toast.makeText(context, context.getString(R.string.scene_backup_nobackups), Toast.LENGTH_SHORT).show();
@@ -73,11 +72,11 @@ public class Backup {
                             FileInputStream is = new FileInputStream(file);
                             jsonData = new Scanner(is, "UTF-8").useDelimiter("\\A").next();
                             ;
-                            SceneCollection sc = SceneCollection.fromJSON(JSONHelper.getReader(jsonData));
+                            SceneCollection sc = SceneCollection.fromJSON(JSONHelper.getReader(jsonData), null);
                             Toast.makeText(context, context.getString(R.string.scene_backup_restored), Toast.LENGTH_SHORT).show();
                             if (sc.scenes != null)
                                 for (Scene scene : sc.scenes)
-                                    adapter.addScene(context, scene);
+                                    sceneCollection.addScene(scene);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                             Toast.makeText(context, context.getString(R.string.scene_backup_restore_failed), Toast.LENGTH_SHORT).show();

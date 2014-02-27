@@ -42,55 +42,43 @@ public class Icons {
         return new BitmapDrawable(context.getResources(), image);
     }
 
-    public static UUID uuidFromWidgetID(int widgetId, WidgetState state) {
-        return new UUID(state == WidgetState.WidgetOff ? 0xABCD :
-                (state == WidgetState.WidgetOn ? 0xABCE : 0xABCF), (long) widgetId);
+    public static UUID uuidFromWidgetID(int widgetId, IconState state) {
+        return new UUID(state == IconState.StateOff ? 0xABCD :
+                (state == IconState.StateOn ? 0xABCE : 0xABCF), (long) widgetId);
     }
 
     public static enum IconType {
         SceneIcon,
         WidgetIcon,
-        DevicePortIcon
+        DevicePortIcon,
+        GroupIcon
     }
 
-    public static int loadWidgetIconFromRes(WidgetState state) {
+    public static int getResIdForState(IconState state) {
         switch (state) {
-            case WidgetOff:
-                return R.drawable.widgetoff;
-            case WidgetOn:
-                return R.drawable.widgeton;
-            case WidgetUnknown:
-                return R.drawable.widgetunknown;
+            case StateOff:
+                return R.drawable.stateoff;
+            case StateOn:
+                return R.drawable.stateon;
+            case StateUnknown:
+                return R.drawable.stateunknown;
         }
         return 0;
     }
 
-    public static Drawable loadWidgetIcon(Context context, Icons.WidgetState state, int widgetId) {
-        Bitmap b = loadIcon(context, uuidFromWidgetID(widgetId, state), Icons.IconType.WidgetIcon);
-        BitmapDrawable destination = null;
-        if (b != null)
-            destination = new BitmapDrawable(context.getResources(), b);
-
-        if (destination == null) {
-            return context.getResources().getDrawable(loadWidgetIconFromRes(state));
-        }
-        return destination;
+    public static Drawable loadStateIconDrawable(Context context, IconState state, UUID uuid) {
+        Bitmap b = loadIcon(context, uuid, Icons.IconType.WidgetIcon, getResIdForState(state));
+        return new BitmapDrawable(context.getResources(), b);
     }
 
-    public static Bitmap loadWidgetIconBitmap(Context context, Icons.WidgetState state, int widgetId) {
-        Bitmap b = loadIcon(context, uuidFromWidgetID(widgetId, state), Icons.IconType.WidgetIcon);
-        if (b != null)
-            return b;
-
-        b = BitmapFactory.decodeResource(context.getResources(),
-                loadWidgetIconFromRes(state));
-        return b;
+    public static Bitmap loadStateIconBitmap(Context context, IconState state, UUID uuid) {
+        return loadIcon(context, uuid, Icons.IconType.WidgetIcon, getResIdForState(state));
     }
 
-    public static enum WidgetState {
-        WidgetOn,
-        WidgetOff,
-        WidgetUnknown
+    public static enum IconState {
+        StateOn,
+        StateOff,
+        StateUnknown
     }
 
     public static void saveIcon(Context context, UUID uuid, Bitmap bitmap, IconType iconType) {
@@ -135,7 +123,7 @@ public class Icons {
     public static Bitmap resizeBitmap(Context context, Bitmap bm) {
         int width = bm.getWidth();
         int height = bm.getHeight();
-        int size = (int) context.getResources().getDimension(android.R.dimen.app_icon_size);
+        float size = context.getResources().getDimension(android.R.dimen.app_icon_size);
         Matrix matrix = new Matrix();
         matrix.postScale(size / width, size / height);
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
@@ -152,7 +140,7 @@ public class Icons {
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
     }
 
-    public static Bitmap loadIcon(Context context, UUID uuid, IconType iconType) {
+    public static Bitmap loadIcon(Context context, UUID uuid, IconType iconType, int default_resource) {
         @SuppressWarnings("ConstantConditions")
         String root = context.getExternalFilesDir(iconType.name()).toString();
         File myDir = new File(root);
@@ -160,7 +148,11 @@ public class Icons {
         File file = new File(myDir, uuid.toString() + ".png");
         if (!file.exists())
             file = new File(myDir, uuid.toString() + ".jpg");
-        if (!file.exists()) return null;
+        if (!file.exists()) {
+            if (default_resource == 0)
+                return null;
+            return BitmapFactory.decodeResource(context.getResources(), default_resource);
+        }
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 

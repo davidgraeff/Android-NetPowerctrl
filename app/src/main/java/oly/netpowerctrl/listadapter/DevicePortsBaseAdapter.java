@@ -1,14 +1,18 @@
 package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
@@ -23,16 +27,41 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     protected ListItemMenu mListItemMenu = null;
     protected int nextId = 0; // we need stable IDs for the gridView
-    protected int outlet_res_id = R.layout.outlet_list_switch;
+    protected int outlet_res_id = R.layout.outlet_list_item;
     protected boolean showHidden = true;
+    protected ViewHolder current_viewHolder;
+
+    //ViewHolder pattern
+    protected static class ViewHolder {
+        ImageView imageView;
+        //LinearLayout mainTextView;
+        View entry;
+        SeekBar seekBar;
+        TextView portName;
+        TextView deviceName;
+        boolean isNew = true;
+
+        Bitmap bitmapDefault;
+        Bitmap bitmapOn;
+        Bitmap bitmapOff;
+
+        ViewHolder(View convertView) {
+            imageView = (ImageView) convertView.findViewById(R.id.outlet_list_bitmap);
+            seekBar = (SeekBar) convertView.findViewById(R.id.outlet_list_seekbar);
+            //mainTextView = (LinearLayout) convertView.findViewById(R.id.outlet_list_text);
+            entry = convertView.findViewById(R.id.outlet_list_entry);
+            portName = (TextView) convertView.findViewById(R.id.outlet_list_portname);
+            deviceName = (TextView) convertView.findViewById(R.id.outlet_list_text_devicename);
+        }
+    }
 
     protected static class DevicePortListItem {
         public DevicePort port;
         String displayText;
-        // unique id for the gridview
+        // unique id for the gridView
         public long id;
         // If you change a DevicePort's value, that new value may be stored in
-        // command_value instead overwritting DevicePort's value. The implementation
+        // command_value instead overwriting DevicePort's value. The implementation
         // depends on the parent class.
         public int command_value;
 
@@ -53,9 +82,17 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     protected List<DevicePortListItem> all_outlets;
     protected LayoutInflater inflater;
-    private boolean temporary_ignore_positionRequest;
+    protected boolean temporary_ignore_positionRequest;
+    protected Context context;
+    private UUID filterGroup = null;
 
-    protected DevicePortsBaseAdapter(Context context) {
+    protected void setGroupFilter(UUID groupFilter) {
+        this.filterGroup = groupFilter;
+    }
+
+    protected DevicePortsBaseAdapter(Context context, UUID filterGroup) {
+        this.context = context;
+        this.filterGroup = filterGroup;
         inflater = LayoutInflater.from(context);
         all_outlets = new ArrayList<DevicePortListItem>();
     }
@@ -71,7 +108,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             if (port == null) {
                 continue;
             }
-            addOutlet(port, sceneItem.command);
+            addItem(port, sceneItem.command);
         }
         notifyDataSetChanged();
     }
@@ -117,14 +154,25 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = inflater.inflate(outlet_res_id, null);
+            current_viewHolder = new ViewHolder(convertView);
+            convertView.setTag(current_viewHolder);
+        } else {
+            current_viewHolder = (ViewHolder) convertView.getTag();
+            current_viewHolder.isNew = false;
         }
+
         DevicePortListItem info = all_outlets.get(position);
 
-        TextView textView = (TextView) convertView.findViewById(R.id.outlet_list_text);
-        textView.setEnabled(info.isEnabled());
-        textView.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-        textView.setAlpha(info.port.Hidden ? 0.5f : 1.0f);
-        textView.setText(info.displayText);
+        current_viewHolder.entry.setAlpha(info.port.Hidden ? 0.5f : 1.0f);
+        current_viewHolder.entry.setEnabled(info.isEnabled());
+
+        current_viewHolder.portName.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+        current_viewHolder.portName.setText(info.port.getDescription());
+        current_viewHolder.portName.setEnabled(info.isEnabled());
+
+        current_viewHolder.deviceName.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+        current_viewHolder.deviceName.setText(info.port.device.DeviceName);
+        current_viewHolder.deviceName.setEnabled(info.isEnabled());
 
         return convertView;
     }
@@ -147,10 +195,16 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
     }
 
-    public void addOutlet(DevicePort oi, int command_value) {
+    public void addItem(DevicePort oi, int command_value) {
         assert oi.device != null;
         if (oi.Disabled || (oi.Hidden && !showHidden))
             return;
+
+        // FilterGroup
+        if (filterGroup != null) {
+            if (!oi.groups.contains(filterGroup))
+                return;
+        }
 
         DevicePortListItem new_oi = new DevicePortListItem(oi, true, command_value, nextId++);
 
@@ -181,8 +235,9 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
                 continue;
             }
 
+            //TODO crash concurrent access
             for (DevicePort oi : device.DevicePorts) {
-                addOutlet(oi, DevicePort.TOGGLE);
+                addItem(oi, oi.current_value);
             }
         }
 

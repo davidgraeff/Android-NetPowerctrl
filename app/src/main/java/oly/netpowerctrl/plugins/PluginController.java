@@ -6,14 +6,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
-import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Created by david on 03.01.14.
@@ -27,7 +26,7 @@ public class PluginController {
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
 
-    private List<PluginRemote> plugins = new ArrayList<PluginRemote>();
+    private Map<DeviceInfo, PluginRemote> plugin_by_deviceInfo = new TreeMap<DeviceInfo, PluginRemote>();
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
         @Override
@@ -43,77 +42,79 @@ public class PluginController {
     public PluginController() {
         NetpowerctrlApplication.instance.registerReceiver(onBroadcast,
                 new IntentFilter(PLUGIN_RESPONSE_ACTION));
-
-        recreate();
     }
 
-    public void destroy() {
+    public void finish() {
         // Unregister receiver
         try {
             NetpowerctrlApplication.instance.unregisterReceiver(onBroadcast);
         } catch (IllegalArgumentException ignored) {
             // We ignore failures of type "Receiver not registered"
         }
-
-        // Save plugin service names (we use this cache on reload)
-        // Destroy plugins
-        Set<String> pluginServiceNameList = new TreeSet<String>();
-        for (PluginRemote r : plugins) {
-            pluginServiceNameList.add(r.serviceName);
-            r.destroy();
-        }
-        plugins.clear();
-        SharedPrefs.savePlugins(pluginServiceNameList);
-    }
-
-    public PluginRemote getPlugin(int pluginId) {
-        return plugins.get(pluginId);
+        plugin_by_deviceInfo.clear();
     }
 
     private void initialPluginData(String serviceName,
                                    String localized_name) {
 
-        for (PluginRemote existing_plugin : plugins) {
-            if (existing_plugin.serviceName.equals(serviceName)) {
-                existing_plugin.localized_name = localized_name;
-                //mDrawerAdapter.get().updatePluginItem(existing_plugin.localized_name, "", existing_plugin.pluginId);
+        /**
+         * We received a message from a plugin, we already know: ignore
+         */
+        for (Map.Entry<DeviceInfo, PluginRemote> entry : plugin_by_deviceInfo.entrySet()) {
+            if (entry.getValue().serviceName.equals(serviceName)) {
                 return;
             }
         }
 
-        PluginRemote plugin = PluginRemote.createPluginRemote(plugins.size(), serviceName, localized_name);
+        PluginRemote plugin = PluginRemote.createPluginRemote(serviceName, localized_name);
 
         if (plugin == null) {
             return;
         }
 
-        plugins.add(plugin);
-        //mDrawerAdapter.get().updatePluginItem(plugin.localized_name, "", plugin.pluginId);
+        plugin_by_deviceInfo.put(plugin.di, plugin);
     }
 
-    public void recreate() {
-        // Use cache to try to bind to already found plugins
-        if (plugins.isEmpty()) {
-            Set<String> pluginServiceNameList = SharedPrefs.readPlugins();
-            if (pluginServiceNameList != null) {
-                for (String serviceName : pluginServiceNameList) {
-                    initialPluginData(serviceName, serviceName);
-                }
-            }
-        } else {
-            for (PluginRemote r : plugins) {
-                //mDrawerAdapter.get().updatePluginItem(r.localized_name, "", r.pluginId);
-            }
-        }
-
-        // Discover plugins
+    public void discover() {
         Intent i = new Intent(PLUGIN_QUERY_ACTION);
         i.putExtra(PAYLOAD_SERVICENAME, NetpowerctrlActivity.class.getCanonicalName());
         NetpowerctrlApplication.instance.sendBroadcast(i);
     }
 
     public void remove(PluginRemote plugin) {
-        plugins.remove(plugin);
-        //mDrawerAdapter.get().removePluginItem(plugin.pluginId);
+        // Remove plugin from all PluginController lists.
+        for (Map.Entry<DeviceInfo, PluginRemote> entry : plugin_by_deviceInfo.entrySet()) {
+            entry.getValue().finish();
+        }
+        plugin_by_deviceInfo.remove(plugin.di);
+        // Set non reachable and notify
+        plugin.di.reachable = false;
+        NetpowerctrlApplication.instance.getService().notifyObservers(plugin.di);
+    }
+
+    public void sendBroadcastQuery() {
+        for (Map.Entry<DeviceInfo, PluginRemote> entry : plugin_by_deviceInfo.entrySet()) {
+            NetpowerctrlApplication.instance.getService().notifyObservers(entry.getKey());
+            PluginRemote remote = entry.getValue();
+            if (remote != null)
+                remote.requestData();
+        }
+        discover();
+    }
+
+    public void sendQuery(DeviceInfo di) {
+        PluginRemote remote = plugin_by_deviceInfo.get(di);
+        di.reachable = remote != null;
+        if (remote != null)
+            remote.requestData();
+        NetpowerctrlApplication.instance.getService().notifyObservers(di);
+    }
+
+    public void execute(DevicePort port, int command) {
+        PluginRemote remote = plugin_by_deviceInfo.get(port.device);
+        if (remote == null)
+            return;
+
+        remote.setValue(port, command);
     }
 }

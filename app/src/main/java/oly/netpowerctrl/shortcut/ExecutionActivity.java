@@ -43,7 +43,7 @@ public class ExecutionActivity extends Activity implements DeviceUpdateStateOrTi
             return;
         }
 
-        // Extract command group from intent extra
+        // Extract name group from intent extra
         Bundle extra = it.getExtras();
         assert extra != null;
 

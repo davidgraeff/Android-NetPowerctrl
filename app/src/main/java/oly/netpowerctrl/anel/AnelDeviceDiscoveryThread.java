@@ -64,8 +64,11 @@ public class AnelDeviceDiscoveryThread extends Thread {
         DeviceInfo di = DeviceInfo.createNewDevice(DeviceInfo.DeviceType.AnelDevice);
         di.DeviceName = DeviceName;
         di.HostName = HostName;
-        di.MacAddress = MacAddress;
+        di.UniqueDeviceID = MacAddress;
         di.ReceivePort = receive_port;
+        // Default values for user and password
+        di.UserName = "admin";
+        di.Password = "anel";
 
         di.SendPort = SharedPrefs.getDefaultSendPort();
         di.reachable = true;

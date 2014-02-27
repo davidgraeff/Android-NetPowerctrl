@@ -13,6 +13,19 @@
         android:icon="@drawable/ic_menu_add" />
 
     <item
+        android:id="@+id/menu_removeGroup"
+        android:title="@string/menu_remove_group"
+        android:showAsAction="collapseActionView|withText"
+        android:icon="@drawable/ic_menu_delete" />
+
+    <item
+        android:id="@+id/menu_renameGroup"
+        android:title="@string/menu_rename_group"
+        android:showAsAction="collapseActionView|withText"
+        android:icon="@drawable/ic_menu_edit" />
+
+
+    <item
         android:id="@+id/menu_showhidden"
         android:title="@string/show_hidden"
         android:showAsAction="collapseActionView|withText" />

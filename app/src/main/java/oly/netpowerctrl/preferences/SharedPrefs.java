@@ -8,13 +8,12 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.datastructure.Groups;
 import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.utils.JSONHelper;
 
@@ -56,33 +55,45 @@ public class SharedPrefs {
         prefEditor.commit();
     }
 
-    public static List<Scene> ReadScenes() {
+    public static SceneCollection ReadScenes() {
         Context context = NetpowerctrlApplication.instance;
-        // Read deprecated scenes
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
         int prefVersion = prefs.getInt(PREF_VERSION_SCENES, 0);
+        // Read deprecated scenes
         if (prefVersion < PREF_CURRENT_VERSION) {
             Toast.makeText(context, context.getString(R.string.error_reading_scenes_old), Toast.LENGTH_LONG).show();
-            return new ArrayList<Scene>();
+            SceneCollection sceneCollection = new SceneCollection(new SceneCollection.IScenesSave() {
+                @Override
+                public void scenesSave(SceneCollection scenes) {
+                    SaveScenes(scenes);
+                }
+            });
+            SaveScenes(sceneCollection);
+            return sceneCollection;
         }
 
         String scenes_str = prefs.getString(PREF_SCENES, "");
 
         try {
-            return SceneCollection.fromJSON(JSONHelper.getReader(scenes_str)).scenes;
+            return SceneCollection.fromJSON(JSONHelper.getReader(scenes_str), new SceneCollection.IScenesSave() {
+                @Override
+                public void scenesSave(SceneCollection scenes) {
+                    SaveScenes(scenes);
+                }
+            });
         } catch (IOException e) {
             Toast.makeText(context, context.getString(R.string.error_reading_scenes), Toast.LENGTH_SHORT).show();
         }
         return null;
     }
 
-    public static void SaveScenes(List<Scene> scenes) {
+    public static void SaveScenes(SceneCollection scenes) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = prefs.edit();
         try {
             JSONHelper h = new JSONHelper();
-            SceneCollection.fromScenes(scenes).toJSON(h.createWriter());
+            scenes.toJSON(h.createWriter());
 
             prefEditor.putInt(PREF_VERSION_SCENES, PREF_CURRENT_VERSION);
             prefEditor.putString(PREF_SCENES, h.getString());
@@ -140,37 +151,26 @@ public class SharedPrefs {
         }
     }
 
-    public static boolean getShowDeviceNames(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        try {
-            return prefs.getBoolean("showDeviceNames", false);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public static void setShowDeviceNames(boolean showDeviceNames) {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("showDeviceNames", showDeviceNames).commit();
-    }
-
     public static void setShowHiddenOutlets(boolean showHiddenOutlets) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("showHiddenOutlets", showHiddenOutlets).commit();
     }
 
-    public static void savePlugins(Set<String> pluginServiceNameList) {
+    public static void saveGroups(Groups groups) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putStringSet("plugins", pluginServiceNameList).commit();
+        prefs.edit().putString("groups", groups.toJSON()).commit();
     }
 
-    public static Set<String> readPlugins() {
+    public static Groups readGroups() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getStringSet("plugins", null);
+        try {
+            return Groups.fromJSON(JSONHelper.getReader(prefs.getString("groups", "")));
+        } catch (IOException e) {
+            return new Groups();
+        }
     }
 
     public static boolean getLoadExtensions() {
@@ -259,4 +259,23 @@ public class SharedPrefs {
         return value;
     }
 
+    public static int getMaxFavScenes() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int value = context.getResources().getInteger(R.integer.max_favourites_scenes);
+        try {
+            value = Integer.parseInt(prefs.getString("max_favourite_scenes", Integer.valueOf(value).toString()));
+        } catch (NumberFormatException e) { /*nop*/ }
+        return value;
+    }
+
+    public static int getMaxFavGroups() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int value = context.getResources().getInteger(R.integer.max_favourites_groups);
+        try {
+            value = Integer.parseInt(prefs.getString("max_favourite_groups", Integer.valueOf(value).toString()));
+        } catch (NumberFormatException e) { /*nop*/ }
+        return value;
+    }
 }

@@ -10,7 +10,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anel.AnelBroadcastSendJob;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.utils.ShowToast;
@@ -27,43 +26,73 @@ public class DeviceSend {
 
     // Singleton
     static DeviceSend mInstance = new DeviceSend();
+    public DatagramSocket datagramSocket;
+    SendThread sendThread = null;
+
+    public DeviceSend() {
+        try {
+            this.datagramSocket = new DatagramSocket();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static DeviceSend instance() {
         return mInstance;
+    }
+
+    public static void onError(int errorID, String ip, int port, Exception e) {
+        Context context = NetpowerctrlApplication.instance;
+        if (context == null)
+            return;
+        String exceptionString = (e == null || e.getMessage() == null) ? "" : e.getMessage();
+        switch (errorID) {
+            case INQUERY_REQUEST:
+                ShowToast.FromOtherThread(context,
+                        context.getString(R.string.error_sending_inquiry, ip) + ": " + exceptionString);
+                break;
+            case INQUERY_BROADCAST_REQUEST:
+                ShowToast.FromOtherThread(context,
+                        context.getString(R.string.error_sending_broadcast_inquiry, port) + ": " + exceptionString);
+                break;
+            case NETWORK_UNREACHABLE:
+                ShowToast.FromOtherThread(context,
+                        context.getString(R.string.error_not_in_range, ip));
+                break;
+            case NETWORK_UNKNOWN_HOSTNAME:
+                ShowToast.FromOtherThread(context,
+                        context.getString(R.string.error_not_in_range, ip) + ": " + exceptionString);
+                break;
+        }
     }
 
     /**
      * Call this to stop the send thread.
      */
     public void interrupt() {
-        if (sendThread.isAlive()) {
+        if (sendThread != null && sendThread.isAlive()) {
             sendThread.add(new KillJob());
             try {
                 sendThread.join();
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
-            sendThread = new SendThread();
+            sendThread = null;
         }
-
     }
 
-    public void addSendJob(DeviceInfo di, byte[] message, int errorID, boolean retryIfFail) {
-        if (!sendThread.isAlive()) {
-            try {
-                sendThread.start();
-            } catch (IllegalThreadStateException ignored) {
-                ignored.printStackTrace();
-            }
-        }
-        SendJob job = new SendJob(di, message, errorID);
-        if (retryIfFail) {
-            new SendJobRepeater(job);
-        }
-        sendThread.add(job);
+    public boolean isRunning() {
+        return sendThread != null && sendThread.isAlive();
+    }
+
+    public void start() {
+        if (sendThread != null && sendThread.isAlive())
+            return;
+        sendThread = new SendThread();
     }
 
     public void addJob(Job job) {
+        if (sendThread == null)
+            return;
         if (!sendThread.isAlive()) {
             try {
                 sendThread.start();
@@ -72,6 +101,10 @@ public class DeviceSend {
             }
         }
         sendThread.add(job);
+    }
+
+    public static interface Job {
+        void process(DeviceSend deviceSend) throws InterruptedException;
     }
 
     private static class SendThread extends Thread {
@@ -93,21 +126,6 @@ public class DeviceSend {
                 }
             }
         }
-    }
-
-    SendThread sendThread = new SendThread();
-    public DatagramSocket datagramSocket;
-
-    public DeviceSend() {
-        try {
-            this.datagramSocket = new DatagramSocket();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static interface Job {
-        void process(DeviceSend deviceSend) throws InterruptedException;
     }
 
     static class KillJob implements Job {
@@ -137,10 +155,12 @@ public class DeviceSend {
         // References to objects
         SendJobRepeater sendJobRepeater = null;
 
-        SendJob(DeviceInfo di, byte[] message, int errorID) {
+        public SendJob(DeviceInfo di, byte[] message, int errorID, boolean retryIfFail) {
             this.message = message;
             this.errorID = errorID;
             this.di = di;
+            if (retryIfFail)
+                sendJobRepeater = new SendJobRepeater(this);
         }
 
         @Override
@@ -173,40 +193,5 @@ public class DeviceSend {
         public void setRepeater(SendJobRepeater sendJobRepeater) {
             this.sendJobRepeater = sendJobRepeater;
         }
-    }
-
-    public static void onError(int errorID, String ip, int port, Exception e) {
-        Context context = NetpowerctrlApplication.instance;
-        if (context == null)
-            return;
-        String exceptionString = (e == null || e.getMessage() == null) ? "" : e.getMessage();
-        switch (errorID) {
-            case INQUERY_REQUEST:
-                ShowToast.FromOtherThread(context,
-                        context.getString(R.string.error_sending_inquiry, ip) + ": " + exceptionString);
-                break;
-            case INQUERY_BROADCAST_REQUEST:
-                ShowToast.FromOtherThread(context,
-                        context.getString(R.string.error_sending_broadcast_inquiry, port) + ": " + exceptionString);
-                break;
-            case NETWORK_UNREACHABLE:
-                ShowToast.FromOtherThread(context,
-                        context.getString(R.string.error_not_in_range, ip));
-                break;
-            case NETWORK_UNKNOWN_HOSTNAME:
-                ShowToast.FromOtherThread(context,
-                        context.getString(R.string.error_not_in_range, ip) + ": " + exceptionString);
-                break;
-        }
-    }
-
-    //TODO remove
-    void sendBroadcastQuery() {
-        addJob(new AnelBroadcastSendJob());
-    }
-
-    //TODO remove
-    void sendQuery(DeviceInfo di) {
-        addSendJob(di, "wer da?\r\n".getBytes(), INQUERY_REQUEST, false);
     }
 }
