@@ -4,11 +4,17 @@
         android:id="@+id/menu_add_scene"
         android:title="@string/menu_add_scene"
         android:showAsAction="ifRoom"
-        android:icon="@android:drawable/ic_menu_add"></item>
+        android:icon="@android:drawable/ic_menu_add" />
 
     <item
         android:id="@+id/menu_remove_scene"
         android:title="@string/menu_remove_all_scenes"
         android:showAsAction="ifRoom"
-        android:icon="@android:drawable/ic_menu_delete"></item>
+        android:icon="@android:drawable/ic_menu_delete" />
+
+    <item
+        android:id="@+id/menu_help"
+        android:title="@string/menu_help"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_help" />
 </menu>

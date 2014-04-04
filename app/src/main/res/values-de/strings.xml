@@ -68,8 +68,6 @@
     <string name="preference_standard_recv_port">Standard UDP-Port zum Empfangen</string>
     <string name="preference_standard_recv_port_summary">Die Applikation empfängt Antworten auf diesem Port (und an allen individuellen Ports der konfigurierten Geräte). Dies entspricht dem \"Senden\"-Port im Web-Interface des Gerätes</string>
 
-    <string name="choose_widget_device">Bitte wählen Sie ein Gerät für dieses Widget</string>
-    <string name="choose_widget_outlet">Bitte wählen Sie eine Steckdose für dieses Widget</string>
     <string name="title_shortcut">Erstelle Shortcut</string>
     <string name="title_scene">Erstelle Szene</string>
 
@@ -127,8 +125,6 @@
     <string name="nfc_failed">Android Beam ist fehlgeschlagen</string>
     <string name="nfc_select_devices_title">Wähle zu installierende Geräte aus</string>
     <string name="menu_add_homescreen">Zum Startbildschirm hinzufügen</string>
-    <string name="menu_showdevicename">Zeige Gerätenamen</string>
-    <string name="menu_hidedevicename">Verstecke Gerätenamen</string>
     <string name="error_saving_scenes">Speichern der Szenen fehlgeschlagen</string>
     <string name="nfc_failed_version">NFC fehlgeschlagen: Version ungleich! Bitte beide Apps updaten.</string>
     <string name="nfc_select_scenes_title">Wähle eine Szene zum installieren</string>
@@ -214,7 +210,7 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="preference_widget_show_text_summary">Zeige Namen und Status unter dem Icon</string>
     <string name="energy_saving_mode">Im Energiesparmodus!</string>
     <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
-    <string name="menu_outlet_createGroup">Zu Gruppe hinzufügen</string>
+    <string name="menu_outlet_createGroup">In Gruppen…</string>
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
     <string name="preference_max_favourite_scenes">Maximale Szenen</string>
     <string name="preference_max_favourite_scenes_summary">Anzahl Szenen in Seitenleiste</string>
@@ -239,12 +235,20 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     Im Moment ist es nicht möglich, die Einstellungen manuell zu sichern und wiederherzustellen. Diese
     Funktion ist geplant.]]></string>
     <string name="createGroup">Gruppe erstellen</string>
-    <string name="outlet_added_to_groups">Zu %1$d Gruppen hinzugefügt</string>
-    <string name="outlet_to_group_title">Zu Gruppen hinzufügen</string>
+    <string name="outlet_added_to_groups">Gehört zu %1$d Gruppen</string>
+    <string name="outlet_to_group_title">%1$s in Gruppen…</string>
     <string name="menu_outlet_removeFromGroup">Von Gruppe entfernen</string>
     <string name="group_create">Erstelle eine neue Gruppe. Bitte den Namen eingeben.</string>
     <string name="empty_group">Diese Gruppe ist leer! Entweder enthält die Gruppe keine Einträge mehr oder es sind nicht alle relevanten Geräte in Reichweite</string>
     <string name="menu_remove_group">Gruppe entfernen</string>
     <string name="menu_rename_group">Gruppe umbenennen</string>
     <string name="drawer_feedback">Feedback</string>
+    <string name="menu_set_favourite">Mache zu Favorit</string>
+    <string name="menu_remove_favourite">Kein Favorit mehr</string>
+    <string name="help_scene">Eine Szene kombiniert mehere Aktionen und kann mit einem Namen und einem Icon versehen werden.
+    Du kannst auch die Kopie einer Szene auf deinem Homescreen ablegen lassen für den super schnelle direkten Zugriff. Mache eine Szene zu einem Favoriten, damit diese im Navigationsmenü aufgelistet wird und von da direkt ausgeführt werden kann.
+
+    Eine spezielle Form von Szenen sind Master/Slave-Szenen. Alle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
+    </string>
+    <string name="error_plugin_not_installed">Plugin nicht installiert!</string>
 </resources>

@@ -83,13 +83,15 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
         public Available_Added_Adapter(FragmentManager fm) {
             super(fm);
 
-            frag = new Fragment[]{
-                    new OutletsSceneEditFragment(EditShortcutActivity.this,
-                            OutletsSceneEditFragment.MANIPULATOR_TAG_INCLUDED,
-                            EditShortcutActivity.this),
-                    new OutletsSceneEditFragment(EditShortcutActivity.this,
-                            OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
-                            EditShortcutActivity.this)};
+            OutletsSceneEditFragment f1 = new OutletsSceneEditFragment();
+            f1.setData(EditShortcutActivity.this,
+                    OutletsSceneEditFragment.MANIPULATOR_TAG_INCLUDED,
+                    EditShortcutActivity.this);
+            OutletsSceneEditFragment f2 = new OutletsSceneEditFragment();
+            f2.setData(EditShortcutActivity.this,
+                    OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
+                    EditShortcutActivity.this);
+            frag = new Fragment[]{f1, f2};
         }
 
         @Override

@@ -28,7 +28,7 @@ public class OutletsSceneEditFragment extends Fragment {
     public OutletsSceneEditFragment() {
     }
 
-    public OutletsSceneEditFragment(Context context, int tag, OutletsManipulator manipulator) {
+    public void setData(Context context, int tag, OutletsManipulator manipulator) {
         // We use the constructor that is dedicated to scene editing
         this.manipulator_tag = tag;
         this.manipulator = manipulator;

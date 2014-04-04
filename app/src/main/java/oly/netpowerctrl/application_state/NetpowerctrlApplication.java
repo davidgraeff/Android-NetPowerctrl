@@ -48,6 +48,10 @@ public class NetpowerctrlApplication extends Application {
     private PluginController pluginController;
     private ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
 
+    public boolean isServiceReady() {
+        return (mDiscoverService != null);
+    }
+
     @SuppressWarnings("unused")
     public boolean registerServiceReadyObserver(ServiceReady o) {
         if (!observersServiceReady.contains(o)) {
@@ -69,6 +73,13 @@ public class NetpowerctrlApplication extends Application {
         while (it.hasNext()) {
             if (!it.next().onServiceReady(mDiscoverService))
                 it.remove();
+        }
+    }
+
+    private void notifyServiceFinished() {
+        Iterator<ServiceReady> it = observersServiceReady.iterator();
+        while (it.hasNext()) {
+            it.next().onServiceFinished();
         }
     }
 
@@ -151,7 +162,8 @@ public class NetpowerctrlApplication extends Application {
 
         // The following mechanism allows only one update request within a
         // 1sec timeframe and only if the service is available and not in reduced mode.
-        if (isDetecting || mWaitForService || mDiscoverService.isNetworkReducedMode)
+        if (isDetecting || mWaitForService || mDiscoverService == null ||
+                mDiscoverService.isNetworkReducedMode)
             return;
 
         isDetecting = true;
@@ -222,12 +234,13 @@ public class NetpowerctrlApplication extends Application {
             detectNewDevicesAndReachability();
 
             // Notify all observers that we are ready
-            instance.notifyServiceReady();
+            notifyServiceReady();
         }
 
         // Service crashed
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            notifyServiceFinished();
             mDiscoverServiceRefCount = 0;
             mDiscoverService = null;
             mWaitForService = false;
@@ -238,8 +251,8 @@ public class NetpowerctrlApplication extends Application {
         return mDiscoverService;
     }
 
-    public PluginController getPluginController() {
-        return pluginController;
+    static public PluginController getPluginController() {
+        return instance.pluginController;
     }
 
     static public RuntimeDataController getDataController() {

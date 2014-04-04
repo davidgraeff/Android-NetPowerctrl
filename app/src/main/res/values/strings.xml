@@ -65,8 +65,6 @@
     <string name="preference_standard_recv_port">Standard UDP port for receiving from the device</string>
     <string name="preference_standard_recv_port_summary">The application will listen on this port for answers (and on each port of your configured devices, if any). This corresponds to the \"SEND\" port in the device\'s web interface</string>
 
-    <string name="choose_widget_device">Please choose a device for this widget</string>
-    <string name="choose_widget_outlet">Please choose an outlet for this widget</string>
     <string name="title_shortcut">Create Shortcut</string>
     <string name="title_scene">Create scene</string>
 
@@ -78,12 +76,6 @@
     <string name="off">Off</string>
     <string name="on">On</string>
     <string name="toggle">Toggle</string>
-
-    <string-array name="shortcutchoices">
-        <item>Off</item>
-        <item>On</item>
-        <item>Toggle</item>
-    </string-array>
 
     <string-array name="feedbackOptions">
         <item>Contact developer</item>
@@ -132,7 +124,6 @@
     <string name="nfc_failed">Android Beam failed</string>
     <string name="nfc_select_devices_title">Select devices to install</string>
     <string name="menu_add_homescreen">Add to homescreen</string>
-    <string name="menu_showdevicename">Show device name</string>
     <string name="error_reading_scenes">Error reading scenes</string>
     <string name="error_saving_scenes">Error saving scenes</string>
     <string name="nfc_failed_version">NFC failed, Version mismatch! Please update both apps.</string>
@@ -218,7 +209,7 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="preference_widget_show_text_summary">Show the name and state below the widgets icon</string>
     <string name="energy_saving_mode">App is in energy saving mode!</string>
     <string name="device_createGroup">Create group with device outlets</string>
-    <string name="menu_outlet_createGroup">Add to group</string>
+    <string name="menu_outlet_createGroup">Groups</string>
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
     <string name="preference_max_favourite_scenes">Scenes in navigation list</string>
     <string name="preference_max_favourite_scenes_summary">Maximum scenes in navigation list</string>
@@ -240,12 +231,16 @@ If you would like to configure new devices, change to the Devices screen.</strin
         If you uninstall and reinstall the application, your configuration should be restored.
         At the moment there is no way to manually save and restore configurations.]]></string>
     <string name="createGroup">Create group</string>
-    <string name="outlet_added_to_groups">Added to %1$d groups</string>
-    <string name="outlet_to_group_title">Add to groups</string>
+    <string name="outlet_added_to_groups">Belong to %1$d groups</string>
+    <string name="outlet_to_group_title">Groups of %1$s</string>
     <string name="menu_outlet_removeFromGroup">Remove from group</string>
     <string name="group_create">Create a new group. Enter a name please.</string>
     <string name="empty_group">This group is empty. Either no items belong to this group anymore or relevant devices are not in range at the moment.</string>
     <string name="menu_remove_group">Remove group</string>
     <string name="menu_rename_group">Rename group</string>
     <string name="drawer_feedback">Feedback</string>
+    <string name="menu_set_favourite">Make favorite</string>
+    <string name="menu_remove_favourite">No favorite anymore</string>
+    <string name="help_scene">A scene combines multiple actions. A scene can have a name and an icon. You may add a copy of a scene to your homescreen for fast access. If a scene is a favorite, it appears in the left navigation menu.</string>
+    <string name="error_plugin_not_installed">Plugin not installed!</string>
 </resources>

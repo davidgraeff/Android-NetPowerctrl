@@ -33,11 +33,11 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
         public int type = 0; // o string, 1 int, 2 boolean
         public boolean mEnabled;
 
-        public ReviewItem(String title, String displayValue, int pageKey, boolean enabled) {
+        public ReviewItem(String title, String displayValue, int pageKey) {
             mTitle = title;
             mDisplayValueString = displayValue;
             mPageKey = pageKey;
-            mEnabled = enabled;
+            mEnabled = true;
             type = 0;
         }
 
@@ -49,11 +49,11 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
             type = 1;
         }
 
-        public ReviewItem(String title, boolean displayValue, int pageKey, boolean enabled) {
+        public ReviewItem(String title, boolean displayValue, int pageKey) {
             mTitle = title;
             mDisplayValueBoolean = displayValue;
             mPageKey = pageKey;
-            mEnabled = enabled;
+            mEnabled = true;
             type = 2;
         }
     }
@@ -75,13 +75,13 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
         this.context = context;
         this.deviceInfo = deviceInfo;
         inflater = LayoutInflater.from(context);
-        deviceConfigurationOptions.add(new ReviewItem("Name", deviceInfo.DeviceName, DeviceName, true));
-        deviceConfigurationOptions.add(new ReviewItem("Host/IP", deviceInfo.HostName, HostName, true));
-        deviceConfigurationOptions.add(new ReviewItem("Username", deviceInfo.UserName, UserName, true));
-        deviceConfigurationOptions.add(new ReviewItem("Password", deviceInfo.Password, Password, true));
-        deviceConfigurationOptions.add(new ReviewItem("Use default ports", deviceInfo.DefaultPorts, DefaultPorts, true));
-        deviceConfigurationOptions.add(new ReviewItem("App receive port", deviceInfo.ReceivePort, ReceivePort, !deviceInfo.DefaultPorts));
-        deviceConfigurationOptions.add(new ReviewItem("App send port", deviceInfo.SendPort, SendPort, !deviceInfo.DefaultPorts));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_name), deviceInfo.DeviceName, DeviceName));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_ip), deviceInfo.HostName, HostName));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_username), deviceInfo.UserName, UserName));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_password), deviceInfo.Password, Password));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_default_ports), deviceInfo.DefaultPorts, DefaultPorts));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_recv_udp), deviceInfo.ReceivePort, ReceivePort, !deviceInfo.DefaultPorts));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_send_udp), deviceInfo.SendPort, SendPort, !deviceInfo.DefaultPorts));
     }
 
     @Override
@@ -117,7 +117,7 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
     @Override
     public View getView(int position, View convertView, ViewGroup container) {
         if (convertView == null)
-            convertView = inflater.inflate(R.layout.device_configuration_item, null);
+            convertView = inflater.inflate(R.layout.device_configuration_item, container);
 
         ReviewItem reviewItem = deviceConfigurationOptions.get(position);
         ((TextView) convertView.findViewById(R.id.titleText)).setText(reviewItem.mTitle);

@@ -39,7 +39,7 @@ public class Groups {
             if (other instanceof GroupItem)
                 return uuid.equals(((GroupItem) other).uuid);
             else if (other instanceof UUID)
-                return uuid.equals(((UUID) other));
+                return uuid.equals(other);
             return false;
         }
 
@@ -238,5 +238,17 @@ public class Groups {
         for (int i = 0; i < a.length; ++i)
             a[i] = groupItems.get(i).name;
         return a;
+    }
+
+    /**
+     * Return true if the group uuid at index is inside the groupUUids list.
+     *
+     * @param index
+     * @param groupUUids
+     * @return
+     */
+    public boolean equalsAtIndex(int index, List<UUID> groupUUids) {
+        GroupItem g = groupItems.get(index);
+        return groupUUids.contains(g.uuid);
     }
 }

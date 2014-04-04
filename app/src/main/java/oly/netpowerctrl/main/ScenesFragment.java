@@ -73,6 +73,14 @@ public class ScenesFragment extends Fragment implements
                 startActivity(it);
                 return true;
             }
+
+            case R.id.menu_help: {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.menu_help)
+                        .setMessage(R.string.help_scene)
+                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+                return true;
+            }
         }
         return false;
     }
@@ -136,6 +144,16 @@ public class ScenesFragment extends Fragment implements
                     mListView.stopEditMode();
                 return true;
             }
+            case R.id.menu_remove_favourite: {
+                scenes.setFavourite(scene, false);
+                scenes.saveScenes();
+                return true;
+            }
+            case R.id.menu_set_favourite: {
+                scenes.setFavourite(scene, true);
+                scenes.saveScenes();
+                return true;
+            }
             case R.id.menu_add_homescreen: {
                 @SuppressWarnings("ConstantConditions")
                 Context context = getActivity().getApplicationContext();
@@ -182,10 +200,19 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void editScene(int position, View view) {
         mListView.setTag(position);
+        Scene scene = scenes.getScene(position);
+
         @SuppressWarnings("ConstantConditions")
         PopupMenu popup = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.scenes_item, popup.getMenu());
+        Menu menu = popup.getMenu();
+        inflater.inflate(R.menu.scenes_item, menu);
+
+        boolean isFav = scene.isFavourite();
+        //noinspection ConstantConditions
+        menu.findItem(R.id.menu_set_favourite).setVisible(!isFav);
+        //noinspection ConstantConditions
+        menu.findItem(R.id.menu_remove_favourite).setVisible(isFav);
 
         popup.setOnMenuItemClickListener(this);
         popup.show();

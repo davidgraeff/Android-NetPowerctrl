@@ -203,7 +203,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         }
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
-        if (!current_device.reachable)
+        if (!current_device.isReachable())
             new DeviceQuery(null, current_device);
     }
 
@@ -274,7 +274,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     public int getReachableConfiguredDevices() {
         int r = 0;
         for (DeviceInfo di : configuredDevices)
-            if (di.reachable)
+            if (di.isReachable())
                 ++r;
         return r;
     }

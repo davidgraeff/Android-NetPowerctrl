@@ -2,7 +2,7 @@ package oly.netpowerctrl.dynamicgid;
 
 import android.view.View;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Author: alex askerov
@@ -11,15 +11,17 @@ import java.util.ArrayList;
  */
 public class DynamicGridUtils {
     /**
-     * Delete item in <code>list</code> from position <code>indexFrom</code> and insert it to <code>indexTwo</code>
+     * Delete item in <code>list</code> from position <code>indexFrom</code> and insert it to <code>indexTo</code>
      *
      * @param list
      * @param indexFrom
-     * @param indexTwo
+     * @param indexTo
      */
-    public static void reorder(ArrayList list, int indexFrom, int indexTwo) {
+    public static void reorder(List list, int indexFrom, int indexTo) {
+        if (indexTo >= list.size())
+            return;
         Object obj = list.remove(indexFrom);
-        list.add(indexTwo, obj);
+        list.add(indexTo, obj);
     }
 
     public static float getViewX(View view) {

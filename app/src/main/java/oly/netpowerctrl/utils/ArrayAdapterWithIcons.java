@@ -30,6 +30,7 @@ public class ArrayAdapterWithIcons extends ArrayAdapter<ArrayAdapterWithIcons.It
 
     public List<Item> items;
 
+    @SuppressWarnings("SameParameterValue")
     public ArrayAdapterWithIcons(Context context, int resource, int textViewResourceId, List<Item> objects) {
         super(context, resource, textViewResourceId, objects);
         items = objects;

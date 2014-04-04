@@ -36,9 +36,24 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     public String FirmwareVersion;
 
     // Temporary state variables
-    public boolean reachable = false;
+    private boolean reachable = false;
+    public String not_reachable_reason;
     public long updated = 0;
     public boolean configured = false;
+
+    public boolean isReachable() {
+        return reachable;
+    }
+
+    public void setReachable() {
+        this.reachable = true;
+        not_reachable_reason = "";
+    }
+
+    public void setNotReachable(String not_reachable_reason) {
+        this.reachable = false;
+        this.not_reachable_reason = not_reachable_reason;
+    }
 
     @Override
     public int compareTo(DeviceInfo deviceInfo) {
@@ -105,8 +120,9 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
             return;
         }
         // Add all devicePorts from DeviceInfo other to a new list (so that we can modify)
-        List<DevicePort> new_devicePorts = new ArrayList<DevicePort>();
-        new_devicePorts.addAll(other.DevicePorts);
+        //List<DevicePort> new_devicePorts = new ArrayList<DevicePort>();
+        //new_devicePorts.addAll(other.DevicePorts);
+
         // Iterators
         Iterator<DevicePort> current_iterator = DevicePorts.iterator();
         Iterator<DevicePort> new_iterator;
@@ -137,6 +153,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         Temperature = other.Temperature;
         FirmwareVersion = other.FirmwareVersion;
         reachable = other.reachable;
+        not_reachable_reason = other.not_reachable_reason;
         updated = other.updated;
     }
 
@@ -169,7 +186,9 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
     @Override
     public boolean equals(Object other) {
-        return uuid.equals(((DeviceInfo) other).uuid);
+        if (other instanceof DeviceInfo)
+            return uuid.equals(((DeviceInfo) other).uuid);
+        return false;
     }
 
     public static DeviceInfo fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {

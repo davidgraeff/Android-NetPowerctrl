@@ -98,43 +98,50 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
         ++startPosition; // Add 1, otherwise we point to the item before the first scene item
 
         SceneCollection g = NetpowerctrlApplication.getDataController().scenes;
-        int maxLength = SharedPrefs.getMaxFavScenes();
-        if (g.length() < maxLength) maxLength = g.length();
+        int maxLength = 0;
+        for (Scene scene : g.scenes) {
+            if (scene.isFavourite())
+                ++maxLength;
+        }
 
         if (addedOrRemoved || scenes_size != maxLength) {
-            // Remove all groups first
+            // Remove all scenes first
             for (int i = 0; i < scenes_size; ++i)
                 mItems.remove(startPosition);
             scenes_size = 0;
 
-            // Readd groups
-            for (int i = 0; i < maxLength; ++i) {
-                final Scene sceneItem = g.scenes.get(i);
-                DrawerItem item = new DrawerItem(sceneItem.sceneName, "");
-                item.uuid = sceneItem.uuid;
-                item.bitmap = sceneItem.getBitmap();
+            // Read scenes, insert scene if its a favourite
+            int counter = 0;
+            for (final Scene scene : g.scenes) {
+                if (!scene.isFavourite())
+                    continue;
+                DrawerItem item = new DrawerItem(scene.sceneName, "");
+                item.uuid = scene.uuid;
+                item.bitmap = scene.getBitmap();
                 item.intendLevel = 1;
                 item.clickHandler = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Executor.execute(sceneItem);
+                        Executor.execute(scene, null);
                     }
                 };
-                mItems.add(startPosition + i, item);
+                mItems.add(startPosition + counter++, item);
             }
             scenes_size = maxLength;
             notifyDataSetChanged();
         } else { // just update names
-            for (int i = 0; i < scenes_size; ++i) {
-                final Scene sceneItem = g.scenes.get(i);
-                DrawerItem item = mItems.get(i + startPosition);
-                item.uuid = sceneItem.uuid;
-                item.bitmap = sceneItem.getBitmap();
-                item.mTitle = sceneItem.sceneName;
+            int counter = 0;
+            for (final Scene scene : g.scenes) {
+                if (!scene.isFavourite())
+                    continue;
+                DrawerItem item = mItems.get(counter++ + startPosition);
+                item.uuid = scene.uuid;
+                item.bitmap = scene.getBitmap();
+                item.mTitle = scene.sceneName;
                 item.clickHandler = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Executor.execute(sceneItem);
+                        Executor.execute(scene, null);
                     }
                 };
             }

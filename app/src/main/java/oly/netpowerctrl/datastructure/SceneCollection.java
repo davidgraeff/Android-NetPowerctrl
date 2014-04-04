@@ -76,16 +76,31 @@ public class SceneCollection {
         writer.endArray();
     }
 
-    public void setBitmap(Scene item, Bitmap bitmap) {
-        if (item == null)
+    public void setBitmap(Scene scene, Bitmap bitmap) {
+        if (scene == null)
             return;
-        item.bitmap = bitmap;
-        Icons.saveIcon(NetpowerctrlApplication.instance, item.uuid, bitmap, Icons.IconType.GroupIcon);
+        scene.bitmap = bitmap;
+        Icons.saveIcon(NetpowerctrlApplication.instance, scene.uuid, bitmap, Icons.IconType.GroupIcon);
+        notifyObservers(false);
+    }
+
+
+    public void setFavourite(Scene scene, boolean favourite) {
+        if (scene == null)
+            return;
+        scene.favourite = favourite;
+        notifyObservers(false);
+    }
+
+    public void setMasterScene(Scene scene, Scene.SceneItem item) {
+        if (scene == null)
+            return;
+        scene.uuid_master = item.uuid;
         notifyObservers(false);
     }
 
     public void executeScene(int position) {
-        Executor.execute(getScene(position));
+        Executor.execute(getScene(position), null);
     }
 
     public void addScene(Scene data) {

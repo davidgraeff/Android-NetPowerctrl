@@ -1,7 +1,6 @@
 package oly.netpowerctrl.widget;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,7 +31,8 @@ public class WidgetConfig extends Activity implements OutletsManipulator {
         }
         setContentView(R.layout.activity_main);
 
-        Fragment f = new OutletsSceneEditFragment(this,
+        OutletsSceneEditFragment f = new OutletsSceneEditFragment();
+        f.setData(this,
                 OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
                 this);
 

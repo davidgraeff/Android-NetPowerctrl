@@ -24,7 +24,7 @@ public class SendJobRepeater extends Handler {
     public SendJobRepeater(DeviceSend.SendJob job) {
         super(Looper.getMainLooper());
         this.job = job;
-        if (!job.di.reachable)
+        if (!job.di.isReachable())
             return;
         job.setRepeater(this);
     }
@@ -43,8 +43,9 @@ public class SendJobRepeater extends Handler {
             if (job.di.getUpdatedTime() > 0) // if the device got updated at some time
                 Toast.makeText(context,
                         context.getString(R.string.error_setting_outlet, job.di.DeviceName,
-                                current_time - job.di.getUpdatedTime() / 1000),
-                        Toast.LENGTH_LONG).show();
+                                (int) (current_time - job.di.getUpdatedTime() / 1000)),
+                        Toast.LENGTH_LONG
+                ).show();
             // if the device never responded so far or the updated counter has been reseted by
             // e.g. the network change listener, we just do nothing here
             return;

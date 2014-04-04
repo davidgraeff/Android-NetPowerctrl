@@ -7,6 +7,7 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.datastructure.ExecutionFinished;
 import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.network.DeviceSend;
 
@@ -41,7 +42,7 @@ final public class AnelExecutor {
     /**
      * @param command_list
      */
-    public static void execute(List<Executor.PortAndCommand> command_list) {
+    public static void execute(List<Executor.PortAndCommand> command_list, ExecutionFinished callback) {
         TreeMap<DeviceInfo, List<Executor.PortAndCommand>> commands_grouped_by_devices =
                 new TreeMap<DeviceInfo, List<Executor.PortAndCommand>>();
 
@@ -58,14 +59,12 @@ final public class AnelExecutor {
 
         // execute by device
         for (TreeMap.Entry<DeviceInfo, List<Executor.PortAndCommand>> entry : commands_grouped_by_devices.entrySet()) {
-            DeviceInfo device = entry.getKey();
-            List<Executor.PortAndCommand> value = entry.getValue();
-            execute(device, value);
+            execute(entry.getKey(), entry.getValue(), callback);
         }
 
     }
 
-    public static void execute(DeviceInfo di, List<Executor.PortAndCommand> command_list) {
+    public static void execute(DeviceInfo di, List<Executor.PortAndCommand> command_list, ExecutionFinished callback) {
         // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
         // “Sw” + Steckdosen + User + Passwort
         // Steckdosen = Zustand aller Steckdosen binär
@@ -141,6 +140,9 @@ final public class AnelExecutor {
             data[2] = data_io;
             DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST, true));
         }
+
+        if (callback != null)
+            callback.onExecutionFinished(command_list.size());
     }
 
     /**
@@ -149,7 +151,7 @@ final public class AnelExecutor {
      * @param port
      * @param command
      */
-    public static void execute(DevicePort port, int command) {
+    public static void execute(DevicePort port, int command, ExecutionFinished callback) {
         port.last_command_timecode = System.currentTimeMillis();
         boolean bValue = false;
         if (command == DevicePort.ON)
@@ -171,6 +173,9 @@ final public class AnelExecutor {
         }
 
         DeviceSend.instance().addJob(new DeviceSend.SendJob(port.device, data, DeviceSend.INQUERY_REQUEST, true));
+
+        if (callback != null)
+            callback.onExecutionFinished(1);
     }
 
     public static void sendBroadcastQuery() {

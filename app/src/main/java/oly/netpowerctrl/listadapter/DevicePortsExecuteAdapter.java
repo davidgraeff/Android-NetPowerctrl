@@ -26,19 +26,10 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     private boolean blockUpdates = false;
 
     // Some observers
-    private ListItemMenu mListContextMenu = null;
     private NotReachableUpdate notReachableObserver;
 
-    private View.OnClickListener menuClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            mListContextMenu.onMenuItemClicked(view, (Integer) view.getTag());
-        }
-    };
-
     public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
-        super(context, filterGroup);
-        this.mListContextMenu = mListContextMenu;
+        super(context, mListContextMenu, filterGroup);
         showHidden = SharedPrefs.getShowHiddenOutlets(context);
         NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
         onDevicesUpdated(null);
@@ -72,8 +63,9 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
         // We do this only once, if the viewHolder is new
         if (current_viewHolder.isNew) {
+            current_viewHolder.position = position;
             current_viewHolder.imageView.setTag(position);
-            current_viewHolder.imageView.setOnClickListener(menuClickListener);
+            current_viewHolder.imageView.setOnClickListener(current_viewHolder);
             //current_viewHolder.mainTextView.setTag(position);
             switch (port.getType()) {
                 case TypeToggle: {
@@ -90,8 +82,11 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 }
                 case TypeRangedValue:
                     current_viewHolder.imageView.setImageResource(R.drawable.netpowerctrl);
+                    current_viewHolder.bitmapOff = Icons.loadStateIconBitmap(context, Icons.IconState.StateOff, port.uuid);
+                    current_viewHolder.bitmapOn = Icons.loadStateIconBitmap(context, Icons.IconState.StateOn, port.uuid);
                     current_viewHolder.seekBar.setVisibility(View.VISIBLE);
                     current_viewHolder.seekBar.setOnSeekBarChangeListener(this);
+                    current_viewHolder.seekBar.setTag(-1);
                     current_viewHolder.seekBar.setMax(port.max_value - port.min_value);
                     break;
             }
@@ -114,6 +109,10 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 current_viewHolder.seekBar.setTag(-1);
                 current_viewHolder.seekBar.setProgress(port.current_value - port.min_value);
                 current_viewHolder.seekBar.setTag(position);
+                if (port.current_value <= port.min_value)
+                    current_viewHolder.imageView.setImageBitmap(current_viewHolder.bitmapOff);
+                else
+                    current_viewHolder.imageView.setImageBitmap(current_viewHolder.bitmapOn);
                 break;
         }
 
@@ -179,7 +178,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
         List<DeviceInfo> all_devices = NetpowerctrlApplication.getDataController().configuredDevices;
         for (DeviceInfo device : all_devices) {
-            if (!device.reachable)
+            if (!device.isReachable())
                 not_reachable.add(device);
         }
 
@@ -188,7 +187,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     public void handleClick(int position) {
         DevicePortListItem info = all_outlets.get(position);
-        Executor.execute(info.port, DevicePort.TOGGLE);
+        Executor.execute(info.port, DevicePort.TOGGLE, null);
         notifyDataSetChanged();
     }
 
@@ -200,7 +199,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         DevicePortListItem info = all_outlets.get(position);
         info.port.current_value = value + info.port.min_value;
         info.command_value = info.port.current_value;
-        Executor.execute(info.port, info.command_value);
+        Executor.execute(info.port, info.command_value, null);
     }
 
     @Override

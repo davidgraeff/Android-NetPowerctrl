@@ -140,7 +140,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                                 getActivity().getString(R.string.devices_refreshed,
                                         NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
                                         NetpowerctrlApplication.getDataController().newDevices.size()),
-                                Toast.LENGTH_SHORT).show();
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 });
                 return true;
@@ -213,6 +214,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (!isAdded())
+                    return;
                 mListView.getEmptyView().setVisibility(View.GONE);
                 mListView.setEmptyView(view.findViewById(android.R.id.empty));
                 emptyText = (TextView) view.findViewById(R.id.empty_text);
@@ -291,9 +294,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 CharSequence[] items = groups.getGroupsArray();
                 final boolean[] checked = new boolean[items.length];
 
+                // Sync checked array with items array
+                for (int i = 0; i < checked.length; ++i) {
+                    if (groups.equalsAtIndex(i, oi.groups))
+                        checked[i] = true;
+                }
+
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.outlet_to_group_title)
+                        .setTitle(getString(R.string.outlet_to_group_title, oi.getDescription()))
                         .setIcon(android.R.drawable.ic_dialog_info)
                         .setMultiChoiceItems(items, checked, new DialogInterface.OnMultiChoiceClickListener() {
                             @Override
@@ -303,11 +312,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         })
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
+                                oi.groups.clear();
                                 int counter = 0;
                                 for (int i = 0; i < checked.length; ++i) {
-                                    if (!checked[i])
+                                    if (!checked[i]) {
                                         continue;
-                                    oi.addToGroup(groups.groupItems.get(i).uuid);
+                                    }
+                                    oi.groups.add(groups.groupItems.get(i).uuid);
                                     ++counter;
                                 }
                                 NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
@@ -345,8 +356,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         //noinspection ConstantConditions
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-        alert.setTitle(getString(R.string.outlet_to_group_title));
-        alert.setMessage(getString(R.string.group_create));
+        alert.setTitle(getString(R.string.menu_rename_group));
 
         final EditText input = new EditText(alert.getContext());
         input.setText(groupItem.name);

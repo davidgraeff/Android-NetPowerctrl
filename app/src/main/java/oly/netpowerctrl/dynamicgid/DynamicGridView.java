@@ -355,7 +355,7 @@ public class DynamicGridView extends GridView {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(@SuppressWarnings("NullableProblems") MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 mDownX = (int) event.getX();
@@ -766,7 +766,7 @@ public class DynamicGridView extends GridView {
     }
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
+    protected void dispatchDraw(@SuppressWarnings("NullableProblems") Canvas canvas) {
         super.dispatchDraw(canvas);
         if (mHoverCell != null) {
             mHoverCell.draw(canvas);

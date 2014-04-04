@@ -42,11 +42,12 @@
         android:id="@+id/outlet_list_seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp"
         android:focusable="false"
         android:thumb="@android:color/transparent"
         android:focusableInTouchMode="false"
-        android:layout_below="@id/outlet_list_bitmap" />
+        android:layout_below="@id/outlet_list_portname"
+        android:layout_toRightOf="@id/outlet_list_bitmap" />
 
 </RelativeLayout>

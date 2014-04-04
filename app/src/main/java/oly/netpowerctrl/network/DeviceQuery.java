@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.Executor;
@@ -31,7 +32,7 @@ public class DeviceQuery {
                 return;
 
             for (DeviceInfo di : devices_to_observe) {
-                di.reachable = false;
+                di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
                 target.onDeviceTimeout(di);
             }
             NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceQuery.this);
@@ -134,7 +135,7 @@ public class DeviceQuery {
     public void finishWithTimeouts() {
         timeoutHandler.removeCallbacks(timeoutRunnable);
         for (DeviceInfo di : devices_to_observe) {
-            di.reachable = false;
+            di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
             target.onDeviceTimeout(di);
         }
         target.onDeviceQueryFinished(devices_to_observe);

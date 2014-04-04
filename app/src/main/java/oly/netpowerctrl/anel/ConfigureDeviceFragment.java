@@ -209,7 +209,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            AnelExecutor.execute(device.DevicePorts.get(0), device.DevicePorts.get(0).current_value);
+            AnelExecutor.execute(device.DevicePorts.get(0), device.DevicePorts.get(0).current_value, null);
             Handler handler = new Handler();
             // Timeout is 1,1s
             handler.postDelayed(new Runnable() {
@@ -227,7 +227,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
         } else if (test_state == TestStates.TEST_ACCESS) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(), getActivity().getString(R.string.device_test_ok), Toast.LENGTH_SHORT).show();
-            device.reachable = true;
+            device.setReachable();
             test_state = TestStates.TEST_OK;
         }
     }
