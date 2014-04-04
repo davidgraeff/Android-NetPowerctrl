@@ -176,6 +176,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             current_viewHolder = (ViewHolder) convertView.getTag();
             current_viewHolder.isNew = false;
         }
+        current_viewHolder.position = position;
 
         DevicePortListItem info = all_outlets.get(position);
 

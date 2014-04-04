@@ -63,7 +63,6 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
         // We do this only once, if the viewHolder is new
         if (current_viewHolder.isNew) {
-            current_viewHolder.position = position;
             current_viewHolder.imageView.setTag(position);
             current_viewHolder.imageView.setOnClickListener(current_viewHolder);
             //current_viewHolder.mainTextView.setTag(position);
