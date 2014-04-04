@@ -52,8 +52,8 @@ public class DrawerController {
 
     WeakReference<Activity> mDrawerActivity;
 
-    public boolean isReady() {
-        return (mDrawerLayout != null);
+    public boolean isLoading() {
+        return (mDrawerLayout == null);
     }
 
     public void setTitle(CharSequence mTitle) {
@@ -86,7 +86,8 @@ public class DrawerController {
         mDrawerAdapter.add(context.getResources().getStringArray(R.array.drawer_titles_app),
                 context.getResources().getStringArray(R.array.drawer_descriptions_app),
                 new String[]{"", DevicesListFragment.class.getName(),
-                        PreferencesFragment.class.getName(), HelpFragment.class.getName()});
+                        PreferencesFragment.class.getName(), HelpFragment.class.getName()}
+        );
 
         String version = context.getString(R.string.Version) + " ";
         try {
@@ -152,7 +153,7 @@ public class DrawerController {
     }
 
     public void menuKeyPressed() {
-        if (!isReady())
+        if (isLoading())
             return;
 
         if (drawerControllableByMenuKey) {
@@ -164,7 +165,7 @@ public class DrawerController {
     }
 
     public void saveSelection() {
-        if (!isReady())
+        if (isLoading())
             return;
 
         final int currentPosition = mDrawerList.getCheckedItemPosition();

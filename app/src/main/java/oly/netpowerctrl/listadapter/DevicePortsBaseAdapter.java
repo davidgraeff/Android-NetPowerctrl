@@ -31,8 +31,11 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
     protected boolean showHidden = true;
     protected ViewHolder current_viewHolder;
 
+    // Some observers
+    private ListItemMenu mListContextMenu = null;
+
     //ViewHolder pattern
-    protected static class ViewHolder {
+    protected static class ViewHolder implements View.OnClickListener {
         ImageView imageView;
         //LinearLayout mainTextView;
         View entry;
@@ -44,14 +47,22 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         Bitmap bitmapDefault;
         Bitmap bitmapOn;
         Bitmap bitmapOff;
+        public int position;
+        private ListItemMenu mListContextMenu = null;
 
-        ViewHolder(View convertView) {
+        ViewHolder(View convertView, ListItemMenu listContextMenu) {
+            mListContextMenu = listContextMenu;
             imageView = (ImageView) convertView.findViewById(R.id.outlet_list_bitmap);
             seekBar = (SeekBar) convertView.findViewById(R.id.outlet_list_seekbar);
             //mainTextView = (LinearLayout) convertView.findViewById(R.id.outlet_list_text);
             entry = convertView.findViewById(R.id.outlet_list_entry);
             portName = (TextView) convertView.findViewById(R.id.outlet_list_portname);
             deviceName = (TextView) convertView.findViewById(R.id.outlet_list_text_devicename);
+        }
+
+        @Override
+        public void onClick(View view) {
+            mListContextMenu.onMenuItemClicked(view, position);
         }
     }
 
@@ -62,7 +73,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         public long id;
         // If you change a DevicePort's value, that new value may be stored in
         // command_value instead overwriting DevicePort's value. The implementation
-        // depends on the parent class.
+        // depends on the child class.
         public int command_value;
 
         DevicePortListItem(DevicePort oi, boolean showDevice, int command_value, long id) {
@@ -78,6 +89,10 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         public boolean isEnabled() {
             return port.last_command_timecode <= port.device.getUpdatedTime();
         }
+
+        public String getDisplayText() {
+            return displayText;
+        }
     }
 
     protected List<DevicePortListItem> all_outlets;
@@ -90,7 +105,8 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         this.filterGroup = groupFilter;
     }
 
-    protected DevicePortsBaseAdapter(Context context, UUID filterGroup) {
+    protected DevicePortsBaseAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
+        this.mListContextMenu = mListContextMenu;
         this.context = context;
         this.filterGroup = filterGroup;
         inflater = LayoutInflater.from(context);
@@ -154,7 +170,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = inflater.inflate(outlet_res_id, null);
-            current_viewHolder = new ViewHolder(convertView);
+            current_viewHolder = new ViewHolder(convertView, mListContextMenu);
             convertView.setTag(current_viewHolder);
         } else {
             current_viewHolder = (ViewHolder) convertView.getTag();
@@ -230,7 +246,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
         for (DeviceInfo device : all_devices) {
-            if (!device.reachable) {
+            if (!device.isReachable()) {
                 not_reachable.add(device);
                 continue;
             }

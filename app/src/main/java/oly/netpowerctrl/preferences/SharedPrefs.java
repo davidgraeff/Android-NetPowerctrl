@@ -58,9 +58,9 @@ public class SharedPrefs {
     public static SceneCollection ReadScenes() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
-        int prefVersion = prefs.getInt(PREF_VERSION_SCENES, 0);
+        int prefVersion = prefs.getInt(PREF_VERSION_SCENES, -1);
         // Read deprecated scenes
-        if (prefVersion < PREF_CURRENT_VERSION) {
+        if (prefVersion != -1 && prefVersion < PREF_CURRENT_VERSION) {
             Toast.makeText(context, context.getString(R.string.error_reading_scenes_old), Toast.LENGTH_LONG).show();
             SceneCollection sceneCollection = new SceneCollection(new SceneCollection.IScenesSave() {
                 @Override
@@ -227,7 +227,7 @@ public class SharedPrefs {
         return receive_port_udp;
     }
 
-    public static boolean getKeepWidgetServiceOn() {
+    public static boolean getOnlyUsedInWifi() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.keep_widget_service_running);
@@ -255,16 +255,6 @@ public class SharedPrefs {
         boolean value = context.getResources().getBoolean(R.bool.notify_on_stop);
         try {
             value = prefs.getBoolean(PREF_notify_on_stop, value);
-        } catch (NumberFormatException e) { /*nop*/ }
-        return value;
-    }
-
-    public static int getMaxFavScenes() {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int value = context.getResources().getInteger(R.integer.max_favourites_scenes);
-        try {
-            value = Integer.parseInt(prefs.getString("max_favourite_scenes", Integer.valueOf(value).toString()));
         } catch (NumberFormatException e) { /*nop*/ }
         return value;
     }

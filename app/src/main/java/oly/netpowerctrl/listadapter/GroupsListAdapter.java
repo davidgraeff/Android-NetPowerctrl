@@ -46,7 +46,7 @@ public class GroupsListAdapter extends BaseAdapter implements Groups.IGroupsUpda
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.scene_list_item, null);
+            convertView = inflater.inflate(R.layout.scene_list_item, parent);
         }
 
         Groups.GroupItem data = groups.groupItems.get(position);

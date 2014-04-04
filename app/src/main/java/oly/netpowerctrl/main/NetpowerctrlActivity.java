@@ -99,7 +99,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     /* Called whenever we call invalidateOptionsMenu() */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (!mDrawer.isReady())
+        if (mDrawer.isLoading())
             return super.onPrepareOptionsMenu(menu);
 
         mDrawer.onPrepareOptionsMenu(menu);

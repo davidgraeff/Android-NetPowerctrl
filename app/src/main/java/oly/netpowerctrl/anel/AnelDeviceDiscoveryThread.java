@@ -71,7 +71,7 @@ public class AnelDeviceDiscoveryThread extends Thread {
         di.Password = "anel";
 
         di.SendPort = SharedPrefs.getDefaultSendPort();
-        di.reachable = true;
+        di.setReachable();
         di.updated = System.currentTimeMillis();
         return di;
     }

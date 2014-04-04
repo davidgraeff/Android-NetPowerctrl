@@ -6,7 +6,6 @@ import android.util.JsonWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -23,6 +22,7 @@ public class Scene {
     public UUID uuid = UUID.randomUUID();
     public Bitmap bitmap = null;
     public long id = nextStableID++;
+    boolean favourite;
 
     public Bitmap getBitmap() {
         if (bitmap == null) {
@@ -30,6 +30,10 @@ public class Scene {
                     Icons.IconType.SceneIcon, R.drawable.netpowerctrl);
         }
         return bitmap;
+    }
+
+    public boolean isFavourite() {
+        return favourite;
     }
 
     public static class SceneItem {
@@ -47,12 +51,31 @@ public class Scene {
 
     public List<SceneItem> sceneItems = new ArrayList<SceneItem>();
 
+    /**
+     * Return null if no master is set, otherwise return the command
+     *
+     * @return
+     */
+    public Integer getMasterCommand() {
+        if (uuid_master == null)
+            return null;
+
+        for (SceneItem item : sceneItems)
+            if (item.uuid.equals(uuid_master))
+                return item.command;
+        return null;
+    }
+
+    UUID uuid_master = null;
+
     public Scene() {
     }
 
     @Override
     public boolean equals(Object other) {
-        return uuid.equals(((Scene) other).uuid);
+        if (other instanceof Scene)
+            return uuid.equals(((Scene) other).uuid);
+        return false;
     }
 
     @SuppressWarnings("unused")
@@ -68,13 +91,16 @@ public class Scene {
         return sceneItems.size();
     }
 
-    public Collection<DeviceInfo> getDevices() {
-        TreeSet<DeviceInfo> devices = new TreeSet<DeviceInfo>();
+    public int getDevices(TreeSet<DeviceInfo> devices) {
+        int valid_commands = 0;
         for (SceneItem c : sceneItems) {
             DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(c.uuid);
-            devices.add(port.device);
+            if (port != null) {
+                devices.add(port.device);
+                ++valid_commands;
+            }
         }
-        return devices;
+        return valid_commands;
     }
 
     /**
@@ -128,6 +154,10 @@ public class Scene {
                 scene.sceneName = reader.nextString();
             } else if (name.equals("uuid")) {
                 scene.uuid = UUID.fromString(reader.nextString());
+            } else if (name.equals("master")) {
+                scene.uuid_master = UUID.fromString(reader.nextString());
+            } else if (name.equals("favourite")) {
+                scene.favourite = reader.nextBoolean();
             } else if (name.equals("groupItems")) {
                 reader.beginArray();
                 while (reader.hasNext()) {
@@ -146,6 +176,9 @@ public class Scene {
         writer.beginObject();
         writer.name("sceneName").value(sceneName);
         writer.name("uuid").value(uuid.toString());
+        if (getSceneItem(uuid_master) != null)
+            writer.name("uuid_master").value(uuid_master.toString());
+        writer.name("favourite").value(favourite);
         writer.name("groupItems").beginArray();
         for (SceneItem c : sceneItems) {
             writer.beginObject();
@@ -155,6 +188,16 @@ public class Scene {
         }
         writer.endArray();
         writer.endObject();
+    }
+
+    private SceneItem getSceneItem(UUID uuid) {
+        if (uuid == null)
+            return null;
+
+        for (SceneItem item : sceneItems)
+            if (item.uuid.equals(uuid))
+                return item;
+        return null;
     }
 
 }

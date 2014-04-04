@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.SeekBar;
 
 import java.util.Iterator;
 
@@ -25,14 +26,31 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int i) {
             int position = (Integer) radioGroup.getTag();
-            int v = (i == R.id.radio0) ? DevicePort.OFF :
+            all_outlets.get(position).command_value = (i == R.id.radio0) ? DevicePort.OFF :
                     (i == R.id.radio1 ? DevicePort.ON : DevicePort.TOGGLE);
-            all_outlets.get(position).command_value = v;
+        }
+    };
+
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            int position = (Integer) seekBar.getTag();
+            all_outlets.get(position).command_value = seekBar.getProgress();
         }
     };
 
     public DevicePortsCreateSceneAdapter(Context context) {
-        super(context, null);
+        super(context, null, null);
     }
 
     public int getViewTypeCount() {
@@ -74,7 +92,12 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         } else if (type == DevicePort.DevicePortType.TypeRangedValue) {
             outlet_res_id = R.layout.create_scene_outlet_list_ranged;
             convertView = super.getView(position, convertView, parent);
-
+            SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.outlet_list_seekbar);
+            //current_viewHolder.seekBar
+            seekBar.setTag(position);
+            seekBar.setMax(info.port.max_value);
+            seekBar.setProgress(info.command_value);
+            seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
         } else if (type == DevicePort.DevicePortType.TypeButton) {
             outlet_res_id = R.layout.create_scene_outlet_list_item;
             convertView = super.getView(position, convertView, parent);

@@ -30,7 +30,7 @@ public class ShowToast {
     }
 
     public static void showToast(final Context ctx, final String message, int length) {
-        final Toast toast = Toast.makeText(ctx, message, Toast.LENGTH_SHORT);
+        final Toast toast = Toast.makeText(ctx, message, Toast.LENGTH_LONG);
         toast.show();
 
         Handler handler = new Handler();

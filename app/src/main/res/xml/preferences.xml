@@ -21,18 +21,10 @@
         android:dialogTitle="@string/preference_standard_recv_port" />
 
     <EditTextPreference
-        android:key="max_favourite_scenes"
-        android:title="@string/preference_max_favourite_scenes"
-        android:inputType="number"
-        android:defaultValue="@integer/max_favourites_scenes"
-        android:dialogMessage="@string/preference_max_favourite_scenes_summary"
-        android:dialogTitle="@string/preference_standard_recv_port" />
-
-    <EditTextPreference
         android:key="max_favourites_groups"
         android:title="@string/preference_max_favourites_groups"
         android:inputType="number"
-        android:defaultValue="@integer/max_favourites_scenes"
+        android:defaultValue="@integer/max_favourites_groups"
         android:dialogMessage="@string/preference_max_favourites_groups_summary"
         android:dialogTitle="@string/preference_standard_recv_port" />
 

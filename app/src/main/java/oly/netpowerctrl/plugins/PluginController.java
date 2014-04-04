@@ -4,14 +4,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.util.Log;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.datastructure.ExecutionFinished;
+import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 
 /**
@@ -22,6 +27,7 @@ public class PluginController {
     private static final String PLUGIN_RESPONSE_ACTION = "oly.netpowerctrl.plugins.PLUGIN_RESPONSE_ACTION";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.action.QUERY_CONDITION";
     private static final String PAYLOAD_SERVICENAME = "SERVICENAME";
+    private static final String PAYLOAD_PACKAGENAME = "PACKAGENAME";
     private static final String PAYLOAD_LOCALIZED_NAME = "LOCALIZED_NAME";
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
@@ -33,7 +39,7 @@ public class PluginController {
         public void onReceive(Context ctxt, Intent i) {
             if (i.getIntExtra(RESULT_CODE, -1) == INITIAL_VALUES)
                 initialPluginData(i.getStringExtra(PAYLOAD_SERVICENAME),
-                        i.getStringExtra(PAYLOAD_LOCALIZED_NAME));
+                        i.getStringExtra(PAYLOAD_LOCALIZED_NAME), i.getStringExtra(PAYLOAD_PACKAGENAME));
             else
                 Log.w(LOGNAME, i.getStringExtra(PAYLOAD_LOCALIZED_NAME) + "failed");
         }
@@ -55,7 +61,7 @@ public class PluginController {
     }
 
     private void initialPluginData(String serviceName,
-                                   String localized_name) {
+                                   String localized_name, String packageName) {
 
         /**
          * We received a message from a plugin, we already know: ignore
@@ -66,7 +72,7 @@ public class PluginController {
             }
         }
 
-        PluginRemote plugin = PluginRemote.createPluginRemote(serviceName, localized_name);
+        PluginRemote plugin = PluginRemote.createPluginRemote(serviceName, localized_name, packageName);
 
         if (plugin == null) {
             return;
@@ -88,7 +94,7 @@ public class PluginController {
         }
         plugin_by_deviceInfo.remove(plugin.di);
         // Set non reachable and notify
-        plugin.di.reachable = false;
+        plugin.di.setNotReachable("PluginController::remove");
         NetpowerctrlApplication.instance.getService().notifyObservers(plugin.di);
     }
 
@@ -104,17 +110,43 @@ public class PluginController {
 
     public void sendQuery(DeviceInfo di) {
         PluginRemote remote = plugin_by_deviceInfo.get(di);
-        di.reachable = remote != null;
-        if (remote != null)
+        boolean reachable = remote != null;
+
+        if (reachable) {
             remote.requestData();
+        } else {
+            di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+        }
         NetpowerctrlApplication.instance.getService().notifyObservers(di);
     }
 
-    public void execute(DevicePort port, int command) {
+    public void execute(final DevicePort port, final int command, final ExecutionFinished callback) {
         PluginRemote remote = plugin_by_deviceInfo.get(port.device);
-        if (remote == null)
+        if (remote != null) {
+            remote.execute(port, command);
+            if (callback != null)
+                callback.onExecutionFinished(1);
+            return;
+        }
+
+        if (callback == null)
             return;
 
-        remote.setValue(port, command);
+        Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                PluginRemote remote = plugin_by_deviceInfo.get(port.device);
+                if (remote != null)
+                    remote.execute(port, command);
+                callback.onExecutionFinished(1);
+            }
+        }, 1000);
+    }
+
+    public void execute(List<Executor.PortAndCommand> command_list, ExecutionFinished callback) {
+        for (Executor.PortAndCommand p : command_list) {
+            execute(p.port, p.command, callback);
+        }
     }
 }

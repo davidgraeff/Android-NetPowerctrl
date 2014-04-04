@@ -2,7 +2,7 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion '19.0.1'
+    buildToolsVersion '19.0.3'
 
     defaultConfig {
         minSdkVersion 14
@@ -19,6 +19,8 @@ android {
 }
 
 dependencies {
-    compile 'ch.acra:acra:4.5.0@jar'
-    compile 'com.android.support:support-v13:+'
+    debugCompile 'ch.acra:acra:4.5.0@jar'
+    debugCompile 'com.android.support:support-v13:+'
+    releaseCompile 'ch.acra:acra:4.5.0@jar'
+    releaseCompile 'com.android.support:support-v13:+'
 }

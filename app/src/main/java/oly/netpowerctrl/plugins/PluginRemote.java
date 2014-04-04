@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -39,17 +40,21 @@ public class PluginRemote {
     private Map<Integer, DevicePort> pre_actions_trigger = new TreeMap<Integer, DevicePort>();
     private boolean receiveFinished = false;
 
+    private List<String> remote_states;
+    private int remote_success_state;
+
     private INetPwrCtrlPlugin service = null;
     private ServiceConnection svcConn = new ServiceConnection() {
         public void onServiceConnected(ComponentName className,
                                        IBinder binder) {
+            serviceName = className.getClassName();
             service = INetPwrCtrlPlugin.Stub.asInterface(binder);
             requestData();
         }
 
         public void onServiceDisconnected(ComponentName className) {
             service = null;
-            PluginController c = NetpowerctrlApplication.instance.getPluginController();
+            PluginController c = NetpowerctrlApplication.getPluginController();
             if (c == null)
                 return;
             c.remove(PluginRemote.this);
@@ -113,15 +118,17 @@ public class PluginRemote {
             di.DevicePorts.clear();
         }
         di.UniqueDeviceID = UniqueDeviceID;
-        di.reachable = true;
+        di.setReachable();
         di.DeviceName = localized_name;
         di.HostName = serviceName;
     }
 
-    static PluginRemote createPluginRemote(String serviceName, String localized_name) {
+    static PluginRemote createPluginRemote(String serviceName, String localized_name, String packageName) {
         Context context = NetpowerctrlApplication.instance;
         PluginRemote r = new PluginRemote(context, serviceName, localized_name);
-        if (!context.bindService(new Intent(INetPwrCtrlPlugin_NAME), r.svcConn, Context.BIND_AUTO_CREATE)) {
+        Intent in = new Intent();
+        in.setClassName(packageName, serviceName);
+        if (!context.bindService(in, r.svcConn, Context.BIND_AUTO_CREATE)) {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
             return null;
         } else {
@@ -134,7 +141,10 @@ public class PluginRemote {
         context.unbindService(svcConn);
     }
 
-    public void setValue(DevicePort port, int command) {
+    public void execute(DevicePort port, int command) {
+        if (service == null)
+            return;
+
         try {
             switch (port.getType()) {
                 case TypeRangedValue:
@@ -149,6 +159,8 @@ public class PluginRemote {
                     service.updateBooleanValue((int) port.id, command == DevicePort.ON);
                     break;
             }
+        } catch (NullPointerException e) {
+            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         } catch (android.os.RemoteException e) {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         }
@@ -158,24 +170,28 @@ public class PluginRemote {
         private String current_header = "";
 
         @Override
+        public void initDone(List<String> states, int success_state) throws RemoteException {
+            remote_states = states;
+            remote_success_state = success_state;
+            di.HostName = serviceName;
+        }
+
+        @Override
         public void pluginState(int state) {
-            Log.w("pluginState", "pluginState" + String.valueOf(state));
-            di.reachable = state == 1;
-            receiveFinished = false;
-            if (state == 0 || service == null) {
-                di.HostName = "Plugin not operable";
+            Log.w("plugin:" + serviceName, "state: " + remote_states.get(state));
+
+            if (state != remote_success_state || service == null) {
+                di.setNotReachable(remote_states.get(state));
                 Handler h = new Handler(context.getMainLooper());
                 h.post(new Runnable() {
                     public void run() {
                         NetpowerctrlApplication.instance.getService().notifyObservers(di);
                     }
                 });
-            } else
-                di.HostName = serviceName;
+            }
 
-            if (state != 1)
-                return;
-
+            di.setReachable();
+            receiveFinished = false;
             try {
                 service.requestValues();
             } catch (RemoteException e) {
@@ -227,7 +243,7 @@ public class PluginRemote {
         }
 
         @Override
-        public void action(final int id, String name) throws RemoteException {
+        public void action(final int id, int groupID, String name) throws RemoteException {
             DevicePort action;
             if (!actions_trigger.containsKey(id)) {
                 action = pre_actions_trigger.get(id);
@@ -238,6 +254,8 @@ public class PluginRemote {
                 actions_trigger.put(id, action);
             } else
                 action = actions_trigger.get(id);
+
+            Log.w("plugin:" + serviceName, "action " + name);
 
             if (current_header.length() > 0)
                 name = current_header + " " + name;
@@ -264,7 +282,7 @@ public class PluginRemote {
     void post() {
         if (!receiveFinished)
             return;
-        Log.w("post", "done");
+        Log.w("plugin:" + serviceName, "receiving done");
         Handler h = new Handler(context.getMainLooper());
         h.post(new Runnable() {
             public void run() {

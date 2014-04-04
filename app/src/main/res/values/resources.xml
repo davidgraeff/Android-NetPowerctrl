@@ -21,7 +21,6 @@
     <item format="integer" name="grid_columns_outlets" type="integer">1</item>
     <item format="integer" name="grid_columns_scenes" type="integer">3</item>
 
-    <item format="integer" name="max_favourites_scenes" type="integer">2</item>
     <item format="integer" name="max_favourites_groups" type="integer">6</item>
 
 </resources>
