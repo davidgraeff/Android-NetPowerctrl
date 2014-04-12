@@ -27,7 +27,7 @@ public class Scene {
     public Bitmap getBitmap() {
         if (bitmap == null) {
             bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, uuid,
-                    Icons.IconType.SceneIcon, R.drawable.netpowerctrl);
+                    Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, R.drawable.netpowerctrl);
         }
         return bitmap;
     }
@@ -200,4 +200,8 @@ public class Scene {
         return null;
     }
 
+    public static class PortAndCommand {
+        public DevicePort port;
+        public Integer command;
+    }
 }

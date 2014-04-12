@@ -18,22 +18,22 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.network.DeviceError;
+import oly.netpowerctrl.datastructure.PluginInterface;
 import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceUpdate;
-import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
-import oly.netpowerctrl.network.NetpowerctrlService;
 import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  */
-public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpdateStateOrTimeout, DeviceUpdate, DeviceError {
+public class ConfigureDeviceFragment extends DialogFragment implements DeviceQueryResult, DeviceUpdate {
     private static final String DEVICE_PARAMETER = "device";
 
     private enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
 
     private TestStates test_state = TestStates.TEST_INIT;
     private DeviceInfo device;
+    private DeviceQuery deviceQuery;
 
     public ConfigureDeviceFragment() {
     }
@@ -51,7 +51,12 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             return;
 
         test_state = TestStates.TEST_REACHABLE;
-        new DeviceQuery(this, device);
+
+        PluginInterface pi = device.getPluginInterface();
+        assert pi != null;
+        pi.prepareForDevices(device);
+
+        deviceQuery = new DeviceQuery(this, device);
     }
 
     private void saveDevice() {
@@ -74,10 +79,10 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
     }
 
     private void saveAndFinish() {
-        NetpowerctrlService listenService = NetpowerctrlApplication.instance.getService();
-        if (listenService != null) {
-            listenService.restartDiscoveryThreads();
-        }
+        PluginInterface pi = device.getPluginInterface();
+        assert pi != null;
+        pi.prepareForDevices(device);
+
         NetpowerctrlApplication.getDataController().addToConfiguredDevices(device, true);
         //noinspection ConstantConditions
         getFragmentManager().popBackStack();
@@ -85,12 +90,6 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
 
     @Override
     public void onDestroy() {
-        NetpowerctrlService listenService = NetpowerctrlApplication.instance.getService();
-        if (listenService != null) {
-            listenService.removeTemporaryDevice(device);
-            listenService.unregisterDeviceUpdateObserver(this);
-            listenService.unregisterDeviceErrorObserver(this);
-        }
         super.onDestroy();
     }
 
@@ -175,13 +174,6 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             getFragmentManager().popBackStack();
             return;
         }
-
-        NetpowerctrlService listenService = NetpowerctrlApplication.instance.getService();
-        if (listenService != null) {
-            listenService.replaceTemporaryDevice(device);
-            listenService.registerDeviceUpdateObserver(this);
-            listenService.registerDeviceErrorObserver(this);
-        }
     }
 
     @Override
@@ -197,6 +189,11 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
 
     @Override
     public void onDeviceUpdated(DeviceInfo di) {
+        onDeviceUpdated(di, false);
+    }
+
+    @Override
+    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
         if (!di.HostName.equals(device.HostName))
             return;
 
@@ -209,13 +206,18 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            AnelExecutor.execute(device.DevicePorts.get(0), device.DevicePorts.get(0).current_value, null);
+            PluginInterface pi = device.getPluginInterface();
+            assert pi != null;
+            if (deviceQuery != null) {
+                deviceQuery.addDevice(device, false);
+            }
+            pi.execute(device.DevicePorts.get(0), device.DevicePorts.get(0).current_value, null);
             Handler handler = new Handler();
             // Timeout is 1,1s
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (test_state == TestStates.TEST_ACCESS) {
+                    if (test_state == TestStates.TEST_ACCESS || test_state == TestStates.TEST_INIT) {
                         test_state = TestStates.TEST_INIT;
                         //noinspection ConstantConditions
                         Toast.makeText(getActivity(),
@@ -238,9 +240,9 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceUpd
     }
 
     @Override
-    public void onDeviceError(String deviceName, String errMessage) {
+    public void onDeviceError(DeviceInfo di, String error_message) {
         if (test_state == TestStates.TEST_ACCESS) {
-            if (deviceName.equals(device.DeviceName)) {
+            if (di.equals(device)) {
                 test_state = TestStates.TEST_INIT;
             }
         }

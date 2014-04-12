@@ -1,13 +1,15 @@
 package oly.netpowerctrl.anel;
 
+import android.os.Handler;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.network.NetpowerctrlService;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
@@ -15,10 +17,10 @@ public class AnelDeviceDiscoveryThread extends Thread {
     private int receive_port;
     private boolean keep_running;
     private DatagramSocket socket;
-    private NetpowerctrlService service;
+    private AnelPlugin anelPlugin;
 
-    public AnelDeviceDiscoveryThread(int port, NetpowerctrlService service) {
-        this.service = service;
+    public AnelDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
+        this.anelPlugin = anelPlugin;
         receive_port = port;
         socket = null;
     }
@@ -39,11 +41,11 @@ public class AnelDeviceDiscoveryThread extends Thread {
                 socket.close();
             } catch (final IOException e) {
                 if (keep_running) { // no message if we were interrupt()ed
-                    String msg = String.format(service.getResources().getString(R.string.error_listen_thread_exception), receive_port);
+                    String msg = String.format(NetpowerctrlApplication.instance.getResources().getString(R.string.error_listen_thread_exception), receive_port);
                     msg += e.getLocalizedMessage();
                     if (receive_port < 1024)
-                        msg += service.getResources().getString(R.string.error_port_lt_1024);
-                    ShowToast.FromOtherThread(service, msg);
+                        msg += NetpowerctrlApplication.instance.getResources().getString(R.string.error_port_lt_1024);
+                    ShowToast.FromOtherThread(NetpowerctrlApplication.instance, msg);
                 }
                 break;
             }
@@ -59,9 +61,9 @@ public class AnelDeviceDiscoveryThread extends Thread {
         super.interrupt();
     }
 
-    static DeviceInfo createReceivedAnelDevice(String DeviceName, String HostName,
-                                               String MacAddress, int receive_port) {
-        DeviceInfo di = DeviceInfo.createNewDevice(DeviceInfo.DeviceType.AnelDevice);
+    private DeviceInfo createReceivedAnelDevice(String DeviceName, String HostName,
+                                                String MacAddress, int receive_port) {
+        DeviceInfo di = DeviceInfo.createNewDevice(anelPlugin.getPluginID());
         di.DeviceName = DeviceName;
         di.HostName = HostName;
         di.UniqueDeviceID = MacAddress;
@@ -77,13 +79,21 @@ public class AnelDeviceDiscoveryThread extends Thread {
     }
 
     void parsePacket(final String message, int receive_port) {
-        String msg[] = message.split(":");
+        final String msg[] = message.split(":");
         if (msg.length < 3) {
             return;
         }
 
         if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
-            service.notifyErrorObservers(msg[1].trim(), msg[2].trim());
+            new Handler(NetpowerctrlApplication.instance.getMainLooper()).post(new Runnable() {
+                public void run() {
+                    String errMessage = msg[2].trim();
+                    if (errMessage.trim().equals("NoPass"))
+                        errMessage = NetpowerctrlApplication.instance.getString(R.string.error_nopass);
+                    NetpowerctrlApplication.getDataController().onDeviceErrorByName(msg[1].trim(), errMessage);
+                }
+            });
+
             return;
         }
 
@@ -115,7 +125,7 @@ public class AnelDeviceDiscoveryThread extends Thread {
 
                     DevicePort oi = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
                     oi.id = (i - 16 + 1) + 10; // 1-based, and for IO we add 10. range: 11..19
-                    oi.setDescriptionByDevice(io_port[0]);
+                    oi.setDescription(io_port[0]);
                     oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
                     di.DevicePorts.add(oi);
                 }
@@ -136,7 +146,7 @@ public class AnelDeviceDiscoveryThread extends Thread {
                 continue;
             DevicePort oi = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
             oi.id = i + 1; // 1-based
-            oi.setDescriptionByDevice(outlet[0]);
+            oi.setDescription(outlet[0]);
             if (outlet.length > 1)
                 oi.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;
             oi.Disabled = (disabledOutlets & (1 << i)) != 0;
@@ -144,6 +154,17 @@ public class AnelDeviceDiscoveryThread extends Thread {
             di.DevicePorts.add(oi);
         }
 
-        service.notifyObservers(di);
+        new Handler(NetpowerctrlApplication.instance.getMainLooper()).post(new Runnable() {
+            public void run() {
+                NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
+            }
+        });
+    }
+
+    /**
+     * @return Return the receive port of this thread
+     */
+    public int getPort() {
+        return receive_port;
     }
 }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:paddingLeft="5dip"
+    android:paddingRight="5dip"
+    android:background="?item_selector">
+
+    <ImageView
+        android:id="@+id/icon_bitmap"
+        android:layout_width="match_parent"
+        android:layout_height="128dp"
+        android:gravity="center_horizontal" />
+
+    <ImageView
+        android:id="@+id/icon_edit"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@android:drawable/ic_menu_edit"
+        android:layout_alignBottom="@id/icon_bitmap"
+        android:layout_alignRight="@id/icon_bitmap" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:singleLine="true"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_below="@id/icon_bitmap" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:singleLine="true"
+        android:textSize="12sp"
+        android:layout_below="@id/title" />
+
+    <SeekBar
+        android:id="@+id/item_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:paddingTop="7dp"
+        android:paddingBottom="5dp"
+        android:focusable="false"
+        android:thumb="@android:color/transparent"
+        android:focusableInTouchMode="false"
+        android:layout_below="@id/subtitle" />
+
+</RelativeLayout>

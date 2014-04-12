@@ -14,29 +14,27 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.network.DevicesUpdate;
+import oly.netpowerctrl.network.DeviceUpdate;
 
-public class DeviceListAdapter extends BaseExpandableListAdapter implements DevicesUpdate {
+public class DevicesAdapter extends BaseExpandableListAdapter implements DeviceUpdate {
     private LayoutInflater inflater;
     private boolean showNewDevices;
 
-    public DeviceListAdapter(Context context, boolean showNewDevices) {
+    public DevicesAdapter(Context context, boolean showNewDevices) {
         this.showNewDevices = showNewDevices;
         inflater = LayoutInflater.from(context);
-        NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
-        if (showNewDevices) {
-            NetpowerctrlApplication.getDataController().registerNewDeviceObserver(this);
-        }
+        onResume();
     }
 
-    /**
-     * Call this "Destructor" while your activity is destroyed.
-     * This will remove all remaining references to this object.
-     */
-    public void finish() {
-        NetpowerctrlApplication.getDataController().unregisterConfiguredObserver(this);
+    public void onPause() {
+        NetpowerctrlApplication.getDataController().unregisterConfiguredDeviceChangeObserver(this);
+        NetpowerctrlApplication.getDataController().unregisterNewDeviceObserver(this);
+    }
+
+    public void onResume() {
+        NetpowerctrlApplication.getDataController().registerConfiguredDeviceChangeObserver(this);
         if (showNewDevices) {
-            NetpowerctrlApplication.getDataController().unregisterNewDeviceObserver(this);
+            NetpowerctrlApplication.getDataController().registerNewDeviceObserver(this);
         }
     }
 
@@ -71,7 +69,7 @@ public class DeviceListAdapter extends BaseExpandableListAdapter implements Devi
     }
 
     @Override
-    public void onDevicesUpdated(List<DeviceInfo> changed_devices) {
+    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
         notifyDataSetChanged();
     }
 
@@ -165,4 +163,5 @@ public class DeviceListAdapter extends BaseExpandableListAdapter implements Devi
     public boolean isChildSelectable(int i, int i2) {
         return true;
     }
+
 }

@@ -1,41 +1,50 @@
 package oly.netpowerctrl.application_state;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import android.content.Context;
+import android.graphics.Bitmap;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
+import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.datastructure.ExecutionFinished;
 import oly.netpowerctrl.datastructure.Groups;
+import oly.netpowerctrl.datastructure.PluginInterface;
+import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
-import oly.netpowerctrl.network.DeviceError;
+import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
-import oly.netpowerctrl.network.DevicesUpdate;
+import oly.netpowerctrl.network.RuntimeDataControllerStateChanged;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * All configured/new devices are listed here, together with
  * observers.
  */
-public class RuntimeDataController implements DeviceUpdate, DeviceError {
+public class RuntimeDataController {
     public ArrayList<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
     public ArrayList<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
     public Groups groups;
     public SceneCollection scenes;
+    private boolean initialDataQueryCompleted = false;
 
-    private ArrayList<DevicesUpdate> observersConfigured = new ArrayList<DevicesUpdate>();
-    private ArrayList<DevicesUpdate> observersNew = new ArrayList<DevicesUpdate>();
+    private WeakHashMap<RuntimeDataControllerStateChanged, Boolean> observersStateChanged = new WeakHashMap<RuntimeDataControllerStateChanged, Boolean>();
+    private WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<DeviceUpdate, Boolean>();
+    private WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<DeviceUpdate, Boolean>();
 
-    private List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
+    private final List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
 
     RuntimeDataController() {
         groups = SharedPrefs.readGroups();
@@ -65,42 +74,56 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         return ports;
     }
 
+
     @SuppressWarnings("unused")
-    public boolean registerConfiguredObserver(DevicesUpdate o) {
-        if (!observersConfigured.contains(o)) {
-            observersConfigured.add(o);
-            return true;
-        }
-        return false;
+    public void registerConfiguredDeviceChangeObserver(DeviceUpdate o) {
+        observersConfiguredDevice.put(o, true);
     }
 
     @SuppressWarnings("unused")
-    public void unregisterConfiguredObserver(DevicesUpdate o) {
-        observersConfigured.remove(o);
+    public void unregisterConfiguredDeviceChangeObserver(DeviceUpdate o) {
+        observersConfiguredDevice.remove(o);
     }
 
-    void notifyConfiguredObservers(List<DeviceInfo> changed_devices) {
-        for (DevicesUpdate o : observersConfigured)
-            o.onDevicesUpdated(changed_devices);
-    }
-
-    @SuppressWarnings("unused")
-    public boolean registerNewDeviceObserver(DevicesUpdate o) {
-        if (!observersNew.contains(o)) {
-            observersNew.add(o);
-            return true;
-        }
-        return false;
+    void notifyConfiguredDeviceChangeObservers(DeviceInfo di, boolean willBeRemoved) {
+        for (DeviceUpdate o : observersConfiguredDevice.keySet())
+            o.onDeviceUpdated(di, willBeRemoved);
     }
 
     @SuppressWarnings("unused")
-    public void unregisterNewDeviceObserver(DevicesUpdate o) {
+    public void registerRuntimeDataControllerStateChanged(RuntimeDataControllerStateChanged o) {
+        observersStateChanged.put(o, true);
+    }
+
+    @SuppressWarnings("unused")
+    public void unregisterRuntimeDataControllerStateChanged(RuntimeDataControllerStateChanged o) {
+        observersStateChanged.remove(o);
+    }
+
+    void notifyStateReloaded() {
+        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
+            o.onDataReloaded();
+    }
+
+    void notifyStateQueryFinished() {
+        initialDataQueryCompleted = true;
+        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
+            o.onDataQueryFinished();
+    }
+
+    @SuppressWarnings("unused")
+    public void registerNewDeviceObserver(DeviceUpdate o) {
+        observersNew.put(o, true);
+    }
+
+    @SuppressWarnings("unused")
+    public void unregisterNewDeviceObserver(DeviceUpdate o) {
         observersNew.remove(o);
     }
 
-    private void notifyNewDeviceObservers(List<DeviceInfo> new_devices) {
-        for (DevicesUpdate o : observersNew)
-            o.onDevicesUpdated(new_devices);
+    private void notifyNewDeviceObservers(DeviceInfo di, boolean removedFromNew) {
+        for (DeviceUpdate o : observersNew.keySet())
+            o.onDeviceUpdated(di, removedFromNew);
     }
 
 
@@ -113,10 +136,10 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     }
 
     public void clear() {
-        //            Log.w("stopUseListener","ObserverConfigured: "+Integer.valueOf(observersConfigured.size()).toString() +
+        //            Log.w("stopUseListener","ObserverConfigured: "+Integer.valueOf(observersStateChanged.size()).toString() +
 //                    " ObserverNew: "+Integer.valueOf(observersNew.size()).toString()+
 //                    " updateDevices: "+Integer.valueOf(updateDeviceStateList.size()).toString());
-//            for (DevicesUpdate dq: observersConfigured)
+//            for (RuntimeDataControllerStateChanged dq: observersStateChanged)
 //                Log.w("ObserverConfigured_",dq.getClass().toString());
 
         // There shouldn't be any device-listen observers anymore,
@@ -136,6 +159,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         // induces a flicker where we can first observe all outlets set to off and
         // within a fraction of a second the actual values are applied.
         // Therefore we update by hand without touching outlet states.
+        boolean isReload = configuredDevices.size() > 0;
         Iterator<DeviceInfo> oldEntriesIt = configuredDevices.iterator();
         while (oldEntriesIt.hasNext()) {
             // remove scenes not existing anymore
@@ -168,12 +192,12 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
                 configuredDevices.add(new_di);
             }
         }
-        notifyConfiguredObservers(newEntries);
+        notifyStateReloaded();
     }
 
     public void clearNewDevices() {
         newDevices.clear();
-        notifyNewDeviceObservers(newDevices);
+        notifyNewDeviceObservers(null, true);
     }
 
     public void addToConfiguredDevices(DeviceInfo current_device, boolean write_to_disk) {
@@ -196,8 +220,8 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         // Remove from new devices list
         for (int i = 0; i < newDevices.size(); ++i) {
             if (newDevices.get(i).UniqueDeviceID.equals(current_device.UniqueDeviceID)) {
+                notifyNewDeviceObservers(newDevices.get(i), true);
                 newDevices.remove(i);
-                notifyNewDeviceObservers(newDevices);
                 break;
             }
         }
@@ -213,23 +237,25 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     }
 
     public void deleteConfiguredDevice(int position) {
-        configuredDevices.get(position).configured = false;
+        DeviceInfo di = configuredDevices.get(position);
+        di.configured = false;
         configuredDevices.remove(position);
+        notifyConfiguredDeviceChangeObservers(di, true);
         saveConfiguredDevices(true);
     }
 
-    @Override
+    /**
+     * Call this by your plugin if a device changed
+     *
+     * @param device_info
+     */
     public void onDeviceUpdated(DeviceInfo device_info) {
         // if it matches a configured device, update it's outlet states
         for (DeviceInfo target : configuredDevices) {
             if (!device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
                 continue;
             target.copyFreshValues(device_info);
-
-            // notify all observers
-            List<DeviceInfo> updates_devices = new ArrayList<DeviceInfo>();
-            updates_devices.add(target);
-            notifyConfiguredObservers(updates_devices);
+            notifyConfiguredDeviceChangeObservers(device_info, false);
 
             // notify observers who are using the DeviceQuery class
             Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
@@ -242,6 +268,14 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
             return;
         }
 
+        // notify observers who are using the DeviceQuery class
+        Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
+        while (it.hasNext()) {
+            // Return true if the DeviceQuery object has finished its task.
+            if (it.next().notifyObservers(device_info))
+                it.remove();
+        }
+
         // Do we have this new device already in the list?
         for (DeviceInfo target : newDevices) {
             if (device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
@@ -249,18 +283,20 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         }
         // No: Add device to new_device list
         newDevices.add(device_info);
-        notifyNewDeviceObservers(newDevices);
+        notifyNewDeviceObservers(device_info, false);
     }
 
-    @Override
-    public void onDeviceError(String deviceName, String errMessage) {
+    public void onDeviceErrorByName(String name, String errMessage) {
+        // notify observers who are using the DeviceQuery class
+        Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
+        while (it.hasNext()) {
+            // Return true if the DeviceQuery object has finished its task.
+            if (it.next().notifyObservers(name))
+                it.remove();
+        }
+
         // error packet received
-        String desc;
-        if (errMessage.trim().equals("NoPass"))
-            desc = NetpowerctrlApplication.instance.getString(R.string.error_nopass);
-        else
-            desc = errMessage;
-        String error = NetpowerctrlApplication.instance.getString(R.string.error_packet_received) + ": " + desc;
+        String error = NetpowerctrlApplication.instance.getString(R.string.error_packet_received) + ": " + errMessage;
         ShowToast.FromOtherThread(NetpowerctrlApplication.instance, error);
     }
 
@@ -268,7 +304,7 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
     public void saveConfiguredDevices(boolean updateObservers) {
         SharedPrefs.SaveConfiguredDevices(configuredDevices);
         if (updateObservers)
-            notifyConfiguredObservers(configuredDevices);
+            notifyStateReloaded();
     }
 
     public int getReachableConfiguredDevices() {
@@ -310,22 +346,64 @@ public class RuntimeDataController implements DeviceUpdate, DeviceError {
         return null;
     }
 
-    public boolean onlyLinkLocalDevices() {
-        boolean linkLocals = true;
-        for (DeviceInfo di : configuredDevices) {
-            if (di.deviceType != DeviceInfo.DeviceType.AnelDevice)
+    public void rename(DevicePort port, String new_name, DevicePortRenamed callback) {
+        if (callback != null)
+            callback.devicePort_start_rename(port);
+
+        PluginInterface remote = port.device.getPluginInterface();
+        if (remote != null) {
+            remote.rename(port, new_name, callback);
+            if (callback != null)
+                callback.devicePort_renamed(port, true, null);
+            return;
+        } else if (callback != null)
+            callback.devicePort_renamed(port, false, NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+    }
+
+    public void execute(Scene scene, ExecutionFinished callback) {
+        Set<PluginInterface> pluginInterfaces = new TreeSet<PluginInterface>();
+        for (Scene.SceneItem item : scene.sceneItems) {
+            DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(item.uuid);
+            if (p == null)
                 continue;
 
-            try {
-                InetAddress address = InetAddress.getByName(di.HostName);
-                linkLocals &= (address.isLinkLocalAddress() || address.isSiteLocalAddress());
-            } catch (UnknownHostException e) {
-                // we couldn't resolve the device hostname to an IP address. One reason is, that
-                // the user entered a dns name instead of an IP (and the dns server is not reachable
-                // at the moment). Therefore we assume that there not only link local addresses.
-                return false;
-            }
+            PluginInterface remote = p.device.getPluginInterface();
+            if (remote == null)
+                continue;
+
+            remote.addToTransaction(p, item.command);
+            pluginInterfaces.add(remote);
         }
-        return linkLocals;
+
+        for (PluginInterface p : pluginInterfaces) {
+            p.executeTransaction(callback);
+        }
+    }
+
+    public void execute(final DevicePort port, final int command, final ExecutionFinished callback) {
+        PluginInterface remote = port.device.getPluginInterface();
+        if (remote != null) {
+            remote.execute(port, command, callback);
+            return;
+        }
+
+        if (callback == null)
+            return;
+
+        callback.onExecutionFinished(1);
+    }
+
+    public boolean isInitialDataQueryCompleted() {
+        return initialDataQueryCompleted;
+    }
+
+    public void setDevicePortBitmap(Context context, DevicePort port, Bitmap bitmap) {
+        if (port == null)
+            return;
+
+        Icons.saveIcon(context, port.uuid,
+                Icons.resizeBitmap(context, bitmap, 128, 128),
+                Icons.IconType.DevicePortIcon, port.getIconState());
+        notifyConfiguredDeviceChangeObservers(port.device, false);
     }
 }

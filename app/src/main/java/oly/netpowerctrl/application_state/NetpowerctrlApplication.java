@@ -19,11 +19,10 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceSend;
-import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
 import oly.netpowerctrl.network.NetpowerctrlService;
 import oly.netpowerctrl.network.ServiceReady;
-import oly.netpowerctrl.plugins.PluginController;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
@@ -45,7 +44,6 @@ public class NetpowerctrlApplication extends Application {
     private int mDiscoverServiceRefCount = 0;
     private NetpowerctrlService mDiscoverService;
     private boolean mWaitForService;
-    private PluginController pluginController;
     private ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
 
     public boolean isServiceReady() {
@@ -120,11 +118,6 @@ public class NetpowerctrlApplication extends Application {
             // stop send queue
             DeviceSend.instance().interrupt();
 
-            if (pluginController != null) {
-                pluginController.finish();
-                pluginController = null;
-            }
-
             if (SharedPrefs.notifyOnStop()) {
                 ShowToast.FromOtherThread(NetpowerctrlApplication.this, getString(R.string.service_stopped));
             }
@@ -158,12 +151,11 @@ public class NetpowerctrlApplication extends Application {
      */
     private boolean isDetecting = false;
 
-    public void detectNewDevicesAndReachability() {
+    public void detectNewDevicesAndReachability(final DeviceQueryResult callback) {
 
         // The following mechanism allows only one update request within a
-        // 1sec timeframe and only if the service is available and not in reduced mode.
-        if (isDetecting || mWaitForService || mDiscoverService == null ||
-                mDiscoverService.isNetworkReducedMode)
+        // 1sec timeframe and only if the service is available.
+        if (isDetecting || mWaitForService || mDiscoverService == null)
             return;
 
         isDetecting = true;
@@ -176,7 +168,7 @@ public class NetpowerctrlApplication extends Application {
         }, 1000);
 
         // First try a broadcast
-        new DeviceQuery(new DeviceUpdateStateOrTimeout() {
+        new DeviceQuery(new DeviceQueryResult() {
             @Override
             public void onDeviceTimeout(DeviceInfo di) {
                 di.updated = System.currentTimeMillis();
@@ -187,24 +179,23 @@ public class NetpowerctrlApplication extends Application {
             }
 
             @Override
+            public void onDeviceError(DeviceInfo di, String error_message) {
+            }
+
+            @Override
             public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+                dataController.notifyStateQueryFinished();
+                if (callback != null)
+                    callback.onDeviceQueryFinished(timeout_devices);
+
                 if (timeout_devices.size() == 0)
                     return;
 
                 // Do we need to go into network reduced mode?
                 List<DeviceInfo> remaining = new ArrayList<DeviceInfo>(dataController.configuredDevices);
                 remaining.removeAll(timeout_devices);
-                boolean containsNetworkReachableDevices = false;
-                for (DeviceInfo di : remaining) {
-                    if (di.deviceType == DeviceInfo.DeviceType.AnelDevice) {
-                        containsNetworkReachableDevices = true;
-                        break;
-                    }
-                }
-                if (!containsNetworkReachableDevices)
-                    mDiscoverService.setNetworkReducedMode();
-
-                dataController.notifyConfiguredObservers(timeout_devices);
+                if (remaining.size() == 0)
+                    mDiscoverService.finish();
             }
         });
     }
@@ -220,18 +211,12 @@ public class NetpowerctrlApplication extends Application {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             NetpowerctrlService.LocalBinder binder = (NetpowerctrlService.LocalBinder) service;
             mDiscoverService = binder.getService();
-            mDiscoverService.registerDeviceErrorObserver(dataController);
-            mDiscoverService.registerDeviceUpdateObserver(dataController);
             if (mDiscoverServiceRefCount == 0)
                 mDiscoverServiceRefCount = 1;
             mWaitForService = false;
 
-            // Plugins
-            if (SharedPrefs.getLoadExtensions())
-                pluginController = new PluginController();
-
             // We do a device detection in the wifi change listener already
-            detectNewDevicesAndReachability();
+            detectNewDevicesAndReachability(null);
 
             // Notify all observers that we are ready
             notifyServiceReady();
@@ -247,12 +232,8 @@ public class NetpowerctrlApplication extends Application {
         }
     };
 
-    public NetpowerctrlService getService() {
-        return mDiscoverService;
-    }
-
-    static public PluginController getPluginController() {
-        return instance.pluginController;
+    static public NetpowerctrlService getService() {
+        return instance.mDiscoverService;
     }
 
     static public RuntimeDataController getDataController() {

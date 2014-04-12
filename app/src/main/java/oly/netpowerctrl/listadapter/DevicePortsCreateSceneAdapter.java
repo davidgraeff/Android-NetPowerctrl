@@ -92,7 +92,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         } else if (type == DevicePort.DevicePortType.TypeRangedValue) {
             outlet_res_id = R.layout.create_scene_outlet_list_ranged;
             convertView = super.getView(position, convertView, parent);
-            SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.outlet_list_seekbar);
+            SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
             //current_viewHolder.seekBar
             seekBar.setTag(position);
             seekBar.setMax(info.port.max_value);

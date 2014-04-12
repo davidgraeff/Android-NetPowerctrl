@@ -18,7 +18,6 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -27,7 +26,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     protected ListItemMenu mListItemMenu = null;
     protected int nextId = 0; // we need stable IDs for the gridView
-    protected int outlet_res_id = R.layout.outlet_list_item;
+    protected int outlet_res_id = R.layout.list_icon_item;
     protected boolean showHidden = true;
     protected ViewHolder current_viewHolder;
 
@@ -36,15 +35,15 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     //ViewHolder pattern
     protected static class ViewHolder implements View.OnClickListener {
-        ImageView imageView;
+        ImageView imageIcon;
+        ImageView imageEdit;
         //LinearLayout mainTextView;
         View entry;
         SeekBar seekBar;
-        TextView portName;
-        TextView deviceName;
+        TextView title;
+        TextView subtitle;
         boolean isNew = true;
 
-        Bitmap bitmapDefault;
         Bitmap bitmapOn;
         Bitmap bitmapOff;
         public int position;
@@ -52,12 +51,13 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
         ViewHolder(View convertView, ListItemMenu listContextMenu) {
             mListContextMenu = listContextMenu;
-            imageView = (ImageView) convertView.findViewById(R.id.outlet_list_bitmap);
-            seekBar = (SeekBar) convertView.findViewById(R.id.outlet_list_seekbar);
+            imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
+            imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
+            seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
             //mainTextView = (LinearLayout) convertView.findViewById(R.id.outlet_list_text);
-            entry = convertView.findViewById(R.id.outlet_list_entry);
-            portName = (TextView) convertView.findViewById(R.id.outlet_list_portname);
-            deviceName = (TextView) convertView.findViewById(R.id.outlet_list_text_devicename);
+            entry = convertView.findViewById(R.id.item_layout);
+            title = (TextView) convertView.findViewById(R.id.title);
+            subtitle = (TextView) convertView.findViewById(R.id.subtitle);
         }
 
         @Override
@@ -105,6 +105,15 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         this.filterGroup = groupFilter;
     }
 
+    public int getLayoutRes() {
+        return outlet_res_id;
+    }
+
+    public void setLayoutRes(int layout_res) {
+        this.outlet_res_id = layout_res;
+        notifyDataSetChanged();
+    }
+
     protected DevicePortsBaseAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
         this.mListContextMenu = mListContextMenu;
         this.context = context;
@@ -127,17 +136,6 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             addItem(port, sceneItem.command);
         }
         notifyDataSetChanged();
-    }
-
-    public List<Executor.PortAndCommand> getDeviceCommands() {
-        List<Executor.PortAndCommand> list_of_scene_outlets = new ArrayList<Executor.PortAndCommand>();
-        for (DevicePortListItem info : all_outlets) {
-            Executor.PortAndCommand p = new Executor.PortAndCommand();
-            p.port = info.port;
-            p.command = info.command_value;
-            list_of_scene_outlets.add(p);
-        }
-        return list_of_scene_outlets;
     }
 
     public List<Scene.SceneItem> getScene() {
@@ -183,13 +181,13 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         current_viewHolder.entry.setAlpha(info.port.Hidden ? 0.5f : 1.0f);
         current_viewHolder.entry.setEnabled(info.isEnabled());
 
-        current_viewHolder.portName.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-        current_viewHolder.portName.setText(info.port.getDescription());
-        current_viewHolder.portName.setEnabled(info.isEnabled());
+        current_viewHolder.title.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+        current_viewHolder.title.setText(info.port.getDescription());
+        current_viewHolder.title.setEnabled(info.isEnabled());
 
-        current_viewHolder.deviceName.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-        current_viewHolder.deviceName.setText(info.port.device.DeviceName);
-        current_viewHolder.deviceName.setEnabled(info.isEnabled());
+        current_viewHolder.subtitle.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+        current_viewHolder.subtitle.setText(info.port.device.DeviceName);
+        current_viewHolder.subtitle.setEnabled(info.isEnabled());
 
         return convertView;
     }
@@ -252,7 +250,6 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
                 continue;
             }
 
-            //TODO crash concurrent access
             for (DevicePort oi : device.DevicePorts) {
                 addItem(oi, oi.current_value);
             }

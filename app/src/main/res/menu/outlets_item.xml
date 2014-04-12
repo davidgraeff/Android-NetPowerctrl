@@ -15,4 +15,8 @@
     <item
         android:id="@+id/menu_outlet_removeFromGroup"
         android:title="@string/menu_outlet_removeFromGroup" />
+    <item
+        android:id="@+id/menu_icon"
+        android:title="@string/scene_set_icon" />
+
 </menu>

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -42,9 +43,8 @@ public class Icons {
         return new BitmapDrawable(context.getResources(), image);
     }
 
-    public static UUID uuidFromWidgetID(int widgetId, IconState state) {
-        return new UUID(state == IconState.StateOff ? 0xABCD :
-                (state == IconState.StateOn ? 0xABCE : 0xABCF), (long) widgetId);
+    public static UUID uuidFromWidgetID(int widgetId) {
+        return new UUID(0xABCD, (long) widgetId);
     }
 
     public static enum IconType {
@@ -52,6 +52,12 @@ public class Icons {
         WidgetIcon,
         DevicePortIcon,
         GroupIcon
+    }
+
+    public static enum IconState {
+        StateOn,
+        StateOff,
+        StateUnknown
     }
 
     public static int getResIdForState(IconState state) {
@@ -66,24 +72,9 @@ public class Icons {
         return 0;
     }
 
-    public static Drawable loadStateIconDrawable(Context context, IconState state, UUID uuid) {
-        Bitmap b = loadIcon(context, uuid, Icons.IconType.WidgetIcon, getResIdForState(state));
-        return new BitmapDrawable(context.getResources(), b);
-    }
-
-    public static Bitmap loadStateIconBitmap(Context context, IconState state, UUID uuid) {
-        return loadIcon(context, uuid, Icons.IconType.WidgetIcon, getResIdForState(state));
-    }
-
-    public static enum IconState {
-        StateOn,
-        StateOff,
-        StateUnknown
-    }
-
-    public static void saveIcon(Context context, UUID uuid, Bitmap bitmap, IconType iconType) {
+    public static void saveIcon(Context context, UUID uuid, Bitmap bitmap, IconType iconType, IconState state) {
         @SuppressWarnings("ConstantConditions")
-        String root = context.getExternalFilesDir(iconType.name()).toString();
+        String root = context.getExternalFilesDir(iconType.name() + state.name()).toString();
         File myDir = new File(root);
 
         String fileName = uuid.toString();
@@ -120,6 +111,13 @@ public class Icons {
         }
     }
 
+    /**
+     * Resize a bitmap to the size of an app icon
+     *
+     * @param context
+     * @param bm
+     * @return
+     */
     public static Bitmap resizeBitmap(Context context, Bitmap bm) {
         int width = bm.getWidth();
         int height = bm.getHeight();
@@ -130,6 +128,8 @@ public class Icons {
     }
 
     public static Bitmap resizeBitmap(Context context, Bitmap bm, int newHeightDP, int newWidthDP) {
+        if (bm == null)
+            return null;
         int width = bm.getWidth();
         int height = bm.getHeight();
         DisplayMetrics m = context.getResources().getDisplayMetrics();
@@ -140,9 +140,14 @@ public class Icons {
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
     }
 
-    public static Bitmap loadIcon(Context context, UUID uuid, IconType iconType, int default_resource) {
+    public static Drawable loadDrawable(Context context, IconType iconType, IconState state, UUID uuid) {
+        Bitmap b = loadIcon(context, uuid, iconType, state, getResIdForState(state));
+        return new BitmapDrawable(context.getResources(), b);
+    }
+
+    public static Bitmap loadIcon(Context context, UUID uuid, IconType iconType, IconState state, int default_resource) {
         @SuppressWarnings("ConstantConditions")
-        String root = context.getExternalFilesDir(iconType.name()).toString();
+        String root = context.getExternalFilesDir(iconType.name() + state.name()).toString();
         File myDir = new File(root);
 
         File file = new File(myDir, uuid.toString() + ".png");
@@ -157,7 +162,7 @@ public class Icons {
     }
 
     public static interface IconSelected {
-        void setIcon(Bitmap bitmap);
+        void setIcon(Object context_object, Bitmap bitmap);
 
         void startActivityForResult(Intent intent, int requestCode);
     }
@@ -166,8 +171,9 @@ public class Icons {
     static final int PICK_IMAGE_KITKAT = 2;
 
 
+    private static WeakReference<Object> icon_callback_context_object;
     public static void show_select_icon_dialog(final Context context, String assetSet,
-                                               final IconSelected callback) {
+                                               final IconSelected callback, final Object callback_context_object) {
         AssetManager assetMgr = context.getAssets();
         Bitmap[] list_of_icons = null;
         String[] list_of_icon_paths = null;
@@ -202,8 +208,10 @@ public class Icons {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (i == 0) {
-                    callback.setIcon(null);
+                    callback.setIcon(callback_context_object, null);
                 } else if (i == 1) {
+                    if (callback_context_object != null)
+                        icon_callback_context_object = new WeakReference<Object>(callback_context_object);
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
                         Intent intent = new Intent();
                         intent.setType("image/jpeg");
@@ -219,7 +227,7 @@ public class Icons {
                     }
 
                 } else {
-                    callback.setIcon(list_of_icons_dialog[i - 2]);
+                    callback.setIcon(callback_context_object, list_of_icons_dialog[i - 2]);
                 }
                 dialogInterface.dismiss();
             }
@@ -243,7 +251,9 @@ public class Icons {
             }
             try {
                 Bitmap b = Icons.getDrawableFromUri(context, selectedImage).getBitmap();
-                callback.setIcon(Icons.resizeBitmap(context, b, 128, 128));
+                callback.setIcon(icon_callback_context_object != null ? icon_callback_context_object.get() : null,
+                        Icons.resizeBitmap(context, b, 128, 128));
+                icon_callback_context_object = null;
             } catch (IOException e) {
                 Toast.makeText(context, context.getString(R.string.error_icon),
                         Toast.LENGTH_SHORT).show();

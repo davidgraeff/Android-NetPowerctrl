@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelog>
+    <release
+        version="2.8a"
+        versioncode="37">
+        <change>Absturz bei Szenenerstellung behoben</change>
+        <change>Was ist neu - Dialog</change>
+        <change>Namensänderungen finden jetzt direkt auf dem Gerät statt</change>
+        <change>Mehr Kontrolle über den Energiesparmodus</change>
+        <change>Energiesparmodus überarbeitet</change>
+        <change>Eigene Icons für Steckdosen/IOs. Widget Icons müssen leider neu gesetzt werden.
+        </change>
+        <change>Listen/Rasteransicht für Szenen, Gruppen und Steckdosen</change>
+    </release>
+</changelog>

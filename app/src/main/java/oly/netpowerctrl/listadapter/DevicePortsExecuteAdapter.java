@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,35 +14,52 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.Executor;
-import oly.netpowerctrl.network.DevicesUpdate;
+import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.network.RuntimeDataControllerStateChanged;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
-        DevicesUpdate, SeekBar.OnSeekBarChangeListener {
+        DeviceUpdate, SeekBar.OnSeekBarChangeListener, RuntimeDataControllerStateChanged {
 
     // We block updates while moving the range slider
     private boolean blockUpdates = false;
 
     // Some observers
-    private NotReachableUpdate notReachableObserver;
+    private WeakReference<NotReachableUpdate> notReachableObserver;
 
     public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
         super(context, mListContextMenu, filterGroup);
         showHidden = SharedPrefs.getShowHiddenOutlets(context);
-        NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
-        onDevicesUpdated(null);
+        blockUpdates = !NetpowerctrlApplication.getDataController().isInitialDataQueryCompleted();
+        onResume();
+        if (!blockUpdates)
+            onDeviceUpdated(null, true);
+    }
+
+    public void onPause() {
+        NetpowerctrlApplication.getDataController().unregisterConfiguredDeviceChangeObserver(this);
+        NetpowerctrlApplication.getDataController().unregisterRuntimeDataControllerStateChanged(this);
+    }
+
+    public void onResume() {
+        NetpowerctrlApplication.getDataController().registerConfiguredDeviceChangeObserver(this);
+        NetpowerctrlApplication.getDataController().registerRuntimeDataControllerStateChanged(this);
+    }
+
+    @Override
+    public void onDataReloaded() {
+
     }
 
     /**
-     * Call this "Destructor" while your activity is destroyed.
-     * This will remove all remaining references to this object.
+     * Update view with outlets after a complete device query finished
      */
-    public void finish() {
-        setNotReachableObserver(null);
-        NetpowerctrlApplication.getDataController().unregisterConfiguredObserver(this);
+    @Override
+    public void onDataQueryFinished() {
+        blockUpdates = false;
+        onDeviceUpdated(null, true);
     }
 
     @Override
@@ -63,26 +81,41 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
         // We do this only once, if the viewHolder is new
         if (current_viewHolder.isNew) {
-            current_viewHolder.imageView.setTag(position);
-            current_viewHolder.imageView.setOnClickListener(current_viewHolder);
+            // For a grid view with a dedicated edit button (image) we use that for
+            // setOnClickListener. In the other case we use the main icon for setOnClickListener.
+            if (current_viewHolder.imageEdit != null) {
+                current_viewHolder.imageEdit.setTag(position);
+                current_viewHolder.imageEdit.setOnClickListener(current_viewHolder);
+            } else {
+                current_viewHolder.imageIcon.setTag(position);
+                current_viewHolder.imageIcon.setOnClickListener(current_viewHolder);
+            }
             //current_viewHolder.mainTextView.setTag(position);
             switch (port.getType()) {
                 case TypeToggle: {
                     current_viewHolder.seekBar.setVisibility(View.GONE);
-                    current_viewHolder.bitmapDefault = Icons.loadStateIconBitmap(context, Icons.IconState.StateUnknown, port.uuid);
-                    current_viewHolder.bitmapOff = Icons.loadStateIconBitmap(context, Icons.IconState.StateOff, port.uuid);
-                    current_viewHolder.bitmapOn = Icons.loadStateIconBitmap(context, Icons.IconState.StateOn, port.uuid);
+                    current_viewHolder.bitmapOff = Icons.loadIcon(context, port.uuid,
+                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
+                            Icons.getResIdForState(Icons.IconState.StateOff));
+                    current_viewHolder.bitmapOn = Icons.loadIcon(context, port.uuid,
+                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
+                            Icons.getResIdForState(Icons.IconState.StateOn));
                     break;
                 }
                 case TypeButton: {
-                    current_viewHolder.imageView.setImageResource(R.drawable.netpowerctrl);
+                    current_viewHolder.bitmapOff = Icons.loadIcon(context, port.uuid,
+                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
+                            R.drawable.netpowerctrl);
                     current_viewHolder.seekBar.setVisibility(View.GONE);
                     break;
                 }
                 case TypeRangedValue:
-                    current_viewHolder.imageView.setImageResource(R.drawable.netpowerctrl);
-                    current_viewHolder.bitmapOff = Icons.loadStateIconBitmap(context, Icons.IconState.StateOff, port.uuid);
-                    current_viewHolder.bitmapOn = Icons.loadStateIconBitmap(context, Icons.IconState.StateOn, port.uuid);
+                    current_viewHolder.bitmapOff = Icons.loadIcon(context, port.uuid,
+                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
+                            Icons.getResIdForState(Icons.IconState.StateOff));
+                    current_viewHolder.bitmapOn = Icons.loadIcon(context, port.uuid,
+                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
+                            Icons.getResIdForState(Icons.IconState.StateOn));
                     current_viewHolder.seekBar.setVisibility(View.VISIBLE);
                     current_viewHolder.seekBar.setOnSeekBarChangeListener(this);
                     current_viewHolder.seekBar.setTag(-1);
@@ -94,13 +127,15 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
         // This has to be done more often
         switch (port.getType()) {
+            case TypeButton: {
+                current_viewHolder.imageIcon.setImageBitmap(current_viewHolder.bitmapOff);
+                break;
+            }
             case TypeToggle: {
-                if (port.current_value <= port.min_value)
-                    current_viewHolder.imageView.setImageBitmap(current_viewHolder.bitmapOff);
-                else if (port.current_value >= port.max_value)
-                    current_viewHolder.imageView.setImageBitmap(current_viewHolder.bitmapOn);
+                if (port.current_value >= port.max_value)
+                    current_viewHolder.imageIcon.setImageBitmap(current_viewHolder.bitmapOn);
                 else
-                    current_viewHolder.imageView.setImageBitmap(current_viewHolder.bitmapDefault);
+                    current_viewHolder.imageIcon.setImageBitmap(current_viewHolder.bitmapOff);
 
                 break;
             }
@@ -109,9 +144,9 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 current_viewHolder.seekBar.setProgress(port.current_value - port.min_value);
                 current_viewHolder.seekBar.setTag(position);
                 if (port.current_value <= port.min_value)
-                    current_viewHolder.imageView.setImageBitmap(current_viewHolder.bitmapOff);
+                    current_viewHolder.imageIcon.setImageBitmap(current_viewHolder.bitmapOff);
                 else
-                    current_viewHolder.imageView.setImageBitmap(current_viewHolder.bitmapOn);
+                    current_viewHolder.imageIcon.setImageBitmap(current_viewHolder.bitmapOn);
                 break;
         }
 
@@ -122,24 +157,21 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     public List<DeviceInfo> update(List<DeviceInfo> all_devices) {
         List<DeviceInfo> not_reachable = super.update(all_devices);
 
-        if (notReachableObserver != null)
-            notReachableObserver.onNotReachableUpdate(not_reachable);
+        if (notReachableObserver != null && notReachableObserver.get() != null)
+            notReachableObserver.get().onNotReachableUpdate(not_reachable);
 
         return not_reachable;
     }
 
-    /**
-     * Called if registerConfiguredObserver has been called before and a configured
-     * device changes.
-     *
-     * @param ignored
-     */
     @Override
-    public void onDevicesUpdated(List<DeviceInfo> ignored) {
+    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
         if (blockUpdates)
             return;
 
-        update(NetpowerctrlApplication.getDataController().configuredDevices);
+        if (willBeRemoved)
+            update(NetpowerctrlApplication.getDataController().configuredDevices);
+        else
+            notifyDataSetChanged();
     }
 
     @Override
@@ -150,7 +182,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     public void sortAlphabetically() {
         temporary_ignore_positionRequest = true;
-        onDevicesUpdated(null);
+        update(NetpowerctrlApplication.getDataController().configuredDevices);
         temporary_ignore_positionRequest = false;
     }
 
@@ -160,7 +192,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     public void setShowHidden(boolean b) {
         showHidden = b;
-        onDevicesUpdated(null);
+        update(NetpowerctrlApplication.getDataController().configuredDevices);
         SharedPrefs.setShowHiddenOutlets(showHidden);
     }
 
@@ -170,7 +202,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
      * @param notReachableObserver The object to notify
      */
     public void setNotReachableObserver(NotReachableUpdate notReachableObserver) {
-        this.notReachableObserver = notReachableObserver;
+        this.notReachableObserver = new WeakReference<NotReachableUpdate>(notReachableObserver);
         if (notReachableObserver == null)
             return;
 
@@ -186,7 +218,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     public void handleClick(int position) {
         DevicePortListItem info = all_outlets.get(position);
-        Executor.execute(info.port, DevicePort.TOGGLE, null);
+        NetpowerctrlApplication.getDataController().execute(info.port, DevicePort.TOGGLE, null);
         notifyDataSetChanged();
     }
 
@@ -198,7 +230,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         DevicePortListItem info = all_outlets.get(position);
         info.port.current_value = value + info.port.min_value;
         info.command_value = info.port.current_value;
-        Executor.execute(info.port, info.command_value, null);
+        NetpowerctrlApplication.getDataController().execute(info.port, info.command_value, null);
     }
 
     @Override
@@ -209,6 +241,5 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         blockUpdates = false;
-        onDevicesUpdated(null);
     }
 }

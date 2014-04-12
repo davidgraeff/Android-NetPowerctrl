@@ -15,13 +15,11 @@ import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class WidgetPreferenceFragment extends PreferencesWithValuesFragment implements Icons.IconSelected {
     int widgetId = -1;
-    Preference current;
     Map<Preference, Icons.IconState> preference_to_state = new TreeMap<Preference, Icons.IconState>();
 
     private Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
         public boolean onPreferenceClick(final Preference preference) {
-            current = preference;
-            Icons.show_select_icon_dialog(getActivity(), "widget_icons", WidgetPreferenceFragment.this);
+            Icons.show_select_icon_dialog(getActivity(), "widget_icons", WidgetPreferenceFragment.this, preference);
             return true;
         }
     };
@@ -42,22 +40,25 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
         preference = findPreference("widget_image_on");
         assert preference != null;
         preference_to_state.put(preference, Icons.IconState.StateOn);
-        preference.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateOn,
-                Icons.uuidFromWidgetID(widgetId, Icons.IconState.StateOn)));
+        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.IconType.WidgetIcon,
+                Icons.IconState.StateOn,
+                Icons.uuidFromWidgetID(widgetId)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_off");
         assert preference != null;
         preference_to_state.put(preference, Icons.IconState.StateOff);
-        preference.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateOff,
-                Icons.uuidFromWidgetID(widgetId, Icons.IconState.StateOff)));
+        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.IconType.WidgetIcon,
+                Icons.IconState.StateOff,
+                Icons.uuidFromWidgetID(widgetId)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_not_reachable");
         assert preference != null;
         preference_to_state.put(preference, Icons.IconState.StateUnknown);
-        preference.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateUnknown,
-                Icons.uuidFromWidgetID(widgetId, Icons.IconState.StateUnknown)));
+        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.IconType.WidgetIcon,
+                Icons.IconState.StateUnknown,
+                Icons.uuidFromWidgetID(widgetId)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_show_text");
@@ -72,9 +73,12 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
     }
 
     @Override
-    public void setIcon(Bitmap bitmap) {
-        Icons.IconState state = preference_to_state.get(current);
-        Icons.saveIcon(getActivity(), Icons.uuidFromWidgetID(widgetId, state), bitmap, Icons.IconType.WidgetIcon);
+    public void setIcon(Object context_object, Bitmap bitmap) {
+        if (context_object == null)
+            return;
+        Preference current = (Preference) context_object;
+        Icons.IconState state = preference_to_state.get(context_object);
+        Icons.saveIcon(getActivity(), Icons.uuidFromWidgetID(widgetId), bitmap, Icons.IconType.WidgetIcon, state);
         if (bitmap == null) {
             current.setIcon(Icons.getResIdForState(state));
         } else {

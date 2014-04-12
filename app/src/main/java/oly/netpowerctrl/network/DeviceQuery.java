@@ -11,7 +11,7 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.Executor;
+import oly.netpowerctrl.datastructure.PluginInterface;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -21,8 +21,8 @@ import oly.netpowerctrl.datastructure.Executor;
  */
 public class DeviceQuery {
     private List<DeviceInfo> devices_to_observe;
-    private DeviceUpdateStateOrTimeout target;
-    private Handler timeoutHandler = new Handler();
+    private DeviceQueryResult target;
+    private Handler timeoutHandler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
 
     private Runnable timeoutRunnable = new Runnable() {
         @Override
@@ -45,12 +45,12 @@ public class DeviceQuery {
         public void run() {
             Log.w("Query", "requery");
             for (DeviceInfo di : devices_to_observe) {
-                Executor.sendQuery(di);
+                sendQuery(di);
             }
         }
     };
 
-    public DeviceQuery(DeviceUpdateStateOrTimeout target, DeviceInfo device_to_observe) {
+    public DeviceQuery(DeviceQueryResult target, DeviceInfo device_to_observe) {
         this.target = target;
         this.devices_to_observe = new ArrayList<DeviceInfo>();
         devices_to_observe.add(device_to_observe);
@@ -58,14 +58,14 @@ public class DeviceQuery {
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
 
-        Executor.sendQuery(device_to_observe);
+        sendQuery(device_to_observe);
         timeoutHandler.postDelayed(requeryRunnable, 300);
         timeoutHandler.postDelayed(requeryRunnable, 600);
         timeoutHandler.postDelayed(requeryRunnable, 1200);
         timeoutHandler.postDelayed(timeoutRunnable, 1500);
     }
 
-    public DeviceQuery(DeviceUpdateStateOrTimeout target, Collection<DeviceInfo> devices_to_observe) {
+    public DeviceQuery(DeviceQueryResult target, Collection<DeviceInfo> devices_to_observe) {
         this.target = target;
         this.devices_to_observe = new ArrayList<DeviceInfo>(devices_to_observe);
 
@@ -79,7 +79,7 @@ public class DeviceQuery {
 
         // Send out broadcast
         for (DeviceInfo di : devices_to_observe)
-            Executor.sendQuery(di);
+            sendQuery(di);
     }
 
     /**
@@ -88,7 +88,7 @@ public class DeviceQuery {
      *
      * @param target
      */
-    public DeviceQuery(DeviceUpdateStateOrTimeout target) {
+    public DeviceQuery(DeviceQueryResult target) {
         this.target = target;
         NetpowerctrlApplication.getDataController().clearNewDevices();
         this.devices_to_observe = new ArrayList<DeviceInfo>(NetpowerctrlApplication.getDataController().configuredDevices);
@@ -98,7 +98,7 @@ public class DeviceQuery {
 
         timeoutHandler.postDelayed(requeryRunnable, 600);
         timeoutHandler.postDelayed(timeoutRunnable, 1500);
-        Executor.sendBroadcastQuery();
+        NetpowerctrlApplication.getService().sendBroadcastQuery();
     }
 
     /**
@@ -111,12 +111,43 @@ public class DeviceQuery {
         Iterator<DeviceInfo> it = devices_to_observe.iterator();
         while (it.hasNext()) {
             DeviceInfo device_to_observe = it.next();
-            if (device_to_observe.equals(received_data)) {
+            boolean eq = received_data.configured ? device_to_observe.equals(received_data) :
+                    device_to_observe.equalsFunctional(received_data);
+            if (eq) {
                 it.remove();
                 if (target != null)
                     target.onDeviceUpdated(received_data);
+                break;
             }
         }
+        return checkIfDone();
+    }
+
+    public boolean notifyObservers(String device_name) {
+        Iterator<DeviceInfo> it = devices_to_observe.iterator();
+        while (it.hasNext()) {
+            DeviceInfo device_to_observe = it.next();
+            boolean eq = device_name.equals(device_to_observe.DeviceName);
+            if (eq) {
+                it.remove();
+                if (target != null)
+                    target.onDeviceUpdated(device_to_observe);
+                break;
+            }
+        }
+        return checkIfDone();
+    }
+
+    public void addDevice(DeviceInfo device, boolean resetTimeout) {
+        devices_to_observe.add(device);
+
+        if (!resetTimeout)
+            return;
+        timeoutHandler.removeCallbacks(timeoutRunnable);
+        timeoutHandler.postDelayed(timeoutRunnable, 1500);
+    }
+
+    private boolean checkIfDone() {
         if (devices_to_observe.isEmpty()) {
             timeoutHandler.removeCallbacks(timeoutRunnable);
             timeoutHandler.removeCallbacks(requeryRunnable);
@@ -126,6 +157,10 @@ public class DeviceQuery {
         }
         return false;
     }
+
+//    if (deviceName.equals(device.DeviceName)) {
+//        test_state = TestStates.TEST_INIT;
+//    }
 
     /**
      * Called right before this object is removed from the Application list
@@ -139,5 +174,16 @@ public class DeviceQuery {
             target.onDeviceTimeout(di);
         }
         target.onDeviceQueryFinished(devices_to_observe);
+    }
+
+    private void sendQuery(DeviceInfo di) {
+        PluginInterface remote = di.getPluginInterface();
+        boolean reachable = remote != null;
+
+        if (reachable) {
+            remote.requestData(di);
+        } else {
+            di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+        }
     }
 }

@@ -23,4 +23,5 @@ dependencies {
     debugCompile 'com.android.support:support-v13:+'
     releaseCompile 'ch.acra:acra:4.5.0@jar'
     releaseCompile 'com.android.support:support-v13:+'
+    compile 'de.cketti.library.changelog:ckchangelog:1.2.0'
 }

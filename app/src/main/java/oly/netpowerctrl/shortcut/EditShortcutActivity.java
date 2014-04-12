@@ -221,7 +221,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
         if (isSceneNotShortcut) {
             if (isLoaded) {
                 setTitle(R.string.title_scene_edit);
-                setIcon(Icons.loadIcon(this, scene.uuid, Icons.IconType.SceneIcon, 0));
+                setIcon(null, Icons.loadIcon(this, scene.uuid, Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, 0));
             } else
                 setTitle(R.string.title_scene);
         } else {
@@ -248,11 +248,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
             return;
 
         if (isSceneNotShortcut) {
-            if (scene_icon != null)
-                Icons.saveIcon(this, scene.uuid,
-                        Icons.resizeBitmap(this, scene_icon, 128, 128), Icons.IconType.SceneIcon);
-            else
-                Icons.saveIcon(this, scene.uuid, null, Icons.IconType.SceneIcon);
+            NetpowerctrlApplication.getDataController().scenes.setBitmap(this, scene, scene_icon);
             NetpowerctrlApplication.getDataController().scenes.addScene(scene);
         } else {
             Intent extra = Shortcuts.createShortcutExecutionIntent(EditShortcutActivity.this,
@@ -277,7 +273,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
         switch (item.getItemId()) {
             case android.R.id.home:
             case R.id.menu_icon:
-                Icons.show_select_icon_dialog(this, "scene_icons", this);
+                Icons.show_select_icon_dialog(this, "scene_icons", this, null);
                 return true;
             case R.id.menu_name:
                 requestName(scene);
@@ -339,7 +335,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
     }
 
     @Override
-    public void setIcon(Bitmap o) {
+    public void setIcon(Object context_object, Bitmap o) {
         scene_icon = o;
         if (o == null) {
             getActionBar().setIcon(getApplicationInfo().icon);
