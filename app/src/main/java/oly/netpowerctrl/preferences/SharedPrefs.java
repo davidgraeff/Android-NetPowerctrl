@@ -30,7 +30,7 @@ public class SharedPrefs {
     public final static String PREF_UUID = "UUID";
     public final static String PREF_standard_send_port = "standard_send_port";
     public final static String PREF_standard_receive_port = "standard_receive_port";
-    public final static String PREF_keep_widget_service_running = "keep_widget_service_running";
+    public final static String PREF_use_energy_saving_mode = "use_energy_saving_mode";
     public final static String PREF_use_dark_theme = "use_dark_theme";
     public final static String PREF_load_plugins = "load_plugins";
     public final static String PREF_widgets = "widgets";
@@ -55,6 +55,13 @@ public class SharedPrefs {
         prefEditor.commit();
     }
 
+    private static SceneCollection.IScenesSave sceneCollectionStorage = new SceneCollection.IScenesSave() {
+        @Override
+        public void scenesSave(SceneCollection scenes) {
+            SaveScenes(scenes);
+        }
+    };
+
     public static SceneCollection ReadScenes() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
@@ -62,29 +69,19 @@ public class SharedPrefs {
         // Read deprecated scenes
         if (prefVersion != -1 && prefVersion < PREF_CURRENT_VERSION) {
             Toast.makeText(context, context.getString(R.string.error_reading_scenes_old), Toast.LENGTH_LONG).show();
-            SceneCollection sceneCollection = new SceneCollection(new SceneCollection.IScenesSave() {
-                @Override
-                public void scenesSave(SceneCollection scenes) {
-                    SaveScenes(scenes);
-                }
-            });
-            SaveScenes(sceneCollection);
+            SceneCollection sceneCollection = new SceneCollection(sceneCollectionStorage);
+            sceneCollection.saveScenes();
             return sceneCollection;
         }
 
         String scenes_str = prefs.getString(PREF_SCENES, "");
 
         try {
-            return SceneCollection.fromJSON(JSONHelper.getReader(scenes_str), new SceneCollection.IScenesSave() {
-                @Override
-                public void scenesSave(SceneCollection scenes) {
-                    SaveScenes(scenes);
-                }
-            });
+            return SceneCollection.fromJSON(JSONHelper.getReader(scenes_str), sceneCollectionStorage);
         } catch (IOException e) {
             Toast.makeText(context, context.getString(R.string.error_reading_scenes), Toast.LENGTH_SHORT).show();
         }
-        return null;
+        return new SceneCollection(sceneCollectionStorage);
     }
 
     public static void SaveScenes(SceneCollection scenes) {
@@ -227,16 +224,16 @@ public class SharedPrefs {
         return receive_port_udp;
     }
 
-    public static boolean getOnlyUsedInWifi() {
+    public static boolean getUse_energy_saving_mode() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.keep_widget_service_running);
+        boolean use_energy_saving_mode = context.getResources().getBoolean(R.bool.use_energy_saving_mode);
         try {
-            keep_widget_service_running = prefs.getBoolean(PREF_keep_widget_service_running, keep_widget_service_running);
+            use_energy_saving_mode = prefs.getBoolean(PREF_use_energy_saving_mode, use_energy_saving_mode);
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
-        return keep_widget_service_running;
+        return use_energy_saving_mode;
     }
 
     public static boolean isDarkTheme() {
@@ -267,5 +264,29 @@ public class SharedPrefs {
             value = Integer.parseInt(prefs.getString("max_favourite_groups", Integer.valueOf(value).toString()));
         } catch (NumberFormatException e) { /*nop*/ }
         return value;
+    }
+
+    public static boolean getOutletsGrid() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("OutletsGrid", false);
+    }
+
+    public static boolean getScenesList() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("ScenesList", false);
+    }
+
+    public static void setOutletsGrid(boolean grid) {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putBoolean("OutletsGrid", grid).commit();
+    }
+
+    public static void setScenesList(boolean grid) {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putBoolean("ScenesList", grid).commit();
     }
 }

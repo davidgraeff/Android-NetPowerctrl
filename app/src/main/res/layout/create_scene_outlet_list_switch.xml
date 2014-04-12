@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/outlet_list_entry"
+    android:id="@+id/item_layout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:baselineAligned="true"
@@ -39,14 +39,14 @@
             android:focusableInTouchMode="false">
 
             <TextView
-                android:id="@+id/outlet_list_portname"
+                android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingRight="5dp"
                 android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <TextView
-                android:id="@+id/outlet_list_text_devicename"
+                android:id="@+id/subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"

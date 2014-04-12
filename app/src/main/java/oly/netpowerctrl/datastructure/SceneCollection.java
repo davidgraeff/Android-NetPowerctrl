@@ -1,5 +1,6 @@
 package oly.netpowerctrl.datastructure;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
@@ -76,11 +77,12 @@ public class SceneCollection {
         writer.endArray();
     }
 
-    public void setBitmap(Scene scene, Bitmap bitmap) {
+    public void setBitmap(Context context, Scene scene, Bitmap scene_icon) {
         if (scene == null)
             return;
-        scene.bitmap = bitmap;
-        Icons.saveIcon(NetpowerctrlApplication.instance, scene.uuid, bitmap, Icons.IconType.GroupIcon);
+        Icons.saveIcon(context, scene.uuid, Icons.resizeBitmap(context, scene_icon, 128, 128),
+                Icons.IconType.SceneIcon, Icons.IconState.StateUnknown);
+        scene.bitmap = scene_icon;
         notifyObservers(false);
     }
 
@@ -100,7 +102,7 @@ public class SceneCollection {
     }
 
     public void executeScene(int position) {
-        Executor.execute(getScene(position), null);
+        NetpowerctrlApplication.getDataController().execute(getScene(position), null);
     }
 
     public void addScene(Scene data) {

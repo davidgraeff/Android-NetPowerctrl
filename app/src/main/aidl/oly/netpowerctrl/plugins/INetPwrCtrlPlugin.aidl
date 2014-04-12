@@ -9,4 +9,5 @@ interface INetPwrCtrlPlugin {
     void updateIntValue(int id, int value);
     void updateBooleanValue(int id, boolean value);
     void executeAction(int id);
+    void rename(int id, String new_name);
 }

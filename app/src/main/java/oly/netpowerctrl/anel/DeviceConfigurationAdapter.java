@@ -117,7 +117,7 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
     @Override
     public View getView(int position, View convertView, ViewGroup container) {
         if (convertView == null)
-            convertView = inflater.inflate(R.layout.device_configuration_item, container);
+            convertView = inflater.inflate(R.layout.device_configuration_item, null);
 
         ReviewItem reviewItem = deviceConfigurationOptions.get(position);
         ((TextView) convertView.findViewById(R.id.titleText)).setText(reviewItem.mTitle);

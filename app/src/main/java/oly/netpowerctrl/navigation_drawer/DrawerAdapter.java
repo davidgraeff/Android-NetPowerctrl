@@ -1,6 +1,5 @@
 package oly.netpowerctrl.navigation_drawer;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -14,15 +13,12 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.datastructure.Groups;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
-import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.main.OutletsFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
@@ -33,7 +29,6 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
 
     private List<DrawerItem> mItems = new ArrayList<DrawerItem>();
     private LayoutInflater inflater;
-    private WeakHashMap<String, Fragment> mCachedFragments = new WeakHashMap<String, Fragment>();
     private UUID groups_position = null;
     private int groups_size = 0;
     private UUID scenes_position = null;
@@ -122,7 +117,7 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
                 item.clickHandler = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Executor.execute(scene, null);
+                        NetpowerctrlApplication.getDataController().execute(scene, null);
                     }
                 };
                 mItems.add(startPosition + counter++, item);
@@ -141,7 +136,7 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
                 item.clickHandler = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Executor.execute(scene, null);
+                        NetpowerctrlApplication.getDataController().execute(scene, null);
                     }
                 };
             }
@@ -197,14 +192,6 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
         scenes_position = mItems.get(mItems.size() - 1).uuid;
         NetpowerctrlApplication.getDataController().scenes.registerObserver(this);
         scenesUpdated(true);
-    }
-
-    public void addCacheFragment(String name) {
-        mCachedFragments.put(name, Fragment.instantiate(NetpowerctrlActivity.instance, name));
-    }
-
-    public Fragment getCachedFragment(String name) {
-        return mCachedFragments.get(name);
     }
 
     public void remove(UUID id) {

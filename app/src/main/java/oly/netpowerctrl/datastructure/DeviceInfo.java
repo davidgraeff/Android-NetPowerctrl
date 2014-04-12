@@ -1,15 +1,18 @@
 package oly.netpowerctrl.datastructure;
 
 import android.util.JsonReader;
+import android.util.JsonToken;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -62,15 +65,30 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         return 1;
     }
 
-    public enum DeviceType {
-        UnknownDevice, AnelDevice, PluginDevice
+    private WeakReference<PluginInterface> pluginInterface = null;
+
+    /**
+     * Get "execution engine" for this device info, either by an existing reference to it or
+     * by requesting it by the plugin controller.
+     *
+     * @return
+     */
+    public PluginInterface getPluginInterface() {
+        PluginInterface pi = pluginInterface != null ? pluginInterface.get() : null;
+
+        if (pi == null) {
+            pi = NetpowerctrlApplication.getService().getPluginInterface(this);
+            pluginInterface = new WeakReference<PluginInterface>(pi);
+        }
+
+        return pi;
     }
 
-    public DeviceType deviceType = DeviceType.UnknownDevice;
+    public String pluginID;
 
-    private DeviceInfo(DeviceType type) {
+    private DeviceInfo(String pluginID) {
         uuid = UUID.randomUUID();
-        deviceType = type;
+        this.pluginID = pluginID;
         DeviceName = "";
         HostName = "";
         UniqueDeviceID = "";
@@ -85,8 +103,8 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         DevicePorts = new ArrayList<DevicePort>();
     }
 
-    public static DeviceInfo createNewDevice(DeviceType type) {
-        DeviceInfo di = new DeviceInfo(type);
+    public static DeviceInfo createNewDevice(String pluginID) {
+        DeviceInfo di = new DeviceInfo(pluginID);
         di.DeviceName = NetpowerctrlApplication.instance.getString(R.string.default_device_name);
         di.SendPort = SharedPrefs.getDefaultSendPort();
         di.ReceivePort = SharedPrefs.getDefaultReceivePort();
@@ -96,6 +114,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     public DeviceInfo(DeviceInfo other) {
         uuid = UUID.randomUUID();
         DeviceName = other.DeviceName;
+        pluginID = other.pluginID;
         HostName = other.HostName;
         UniqueDeviceID = other.UniqueDeviceID;
         UserName = other.UserName;
@@ -193,7 +212,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
     public static DeviceInfo fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
-        DeviceInfo di = new DeviceInfo(DeviceType.UnknownDevice);
+        DeviceInfo di = new DeviceInfo("");
         di.configured = true;
         di.reachable = false;
         while (reader.hasNext()) {
@@ -219,10 +238,11 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
             } else if (name.equals("SendPort")) {
                 di.SendPort = reader.nextInt();
             } else if (name.equals("Type")) {
-                int t = reader.nextInt();
-                if (t > DeviceType.values().length)
-                    throw new ClassNotFoundException();
-                di.deviceType = DeviceType.values()[t];
+                // For compatibility
+                if (reader.peek() == JsonToken.NUMBER)
+                    di.pluginID = AnelPlugin.PLUGIN_ID;
+                else
+                    di.pluginID = reader.nextString();
             } else if (name.equals("ReceivePort")) {
                 di.ReceivePort = reader.nextInt();
             } else if (name.equals("HttpPort")) {
@@ -245,7 +265,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
         reader.endObject();
 
-        if (di.deviceType == DeviceType.UnknownDevice)
+        if (di.pluginID.isEmpty())
             throw new ClassNotFoundException();
         return di;
     }
@@ -269,7 +289,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.beginObject();
         writer.name("uuid").value(uuid.toString());
         writer.name("DeviceName").value(DeviceName);
-        writer.name("Type").value(deviceType.ordinal());
+        writer.name("Type").value(pluginID);
         writer.name("HostName").value(HostName);
         writer.name("UniqueDeviceID").value(UniqueDeviceID);
         writer.name("UserName").value(UserName);

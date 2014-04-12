@@ -7,6 +7,18 @@
         android:icon="@drawable/ic_menu_refresh" />
 
     <item
+        android:id="@+id/menu_view_list"
+        android:title="@string/menu_view_list"
+        android:showAsAction="ifRoom"
+        android:icon="?attr/ic_action_view_as_list" />
+
+    <item
+        android:id="@+id/menu_view_grid"
+        android:title="@string/menu_view_grid"
+        android:showAsAction="ifRoom"
+        android:icon="?attr/ic_action_view_as_grid" />
+
+    <item
         android:id="@+id/menu_add_scene"
         android:title="@string/menu_add_scene"
         android:showAsAction="ifRoom"

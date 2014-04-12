@@ -64,7 +64,8 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 s.setKey(entryValues[i]);
                 s.setFragment(WidgetPreferenceFragment.class.getName());
                 s.setTitle(entries[i]);
-                s.setIcon(Icons.loadStateIconDrawable(getActivity(), Icons.IconState.StateOn, Icons.uuidFromWidgetID(widgetID, Icons.IconState.StateOn)));
+                s.setIcon(Icons.loadDrawable(getActivity(), Icons.IconType.WidgetIcon,
+                        Icons.IconState.StateOn, Icons.uuidFromWidgetID(widgetID)));
                 lp.addPreference(s);
                 s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override

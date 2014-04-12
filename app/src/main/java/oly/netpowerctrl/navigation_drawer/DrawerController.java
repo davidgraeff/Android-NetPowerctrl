@@ -100,7 +100,6 @@ public class DrawerController {
 
         mDrawerAdapter.setAccompanyFragment(OutletsFragment.class.getName(),
                 ScenesFragment.class.getName());
-        mDrawerAdapter.addCacheFragment(OutletsFragment.class.getName());
 
         mDrawerList.setAdapter(mDrawerAdapter);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
@@ -236,9 +235,7 @@ public class DrawerController {
             return;
 
         if (currentFragment == null || !item.fragmentClassName.equals(currentFragmentClass)) {
-            currentFragment = mDrawerAdapter.getCachedFragment(item.fragmentClassName);
-            if (currentFragment == null)
-                currentFragment = Fragment.instantiate(context, item.fragmentClassName);
+            currentFragment = Fragment.instantiate(context, item.fragmentClassName);
             currentFragmentClass = item.fragmentClassName;
         }
 

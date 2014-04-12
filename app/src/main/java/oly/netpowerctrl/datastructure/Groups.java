@@ -46,7 +46,7 @@ public class Groups {
         public Bitmap getBitmap() {
             if (bitmap == null) {
                 bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, uuid,
-                        Icons.IconType.SceneIcon, R.drawable.netpowerctrl);
+                        Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, R.drawable.netpowerctrl);
             }
             return bitmap;
         }
@@ -90,7 +90,8 @@ public class Groups {
         if (item == null)
             return;
         item.bitmap = bitmap;
-        Icons.saveIcon(NetpowerctrlApplication.instance, item.uuid, bitmap, Icons.IconType.GroupIcon);
+        Icons.saveIcon(NetpowerctrlApplication.instance, item.uuid, bitmap,
+                Icons.IconType.GroupIcon, Icons.IconState.StateUnknown);
         notifyObservers(false);
     }
 

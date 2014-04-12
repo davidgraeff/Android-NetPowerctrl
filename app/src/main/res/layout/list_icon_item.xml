@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/outlet_list_entry"
+    android:id="@+id/item_layout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
@@ -13,41 +13,41 @@
     android:focusableInTouchMode="false">
 
     <ImageView
-        android:id="@+id/outlet_list_bitmap"
-        android:src="@drawable/netpowerctrl"
+        android:id="@+id/icon_bitmap"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:paddingRight="5dp" />
 
     <TextView
-        android:id="@+id/outlet_list_portname"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingRight="5dp"
         android:layout_centerVertical="true"
         android:textAppearance="@android:style/TextAppearance.Medium"
-        android:layout_toRightOf="@id/outlet_list_bitmap" />
+        android:layout_toRightOf="@id/icon_bitmap" />
 
     <TextView
-        android:id="@+id/outlet_list_text_devicename"
+        android:id="@+id/subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:textAppearance="@android:style/TextAppearance.Small"
-        android:layout_toRightOf="@id/outlet_list_portname"
+        android:layout_toRightOf="@id/title"
         android:layout_centerVertical="true"
         android:paddingTop="2dp" />
 
     <SeekBar
-        android:id="@+id/outlet_list_seekbar"
+        android:id="@+id/item_seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:paddingTop="7dp"
         android:paddingBottom="5dp"
         android:focusable="false"
         android:thumb="@android:color/transparent"
         android:focusableInTouchMode="false"
-        android:layout_below="@id/outlet_list_portname"
-        android:layout_toRightOf="@id/outlet_list_bitmap" />
+        android:layout_below="@id/title"
+        android:layout_toRightOf="@id/icon_bitmap" />
 
 </RelativeLayout>

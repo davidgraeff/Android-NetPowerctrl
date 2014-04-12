@@ -3,6 +3,8 @@
     <attr format="color" name="drawer_item_background" />
     <attr format="color" name="preferences_title_light" />
     <attr format="reference" name="item_selector" />
+    <attr format="reference" name="ic_action_view_as_list" />
+    <attr format="reference" name="ic_action_view_as_grid" />
 
     <declare-styleable name="CompoundButton">
         <attr name="android:button" />

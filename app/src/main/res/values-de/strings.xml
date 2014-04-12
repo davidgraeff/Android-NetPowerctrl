@@ -5,6 +5,11 @@
     <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
     <string name="app_name_widget">Power-Control Steckdose</string>
 
+    <string name="changelog_full_title">Change Log</string>
+    <string name="changelog_title">Was ist neu…</string>
+    <string name="changelog_ok_button">OK</string>
+    <string name="changelog_show_full">Mehr…</string>
+
     <string name="configure_device">Gerät bearbeiten</string>
     <string name="delete_device">Gerät löschen</string>
     <string name="delete_all_devices">Alle löschen</string>
@@ -118,7 +123,7 @@
     <string name="menu_down">Runter</string>
     <string name="menu_rename_outlet">Umbenennen</string>
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
-    <string name="outlet_rename_message">Der Name gilt nur für dieses Handy/Tablet und wird zurückgesetzt, sobald der Name auf dem Gerät verändert wird. Nutzte einen leeren Text um den Namen auf "%s" zurückzusetzten.</string>
+    <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
     <string name="name">Name</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Szene bearbeiten</string>
@@ -137,8 +142,8 @@
     <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
-    <string name="preference_keep_widget_service_running">Aktuell halten</string>
-    <string name="preference_keep_widget_service_running_summary">Für diesen Zweck wird ein Hintergrunddienst benötigt. Die Batterielaufzeit kann beeinträchtigt werden.</string>
+    <string name="preference_use_energy_saving_mode">Energiesparmodus</string>
+    <string name="preference_use_energy_saving_mode_summary">Sobald deine Geräte nach einem Netwerkwechsel (WLan/2G/3G/4G) nicht mehr erreichbar sind, werden alle Netzwerkkomponenten abgeschaltet um Energie zu sparen.</string>
     <string name="scene_replace">(Aktualisieren)</string>
     <string name="menu_sortAlphabetically">Alphabetisch anordnen</string>
     <string name="scene_backup_nobackups">Keine Sicherungen gefunden</string>
@@ -245,10 +250,14 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="drawer_feedback">Feedback</string>
     <string name="menu_set_favourite">Mache zu Favorit</string>
     <string name="menu_remove_favourite">Kein Favorit mehr</string>
-    <string name="help_scene">Eine Szene kombiniert mehere Aktionen und kann mit einem Namen und einem Icon versehen werden.
+    <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
     Du kannst auch die Kopie einer Szene auf deinem Homescreen ablegen lassen für den super schnelle direkten Zugriff. Mache eine Szene zu einem Favoriten, damit diese im Navigationsmenü aufgelistet wird und von da direkt ausgeführt werden kann.
 
     Eine spezielle Form von Szenen sind Master/Slave-Szenen. Alle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
     </string>
     <string name="error_plugin_not_installed">Plugin nicht installiert!</string>
+    <string name="renameInProgress">Benenne um…</string>
+    <string name="renameFailed">Umbenennung fehlgeschlagen: %1$s</string>
+    <string name="menu_view_list">Listenansicht</string>
+    <string name="menu_view_grid">Rasteransicht</string>
 </resources>

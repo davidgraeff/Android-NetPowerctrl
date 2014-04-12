@@ -31,6 +31,7 @@ import android.view.ViewConfiguration;
 
 import java.lang.reflect.Field;
 
+import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.navigation_drawer.DrawerController;
@@ -92,6 +93,10 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
                     mNfcAdapter.setNdefPushMessageCallback(NetpowerctrlActivity.this,
                             NetpowerctrlActivity.this);
                 }
+
+                ChangeLog cl = new ChangeLog(NetpowerctrlActivity.this);
+                if (cl.isFirstRun())
+                    cl.getLogDialog().show();
             }
         }, 100);
     }
@@ -134,7 +139,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         super.onResume();
         NFC.checkIntentForNFC(this, getIntent());
         NetpowerctrlApplication.instance.useListener();
-        NetpowerctrlApplication.instance.detectNewDevicesAndReachability();
+        NetpowerctrlApplication.instance.detectNewDevicesAndReachability(null);
     }
 
     @Override

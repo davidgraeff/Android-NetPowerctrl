@@ -15,17 +15,16 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.ExecutionFinished;
-import oly.netpowerctrl.datastructure.Executor;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.NetpowerctrlService;
 import oly.netpowerctrl.network.ServiceReady;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ShowToast;
 
-public class ExecutionActivity extends Activity implements DeviceUpdateStateOrTimeout, ExecutionFinished {
+public class ExecutionActivity extends Activity implements DeviceQueryResult, ExecutionFinished {
     private Scene scene = null;
     private int scene_commands = 0;
     private int scene_executed_commands = 0;
@@ -62,7 +61,7 @@ public class ExecutionActivity extends Activity implements DeviceUpdateStateOrTi
                 finish();
                 return;
             }
-            Executor.execute(port, extra.getInt(EditShortcutActivity.RESULT_ACTION_COMMAND), this);
+            NetpowerctrlApplication.getDataController().execute(port, extra.getInt(EditShortcutActivity.RESULT_ACTION_COMMAND), this);
             return;
         }
 
@@ -121,7 +120,12 @@ public class ExecutionActivity extends Activity implements DeviceUpdateStateOrTi
 
     @Override
     public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
-        Executor.execute(scene, this);
+        NetpowerctrlApplication.getDataController().execute(scene, this);
+    }
+
+    @Override
+    public void onDeviceError(DeviceInfo di, String error_message) {
+        Toast.makeText(this, getString(R.string.error_nopass, di.DeviceName), Toast.LENGTH_SHORT).show();
     }
 
     @Override

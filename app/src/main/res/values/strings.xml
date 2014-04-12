@@ -5,6 +5,11 @@
     <string name="app_name_shortcut_desc">Start a scene from your home screen</string>
     <string name="app_name_widget">Power-Control Outlet State</string>
 
+    <string name="changelog_full_title">Change Log</string>
+    <string name="changelog_title">What\'s New</string>
+    <string name="changelog_ok_button">OK</string>
+    <string name="changelog_show_full">more...</string>
+
     <string name="configure_device">Edit Device</string>
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
@@ -115,10 +120,10 @@
     <string name="menu_down">Move down</string>
     <string name="menu_rename_outlet">Rename</string>
     <string name="outlet_rename_title">Rename outlet</string>
-    <string name="outlet_rename_message">The name is local to this device only and will be reset if you rename this outlet on your anel device. Use an empty name to fall back to the default name %s.</string>
+    <string name="outlet_rename_message">Rename this outlet. The new name will be stored on the anel device.</string>
     <string name="name">Name</string>
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
-    <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommened. Should I save nevertheless?</string>
+    <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Edit scene</string>
     <string name="nfc_failed">Android Beam failed</string>
@@ -137,8 +142,8 @@
     <string name="error_device_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
     <string name="device_test_ok">Test OK</string>
-    <string name="preference_keep_widget_service_running">Keep update service running?</string>
-    <string name="preference_keep_widget_service_running_summary">To guarantee accurate widget states a background service needs to run. This will reduce battery time.</string>
+    <string name="preference_use_energy_saving_mode">Use energy saving mode</string>
+    <string name="preference_use_energy_saving_mode_summary">If your devices can not be reached after a network (WiFi/2G/3G/4G) change, all network parts of the app go into a standby mode.</string>
     <string name="scene_replace">(Update)</string>
     <string name="menu_sortAlphabetically">Sort alphabetically</string>
     <string name="scene_backup_nobackups">No backups available</string>
@@ -243,4 +248,8 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="menu_remove_favourite">No favorite anymore</string>
     <string name="help_scene">A scene combines multiple actions. A scene can have a name and an icon. You may add a copy of a scene to your homescreen for fast access. If a scene is a favorite, it appears in the left navigation menu.</string>
     <string name="error_plugin_not_installed">Plugin not installed!</string>
+    <string name="renameInProgress">Renaming in progress…</string>
+    <string name="renameFailed">Renaming failed: %1$s</string>
+    <string name="menu_view_list">View as list</string>
+    <string name="menu_view_grid">View as grid</string>
 </resources>

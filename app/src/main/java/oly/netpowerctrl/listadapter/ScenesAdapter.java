@@ -12,13 +12,23 @@ import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
 
-public class ScenesListAdapter extends AbstractDynamicGridAdapter implements SceneCollection.IScenesUpdated {
+public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCollection.IScenesUpdated {
     SceneCollection scenes;
     private LayoutInflater inflater;
     private boolean disableEditing;
     private IEditSceneRequest observer = null;
+    private int outlet_res_id = R.layout.grid_icon_item;
 
-    public ScenesListAdapter(Context context, SceneCollection data) {
+    public int getLayoutRes() {
+        return outlet_res_id;
+    }
+
+    public void setLayoutRes(int layout_res) {
+        this.outlet_res_id = layout_res;
+        notifyDataSetChanged();
+    }
+
+    public ScenesAdapter(Context context, SceneCollection data) {
         inflater = LayoutInflater.from(context);
         scenes = data;
         scenes.registerObserver(this);
@@ -56,21 +66,27 @@ public class ScenesListAdapter extends AbstractDynamicGridAdapter implements Sce
     public View getView(final int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.scene_list_item, null);
+            convertView = inflater.inflate(outlet_res_id, null);
+            assert convertView != null;
+            convertView.findViewById(R.id.subtitle).setVisibility(View.GONE);
         }
 
         final Scene data = scenes.getScene(position);
 
-        assert convertView != null;
-        final TextView tvName = (TextView) convertView.findViewById(R.id.scene_list_name);
+        final TextView tvName = (TextView) convertView.findViewById(R.id.title);
         tvName.setText(data.sceneName);
 
-        ImageView image = (ImageView) convertView.findViewById(R.id.scene_icon_bitmap);
+        ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
         image.setImageBitmap(data.getBitmap());
 
-        image = (ImageView) convertView.findViewById(R.id.scene_icon_edit);
-        image.setVisibility(disableEditing ? View.GONE : View.VISIBLE);
-        image.setOnClickListener(new View.OnClickListener() {
+        // For a grid view with a dedicated edit button (image) we use that for
+        // setOnClickListener. In the other case we use the main icon for setOnClickListener.
+        ImageView image_edit = (ImageView) convertView.findViewById(R.id.icon_edit);
+        if (image_edit != null)
+            image_edit.setVisibility(disableEditing ? View.GONE : View.VISIBLE);
+        else
+            image_edit = image;
+        image_edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (observer != null)

@@ -13,11 +13,11 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.Groups;
 import oly.netpowerctrl.utils.Icons;
 
-public class GroupsListAdapter extends BaseAdapter implements Groups.IGroupsUpdated {
+public class GroupsAdapter extends BaseAdapter implements Groups.IGroupsUpdated {
     private LayoutInflater inflater;
     Groups groups;
 
-    public GroupsListAdapter(Context context, Groups data) {
+    public GroupsAdapter(Context context, Groups data) {
         inflater = LayoutInflater.from(context);
         groups = data;
         groups.registerObserver(this);
@@ -46,19 +46,19 @@ public class GroupsListAdapter extends BaseAdapter implements Groups.IGroupsUpda
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.scene_list_item, parent);
+            convertView = inflater.inflate(R.layout.grid_icon_item, parent);
         }
 
         Groups.GroupItem data = groups.groupItems.get(position);
 
         assert convertView != null;
-        TextView tvName = (TextView) convertView.findViewById(R.id.scene_list_name);
+        TextView tvName = (TextView) convertView.findViewById(R.id.title);
         tvName.setText(data.name);
 
-        ImageView image = (ImageView) convertView.findViewById(R.id.scene_icon_bitmap);
+        ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
         if (data.bitmap == null) {
             data.bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, data.uuid,
-                    Icons.IconType.SceneIcon, R.drawable.stateon);
+                    Icons.IconType.GroupIcon, Icons.IconState.StateUnknown, R.drawable.stateon);
         }
 
         image.setImageBitmap(data.bitmap);

@@ -24,8 +24,8 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
-import oly.netpowerctrl.network.DevicesUpdate;
+import oly.netpowerctrl.network.DeviceQueryResult;
+import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.network.NetpowerctrlService;
 import oly.netpowerctrl.network.ServiceReady;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -35,7 +35,7 @@ import oly.netpowerctrl.utils.Icons;
 /**
  * Widget Update Service
  */
-public class WidgetUpdateService extends Service implements DeviceUpdateStateOrTimeout, DevicesUpdate, ServiceReady {
+public class WidgetUpdateService extends Service implements DeviceQueryResult, DeviceUpdate, ServiceReady {
     private static final String LOG = "WidgetUpdateService";
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
@@ -52,7 +52,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
          * system ends service) unregister from the listener service and from the shared preferences
          * changed signal.
          */
-        NetpowerctrlApplication.getDataController().unregisterConfiguredObserver(this);
+        NetpowerctrlApplication.getDataController().unregisterConfiguredDeviceChangeObserver(this);
         NetpowerctrlApplication.instance.unregisterServiceReadyObserver(this);
         NetpowerctrlApplication.instance.stopUseListener();
     }
@@ -63,6 +63,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
         context = getApplicationContext();
         appWidgetManager = AppWidgetManager.getInstance(context);
         NetpowerctrlApplication.instance.useListener();
+        NetpowerctrlApplication.getDataController().registerConfiguredDeviceChangeObserver(this);
         NetpowerctrlApplication.instance.registerServiceReadyObserver(this);
         super.onCreate();
     }
@@ -91,7 +92,7 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
             allWidgets.append(appWidgetId, port);
             if (port.device.updated > 0)
-                onDeviceUpdated(port.device);
+                onDeviceUpdated(port.device, false);
             else {
                 devicesToUpdate.add(port.device);
                 widgetUpdateRequests.add(appWidgetId);
@@ -179,8 +180,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
         if (!oi.device.isReachable()) {
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadStateIconBitmap(this, Icons.IconState.StateUnknown,
-                            Icons.uuidFromWidgetID(appWidgetId, Icons.IconState.StateUnknown))
+                    Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
+                            Icons.IconType.WidgetIcon, Icons.IconState.StateUnknown,
+                            Icons.getResIdForState(Icons.IconState.StateUnknown))
             );
             views.setTextViewText(R.id.widget_name, oi.getDescription());
             views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_outlet_not_reachable));
@@ -193,8 +195,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
         } else if (oi.current_value > 0) { // On
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadStateIconBitmap(this, Icons.IconState.StateOn,
-                            Icons.uuidFromWidgetID(appWidgetId, Icons.IconState.StateOn))
+                    Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
+                            Icons.IconType.WidgetIcon, Icons.IconState.StateOn,
+                            Icons.getResIdForState(Icons.IconState.StateOn))
             );
             views.setTextViewText(R.id.widget_name, oi.getDescription());
             views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_on));
@@ -202,8 +205,9 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
         } else { // Off
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadStateIconBitmap(this, Icons.IconState.StateOff,
-                            Icons.uuidFromWidgetID(appWidgetId, Icons.IconState.StateOff))
+                    Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
+                            Icons.IconType.WidgetIcon, Icons.IconState.StateOff,
+                            Icons.getResIdForState(Icons.IconState.StateOff))
             );
 
             views.setTextViewText(R.id.widget_name, oi.getDescription());
@@ -240,6 +244,11 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     }
 
     @Override
+    public void onDeviceError(DeviceInfo di, String error_message) {
+
+    }
+
+    @Override
     public void onDeviceTimeout(DeviceInfo di) {
         if (di == null)
             return;
@@ -260,6 +269,11 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
 
     @Override
     public void onDeviceUpdated(DeviceInfo di) {
+        onDeviceUpdated(di, false);
+    }
+
+    @Override
+    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
         //Log.w("widget", di != null ? di.DeviceName : "empty di");
         if (di == null)
             return;
@@ -291,18 +305,11 @@ public class WidgetUpdateService extends Service implements DeviceUpdateStateOrT
     @Override
     public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
         for (DeviceInfo di : timeout_devices)
-            onDeviceUpdated(di);
-    }
-
-    @Override
-    public void onDevicesUpdated(List<DeviceInfo> changed_devices) {
-        for (DeviceInfo di : changed_devices)
-            onDeviceUpdated(di);
+            onDeviceUpdated(di, false);
     }
 
     @Override
     public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
-        NetpowerctrlApplication.getDataController().registerConfiguredObserver(this);
         if (allWidgets.size() == 0)
             updateDevices();
         return true;

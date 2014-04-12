@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.utils.Icons;
+
 /**
  * Base class for actions (IO, Outlet, ...)
  */
@@ -30,11 +32,11 @@ public final class DevicePort implements Comparable {
     public long last_command_timecode = 0;
     // UI specific
     public int positionRequest;
+
     // Device
     public DeviceInfo device;
     protected DevicePortType ui_type;
     private String Description = "";
-    private String UserDescription = "";
 
 
     public DevicePort(DeviceInfo di, DevicePortType ui_type) {
@@ -60,8 +62,6 @@ public final class DevicePort implements Comparable {
                 oi.ui_type = DevicePortType.values()[t];
             } else if (name.equals("Description")) {
                 oi.Description = reader.nextString();
-            } else if (name.equals("UserDescription")) {
-                oi.UserDescription = reader.nextString();
             } else if (name.equals("Value")) {
                 oi.current_value = reader.nextInt();
             } else if (name.equals("max_value")) {
@@ -117,7 +117,7 @@ public final class DevicePort implements Comparable {
             max_value = source_oi.max_value;
             min_value = source_oi.min_value;
             Disabled = source_oi.Disabled;
-            setDescriptionByDevice(source_oi.getDescription());
+            setDescription(source_oi.getDescription());
             return true;
         }
         return false;
@@ -129,7 +129,6 @@ public final class DevicePort implements Comparable {
 
     protected void clone(DevicePort other) {
         Description = other.Description;
-        UserDescription = other.UserDescription;
         current_value = other.current_value;
         max_value = other.max_value;
         min_value = other.min_value;
@@ -142,7 +141,6 @@ public final class DevicePort implements Comparable {
         writer.beginObject();
         writer.name("Type").value(ui_type.ordinal());
         writer.name("Description").value(Description);
-        writer.name("UserDescription").value(UserDescription);
         writer.name("Value").value(current_value);
         writer.name("max_value").value(max_value);
         writer.name("min_value").value(min_value);
@@ -159,29 +157,18 @@ public final class DevicePort implements Comparable {
     }
 
     public String getDescription() {
-        return (this.UserDescription.isEmpty() ? this.Description : this.UserDescription);
-    }
-
-    public String getDeviceDescription() {
-        return Description;
+        return this.Description;
     }
 
     /**
-     * Reset description set by the user, if the device propagates a new
-     * description.
+     * Please be aware that if you do not request the description
+     * change directly on the device, the change you make here will
+     * be overridden on next device update!
      *
-     * @param desc The new description received from the device
+     * @param desc The new descriptive name.
      */
-    public void setDescriptionByDevice(String desc) {
-        if (!Description.equals(desc)) {
-            if (!Description.isEmpty())
-                UserDescription = "";
-            Description = desc;
-        }
-    }
-
-    public void setDescriptionByUser(String desc) {
-        UserDescription = desc;
+    public void setDescription(String desc) {
+        Description = desc;
     }
 
     public void addToGroup(UUID uuid) {
@@ -191,5 +178,14 @@ public final class DevicePort implements Comparable {
 
     public enum DevicePortType {
         TypeUnknown, TypeRangedValue, TypeToggle, TypeButton
+    }
+
+    public Icons.IconState getIconState() {
+        Icons.IconState t = Icons.IconState.StateOff;
+        if (current_value != min_value &&
+                (getType() == DevicePort.DevicePortType.TypeToggle ||
+                        getType() == DevicePort.DevicePortType.TypeRangedValue))
+            t = Icons.IconState.StateOn;
+        return t;
     }
 }

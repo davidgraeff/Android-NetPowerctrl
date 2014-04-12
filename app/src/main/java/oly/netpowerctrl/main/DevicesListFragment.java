@@ -23,19 +23,19 @@ import android.widget.Toast;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.anel.ConfigureDeviceFragment;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.listadapter.DeviceListAdapter;
-import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceUpdateStateOrTimeout;
+import oly.netpowerctrl.listadapter.DevicesAdapter;
+import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 
 /**
  */
 public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, ExpandableListView.OnChildClickListener {
-    private DeviceListAdapter adapter;
+    private DevicesAdapter adapter;
 
     public DevicesListFragment() {
     }
@@ -47,9 +47,17 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
-    public void onDestroy() {
-        adapter.finish();
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
+        if (adapter != null)
+            adapter.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (adapter != null)
+            adapter.onResume();
     }
 
     @Override
@@ -57,7 +65,7 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
         switch (item.getItemId()) {
             case R.id.menu_add_device: {
                 // At the moment we always create an anel device
-                DeviceInfo di = DeviceInfo.createNewDevice(DeviceInfo.DeviceType.AnelDevice);
+                DeviceInfo di = DeviceInfo.createNewDevice(AnelPlugin.PLUGIN_ID);
                 show_configure_device_dialog(di);
                 return true;
             }
@@ -80,14 +88,11 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
             }
 
             case R.id.menu_requery: {
-                if (NetpowerctrlApplication.instance.getService().isNetworkReducedMode) {
-                    //noinspection ConstantConditions
-                    Toast.makeText(getActivity(),
-                            getActivity().getString(R.string.energy_saving_mode),
-                            Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-                new DeviceQuery(new DeviceUpdateStateOrTimeout() {
+                NetpowerctrlApplication.instance.detectNewDevicesAndReachability(new DeviceQueryResult() {
+                    @Override
+                    public void onDeviceError(DeviceInfo di, String error_message) {
+                    }
+
                     @Override
                     public void onDeviceTimeout(DeviceInfo di) {
                     }
@@ -103,7 +108,8 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
                                 getActivity().getString(R.string.devices_refreshed,
                                         NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
                                         NetpowerctrlApplication.getDataController().newDevices.size()),
-                                Toast.LENGTH_SHORT).show();
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 });
                 return true;
@@ -116,7 +122,7 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new DeviceListAdapter(NetpowerctrlActivity.instance, true);
+        adapter = new DevicesAdapter(NetpowerctrlActivity.instance, true);
         setHasOptionsMenu(true);
     }
 
@@ -200,7 +206,7 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     private void show_configure_device_dialog(DeviceInfo di) {
-        if (di.deviceType == DeviceInfo.DeviceType.AnelDevice) {
+        if (di.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
             Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), di);
             FragmentManager fragmentManager = getFragmentManager();
             assert fragmentManager != null;
