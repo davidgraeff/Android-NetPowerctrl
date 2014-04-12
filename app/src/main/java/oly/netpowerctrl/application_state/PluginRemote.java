@@ -1,4 +1,4 @@
-package oly.netpowerctrl.datastructure;
+package oly.netpowerctrl.application_state;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,9 +14,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
-import oly.netpowerctrl.network.NetpowerctrlService;
+import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
 import oly.netpowerctrl.utils.ShowToast;
@@ -26,7 +27,7 @@ import oly.netpowerctrl.utils.ShowToast;
  * plugin service values.
  */
 public class PluginRemote implements PluginInterface {
-    private static final String TAG = "PluginRemote";
+    private String TAG = "PluginRemote";
     private static final String INetPwrCtrlPlugin_NAME = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private final Context context;
     public String serviceName;
@@ -78,7 +79,7 @@ public class PluginRemote implements PluginInterface {
      */
     private PluginRemote(Context context, String serviceName, String localized_name) {
         String UniqueDeviceID = "plugin" + serviceName;
-
+        TAG += " " + serviceName;
         this.context = context;
         this.localized_name = localized_name;
         this.serviceName = serviceName;
@@ -136,7 +137,7 @@ public class PluginRemote implements PluginInterface {
     public void requestData() {
         try {
             if (service != null) {
-                Log.w(TAG, "init: " + serviceName + " " + service.toString());
+                Log.w(TAG, "init");
                 service.init(callback);
             } else
                 ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
@@ -144,7 +145,7 @@ public class PluginRemote implements PluginInterface {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         } catch (Exception e) {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
-            Log.w("PluginRemote,requestData", e.getMessage() == null ? "" : e.getMessage());
+            Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
             e.printStackTrace();
         }
     }
@@ -165,7 +166,7 @@ public class PluginRemote implements PluginInterface {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         } catch (Exception e) {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
-            Log.w("PluginRemote,rename", e.getMessage() == null ? "" : e.getMessage());
+            Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
             e.printStackTrace();
         }
     }
@@ -244,7 +245,7 @@ public class PluginRemote implements PluginInterface {
                 Handler h = new Handler(context.getMainLooper());
                 h.post(new Runnable() {
                     public void run() {
-                        Log.w("plugin:" + serviceName, "state: " + di.not_reachable_reason);
+                        Log.w(TAG, "new state: " + di.not_reachable_reason);
                         NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
                     }
                 });
@@ -256,7 +257,7 @@ public class PluginRemote implements PluginInterface {
             isRequesting = true;
             receiveFinished = false;
 
-            Log.w("plugin:" + serviceName, "requestValues");
+            Log.w(TAG, "plugin ready. request data.");
 
             try {
                 service.requestValues();
@@ -351,12 +352,12 @@ public class PluginRemote implements PluginInterface {
     private void post() {
         if (!receiveFinished)
             return;
-        Log.w("plugin:" + serviceName, "receiving done");
+        Log.w(TAG, "receiving done");
         di.setReachable();
         Handler h = new Handler(context.getMainLooper());
         h.post(new Runnable() {
             public void run() {
-                Log.w("plugin:" + serviceName, "receiving done main loop");
+                Log.w(TAG, "receiving done main loop");
                 NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
             }
         });

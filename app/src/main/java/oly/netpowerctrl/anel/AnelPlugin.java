@@ -18,13 +18,13 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.ExecutionFinished;
-import oly.netpowerctrl.datastructure.PluginInterface;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceSend;
+import oly.netpowerctrl.network.ExecutionFinished;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).

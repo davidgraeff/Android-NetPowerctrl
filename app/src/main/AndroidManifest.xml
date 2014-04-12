@@ -102,7 +102,7 @@
         </receiver>
 
         <service
-            android:name="oly.netpowerctrl.network.NetpowerctrlService"
+            android:name=".application_state.NetpowerctrlService"
             android:permission="android.permission.INTERNET" />
 
         <service android:name="oly.netpowerctrl.widget.WidgetUpdateService" />

@@ -10,8 +10,8 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.PluginInterface;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one

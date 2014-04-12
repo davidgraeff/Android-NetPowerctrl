@@ -21,8 +21,6 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceSend;
-import oly.netpowerctrl.network.NetpowerctrlService;
-import oly.netpowerctrl.network.ServiceReady;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 

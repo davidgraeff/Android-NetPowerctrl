@@ -12,10 +12,10 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataControllerStateChanged;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.network.DeviceUpdate;
-import oly.netpowerctrl.network.RuntimeDataControllerStateChanged;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
