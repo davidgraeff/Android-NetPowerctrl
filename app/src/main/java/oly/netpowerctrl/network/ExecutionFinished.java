@@ -1,4 +1,4 @@
-package oly.netpowerctrl.datastructure;
+package oly.netpowerctrl.network;
 
 /**
  * Created by david on 04.04.14.

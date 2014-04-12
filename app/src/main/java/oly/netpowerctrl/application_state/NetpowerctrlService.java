@@ -1,4 +1,4 @@
-package oly.netpowerctrl.network;
+package oly.netpowerctrl.application_state;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -15,11 +15,9 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.PluginInterface;
-import oly.netpowerctrl.datastructure.PluginRemote;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.network.DeviceSend;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 

@@ -20,14 +20,14 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceUpdate;
-import oly.netpowerctrl.network.NetpowerctrlService;
-import oly.netpowerctrl.network.ServiceReady;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.shortcut.Shortcuts;
 import oly.netpowerctrl.utils.Icons;

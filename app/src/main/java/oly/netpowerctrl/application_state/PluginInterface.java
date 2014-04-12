@@ -1,6 +1,9 @@
-package oly.netpowerctrl.datastructure;
+package oly.netpowerctrl.application_state;
 
+import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
+import oly.netpowerctrl.network.ExecutionFinished;
 
 /**
  * Created by david on 10.04.14.

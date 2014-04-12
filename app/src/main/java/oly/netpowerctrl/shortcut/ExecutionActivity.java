@@ -12,15 +12,15 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.ExecutionFinished;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceQueryResult;
-import oly.netpowerctrl.network.NetpowerctrlService;
-import oly.netpowerctrl.network.ServiceReady;
+import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ShowToast;
 

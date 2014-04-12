@@ -14,6 +14,7 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.JSONHelper;
 
