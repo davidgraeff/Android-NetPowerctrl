@@ -203,5 +203,10 @@ public class Scene {
     public static class PortAndCommand {
         public DevicePort port;
         public Integer command;
+
+        public PortAndCommand(DevicePort port, Integer command) {
+            this.port = port;
+            this.command = command;
+        }
     }
 }

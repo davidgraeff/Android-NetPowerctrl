@@ -3,6 +3,7 @@ package oly.netpowerctrl.network;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
@@ -40,18 +41,24 @@ public class SendJobRepeater extends Handler {
         NetpowerctrlApplication context = NetpowerctrlApplication.instance;
         if (retries >= 3) { //!job.di.reachable ||
             //give up
-            if (job.di.getUpdatedTime() > 0) // if the device got updated at some time
+            if (job.di.getUpdatedTime() > 0) { // if the device got updated at some time
+//                Date date = new Date(current_time-job.di.getUpdatedTime());
+//                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm,a dd.MMM.yyyy", Locale.GERMAN);
+//                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+//                String formattedDate = sdf.format(date);
                 Toast.makeText(context,
                         context.getString(R.string.error_setting_outlet, job.di.DeviceName,
-                                (int) (current_time - job.di.getUpdatedTime() / 1000)),
+                                (int) ((current_time - job.di.getUpdatedTime()) / 1000)),
                         Toast.LENGTH_LONG
                 ).show();
+            }
             // if the device never responded so far or the updated counter has been reseted by
             // e.g. the network change listener, we just do nothing here
             return;
         }
 
         if (!job.di.updatedAfter(current_time)) {
+            Log.w("Repeater", job.di.DeviceName + ", hash: " + String.valueOf(job.di.getHash()));
             retries++;
             job.setRepeater(this);
             DeviceSend.instance().addJob(job);

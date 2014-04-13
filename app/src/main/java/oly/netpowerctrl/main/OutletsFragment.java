@@ -98,16 +98,16 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
-    private void setListOrGrid(boolean grid) {
+    private void setListOrGrid(boolean grid, int widthOfListView) {
         if (!grid) {
             adapter.setLayoutRes(R.layout.list_icon_item);
             mListView.setMinimumColumnWidth(280);
-            mListView.setNumColumns(GridView.AUTO_FIT, mListView.getWidth());
+            mListView.setNumColumns(GridView.AUTO_FIT, widthOfListView);
             mListView.setAdapter(adapter);
         } else {
             adapter.setLayoutRes(R.layout.grid_icon_item);
             mListView.setMinimumColumnWidth(150);
-            mListView.setNumColumns(GridView.AUTO_FIT, mListView.getWidth());
+            mListView.setNumColumns(GridView.AUTO_FIT, widthOfListView);
             mListView.setAdapter(adapter);
         }
         SharedPrefs.setOutletsGrid(grid);
@@ -178,14 +178,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_view_list: {
-                setListOrGrid(false);
+                setListOrGrid(false, mListView.getWidth());
                 //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
             }
 
             case R.id.menu_view_grid: {
-                setListOrGrid(true);
+                setListOrGrid(true, mListView.getWidth());
                 //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
@@ -266,7 +266,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
             }
         }, 1000);
-        setListOrGrid(SharedPrefs.getOutletsGrid());
+        setListOrGrid(SharedPrefs.getOutletsGrid(), container.getWidth());
 
         btnEmpty = (Button) view.findViewById(R.id.btnChangeToDevices);
         btnEmpty.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);

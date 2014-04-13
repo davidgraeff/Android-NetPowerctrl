@@ -2,6 +2,7 @@ package oly.netpowerctrl.application_state;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
@@ -133,6 +133,16 @@ public class RuntimeDataController {
         updateDeviceStateList.add(o);
     }
 
+    private void notifyDeviceQueries(DeviceInfo target) {
+        // notify observers who are using the DeviceQuery class
+        Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
+        while (it.hasNext()) {
+            // Return true if the DeviceQuery object has finished its task.
+            if (it.next().notifyObservers(target))
+                it.remove();
+        }
+    }
+
     public void clear() {
         //            Log.w("stopUseListener","ObserverConfigured: "+Integer.valueOf(observersStateChanged.size()).toString() +
 //                    " ObserverNew: "+Integer.valueOf(observersNew.size()).toString()+
@@ -218,8 +228,8 @@ public class RuntimeDataController {
         // Remove from new devices list
         for (int i = 0; i < newDevices.size(); ++i) {
             if (newDevices.get(i).UniqueDeviceID.equals(current_device.UniqueDeviceID)) {
-                notifyNewDeviceObservers(newDevices.get(i), true);
                 newDevices.remove(i);
+                notifyNewDeviceObservers(current_device, true);
                 break;
             }
         }
@@ -252,27 +262,23 @@ public class RuntimeDataController {
         for (DeviceInfo target : configuredDevices) {
             if (!device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
                 continue;
-            target.copyFreshValues(device_info);
-            notifyConfiguredDeviceChangeObservers(device_info, false);
 
-            // notify observers who are using the DeviceQuery class
-            Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
-            while (it.hasNext()) {
-                // Return true if the DeviceQuery object has finished its task.
-                if (it.next().notifyObservers(target))
-                    it.remove();
+            if (!target.copyFreshValues(device_info)) {
+                Log.w("RuntimeDataController", "same values: " + device_info.DeviceName);
+                notifyDeviceQueries(target);
+                return;
             }
+
+            Log.w("onDeviceUpdated", target.DeviceName + " " + String.valueOf(target.getHash()));
+
+            notifyConfiguredDeviceChangeObservers(target, false);
+            notifyDeviceQueries(target);
 
             return;
         }
 
         // notify observers who are using the DeviceQuery class
-        Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
-        while (it.hasNext()) {
-            // Return true if the DeviceQuery object has finished its task.
-            if (it.next().notifyObservers(device_info))
-                it.remove();
-        }
+        notifyDeviceQueries(device_info);
 
         // Do we have this new device already in the list?
         for (DeviceInfo target : newDevices) {
@@ -359,7 +365,7 @@ public class RuntimeDataController {
     }
 
     public void execute(Scene scene, ExecutionFinished callback) {
-        Set<PluginInterface> pluginInterfaces = new TreeSet<PluginInterface>();
+        List<PluginInterface> pluginInterfaces = new ArrayList<PluginInterface>();
         for (Scene.SceneItem item : scene.sceneItems) {
             DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(item.uuid);
             if (p == null)
@@ -370,7 +376,8 @@ public class RuntimeDataController {
                 continue;
 
             remote.addToTransaction(p, item.command);
-            pluginInterfaces.add(remote);
+            if (!pluginInterfaces.contains(remote))
+                pluginInterfaces.add(remote);
         }
 
         for (PluginInterface p : pluginInterfaces) {

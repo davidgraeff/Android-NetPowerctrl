@@ -38,36 +38,6 @@ public class DevicesAdapter extends BaseExpandableListAdapter implements DeviceU
         }
     }
 
-    private View getView(int position, View convertView, List<DeviceInfo> devices) {
-
-        if (convertView == null)
-            convertView = inflater.inflate(R.layout.device_list_item, null);
-        assert convertView != null;
-
-        DeviceInfo di = devices.get(position);
-        TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
-        tvName.setText(di.DeviceName);
-        if (di.isReachable())
-            tvName.setPaintFlags(tvName.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
-        else
-            tvName.setPaintFlags(tvName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-
-        TextView tvIP = (TextView) convertView.findViewById(R.id.device_ip);
-        String subtext = di.HostName;
-        if (di.Temperature.length() > 0)
-            subtext += ", " + di.Temperature;
-        if (di.FirmwareVersion.length() > 0)
-            subtext += ", " + di.FirmwareVersion;
-        if (!di.isReachable())
-            subtext += ", " + di.not_reachable_reason;
-        tvIP.setText(subtext);
-
-        tvIP.setTag(position);
-
-        convertView.setTag(position);
-        return convertView;
-    }
-
     @Override
     public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
         notifyDataSetChanged();
@@ -88,8 +58,9 @@ public class DevicesAdapter extends BaseExpandableListAdapter implements DeviceU
         if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupPosition == 0)
             groupPosition = 1;
 
-        return (groupPosition == 0) ? NetpowerctrlApplication.getDataController().configuredDevices.size() :
+        int r = (groupPosition == 0) ? NetpowerctrlApplication.getDataController().configuredDevices.size() :
                 NetpowerctrlApplication.getDataController().newDevices.size();
+        return r;
     }
 
     @Override
@@ -148,15 +119,43 @@ public class DevicesAdapter extends BaseExpandableListAdapter implements DeviceU
     }
 
     @Override
-    public View getChildView(int groupPosition, int position, boolean b, View view, ViewGroup viewGroup) {
+    public View getChildView(int groupPosition, int position, boolean b, View convertView, ViewGroup viewGroup) {
         // The groupPosition of new_devices is always 1
         if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0 && groupPosition == 0)
             groupPosition = 1;
 
-        return getView(position, view,
-                (groupPosition == 0) ? NetpowerctrlApplication.getDataController().configuredDevices :
-                        NetpowerctrlApplication.getDataController().newDevices
-        );
+        List<DeviceInfo> devices = (groupPosition == 0) ? NetpowerctrlApplication.getDataController().configuredDevices :
+                NetpowerctrlApplication.getDataController().newDevices;
+
+        if (convertView == null)
+            convertView = inflater.inflate(R.layout.device_list_item, null);
+        assert convertView != null;
+
+        if (position == 1)
+            position = 1;
+        DeviceInfo di = devices.get(position);
+        TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
+        tvName.setText(di.DeviceName);
+        if (di.isReachable())
+            tvName.setPaintFlags(tvName.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
+        else
+            tvName.setPaintFlags(tvName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+        TextView tvIP = (TextView) convertView.findViewById(R.id.device_ip);
+        String subtext = di.HostName;
+        if (di.Temperature.length() > 0)
+            subtext += ", " + di.Temperature;
+        if (di.FirmwareVersion.length() > 0)
+            subtext += ", " + di.FirmwareVersion;
+        if (!di.isReachable())
+            subtext += ", " + di.not_reachable_reason;
+        tvIP.setText(subtext);
+
+        tvIP.setTag(position);
+
+        convertView.setTag(position);
+        return convertView;
+
     }
 
     @Override

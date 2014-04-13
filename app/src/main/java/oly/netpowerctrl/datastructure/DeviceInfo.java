@@ -135,10 +135,17 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         }
     }
 
-    public void copyFreshValues(DeviceInfo other) {
+    /**
+     * @param other Another DeviceInfo object from where to copy data from.
+     * @return Return true if this object changed because of the values of "other".
+     */
+    public boolean copyFreshValues(DeviceInfo other) {
         if (other.equals(this)) {
-            return;
+            return false;
         }
+
+        int hash_before = getHash();
+
         // Add all devicePorts from DeviceInfo other to a new list (so that we can modify)
         //List<DevicePort> new_devicePorts = new ArrayList<DevicePort>();
         //new_devicePorts.addAll(other.DevicePorts);
@@ -175,6 +182,8 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         reachable = other.reachable;
         not_reachable_reason = other.not_reachable_reason;
         updated = other.updated;
+
+        return getHash() != hash_before;
     }
 
     /**
@@ -324,5 +333,15 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
     public long getUpdatedTime() {
         return updated;
+    }
+
+    public int getHash() {
+        int h = DeviceName.hashCode() + 512 * ReceivePort + 1024 * SendPort + UniqueDeviceID.hashCode();
+        if (reachable) h += 1000;
+
+        for (DevicePort port : DevicePorts) {
+            h += port.current_value + port.getDescription().hashCode();
+        }
+        return h;
     }
 }
