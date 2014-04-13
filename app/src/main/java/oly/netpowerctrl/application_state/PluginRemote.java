@@ -183,6 +183,8 @@ public class PluginRemote implements PluginInterface {
     public void executeTransaction(ExecutionFinished callback) {
         if (callback != null)
             callback.onExecutionFinished(transaction_counter);
+
+        transaction_counter = 0;
     }
 
     @Override

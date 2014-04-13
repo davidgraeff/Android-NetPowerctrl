@@ -313,7 +313,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void addToTransaction(DevicePort port, int command) {
-        command_list.add(new Scene.PortAndCommand());
+        command_list.add(new Scene.PortAndCommand(port, command));
     }
 
     @Override
@@ -333,6 +333,8 @@ final public class AnelPlugin implements PluginInterface {
         for (TreeMap.Entry<DeviceInfo, List<Scene.PortAndCommand>> entry : commands_grouped_by_devices.entrySet()) {
             executeDeviceBatch(entry.getKey(), entry.getValue(), callback);
         }
+
+        command_list.clear();
     }
 
     public static final String PLUGIN_ID = "org.anel.outlets_and_io";

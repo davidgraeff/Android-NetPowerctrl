@@ -1,6 +1,7 @@
 package oly.netpowerctrl.network;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -171,7 +172,7 @@ public class DeviceSend {
                 }
                 //deviceSend.datagramSocket.setBroadcast(broadcast);
                 deviceSend.datagramSocket.send(new DatagramPacket(message, message.length, ip, di.SendPort));
-                //Log.w("SendJob",ip.getHostAddress());
+                Log.w("SendJob", ip.getHostAddress() + " " + String.valueOf(di.SendPort) + " " + String.valueOf(message.length));
                 if (sendJobRepeater != null)
                     sendJobRepeater.startDelayedCheck();
             } catch (final SocketException e) {

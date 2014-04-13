@@ -6,7 +6,7 @@ import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.ExecutionFinished;
 
 /**
- * Created by david on 10.04.14.
+ * This interface defines a plugin
  */
 public interface PluginInterface {
     void finish();
