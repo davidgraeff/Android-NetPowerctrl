@@ -11,7 +11,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
-import oly.netpowerctrl.main.OutletsSceneEditFragment;
+import oly.netpowerctrl.main.SceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.shortcut.OutletsManipulator;
 
@@ -31,9 +31,9 @@ public class WidgetConfig extends Activity implements OutletsManipulator {
         }
         setContentView(R.layout.activity_main);
 
-        OutletsSceneEditFragment f = new OutletsSceneEditFragment();
+        SceneEditFragment f = new SceneEditFragment();
         f.setData(this,
-                OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
+                SceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
                 this);
 
         getFragmentManager().beginTransaction().replace(R.id.content_frame, f).commit();

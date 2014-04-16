@@ -139,7 +139,8 @@ public class SharedPrefs {
                 .putString(PREF_DEVICES, configured_devices).commit();
     }
 
-    public static boolean getShowHiddenOutlets(Context context) {
+    public static boolean getShowHiddenOutlets() {
+        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         try {
             return prefs.getBoolean("showHiddenOutlets", false);

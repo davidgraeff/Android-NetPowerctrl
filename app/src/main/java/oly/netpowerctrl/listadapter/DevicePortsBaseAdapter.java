@@ -11,6 +11,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -250,9 +251,13 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
                 continue;
             }
 
-            for (DevicePort oi : device.DevicePorts) {
+            device.lockDevicePorts();
+            Iterator<DevicePort> it = device.getDevicePortIterator();
+            while (it.hasNext()) {
+                DevicePort oi = it.next();
                 addItem(oi, oi.current_value);
             }
+            device.releaseDevicePorts();
         }
 
         // Sort for positionRequest number or alphabetically

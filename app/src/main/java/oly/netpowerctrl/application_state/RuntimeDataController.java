@@ -19,6 +19,7 @@ import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Groups;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
+import oly.netpowerctrl.network.DeviceObserverBase;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
@@ -32,8 +33,8 @@ import oly.netpowerctrl.utils.ShowToast;
  * observers.
  */
 public class RuntimeDataController {
-    public ArrayList<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
-    public ArrayList<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
+    public List<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
+    public List<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
     public Groups groups;
     public SceneCollection scenes;
     private boolean initialDataQueryCompleted = false;
@@ -42,12 +43,13 @@ public class RuntimeDataController {
     private WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<DeviceUpdate, Boolean>();
     private WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<DeviceUpdate, Boolean>();
 
-    private final List<DeviceQuery> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceQuery>());
+    private final List<DeviceObserverBase> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
 
     RuntimeDataController() {
         groups = SharedPrefs.readGroups();
         scenes = SharedPrefs.ReadScenes();
-        reloadConfiguredDevices();
+        configuredDevices = SharedPrefs.ReadConfiguredDevices();
+        //notifyStateReloaded();
     }
 
     //! get a list of all send ports of all configured scenes plus the default send port
@@ -125,17 +127,21 @@ public class RuntimeDataController {
     }
 
 
-    public void removeUpdateDeviceState(DeviceQuery o) {
-        updateDeviceStateList.remove(o);
+    public void removeUpdateDeviceState(DeviceObserverBase o) {
+        synchronized (updateDeviceStateList) {
+            updateDeviceStateList.remove(o);
+        }
     }
 
-    public void addUpdateDeviceState(DeviceQuery o) {
-        updateDeviceStateList.add(o);
+    public void addUpdateDeviceState(DeviceObserverBase o) {
+        synchronized (updateDeviceStateList) {
+            updateDeviceStateList.add(o);
+        }
     }
 
     private void notifyDeviceQueries(DeviceInfo target) {
         // notify observers who are using the DeviceQuery class
-        Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
+        Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
         while (it.hasNext()) {
             // Return true if the DeviceQuery object has finished its task.
             if (it.next().notifyObservers(target))
@@ -152,55 +158,10 @@ public class RuntimeDataController {
 
         // There shouldn't be any device-listen observers anymore,
         // but we clear the list here nevertheless.
-        for (DeviceQuery dq : updateDeviceStateList)
+        for (DeviceObserverBase dq : updateDeviceStateList)
             dq.finishWithTimeouts();
         updateDeviceStateList.clear();
         newDevices.clear();
-    }
-
-
-    public void reloadConfiguredDevices() {
-        List<DeviceInfo> newEntries = SharedPrefs.ReadConfiguredDevices();
-        // This is somehow a more complicated way of alDevices := newEntries
-        // because with an assignment we would lose the outlet states which are not stored in the SharedPref
-        // and only with the next UDP update those states are restored. This
-        // induces a flicker where we can first observe all outlets set to off and
-        // within a fraction of a second the actual values are applied.
-        // Therefore we update by hand without touching outlet states.
-        boolean isReload = configuredDevices.size() > 0;
-        Iterator<DeviceInfo> oldEntriesIt = configuredDevices.iterator();
-        while (oldEntriesIt.hasNext()) {
-            // remove scenes not existing anymore
-            DeviceInfo old_di = oldEntriesIt.next();
-            DeviceInfo new_di = null;
-            for (DeviceInfo it_di : newEntries) {
-                if (it_di.UniqueDeviceID.equals(old_di.UniqueDeviceID)) {
-                    new_di = it_di;
-                    break;
-                }
-            }
-            if (new_di == null) {
-                oldEntriesIt.remove();
-            } else if (old_di.DevicePorts.size() != new_di.DevicePorts.size()) {
-                // Number of outlets have changed. This is a reason to forget about
-                // outlet states and replace the old device with the new one.
-                oldEntriesIt.remove();
-            }
-        }
-        // add new scenes
-        for (DeviceInfo new_di : newEntries) {
-            DeviceInfo old_di = null;
-            for (int i = 0; i < configuredDevices.size(); ++i) {
-                if (configuredDevices.get(i).UniqueDeviceID.equals(new_di.UniqueDeviceID)) {
-                    old_di = newEntries.get(i);
-                    break;
-                }
-            }
-            if (old_di == null) {
-                configuredDevices.add(new_di);
-            }
-        }
-        notifyStateReloaded();
     }
 
     public void clearNewDevices() {
@@ -260,7 +221,7 @@ public class RuntimeDataController {
     public void onDeviceUpdated(DeviceInfo device_info) {
         // if it matches a configured device, update it's outlet states
         for (DeviceInfo target : configuredDevices) {
-            if (!device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
+            if (!device_info.equalsByUniqueID(target))
                 continue;
 
             if (!target.copyFreshValues(device_info)) {
@@ -268,8 +229,6 @@ public class RuntimeDataController {
                 notifyDeviceQueries(target);
                 return;
             }
-
-            Log.w("onDeviceUpdated", target.DeviceName + " " + String.valueOf(target.getHash()));
 
             notifyConfiguredDeviceChangeObservers(target, false);
             notifyDeviceQueries(target);
@@ -292,7 +251,7 @@ public class RuntimeDataController {
 
     public void onDeviceErrorByName(String name, String errMessage) {
         // notify observers who are using the DeviceQuery class
-        Iterator<DeviceQuery> it = updateDeviceStateList.iterator();
+        Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
         while (it.hasNext()) {
             // Return true if the DeviceQuery object has finished its task.
             if (it.next().notifyObservers(name))
@@ -319,31 +278,28 @@ public class RuntimeDataController {
         return r;
     }
 
-    public DeviceInfo findDevice(UUID uuid) {
-        for (DeviceInfo di : configuredDevices) {
-            if (di.uuid.equals(uuid)) {
-                return di;
-            }
-        }
-        return null;
-    }
-
     public DevicePort findDevicePort(UUID uuid) {
         if (uuid == null)
             return null;
+
         for (DeviceInfo di : configuredDevices) {
-            for (DevicePort port : di.DevicePorts) {
+            di.lockDevicePorts();
+            Iterator<DevicePort> it = di.getDevicePortIterator();
+            while (it.hasNext()) {
+                DevicePort port = it.next();
                 if (port.uuid.equals(uuid)) {
+                    di.releaseDevicePorts();
                     return port;
                 }
             }
+            di.releaseDevicePorts();
         }
         return null;
     }
 
-    public DeviceInfo findDeviceByMac(String mac) {
+    public DeviceInfo findDeviceByUniqueID(String uniqueID) {
         for (DeviceInfo di : configuredDevices) {
-            if (di.UniqueDeviceID.equals(mac)) {
+            if (di.UniqueDeviceID.equals(uniqueID)) {
                 return di;
             }
         }

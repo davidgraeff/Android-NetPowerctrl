@@ -91,7 +91,7 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
             }
 
             allWidgets.append(appWidgetId, port);
-            if (port.device.updated > 0)
+            if (port.device.getUpdatedTime() > 0)
                 onDeviceUpdated(port.device, false);
             else {
                 devicesToUpdate.add(port.device);
@@ -256,7 +256,7 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
         for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
             int appWidgetId = widgetUpdateRequests.get(i);
             DevicePort devicePort = allWidgets.get(appWidgetId);
-            if (devicePort.device.equalsFunctional(di)) {
+            if (devicePort.device.equalsByUniqueID(di)) {
                 widgetUpdateRequests.remove(i);
                 setWidgetState(appWidgetId, devicePort);
                 finishServiceIfDone();
@@ -294,7 +294,7 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
                 continue;
             }
 
-            if (devicePort.device.equalsFunctional(di)) {
+            if (devicePort.device.equalsByUniqueID(di)) {
                 setWidgetState(appWidgetId, devicePort);
             }
         }

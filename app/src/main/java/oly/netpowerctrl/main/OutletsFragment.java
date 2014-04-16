@@ -273,7 +273,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         btnEmpty.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NetpowerctrlActivity.instance.changeToFragment(DevicesListFragment.class.getName());
+                NetpowerctrlActivity.instance.changeToFragment(DevicesFragment.class.getName());
             }
         });
 
@@ -378,12 +378,16 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
             case R.id.menu_outlet_hide: {
                 oi.Hidden = true;
-                NetpowerctrlApplication.getDataController().saveConfiguredDevices(true);
+                // onDeviceUpdated will either call notifyDataSetChanged if the second parameter is
+                // false or it will reconstruct the entire adapter.
+                adapter.onDeviceUpdated(null, !adapter.getIsShowingHidden());
+                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
                 return true;
             }
             case R.id.menu_outlet_unhide: {
                 oi.Hidden = false;
-                NetpowerctrlApplication.getDataController().saveConfiguredDevices(true);
+                adapter.notifyDataSetChanged();
+                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
                 return true;
             }
             case R.id.menu_icon:
@@ -531,7 +535,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             return;
         NetpowerctrlApplication.getDataController().setDevicePortBitmap(getActivity(),
                 (DevicePort) context_object, bitmap);
-        // invalidate all viewholders
+        invalidateListViewViewHolders();
+    }
+
+    void invalidateListViewViewHolders() {
         int c = mListView.getFirstVisiblePosition();
         mListView.setAdapter(adapter);
         mListView.setSelection(c);

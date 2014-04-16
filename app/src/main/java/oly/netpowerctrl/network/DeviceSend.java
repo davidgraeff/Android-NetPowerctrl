@@ -1,13 +1,15 @@
 package oly.netpowerctrl.network;
 
 import android.content.Context;
-import android.util.Log;
+import android.widget.Toast;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
@@ -147,34 +149,75 @@ public class DeviceSend {
         }
     }
 
-    static public class SendJob implements Job {
+    static public class SendJob extends DeviceObserverBase implements Job {
         InetAddress ip = null;
         DeviceInfo di;
         byte[] message;
         int errorID;
+        private boolean initialized = false;
+        private long current_time = System.currentTimeMillis();
 
-        // References to objects
-        SendJobRepeater sendJobRepeater = null;
+        private DeviceQueryResult deviceQueryResult = new DeviceQueryResult() {
 
-        public SendJob(DeviceInfo di, byte[] message, int errorID, boolean retryIfFail) {
+            @Override
+            public void onDeviceError(DeviceInfo di, String error_message) {
+
+            }
+
+            @Override
+            public void onDeviceTimeout(DeviceInfo di) {
+
+            }
+
+            @Override
+            public void onDeviceUpdated(DeviceInfo di) {
+
+            }
+
+            @Override
+            public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+                if (timeout_devices.isEmpty())
+                    return;
+
+                Context context = NetpowerctrlApplication.instance;
+                Toast.makeText(context,
+                        context.getString(R.string.error_setting_outlet, di.DeviceName,
+                                (int) ((current_time - di.getUpdatedTime()) / 1000)),
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        };
+
+        public SendJob(DeviceInfo di, byte[] message, int errorID) {
             this.message = message;
             this.errorID = errorID;
             this.di = di;
-            if (retryIfFail)
-                sendJobRepeater = new SendJobRepeater(this);
         }
 
         @Override
         public void process(DeviceSend deviceSend) {
+            if (!initialized) {
+                initialized = true;
+
+                //DeviceObserverBase
+                setDeviceQueryResult(deviceQueryResult);
+                devices_to_observe = new ArrayList<DeviceInfo>();
+                devices_to_observe.add(di);
+
+                // Register on main application object to receive device updates
+                NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
+
+                mainLoopHandler.postDelayed(timeoutRunnable, 700);
+            }
+
             try {
                 if (ip == null) {
                     ip = InetAddress.getByName(di.HostName);
                 }
                 //deviceSend.datagramSocket.setBroadcast(broadcast);
                 deviceSend.datagramSocket.send(new DatagramPacket(message, message.length, ip, di.SendPort));
-                Log.w("SendJob", ip.getHostAddress() + " " + String.valueOf(di.SendPort) + " " + String.valueOf(message.length));
-                if (sendJobRepeater != null)
-                    sendJobRepeater.startDelayedCheck();
+                mainLoopHandler.postDelayed(redoRunnable, 300);
+
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))
                     DeviceSend.onError(NETWORK_UNREACHABLE, ip.getHostAddress(), di.SendPort, e);
@@ -187,12 +230,11 @@ public class DeviceSend {
                 e.printStackTrace();
                 DeviceSend.onError(errorID, di.HostName, di.SendPort, e);
             }
-
-            sendJobRepeater = null;
         }
 
-        public void setRepeater(SendJobRepeater sendJobRepeater) {
-            this.sendJobRepeater = sendJobRepeater;
+        @Override
+        protected void doAction(DeviceInfo di) {
+            DeviceSend.instance().addJob(this);
         }
     }
 }

@@ -1,5 +1,7 @@
 package oly.netpowerctrl.application_state;
 
+import android.content.Context;
+
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
@@ -33,4 +35,6 @@ public interface PluginInterface {
      *               device to start only the receiving unit responsible for that device.
      */
     void prepareForDevices(DeviceInfo device);
+
+    void openConfigurationPage(DeviceInfo device, Context context);
 }

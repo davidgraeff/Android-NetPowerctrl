@@ -56,7 +56,7 @@ public class NetpowerctrlService extends Service {
 
             List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
             for (DeviceInfo di : devices) {
-                di.updated = 0;
+                di.setUpdatedNever();
             }
 
             if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected())
@@ -148,14 +148,7 @@ public class NetpowerctrlService extends Service {
         }
         NetpowerctrlApplication.instance.detectNewDevicesAndReachability(null);
 
-        if (!SharedPrefs.getLoadExtensions())
-            return;
 
-        if (!isBroadcastListener) {
-            isBroadcastListener = true;
-            NetpowerctrlApplication.instance.registerReceiver(pluginBroadcastListener,
-                    new IntentFilter(PLUGIN_RESPONSE_ACTION));
-        }
     }
 
     private void createRemotePlugin(String serviceName,
@@ -182,6 +175,12 @@ public class NetpowerctrlService extends Service {
     private void discover() {
         if (!SharedPrefs.getLoadExtensions())
             return;
+
+        if (!isBroadcastListener) {
+            isBroadcastListener = true;
+            NetpowerctrlApplication.instance.registerReceiver(pluginBroadcastListener,
+                    new IntentFilter(PLUGIN_RESPONSE_ACTION));
+        }
 
         Intent i = new Intent(PLUGIN_QUERY_ACTION);
         i.putExtra(PAYLOAD_SERVICENAME, NetpowerctrlActivity.class.getCanonicalName());

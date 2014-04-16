@@ -34,7 +34,7 @@ import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsCreateSceneAdapter;
-import oly.netpowerctrl.main.OutletsSceneEditFragment;
+import oly.netpowerctrl.main.SceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -83,13 +83,13 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
         public Available_Added_Adapter(FragmentManager fm) {
             super(fm);
 
-            OutletsSceneEditFragment f1 = new OutletsSceneEditFragment();
+            SceneEditFragment f1 = new SceneEditFragment();
             f1.setData(EditShortcutActivity.this,
-                    OutletsSceneEditFragment.MANIPULATOR_TAG_INCLUDED,
+                    SceneEditFragment.MANIPULATOR_TAG_INCLUDED,
                     EditShortcutActivity.this);
-            OutletsSceneEditFragment f2 = new OutletsSceneEditFragment();
+            SceneEditFragment f2 = new SceneEditFragment();
             f2.setData(EditShortcutActivity.this,
-                    OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
+                    SceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
                     EditShortcutActivity.this);
             frag = new Fragment[]{f1, f2};
         }
@@ -385,10 +385,10 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
 
     @Override
     public void setManipulatorObjects(int tag, final DynamicGridView view, DevicePortsBaseAdapter adapter) {
-        if (tag == OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE) {
+        if (tag == SceneEditFragment.MANIPULATOR_TAG_AVAILABLE) {
             grid_available = view;
             adapter_available = (DevicePortsAvailableAdapter) adapter;
-        } else if (tag == OutletsSceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
+        } else if (tag == SceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
             grid_included = view;
             adapter_included = (DevicePortsCreateSceneAdapter) adapter;
         }

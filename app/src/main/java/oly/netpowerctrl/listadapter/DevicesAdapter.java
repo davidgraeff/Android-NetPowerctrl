@@ -131,8 +131,6 @@ public class DevicesAdapter extends BaseExpandableListAdapter implements DeviceU
             convertView = inflater.inflate(R.layout.device_list_item, null);
         assert convertView != null;
 
-        if (position == 1)
-            position = 1;
         DeviceInfo di = devices.get(position);
         TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
         tvName.setText(di.DeviceName);
@@ -145,8 +143,8 @@ public class DevicesAdapter extends BaseExpandableListAdapter implements DeviceU
         String subtext = di.HostName;
         if (di.Temperature.length() > 0)
             subtext += ", " + di.Temperature;
-        if (di.FirmwareVersion.length() > 0)
-            subtext += ", " + di.FirmwareVersion;
+        if (di.Version.length() > 0)
+            subtext += ", " + di.Version;
         if (!di.isReachable())
             subtext += ", " + di.not_reachable_reason;
         tvIP.setText(subtext);

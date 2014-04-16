@@ -153,7 +153,7 @@
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
     <string name="menu_switch_all_ignore">Alle von Szene entfernen</string>
     <string name="menu_help">Hilfe</string>
-    <string name="menu_device_website">Webseite des Geräts aufrufen</string>
+    <string name="menu_device_configuration_page">Konfigurationsseite öffnen</string>
     <string name="error_not_reachable">Gerät nicht erreichbar</string>
 
     <string name="plugin_drawer_title">Erweiterungen</string>

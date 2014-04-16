@@ -7,8 +7,8 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
@@ -74,7 +74,7 @@ public class AnelBroadcastSendJob implements DeviceSend.Job {
 //                        Toast.LENGTH_SHORT).show();
 
             // Query all existing anel devices directly
-            ArrayList<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
+            List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
             for (DeviceInfo di : devices) {
                 if (di.pluginID.equals(AnelPlugin.PLUGIN_ID))
                     di.getPluginInterface().requestData(di);

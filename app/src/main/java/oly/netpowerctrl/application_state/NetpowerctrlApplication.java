@@ -166,10 +166,10 @@ public class NetpowerctrlApplication extends Application {
         }, 1000);
 
         // First try a broadcast
+        NetpowerctrlApplication.getDataController().clearNewDevices();
         new DeviceQuery(new DeviceQueryResult() {
             @Override
             public void onDeviceTimeout(DeviceInfo di) {
-                di.updated = System.currentTimeMillis();
             }
 
             @Override

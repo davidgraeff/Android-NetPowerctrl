@@ -21,7 +21,7 @@ import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.main.DevicesListFragment;
+import oly.netpowerctrl.main.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackDialog;
 import oly.netpowerctrl.main.HelpFragment;
 import oly.netpowerctrl.main.OutletsFragment;
@@ -85,7 +85,7 @@ public class DrawerController {
 
         mDrawerAdapter.add(context.getResources().getStringArray(R.array.drawer_titles_app),
                 context.getResources().getStringArray(R.array.drawer_descriptions_app),
-                new String[]{"", DevicesListFragment.class.getName(),
+                new String[]{"", DevicesFragment.class.getName(),
                         PreferencesFragment.class.getName(), HelpFragment.class.getName()}
         );
 
@@ -133,7 +133,7 @@ public class DrawerController {
             if (NetpowerctrlApplication.getDataController().configuredDevices.size() > 0)
                 pos = mDrawerAdapter.indexOf(OutletsFragment.class.getName());
             else
-                pos = mDrawerAdapter.indexOf(DevicesListFragment.class.getName());
+                pos = mDrawerAdapter.indexOf(DevicesFragment.class.getName());
         }
         selectItem(pos);
 
