@@ -26,7 +26,7 @@ public final class DevicePort implements Comparable {
     public boolean Disabled = false;
     public UUID uuid = UUID.randomUUID(); // unique identity among all device ports
     public List<UUID> groups = new ArrayList<UUID>();
-    public long id = 0; // unique identity among device ports on this device
+    public int id = 0; // unique identity among device ports on this device
     // last_command_timecode: Updated after name has been send.
     // Used to disable control in list until ack from device has been received.
     public long last_command_timecode = 0;
@@ -42,6 +42,20 @@ public final class DevicePort implements Comparable {
     public DevicePort(DeviceInfo di, DevicePortType ui_type) {
         device = di;
         this.ui_type = ui_type;
+    }
+
+    public DevicePort(DevicePort other) {
+        Description = other.Description;
+        current_value = other.current_value;
+        max_value = other.max_value;
+        min_value = other.min_value;
+        Disabled = other.Disabled;
+        Hidden = other.Hidden;
+        positionRequest = other.positionRequest;
+        ui_type = other.ui_type;
+        device = other.device;
+        id = other.id;
+        // do not copy last_command_timecode! This value is set by the execute(..) methods
     }
 
     public static DevicePort fromJSON(JsonReader reader, DeviceInfo di)
@@ -75,7 +89,7 @@ public final class DevicePort implements Comparable {
             } else if (name.equals("positionRequest")) {
                 oi.positionRequest = reader.nextInt();
             } else if (name.equals("id")) {
-                oi.id = reader.nextLong();
+                oi.id = reader.nextInt();
             } else if (name.equals("uuid")) {
                 oi.uuid = UUID.fromString(reader.nextString());
             } else if (name.equals("groups")) {
@@ -108,34 +122,31 @@ public final class DevicePort implements Comparable {
     }
 
     public boolean equals(DevicePort other) {
-        return (id == other.id) && device.equals(device);
+        return (id == other.id) && device.equalsByUniqueID(device);
     }
 
-    public boolean copyValuesIfMatching(DevicePort source_oi) {
-        if (equals(source_oi)) {
-            current_value = source_oi.current_value;
-            max_value = source_oi.max_value;
-            min_value = source_oi.min_value;
-            Disabled = source_oi.Disabled;
-            setDescription(source_oi.getDescription());
-            return true;
-        }
-        return false;
+    /**
+     * @param source_oi
+     * @return Return true if values in this object have changed because of source_oi.
+     */
+    public boolean copyValues(DevicePort source_oi) {
+        boolean hasChanged = false;
+        hasChanged |= current_value != source_oi.current_value;
+        current_value = source_oi.current_value;
+        hasChanged |= max_value != source_oi.max_value;
+        max_value = source_oi.max_value;
+        hasChanged |= min_value != source_oi.min_value;
+        min_value = source_oi.min_value;
+        hasChanged |= Disabled != source_oi.Disabled;
+        Disabled = source_oi.Disabled;
+        hasChanged |= setDescription(source_oi.getDescription());
+        return hasChanged;
     }
 
     public DevicePortType getType() {
         return ui_type;
     }
 
-    protected void clone(DevicePort other) {
-        Description = other.Description;
-        current_value = other.current_value;
-        max_value = other.max_value;
-        min_value = other.min_value;
-        Disabled = other.Disabled;
-        Hidden = other.Hidden;
-        positionRequest = other.positionRequest;
-    }
 
     public void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
@@ -156,6 +167,10 @@ public final class DevicePort implements Comparable {
         writer.endObject();
     }
 
+    public String debugOut() {
+        return Description + " " + String.valueOf(current_value);
+    }
+
     public String getDescription() {
         return this.Description;
     }
@@ -167,8 +182,10 @@ public final class DevicePort implements Comparable {
      *
      * @param desc The new descriptive name.
      */
-    public void setDescription(String desc) {
+    public boolean setDescription(String desc) {
+        boolean hasChanged = !desc.equals(Description);
         Description = desc;
+        return hasChanged;
     }
 
     public void addToGroup(UUID uuid) {

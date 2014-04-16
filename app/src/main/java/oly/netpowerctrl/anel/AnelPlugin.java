@@ -1,5 +1,8 @@
 package oly.netpowerctrl.anel;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
@@ -11,6 +14,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -127,17 +131,20 @@ final public class AnelPlugin implements PluginInterface {
         boolean containsIO = false;
 
         // First step: Setup data byte (outlet, io) to reflect the current state of the device ports.
-        for (int i = 0; i < di.DevicePorts.size(); ++i) {
-            if (di.DevicePorts.get(i).Disabled || di.DevicePorts.get(i).current_value == 0)
+        di.lockDevicePorts();
+        Iterator<DevicePort> it = di.getDevicePortIterator();
+        while (it.hasNext()) {
+            DevicePort oi = it.next();
+            if (oi.Disabled || oi.current_value == 0)
                 continue;
-
-            int id = (int) di.DevicePorts.get(i).id;
+            int id = (int) oi.id;
             if (id >= 10) {
                 data_io = switchOn(data_io, id - 10);
             } else {
                 data_outlet = switchOn(data_outlet, id);
             }
         }
+        di.releaseDevicePorts();
 
         // Second step: Apply commands
         for (Scene.PortAndCommand c : command_list) {
@@ -183,13 +190,13 @@ final public class AnelPlugin implements PluginInterface {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST, true));
+            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST));
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST, true));
+            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST));
         }
 
         if (callback != null)
@@ -224,7 +231,7 @@ final public class AnelPlugin implements PluginInterface {
                     port.id, port.device.UserName, port.device.Password).getBytes();
         }
 
-        DeviceSend.instance().addJob(new DeviceSend.SendJob(port.device, data, DeviceSend.INQUERY_REQUEST, true));
+        DeviceSend.instance().addJob(new DeviceSend.SendJob(port.device, data, DeviceSend.INQUERY_REQUEST));
 
         if (callback != null)
             callback.onExecutionFinished(1);
@@ -244,7 +251,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void requestData(DeviceInfo di) {
-        DeviceSend.instance().addJob(new DeviceSend.SendJob(di, "wer da?\r\n".getBytes(), DeviceSend.INQUERY_REQUEST, true));
+        DeviceSend.instance().addJob(new DeviceSend.SendJob(di, "wer da?\r\n".getBytes(), DeviceSend.INQUERY_REQUEST));
     }
 
     @Override
@@ -347,6 +354,13 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public void prepareForDevices(DeviceInfo device) {
         startDiscoveryThreads((device != null) ? device.ReceivePort : 0);
+    }
+
+    @Override
+    public void openConfigurationPage(DeviceInfo device, Context context) {
+        Intent browse = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://" + device.HostName + ":" + Integer.valueOf(device.HttpPort).toString()));
+        context.startActivity(browse);
     }
 
 //

@@ -74,7 +74,7 @@ public class AnelDeviceDiscoveryThread extends Thread {
 
         di.SendPort = SharedPrefs.getDefaultSendPort();
         di.setReachable();
-        di.updated = System.currentTimeMillis();
+        di.setUpdatedNow();
         return di;
     }
 
@@ -127,10 +127,10 @@ public class AnelDeviceDiscoveryThread extends Thread {
                     oi.id = (i - 16 + 1) + 10; // 1-based, and for IO we add 10. range: 11..19
                     oi.setDescription(io_port[0]);
                     oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
-                    di.DevicePorts.add(oi);
+                    di.add(oi);
                 }
                 di.Temperature = msg[24];
-                di.FirmwareVersion = msg[25].trim();
+                di.Version = msg[25].trim();
             }
 
         }
@@ -151,7 +151,7 @@ public class AnelDeviceDiscoveryThread extends Thread {
                 oi.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;
             oi.Disabled = (disabledOutlets & (1 << i)) != 0;
 
-            di.DevicePorts.add(oi);
+            di.add(oi);
         }
 
         new Handler(NetpowerctrlApplication.instance.getMainLooper()).post(new Runnable() {

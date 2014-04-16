@@ -19,6 +19,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceUpdate;
@@ -211,7 +212,9 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
             if (deviceQuery != null) {
                 deviceQuery.addDevice(device, false);
             }
-            pi.execute(device.DevicePorts.get(0), device.DevicePorts.get(0).current_value, null);
+            DevicePort oi = device.getFirst();
+            if (oi != null)
+                pi.execute(oi, oi.current_value, null);
             Handler handler = new Handler();
             // Timeout is 1,1s
             handler.postDelayed(new Runnable() {
@@ -242,7 +245,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
     @Override
     public void onDeviceError(DeviceInfo di, String error_message) {
         if (test_state == TestStates.TEST_ACCESS) {
-            if (di.equals(device)) {
+            if (di.equalsByUniqueID(device)) {
                 test_state = TestStates.TEST_INIT;
             }
         }

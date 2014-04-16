@@ -31,7 +31,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
         super(context, mListContextMenu, filterGroup);
-        showHidden = SharedPrefs.getShowHiddenOutlets(context);
+        showHidden = SharedPrefs.getShowHiddenOutlets();
         blockUpdates = !NetpowerctrlApplication.getDataController().isInitialDataQueryCompleted();
         onResume();
         if (!blockUpdates)
@@ -192,6 +192,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     public void setShowHidden(boolean b) {
         showHidden = b;
+        blockUpdates = false;
         update(NetpowerctrlApplication.getDataController().configuredDevices);
         SharedPrefs.setShowHiddenOutlets(showHidden);
     }

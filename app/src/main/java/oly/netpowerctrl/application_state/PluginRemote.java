@@ -4,14 +4,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
@@ -28,23 +28,18 @@ import oly.netpowerctrl.utils.ShowToast;
  */
 public class PluginRemote implements PluginInterface {
     private String TAG = "PluginRemote";
-    private static final String INetPwrCtrlPlugin_NAME = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private final Context context;
     public String serviceName;
     public String localized_name;
+    public String packageName;
     //public PluginValuesAdapter valuesAdapter;
     private DeviceInfo di = null;
-    private Map<Integer, DevicePort> actions_int = new TreeMap<Integer, DevicePort>();
-    private Map<Integer, DevicePort> actions_boolean = new TreeMap<Integer, DevicePort>();
-    private Map<Integer, DevicePort> actions_trigger = new TreeMap<Integer, DevicePort>();
-
-    private Map<Integer, DevicePort> pre_actions_int = new TreeMap<Integer, DevicePort>();
-    private Map<Integer, DevicePort> pre_actions_boolean = new TreeMap<Integer, DevicePort>();
-    private Map<Integer, DevicePort> pre_actions_trigger = new TreeMap<Integer, DevicePort>();
+    private Set<Integer> devicePortIDs;
     private boolean receiveFinished = false;
 
     private List<String> remote_states;
     private int remote_success_state;
+    private boolean isInitialized = false;
 
     private INetPwrCtrlPlugin service = null;
     private ServiceConnection svcConn = new ServiceConnection() {
@@ -52,7 +47,7 @@ public class PluginRemote implements PluginInterface {
                                        IBinder binder) {
             serviceName = className.getClassName();
             service = INetPwrCtrlPlugin.Stub.asInterface(binder);
-            requestData();
+            init();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -73,38 +68,21 @@ public class PluginRemote implements PluginInterface {
      * Initialize a plugin. Try to load an already configured DeviceInfo for this plugin
      * or create a new DeviceInfo object.
      *
-     * @param context
-     * @param serviceName
-     * @param localized_name
+     * @param context Context
+     * @param serviceName Android Service Name
+     * @param localized_name Translated plugin name
+     * @param packageName Package name
      */
-    private PluginRemote(Context context, String serviceName, String localized_name) {
+    private PluginRemote(Context context, String serviceName, String localized_name, String packageName) {
         String UniqueDeviceID = "plugin" + serviceName;
         TAG += " " + serviceName;
         this.context = context;
         this.localized_name = localized_name;
         this.serviceName = serviceName;
-        di = NetpowerctrlApplication.getDataController().findDeviceByMac(UniqueDeviceID);
+        this.packageName = packageName;
+        di = NetpowerctrlApplication.getDataController().findDeviceByUniqueID(UniqueDeviceID);
         if (di == null)
             di = DeviceInfo.createNewDevice(getPluginID());
-        else {
-            // An already configured DeviceInfo has been found. Extract all devicePorts into the
-            // local variables. The devicePorts are readded to the DeviceInfo when we receive
-            // all available actions from the remote plugin.
-            for (DevicePort port : di.DevicePorts) {
-                switch (port.getType()) {
-                    case TypeToggle:
-                        pre_actions_boolean.put((int) port.id, port);
-                        break;
-                    case TypeButton:
-                        pre_actions_trigger.put((int) port.id, port);
-                        break;
-                    case TypeRangedValue:
-                        pre_actions_int.put((int) port.id, port);
-                        break;
-                }
-            }
-            di.DevicePorts.clear();
-        }
         di.UniqueDeviceID = UniqueDeviceID;
         di.setNotReachable("init...");
         di.DeviceName = localized_name;
@@ -113,7 +91,7 @@ public class PluginRemote implements PluginInterface {
 
     public static PluginRemote create(String serviceName, String localized_name, String packageName) {
         Context context = NetpowerctrlApplication.instance;
-        PluginRemote r = new PluginRemote(context, serviceName, localized_name);
+        PluginRemote r = new PluginRemote(context, serviceName, localized_name, packageName);
         Intent in = new Intent();
         in.setClassName(packageName, serviceName);
         if (!context.bindService(in, r.svcConn, Context.BIND_AUTO_CREATE)) {
@@ -131,14 +109,38 @@ public class PluginRemote implements PluginInterface {
     }
 
     /**
-     * Request new data from plugin
+     * init
      */
-    @Override
-    public void requestData() {
+    public void init() {
         try {
             if (service != null) {
                 Log.w(TAG, "init");
                 service.init(callback);
+                isInitialized = true;
+            } else
+                ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+        } catch (RemoteException e) {
+            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+        } catch (Exception e) {
+            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
+            Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Request new data from plugin
+     */
+    @Override
+    public void requestData() {
+        if (!isInitialized) {
+            init();
+            return;
+        }
+        try {
+            if (service != null) {
+                Log.w(TAG, "requestData");
+                service.requestValues();
             } else
                 ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
         } catch (RemoteException e) {
@@ -198,6 +200,22 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
+    public void openConfigurationPage(DeviceInfo device, Context context) {
+        Intent i;
+        PackageManager manager = context.getPackageManager();
+        try {
+            assert manager != null;
+            i = manager.getLaunchIntentForPackage(packageName);
+            if (i == null)
+                throw new PackageManager.NameNotFoundException();
+            i.addCategory(Intent.CATEGORY_LAUNCHER);
+            context.startActivity(i);
+        } catch (PackageManager.NameNotFoundException ignored) {
+
+        }
+    }
+
+    @Override
     public void execute(DevicePort port, int command, ExecutionFinished callback) {
         if (service == null) {
             if (callback != null)
@@ -229,124 +247,104 @@ public class PluginRemote implements PluginInterface {
             callback.onExecutionFinished(1);
     }
 
+    private Handler handler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
+
     private final INetPwrCtrlPluginResult.Stub callback = new INetPwrCtrlPluginResult.Stub() {
         private String current_header = "";
-        private boolean isRequesting = false;
 
         @Override
         public void initDone(List<String> states, int success_state) throws RemoteException {
             remote_states = states;
             remote_success_state = success_state;
             di.HostName = serviceName;
+            di.setHasChanged();
+            devicePortIDs = di.getDevicePortIDs();
         }
 
         @Override
         public void pluginState(int state) {
+            di.setUpdatedNow();
             if (state != remote_success_state || service == null) {
                 di.setNotReachable(remote_states.get(state));
-                Handler h = new Handler(context.getMainLooper());
-                h.post(new Runnable() {
-                    public void run() {
-                        Log.w(TAG, "new state: " + di.not_reachable_reason);
-                        NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
-                    }
-                });
-            }
+            } else
+                di.setReachable();
+            di.setHasChanged();
 
-            if (isRequesting)
-                return;
-
-            isRequesting = true;
-            receiveFinished = false;
-
-            Log.w(TAG, "plugin ready. request data.");
-
-            try {
-                service.requestValues();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+            handler.post(new Runnable() {
+                public void run() {
+                    NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
+                }
+            });
         }
 
         @Override
         public void intValue(final int id, String name, final int min, final int max, final int value) throws RemoteException {
-            DevicePort action;
-            if (!actions_int.containsKey(id)) {
-                action = pre_actions_int.get(id);
-                if (action == null)
-                    action = new DevicePort(di, DevicePort.DevicePortType.TypeRangedValue);
+            devicePortIDs.remove(id);
+            DevicePort action = di.getByID(id);
+            if (action == null) {
+                action = new DevicePort(di, DevicePort.DevicePortType.TypeRangedValue);
                 action.id = id;
-                di.DevicePorts.add(action);
-                actions_int.put(id, action);
-            } else {
-                action = actions_int.get(id);
+                di.addSafe(action);
             }
             action.current_value = value;
             action.min_value = min;
             action.max_value = max;
 
-            if (current_header.length() > 0)
-                name = current_header + " " + name;
             action.setDescription(name);
+
+            di.setHasChanged();
+
             post();
         }
 
         @Override
         public void booleanValue(final int id, String name, final boolean value) throws RemoteException {
-            DevicePort action;
-            if (!actions_boolean.containsKey(id)) {
-                action = pre_actions_boolean.get(id);
-                if (action == null)
-                    action = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
+            devicePortIDs.remove(id);
+            DevicePort action = di.getByID(id);
+            if (action == null) {
+                action = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
                 action.id = id;
-                di.DevicePorts.add(action);
-                actions_boolean.put(id, action);
-            } else
-                action = actions_boolean.get(id);
+                di.addSafe(action);
+            }
             action.current_value = value ? DevicePort.ON : DevicePort.OFF;
 
-            if (current_header.length() > 0)
-                name = current_header + " " + name;
             action.setDescription(name);
+
+            di.setHasChanged();
+
             post();
         }
 
         @Override
         public void action(final int id, int groupID, String name) throws RemoteException {
-            DevicePort action;
-            if (!actions_trigger.containsKey(id)) {
-                action = pre_actions_trigger.get(id);
-                if (action == null)
-                    action = new DevicePort(di, DevicePort.DevicePortType.TypeButton);
+            devicePortIDs.remove(id);
+            DevicePort action = di.getByID(id);
+            if (action == null) {
+                action = new DevicePort(di, DevicePort.DevicePortType.TypeButton);
                 action.id = id;
-                di.DevicePorts.add(action);
-                actions_trigger.put(id, action);
-            } else
-                action = actions_trigger.get(id);
-
-            //Log.w("plugin:" + serviceName, "action " + name);
-
-            if (current_header.length() > 0)
-                name = current_header + " " + name;
+                di.addSafe(action);
+            }
 
             action.setDescription(name);
-            post();
-        }
 
-        @Override
-        public void header(final String name) throws RemoteException {
-            current_header = name;
+            di.setHasChanged();
+
+            post();
         }
 
         @Override
         public void finished() throws RemoteException {
             if (receiveFinished)
                 return;
-            isRequesting = false;
             receiveFinished = true;
-            pre_actions_int.clear();
-            pre_actions_boolean.clear();
-            pre_actions_trigger.clear();
+            // Remove old DevicePorts
+            if (devicePortIDs.size() > 0) {
+                di.setHasChanged();
+                for (Integer i : devicePortIDs) {
+                    di.remove(i);
+                }
+            }
+
             post();
         }
     };
@@ -354,12 +352,10 @@ public class PluginRemote implements PluginInterface {
     private void post() {
         if (!receiveFinished)
             return;
-        Log.w(TAG, "receiving done");
         di.setReachable();
-        Handler h = new Handler(context.getMainLooper());
-        h.post(new Runnable() {
+        di.setUpdatedNow();
+        handler.post(new Runnable() {
             public void run() {
-                Log.w(TAG, "receiving done main loop");
                 NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
             }
         });

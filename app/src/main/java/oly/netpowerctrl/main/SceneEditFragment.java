@@ -18,23 +18,23 @@ import oly.netpowerctrl.shortcut.OutletsManipulator;
 
 /**
  */
-public class OutletsSceneEditFragment extends Fragment {
+public class SceneEditFragment extends Fragment {
     private DevicePortsBaseAdapter adapter;
     private OutletsManipulator manipulator = null;
     private int manipulator_tag;
     public static final int MANIPULATOR_TAG_INCLUDED = 0;
     public static final int MANIPULATOR_TAG_AVAILABLE = 1;
 
-    public OutletsSceneEditFragment() {
+    public SceneEditFragment() {
     }
 
     public void setData(Context context, int tag, OutletsManipulator manipulator) {
         // We use the constructor that is dedicated to scene editing
         this.manipulator_tag = tag;
         this.manipulator = manipulator;
-        if (tag == OutletsSceneEditFragment.MANIPULATOR_TAG_AVAILABLE) {
+        if (tag == SceneEditFragment.MANIPULATOR_TAG_AVAILABLE) {
             adapter = new DevicePortsAvailableAdapter(context);
-        } else if (tag == OutletsSceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
+        } else if (tag == SceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
             adapter = new DevicePortsCreateSceneAdapter(context);
         }
     }

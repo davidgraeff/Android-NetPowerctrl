@@ -6,8 +6,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,7 +18,9 @@ import android.widget.ExpandableListView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
@@ -34,10 +34,10 @@ import oly.netpowerctrl.preferences.PreferencesFragment;
 
 /**
  */
-public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, ExpandableListView.OnChildClickListener {
+public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, ExpandableListView.OnChildClickListener {
     private DevicesAdapter adapter;
 
-    public DevicesListFragment() {
+    public DevicesFragment() {
     }
 
     @Override
@@ -169,11 +169,15 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 assert current_device != null;
-                                for (DevicePort port : current_device.DevicePorts) {
-                                    port.addToGroup(current_device.uuid);
+                                current_device.lockDevicePorts();
+                                Iterator<DevicePort> it = current_device.getDevicePortIterator();
+                                UUID uuidOfDevice = UUID.nameUUIDFromBytes(current_device.UniqueDeviceID.getBytes());
+                                while (it.hasNext()) {
+                                    it.next().addToGroup(uuidOfDevice);
                                 }
+                                current_device.releaseDevicePorts();
                                 NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
-                                NetpowerctrlApplication.getDataController().groups.edit(current_device.uuid, current_device.DeviceName);
+                                NetpowerctrlApplication.getDataController().groups.edit(uuidOfDevice, current_device.DeviceName);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -195,11 +199,8 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
                 return true;
             }
 
-            case R.id.menu_device_website:
-                Intent browse = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("http://" + current_device.HostName + ":" + Integer.valueOf(current_device.HttpPort).toString()));
-                getActivity().startActivity(browse);
-
+            case R.id.menu_device_configuration_page:
+                current_device.getPluginInterface().openConfigurationPage(current_device, getActivity());
             default:
                 return false;
         }
@@ -218,8 +219,7 @@ public class DevicesListFragment extends Fragment implements PopupMenu.OnMenuIte
             ft.addToBackStack(null);
             ((DialogFragment) fragment).show(ft, "dialog");
         } else { // for now: We just add the device to the configured devices
-            if (NetpowerctrlApplication.getDataController().findDevice(di.uuid) == null)
-                NetpowerctrlApplication.getDataController().addToConfiguredDevices(di, true);
+            NetpowerctrlApplication.getDataController().addToConfiguredDevices(di, true);
         }
     }
 

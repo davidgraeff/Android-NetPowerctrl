@@ -153,7 +153,7 @@
     <string name="menu_switch_all_toogle">All toggle</string>
     <string name="menu_switch_all_ignore">Remove all from scene</string>
     <string name="menu_help">Help</string>
-    <string name="menu_device_website">Visit website of the device</string>
+    <string name="menu_device_configuration_page">Open configuration page</string>
     <string name="error_not_reachable">Devices not reachable</string>
     <string name="plugin_drawer_title">Plugins</string>
     <string name="empty_no_scenes">No scene found. Create one by clicking on the (+) icon located in the top-left bar.\n\n
