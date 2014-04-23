@@ -12,6 +12,7 @@ import android.util.Log;
 
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DeviceInfo;
@@ -216,6 +217,11 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
+    public boolean isNetworkPlugin() {
+        return false;
+    }
+
+    @Override
     public void execute(DevicePort port, int command, ExecutionFinished callback) {
         if (service == null) {
             if (callback != null)
@@ -258,7 +264,8 @@ public class PluginRemote implements PluginInterface {
             remote_success_state = success_state;
             di.HostName = serviceName;
             di.setHasChanged();
-            devicePortIDs = di.getDevicePortIDs();
+            // Copy of current device port IDs
+            devicePortIDs = new TreeSet<Integer>(di.getDevicePortIDs());
         }
 
         @Override
@@ -278,7 +285,7 @@ public class PluginRemote implements PluginInterface {
         }
 
         @Override
-        public void intValue(final int id, String name, final int min, final int max, final int value) throws RemoteException {
+        public void intValue(final int id, String name, final int min, final int max, final int value) {
             devicePortIDs.remove(id);
             DevicePort action = di.getByID(id);
             if (action == null) {
@@ -298,7 +305,7 @@ public class PluginRemote implements PluginInterface {
         }
 
         @Override
-        public void booleanValue(final int id, String name, final boolean value) throws RemoteException {
+        public void booleanValue(final int id, String name, final boolean value) {
             devicePortIDs.remove(id);
             DevicePort action = di.getByID(id);
             if (action == null) {
@@ -316,7 +323,7 @@ public class PluginRemote implements PluginInterface {
         }
 
         @Override
-        public void action(final int id, int groupID, String name) throws RemoteException {
+        public void action(final int id, int groupID, String name) {
             devicePortIDs.remove(id);
             DevicePort action = di.getByID(id);
             if (action == null) {
@@ -333,18 +340,21 @@ public class PluginRemote implements PluginInterface {
         }
 
         @Override
-        public void finished() throws RemoteException {
+        public void finished() {
             if (receiveFinished)
                 return;
-            receiveFinished = true;
             // Remove old DevicePorts
             if (devicePortIDs.size() > 0) {
                 di.setHasChanged();
-                for (Integer i : devicePortIDs) {
-                    di.remove(i);
+                for (int id : devicePortIDs) {
+                    Log.w("removeOldPort", di.getByID(id).debugOut());
+                    di.remove(id);
                 }
+                // Save ports
+                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
             }
 
+            receiveFinished = true;
             post();
         }
     };

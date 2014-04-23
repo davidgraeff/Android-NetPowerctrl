@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="oly.netpowerctrl"
-    android:versionCode="38"
-    android:versionName="2.8b">
+    android:versionCode="44"
+    android:versionName="2.11">
 
-<!-- Api level 14: Android 4.0 15. Dezember 2011 -->
+    <!-- Api level 14: Android 4.0 15. Dezember 2011 -->
     <!-- Api level 16: Android 4.1 27. Juni 2012 -->
     <!--<uses-sdk
         android:minSdkVersion="14"
@@ -63,8 +63,8 @@
         <activity
             android:name="oly.netpowerctrl.widget.WidgetConfig"
             android:label="@string/app_name"
-            android:description="@string/app_name_shortcut_desc"
-            android:icon="@drawable/widget"
+            android:description="@string/app_name_widget"
+            android:icon="@drawable/netpowerctrl"
             android:theme="@style/Theme.Transparent">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
@@ -88,8 +88,9 @@
             </intent-filter>
         </activity>
 
+        <!-- Widget -->
         <receiver
-            android:icon="@drawable/widget"
+            android:icon="@drawable/netpowerctrl"
             android:label="@string/app_name_widget"
             android:name="oly.netpowerctrl.widget.DeviceWidgetProvider">
             <intent-filter>

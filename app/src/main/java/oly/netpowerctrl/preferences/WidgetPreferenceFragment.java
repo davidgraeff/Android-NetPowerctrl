@@ -40,25 +40,25 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
         preference = findPreference("widget_image_on");
         assert preference != null;
         preference_to_state.put(preference, Icons.IconState.StateOn);
-        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.IconType.WidgetIcon,
-                Icons.IconState.StateOn,
-                Icons.uuidFromWidgetID(widgetId)));
+        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.uuidFromWidgetID(widgetId),
+                Icons.IconType.WidgetIcon, Icons.IconState.StateOn,
+                Icons.getResIdForState(Icons.IconState.StateOn)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_off");
         assert preference != null;
         preference_to_state.put(preference, Icons.IconState.StateOff);
-        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.IconType.WidgetIcon,
-                Icons.IconState.StateOff,
-                Icons.uuidFromWidgetID(widgetId)));
+        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.uuidFromWidgetID(widgetId),
+                Icons.IconType.WidgetIcon, Icons.IconState.StateOff,
+                Icons.getResIdForState(Icons.IconState.StateOff)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_not_reachable");
         assert preference != null;
         preference_to_state.put(preference, Icons.IconState.StateUnknown);
-        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.IconType.WidgetIcon,
-                Icons.IconState.StateUnknown,
-                Icons.uuidFromWidgetID(widgetId)));
+        preference.setIcon(Icons.loadDrawable(getActivity(), Icons.uuidFromWidgetID(widgetId),
+                Icons.IconType.WidgetIcon, Icons.IconState.StateUnknown,
+                Icons.getResIdForState(Icons.IconState.StateUnknown)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_show_text");

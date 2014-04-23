@@ -54,17 +54,48 @@ public class ExecutionActivity extends Activity implements DeviceQueryResult, Ex
 
         // Execute single action (in contrast to scene)
         if (extra.containsKey(EditShortcutActivity.RESULT_ACTION_UUID)) {
-            UUID port_uuid = UUID.fromString(extra.getString(EditShortcutActivity.RESULT_ACTION_UUID));
-            DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(port_uuid);
-            if (port == null) {
-                Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
-                finish();
-                return;
+            executeSingleAction(extra);
+        } else {
+            executeScene(extra);
+
+            // Show main window
+            if (extra.getBoolean("show_mainWindow")) {
+                Intent mainIt = new Intent(this, NetpowerctrlActivity.class);
+                startActivity(mainIt);
             }
-            NetpowerctrlApplication.getDataController().execute(port, extra.getInt(EditShortcutActivity.RESULT_ACTION_COMMAND), this);
+
+            if (extra.getBoolean("enable_feedback")) {
+                //noinspection ConstantConditions
+                ShowToast.showToast(this,
+                        this.getString(R.string.scene_executed, scene.sceneName), 800);
+            }
+        }
+    }
+
+    void executeSingleAction(Bundle extra) {
+        UUID port_uuid = UUID.fromString(extra.getString(EditShortcutActivity.RESULT_ACTION_UUID));
+        final DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(port_uuid);
+        if (port == null) {
+            Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
+            finish();
             return;
         }
+        final int command = extra.getInt(EditShortcutActivity.RESULT_ACTION_COMMAND);
+        NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
+            @Override
+            public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
+                NetpowerctrlApplication.getDataController().execute(port, command, ExecutionActivity.this);
+                return false;
+            }
 
+            @Override
+            public void onServiceFinished() {
+                finish();
+            }
+        });
+    }
+
+    void executeScene(Bundle extra) {
         // Extract scene from extra bundle
         try {
             scene = Scene.fromJSON(JSONHelper.getReader(extra.getString(EditShortcutActivity.RESULT_SCENE)));
@@ -93,18 +124,6 @@ public class ExecutionActivity extends Activity implements DeviceQueryResult, Ex
                 finish();
             }
         });
-
-        // Show main window
-        if (extra.getBoolean("show_mainWindow")) {
-            Intent mainIt = new Intent(this, NetpowerctrlActivity.class);
-            startActivity(mainIt);
-        }
-
-        if (extra.getBoolean("enable_feedback")) {
-            //noinspection ConstantConditions
-            ShowToast.showToast(this,
-                    this.getString(R.string.scene_executed, scene.sceneName), 800);
-        }
     }
 
     @Override

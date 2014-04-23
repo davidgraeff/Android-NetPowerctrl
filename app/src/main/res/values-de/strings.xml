@@ -3,7 +3,7 @@
     <string name="app_name">Power Control</string>
     <string name="app_name_shortcut">Power-Control Szene</string>
     <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
-    <string name="app_name_widget">Power-Control Steckdose</string>
+    <string name="app_name_widget">Power-Control Steckdosenzustand</string>
 
     <string name="changelog_full_title">Change Log</string>
     <string name="changelog_title">Was ist neu…</string>
@@ -90,6 +90,7 @@
         <item>Fehler melden (Ticket System)</item>
         <item>Zum Quellcode</item>
         <item>In Google Play bewerten</item>
+        <item>Change log</item>
         <item>Spenden per %s</item>
     </string-array>
 
@@ -143,7 +144,7 @@
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
     <string name="preference_use_energy_saving_mode">Energiesparmodus</string>
-    <string name="preference_use_energy_saving_mode_summary">Sobald deine Geräte nach einem Netwerkwechsel (WLan/2G/3G/4G) nicht mehr erreichbar sind, werden alle Netzwerkkomponenten abgeschaltet um Energie zu sparen.</string>
+    <string name="preference_use_energy_saving_mode_summary">Sobald deine Geräte nach einem Netwerkwechsel (WLan/2G/3G/4G) nicht mehr erreichbar sind, werden alle Netzwerkkomponenten abgeschaltet um Energie zu sparen. Ob die Geräte nach erneutem Netzwechsel wieder erreichbar sind, wird bewusst nicht ausgewertet, bitte das Aktualisieren Icon benutzen</string>
     <string name="scene_replace">(Aktualisieren)</string>
     <string name="menu_sortAlphabetically">Alphabetisch anordnen</string>
     <string name="scene_backup_nobackups">Keine Sicherungen gefunden</string>
@@ -213,14 +214,13 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="widget_off">(Aus)</string>
     <string name="preference_widget_show_text">Zeige Titel</string>
     <string name="preference_widget_show_text_summary">Zeige Namen und Status unter dem Icon</string>
-    <string name="energy_saving_mode">Im Energiesparmodus!</string>
     <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
     <string name="menu_outlet_createGroup">In Gruppen…</string>
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
     <string name="preference_max_favourite_scenes">Maximale Szenen</string>
     <string name="preference_max_favourite_scenes_summary">Anzahl Szenen in Seitenleiste</string>
-    <string name="preference_max_favourites_groups">Maximale Gruppen</string>
-    <string name="preference_max_favourites_groups_summary">Anzahl Gruppen in Seitenleiste</string>
+    <string name="preference_max_favourites_groups">Max. Gruppen in Hauptmenü</string>
+    <string name="preference_max_favourites_groups_summary">Die ANzahl der maximal angezeigten Gruppen im seitlichen Hauptmenü.</string>
     <string name="help_nfc_title">Austausch von Steckdosenleisten-Einstellungen über mehrere Geräte</string>
     <string name="help_nfc"><![CDATA[
     Sofern dein Gerät und ein anderes Gerät (z.B. Mobiltelefon und Tablet oder das eigene Telefon und
@@ -251,13 +251,26 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="menu_set_favourite">Mache zu Favorit</string>
     <string name="menu_remove_favourite">Kein Favorit mehr</string>
     <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
-    Du kannst auch die Kopie einer Szene auf deinem Homescreen ablegen lassen für den super schnelle direkten Zugriff. Mache eine Szene zu einem Favoriten, damit diese im Navigationsmenü aufgelistet wird und von da direkt ausgeführt werden kann.
-
-    Eine spezielle Form von Szenen sind Master/Slave-Szenen. Alle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
+    Lege die Kopie einer Szene auf deinem Homescreen ab um diese super schnell direkt auszuführen. Mache eine Szene zu einem Favoriten, damit diese im Navigationsmenü aufgelistet für den schnellen Zugriff.
+    \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
     </string>
     <string name="error_plugin_not_installed">Plugin nicht installiert!</string>
     <string name="renameInProgress">Benenne um…</string>
     <string name="renameFailed">Umbenennung fehlgeschlagen: %1$s</string>
     <string name="menu_view_list">Listenansicht</string>
     <string name="menu_view_grid">Rasteransicht</string>
+    <string name="network_no_devices">Keine Geräte in diesem Netzwerk gefunden: Energiesparmodus.</string>
+    <string name="network_restarted">Neue Geräteerkennung durch Netzwerkwechsel…</string>
+    <string name="network_unreachable">Keine Netzwerkverbindung: Energiesparmodus.</string>
+    <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombineren. Zuerst musst du aber Geräte einrichten.</string>
+    <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Benutze den Plus-Button um ein Gerät zu erstellen, was nicht automatisch gefunden worden ist.\n\nDu musst auf deinen Geräten UDP eingeschaltet haben!</string>
+    <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten. Über das Menü, welches du mit einem Fingerwisch von links aufmachst kannst du danach zur Steckdosenübersicht zurück.</string>
+    <string name="preference_animations_enabled">Animationen</string>
+    <string name="preference_animations_enabled_summary">Schaltet Listen- und Rasteranimationen ein und aus.</string>
+    <string name="energy_saving_mode_log">Logbuch</string>
+    <string name="preference_use_log_energy_saving_mode">Log: Energiesparmodus</string>
+    <string name="preference_use_log_energy_saving_mod_summary">Alle Energiespar-Aktivitäten mitloggen</string>
+    <string name="menu_log_send_mail">Dem Entwickler das Logbuch per Mail senden</string>
+    <string name="help_log">Hier siehst du alle mitgeloggten Ereignisse. Das Log sollte regelmäßig geleert werden, da es Speicherplatz auf der SD-Karte verwendet.</string>
+    <string name="log_activated">Log wurde aktiviert</string>
 </resources>

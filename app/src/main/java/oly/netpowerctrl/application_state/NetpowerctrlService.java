@@ -5,9 +5,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -16,11 +19,17 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.main.EnergySaveLogFragment;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceSend;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
+/**
+ * Look for and load plugins. After network change: Rescan for reachable devices.
+ */
 public class NetpowerctrlService extends Service {
     private static final String LOGNAME = "Plugins";
     private static final String PLUGIN_RESPONSE_ACTION = "oly.netpowerctrl.plugins.PLUGIN_RESPONSE_ACTION";
@@ -34,6 +43,10 @@ public class NetpowerctrlService extends Service {
     private BroadcastReceiver pluginBroadcastListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context ctxt, Intent i) {
+            if (NetpowerctrlApplication.getService() == null) {
+                ShowToast.FromOtherThread(ctxt, "Power-Control error: pluginBroadcastListener still registered!");
+                return;
+            }
             if (i.getIntExtra(RESULT_CODE, -1) == INITIAL_VALUES)
                 createRemotePlugin(i.getStringExtra(PAYLOAD_SERVICENAME),
                         i.getStringExtra(PAYLOAD_LOCALIZED_NAME), i.getStringExtra(PAYLOAD_PACKAGENAME));
@@ -50,25 +63,22 @@ public class NetpowerctrlService extends Service {
     BroadcastReceiver networkChangedListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
             ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            //int type = (cm.getActiveNetworkInfo() == null) ? 0 : cm.getActiveNetworkInfo().getType();
-
-            List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
-            for (DeviceInfo di : devices) {
-                di.setUpdatedNever();
-            }
-
-            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected())
+            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
+                if (SharedPrefs.notifyOnStop()) {
+                    ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
+                }
+                if (SharedPrefs.logEnergySaveMode())
+                    EnergySaveLogFragment.appendLog("Energiesparen aus: Netzwechsel erkannt");
                 start();
-            else
+            } else {
+                if (SharedPrefs.logEnergySaveMode())
+                    EnergySaveLogFragment.appendLog("Energiesparen an: Kein Netzwerk");
                 finish();
-//            if (type == lastNetworkType)
-//                return;
-//            lastNetworkType = type;
-
-            //Log.w("NETWORK",Integer.valueOf(lastNetworkType).toString());
-
+                if (SharedPrefs.notifyOnStop()) {
+                    ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_unreachable));
+                }
+            }
         }
     };
     /**
@@ -77,10 +87,22 @@ public class NetpowerctrlService extends Service {
 
     private boolean isNetworkChangedListener = false;
     private List<PluginInterface> plugins = new ArrayList<PluginInterface>();
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+            if (s.equals(SharedPrefs.PREF_use_energy_saving_mode) && isNetworkReducedMode) {
+                if (SharedPrefs.logEnergySaveMode())
+                    EnergySaveLogFragment.appendLog("Energiesparen abgeschaltet");
+                start();
+                if (SharedPrefs.notifyOnStop()) {
+                    ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
+                }
+            }
+        }
+    };
 
     @Override
     public IBinder onBind(Intent intent) {
-        start();
         return mBinder;
     }
 
@@ -90,12 +112,13 @@ public class NetpowerctrlService extends Service {
             isNetworkChangedListener = false;
             unregisterReceiver(networkChangedListener);
         }
+        if (SharedPrefs.logEnergySaveMode())
+            EnergySaveLogFragment.appendLog("ENDE: Hintergrunddienste aus");
         finish();
-        stopSelf();
         return super.onUnbind(intent);
     }
 
-    public void finish() {
+    private void finish() {
         // Clear all except the anel support
         PluginInterface first = plugins.get(0);
         plugins.clear();
@@ -119,26 +142,30 @@ public class NetpowerctrlService extends Service {
 
         // Stop listening for network changes
         if (isNetworkChangedListener) {
+            if (SharedPrefs.logEnergySaveMode())
+                EnergySaveLogFragment.appendLog("Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
             isNetworkChangedListener = false;
             unregisterReceiver(networkChangedListener);
-        }
-
-        if (SharedPrefs.notifyOnStop()) {
-            ShowToast.FromOtherThread(this, getString(R.string.energy_saving_mode));
         }
     }
 
     public void start() {
-        if (plugins.size() == 0)
+        if (plugins.size() == 0) {
             plugins.add(new AnelPlugin());
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+        }
 
         if (!isNetworkChangedListener && SharedPrefs.getUse_energy_saving_mode()) {
+            if (SharedPrefs.logEnergySaveMode())
+                EnergySaveLogFragment.appendLog("Netzwerkwechsel überwacht");
             isNetworkChangedListener = true;
             IntentFilter filter = new IntentFilter();
             filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
             registerReceiver(networkChangedListener, filter);
         }
 
+        // Start anel listener
         ((AnelPlugin) plugins.get(0)).startDiscoveryThreads(0);
 
         isNetworkReducedMode = false;
@@ -146,9 +173,8 @@ public class NetpowerctrlService extends Service {
         if (!alreadyRunning) { // Start send and listen threads
             DeviceSend.instance().start();
         }
-        NetpowerctrlApplication.instance.detectNewDevicesAndReachability(null);
 
-
+        findDevices(null);
     }
 
     private void createRemotePlugin(String serviceName,
@@ -210,6 +236,71 @@ public class NetpowerctrlService extends Service {
         }
         return null;
     }
+
+
+    /**
+     * Detect new devices and check reach-ability of configured devices.
+     */
+    private boolean isDetecting = false;
+
+    public void findDevices(final DeviceQueryResult callback) {
+        if (isNetworkReducedMode) {
+            ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
+            if (SharedPrefs.logEnergySaveMode())
+                EnergySaveLogFragment.appendLog("Energiesparen aus: Suche Geräte");
+            start();
+            return;
+        }
+        // The following mechanism allows only one update request within a
+        // 1sec timeframe.
+        if (isDetecting)
+            return;
+        isDetecting = true;
+        Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isDetecting = false;
+            }
+        }, 1000);
+
+        // First try a broadcast
+        NetpowerctrlApplication.getDataController().clearNewDevices();
+        new DeviceQuery(new DeviceQueryResult() {
+            @Override
+            public void onDeviceTimeout(DeviceInfo di) {
+            }
+
+            @Override
+            public void onDeviceUpdated(DeviceInfo di) {
+            }
+
+            @Override
+            public void onDeviceError(DeviceInfo di, String error_message) {
+            }
+
+            @Override
+            public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+                NetpowerctrlApplication.getDataController().notifyStateQueryFinished();
+                if (callback != null)
+                    callback.onDeviceQueryFinished(timeout_devices);
+
+                if (timeout_devices.size() == 0)
+                    return;
+
+                // Do we need to go into network reduced mode?
+                if (timeout_devices.size() == NetpowerctrlApplication.getDataController().countNetworkDevices()) {
+                    if (SharedPrefs.logEnergySaveMode())
+                        EnergySaveLogFragment.appendLog("Energiesparen an: Keine Geräte gefunden");
+                    finish();
+                    if (SharedPrefs.notifyOnStop()) {
+                        ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_no_devices));
+                    }
+                }
+            }
+        });
+    }
+
 
     public class LocalBinder extends Binder {
         public NetpowerctrlService getService() {

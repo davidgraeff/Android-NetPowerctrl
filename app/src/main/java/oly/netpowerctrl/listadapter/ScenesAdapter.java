@@ -1,23 +1,81 @@
 package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.UUID;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
+import oly.netpowerctrl.utils.IconDeferredLoadingThread;
+import oly.netpowerctrl.utils.Icons;
+import oly.netpowerctrl.utils.ListItemMenu;
 
 public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCollection.IScenesUpdated {
     SceneCollection scenes;
     private LayoutInflater inflater;
     private boolean disableEditing;
-    private IEditSceneRequest observer = null;
+    private ListItemMenu mListContextMenu = null;
     private int outlet_res_id = R.layout.grid_icon_item;
+    protected ViewHolder current_viewHolder;
+    private IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
+
+    //ViewHolder pattern
+    protected static class ViewHolder implements View.OnClickListener, IconDeferredLoadingThread.IconLoaded {
+        ImageView imageIcon;
+        ImageView imageEdit;
+        //LinearLayout mainTextView;
+        View entry;
+        TextView title;
+        TextView subtitle;
+        boolean isNew = true;
+
+        int currentBitmapIndex = 0;
+        Drawable[] drawables = new Drawable[1];
+        public int position;
+        private ListItemMenu mListContextMenu = null;
+        private IconDeferredLoadingThread iconCache;
+
+        ViewHolder(View convertView, ListItemMenu listContextMenu, IconDeferredLoadingThread iconCache) {
+            mListContextMenu = listContextMenu;
+            this.iconCache = iconCache;
+            imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
+            imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
+            entry = convertView.findViewById(R.id.item_layout);
+            title = (TextView) convertView.findViewById(R.id.title);
+            subtitle = (TextView) convertView.findViewById(R.id.subtitle);
+        }
+
+        public void loadIcon(UUID uuid, Icons.IconType iconType, Icons.IconState state, int default_resource, int bitmapPosition) {
+            iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
+                    uuid, iconType, state, default_resource, this, bitmapPosition));
+        }
+
+        public void setCurrentBitmapIndex(int index) {
+            currentBitmapIndex = index;
+            if (drawables[index] != null)
+                imageIcon.setImageDrawable(drawables[index]);
+        }
+
+        @Override
+        public void onClick(View view) {
+            mListContextMenu.onMenuItemClicked(view, position);
+        }
+
+        @Override
+        public void setDrawable(Drawable bitmap, int position) {
+            drawables[position] = bitmap;
+            if (currentBitmapIndex == position)
+                imageIcon.setImageDrawable(drawables[position]);
+        }
+    }
 
     public int getLayoutRes() {
         return outlet_res_id;
@@ -31,6 +89,7 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
     public ScenesAdapter(Context context, SceneCollection data) {
         inflater = LayoutInflater.from(context);
         scenes = data;
+        iconCache.start();
         scenes.registerObserver(this);
     }
 
@@ -39,8 +98,8 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
         notifyDataSetChanged();
     }
 
-    public void setObserver(IEditSceneRequest observer) {
-        this.observer = observer;
+    public void setListContextMenu(ListItemMenu listItemMenu) {
+        this.mListContextMenu = listItemMenu;
     }
 
     @Override
@@ -64,35 +123,43 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
+        final Scene data = scenes.getScene(position);
 
         if (convertView == null) {
             convertView = inflater.inflate(outlet_res_id, null);
-            assert convertView != null;
-            convertView.findViewById(R.id.subtitle).setVisibility(View.GONE);
+            current_viewHolder = new ViewHolder(convertView, mListContextMenu, iconCache);
+            convertView.setTag(current_viewHolder);
+        } else {
+            current_viewHolder = (ViewHolder) convertView.getTag();
+            current_viewHolder.isNew = false;
+        }
+        current_viewHolder.position = position;
+
+        if (current_viewHolder.isNew) {
+            // For a grid view with a dedicated edit button (image) we use that for
+            // setOnClickListener. In the other case we use the main icon for setOnClickListener.
+            if (current_viewHolder.imageEdit != null) {
+                current_viewHolder.imageEdit.setTag(position);
+                current_viewHolder.imageEdit.setOnClickListener(current_viewHolder);
+            } else {
+                current_viewHolder.imageIcon.setTag(position);
+                current_viewHolder.imageIcon.setOnClickListener(current_viewHolder);
+            }
+
+            current_viewHolder.loadIcon(data.uuid, Icons.IconType.SceneIcon,
+                    Icons.IconState.StateUnknown, R.drawable.netpowerctrl, 0);
         }
 
-        final Scene data = scenes.getScene(position);
-
-        final TextView tvName = (TextView) convertView.findViewById(R.id.title);
-        tvName.setText(data.sceneName);
-
-        ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
-        image.setImageBitmap(data.getBitmap());
+        current_viewHolder.title.setText(data.sceneName);
+        if (data.isMasterSlave()) {
+            current_viewHolder.subtitle.setText("Master/Slave");
+        }
 
         // For a grid view with a dedicated edit button (image) we use that for
         // setOnClickListener. In the other case we use the main icon for setOnClickListener.
-        ImageView image_edit = (ImageView) convertView.findViewById(R.id.icon_edit);
+        ImageView image_edit = current_viewHolder.imageEdit;
         if (image_edit != null)
             image_edit.setVisibility(disableEditing ? View.GONE : View.VISIBLE);
-        else
-            image_edit = image;
-        image_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (observer != null)
-                    observer.editScene(position, view);
-            }
-        });
         return convertView;
     }
 
@@ -110,8 +177,8 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
     public void scenesUpdated(boolean addedOrRemoved) {
         notifyDataSetChanged();
     }
-
-    public interface IEditSceneRequest {
-        void editScene(int position, View view);
-    }
+//
+//    public interface IEditSceneRequest {
+//        void editScene(int position, View view);
+//    }
 }

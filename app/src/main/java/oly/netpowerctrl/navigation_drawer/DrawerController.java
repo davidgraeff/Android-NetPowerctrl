@@ -41,7 +41,7 @@ public class DrawerController {
     private DrawerAdapter mDrawerAdapter;
 
 
-    private CharSequence mTitle;
+    //private CharSequence mTitle;
     private boolean drawerControllableByMenuKey = false;
 
     private Fragment currentFragment;
@@ -57,13 +57,17 @@ public class DrawerController {
     }
 
     public void setTitle(CharSequence mTitle) {
-        this.mTitle = mTitle;
+        //this.mTitle = mTitle;
+        Activity context = mDrawerActivity.get();
+        if (context == null) // should never happen
+            return;
+        //noinspection ConstantConditions
+        context.getActionBar().setTitle(mTitle);
     }
 
     public void createDrawer(final Activity context) {
         mDrawerActivity = new WeakReference<Activity>(context);
         // References for the drawer
-        mTitle = context.getTitle();
         mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) context.findViewById(R.id.left_drawer_list);
 
@@ -115,7 +119,6 @@ public class DrawerController {
                 R.string.drawer_close  /* "close drawer" description for accessibility */
         ) {
             public void onDrawerClosed(View view) {
-                context.getActionBar().setTitle(mTitle);
                 context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 

@@ -37,4 +37,6 @@ public interface PluginInterface {
     void prepareForDevices(DeviceInfo device);
 
     void openConfigurationPage(DeviceInfo device, Context context);
+
+    boolean isNetworkPlugin();
 }

@@ -2,7 +2,6 @@ package oly.netpowerctrl.application_state;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,8 +100,8 @@ public class RuntimeDataController {
     }
 
     void notifyStateReloaded() {
-        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
-            o.onDataReloaded();
+//        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
+//            o.onDataReloaded();
     }
 
     void notifyStateQueryFinished() {
@@ -141,11 +140,13 @@ public class RuntimeDataController {
 
     private void notifyDeviceQueries(DeviceInfo target) {
         // notify observers who are using the DeviceQuery class
-        Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
-        while (it.hasNext()) {
-            // Return true if the DeviceQuery object has finished its task.
-            if (it.next().notifyObservers(target))
-                it.remove();
+        synchronized (updateDeviceStateList) {
+            Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
+            while (it.hasNext()) {
+                // Return true if the DeviceQuery object has finished its task.
+                if (it.next().notifyObservers(target))
+                    it.remove();
+            }
         }
     }
 
@@ -205,12 +206,27 @@ public class RuntimeDataController {
         saveConfiguredDevices(true);
     }
 
-    public void deleteConfiguredDevice(int position) {
-        DeviceInfo di = configuredDevices.get(position);
+    public void deleteConfiguredDevice(DeviceInfo di) {
+        int position = configuredDevices.indexOf(di);
+        if (position == -1)
+            return;
         di.configured = false;
         configuredDevices.remove(position);
         notifyConfiguredDeviceChangeObservers(di, true);
         saveConfiguredDevices(true);
+    }
+
+    /**
+     * Call this by your plugin if a device changed and you are on another thread
+     *
+     * @param device_info
+     */
+    public void onDeviceUpdatedOtherThread(final DeviceInfo device_info) {
+        NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+            public void run() {
+                onDeviceUpdated(device_info);
+            }
+        });
     }
 
     /**
@@ -225,7 +241,7 @@ public class RuntimeDataController {
                 continue;
 
             if (!target.copyFreshValues(device_info)) {
-                Log.w("RuntimeDataController", "same values: " + device_info.DeviceName);
+                //Log.w("RuntimeDataController", "same values: " + device_info.DeviceName);
                 notifyDeviceQueries(target);
                 return;
             }
@@ -315,13 +331,16 @@ public class RuntimeDataController {
             remote.rename(port, new_name, callback);
             if (callback != null)
                 callback.devicePort_renamed(port, true, null);
-            return;
         } else if (callback != null)
             callback.devicePort_renamed(port, false, NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
     }
 
     public void execute(Scene scene, ExecutionFinished callback) {
         List<PluginInterface> pluginInterfaces = new ArrayList<PluginInterface>();
+
+        boolean isMasterSlave = scene.isMasterSlave();
+        Integer masterCommand = scene.getMasterCommand();
+
         for (Scene.SceneItem item : scene.sceneItems) {
             DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(item.uuid);
             if (p == null)
@@ -366,5 +385,12 @@ public class RuntimeDataController {
                 Icons.resizeBitmap(context, bitmap, 128, 128),
                 Icons.IconType.DevicePortIcon, port.getIconState());
         notifyConfiguredDeviceChangeObservers(port.device, false);
+    }
+
+    public int countNetworkDevices() {
+        int i = 0;
+        for (DeviceInfo di : configuredDevices)
+            if (di.isNetworkDevice()) ++i;
+        return i;
     }
 }

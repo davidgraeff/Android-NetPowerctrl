@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_log_send_mail"
+        android:title="@string/menu_log_send_mail"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_dialog_email" />
+
+    <item
+        android:id="@+id/menu_remove_log"
+        android:title="@string/menu_remove_all_scenes"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_delete" />
+
+    <item
+        android:id="@+id/menu_help"
+        android:title="@string/menu_help"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_help" />
+</menu>

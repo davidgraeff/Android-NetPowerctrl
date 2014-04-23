@@ -1,6 +1,5 @@
 package oly.netpowerctrl.datastructure;
 
-import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -10,9 +9,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class Scene {
@@ -20,21 +17,15 @@ public class Scene {
 
     public String sceneName = "";
     public UUID uuid = UUID.randomUUID();
-    public Bitmap bitmap = null;
+    //public Bitmap bitmap = null;
     public long id = nextStableID++;
     boolean favourite;
 
-    public Bitmap getBitmap() {
-        if (bitmap == null) {
-            bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, uuid,
-                    Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, R.drawable.netpowerctrl);
-        }
-        return bitmap;
-    }
 
     public boolean isFavourite() {
         return favourite;
     }
+
 
     public static class SceneItem {
         public UUID uuid = UUID.randomUUID();
@@ -64,6 +55,10 @@ public class Scene {
             if (item.uuid.equals(uuid_master))
                 return item.command;
         return null;
+    }
+
+    public boolean isMasterSlave() {
+        return (uuid_master != null);
     }
 
     UUID uuid_master = null;

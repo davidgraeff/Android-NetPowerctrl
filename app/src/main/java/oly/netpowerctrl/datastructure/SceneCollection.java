@@ -82,7 +82,6 @@ public class SceneCollection {
             return;
         Icons.saveIcon(context, scene.uuid, Icons.resizeBitmap(context, scene_icon, 128, 128),
                 Icons.IconType.SceneIcon, Icons.IconState.StateUnknown);
-        scene.bitmap = scene_icon;
         notifyObservers(false);
     }
 

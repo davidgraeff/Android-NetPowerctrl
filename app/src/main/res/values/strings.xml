@@ -87,6 +87,7 @@
         <item>Report a bug (Ticket system)</item>
         <item>Go to source code</item>
         <item>Rate in Google Play</item>
+        <item>Change log</item>
         <item>Donate via %s</item>
     </string-array>
 
@@ -212,7 +213,6 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="widget_off">(Off)</string>
     <string name="preference_widget_show_text">Show title</string>
     <string name="preference_widget_show_text_summary">Show the name and state below the widgets icon</string>
-    <string name="energy_saving_mode">App is in energy saving mode!</string>
     <string name="device_createGroup">Create group with device outlets</string>
     <string name="menu_outlet_createGroup">Groups</string>
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
@@ -252,4 +252,18 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="renameFailed">Renaming failed: %1$s</string>
     <string name="menu_view_list">View as list</string>
     <string name="menu_view_grid">View as grid</string>
+    <string name="network_no_devices">No devices detected: Energy saving mode.</string>
+    <string name="network_restarted">Network change: Start new device discovery…</string>
+    <string name="network_unreachable">No active network connection: Energy saving mode.</string>
+    <string name="empty_no_scenes_no_devices">No scenes found. With a scene you may combine multiple outlet actions. First you have to configure some devices though.</string>
+    <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen. Der Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Benutze den Plus-Button um ein Gerät zu erstellen, was nicht automatisch gefunden worden ist.</string>
+    <string name="empty_no_outlets_no_devices">Welcome!\nWith this app you may control Anel devices. First you have to configure some devices though. Use the navigation to come back to the outlet overview. Open the navigation from anywhere in your app by swiping from the left edge of the screen.</string>
+    <string name="preference_animations_enabled">Animations</string>
+    <string name="preference_animations_enabled_summary">Switch list and grid animations on and off</string>
+    <string name="energy_saving_mode_log">Open log</string>
+    <string name="preference_use_log_energy_saving_mode">Log: Energiesparmodus</string>
+    <string name="preference_use_log_energy_saving_mod_summary">Alle Energiesparmodusaktivitäten mitloggen</string>
+    <string name="menu_log_send_mail">Dem Entwickler den Log per Mail senden</string>
+    <string name="help_log">Alle mitgeloggten Ereignisse. Das Log sollte regelmäßig geleert werden, da es Speicherplatz auf der SD-Karte verwendet.</string>
+    <string name="log_activated">Log wurde aktiviert</string>
 </resources>
