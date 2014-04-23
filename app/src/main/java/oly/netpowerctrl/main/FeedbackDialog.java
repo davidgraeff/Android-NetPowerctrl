@@ -17,6 +17,7 @@ import android.util.Base64;
 
 import java.io.UnsupportedEncodingException;
 
+import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.utils.Icons;
 
@@ -78,6 +79,11 @@ public class FeedbackDialog extends DialogFragment {
                     }
                     break;
                     case 4: {
+                        ChangeLog cl = new ChangeLog(getActivity());
+                        cl.getFullLogDialog().show();
+                    }
+                    break;
+                    case 5: {
                         String p1 = "aHR0cHM6Ly93d3cucGF5cGFsLmNvbS9jZ2ktYmluL3dlYnNjcj9jbWQ9X3MteGNsaWNrJmhvc3RlZF9idXR0b25faWQ9OTNUQUFUSkIzV0pGMg==";
                         try {
                             String text = new String(Base64.decode(p1, Base64.DEFAULT), "UTF-8");

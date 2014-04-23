@@ -1,7 +1,6 @@
 package oly.netpowerctrl.network;
 
 import android.os.Handler;
-import android.util.Log;
 
 import java.util.Iterator;
 import java.util.List;
@@ -37,14 +36,13 @@ public abstract class DeviceObserverBase {
         }
     };
 
-    protected abstract void doAction(DeviceInfo di);
+    protected abstract void doAction(DeviceInfo di, boolean repeated);
 
     protected Runnable redoRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.w("DeviceObserverBase", "redo action");
             for (DeviceInfo di : devices_to_observe) {
-                doAction(di);
+                doAction(di, true);
             }
         }
     };

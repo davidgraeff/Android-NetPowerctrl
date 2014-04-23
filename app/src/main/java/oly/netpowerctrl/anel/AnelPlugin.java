@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
@@ -84,6 +85,14 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     public void stopDiscoveryThreads() {
+        RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        for (DeviceInfo di : d.configuredDevices) {
+            if (di.getPluginInterface() == this) {
+                di.setNotReachable("Energiesparmodus");
+                d.onDeviceUpdated(di);
+            }
+        }
+
         if (discoveryThreads.size() == 0)
             return;
 
@@ -190,18 +199,20 @@ final public class AnelPlugin implements PluginInterface {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST));
+            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, requestMessage, DeviceSend.INQUERY_REQUEST));
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, DeviceSend.INQUERY_REQUEST));
+            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, requestMessage, DeviceSend.INQUERY_REQUEST));
         }
 
         if (callback != null)
             callback.onExecutionFinished(command_list.size());
     }
+
+    static final byte[] requestMessage = "wer da?\r\n".getBytes();
 
     /**
      * Switch a single outlet or io port
@@ -231,7 +242,8 @@ final public class AnelPlugin implements PluginInterface {
                     port.id, port.device.UserName, port.device.Password).getBytes();
         }
 
-        DeviceSend.instance().addJob(new DeviceSend.SendJob(port.device, data, DeviceSend.INQUERY_REQUEST));
+        DeviceSend.Job j = new DeviceSend.SendJob(port.device, data, requestMessage, DeviceSend.INQUERY_REQUEST);
+        DeviceSend.instance().addJob(j);
 
         if (callback != null)
             callback.onExecutionFinished(1);
@@ -251,7 +263,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void requestData(DeviceInfo di) {
-        DeviceSend.instance().addJob(new DeviceSend.SendJob(di, "wer da?\r\n".getBytes(), DeviceSend.INQUERY_REQUEST));
+        DeviceSend.instance().addJob(new DeviceSend.SendJob(di, requestMessage, DeviceSend.INQUERY_REQUEST));
     }
 
     @Override
@@ -361,6 +373,11 @@ final public class AnelPlugin implements PluginInterface {
         Intent browse = new Intent(Intent.ACTION_VIEW,
                 Uri.parse("http://" + device.HostName + ":" + Integer.valueOf(device.HttpPort).toString()));
         context.startActivity(browse);
+    }
+
+    @Override
+    public boolean isNetworkPlugin() {
+        return true;
     }
 
 //

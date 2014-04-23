@@ -2,7 +2,6 @@ package oly.netpowerctrl.main;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,9 +13,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
 
 import java.io.IOException;
 
@@ -31,12 +34,13 @@ import oly.netpowerctrl.shortcut.EditShortcutActivity;
 import oly.netpowerctrl.shortcut.Shortcuts;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
+import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.OnBackButton;
 
 /**
  */
 public class ScenesFragment extends Fragment implements
-        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnBackButton, ScenesAdapter.IEditSceneRequest, Icons.IconSelected {
+        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnBackButton, Icons.IconSelected, ListItemMenu {
     SceneCollection scenes;
     private DynamicGridView mListView;
     private ScenesAdapter scenesAdapter;
@@ -44,17 +48,29 @@ public class ScenesFragment extends Fragment implements
     public ScenesFragment() {
     }
 
+    private void assignAdapter() {
+        if (SharedPrefs.getAnimationEnabled()) {
+            // Add animation to the list
+            ScaleInAnimationAdapter animatedAdapter = new ScaleInAnimationAdapter(scenesAdapter);
+            animatedAdapter.setAbsListView(mListView);
+            mListView.setAbstractDynamicGridAdapter(scenesAdapter);
+            mListView.setAdapter(animatedAdapter);
+        } else {
+            mListView.setAdapter(scenesAdapter);
+        }
+    }
+
     private void setListOrGrid(boolean grid) {
         if (!grid) {
             scenesAdapter.setLayoutRes(R.layout.list_icon_item);
             mListView.setMinimumColumnWidth(280);
             mListView.setNumColumns(GridView.AUTO_FIT, mListView.getWidth());
-            mListView.setAdapter(scenesAdapter);
+            assignAdapter();
         } else {
             scenesAdapter.setLayoutRes(R.layout.grid_icon_item);
             mListView.setMinimumColumnWidth(150);
             mListView.setNumColumns(GridView.AUTO_FIT, mListView.getWidth());
-            mListView.setAdapter(scenesAdapter);
+            assignAdapter();
         }
         SharedPrefs.setScenesList(grid);
     }
@@ -63,6 +79,20 @@ public class ScenesFragment extends Fragment implements
     public void onCreateOptionsMenu(
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.scenes, menu);
+
+        //noinspection ConstantConditions
+        menu.findItem(R.id.menu_add_scene).setVisible(NetpowerctrlApplication.getDataController().configuredDevices.size() > 0);
+
+        if (scenesAdapter == null || scenesAdapter.getCount() == 0) {
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_remove_scene).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_view_list).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_view_grid).setVisible(false);
+            return;
+        }
+
         boolean isList = scenesAdapter != null && scenesAdapter.getLayoutRes() == R.layout.list_icon_item;
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_view_list).setVisible(!isList);
@@ -84,6 +114,7 @@ public class ScenesFragment extends Fragment implements
                                 // Delete all scenes
                                 scenes.deleteAll();
                                 mListView.stopEditMode();
+                                getActivity().invalidateOptionsMenu();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -123,6 +154,12 @@ public class ScenesFragment extends Fragment implements
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().invalidateOptionsMenu();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         scenes = NetpowerctrlApplication.getDataController().scenes;
@@ -145,8 +182,23 @@ public class ScenesFragment extends Fragment implements
             }
         });
         scenesAdapter = new ScenesAdapter(getActivity(), scenes);
-        scenesAdapter.setObserver(this);
+        scenesAdapter.setListContextMenu(this);
         setListOrGrid(SharedPrefs.getScenesList());
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0) {
+            //noinspection ConstantConditions
+            ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes_no_devices));
+            Button btnEmpty = ((Button) view.findViewById(R.id.btnChangeToDevices));
+            btnEmpty.setVisibility(View.VISIBLE);
+            btnEmpty.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    NetpowerctrlActivity.instance.changeToFragment(DevicesFragment.class.getName());
+                }
+            });
+        } else {
+            //noinspection ConstantConditions
+            ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes));
+        }
         mListView.setEmptyView(view.findViewById(android.R.id.empty));
         onConfigurationChanged(getResources().getConfiguration());
         return view;
@@ -174,6 +226,7 @@ public class ScenesFragment extends Fragment implements
                 scenes.removeScene(position);
                 if (scenes.length() == 0)
                     mListView.stopEditMode();
+                getActivity().invalidateOptionsMenu();
                 return true;
             }
             case R.id.menu_remove_favourite: {
@@ -192,22 +245,8 @@ public class ScenesFragment extends Fragment implements
                 return true;
 
             case R.id.menu_add_homescreen: {
-                @SuppressWarnings("ConstantConditions")
-                Context context = getActivity().getApplicationContext();
-                Intent extra = Shortcuts.createShortcutExecutionIntent(getActivity(), scene, false, false);
-                Bitmap bitmap = Icons.loadIcon(getActivity(), scene.uuid,
-                        Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, 0);
-                Intent shortcutIntent;
-                if (bitmap != null) {
-                    shortcutIntent = Shortcuts.createShortcut(extra, scene.sceneName,
-                            Icons.resizeBitmap(getActivity(), bitmap));
-                } else
-                    shortcutIntent = Shortcuts.createShortcut(extra, scene.sceneName,
-                            getActivity());
-
-                shortcutIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
-                assert context != null;
-                context.sendBroadcast(shortcutIntent);
+                //noinspection ConstantConditions
+                Shortcuts.createHomeIcon(getActivity().getApplicationContext(), scene);
                 return true;
             }
         }
@@ -236,12 +275,26 @@ public class ScenesFragment extends Fragment implements
     }
 
     @Override
-    public void editScene(int position, View view) {
+    public void setIcon(Object context_object, Bitmap bitmap) {
+        if (context_object == null)
+            return;
+        NetpowerctrlApplication.getDataController().scenes.setBitmap(getActivity(),
+                (Scene) context_object, bitmap);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        Icons.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
+    }
+
+    @Override
+    public void onMenuItemClicked(View v, int position) {
         mListView.setTag(position);
         Scene scene = scenes.getScene(position);
 
         @SuppressWarnings("ConstantConditions")
-        PopupMenu popup = new PopupMenu(getActivity(), view);
+        PopupMenu popup = new PopupMenu(getActivity(), v);
         MenuInflater inflater = popup.getMenuInflater();
         Menu menu = popup.getMenu();
         inflater.inflate(R.menu.scenes_item, menu);
@@ -254,19 +307,5 @@ public class ScenesFragment extends Fragment implements
 
         popup.setOnMenuItemClickListener(this);
         popup.show();
-    }
-
-    @Override
-    public void setIcon(Object context_object, Bitmap bitmap) {
-        if (context_object == null)
-            return;
-        NetpowerctrlApplication.getDataController().scenes.setBitmap(getActivity(),
-                (Scene) context_object, bitmap);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        Icons.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
     }
 }

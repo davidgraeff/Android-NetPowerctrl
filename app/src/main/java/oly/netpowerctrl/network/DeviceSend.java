@@ -152,8 +152,9 @@ public class DeviceSend {
     static public class SendJob extends DeviceObserverBase implements Job {
         InetAddress ip = null;
         DeviceInfo di;
-        byte[] message;
+        List<byte[]> messages = new ArrayList<byte[]>();
         int errorID;
+        int redoCounter = 0;
         private boolean initialized = false;
         private long current_time = System.currentTimeMillis();
 
@@ -161,21 +162,20 @@ public class DeviceSend {
 
             @Override
             public void onDeviceError(DeviceInfo di, String error_message) {
-
             }
 
             @Override
             public void onDeviceTimeout(DeviceInfo di) {
-
             }
 
             @Override
             public void onDeviceUpdated(DeviceInfo di) {
-
             }
 
             @Override
             public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+                mainLoopHandler.removeCallbacks(redoRunnable);
+                mainLoopHandler.removeCallbacks(timeoutRunnable);
                 if (timeout_devices.isEmpty())
                     return;
 
@@ -189,13 +189,30 @@ public class DeviceSend {
         };
 
         public SendJob(DeviceInfo di, byte[] message, int errorID) {
-            this.message = message;
+            this.messages.add(message);
+            this.errorID = errorID;
+            this.di = di;
+        }
+
+        public SendJob(DeviceInfo di, byte[] message, byte[] message2, int errorID) {
+            this.messages.add(message);
+            this.messages.add(message2);
             this.errorID = errorID;
             this.di = di;
         }
 
         @Override
         public void process(DeviceSend deviceSend) {
+            // Get IP
+            try {
+                if (ip == null) {
+                    ip = InetAddress.getByName(di.HostName);
+                }
+            } catch (final UnknownHostException e) {
+                DeviceSend.onError(NETWORK_UNKNOWN_HOSTNAME, di.HostName, di.SendPort, e);
+                return;
+            }
+
             if (!initialized) {
                 initialized = true;
 
@@ -206,17 +223,19 @@ public class DeviceSend {
 
                 // Register on main application object to receive device updates
                 NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
-
-                mainLoopHandler.postDelayed(timeoutRunnable, 700);
             }
 
             try {
-                if (ip == null) {
-                    ip = InetAddress.getByName(di.HostName);
+                // Send all messages
+                for (byte[] message : messages) {
+                    deviceSend.datagramSocket.send(new DatagramPacket(message, message.length, ip, di.SendPort));
+                    Thread.sleep(30);
                 }
-                //deviceSend.datagramSocket.setBroadcast(broadcast);
-                deviceSend.datagramSocket.send(new DatagramPacket(message, message.length, ip, di.SendPort));
-                mainLoopHandler.postDelayed(redoRunnable, 300);
+
+                if (redoCounter++ < 3)
+                    mainLoopHandler.postDelayed(redoRunnable, 400);
+                else
+                    mainLoopHandler.postDelayed(timeoutRunnable, 400);
 
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))
@@ -224,8 +243,7 @@ public class DeviceSend {
                 else {
                     DeviceSend.onError(errorID, ip.getHostAddress(), di.SendPort, e);
                 }
-            } catch (final UnknownHostException e) {
-                DeviceSend.onError(NETWORK_UNKNOWN_HOSTNAME, di.HostName, di.SendPort, e);
+
             } catch (final Exception e) {
                 e.printStackTrace();
                 DeviceSend.onError(errorID, di.HostName, di.SendPort, e);
@@ -233,7 +251,7 @@ public class DeviceSend {
         }
 
         @Override
-        protected void doAction(DeviceInfo di) {
+        protected void doAction(DeviceInfo di, boolean repeated) {
             DeviceSend.instance().addJob(this);
         }
     }

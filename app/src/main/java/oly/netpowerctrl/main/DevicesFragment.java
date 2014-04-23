@@ -13,10 +13,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ExpandableListView;
+import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
+
+import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
 
 import java.util.Iterator;
 import java.util.List;
@@ -31,10 +34,11 @@ import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.listadapter.DevicesAdapter;
 import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.preferences.PreferencesFragment;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  */
-public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, ExpandableListView.OnChildClickListener {
+public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener {
     private DevicesAdapter adapter;
 
     public DevicesFragment() {
@@ -44,6 +48,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onCreateOptionsMenu(
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.devices, menu);
+        //noinspection ConstantConditions
+        menu.findItem(R.id.menu_delete_all_devices).setVisible(NetpowerctrlApplication.getDataController().configuredDevices.size() > 0);
     }
 
     @Override
@@ -70,6 +76,14 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
 
+            case R.id.menu_help: {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.menu_help)
+                        .setMessage(R.string.help_devices)
+                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+                return true;
+            }
+
             case R.id.menu_delete_all_devices: {
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
@@ -88,7 +102,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.detectNewDevicesAndReachability(new DeviceQueryResult() {
+                NetpowerctrlApplication.instance.findDevices(new DeviceQueryResult() {
                     @Override
                     public void onDeviceError(DeviceInfo di, String error_message) {
                     }
@@ -126,18 +140,26 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         setHasOptionsMenu(true);
     }
 
-    private ExpandableListView mListView;
-    private int currentGroup = 0;
-    private int currentGroupDevice = 0;
+    private ListView mListView;
+
+    private void assignAdapter() {
+        if (SharedPrefs.getAnimationEnabled()) {
+            // Add animation to the list
+            ScaleInAnimationAdapter animatedAdapter = new ScaleInAnimationAdapter(adapter);
+            animatedAdapter.setAbsListView(mListView);
+            mListView.setAdapter(animatedAdapter);
+        } else {
+            mListView.setAdapter(adapter);
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_devices, container, false);
-        mListView = (ExpandableListView) view.findViewById(android.R.id.list);
-        mListView.setGroupIndicator(null);
-        mListView.setOnChildClickListener(this);
-        mListView.setAdapter(adapter);
+        mListView = (ListView) view.findViewById(android.R.id.list);
+        mListView.setOnItemClickListener(this);
+        assignAdapter();
         mListView.setEmptyView(view.findViewById(android.R.id.empty));
         Button btn = (Button) view.findViewById(R.id.btnChangeToPreferences);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -152,7 +174,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-        final DeviceInfo current_device = (DeviceInfo) adapter.getChild(currentGroup, currentGroupDevice);
+        final DeviceInfo current_device = (DeviceInfo) adapter.getItem((Integer) mListView.getTag());
 
         switch (menuItem.getItemId()) {
             case R.id.menu_device_configure: {
@@ -192,7 +214,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                NetpowerctrlApplication.getDataController().deleteConfiguredDevice(currentGroupDevice);
+                                NetpowerctrlApplication.getDataController().deleteConfiguredDevice(current_device);
+                                NetpowerctrlApplication.instance.findDevices(null);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -224,13 +247,16 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     @Override
-    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-        currentGroup = groupPosition;
-        currentGroupDevice = childPosition;
-        DeviceInfo di = (DeviceInfo) adapter.getChild(currentGroup, currentGroupDevice);
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        Object item = adapter.getItem(i);
+        if (!(item instanceof DeviceInfo))
+            return;
+
+        mListView.setTag(i);
+        DeviceInfo di = (DeviceInfo) item;
         if (di.configured) {
             @SuppressWarnings("ConstantConditions")
-            PopupMenu popup = new PopupMenu(getActivity(), v);
+            PopupMenu popup = new PopupMenu(getActivity(), view);
             MenuInflater inflater = popup.getMenuInflater();
             inflater.inflate(R.menu.configured_device_item, popup.getMenu());
 
@@ -240,6 +266,5 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             // Set default values for anel devices
             show_configure_device_dialog(di);
         }
-        return true;
     }
 }

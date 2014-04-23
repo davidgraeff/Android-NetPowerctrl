@@ -423,4 +423,11 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     public void remove(Integer id) {
         DevicePorts.remove(id);
     }
+
+    public boolean isNetworkDevice() {
+        PluginInterface pi = getPluginInterface();
+        if (pi == null)
+            return false;
+        return pi.isNetworkPlugin();
+    }
 }

@@ -154,11 +154,7 @@ public class AnelDeviceDiscoveryThread extends Thread {
             di.add(oi);
         }
 
-        new Handler(NetpowerctrlApplication.instance.getMainLooper()).post(new Runnable() {
-            public void run() {
-                NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
-            }
-        });
+        NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(di);
     }
 
     /**

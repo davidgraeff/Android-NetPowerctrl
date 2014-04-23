@@ -90,11 +90,6 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         @SuppressWarnings("ConstantConditions")
         ListView view = new ListView(getActivity());
@@ -173,7 +168,6 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
                     Toast.LENGTH_LONG).show();
             //noinspection ConstantConditions
             getFragmentManager().popBackStack();
-            return;
         }
     }
 

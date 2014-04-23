@@ -1,5 +1,7 @@
 package oly.netpowerctrl.network;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -24,7 +26,7 @@ public class DeviceQuery extends DeviceObserverBase {
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
 
-        doAction(device_to_observe);
+        doAction(device_to_observe, false);
         mainLoopHandler.postDelayed(redoRunnable, 300);
         mainLoopHandler.postDelayed(redoRunnable, 600);
         mainLoopHandler.postDelayed(redoRunnable, 1200);
@@ -45,7 +47,7 @@ public class DeviceQuery extends DeviceObserverBase {
 
         // Send out broadcast
         for (DeviceInfo di : devices_to_observe)
-            doAction(di);
+            doAction(di, false);
     }
 
     /**
@@ -71,7 +73,9 @@ public class DeviceQuery extends DeviceObserverBase {
 //    }
 
     @Override
-    protected void doAction(DeviceInfo di) {
+    protected void doAction(DeviceInfo di, boolean repeated) {
+        if (repeated)
+            Log.w("DeviceObserverBase", "redo: " + di.DeviceName);
         PluginInterface remote = di.getPluginInterface();
         boolean reachable = remote != null;
 

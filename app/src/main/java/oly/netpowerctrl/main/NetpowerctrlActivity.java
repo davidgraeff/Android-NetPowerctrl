@@ -139,7 +139,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         super.onResume();
         NFC.checkIntentForNFC(this, getIntent());
         NetpowerctrlApplication.instance.useListener();
-        NetpowerctrlApplication.instance.detectNewDevicesAndReachability(null);
+        NetpowerctrlApplication.instance.findDevices(null);
     }
 
     @Override

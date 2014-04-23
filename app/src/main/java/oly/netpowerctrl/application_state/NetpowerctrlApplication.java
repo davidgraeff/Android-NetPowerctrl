@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.util.Log;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
@@ -14,11 +16,9 @@ import org.acra.annotation.ReportsCrashes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.main.EnergySaveLogFragment;
 import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceSend;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -37,6 +37,7 @@ import oly.netpowerctrl.utils.ShowToast;
         resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application {
     public static NetpowerctrlApplication instance;
+    private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
     private RuntimeDataController dataController = null;
     private int mDiscoverServiceRefCount = 0;
@@ -144,58 +145,17 @@ public class NetpowerctrlApplication extends Application {
         }
     }
 
-    /**
-     * Detect new devices and check reachability of configured devices
-     */
-    private boolean isDetecting = false;
 
-    public void detectNewDevicesAndReachability(final DeviceQueryResult callback) {
+    public void findDevices(final DeviceQueryResult callback) {
 
-        // The following mechanism allows only one update request within a
-        // 1sec timeframe and only if the service is available.
-        if (isDetecting || mWaitForService || mDiscoverService == null)
+        // only if the service is available.
+        if (mWaitForService)
             return;
 
-        isDetecting = true;
-        Handler h = new Handler();
-        h.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                isDetecting = false;
-            }
-        }, 1000);
-
-        // First try a broadcast
-        NetpowerctrlApplication.getDataController().clearNewDevices();
-        new DeviceQuery(new DeviceQueryResult() {
-            @Override
-            public void onDeviceTimeout(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceUpdated(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceError(DeviceInfo di, String error_message) {
-            }
-
-            @Override
-            public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
-                dataController.notifyStateQueryFinished();
-                if (callback != null)
-                    callback.onDeviceQueryFinished(timeout_devices);
-
-                if (timeout_devices.size() == 0)
-                    return;
-
-                // Do we need to go into network reduced mode?
-                List<DeviceInfo> remaining = new ArrayList<DeviceInfo>(dataController.configuredDevices);
-                remaining.removeAll(timeout_devices);
-                if (remaining.size() == 0)
-                    mDiscoverService.finish();
-            }
-        });
+        if (mDiscoverService == null) {
+            Log.e("findDevices", "No service! Use useListener!");
+        } else
+            mDiscoverService.findDevices(callback);
     }
 
     /**
@@ -212,9 +172,9 @@ public class NetpowerctrlApplication extends Application {
             if (mDiscoverServiceRefCount == 0)
                 mDiscoverServiceRefCount = 1;
             mWaitForService = false;
-
-            // We do a device detection in the wifi change listener already
-            detectNewDevicesAndReachability(null);
+            if (SharedPrefs.logEnergySaveMode())
+                EnergySaveLogFragment.appendLog("Hintergrunddienst gestartet");
+            mDiscoverService.start();
 
             // Notify all observers that we are ready
             notifyServiceReady();
@@ -236,5 +196,9 @@ public class NetpowerctrlApplication extends Application {
 
     static public RuntimeDataController getDataController() {
         return instance.dataController;
+    }
+
+    public static Handler getMainThreadHandler() {
+        return instance.mainThreadHandler;
     }
 }

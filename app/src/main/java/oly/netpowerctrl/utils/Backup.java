@@ -71,7 +71,7 @@ public class Backup {
                         try {
                             FileInputStream is = new FileInputStream(file);
                             jsonData = new Scanner(is, "UTF-8").useDelimiter("\\A").next();
-                            ;
+
                             SceneCollection sc = SceneCollection.fromJSON(JSONHelper.getReader(jsonData), null);
                             Toast.makeText(context, context.getString(R.string.scene_backup_restored), Toast.LENGTH_SHORT).show();
                             if (sc.scenes != null)
@@ -85,7 +85,8 @@ public class Backup {
                             Toast.makeText(context, context.getString(R.string.scene_backup_restore_failed), Toast.LENGTH_SHORT).show();
                         }
                     }
-                });
+                }
+        );
         AlertDialog dialog = builder.create();//AlertDialog dialog; create like this outside onClick
         dialog.show();
     }

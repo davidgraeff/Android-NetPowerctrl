@@ -112,7 +112,7 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
                     continue;
                 DrawerItem item = new DrawerItem(scene.sceneName, "");
                 item.uuid = scene.uuid;
-                item.bitmap = scene.getBitmap();
+                //item.bitmap = scene.getBitmap();
                 item.intendLevel = 1;
                 item.clickHandler = new View.OnClickListener() {
                     @Override
@@ -131,7 +131,7 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
                     continue;
                 DrawerItem item = mItems.get(counter++ + startPosition);
                 item.uuid = scene.uuid;
-                item.bitmap = scene.getBitmap();
+                //item.bitmap = scene.getBitmap();
                 item.mTitle = scene.sceneName;
                 item.clickHandler = new View.OnClickListener() {
                     @Override

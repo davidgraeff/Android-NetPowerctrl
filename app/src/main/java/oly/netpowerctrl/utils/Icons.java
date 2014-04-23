@@ -57,7 +57,7 @@ public class Icons {
     public static enum IconState {
         StateOn,
         StateOff,
-        StateUnknown
+        StateUnknown, StateToggle
     }
 
     public static int getResIdForState(IconState state) {
@@ -68,6 +68,8 @@ public class Icons {
                 return R.drawable.stateon;
             case StateUnknown:
                 return R.drawable.stateunknown;
+            case StateToggle:
+                return R.drawable.netpowerctrl;
         }
         return 0;
     }
@@ -140,8 +142,8 @@ public class Icons {
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
     }
 
-    public static Drawable loadDrawable(Context context, IconType iconType, IconState state, UUID uuid) {
-        Bitmap b = loadIcon(context, uuid, iconType, state, getResIdForState(state));
+    public static Drawable loadDrawable(Context context, UUID uuid, IconType iconType, IconState state, int default_resource) {
+        Bitmap b = loadIcon(context, uuid, iconType, state, default_resource);
         return new BitmapDrawable(context.getResources(), b);
     }
 
@@ -172,6 +174,7 @@ public class Icons {
 
 
     private static WeakReference<Object> icon_callback_context_object;
+
     public static void show_select_icon_dialog(final Context context, String assetSet,
                                                final IconSelected callback, final Object callback_context_object) {
         AssetManager assetMgr = context.getAssets();
@@ -214,11 +217,12 @@ public class Icons {
                         icon_callback_context_object = new WeakReference<Object>(callback_context_object);
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
                         Intent intent = new Intent();
-                        intent.setType("image/jpeg");
+                        intent.setType("image/*");
                         intent.setAction(Intent.ACTION_GET_CONTENT);
                         callback.startActivityForResult(Intent.createChooser(intent,
-                                context.getResources().getString(R.string.dialog_icon_select)),
-                                PICK_IMAGE_BEFORE_KITKAT);
+                                        context.getResources().getString(R.string.dialog_icon_select)),
+                                PICK_IMAGE_BEFORE_KITKAT
+                        );
                     } else {
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                         intent.setType("image/*");

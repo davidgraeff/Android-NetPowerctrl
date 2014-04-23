@@ -61,7 +61,6 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
     private Switch enable_feedback;
     private View btnDone;
     private DynamicGridView grid_available;
-    private DynamicGridView grid_included;
     private DevicePortsAvailableAdapter adapter_available;
     private DevicePortsCreateSceneAdapter adapter_included;
 
@@ -389,7 +388,6 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
             grid_available = view;
             adapter_available = (DevicePortsAvailableAdapter) adapter;
         } else if (tag == SceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
-            grid_included = view;
             adapter_included = (DevicePortsCreateSceneAdapter) adapter;
         }
 

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.utils.Icons;
 
 /**
  * Shortcut Utility class
@@ -74,4 +75,19 @@ public class Shortcuts {
         return intent;
     }
 
+    public static void createHomeIcon(Context context, Scene scene) {
+        Intent extra = Shortcuts.createShortcutExecutionIntent(context, scene, false, false);
+        Bitmap bitmap = Icons.loadIcon(context, scene.uuid,
+                Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, 0);
+        Intent shortcutIntent;
+        if (bitmap != null) {
+            shortcutIntent = Shortcuts.createShortcut(extra, scene.sceneName,
+                    Icons.resizeBitmap(context, bitmap));
+        } else
+            shortcutIntent = Shortcuts.createShortcut(extra, scene.sceneName, context);
+
+        shortcutIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+        assert context != null;
+        context.sendBroadcast(shortcutIntent);
+    }
 }

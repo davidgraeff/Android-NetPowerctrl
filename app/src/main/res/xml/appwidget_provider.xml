@@ -4,6 +4,6 @@
     android:minHeight="40dp"
     android:minWidth="40dp"
     android:updatePeriodMillis="0"
-    android:previewImage="@drawable/widget"
+    android:previewImage="@drawable/netpowerctrl"
     android:configure="oly.netpowerctrl.widget.WidgetConfig"
     android:widgetCategory="home_screen|keyguard"></appwidget-provider>

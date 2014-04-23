@@ -2,13 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_outlet_hide"
-        android:title="@string/menu_hide_outlet"></item>
+        android:title="@string/menu_hide_outlet" />
     <item
         android:id="@+id/menu_outlet_unhide"
-        android:title="@string/menu_unhide_outlet"></item>
+        android:title="@string/menu_unhide_outlet" />
     <item
         android:id="@+id/menu_outlet_rename"
-        android:title="@string/menu_rename_outlet"></item>
+        android:title="@string/menu_rename_outlet" />
+    <item
+        android:id="@+id/menu_add_homescreen"
+        android:title="@string/menu_add_homescreen" />
     <item
         android:id="@+id/menu_outlet_createGroup"
         android:title="@string/menu_outlet_createGroup" />

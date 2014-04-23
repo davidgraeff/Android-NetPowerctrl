@@ -1,8 +1,8 @@
 package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,21 +21,24 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
+import oly.netpowerctrl.utils.IconDeferredLoadingThread;
+import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
-    protected ListItemMenu mListItemMenu = null;
     protected int nextId = 0; // we need stable IDs for the gridView
     protected int outlet_res_id = R.layout.list_icon_item;
     protected boolean showHidden = true;
     protected ViewHolder current_viewHolder;
+    private IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
 
     // Some observers
     private ListItemMenu mListContextMenu = null;
+    protected ListItemMenu mListItemMenu = null;
 
     //ViewHolder pattern
-    protected static class ViewHolder implements View.OnClickListener {
+    protected static class ViewHolder implements View.OnClickListener, IconDeferredLoadingThread.IconLoaded {
         ImageView imageIcon;
         ImageView imageEdit;
         //LinearLayout mainTextView;
@@ -45,13 +48,15 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         TextView subtitle;
         boolean isNew = true;
 
-        Bitmap bitmapOn;
-        Bitmap bitmapOff;
+        int currentBitmapIndex = 0;
+        Drawable[] drawables = new Drawable[2];
         public int position;
         private ListItemMenu mListContextMenu = null;
+        private IconDeferredLoadingThread iconCache;
 
-        ViewHolder(View convertView, ListItemMenu listContextMenu) {
+        ViewHolder(View convertView, ListItemMenu listContextMenu, IconDeferredLoadingThread iconCache) {
             mListContextMenu = listContextMenu;
+            this.iconCache = iconCache;
             imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
             imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
             seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
@@ -61,9 +66,27 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             subtitle = (TextView) convertView.findViewById(R.id.subtitle);
         }
 
+        public void loadIcon(UUID uuid, Icons.IconType iconType, Icons.IconState state, int default_resource, int bitmapPosition) {
+            iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
+                    uuid, iconType, state, default_resource, this, bitmapPosition));
+        }
+
+        public void setCurrentBitmapIndex(int index) {
+            currentBitmapIndex = index;
+            if (drawables[index] != null)
+                imageIcon.setImageDrawable(drawables[index]);
+        }
+
         @Override
         public void onClick(View view) {
             mListContextMenu.onMenuItemClicked(view, position);
+        }
+
+        @Override
+        public void setDrawable(Drawable bitmap, int position) {
+            drawables[position] = bitmap;
+            if (currentBitmapIndex == position)
+                imageIcon.setImageDrawable(drawables[position]);
         }
     }
 
@@ -120,6 +143,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         this.context = context;
         this.filterGroup = filterGroup;
         inflater = LayoutInflater.from(context);
+        iconCache.start();
         all_outlets = new ArrayList<DevicePortListItem>();
     }
 
@@ -169,7 +193,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = inflater.inflate(outlet_res_id, null);
-            current_viewHolder = new ViewHolder(convertView, mListContextMenu);
+            current_viewHolder = new ViewHolder(convertView, mListContextMenu, iconCache);
             convertView.setTag(current_viewHolder);
         } else {
             current_viewHolder = (ViewHolder) convertView.getTag();

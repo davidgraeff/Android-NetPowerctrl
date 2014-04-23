@@ -76,10 +76,14 @@ public class SharedPrefs {
 
         String scenes_str = prefs.getString(PREF_SCENES, "");
 
-        try {
-            return SceneCollection.fromJSON(JSONHelper.getReader(scenes_str), sceneCollectionStorage);
-        } catch (IOException e) {
-            Toast.makeText(context, context.getString(R.string.error_reading_scenes), Toast.LENGTH_SHORT).show();
+        if (scenes_str.length() > 0) {
+            try {
+                return SceneCollection.fromJSON(JSONHelper.getReader(scenes_str), sceneCollectionStorage);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(context, context.getString(R.string.error_reading_scenes), Toast.LENGTH_SHORT).show();
+            }
+
         }
         return new SceneCollection(sceneCollectionStorage);
     }
@@ -289,5 +293,19 @@ public class SharedPrefs {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("ScenesList", grid).commit();
+    }
+
+    public static boolean getAnimationEnabled() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.animations_enabled);
+        return prefs.getBoolean("animations_enabled", value);
+    }
+
+    public static boolean logEnergySaveMode() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.use_log_energy_saving_mod);
+        return prefs.getBoolean("use_log_energy_saving_mode", value);
     }
 }

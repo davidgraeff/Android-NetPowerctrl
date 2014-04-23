@@ -1,6 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="2.11"
+        versioncode="44">
+        <change>Fehlerbehebung</change>
+    </release>
+    <release
+        version="2.10"
+        versioncode="43">
+        <change>Logbuch Funktionalität: Wenn die App bei dir nicht wie gewünscht funktioniert,
+            kannst du mir das Logbuch per Mail senden damit ich den Fehler schneller finde. Das
+            Logbuch findest du in den Einstellungen.
+        </change>
+        <change>Absturz bei Gerätebildschirm behoben</change>
+        <change>Energiesparmodus verbessert</change>
+    </release>
+    <release
+        version="2.9"
+        versioncode="42">
+        <change>Optional animierte Steckdosen-, Szenen-, Geräteeinträge</change>
+        <change>Zum Startbildschirm hinzufügen jetzt auch für Steckdosen</change>
+        <change>Verbessertes Nutzungserlebnis bei unkonfigurierter App</change>
+        <change>Es werden jetzt nicht mehr unendlich oft Nachrichten geschickt, wenn ein Gerät nicht
+            sofort antwortet
+        </change>
+        <change>Kein Absturz mehr wenn Widgets angeklickt werden und der Hintergrunddienst noch
+            nicht bereit ist
+        </change>
+    </release>
+    <release
+        version="2.8e"
+        versioncode="41">
+        <change>Automatische Optimierung wieder abgeschaltet: App startete nicht mehr auf allen
+            Geräten
+        </change>
+        <change>Icons für die Steckdosen Übersichtsseite und Szenenseite werden im Hintergrund
+            geladen
+        </change>
+    </release>
+    <release
+        version="2.8d"
+        versioncode="40">
+        <change>Absturz bei Konfigurationstests von neuen Geräten behoben</change>
+    </release>
+    <release
+        version="2.8c"
+        versioncode="39">
+        <change>Behebe Anzeigeprobleme von Steckdosenzuständen</change>
+    </release>
+    <release
         version="2.8b"
         versioncode="38">
         <change>Absturz bei Szenenausführung behoben</change>

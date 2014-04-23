@@ -23,6 +23,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +42,7 @@ import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.shortcut.EditShortcutActivity;
+import oly.netpowerctrl.shortcut.Shortcuts;
 import oly.netpowerctrl.utils.ChangeArgumentsFragment;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -98,17 +101,29 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
+    private void assignAdapter() {
+        if (SharedPrefs.getAnimationEnabled()) {
+            // Add animation to the list
+            ScaleInAnimationAdapter animatedAdapter = new ScaleInAnimationAdapter(adapter);
+            animatedAdapter.setAbsListView(mListView);
+            mListView.setAbstractDynamicGridAdapter(adapter);
+            mListView.setAdapter(animatedAdapter);
+        } else {
+            mListView.setAdapter(adapter);
+        }
+    }
+
     private void setListOrGrid(boolean grid, int widthOfListView) {
         if (!grid) {
             adapter.setLayoutRes(R.layout.list_icon_item);
             mListView.setMinimumColumnWidth(280);
             mListView.setNumColumns(GridView.AUTO_FIT, widthOfListView);
-            mListView.setAdapter(adapter);
+            assignAdapter();
         } else {
             adapter.setLayoutRes(R.layout.grid_icon_item);
             mListView.setMinimumColumnWidth(150);
             mListView.setNumColumns(GridView.AUTO_FIT, widthOfListView);
-            mListView.setAdapter(adapter);
+            assignAdapter();
         }
         SharedPrefs.setOutletsGrid(grid);
     }
@@ -116,6 +131,29 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.outlets, menu);
+
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0) {
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_showhidden).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_hidehidden).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_removeGroup).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_renameGroup).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_view_list).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_view_grid).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_sortAlphabetically).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_add_scene).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_requery).setVisible(false);
+            return;
+        }
+
         boolean hiddenShown = false;
         if (adapter != null) {
             hiddenShown = adapter.getIsShowingHidden();
@@ -150,8 +188,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 renameGroup();
                 return true;
             }
+
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.detectNewDevicesAndReachability(new DeviceQueryResult() {
+                NetpowerctrlApplication.instance.findDevices(new DeviceQueryResult() {
                     @Override
                     public void onDeviceError(DeviceInfo di, String error_message) {
                     }
@@ -249,23 +288,29 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         });
         hintText = (TextView) view.findViewById(R.id.hintText);
         adapter.setNotReachableObserver(this);
-        mListView.setEmptyView(view.findViewById(R.id.loading));
-        // We assign the empty view after a short delay time,
-        // to reduce visual flicker on app start, where data
-        // is loaded with a high chance within the first 500ms.
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isAdded())
-                    return;
+        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0) {
+            mListView.setEmptyView(view.findViewById(android.R.id.empty));
+            emptyText = (TextView) view.findViewById(R.id.empty_text);
+            emptyText.setText(getString(R.string.empty_no_outlets_no_devices));
+        } else {
+            mListView.setEmptyView(view.findViewById(R.id.loading));
+            // We assign the empty view after a short delay time,
+            // to reduce visual flicker on app start, where data
+            // is loaded with a high chance within the first 500ms.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isAdded())
+                        return;
 
-                mListView.getEmptyView().setVisibility(View.GONE);
-                mListView.setEmptyView(view.findViewById(android.R.id.empty));
-                emptyText = (TextView) view.findViewById(R.id.empty_text);
-                emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
+                    mListView.getEmptyView().setVisibility(View.GONE);
+                    mListView.setEmptyView(view.findViewById(android.R.id.empty));
+                    emptyText = (TextView) view.findViewById(R.id.empty_text);
+                    emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
 
-            }
-        }, 1000);
+                }
+            }, 1000);
+        }
         setListOrGrid(SharedPrefs.getOutletsGrid(), container.getWidth());
 
         btnEmpty = (Button) view.findViewById(R.id.btnChangeToDevices);
@@ -388,6 +433,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 oi.Hidden = false;
                 adapter.notifyDataSetChanged();
                 NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                return true;
+            }
+            case R.id.menu_add_homescreen: {
+                Scene scene = new Scene();
+                scene.sceneName = oi.getDescription();
+                scene.add(oi.uuid, DevicePort.TOGGLE);
+                //noinspection ConstantConditions
+                Shortcuts.createHomeIcon(getActivity().getApplicationContext(), scene);
                 return true;
             }
             case R.id.menu_icon:

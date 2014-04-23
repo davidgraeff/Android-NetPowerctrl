@@ -57,6 +57,7 @@ public class DynamicGridView extends GridView {
     private int mLastEventX = -1;
 
     private List<Long> idList = new ArrayList<Long>();
+    AbstractDynamicGridAdapter abstractDynamicGridAdapter;
 
     private long mMobileItemId = INVALID_ID;
 
@@ -179,7 +180,7 @@ public class DynamicGridView extends GridView {
         mIsEditMode = false;
         if (isPostHoneycomb() && mWobbleInEditMode)
             stopWobble(true);
-        getAdapterInterface().finishedReordering();
+        getDynamicGridAdapter().finishedReordering();
     }
 
     public boolean isEditMode() {
@@ -275,13 +276,12 @@ public class DynamicGridView extends GridView {
         return animator;
     }
 
-
     private void reorderElements(int originalPosition, int targetPosition) {
-        getAdapterInterface().reorderItems(originalPosition, targetPosition);
+        getDynamicGridAdapter().reorderItems(originalPosition, targetPosition);
     }
 
-    private AbstractDynamicGridAdapter getAdapterInterface() {
-        return ((AbstractDynamicGridAdapter) getAdapter());
+    private AbstractDynamicGridAdapter getDynamicGridAdapter() {
+        return abstractDynamicGridAdapter;
     }
 
     /**
@@ -342,11 +342,10 @@ public class DynamicGridView extends GridView {
 
     public View getViewForId(long itemId) {
         int firstVisiblePosition = getFirstVisiblePosition();
-        AbstractDynamicGridAdapter adapter = ((AbstractDynamicGridAdapter) getAdapter());
         for (int i = 0; i < getChildCount(); i++) {
             View v = getChildAt(i);
             int position = firstVisiblePosition + i;
-            long id = adapter.getItemId(position);
+            long id = getDynamicGridAdapter().getItemId(position);
             if (id == itemId) {
                 return v;
             }
@@ -485,6 +484,12 @@ public class DynamicGridView extends GridView {
     @Override
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
+        if (adapter instanceof AbstractDynamicGridAdapter)
+            abstractDynamicGridAdapter = (AbstractDynamicGridAdapter) adapter;
+    }
+
+    public void setAbstractDynamicGridAdapter(AbstractDynamicGridAdapter adapter) {
+        abstractDynamicGridAdapter = adapter;
     }
 
     private void touchEventsEnded() {
