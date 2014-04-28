@@ -39,10 +39,9 @@ public class EnergySaveLogFragment extends ListFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listItems);
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listItems);
     }
 
     @Override

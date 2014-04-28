@@ -26,6 +26,14 @@ public class Scene {
         return favourite;
     }
 
+    public void setMaster(DevicePort master) {
+        uuid_master = master.uuid;
+    }
+
+    public UUID getMasterUUid() {
+        return uuid_master;
+    }
+
 
     public static class SceneItem {
         public UUID uuid = UUID.randomUUID();
@@ -149,7 +157,7 @@ public class Scene {
                 scene.sceneName = reader.nextString();
             } else if (name.equals("uuid")) {
                 scene.uuid = UUID.fromString(reader.nextString());
-            } else if (name.equals("master")) {
+            } else if (name.equals("uuid_master")) {
                 scene.uuid_master = UUID.fromString(reader.nextString());
             } else if (name.equals("favourite")) {
                 scene.favourite = reader.nextBoolean();

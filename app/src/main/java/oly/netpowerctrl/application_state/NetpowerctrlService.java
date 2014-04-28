@@ -123,7 +123,7 @@ public class NetpowerctrlService extends Service {
         PluginInterface first = plugins.get(0);
         plugins.clear();
         plugins.add(first);
-        ((AnelPlugin) first).stopDiscoveryThreads();
+        ((AnelPlugin) first).stopDiscoveryThreads(this);
 
         isNetworkReducedMode = true;
         // Stop send and listen threads

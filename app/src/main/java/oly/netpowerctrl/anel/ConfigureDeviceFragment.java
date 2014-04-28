@@ -53,7 +53,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
 
         test_state = TestStates.TEST_REACHABLE;
 
-        PluginInterface pi = device.getPluginInterface();
+        PluginInterface pi = device.getPluginInterface(NetpowerctrlApplication.getService());
         assert pi != null;
         pi.prepareForDevices(device);
 
@@ -80,7 +80,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
     }
 
     private void saveAndFinish() {
-        PluginInterface pi = device.getPluginInterface();
+        PluginInterface pi = device.getPluginInterface(NetpowerctrlApplication.getService());
         assert pi != null;
         pi.prepareForDevices(device);
 
@@ -201,7 +201,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            PluginInterface pi = device.getPluginInterface();
+            PluginInterface pi = device.getPluginInterface(NetpowerctrlApplication.getService());
             assert pi != null;
             if (deviceQuery != null) {
                 deviceQuery.addDevice(device, false);

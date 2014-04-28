@@ -62,7 +62,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
             //mainTextView = (LinearLayout) convertView.findViewById(R.id.outlet_list_text);
             entry = convertView.findViewById(R.id.item_layout);
-            title = (TextView) convertView.findViewById(R.id.title);
+            title = (TextView) convertView.findViewById(R.id.text1);
             subtitle = (TextView) convertView.findViewById(R.id.subtitle);
         }
 
@@ -149,10 +149,11 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     /**
      * Call this to load AnelDeviceSwitch data from a scene.
+     * This will not update the view.
      *
      * @param scene
      */
-    public void loadByScene(Scene scene) {
+    public void loadItemsOfScene(Scene scene) {
         for (Scene.SceneItem sceneItem : scene.sceneItems) {
             DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(sceneItem.uuid);
             if (port == null) {
@@ -160,7 +161,20 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             }
             addItem(port, sceneItem.command);
         }
-        notifyDataSetChanged();
+    }
+
+    protected int getItemPositionByUUid(UUID uuid) {
+        if (uuid == null)
+            return -1;
+
+        int i = 0;
+        for (DevicePortListItem info : all_outlets) {
+            if (info.port.uuid.equals(uuid))
+                return i;
+            ++i;
+        }
+
+        return -1;
     }
 
     public List<Scene.SceneItem> getScene() {

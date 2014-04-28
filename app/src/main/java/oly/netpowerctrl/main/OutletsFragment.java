@@ -23,7 +23,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
+import com.nhaarman.listviewanimations.swinginadapters.prepared.SwingBottomInAnimationAdapter;
 
 import java.util.List;
 import java.util.UUID;
@@ -104,7 +104,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private void assignAdapter() {
         if (SharedPrefs.getAnimationEnabled()) {
             // Add animation to the list
-            ScaleInAnimationAdapter animatedAdapter = new ScaleInAnimationAdapter(adapter);
+            SwingBottomInAnimationAdapter animatedAdapter = new SwingBottomInAnimationAdapter(adapter);
             animatedAdapter.setAbsListView(mListView);
             mListView.setAbstractDynamicGridAdapter(adapter);
             mListView.setAdapter(animatedAdapter);
@@ -443,6 +443,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 Shortcuts.createHomeIcon(getActivity().getApplicationContext(), scene);
                 return true;
             }
+            case R.id.menu_outlet_master_slave:
+                //noinspection ConstantConditions
+                Bundle b = new Bundle();
+                b.putString("master_uuid", oi.uuid.toString());
+                Fragment fragment = Fragment.instantiate(getActivity(), MasterSlaveFragment.class.getName(), b);
+                //noinspection ConstantConditions
+                getFragmentManager().beginTransaction().addToBackStack(null).
+                        replace(R.id.content_frame, fragment).commit();
+                return true;
             case R.id.menu_icon:
                 Icons.show_select_icon_dialog(getActivity(), "scene_icons", this, oi);
                 return true;

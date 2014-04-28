@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 
@@ -65,7 +66,11 @@ public class DeviceQuery extends DeviceObserverBase {
 
         mainLoopHandler.postDelayed(redoRunnable, 600);
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
-        NetpowerctrlApplication.getService().sendBroadcastQuery();
+
+        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        if (service == null)
+            return;
+        service.sendBroadcastQuery();
     }
 
     //    if (deviceName.equalsByUniqueID(device.DeviceName)) {
@@ -74,9 +79,12 @@ public class DeviceQuery extends DeviceObserverBase {
 
     @Override
     protected void doAction(DeviceInfo di, boolean repeated) {
+        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        if (service == null)
+            return;
         if (repeated)
             Log.w("DeviceObserverBase", "redo: " + di.DeviceName);
-        PluginInterface remote = di.getPluginInterface();
+        PluginInterface remote = di.getPluginInterface(service);
         boolean reachable = remote != null;
 
         if (reachable) {

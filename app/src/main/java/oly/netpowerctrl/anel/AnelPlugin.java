@@ -22,6 +22,7 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.datastructure.DeviceInfo;
@@ -84,10 +85,10 @@ final public class AnelPlugin implements PluginInterface {
         }
     }
 
-    public void stopDiscoveryThreads() {
+    public void stopDiscoveryThreads(NetpowerctrlService service) {
         RuntimeDataController d = NetpowerctrlApplication.getDataController();
         for (DeviceInfo di : d.configuredDevices) {
-            if (di.getPluginInterface() == this) {
+            if (this.equals(di.getPluginInterface(service))) {
                 di.setNotReachable("Energiesparmodus");
                 d.onDeviceUpdated(di);
             }

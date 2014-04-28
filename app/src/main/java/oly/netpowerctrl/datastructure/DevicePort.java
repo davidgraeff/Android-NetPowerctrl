@@ -37,6 +37,7 @@ public final class DevicePort implements Comparable {
     public DeviceInfo device;
     protected DevicePortType ui_type;
     private String Description = "";
+    private List<UUID> slaves = new ArrayList<UUID>();
 
 
     public DevicePort(DeviceInfo di, DevicePortType ui_type) {
@@ -54,6 +55,7 @@ public final class DevicePort implements Comparable {
         positionRequest = other.positionRequest;
         ui_type = other.ui_type;
         device = other.device;
+        slaves = other.slaves;
         id = other.id;
         // do not copy last_command_timecode! This value is set by the execute(..) methods
     }
@@ -92,6 +94,13 @@ public final class DevicePort implements Comparable {
                 oi.id = reader.nextInt();
             } else if (name.equals("uuid")) {
                 oi.uuid = UUID.fromString(reader.nextString());
+            } else if (name.equals("slaves")) {
+                oi.slaves.clear();
+                reader.beginArray();
+                while (reader.hasNext()) {
+                    oi.slaves.add(UUID.fromString(reader.nextString()));
+                }
+                reader.endArray();
             } else if (name.equals("groups")) {
                 oi.groups.clear();
                 reader.beginArray();
@@ -164,6 +173,10 @@ public final class DevicePort implements Comparable {
         for (UUID group_uuid : groups)
             writer.value(group_uuid.toString());
         writer.endArray();
+        writer.name("slaves").beginArray();
+        for (UUID slave_uuid : slaves)
+            writer.value(slave_uuid.toString());
+        writer.endArray();
         writer.endObject();
     }
 
@@ -191,6 +204,14 @@ public final class DevicePort implements Comparable {
     public void addToGroup(UUID uuid) {
         if (!groups.contains(uuid))
             groups.add(uuid);
+    }
+
+    public void setSlaves(List<UUID> slaves) {
+        this.slaves = slaves;
+    }
+
+    public List<UUID> getSlaves() {
+        return slaves;
     }
 
     public enum DevicePortType {

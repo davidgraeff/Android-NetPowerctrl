@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="3.0"
+        versioncode="46">
+        <change>Master/Slave Szenen: Alle Steckdosen richten sich nach dem Schaltzustand einer
+            ausgewählten
+        </change>
+    </release>
+    <release
+        version="2.12"
+        versioncode="45">
+        <change>Absturz in Logbuch behoben</change>
+        <change>Absturz bei Gerätebildschirm behoben</change>
+    </release>
+    <release
         version="2.11"
         versioncode="44">
         <change>Fehlerbehebung</change>
