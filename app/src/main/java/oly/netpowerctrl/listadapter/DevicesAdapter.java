@@ -49,17 +49,31 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate {
         if (position == 0)
             return TYPE_HEADER;
         int cs = NetpowerctrlApplication.getDataController().configuredDevices.size();
-        if (position - 1 == cs)
+        if (cs > 0 && position - 1 == cs)
             return TYPE_HEADER;
         else
             return TYPE_ITEM;
     }
 
     @Override
+    public Object getItem(int position) {
+        if (position == 0)
+            return null;
+        int cs = NetpowerctrlApplication.getDataController().configuredDevices.size();
+        if (cs > 0 && position - 1 == cs)
+            return null;
+        else if (position - 1 < cs) // minus one header
+            return NetpowerctrlApplication.getDataController().configuredDevices.get(position - 1);
+        else // minus configuredDevices size and two headers
+            return NetpowerctrlApplication.getDataController().newDevices.get(position - (cs > 0 ? 2 : 1) - cs);
+    }
+
+    @Override
     public int getViewTypeCount() {
-        int c = 1;
-        if (showNewDevices && NetpowerctrlApplication.getDataController().newDevices.size() > 0)
-            ++c;
+        int c = 1; // always one view type!
+        if ((showNewDevices && NetpowerctrlApplication.getDataController().newDevices.size() > 0) ||
+                NetpowerctrlApplication.getDataController().configuredDevices.size() > 0)
+            ++c; // header type + content type
 
         return c;
     }
@@ -71,23 +85,11 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate {
         if (c > 0) ++c; // header
         if (showNewDevices) {
             c += d.newDevices.size();
-            if (c > 0) ++c; // header
+            if (d.newDevices.size() > 0) ++c; // header
         }
         return c;
     }
 
-    @Override
-    public Object getItem(int position) {
-        if (position == 0)
-            return null;
-        int cs = NetpowerctrlApplication.getDataController().configuredDevices.size();
-        if (position - 1 == cs)
-            return null;
-        else if (position - 1 < cs) // minus one header
-            return NetpowerctrlApplication.getDataController().configuredDevices.get(position - 1);
-        else // minus configuredDevices size and two headers
-            return NetpowerctrlApplication.getDataController().newDevices.get(position - 2 - cs);
-    }
 
     @Override
     public long getItemId(int i) {

@@ -173,7 +173,7 @@ public class RuntimeDataController {
     public void addToConfiguredDevices(DeviceInfo current_device, boolean write_to_disk) {
         // Already in configured devices?
         for (int i = configuredDevices.size() - 1; i >= 0; --i) {
-            if (current_device.UniqueDeviceID.equals(configuredDevices.get(i).UniqueDeviceID)) {
+            if (current_device.equalsByUniqueID(configuredDevices.get(i))) {
                 configuredDevices.set(i, current_device);
                 if (write_to_disk) {
                     saveConfiguredDevices(true);
@@ -189,7 +189,7 @@ public class RuntimeDataController {
 
         // Remove from new devices list
         for (int i = 0; i < newDevices.size(); ++i) {
-            if (newDevices.get(i).UniqueDeviceID.equals(current_device.UniqueDeviceID)) {
+            if (newDevices.get(i).equalsByUniqueID(current_device)) {
                 newDevices.remove(i);
                 notifyNewDeviceObservers(current_device, true);
                 break;
@@ -326,7 +326,7 @@ public class RuntimeDataController {
         if (callback != null)
             callback.devicePort_start_rename(port);
 
-        PluginInterface remote = port.device.getPluginInterface();
+        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlApplication.getService());
         if (remote != null) {
             remote.rename(port, new_name, callback);
             if (callback != null)
@@ -346,7 +346,7 @@ public class RuntimeDataController {
             if (p == null)
                 continue;
 
-            PluginInterface remote = p.device.getPluginInterface();
+            PluginInterface remote = p.device.getPluginInterface(NetpowerctrlApplication.getService());
             if (remote == null)
                 continue;
 
@@ -361,9 +361,27 @@ public class RuntimeDataController {
     }
 
     public void execute(final DevicePort port, final int command, final ExecutionFinished callback) {
-        PluginInterface remote = port.device.getPluginInterface();
+        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlApplication.getService());
         if (remote != null) {
             remote.execute(port, command, callback);
+
+            // Support for slaves of an outlet.
+            List<UUID> slaves = port.getSlaves();
+            if (slaves.size() > 0) {
+                boolean bValue = false;
+                if (command == DevicePort.ON)
+                    bValue = true;
+                else if (command == DevicePort.OFF)
+                    bValue = false;
+                else if (command == DevicePort.TOGGLE)
+                    bValue = port.current_value <= 0;
+
+                for (UUID slave_uuid : slaves) {
+                    DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(slave_uuid);
+                    if (p != null)
+                        execute(p, bValue ? DevicePort.ON : DevicePort.OFF, null);
+                }
+            }
             return;
         }
 
@@ -390,7 +408,7 @@ public class RuntimeDataController {
     public int countNetworkDevices() {
         int i = 0;
         for (DeviceInfo di : configuredDevices)
-            if (di.isNetworkDevice()) ++i;
+            if (di.isNetworkDevice(NetpowerctrlApplication.getService())) ++i;
         return i;
     }
 }

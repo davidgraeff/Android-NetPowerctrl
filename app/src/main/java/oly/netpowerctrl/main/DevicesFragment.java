@@ -223,7 +223,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_device_configuration_page:
-                current_device.getPluginInterface().openConfigurationPage(current_device, getActivity());
+                current_device.getPluginInterface(NetpowerctrlApplication.getService())
+                        .openConfigurationPage(current_device, getActivity());
             default:
                 return false;
         }

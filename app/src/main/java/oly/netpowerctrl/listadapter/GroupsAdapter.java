@@ -52,7 +52,7 @@ public class GroupsAdapter extends BaseAdapter implements Groups.IGroupsUpdated 
         Groups.GroupItem data = groups.groupItems.get(position);
 
         assert convertView != null;
-        TextView tvName = (TextView) convertView.findViewById(R.id.title);
+        TextView tvName = (TextView) convertView.findViewById(R.id.text1);
         tvName.setText(data.name);
 
         ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);

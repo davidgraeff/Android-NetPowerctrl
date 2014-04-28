@@ -17,6 +17,7 @@ import java.util.concurrent.Semaphore;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -215,11 +216,11 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
      *
      * @return
      */
-    public PluginInterface getPluginInterface() {
+    public PluginInterface getPluginInterface(NetpowerctrlService service) {
         PluginInterface pi = pluginInterface != null ? pluginInterface.get() : null;
 
         if (pi == null) {
-            pi = NetpowerctrlApplication.getService().getPluginInterface(this);
+            pi = service.getPluginInterface(this);
             pluginInterface = new WeakReference<PluginInterface>(pi);
         }
 
@@ -424,8 +425,8 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         DevicePorts.remove(id);
     }
 
-    public boolean isNetworkDevice() {
-        PluginInterface pi = getPluginInterface();
+    public boolean isNetworkDevice(NetpowerctrlService service) {
+        PluginInterface pi = getPluginInterface(service);
         if (pi == null)
             return false;
         return pi.isNetworkPlugin();

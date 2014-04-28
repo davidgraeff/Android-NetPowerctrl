@@ -16,7 +16,7 @@ public class DevicePortsAvailableAdapter extends DevicePortsBaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        outlet_res_id = R.layout.create_scene_outlet_list_item;
+        outlet_res_id = R.layout.available_outlet_list_item;
         return super.getView(position, convertView, parent);
     }
 

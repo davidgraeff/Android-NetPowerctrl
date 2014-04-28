@@ -283,7 +283,7 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
             } else
                 image.setVisibility(View.GONE);
 
-            TextView title = ((TextView) v.findViewById(R.id.title));
+            TextView title = ((TextView) v.findViewById(R.id.text1));
             title.setText(item.mTitle);
 
             TextView summary = ((TextView) v.findViewById(R.id.summary));

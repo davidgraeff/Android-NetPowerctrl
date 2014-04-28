@@ -261,9 +261,13 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="preference_animations_enabled">Animations</string>
     <string name="preference_animations_enabled_summary">Switch list and grid animations on and off</string>
     <string name="energy_saving_mode_log">Open log</string>
-    <string name="preference_use_log_energy_saving_mode">Log: Energiesparmodus</string>
-    <string name="preference_use_log_energy_saving_mod_summary">Alle Energiesparmodusaktivitäten mitloggen</string>
-    <string name="menu_log_send_mail">Dem Entwickler den Log per Mail senden</string>
+    <string name="preference_use_log_energy_saving_mode">Log: Energy saving mode</string>
+    <string name="preference_use_log_energy_saving_mod_summary">Log all activities of the energy saving mode</string>
+    <string name="menu_log_send_mail">Send the log to the developer</string>
     <string name="help_log">Alle mitgeloggten Ereignisse. Das Log sollte regelmäßig geleert werden, da es Speicherplatz auf der SD-Karte verwendet.</string>
-    <string name="log_activated">Log wurde aktiviert</string>
+    <string name="log_activated">Log has been activated</string>
+    <string name="toggleMaster">Master</string>
+    <string name="toggleSlave">Like Master</string>
+    <string name="menu_outlet_master_slave">Master for…</string>
+    <string name="outlet_master_slave_title">Slaves für %1$s setzen</string>
 </resources>

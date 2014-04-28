@@ -186,7 +186,9 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
                         return;
                     }
                     isLoaded = true;
-                    adapter_included.loadByScene(scene);
+                    adapter_included.loadItemsOfScene(scene);
+                    adapter_included.setMasterOfScene(scene);
+                    adapter_included.notifyDataSetChanged();
                     //shortcutName.setText(scene.sceneName);
                 }
             }
@@ -243,6 +245,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
     private void save_and_close() {
         // Generate list of checked items
         scene.sceneItems = adapter_included.getScene();
+        scene.setMaster(adapter_included.getMaster());
         if (scene.sceneName.isEmpty() || scene.length() == 0)
             return;
 

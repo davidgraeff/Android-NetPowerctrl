@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.network.DeviceSend;
 
@@ -74,10 +75,13 @@ public class AnelBroadcastSendJob implements DeviceSend.Job {
 //                        Toast.LENGTH_SHORT).show();
 
             // Query all existing anel devices directly
+            NetpowerctrlService service = NetpowerctrlApplication.getService();
+            if (service == null)
+                return;
             List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
             for (DeviceInfo di : devices) {
                 if (di.pluginID.equals(AnelPlugin.PLUGIN_ID))
-                    di.getPluginInterface().requestData(di);
+                    di.getPluginInterface(service).requestData(di);
             }
         }
     }

@@ -9,11 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
+import com.nhaarman.listviewanimations.swinginadapters.prepared.SwingBottomInAnimationAdapter;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsCreateSceneAdapter;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.shortcut.OutletsManipulator;
 
 /**
@@ -26,6 +29,18 @@ public class SceneEditFragment extends Fragment {
     public static final int MANIPULATOR_TAG_AVAILABLE = 1;
 
     public SceneEditFragment() {
+    }
+
+    private void assignAdapter() {
+        if (SharedPrefs.getAnimationEnabled()) {
+            // Add animation to the list
+            SwingBottomInAnimationAdapter animatedAdapter = new SwingBottomInAnimationAdapter(adapter);
+            animatedAdapter.setAbsListView(mListView);
+            mListView.setAbstractDynamicGridAdapter(adapter);
+            mListView.setAdapter(animatedAdapter);
+        } else {
+            mListView.setAdapter(adapter);
+        }
     }
 
     public void setData(Context context, int tag, OutletsManipulator manipulator) {
@@ -48,7 +63,7 @@ public class SceneEditFragment extends Fragment {
         mListView = (DynamicGridView) view.findViewById(android.R.id.list);
         mListView.setMinimumColumnWidth(350);
         mListView.setNumColumns(GridView.AUTO_FIT, container.getWidth());
-        mListView.setAdapter(adapter);
+        assignAdapter();
         mListView.setEmptyView(view.findViewById(R.id.loading));
         // We assign the empty view after a short delay time,
         // to reduce visual flicker on app start, where data

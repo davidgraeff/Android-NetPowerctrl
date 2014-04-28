@@ -49,7 +49,7 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
             imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
             imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
             entry = convertView.findViewById(R.id.item_layout);
-            title = (TextView) convertView.findViewById(R.id.title);
+            title = (TextView) convertView.findViewById(R.id.text1);
             subtitle = (TextView) convertView.findViewById(R.id.subtitle);
         }
 

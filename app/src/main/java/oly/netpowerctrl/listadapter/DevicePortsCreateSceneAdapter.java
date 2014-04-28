@@ -12,9 +12,12 @@ import java.util.Iterator;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.utils.SegmentedRadioGroup;
 
 public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
+    DevicePortListItem master = null;
+
     private View.OnClickListener closeClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -26,8 +29,35 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int i) {
             int position = (Integer) radioGroup.getTag();
-            all_outlets.get(position).command_value = (i == R.id.radio0) ? DevicePort.OFF :
-                    (i == R.id.radio1 ? DevicePort.ON : DevicePort.TOGGLE);
+            DevicePortListItem info = all_outlets.get(position);
+            int command_value = info.command_value;
+
+            boolean masterChanged = false;
+            if (info.equals(master)) {
+                masterChanged = true;
+                master = null;
+            }
+
+            switch (i) {
+                case R.id.radioSwitchOff:
+                    command_value = DevicePort.OFF;
+                    break;
+                case R.id.radioSwitchOn:
+                    command_value = DevicePort.ON;
+                    break;
+                case R.id.radioToggleMaster:
+                    master = info;
+                    masterChanged = true;
+                    // no break
+                case R.id.radioToggle:
+                    command_value = DevicePort.TOGGLE;
+                    break;
+            }
+
+            info.command_value = command_value;
+
+            if (masterChanged)
+                notifyDataSetChanged();
         }
     };
 
@@ -73,9 +103,16 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             SegmentedRadioGroup rGroup = (SegmentedRadioGroup) convertView.findViewById(R.id.radioGroup);
             rGroup.setOnCheckedChangeListener(switchClickListener);
             rGroup.setTag(position);
-            RadioButton r0 = (RadioButton) convertView.findViewById(R.id.radio0);
-            RadioButton r1 = (RadioButton) convertView.findViewById(R.id.radio1);
-            RadioButton r2 = (RadioButton) convertView.findViewById(R.id.radio2);
+            RadioButton r0 = (RadioButton) convertView.findViewById(R.id.radioSwitchOff);
+            RadioButton r1 = (RadioButton) convertView.findViewById(R.id.radioSwitchOn);
+            RadioButton r2 = (RadioButton) convertView.findViewById(R.id.radioToggle);
+            RadioButton r3 = (RadioButton) convertView.findViewById(R.id.radioToggleMaster);
+
+            if (master == null || info.equals(master)) {
+                r2.setText(R.string.toggle);
+            } else {
+                r2.setText(R.string.toggleSlave);
+            }
 
             switch (info.command_value) {
                 case DevicePort.OFF:
@@ -85,7 +122,10 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
                     r1.setChecked(true);
                     break;
                 case DevicePort.TOGGLE:
-                    r2.setChecked(true);
+                    if (info.equals(master))
+                        r3.setChecked(true);
+                    else
+                        r2.setChecked(true);
                     break;
             }
 
@@ -154,5 +194,21 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
 
     public DevicePort getItem(int position) {
         return all_outlets.get(position).port;
+    }
+
+    public DevicePort getMaster() {
+        if (master != null)
+            return master.port;
+        return null;
+    }
+
+    public void setMasterOfScene(Scene scene) {
+        if (scene.isMasterSlave()) {
+            int p = getItemPositionByUUid(scene.getMasterUUid());
+            if (p != -1)
+                master = all_outlets.get(p);
+            else
+                master = null;
+        }
     }
 }
