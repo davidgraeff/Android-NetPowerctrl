@@ -9,6 +9,10 @@ android {
         targetSdkVersion 19
     }
 
+    lintOptions {
+        abortOnError false
+    }
+
     buildTypes {
         release {
             zipAlign true

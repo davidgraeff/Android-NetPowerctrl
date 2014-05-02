@@ -32,7 +32,6 @@ import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
-import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsCreateSceneAdapter;
 import oly.netpowerctrl.main.SceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -44,7 +43,7 @@ import oly.netpowerctrl.utils.ListItemMenu;
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditShortcutActivity extends Activity implements ListItemMenu, OutletsManipulator, Icons.IconSelected {
+public class EditShortcutActivity extends Activity implements ListItemMenu, SceneEditFragmentReady, Icons.IconSelected {
 
     /**
      * We pass arguments to this activity via the intent extra bundle.
@@ -77,18 +76,18 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
      * (Available actions, scene included actions)
      */
     private class Available_Added_Adapter extends FragmentPagerAdapter {
-        private Fragment[] frag;
+        private final Fragment[] frag;
 
         public Available_Added_Adapter(FragmentManager fm) {
             super(fm);
 
             SceneEditFragment f1 = new SceneEditFragment();
             f1.setData(EditShortcutActivity.this,
-                    SceneEditFragment.MANIPULATOR_TAG_INCLUDED,
+                    SceneEditFragment.TYPE_INCLUDED,
                     EditShortcutActivity.this);
             SceneEditFragment f2 = new SceneEditFragment();
             f2.setData(EditShortcutActivity.this,
-                    SceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
+                    SceneEditFragment.TYPE_AVAILABLE,
                     EditShortcutActivity.this);
             frag = new Fragment[]{f1, f2};
         }
@@ -107,9 +106,9 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Zugewiesene Aktionen";
+                    return getString(R.string.scene_create_added);
                 case 1:
-                    return "Verfügbar";
+                    return getString(R.string.scene_create_available);
             }
             return "";
         }
@@ -133,6 +132,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
 
         //set the actionbar to use the custom view (can also be done with a style)
         ActionBar bar = getActionBar();
+        assert bar != null;
         bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                 ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
         bar.setHomeButtonEnabled(true);
@@ -331,11 +331,13 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
      * Called by the widget/object/dialog that is responsible for asking the
      * user for a new scene name after a name has been chosen.
      */
-    public void sceneNameChanged() {
+    void sceneNameChanged() {
+        //noinspection ConstantConditions
         getActionBar().setSubtitle(scene.sceneName.length() == 0 ? getString(R.string.scene_no_name) : scene.sceneName);
         invalidateOptionsMenu();
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void setIcon(Object context_object, Bitmap o) {
         scene_icon = o;
@@ -386,12 +388,13 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
     }
 
     @Override
-    public void setManipulatorObjects(int tag, final DynamicGridView view, DevicePortsBaseAdapter adapter) {
-        if (tag == SceneEditFragment.MANIPULATOR_TAG_AVAILABLE) {
-            grid_available = view;
-            adapter_available = (DevicePortsAvailableAdapter) adapter;
-        } else if (tag == SceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
-            adapter_included = (DevicePortsCreateSceneAdapter) adapter;
+    public void sceneEditFragmentReady(final SceneEditFragment fragment) {
+        final int type = fragment.getType();
+        if (type == SceneEditFragment.TYPE_AVAILABLE) {
+            grid_available = fragment.getListView();
+            adapter_available = (DevicePortsAvailableAdapter) fragment.getAdapter();
+        } else if (type == SceneEditFragment.TYPE_INCLUDED) {
+            adapter_included = (DevicePortsCreateSceneAdapter) fragment.getAdapter();
         }
 
         // When both adapters and gridViews are available, we
@@ -402,8 +405,9 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Outl
                 @Override
                 public void run() {
                     loadContent();
+                    fragment.checkEmpty();
                 }
-            }, 150);
+            }, 50);
         }
     }
 

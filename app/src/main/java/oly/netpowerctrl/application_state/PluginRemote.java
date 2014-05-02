@@ -31,8 +31,8 @@ public class PluginRemote implements PluginInterface {
     private String TAG = "PluginRemote";
     private final Context context;
     public String serviceName;
-    public String localized_name;
-    public String packageName;
+    private final String localized_name;
+    private final String packageName;
     //public PluginValuesAdapter valuesAdapter;
     private DeviceInfo di = null;
     private Set<Integer> devicePortIDs;
@@ -43,7 +43,7 @@ public class PluginRemote implements PluginInterface {
     private boolean isInitialized = false;
 
     private INetPwrCtrlPlugin service = null;
-    private ServiceConnection svcConn = new ServiceConnection() {
+    private final ServiceConnection svcConn = new ServiceConnection() {
         public void onServiceConnected(ComponentName className,
                                        IBinder binder) {
             serviceName = className.getClassName();
@@ -69,10 +69,10 @@ public class PluginRemote implements PluginInterface {
      * Initialize a plugin. Try to load an already configured DeviceInfo for this plugin
      * or create a new DeviceInfo object.
      *
-     * @param context Context
-     * @param serviceName Android Service Name
+     * @param context        Context
+     * @param serviceName    Android Service Name
      * @param localized_name Translated plugin name
-     * @param packageName Package name
+     * @param packageName    Package name
      */
     private PluginRemote(Context context, String serviceName, String localized_name, String packageName) {
         String UniqueDeviceID = "plugin" + serviceName;
@@ -112,7 +112,7 @@ public class PluginRemote implements PluginInterface {
     /**
      * init
      */
-    public void init() {
+    void init() {
         try {
             if (service != null) {
                 Log.w(TAG, "init");
@@ -162,7 +162,7 @@ public class PluginRemote implements PluginInterface {
     public void rename(DevicePort port, String new_name, DevicePortRenamed callback) {
         try {
             if (service != null) {
-                service.rename((int) port.id, new_name);
+                service.rename(port.id, new_name);
             } else
                 ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
         } catch (RemoteException e) {
@@ -234,13 +234,13 @@ public class PluginRemote implements PluginInterface {
                 case TypeRangedValue:
                     if (command == DevicePort.TOGGLE)
                         command = port.current_value > 0 ? port.min_value : port.max_value;
-                    service.updateIntValue((int) port.id, command);
+                    service.updateIntValue(port.id, command);
                     break;
                 case TypeButton:
-                    service.executeAction((int) port.id);
+                    service.executeAction(port.id);
                     break;
                 case TypeToggle:
-                    service.updateBooleanValue((int) port.id, command == DevicePort.ON);
+                    service.updateBooleanValue(port.id, command == DevicePort.ON);
                     break;
             }
         } catch (NullPointerException e) {
@@ -253,7 +253,7 @@ public class PluginRemote implements PluginInterface {
             callback.onExecutionFinished(1);
     }
 
-    private Handler handler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
+    private final Handler handler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
 
     private final INetPwrCtrlPluginResult.Stub callback = new INetPwrCtrlPluginResult.Stub() {
         private String current_header = "";

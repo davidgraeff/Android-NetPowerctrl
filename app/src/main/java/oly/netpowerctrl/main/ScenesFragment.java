@@ -41,7 +41,7 @@ import oly.netpowerctrl.utils.OnBackButton;
  */
 public class ScenesFragment extends Fragment implements
         PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnBackButton, Icons.IconSelected, ListItemMenu {
-    SceneCollection scenes;
+    private SceneCollection scenes;
     private DynamicGridView mListView;
     private ScenesAdapter scenesAdapter;
 
@@ -93,7 +93,7 @@ public class ScenesFragment extends Fragment implements
             return;
         }
 
-        boolean isList = scenesAdapter != null && scenesAdapter.getLayoutRes() == R.layout.list_icon_item;
+        boolean isList = scenesAdapter.getLayoutRes() == R.layout.list_icon_item;
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_view_list).setVisible(!isList);
         //noinspection ConstantConditions
@@ -143,6 +143,7 @@ public class ScenesFragment extends Fragment implements
             }
 
             case R.id.menu_help: {
+                //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.menu_help)
                         .setMessage(R.string.help_scene)
@@ -156,6 +157,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
+        //noinspection ConstantConditions
         getActivity().invalidateOptionsMenu();
     }
 
@@ -170,11 +172,13 @@ public class ScenesFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_scenes, container, false);
+        assert view != null;
         mListView = (DynamicGridView) view.findViewById(android.R.id.list);
         mListView.setOnItemClickListener(this);
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                //noinspection ConstantConditions
                 Toast.makeText(getActivity(), getActivity().getString(R.string.hint_stop_edit), Toast.LENGTH_SHORT).show();
                 scenesAdapter.setDisableEditing(true);
                 mListView.startEditMode();
@@ -226,6 +230,7 @@ public class ScenesFragment extends Fragment implements
                 scenes.removeScene(position);
                 if (scenes.length() == 0)
                     mListView.stopEditMode();
+                //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
             }

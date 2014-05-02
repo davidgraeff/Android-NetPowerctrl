@@ -17,7 +17,9 @@ package oly.netpowerctrl.utils;
  */
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.widget.RadioGroup;
 
 import oly.netpowerctrl.R;
@@ -41,14 +43,27 @@ public class SegmentedRadioGroup extends RadioGroup {
     private void changeButtonsImages() {
         int count = super.getChildCount();
 
+        TypedValue typedValue = new TypedValue();
+        //noinspection ConstantConditions
+        Resources.Theme theme = getContext().getTheme();
+        assert theme != null;
+
         if (count > 1) {
-            super.getChildAt(0).setBackgroundResource(R.drawable.segment_radio_left);
+            theme.resolveAttribute(R.attr.segment_radio_left, typedValue, true);
+            //noinspection ConstantConditions
+            super.getChildAt(0).setBackgroundResource(typedValue.resourceId);
+            theme.resolveAttribute(R.attr.segment_radio_middle, typedValue, true);
             for (int i = 1; i < count - 1; i++) {
-                super.getChildAt(i).setBackgroundResource(R.drawable.segment_radio_middle);
+                //noinspection ConstantConditions
+                super.getChildAt(i).setBackgroundResource(typedValue.resourceId);
             }
-            super.getChildAt(count - 1).setBackgroundResource(R.drawable.segment_radio_right);
+            theme.resolveAttribute(R.attr.segment_radio_right, typedValue, true);
+            //noinspection ConstantConditions
+            super.getChildAt(count - 1).setBackgroundResource(typedValue.resourceId);
         } else if (count == 1) {
-            super.getChildAt(0).setBackgroundResource(R.drawable.segment_button);
+            theme.resolveAttribute(R.attr.segment_button, typedValue, true);
+            //noinspection ConstantConditions
+            super.getChildAt(0).setBackgroundResource(typedValue.resourceId);
         }
     }
 }

@@ -16,13 +16,13 @@ import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class Groups {
-    public static long nextStableID = 0;
+    private static long nextStableID = 0;
 
     public static class GroupItem {
         public UUID uuid;
         public String name;
         public Bitmap bitmap = null;
-        public long id = nextStableID++;
+        public final long id = nextStableID++;
 
         public GroupItem(UUID uuid, String name) {
             this.uuid = uuid;
@@ -52,21 +52,19 @@ public class Groups {
         }
     }
 
-    GroupItem groupItemIndexOfHelper = new GroupItem(null, null);
+    private final GroupItem groupItemIndexOfHelper = new GroupItem(null, null);
 
     public interface IGroupsUpdated {
         void groupsUpdated(boolean addedOrRemoved);
     }
 
-    private ArrayList<IGroupsUpdated> observers = new ArrayList<IGroupsUpdated>();
+    private final ArrayList<IGroupsUpdated> observers = new ArrayList<IGroupsUpdated>();
 
     @SuppressWarnings("unused")
-    public boolean registerObserver(IGroupsUpdated o) {
+    public void registerObserver(IGroupsUpdated o) {
         if (!observers.contains(o)) {
             observers.add(o);
-            return true;
         }
-        return false;
     }
 
     @SuppressWarnings("unused")
@@ -80,7 +78,7 @@ public class Groups {
             o.groupsUpdated(addedOrRemoved);
     }
 
-    public List<GroupItem> groupItems = new ArrayList<GroupItem>();
+    public final List<GroupItem> groupItems = new ArrayList<GroupItem>();
 
     public Groups() {
     }
@@ -186,6 +184,7 @@ public class Groups {
         reader.beginObject();
         while (reader.hasNext()) {
             String name = reader.nextName();
+            assert name != null;
             if (name.equals("name")) {
                 group_name = reader.nextString();
             } else if (name.equals("uuid")) {
@@ -207,6 +206,7 @@ public class Groups {
         reader.beginObject();
         while (reader.hasNext()) {
             String name = reader.nextName();
+            assert name != null;
             if (name.equals("groupItems")) {
                 reader.beginArray();
                 while (reader.hasNext()) {
@@ -221,7 +221,7 @@ public class Groups {
         return scene;
     }
 
-    public void toJSON(JsonWriter writer) throws IOException {
+    void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("groupItems").beginArray();
         for (GroupItem c : groupItems) {

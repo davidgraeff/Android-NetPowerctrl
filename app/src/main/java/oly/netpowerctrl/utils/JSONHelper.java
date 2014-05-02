@@ -11,7 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Created by david on 04.01.14.
+ * Some helper methods to read and write json to and from strings.
  */
 public class JSONHelper {
     public static JsonReader getReader(String text) {
@@ -27,7 +27,7 @@ public class JSONHelper {
     }
 
     private ByteArrayOutputStream baos;
-    JsonWriter writer;
+    private JsonWriter writer;
 
     public JsonWriter createWriter() {
         baos = new ByteArrayOutputStream();

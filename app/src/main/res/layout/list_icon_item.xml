@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_layout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
@@ -16,7 +17,8 @@
         android:id="@+id/icon_bitmap"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:paddingRight="5dp" />
+        android:paddingRight="5dp"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/text1"

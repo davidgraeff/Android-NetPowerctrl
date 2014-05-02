@@ -17,8 +17,8 @@ import oly.netpowerctrl.utils.Icons;
  */
 public class SceneCollection {
     public List<Scene> scenes;
-    public IScenesSave storage;
-    private ArrayList<IScenesUpdated> observers = new ArrayList<IScenesUpdated>();
+    private final IScenesSave storage;
+    private final ArrayList<IScenesUpdated> observers = new ArrayList<IScenesUpdated>();
 
     public SceneCollection(IScenesSave storage) {
         this.storage = storage;
@@ -46,12 +46,10 @@ public class SceneCollection {
     }
 
     @SuppressWarnings("unused")
-    public boolean registerObserver(IScenesUpdated o) {
+    public void registerObserver(IScenesUpdated o) {
         if (!observers.contains(o)) {
             observers.add(o);
-            return true;
         }
-        return false;
     }
 
     @SuppressWarnings("unused")

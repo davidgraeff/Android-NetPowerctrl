@@ -37,7 +37,7 @@ import oly.netpowerctrl.network.ExecutionFinished;
  * This is a specialized class for Anel devices.
  */
 final public class AnelPlugin implements PluginInterface {
-    private List<AnelDeviceDiscoveryThread> discoveryThreads = new ArrayList<AnelDeviceDiscoveryThread>();
+    private final List<AnelDeviceDiscoveryThread> discoveryThreads = new ArrayList<AnelDeviceDiscoveryThread>();
 
     public void startDiscoveryThreads(int additional_port) {
         // Get all ports of configured devices and add the additional_port if != 0
@@ -147,7 +147,7 @@ final public class AnelPlugin implements PluginInterface {
             DevicePort oi = it.next();
             if (oi.Disabled || oi.current_value == 0)
                 continue;
-            int id = (int) oi.id;
+            int id = oi.id;
             if (id >= 10) {
                 data_io = switchOn(data_io, id - 10);
             } else {
@@ -160,7 +160,7 @@ final public class AnelPlugin implements PluginInterface {
         for (Scene.PortAndCommand c : command_list) {
             c.port.last_command_timecode = System.currentTimeMillis();
 
-            int id = (int) c.port.id;
+            int id = c.port.id;
             if (id >= 10) {
                 containsIO = true;
             } else {
@@ -213,7 +213,7 @@ final public class AnelPlugin implements PluginInterface {
             callback.onExecutionFinished(command_list.size());
     }
 
-    static final byte[] requestMessage = "wer da?\r\n".getBytes();
+    private static final byte[] requestMessage = "wer da?\r\n".getBytes();
 
     /**
      * Switch a single outlet or io port
@@ -250,7 +250,7 @@ final public class AnelPlugin implements PluginInterface {
             callback.onExecutionFinished(1);
     }
 
-    static Thread renameThread;
+    private static Thread renameThread;
 
     @Override
     public void finish() {
@@ -329,7 +329,7 @@ final public class AnelPlugin implements PluginInterface {
         renameThread.start();
     }
 
-    private List<Scene.PortAndCommand> command_list = new ArrayList<Scene.PortAndCommand>();
+    private final List<Scene.PortAndCommand> command_list = new ArrayList<Scene.PortAndCommand>();
 
     @Override
     public void addToTransaction(DevicePort port, int command) {

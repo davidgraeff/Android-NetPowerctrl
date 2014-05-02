@@ -15,9 +15,10 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.network.DeviceUpdate;
 
 public class DevicesAdapter extends BaseAdapter implements DeviceUpdate {
-    private LayoutInflater inflater;
-    private boolean showNewDevices;
+    private final LayoutInflater inflater;
+    private final boolean showNewDevices;
 
+    @SuppressWarnings("SameParameterValue")
     public DevicesAdapter(Context context, boolean showNewDevices) {
         this.showNewDevices = showNewDevices;
         inflater = LayoutInflater.from(context);

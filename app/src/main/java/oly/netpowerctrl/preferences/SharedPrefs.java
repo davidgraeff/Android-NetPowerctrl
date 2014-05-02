@@ -18,23 +18,24 @@ import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class SharedPrefs {
-    public final static int PREF_CURRENT_VERSION = 2;
-    public final static String PREF_VERSION_DEVICES = "version_devices";
-    public final static String PREF_VERSION_SCENES = "version_scenes";
+    private final static int PREF_CURRENT_VERSION = 2;
+    private final static String PREF_VERSION_DEVICES = "version_devices";
+    private final static String PREF_VERSION_SCENES = "version_scenes";
     public final static String PREF_BASENAME = "oly.netpowerctrl";
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
     public final static String PREF_GROUPS_BASENAME = "oly.netpowerctrl.groups";
-    public final static String PREF_DEVICES = "CONFIGURED_DEVICES";
-    public final static String PREF_SCENES = "GROUPS";
-    public final static String PREF_FIRST_TAB = "FIRST_TAB";
-    public final static String PREF_UUID = "UUID";
-    public final static String PREF_standard_send_port = "standard_send_port";
-    public final static String PREF_standard_receive_port = "standard_receive_port";
+    private final static String PREF_DEVICES = "CONFIGURED_DEVICES";
+    private final static String PREF_SCENES = "GROUPS";
+    private final static String PREF_FIRST_TAB = "FIRST_TAB";
+    private final static String PREF_UUID = "UUID";
+    private final static String PREF_standard_send_port = "standard_send_port";
+    private final static String PREF_standard_receive_port = "standard_receive_port";
     public final static String PREF_use_energy_saving_mode = "use_energy_saving_mode";
+    private final static String PREF_wakeup_energy_saving_mode = "wakeup_energy_saving_mode";
     public final static String PREF_use_dark_theme = "use_dark_theme";
-    public final static String PREF_load_plugins = "load_plugins";
+    private final static String PREF_load_plugins = "load_plugins";
     public final static String PREF_widgets = "widgets";
-    public final static String PREF_notify_on_stop = "notify_on_stop";
+    private final static String PREF_notify_on_stop = "notify_on_stop";
 
     public static String getFirstTab() {
         Context context = NetpowerctrlApplication.instance;
@@ -55,7 +56,7 @@ public class SharedPrefs {
         prefEditor.commit();
     }
 
-    private static SceneCollection.IScenesSave sceneCollectionStorage = new SceneCollection.IScenesSave() {
+    private static final SceneCollection.IScenesSave sceneCollectionStorage = new SceneCollection.IScenesSave() {
         @Override
         public void scenesSave(SceneCollection scenes) {
             SaveScenes(scenes);
@@ -88,7 +89,7 @@ public class SharedPrefs {
         return new SceneCollection(sceneCollectionStorage);
     }
 
-    public static void SaveScenes(SceneCollection scenes) {
+    private static void SaveScenes(SceneCollection scenes) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = context.getSharedPreferences(PREF_GROUPS_BASENAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefEditor = prefs.edit();
@@ -175,6 +176,7 @@ public class SharedPrefs {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean getLoadExtensions() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -239,6 +241,18 @@ public class SharedPrefs {
             ignored.printStackTrace();
         }
         return use_energy_saving_mode;
+    }
+
+    public static boolean getWakeup_energy_saving_mode() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean wakeup_energy_saving_mode = context.getResources().getBoolean(R.bool.wakeup_energy_saving_mode);
+        try {
+            wakeup_energy_saving_mode = prefs.getBoolean(PREF_wakeup_energy_saving_mode, wakeup_energy_saving_mode);
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
+        return wakeup_energy_saving_mode;
     }
 
     public static boolean isDarkTheme() {
@@ -307,5 +321,17 @@ public class SharedPrefs {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.use_log_energy_saving_mod);
         return prefs.getBoolean("use_log_energy_saving_mode", value);
+    }
+
+    /**
+     * @return Return true if first run. All later calls will always return false.
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public static boolean isFirstRun() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = prefs.getBoolean("firstRun", true);
+        prefs.edit().putBoolean("firstRun", false).commit();
+        return value;
     }
 }

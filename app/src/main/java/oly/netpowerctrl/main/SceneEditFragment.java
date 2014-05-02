@@ -17,16 +17,16 @@ import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsCreateSceneAdapter;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.shortcut.OutletsManipulator;
+import oly.netpowerctrl.shortcut.SceneEditFragmentReady;
 
 /**
  */
 public class SceneEditFragment extends Fragment {
-    private DevicePortsBaseAdapter adapter;
-    private OutletsManipulator manipulator = null;
-    private int manipulator_tag;
-    public static final int MANIPULATOR_TAG_INCLUDED = 0;
-    public static final int MANIPULATOR_TAG_AVAILABLE = 1;
+    private DevicePortsBaseAdapter mAdapter;
+    private SceneEditFragmentReady readyObserver = null;
+    private int mEditType = 0;
+    public static final int TYPE_INCLUDED = 1;
+    public static final int TYPE_AVAILABLE = 2;
 
     public SceneEditFragment() {
     }
@@ -34,23 +34,23 @@ public class SceneEditFragment extends Fragment {
     private void assignAdapter() {
         if (SharedPrefs.getAnimationEnabled()) {
             // Add animation to the list
-            SwingBottomInAnimationAdapter animatedAdapter = new SwingBottomInAnimationAdapter(adapter);
+            SwingBottomInAnimationAdapter animatedAdapter = new SwingBottomInAnimationAdapter(mAdapter);
             animatedAdapter.setAbsListView(mListView);
-            mListView.setAbstractDynamicGridAdapter(adapter);
+            mListView.setAbstractDynamicGridAdapter(mAdapter);
             mListView.setAdapter(animatedAdapter);
         } else {
-            mListView.setAdapter(adapter);
+            mListView.setAdapter(mAdapter);
         }
     }
 
-    public void setData(Context context, int tag, OutletsManipulator manipulator) {
+    public void setData(Context context, int tag, SceneEditFragmentReady manipulator) {
         // We use the constructor that is dedicated to scene editing
-        this.manipulator_tag = tag;
-        this.manipulator = manipulator;
-        if (tag == SceneEditFragment.MANIPULATOR_TAG_AVAILABLE) {
-            adapter = new DevicePortsAvailableAdapter(context);
-        } else if (tag == SceneEditFragment.MANIPULATOR_TAG_INCLUDED) {
-            adapter = new DevicePortsCreateSceneAdapter(context);
+        this.mEditType = tag;
+        this.readyObserver = manipulator;
+        if (tag == SceneEditFragment.TYPE_AVAILABLE) {
+            mAdapter = new DevicePortsAvailableAdapter(context);
+        } else if (tag == SceneEditFragment.TYPE_INCLUDED) {
+            mAdapter = new DevicePortsCreateSceneAdapter(context);
         }
     }
 
@@ -60,28 +60,45 @@ public class SceneEditFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_outlets_sceneedit, container, false);
+        assert view != null;
         mListView = (DynamicGridView) view.findViewById(android.R.id.list);
         mListView.setMinimumColumnWidth(350);
         mListView.setNumColumns(GridView.AUTO_FIT, container.getWidth());
         assignAdapter();
-        mListView.setEmptyView(view.findViewById(R.id.loading));
-        // We assign the empty view after a short delay time,
-        // to reduce visual flicker on app start, where data
-        // is loaded with a high chance within the first 500ms.
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mListView.getEmptyView().setVisibility(View.GONE);
-                if (manipulator_tag == MANIPULATOR_TAG_AVAILABLE)
-                    mListView.setEmptyView(view.findViewById(R.id.empty_available));
-                else if (manipulator_tag == MANIPULATOR_TAG_INCLUDED)
-                    mListView.setEmptyView(view.findViewById(R.id.empty_included));
-            }
-        }, 1000);
-
         // If this fragment is within the scene editing activity, we need to call
-        // the activity back here, to provide the gridView and adapter objects.
-        manipulator.setManipulatorObjects(manipulator_tag, mListView, adapter);
+        // the activity back here, to provide the gridView and mAdapter objects.
+        readyObserver.sceneEditFragmentReady(this);
         return view;
+    }
+
+    public DevicePortsBaseAdapter getAdapter() {
+        return mAdapter;
+    }
+
+    public int getType() {
+        return mEditType;
+    }
+
+    public DynamicGridView getListView() {
+        return mListView;
+    }
+
+    public void checkEmpty() {
+        final View view = getView();
+        if (mEditType == SceneEditFragment.TYPE_AVAILABLE) {
+            mListView.setEmptyView(view.findViewById(R.id.loading));
+            // We assign the empty view after a short delay time,
+            // to reduce visual flicker on app start, where data
+            // is loaded with a high chance within the first 500ms.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    //noinspection ConstantConditions
+                    mListView.getEmptyView().setVisibility(View.GONE);
+                    mListView.setEmptyView(view.findViewById(R.id.empty_available));
+                }
+            }, 1000);
+        } else if (mEditType == TYPE_INCLUDED)
+            mListView.setEmptyView(view.findViewById(R.id.empty_included));
     }
 }

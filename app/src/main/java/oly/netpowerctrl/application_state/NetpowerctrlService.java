@@ -40,7 +40,7 @@ public class NetpowerctrlService extends Service {
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
     private boolean isBroadcastListener = false;
-    private BroadcastReceiver pluginBroadcastListener = new BroadcastReceiver() {
+    private final BroadcastReceiver pluginBroadcastListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context ctxt, Intent i) {
             if (NetpowerctrlApplication.getService() == null) {
@@ -59,10 +59,11 @@ public class NetpowerctrlService extends Service {
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
      */
-    public boolean isNetworkReducedMode;
-    BroadcastReceiver networkChangedListener = new BroadcastReceiver() {
+    private boolean isNetworkReducedMode;
+    private final BroadcastReceiver networkChangedListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            @SuppressWarnings("ConstantConditions")
             ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
                 if (SharedPrefs.notifyOnStop()) {
@@ -86,8 +87,8 @@ public class NetpowerctrlService extends Service {
      */
 
     private boolean isNetworkChangedListener = false;
-    private List<PluginInterface> plugins = new ArrayList<PluginInterface>();
-    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+    private final List<PluginInterface> plugins = new ArrayList<PluginInterface>();
+    private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
             if (s.equals(SharedPrefs.PREF_use_energy_saving_mode) && isNetworkReducedMode) {
@@ -141,7 +142,7 @@ public class NetpowerctrlService extends Service {
         }
 
         // Stop listening for network changes
-        if (isNetworkChangedListener) {
+        if (isNetworkChangedListener && !SharedPrefs.getWakeup_energy_saving_mode()) {
             if (SharedPrefs.logEnergySaveMode())
                 EnergySaveLogFragment.appendLog("Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
             isNetworkChangedListener = false;
@@ -276,7 +277,7 @@ public class NetpowerctrlService extends Service {
             }
 
             @Override
-            public void onDeviceError(DeviceInfo di, String error_message) {
+            public void onDeviceError(DeviceInfo di) {
             }
 
             @Override

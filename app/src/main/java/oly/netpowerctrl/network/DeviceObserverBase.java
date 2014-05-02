@@ -10,17 +10,19 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 
 /**
- * Created by david on 16.04.14.
+ * This base class is used by the device query and device-resend-command class.
+ * It will be registered on the main application to receive device updates and
+ * provide the result of a query/a sending action to the DeviceQueryResult object.
  */
 public abstract class DeviceObserverBase {
     public void setDeviceQueryResult(DeviceQueryResult target) {
         this.target = target;
     }
 
-    protected List<DeviceInfo> devices_to_observe;
-    protected DeviceQueryResult target;
-    protected Handler mainLoopHandler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
-    protected Runnable timeoutRunnable = new Runnable() {
+    List<DeviceInfo> devices_to_observe;
+    private DeviceQueryResult target;
+    final Handler mainLoopHandler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
+    final Runnable timeoutRunnable = new Runnable() {
         @Override
         public void run() {
             NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
@@ -38,7 +40,7 @@ public abstract class DeviceObserverBase {
 
     protected abstract void doAction(DeviceInfo di, boolean repeated);
 
-    protected Runnable redoRunnable = new Runnable() {
+    final Runnable redoRunnable = new Runnable() {
         @Override
         public void run() {
             for (DeviceInfo di : devices_to_observe) {
@@ -82,6 +84,7 @@ public abstract class DeviceObserverBase {
         return checkIfDone();
     }
 
+    @SuppressWarnings("SameParameterValue")
     public void addDevice(DeviceInfo device, boolean resetTimeout) {
         devices_to_observe.add(device);
 

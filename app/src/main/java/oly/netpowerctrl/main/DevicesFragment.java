@@ -77,6 +77,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_help: {
+                //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.menu_help)
                         .setMessage(R.string.help_devices)
@@ -104,7 +105,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             case R.id.menu_requery: {
                 NetpowerctrlApplication.instance.findDevices(new DeviceQueryResult() {
                     @Override
-                    public void onDeviceError(DeviceInfo di, String error_message) {
+                    public void onDeviceError(DeviceInfo di) {
                     }
 
                     @Override
@@ -157,6 +158,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_devices, container, false);
+        assert view != null;
         mListView = (ListView) view.findViewById(android.R.id.list);
         mListView.setOnItemClickListener(this);
         assignAdapter();

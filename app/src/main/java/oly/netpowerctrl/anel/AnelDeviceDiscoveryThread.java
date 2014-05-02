@@ -13,11 +13,11 @@ import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
-public class AnelDeviceDiscoveryThread extends Thread {
-    private int receive_port;
+class AnelDeviceDiscoveryThread extends Thread {
+    private final int receive_port;
     private boolean keep_running;
     private DatagramSocket socket;
-    private AnelPlugin anelPlugin;
+    private final AnelPlugin anelPlugin;
 
     public AnelDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
         this.anelPlugin = anelPlugin;

@@ -16,16 +16,16 @@ import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.utils.SegmentedRadioGroup;
 
 public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
-    DevicePortListItem master = null;
+    private DevicePortListItem master = null;
 
-    private View.OnClickListener closeClickListener = new View.OnClickListener() {
+    private final View.OnClickListener closeClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             mListItemMenu.onMenuItemClicked(view, (Integer) view.getTag());
         }
     };
 
-    private RadioGroup.OnCheckedChangeListener switchClickListener = new RadioGroup.OnCheckedChangeListener() {
+    private final RadioGroup.OnCheckedChangeListener switchClickListener = new RadioGroup.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int i) {
             int position = (Integer) radioGroup.getTag();
@@ -61,7 +61,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         }
     };
 
-    private SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+    private final SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 
@@ -100,6 +100,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             outlet_res_id = R.layout.create_scene_outlet_list_switch;
             convertView = super.getView(position, convertView, parent);
 
+            assert convertView != null;
             SegmentedRadioGroup rGroup = (SegmentedRadioGroup) convertView.findViewById(R.id.radioGroup);
             rGroup.setOnCheckedChangeListener(switchClickListener);
             rGroup.setTag(position);
@@ -132,6 +133,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         } else if (type == DevicePort.DevicePortType.TypeRangedValue) {
             outlet_res_id = R.layout.create_scene_outlet_list_ranged;
             convertView = super.getView(position, convertView, parent);
+            assert convertView != null;
             SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
             //current_viewHolder.seekBar
             seekBar.setTag(position);
@@ -147,6 +149,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             convertView = super.getView(position, convertView, parent);
         }
 
+        assert convertView != null;
         ImageView btnClose = (ImageView) convertView.findViewById(R.id.outlet_list_close);
         if (mListItemMenu != null) {
             btnClose.setVisibility(View.VISIBLE);

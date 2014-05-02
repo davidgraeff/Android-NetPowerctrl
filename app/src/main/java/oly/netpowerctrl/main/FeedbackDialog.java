@@ -28,6 +28,7 @@ public class FeedbackDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        @SuppressWarnings("ConstantConditions")
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.netpowerctrl);
 
@@ -49,10 +50,13 @@ public class FeedbackDialog extends DialogFragment {
                         @SuppressWarnings("ConstantConditions")
                         ApplicationInfo info = getActivity().getApplicationContext().getApplicationInfo();
                         PackageManager pm = getActivity().getApplicationContext().getPackageManager();
+                        assert pm != null;
                         Intent intent = new Intent(Intent.ACTION_SEND);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"david.graeff@web.de"});
                         try {
+                            assert info != null;
+                            //noinspection ConstantConditions
                             intent.putExtra(Intent.EXTRA_SUBJECT, info.loadLabel(pm).toString() + "(" + pm.getPackageInfo(info.packageName, 0).versionName + ")" + " Contact Form | Device: " + Build.MANUFACTURER + " " + Build.DEVICE + "(" + Build.MODEL + ") API: " + Build.VERSION.SDK_INT);
                         } catch (PackageManager.NameNotFoundException ignored) {
                         }

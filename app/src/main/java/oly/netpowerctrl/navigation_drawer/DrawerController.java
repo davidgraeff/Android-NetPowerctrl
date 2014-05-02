@@ -21,9 +21,9 @@ import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.main.DataTransferFragment;
 import oly.netpowerctrl.main.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackDialog;
-import oly.netpowerctrl.main.HelpFragment;
 import oly.netpowerctrl.main.OutletsFragment;
 import oly.netpowerctrl.main.ScenesFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
@@ -50,7 +50,7 @@ public class DrawerController {
     private String currentAccompanyFragmentClass;
     public int drawerLastItemPosition;
 
-    WeakReference<Activity> mDrawerActivity;
+    private WeakReference<Activity> mDrawerActivity;
 
     public boolean isLoading() {
         return (mDrawerLayout == null);
@@ -90,7 +90,7 @@ public class DrawerController {
         mDrawerAdapter.add(context.getResources().getStringArray(R.array.drawer_titles_app),
                 context.getResources().getStringArray(R.array.drawer_descriptions_app),
                 new String[]{"", DevicesFragment.class.getName(),
-                        PreferencesFragment.class.getName(), HelpFragment.class.getName()}
+                        PreferencesFragment.class.getName(), DataTransferFragment.class.getName()}
         );
 
         String version = context.getString(R.string.Version) + " ";
@@ -133,10 +133,7 @@ public class DrawerController {
         // Restore the last visited screen
         int pos = mDrawerAdapter.indexOf(SharedPrefs.getFirstTab());
         if (pos == -1) {
-            if (NetpowerctrlApplication.getDataController().configuredDevices.size() > 0)
-                pos = mDrawerAdapter.indexOf(OutletsFragment.class.getName());
-            else
-                pos = mDrawerAdapter.indexOf(DevicesFragment.class.getName());
+            pos = mDrawerAdapter.indexOf(OutletsFragment.class.getName());
         }
         selectItem(pos);
 

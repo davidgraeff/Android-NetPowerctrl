@@ -25,7 +25,7 @@ public final class DevicePort implements Comparable {
     public boolean Hidden = false;
     public boolean Disabled = false;
     public UUID uuid = UUID.randomUUID(); // unique identity among all device ports
-    public List<UUID> groups = new ArrayList<UUID>();
+    public final List<UUID> groups = new ArrayList<UUID>();
     public int id = 0; // unique identity among device ports on this device
     // last_command_timecode: Updated after name has been send.
     // Used to disable control in list until ack from device has been received.
@@ -34,8 +34,8 @@ public final class DevicePort implements Comparable {
     public int positionRequest;
 
     // Device
-    public DeviceInfo device;
-    protected DevicePortType ui_type;
+    public final DeviceInfo device;
+    private DevicePortType ui_type;
     private String Description = "";
     private List<UUID> slaves = new ArrayList<UUID>();
 
@@ -139,8 +139,8 @@ public final class DevicePort implements Comparable {
      * @return Return true if values in this object have changed because of source_oi.
      */
     public boolean copyValues(DevicePort source_oi) {
-        boolean hasChanged = false;
-        hasChanged |= current_value != source_oi.current_value;
+        boolean hasChanged;
+        hasChanged = current_value != source_oi.current_value;
         current_value = source_oi.current_value;
         hasChanged |= max_value != source_oi.max_value;
         max_value = source_oi.max_value;

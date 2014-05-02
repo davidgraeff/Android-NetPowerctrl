@@ -21,15 +21,14 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 /**
  * For displaying DeviceInfo fields in a ListView
  */
-public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickListener {
+class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickListener {
     public static class ReviewItem {
-        public static final int DEFAULT_WEIGHT = 0;
 
-        public String mTitle;
+        public final String mTitle;
         public String mDisplayValueString;
         public int mDisplayValueInt;
         public boolean mDisplayValueBoolean;
-        public int mPageKey;
+        public final int mPageKey;
         public int type = 0; // o string, 1 int, 2 boolean
         public boolean mEnabled;
 
@@ -49,19 +48,19 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
             type = 1;
         }
 
-        public ReviewItem(String title, boolean displayValue, int pageKey) {
+        public ReviewItem(String title, boolean displayValue) {
             mTitle = title;
             mDisplayValueBoolean = displayValue;
-            mPageKey = pageKey;
+            mPageKey = DeviceConfigurationAdapter.DefaultPorts;
             mEnabled = true;
             type = 2;
         }
     }
 
-    public List<ReviewItem> deviceConfigurationOptions = new ArrayList<ReviewItem>();
-    private Context context;
-    private DeviceInfo deviceInfo;
-    private LayoutInflater inflater;
+    private final List<ReviewItem> deviceConfigurationOptions = new ArrayList<ReviewItem>();
+    private final Context context;
+    private final DeviceInfo deviceInfo;
+    private final LayoutInflater inflater;
 
     private static final int DeviceName = 0;
     private static final int HostName = 1;
@@ -79,7 +78,7 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_ip), deviceInfo.HostName, HostName));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_username), deviceInfo.UserName, UserName));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_password), deviceInfo.Password, Password));
-        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_default_ports), deviceInfo.DefaultPorts, DefaultPorts));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_default_ports), deviceInfo.DefaultPorts));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_recv_udp), deviceInfo.ReceivePort, ReceivePort, !deviceInfo.DefaultPorts));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_send_udp), deviceInfo.SendPort, SendPort, !deviceInfo.DefaultPorts));
     }
@@ -120,6 +119,7 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
             convertView = inflater.inflate(R.layout.device_configuration_item, null);
 
         ReviewItem reviewItem = deviceConfigurationOptions.get(position);
+        assert convertView != null;
         ((TextView) convertView.findViewById(R.id.titleText)).setText(reviewItem.mTitle);
         TextView text = (TextView) convertView.findViewById(R.id.textOption);
         CheckBox checkbox = (CheckBox) convertView.findViewById(R.id.checkboxOption);
@@ -171,17 +171,20 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
             return;
         }
 
-        final EditText text = new EditText(context);
-        text.setText(((TextView) view).getText());
+        EditText textView = new EditText(context);
+        textView.setText(((TextView) view).getText());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setView(text);
+        builder.setView(textView);
+
+        @SuppressWarnings("ConstantConditions")
+        final String text = textView.getText().toString();
 
         switch (key) {
             case DeviceName:
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text.getText().toString();
+                        item.mDisplayValueString = text;
                         deviceInfo.DeviceName = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
@@ -191,7 +194,7 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text.getText().toString();
+                        item.mDisplayValueString = text;
                         deviceInfo.HostName = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
@@ -201,7 +204,7 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text.getText().toString();
+                        item.mDisplayValueString = text;
                         deviceInfo.UserName = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
@@ -211,29 +214,29 @@ public class DeviceConfigurationAdapter extends BaseAdapter implements View.OnCl
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text.getText().toString();
+                        item.mDisplayValueString = text;
                         deviceInfo.Password = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
                 });
                 break;
             case ReceivePort:
-                text.setInputType(InputType.TYPE_CLASS_NUMBER);
+                textView.setInputType(InputType.TYPE_CLASS_NUMBER);
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueInt = Integer.valueOf(text.getText().toString());
+                        item.mDisplayValueInt = Integer.valueOf(text);
                         deviceInfo.ReceivePort = item.mDisplayValueInt;
                         notifyDataSetChanged();
                     }
                 });
                 break;
             case SendPort:
-                text.setInputType(InputType.TYPE_CLASS_NUMBER);
+                textView.setInputType(InputType.TYPE_CLASS_NUMBER);
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueInt = Integer.valueOf(text.getText().toString());
+                        item.mDisplayValueInt = Integer.valueOf(text);
                         deviceInfo.SendPort = item.mDisplayValueInt;
                         notifyDataSetChanged();
                     }

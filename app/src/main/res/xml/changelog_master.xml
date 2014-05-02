@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="3.1"
+        versioncode="47">
+        <change>Master/Slave Steckdosen: Einer Steckdose können mehrere andere Zugeordnet werden,
+            welche den selben Zustand beim Wechsel einnehmen.
+        </change>
+        <change>Vorbereiten für mögliches Synchronisieren der Geräte, Gruppen, Szenen, Icons mit
+            Google Drive und Nachbargeräten
+        </change>
+        <change>Möglichkeit, den Energiesparmodus automatisch zu beenden. Der Netzwerkwechsel wird
+            dafür überwacht (kostet natürlich Energie). Für Widget-Nutzer praktisch.
+        </change>
+        <change>Changelog wird bei aller erster Benutzung jetzt nicht mehr angezeigt</change>
+    </release>
+    <release
         version="3.0"
         versioncode="46">
         <change>Master/Slave Szenen: Alle Steckdosen richten sich nach dem Schaltzustand einer

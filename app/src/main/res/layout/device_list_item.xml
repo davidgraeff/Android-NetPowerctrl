@@ -4,32 +4,23 @@
     android:layout_height="wrap_content"
     android:baselineAligned="true"
     android:gravity="center_vertical"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:paddingLeft="16dip"
-    android:paddingRight="12dip">
+    android:paddingRight="12dip"
+    android:paddingBottom="5dip"
+    android:paddingTop="5dip"
+    android:layout_marginBottom="5dp"
+    android:layout_marginTop="5dp">
 
-    <LinearLayout
-        android:padding="5dp"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/device_name"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <TextView
-            android:id="@+id/device_name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/device_ip"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp" />
-    </LinearLayout>
-
-
+    <TextView
+        android:id="@+id/device_ip"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 </LinearLayout>

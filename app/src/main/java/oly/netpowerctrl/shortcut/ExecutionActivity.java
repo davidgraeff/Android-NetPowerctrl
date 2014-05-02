@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
@@ -83,7 +82,7 @@ public class ExecutionActivity extends Activity implements DeviceQueryResult, Ex
         final int command = extra.getInt(EditShortcutActivity.RESULT_ACTION_COMMAND);
         NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
             @Override
-            public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
+            public boolean onServiceReady() {
                 NetpowerctrlApplication.getDataController().execute(port, command, ExecutionActivity.this);
                 return false;
             }
@@ -111,7 +110,7 @@ public class ExecutionActivity extends Activity implements DeviceQueryResult, Ex
         // The application may have be started here, we have to wait for the service to be ready
         NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
             @Override
-            public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
+            public boolean onServiceReady() {
                 // DeviceQuery for scene devices
                 TreeSet<DeviceInfo> devices = new TreeSet<DeviceInfo>();
                 scene_commands = scene.getDevices(devices);
@@ -143,7 +142,7 @@ public class ExecutionActivity extends Activity implements DeviceQueryResult, Ex
     }
 
     @Override
-    public void onDeviceError(DeviceInfo di, String error_message) {
+    public void onDeviceError(DeviceInfo di) {
         Toast.makeText(this, getString(R.string.error_nopass, di.DeviceName), Toast.LENGTH_SHORT).show();
     }
 

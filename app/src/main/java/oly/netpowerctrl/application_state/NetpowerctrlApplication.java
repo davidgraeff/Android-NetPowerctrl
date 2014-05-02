@@ -37,27 +37,25 @@ import oly.netpowerctrl.utils.ShowToast;
         resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application {
     public static NetpowerctrlApplication instance;
-    private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+    private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
     private RuntimeDataController dataController = null;
     private int mDiscoverServiceRefCount = 0;
     private NetpowerctrlService mDiscoverService;
     private boolean mWaitForService;
-    private ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
+    private final ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
 
     public boolean isServiceReady() {
         return (mDiscoverService != null);
     }
 
     @SuppressWarnings("unused")
-    public boolean registerServiceReadyObserver(ServiceReady o) {
+    public void registerServiceReadyObserver(ServiceReady o) {
         if (!observersServiceReady.contains(o)) {
             observersServiceReady.add(o);
             if (mDiscoverService != null)
-                o.onServiceReady(mDiscoverService);
-            return true;
+                o.onServiceReady();
         }
-        return false;
     }
 
     @SuppressWarnings("unused")
@@ -68,15 +66,14 @@ public class NetpowerctrlApplication extends Application {
     private void notifyServiceReady() {
         Iterator<ServiceReady> it = observersServiceReady.iterator();
         while (it.hasNext()) {
-            if (!it.next().onServiceReady(mDiscoverService))
+            if (!it.next().onServiceReady())
                 it.remove();
         }
     }
 
     private void notifyServiceFinished() {
-        Iterator<ServiceReady> it = observersServiceReady.iterator();
-        while (it.hasNext()) {
-            it.next().onServiceFinished();
+        for (ServiceReady anObserversServiceReady : observersServiceReady) {
+            anObserversServiceReady.onServiceFinished();
         }
     }
 
@@ -101,8 +98,8 @@ public class NetpowerctrlApplication extends Application {
         }, 180);
     }
 
-    private Handler stopServiceHandler = new Handler();
-    private Runnable stopRunnable = new Runnable() {
+    private final Handler stopServiceHandler = new Handler();
+    private final Runnable stopRunnable = new Runnable() {
         @Override
         public void run() {
             try {
@@ -161,7 +158,7 @@ public class NetpowerctrlApplication extends Application {
     /**
      * Defines callbacks for service binding, passed to bindService()
      */
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private final ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName className,

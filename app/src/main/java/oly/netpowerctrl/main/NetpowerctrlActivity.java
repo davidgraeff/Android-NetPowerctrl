@@ -42,7 +42,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     public static NetpowerctrlActivity instance = null;
 
     // Drawer
-    private DrawerController mDrawer = new DrawerController();
+    private final DrawerController mDrawer = new DrawerController();
 
     @Override
     protected void onDestroy() {
@@ -94,9 +94,11 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
                             NetpowerctrlActivity.this);
                 }
 
-                ChangeLog cl = new ChangeLog(NetpowerctrlActivity.this);
-                if (cl.isFirstRun())
-                    cl.getLogDialog().show();
+                if (!SharedPrefs.isFirstRun()) {
+                    ChangeLog cl = new ChangeLog(NetpowerctrlActivity.this);
+                    if (cl.isFirstRun())
+                        cl.getLogDialog().show();
+                }
             }
         }, 100);
     }

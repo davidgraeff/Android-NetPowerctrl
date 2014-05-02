@@ -9,7 +9,7 @@ import java.util.List;
  * Date: 9/7/13
  * Time: 10:14 PM
  */
-public class DynamicGridUtils {
+class DynamicGridUtils {
     /**
      * Delete item in <code>list</code> from position <code>indexFrom</code> and insert it to <code>indexTo</code>
      *
@@ -17,7 +17,7 @@ public class DynamicGridUtils {
      * @param indexFrom
      * @param indexTo
      */
-    public static void reorder(List list, int indexFrom, int indexTo) {
+    public static void reorder(List<Object> list, int indexFrom, int indexTo) {
         if (indexTo >= list.size())
             return;
         Object obj = list.remove(indexFrom);

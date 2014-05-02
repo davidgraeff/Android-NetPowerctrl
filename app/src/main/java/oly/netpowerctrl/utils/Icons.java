@@ -33,7 +33,7 @@ import oly.netpowerctrl.R;
  * Util for scenes
  */
 public class Icons {
-    public static BitmapDrawable getDrawableFromUri(Context context, Uri uri) throws IOException {
+    private static BitmapDrawable getDrawableFromUri(Context context, Uri uri) throws IOException {
         ParcelFileDescriptor parcelFileDescriptor =
                 context.getContentResolver().openFileDescriptor(uri, "r");
         assert parcelFileDescriptor != null;
@@ -169,8 +169,8 @@ public class Icons {
         void startActivityForResult(Intent intent, int requestCode);
     }
 
-    static final int PICK_IMAGE_BEFORE_KITKAT = 1;
-    static final int PICK_IMAGE_KITKAT = 2;
+    private static final int PICK_IMAGE_BEFORE_KITKAT = 1;
+    private static final int PICK_IMAGE_KITKAT = 2;
 
 
     private static WeakReference<Object> icon_callback_context_object;
@@ -231,6 +231,7 @@ public class Icons {
                     }
 
                 } else {
+                    assert list_of_icons_dialog != null;
                     callback.setIcon(callback_context_object, list_of_icons_dialog[i - 2]);
                 }
                 dialogInterface.dismiss();

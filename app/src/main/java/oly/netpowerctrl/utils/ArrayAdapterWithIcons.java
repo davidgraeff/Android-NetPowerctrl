@@ -10,9 +10,9 @@ import android.widget.TextView;
 import java.util.List;
 
 /**
- * Created by david on 17.02.14.
+ * A simple array adapter that additionally provide icons for each entry.
  */
-public class ArrayAdapterWithIcons extends ArrayAdapter<ArrayAdapterWithIcons.Item> {
+class ArrayAdapterWithIcons extends ArrayAdapter<ArrayAdapterWithIcons.Item> {
     public static class Item {
         public final String text;
         public final Drawable icon;
@@ -28,7 +28,7 @@ public class ArrayAdapterWithIcons extends ArrayAdapter<ArrayAdapterWithIcons.It
         }
     }
 
-    public List<Item> items;
+    public final List<Item> items;
 
     @SuppressWarnings("SameParameterValue")
     public ArrayAdapterWithIcons(Context context, int resource, int textViewResourceId, List<Item> objects) {
@@ -40,6 +40,7 @@ public class ArrayAdapterWithIcons extends ArrayAdapter<ArrayAdapterWithIcons.It
     public View getView(int position, View convertView, ViewGroup parent) {
         //User super class to create the View
         View v = super.getView(position, convertView, parent);
+        assert v != null;
         TextView tv = (TextView) v.findViewById(android.R.id.text1);
         //Put the image on the TextView
         tv.setCompoundDrawablesWithIntrinsicBounds(items.get(position).icon, null, null, null);

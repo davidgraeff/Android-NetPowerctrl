@@ -27,32 +27,32 @@ import oly.netpowerctrl.utils.ListItemMenu;
 
 public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
-    protected int nextId = 0; // we need stable IDs for the gridView
-    protected int outlet_res_id = R.layout.list_icon_item;
-    protected boolean showHidden = true;
-    protected ViewHolder current_viewHolder;
-    private IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
+    private int nextId = 0; // we need stable IDs for the gridView
+    int outlet_res_id = R.layout.list_icon_item;
+    boolean showHidden = true;
+    ViewHolder current_viewHolder;
+    private final IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
 
     // Some observers
     private ListItemMenu mListContextMenu = null;
-    protected ListItemMenu mListItemMenu = null;
+    ListItemMenu mListItemMenu = null;
 
     //ViewHolder pattern
     protected static class ViewHolder implements View.OnClickListener, IconDeferredLoadingThread.IconLoaded {
-        ImageView imageIcon;
-        ImageView imageEdit;
+        final ImageView imageIcon;
+        final ImageView imageEdit;
         //LinearLayout mainTextView;
-        View entry;
-        SeekBar seekBar;
-        TextView title;
-        TextView subtitle;
+        final View entry;
+        final SeekBar seekBar;
+        final TextView title;
+        final TextView subtitle;
         boolean isNew = true;
 
         int currentBitmapIndex = 0;
-        Drawable[] drawables = new Drawable[2];
+        final Drawable[] drawables = new Drawable[2];
         public int position;
         private ListItemMenu mListContextMenu = null;
-        private IconDeferredLoadingThread iconCache;
+        private final IconDeferredLoadingThread iconCache;
 
         ViewHolder(View convertView, ListItemMenu listContextMenu, IconDeferredLoadingThread iconCache) {
             mListContextMenu = listContextMenu;
@@ -66,6 +66,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             subtitle = (TextView) convertView.findViewById(R.id.subtitle);
         }
 
+        @SuppressWarnings("SameParameterValue")
         public void loadIcon(UUID uuid, Icons.IconType iconType, Icons.IconState state, int default_resource, int bitmapPosition) {
             iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
                     uuid, iconType, state, default_resource, this, bitmapPosition));
@@ -90,42 +91,35 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         }
     }
 
-    protected static class DevicePortListItem {
-        public DevicePort port;
-        String displayText;
+    static class DevicePortListItem {
+        public final DevicePort port;
+        final String displayText;
         // unique id for the gridView
-        public long id;
+        public final long id;
         // If you change a DevicePort's value, that new value may be stored in
         // command_value instead overwriting DevicePort's value. The implementation
         // depends on the child class.
         public int command_value;
 
-        DevicePortListItem(DevicePort oi, boolean showDevice, int command_value, long id) {
+        DevicePortListItem(DevicePort oi, int command_value, long id) {
             this.id = id;
             this.port = oi;
             this.command_value = command_value;
-            if (showDevice)
-                displayText = oi.device.DeviceName + ": " + oi.getDescription();
-            else
-                displayText = oi.getDescription();
+            displayText = oi.device.DeviceName + ": " + oi.getDescription();
         }
 
         public boolean isEnabled() {
             return port.last_command_timecode <= port.device.getUpdatedTime();
         }
 
-        public String getDisplayText() {
-            return displayText;
-        }
     }
 
-    protected List<DevicePortListItem> all_outlets;
-    protected LayoutInflater inflater;
-    protected boolean temporary_ignore_positionRequest;
-    protected Context context;
+    final List<DevicePortListItem> all_outlets;
+    private final LayoutInflater inflater;
+    boolean temporary_ignore_positionRequest;
     private UUID filterGroup = null;
 
-    protected void setGroupFilter(UUID groupFilter) {
+    void setGroupFilter(UUID groupFilter) {
         this.filterGroup = groupFilter;
     }
 
@@ -138,9 +132,8 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         notifyDataSetChanged();
     }
 
-    protected DevicePortsBaseAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
+    DevicePortsBaseAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
         this.mListContextMenu = mListContextMenu;
-        this.context = context;
         this.filterGroup = filterGroup;
         inflater = LayoutInflater.from(context);
         iconCache.start();
@@ -163,7 +156,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         }
     }
 
-    protected int getItemPositionByUUid(UUID uuid) {
+    int getItemPositionByUUid(UUID uuid) {
         if (uuid == null)
             return -1;
 
@@ -208,6 +201,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         if (convertView == null) {
             convertView = inflater.inflate(outlet_res_id, null);
             current_viewHolder = new ViewHolder(convertView, mListContextMenu, iconCache);
+            assert convertView != null;
             convertView.setTag(current_viewHolder);
         } else {
             current_viewHolder = (ViewHolder) convertView.getTag();
@@ -260,7 +254,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
                 return;
         }
 
-        DevicePortListItem new_oi = new DevicePortListItem(oi, true, command_value, nextId++);
+        DevicePortListItem new_oi = new DevicePortListItem(oi, command_value, nextId++);
 
         boolean found = false;
         for (int i = 0; i < all_outlets.size(); ++i) {

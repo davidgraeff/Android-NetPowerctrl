@@ -33,14 +33,14 @@ import oly.netpowerctrl.utils.ShowToast;
  */
 public class RuntimeDataController {
     public List<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
-    public List<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
-    public Groups groups;
-    public SceneCollection scenes;
+    public final List<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
+    public final Groups groups;
+    public final SceneCollection scenes;
     private boolean initialDataQueryCompleted = false;
 
-    private WeakHashMap<RuntimeDataControllerStateChanged, Boolean> observersStateChanged = new WeakHashMap<RuntimeDataControllerStateChanged, Boolean>();
-    private WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<DeviceUpdate, Boolean>();
-    private WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<DeviceUpdate, Boolean>();
+    private final WeakHashMap<RuntimeDataControllerStateChanged, Boolean> observersStateChanged = new WeakHashMap<RuntimeDataControllerStateChanged, Boolean>();
+    private final WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<DeviceUpdate, Boolean>();
+    private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<DeviceUpdate, Boolean>();
 
     private final List<DeviceObserverBase> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
 
@@ -337,9 +337,6 @@ public class RuntimeDataController {
 
     public void execute(Scene scene, ExecutionFinished callback) {
         List<PluginInterface> pluginInterfaces = new ArrayList<PluginInterface>();
-
-        boolean isMasterSlave = scene.isMasterSlave();
-        Integer masterCommand = scene.getMasterCommand();
 
         for (Scene.SceneItem item : scene.sceneItems) {
             DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(item.uuid);

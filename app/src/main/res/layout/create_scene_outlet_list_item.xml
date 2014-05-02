@@ -24,7 +24,8 @@
         android:focusableInTouchMode="false"
         android:paddingRight="16dip"
         android:visibility="gone"
-        android:src="@android:drawable/btn_dialog" />
+        android:src="@android:drawable/btn_dialog"
+        android:contentDescription="@string/scene_remove_item" />
 
     <LinearLayout
         android:layout_width="fill_parent"
