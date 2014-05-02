@@ -9,15 +9,14 @@ import android.widget.AdapterView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
 import oly.netpowerctrl.main.SceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.shortcut.OutletsManipulator;
+import oly.netpowerctrl.shortcut.SceneEditFragmentReady;
 
-public class WidgetConfig extends Activity implements OutletsManipulator {
+public class WidgetConfig extends Activity implements SceneEditFragmentReady {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    DevicePortsBaseAdapter adapter;
+    private DevicePortsBaseAdapter adapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -33,7 +32,7 @@ public class WidgetConfig extends Activity implements OutletsManipulator {
 
         SceneEditFragment f = new SceneEditFragment();
         f.setData(this,
-                SceneEditFragment.MANIPULATOR_TAG_AVAILABLE,
+                SceneEditFragment.TYPE_AVAILABLE,
                 this);
 
         getFragmentManager().beginTransaction().replace(R.id.content_frame, f).commit();
@@ -47,7 +46,7 @@ public class WidgetConfig extends Activity implements OutletsManipulator {
         }
     }
 
-    private AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
+    private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
             SharedPrefs.SaveWidget(widgetId, adapter.getItem(position).uuid.toString());
@@ -62,10 +61,10 @@ public class WidgetConfig extends Activity implements OutletsManipulator {
     };
 
     @Override
-    public void setManipulatorObjects(int tag, DynamicGridView view, DevicePortsBaseAdapter adapter) {
-        view.setOnItemClickListener(selectedOutletListener);
+    public void sceneEditFragmentReady(SceneEditFragment fragment) {
+        fragment.getListView().setOnItemClickListener(selectedOutletListener);
+        this.adapter = fragment.getAdapter();
         adapter.update(NetpowerctrlApplication.getDataController().configuredDevices);
-        this.adapter = adapter;
     }
 
     @Override

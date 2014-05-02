@@ -145,8 +145,11 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     public List<DeviceInfo> update(List<DeviceInfo> all_devices) {
         List<DeviceInfo> not_reachable = super.update(all_devices);
 
-        if (notReachableObserver != null && notReachableObserver.get() != null)
-            notReachableObserver.get().onNotReachableUpdate(not_reachable);
+        if (notReachableObserver != null) {
+            NotReachableUpdate u = notReachableObserver.get();
+            if (u != null)
+                u.onNotReachableUpdate(not_reachable);
+        }
 
         return not_reachable;
     }

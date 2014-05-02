@@ -8,7 +8,7 @@
     <string name="changelog_full_title">Change Log</string>
     <string name="changelog_title">What\'s New</string>
     <string name="changelog_ok_button">OK</string>
-    <string name="changelog_show_full">more...</string>
+    <string name="changelog_show_full">more…</string>
 
     <string name="configure_device">Edit Device</string>
     <string name="delete_device">Delete Device</string>
@@ -22,40 +22,24 @@
     <string name="error_unknown_device">Internal program error: device unknown!</string>
     <string name="error_packet_received">Device reports an error</string>
     <string name="error_nopass">Invalid username / password combination</string>
-    <string name="error_edited_device_not_found">Internal program error: edited device not found!</string>
     <string name="error_listen_thread_exception">Could not listen on port %d:\n</string>
     <string name="error_port_lt_1024">(ports &lt; 1024 only possible on rooted devices)</string>
-    <string name="error_outlet_title">Outlet data error</string>
-    <string name="error_port_config_number">Please enter only valid port numbers.</string>
-    <string name="error_getting_first_packet">No answer from the device. Either the ports are not configured correctly or it is out of reach. You may try sending comands, but the result is uncertain.</string>
     <string name="error_setting_outlet">No answer from the device %1$s. Last seen: %2$d seconds ago</string>
 
     <string name="device_test">Test</string>
-    <string name="device_settings">Device Settings</string>
     <string name="device_name">Name</string>
-    <string name="device_name_summary">Custom description of this device.</string>
     <string name="device_ip">Hostname or IP</string>
-    <string name="device_ip_summary">The hostname or IP address to connect to.</string>
-    <string name="device_mac">MAC Address</string>
-    <string name="device_mac_summary">The MAC Address as reported by the device.</string>
     <string name="device_default_ports">Default UDP ports?</string>
     <string name="device_send_udp">UDP port for sending</string>
-    <string name="device_send_udp_summary">Consult the device\'s web interface ("Receive Port").</string>
     <string name="device_recv_udp">UDP port for receiving</string>
-    <string name="device_recv_udp_summary">Consult the device\'s web interface ("Send Port").</string>
     <string name="device_username">Username</string>
-    <string name="device_username_summary">The username to log in to the device. Can be configured from the device\'s web interface</string>
     <string name="device_password">Password</string>
-    <string name="device_password_summary">The password to log in to the device.</string>
-    <string name="device_outlets">Outlets</string>
-    <string name="device_outlets_summary">Configure this device\'s outlets</string>
 
     <string name="menu_add_device">Add device</string>
     <string name="menu_add_scene">Add scene</string>
     <string name="menu_remove_scene">Delete</string>
     <string name="menu_remove_all_scenes">Delete all</string>
     <string name="menu_edit_scene">Edit</string>
-    <string name="menu_backup_scene">Backup</string>
     <string name="menu_cancel">Cancel</string>
     <string name="menu_delete_all">Delete all</string>
     <string name="menu_refresh">Refresh</string>
@@ -73,7 +57,6 @@
     <string name="title_shortcut">Create Shortcut</string>
     <string name="title_scene">Create scene</string>
 
-    <string name="scenename">Group name</string>
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
     <string name="delete_all_groups">Delete all scenes?</string>
     <string name="confirmation_delete_all_groups">Are you sure you want to delete all scenes?</string>
@@ -112,17 +95,13 @@
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
-    <string name="empty">No content to show</string>
     <string name="show_hidden">Show hidden</string>
     <string name="hide_hidden">Hide hidden</string>
     <string name="menu_hide_outlet">Hide</string>
     <string name="menu_unhide_outlet">Unhide</string>
-    <string name="menu_up">Move up</string>
-    <string name="menu_down">Move down</string>
     <string name="menu_rename_outlet">Rename</string>
     <string name="outlet_rename_title">Rename outlet</string>
     <string name="outlet_rename_message">Rename this outlet. The new name will be stored on the anel device.</string>
-    <string name="name">Name</string>
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
     <string name="Version">Version</string>
@@ -134,12 +113,6 @@
     <string name="error_saving_scenes">Error saving scenes</string>
     <string name="nfc_failed_version">NFC failed, Version mismatch! Please update both apps.</string>
     <string name="nfc_select_scenes_title">Select scenes to install</string>
-    <string name="shortcut_created">Shortcut created</string>
-    <string name="scene_backup_created">Backup created</string>
-    <string name="scene_backup_restored">Backup restored</string>
-    <string name="menu_backup_scenes">Backup all scenes</string>
-    <string name="menu_restore_scenes">Restore a backup</string>
-    <string name="scene_backup_failed">Backup failed</string>
     <string name="error_device_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
     <string name="device_test_ok">Test OK</string>
@@ -147,8 +120,6 @@
     <string name="preference_use_energy_saving_mode_summary">If your devices can not be reached after a network (WiFi/2G/3G/4G) change, all network parts of the app go into a standby mode.</string>
     <string name="scene_replace">(Update)</string>
     <string name="menu_sortAlphabetically">Sort alphabetically</string>
-    <string name="scene_backup_nobackups">No backups available</string>
-    <string name="scene_backup_restore_failed">Sicherungswiederherstellung fehlgeschlagen!</string>
     <string name="menu_switch_all_on">All on</string>
     <string name="menu_switch_all_off">All off</string>
     <string name="menu_switch_all_toogle">All toggle</string>
@@ -156,7 +127,7 @@
     <string name="menu_help">Help</string>
     <string name="menu_device_configuration_page">Open configuration page</string>
     <string name="error_not_reachable">Devices not reachable</string>
-    <string name="plugin_drawer_title">Plugins</string>
+
     <string name="empty_no_scenes">No scene found. Create one by clicking on the (+) icon located in the top-left bar.\n\n
 A scene combines multiple actions and execute them at once.</string>
     <string name="empty_no_outlets">No outlets to display.\n\n
@@ -166,26 +137,20 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="error_not_in_range">Destination network %1$s not in range</string>
     <string name="scene_executed">Scene %1$s executed</string>
     <string name="shortcut_enable_feedback">Notification on execution</string>
-    <string name="preference_change_the_title">Restart?</string>
-    <string name="preference_change_the_message">You have to restart the app for a theme change to take effect. Restart?</string>
     <string name="preference_use_dark_theme">Dark theme</string>
     <string name="preference_use_dark_theme_summary">Switch between dark and light theme.</string>
     <string name="error_plugin_failed">Plugin failed: %1$s</string>
-    <string name="plugin_loaded">Plugin loaded %1$s</string>
     <string name="preference_load_plugins">Allow extensions</string>
     <string name="preference_load_plugins_summary">Show controls from supported applications in this app.</string>
-    <string name="error_widget_update">Internal error: Widget %1$d</string>
     <string name="error_widget_device_removed">Device removed!</string>
     <string name="widget_outlet_not_reachable">(not reachable)</string>
     <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
-    <string name="devices_no_new_on_network">Hint: This network does not allow new-device recognition</string>
     <string name="pref_widgets">Widgets</string>
     <string name="widget_image_on">Widget image: On state</string>
     <string name="widget_image_off">Widget image: Off state</string>
     <string name="widget_image_not_reachable">Widget image: Not available</string>
     <string name="crash_toast_text">Ooooops ! I crashed, but a report can be sent to my developer to help fix the issue!</string>
     <string name="outlet_to_scene_title">Create scene</string>
-    <string name="outlet_to_scene_message">A scene is created with the current state of all listed, non-hidden outlets. Please enter a scene name.</string>
     <string name="service_stopped">Power-Control Background Service stopped</string>
     <string name="preference_notify_on_stop">Notify on app shutdown</string>
     <string name="preference_notify_on_stop_summary">Activate this to see if really all parts of the app are shutdown on close.</string>
@@ -196,9 +161,6 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="hint_stop_edit">Press back to stop editing</string>
     <string name="scene_set_name">Set name</string>
     <string name="scene_set_icon">Set icon</string>
-    <string name="widget_icon">Widget Icon</string>
-    <string name="widget_default_icon">Default Icon</string>
-    <string name="widget_icon_select">Select Widget Icon…</string>
     <string name="dialog_icon_title">Icon</string>
     <string name="dialog_icon_default">Default Icon</string>
     <string name="dialog_icon_select">Select Scene Icon…</string>
@@ -216,21 +178,16 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="device_createGroup">Create group with device outlets</string>
     <string name="menu_outlet_createGroup">Groups</string>
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
-    <string name="preference_max_favourite_scenes">Scenes in navigation list</string>
-    <string name="preference_max_favourite_scenes_summary">Maximum scenes in navigation list</string>
     <string name="preference_max_favourites_groups">Groups in navigation list</string>
     <string name="preference_max_favourites_groups_summary">Maximum groups in navigation list</string>
-    <string name="help_nfc_title">Exchange configurations and scenes with other devices</string>
-    <string name="help_nfc"><![CDATA[If you would like to transfer your configuration to another device (
-        for instance from a mobile to a tablet, or from your phone to a friend\'s one) and both devices have NFC capability, then do the following:<br />
-        <ul><li>Unlock both devices</li><br />
-        <li>Enable NFC on both</li><br />
-        <li>Hold them together</li></ul><br />
+    <string name="help_nfc"><![CDATA[If you would like to transfer your configuration to another device and both devices have NFC capability, then do the following:<br />
+        <ul><li>* Unlock both devices</li><br />
+        <li>* Enable NFC on both</li><br />
+        <li>* Hold them together</li></ul><br />
     <br />
     Android now want you to confirm to use the <i>beam</i> functionality.
     If this App is not installed on the destination device, Google Play will be started.
     If you confirm <i>beam</i>, the destination device will ask you which configurations should be transferred.]]></string>
-    <string name="help_backup_title">Exchange/Backup device configuration</string>
     <string name="help_backup"><![CDATA[
     Your devices configuration is automatically backed up by the Google app-data Backup Service.
         If you uninstall and reinstall the application, your configuration should be restored.
@@ -269,5 +226,13 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="toggleMaster">Master</string>
     <string name="toggleSlave">Like Master</string>
     <string name="menu_outlet_master_slave">Master for…</string>
-    <string name="outlet_master_slave_title">Slaves für %1$s setzen</string>
+    <string name="outlet_master_slave_title">Slaves for %1$s</string>
+    <string name="preference_sync_with_neighbours">Synchronize with neighbours</string>
+    <string name="preference_sync_with_neighbours_summary">Scenes, groups, devices, icons will automatically synchronized with paired neighbours</string>
+    <string name="scene_create_available">Available</string>
+    <string name="scene_create_added">Attachted actions</string>
+    <string name="preference_wakeup_energy_saving_mode">Wake up from energy saving mode</string>
+    <string name="preference_wakeup_energy_saving_mode_summary">Usually the energy saving mode will not be left automatically (except if you reopen the app). If you activate this option, part of the app will remain active and search for devices after a network change.</string>
+    <string name="activate_nfc">Aktiviere NFC in den Einstellungen</string>
+    <string name="scene_remove_item">Remove item from scene</string>
 </resources>

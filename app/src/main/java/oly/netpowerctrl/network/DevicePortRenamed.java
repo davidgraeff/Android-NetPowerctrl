@@ -8,5 +8,5 @@ import oly.netpowerctrl.datastructure.DevicePort;
 public interface DevicePortRenamed {
     void devicePort_renamed(DevicePort oi, boolean success, String error_message);
 
-    void devicePort_start_rename(DevicePort oi);
+    void devicePort_start_rename(@SuppressWarnings("UnusedParameters") DevicePort oi);
 }

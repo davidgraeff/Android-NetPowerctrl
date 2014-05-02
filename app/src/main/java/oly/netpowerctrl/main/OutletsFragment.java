@@ -56,7 +56,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private TextView hintText;
     private TextView emptyText;
     private Button btnEmpty;
-    UUID groupFilter = null;
+    private UUID groupFilter = null;
 
     public OutletsFragment() {
     }
@@ -192,7 +192,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             case R.id.menu_requery: {
                 NetpowerctrlApplication.instance.findDevices(new DeviceQueryResult() {
                     @Override
-                    public void onDeviceError(DeviceInfo di, String error_message) {
+                    public void onDeviceError(DeviceInfo di) {
                     }
 
                     @Override
@@ -271,6 +271,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
 
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
+        assert view != null;
         mListView = (DynamicGridView) view.findViewById(android.R.id.list);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -281,6 +282,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                //noinspection ConstantConditions
                 Toast.makeText(getActivity(), getActivity().getString(R.string.hint_stop_edit), Toast.LENGTH_SHORT).show();
                 mListView.startEditMode();
                 return false;
@@ -303,7 +305,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     if (!isAdded())
                         return;
 
-                    mListView.getEmptyView().setVisibility(View.GONE);
+                    View v = mListView.getEmptyView();
+                    if (v != null)
+                        v.setVisibility(View.GONE);
                     mListView.setEmptyView(view.findViewById(android.R.id.empty));
                     emptyText = (TextView) view.findViewById(R.id.empty_text);
                     emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
@@ -447,6 +451,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 //noinspection ConstantConditions
                 Bundle b = new Bundle();
                 b.putString("master_uuid", oi.uuid.toString());
+                @SuppressWarnings("ConstantConditions")
                 Fragment fragment = Fragment.instantiate(getActivity(), MasterSlaveFragment.class.getName(), b);
                 //noinspection ConstantConditions
                 getFragmentManager().beginTransaction().addToBackStack(null).
@@ -570,6 +575,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         progressDialog = null;
 
         if (!success) {
+            //noinspection ConstantConditions
             Toast.makeText(getActivity(), getString(R.string.renameFailed, error_message), Toast.LENGTH_SHORT).show();
         } else {
             new DeviceQuery(null, oi.device);

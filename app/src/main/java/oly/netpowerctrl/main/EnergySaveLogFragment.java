@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,8 +31,8 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
 public class EnergySaveLogFragment extends ListFragment {
-    ArrayAdapter<String> arrayAdapter;
-    ArrayList<String> listItems = new ArrayList<String>();
+    private ArrayAdapter<String> arrayAdapter;
+    private final ArrayList<String> listItems = new ArrayList<String>();
 
 
     public EnergySaveLogFragment() {
@@ -39,6 +40,7 @@ public class EnergySaveLogFragment extends ListFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        //noinspection ConstantConditions
         arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listItems);
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
@@ -48,10 +50,12 @@ public class EnergySaveLogFragment extends ListFragment {
     public void onResume() {
         super.onResume();
         loadData();
-        NetpowerctrlApplication.instance.getMainThreadHandler().postDelayed(new Runnable() {
+        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                getListView().setItemChecked(arrayAdapter.getCount() - 1, true);
+                ListView v = getListView();
+                if (v != null)
+                    v.setItemChecked(arrayAdapter.getCount() - 1, true);
             }
         }, 10);
     }
@@ -61,16 +65,16 @@ public class EnergySaveLogFragment extends ListFragment {
         File f = getLogFile();
         if (f.exists()) {
             try {
-                InputStream instream = new FileInputStream(f);
-                InputStreamReader inputreader = new InputStreamReader(instream);
-                BufferedReader reader = new BufferedReader(inputreader);
+                InputStream inStream = new FileInputStream(f);
+                InputStreamReader inputReader = new InputStreamReader(inStream);
+                BufferedReader reader = new BufferedReader(inputReader);
                 String line;
                 do {
                     line = reader.readLine();
                     if (line != null)
                         listItems.add(line);
                 } while (line != null);
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException ignored) {
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -89,6 +93,7 @@ public class EnergySaveLogFragment extends ListFragment {
     public void onCreateOptionsMenu(
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.log, menu);
+        //noinspection ConstantConditions
         menu.findItem(R.id.menu_remove_log).setVisible(!arrayAdapter.isEmpty());
     }
 
@@ -103,6 +108,7 @@ public class EnergySaveLogFragment extends ListFragment {
                         logFile = null;
                 }
                 arrayAdapter.clear();
+                //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
             }
@@ -110,11 +116,14 @@ public class EnergySaveLogFragment extends ListFragment {
                 @SuppressWarnings("ConstantConditions")
                 ApplicationInfo info = getActivity().getApplicationContext().getApplicationInfo();
                 PackageManager pm = getActivity().getApplicationContext().getPackageManager();
+                assert pm != null;
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"david.graeff@web.de"});
                 intent.putExtra(Intent.EXTRA_TEXT, getStringFromFile());
                 try {
+                    assert info != null;
+                    //noinspection ConstantConditions
                     intent.putExtra(Intent.EXTRA_SUBJECT, info.loadLabel(pm).toString() + "(" + pm.getPackageInfo(info.packageName, 0).versionName + ")" + " Log | Device: " + Build.MANUFACTURER + " " + Build.DEVICE + "(" + Build.MODEL + ") API: " + Build.VERSION.SDK_INT);
                 } catch (PackageManager.NameNotFoundException ignored) {
                 }
@@ -124,6 +133,7 @@ public class EnergySaveLogFragment extends ListFragment {
             }
 
             case R.id.menu_help: {
+                //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.menu_help)
                         .setMessage(R.string.help_log)
@@ -135,14 +145,14 @@ public class EnergySaveLogFragment extends ListFragment {
     }
 
 
-    static File getLogFile() {
+    private static File getLogFile() {
         return new File(NetpowerctrlApplication.instance.getExternalFilesDir("logs"), "main_log.txt");
     }
 
     private static String convertStreamToString(InputStream is) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = reader.readLine()) != null) {
             sb.append(line).append("\n");
         }
@@ -150,22 +160,22 @@ public class EnergySaveLogFragment extends ListFragment {
         return sb.toString();
     }
 
-    public static String getStringFromFile() {
-        FileInputStream fin = null;
+    private static String getStringFromFile() {
+        FileInputStream fin;
         String ret = "";
         try {
             fin = new FileInputStream(getLogFile());
             ret = convertStreamToString(fin);
             //Make sure you close all streams.
             fin.close();
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-        } catch (Exception e) {
+        } catch (FileNotFoundException ignored) {
+        } catch (IOException ignored) {
+        } catch (Exception ignored) {
         }
         return ret;
     }
 
-    static File logFile = null;
+    private static File logFile = null;
 
     synchronized static public void appendLog(String text) {
         text = DateFormat.getDateTimeInstance().format(new Date()) + "\n  " + text;
@@ -177,7 +187,11 @@ public class EnergySaveLogFragment extends ListFragment {
         }
 
         File parent = logFile.getParentFile();
-        if (parent != null) parent.mkdirs();
+        if (parent != null)
+            if (!parent.mkdirs()) {
+                Log.w("log", "failed to create log dir");
+                return;
+            }
 
         if (!logFile.exists()) {
             try {

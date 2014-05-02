@@ -36,7 +36,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
     private DeviceInfo device;
     private DeviceQuery deviceQuery;
 
-    public ConfigureDeviceFragment() {
+    private ConfigureDeviceFragment() {
     }
 
     public static ConfigureDeviceFragment instantiate(Context ctx, DeviceInfo di) {
@@ -156,8 +156,8 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
         if (getArguments() != null) {
             try {
                 device = DeviceInfo.fromJSON(JSONHelper.getReader(getArguments().getString(DEVICE_PARAMETER)));
-            } catch (IOException e) {
-            } catch (ClassNotFoundException e) {
+            } catch (IOException ignored) {
+            } catch (ClassNotFoundException ignored) {
             }
         }
 
@@ -237,7 +237,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
     }
 
     @Override
-    public void onDeviceError(DeviceInfo di, String error_message) {
+    public void onDeviceError(DeviceInfo di) {
         if (test_state == TestStates.TEST_ACCESS) {
             if (di.equalsByUniqueID(device)) {
                 test_state = TestStates.TEST_INIT;

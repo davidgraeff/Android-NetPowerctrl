@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="text_light">#66000000</color>
-    <color name="hint_background">#fffff3a7</color>
 </resources>

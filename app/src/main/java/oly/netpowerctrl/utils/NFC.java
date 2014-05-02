@@ -74,7 +74,7 @@ public class NFC {
     }
 
     public static class VersionException extends Exception {
-        public int version;
+        public final int version;
 
         public VersionException(int version) {
             this.version = version;
@@ -143,7 +143,7 @@ public class NFC {
         }
     }
 
-    public static void parseNFC(Context context, String text) {
+    private static void parseNFC(Context context, String text) {
         final NFC_Transfer dc;
         try {
             dc = NFC_Transfer.fromJSON(text);
@@ -193,7 +193,8 @@ public class NFC {
                             selectedItems.delete(indexSelected);
                         }
                     }
-                })
+                }
+        )
                 // Set the action buttons
                 .setPositiveButton(context.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     @Override
@@ -254,7 +255,8 @@ public class NFC {
                             selectedItems.delete(indexSelected);
                         }
                     }
-                })
+                }
+        )
                 // Set the action buttons
                 .setPositiveButton(context.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     @Override

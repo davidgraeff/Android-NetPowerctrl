@@ -22,35 +22,20 @@
     <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
     <string name="error_packet_received">Fehler vom Gerät gemeldet</string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
-    <string name="error_edited_device_not_found">Interner Programmfehler: Gerät nicht gefunden!</string>
     <string name="error_listen_thread_exception">Kann nicht Port %d zum Empfangen öffnen:\n</string>
     <string name="error_port_lt_1024">(Ports &lt; 1024 sind nur auf gerooteten Geräten möglich)</string>
-    <string name="error_outlet_title">Fehler</string>
-    <string name="error_port_config_number">Bitte geben Sie eine gültige Port-Nummer ein.</string>
-    <string name="error_getting_first_packet">Keine Antwort vom Gerät %1$s!</string>
     <string name="error_setting_outlet">Keine Antwort von Gerät %1$s. Zuletzt vor %2$d Sekunden Kontakt.</string>
     <string name="error_shortcut_not_valid">Verknüpfung beschädigt!</string>
     <string name="error_reading_scenes">Szenen konnten nicht geladen werden</string>
 
     <string name="device_test">Test</string>
-    <string name="device_settings">Geräte-Einstellungen</string>
     <string name="device_name">Name</string>
-    <string name="device_name_summary">Beliebige Bezeichnung für dieses Gerät.</string>
     <string name="device_ip">Hostname or IP</string>
-    <string name="device_ip_summary">Der Hostname oder die IP-Adresse für dieses Gerät.</string>
-    <string name="device_mac">MAC Adresse</string>
-    <string name="device_mac_summary">Die MAC Adresse des Geräts.</string>
     <string name="device_default_ports">Standard UDP-Ports?</string>
     <string name="device_send_udp">UDP-Port zum Senden</string>
-    <string name="device_send_udp_summary">Siehe \"Empfangen\" in der Web-Oberfläche des Gerätes.</string>
     <string name="device_recv_udp">UDP-Port zum Empfangen</string>
-    <string name="device_recv_udp_summary">Siehe \"Senden\" in der Web-Oberfläche des Gerätes.</string>
     <string name="device_username">Benutzername</string>
-    <string name="device_username_summary">Benutzername zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
     <string name="device_password">Passwort</string>
-    <string name="device_password_summary">Passwort zur Anmeldung an das Gerät. Kann in der Web-Oberfläche konfiguriert werden.</string>
-    <string name="device_outlets">Steckdosen</string>
-    <string name="device_outlets_summary">Konfiguration der einzelnen Steckdosen des Gerätes</string>
     <string name="device_save_without_test">Das Gerät ist mit diesen Einstellungen noch nicht getestet worden. Dennoch speichern?</string>
 
     <string name="menu_add_device">Neues Gerät</string>
@@ -58,7 +43,6 @@
     <string name="menu_remove_scene">Entfernen</string>
     <string name="menu_remove_all_scenes">Entferne alle Szenen</string>
     <string name="menu_edit_scene">Szene bearbeiten</string>
-    <string name="menu_backup_scene">Backup</string>
     <string name="menu_cancel">Abbruch</string>
     <string name="menu_delete_all">Alle löschen</string>
     <string name="menu_refresh">Aktualisieren</string>
@@ -76,7 +60,6 @@
     <string name="title_shortcut">Erstelle Shortcut</string>
     <string name="title_scene">Erstelle Szene</string>
 
-    <string name="scenename">Szenen Name</string>
     <string name="shortcut_show_mainwindow">Öffne App beim Ausführen</string>
     <string name="delete_all_groups">Alle Szenen löschen?</string>
     <string name="confirmation_delete_all_groups">Sind Sie sicher, dass Sie alle Szenen löschen wollen?</string>
@@ -115,17 +98,13 @@
 
     <string name="drawer_open">Öffne Navigationsleiste</string>
     <string name="drawer_close">Schließe Navigationsleiste</string>
-    <string name="empty">Kein Inhalt zum Anzeigen</string>
     <string name="show_hidden">Zeige Ausgeblendete</string>
     <string name="hide_hidden">Verstecke Ausgeblendete</string>
     <string name="menu_hide_outlet">Verstecken</string>
     <string name="menu_unhide_outlet">Einblenden</string>
-    <string name="menu_up">Hoch</string>
-    <string name="menu_down">Runter</string>
     <string name="menu_rename_outlet">Umbenennen</string>
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
     <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
-    <string name="name">Name</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Szene bearbeiten</string>
     <string name="nfc_failed">Android Beam ist fehlgeschlagen</string>
@@ -134,21 +113,13 @@
     <string name="error_saving_scenes">Speichern der Szenen fehlgeschlagen</string>
     <string name="nfc_failed_version">NFC fehlgeschlagen: Version ungleich! Bitte beide Apps updaten.</string>
     <string name="nfc_select_scenes_title">Wähle eine Szene zum installieren</string>
-    <string name="shortcut_created">Verknüpfung erstellt</string>
-    <string name="scene_backup_created">Sicherung erstellt</string>
-    <string name="scene_backup_restored">Sicherung wiederhergestellt</string>
-    <string name="menu_backup_scenes">Neue Sicherung anlegen</string>
-    <string name="menu_restore_scenes">Sicherung wiederherstellen</string>
-    <string name="scene_backup_failed">Backup fehlgeschlagen</string>
     <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
     <string name="preference_use_energy_saving_mode">Energiesparmodus</string>
-    <string name="preference_use_energy_saving_mode_summary">Sobald deine Geräte nach einem Netwerkwechsel (WLan/2G/3G/4G) nicht mehr erreichbar sind, werden alle Netzwerkkomponenten abgeschaltet um Energie zu sparen. Ob die Geräte nach erneutem Netzwechsel wieder erreichbar sind, wird bewusst nicht ausgewertet, bitte das Aktualisieren Icon benutzen</string>
+    <string name="preference_use_energy_saving_mode_summary">Sobald deine Geräte nach einem Netwerkwechsel (WLan/2G/3G/4G) nicht mehr erreichbar sind, werden alle Netzwerkkomponenten abgeschaltet um Energie zu sparen.</string>
     <string name="scene_replace">(Aktualisieren)</string>
     <string name="menu_sortAlphabetically">Alphabetisch anordnen</string>
-    <string name="scene_backup_nobackups">Keine Sicherungen gefunden</string>
-    <string name="scene_backup_restore_failed">Sicherungswiederherstellung fehlgeschlagen!</string>
     <string name="menu_switch_all_on">Alle auf Einschalten</string>
     <string name="menu_switch_all_off">Alle auf Ausschalten</string>
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
@@ -157,7 +128,6 @@
     <string name="menu_device_configuration_page">Konfigurationsseite öffnen</string>
     <string name="error_not_reachable">Gerät nicht erreichbar</string>
 
-    <string name="plugin_drawer_title">Erweiterungen</string>
     <string name="empty_no_scenes">Keine Szenen gefunden. Erstelle eine mit dem (+) Icon oben rechts.\n\n
 Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
@@ -167,26 +137,20 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
     <string name="scene_executed">Szene %1$s ausgeführt</string>
     <string name="shortcut_enable_feedback">Benachrichtigung bei Ausführung</string>
-    <string name="preference_change_the_title">Neustart benötigt</string>
-    <string name="preference_change_the_message">Du musst die App neu starten, um den Theme zu ändern. Soll neugestartet werden?</string>
     <string name="preference_use_dark_theme">Dunkles Thema</string>
     <string name="preference_use_dark_theme_summary">Zwischen hellem und dunklem Thema wechseln.</string>
     <string name="error_plugin_failed">Plugin Fehler: %1$s</string>
-    <string name="plugin_loaded">Plugin geladen %1$s</string>
     <string name="preference_load_plugins">Erlaube Erweiterungen</string>
     <string name="preference_load_plugins_summary">Zeige Kontrollmöglichkeiten unterstützter Anwendungen in dieser App.</string>
-    <string name="error_widget_update">Interner Fehler: Widget %1$d</string>
     <string name="error_widget_device_removed">Gerät entfernt!</string>
     <string name="widget_outlet_not_reachable">(nicht erreichbar)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
-    <string name="devices_no_new_on_network">Hinweis: Dieses Netwerk erlaubt keine Geräte Erkennung</string>
     <string name="pref_widgets">Widgets</string>
     <string name="widget_image_on">Widget Aussehen: An</string>
     <string name="widget_image_off">Widget Aussehen: Aus</string>
     <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
     <string name="crash_toast_text">Ooooops! Ich bin leider abgestürzt :( Aber ein Absturzbericht wird automatisch angefertigt.</string>
     <string name="outlet_to_scene_title">Erstelle Szene</string>
-    <string name="outlet_to_scene_message">Eine Szene mit allen aktuellen Zuständen der nicht-versteckten Steckdosen erstellen? Bitte einen Namen für die Szene eingeben.</string>
     <string name="service_stopped">Power-Control Hintergrunddienst beendet</string>
     <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
     <string name="preference_notify_on_stop_summary">Diese Option hilft zu überprüfen ob wirklich alles beendet wurde.</string>
@@ -197,9 +161,6 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="hint_stop_edit">Zurück drücken um das Editieren zu beenden</string>
     <string name="scene_set_name">Namen setzen</string>
     <string name="scene_set_icon">Bild setzen</string>
-    <string name="widget_icon">Widget Bild</string>
-    <string name="widget_default_icon">Vordefiniertes Bild</string>
-    <string name="widget_icon_select">Bild auswählen…</string>
     <string name="dialog_icon_title">Bild</string>
     <string name="dialog_icon_default">Bild zurücksetzen</string>
     <string name="dialog_icon_select">Wähle Bild aus…</string>
@@ -217,28 +178,19 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
     <string name="menu_outlet_createGroup">In Gruppen…</string>
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
-    <string name="preference_max_favourite_scenes">Maximale Szenen</string>
-    <string name="preference_max_favourite_scenes_summary">Anzahl Szenen in Seitenleiste</string>
     <string name="preference_max_favourites_groups">Max. Gruppen in Hauptmenü</string>
     <string name="preference_max_favourites_groups_summary">Die ANzahl der maximal angezeigten Gruppen im seitlichen Hauptmenü.</string>
-    <string name="help_nfc_title">Austausch von Steckdosenleisten-Einstellungen über mehrere Geräte</string>
     <string name="help_nfc"><![CDATA[
-    Sofern dein Gerät und ein anderes Gerät (z.B. Mobiltelefon und Tablet oder das eigene Telefon und
-    das eines Freundes) NFC beherrschen, können die Steckdosenleisten-Einstellungen einfach übertragen
-    werden:<br /><ul>
-    <li>Beide Geräte entsperren</li><br />
-    <li>NFC einschalten</li><br />
-    <li>Geräte aneinander halten</li></ul><br />
+    Dein Gerät unterstützt Nahfunk (NFC). Du kannst Geräte, Gruppen, Szenen und Icons einfach auf ein anderes Gerät mit Nahfunk Unterstützung übertragen:<br /><ul>
+    <li>* Beide Geräte entsperren</li><br />
+    <li>* NFC einschalten</li><br />
+    <li>* Geräte aneinander halten</li></ul><br /><br />
     Android wird nun nach einer Bestätigung fragen, ob <i>Beam</i> genutzt werden soll.
     Sofern das Zielgerät diese App noch nicht installiert hat, wird Google Play aufgerufen.
     Wenn <i>Beam</i> bestätigt worden ist, dann können auf dem Zielgerät die gewünschten Konfigurationen
     eingerichtet werden.]]></string>
-    <string name="help_backup_title">Backup der Einstellungen</string>
     <string name="help_backup"><![CDATA[
-    Deine Geräte Einstellungen werden automatisch mit dem Google Backup Service gesichert.
-    Bei einer Neuinstallation oder Aktualisierung der Anwendung oder des Mobiltelefons werden die Daten wiederhergestellt.
-    Im Moment ist es nicht möglich, die Einstellungen manuell zu sichern und wiederherzustellen. Diese
-    Funktion ist geplant.]]></string>
+    Diese Funktion ist in der nächsten größeren Version geplant.]]></string>
     <string name="createGroup">Gruppe erstellen</string>
     <string name="outlet_added_to_groups">Gehört zu %1$d Gruppen</string>
     <string name="outlet_to_group_title">%1$s in Gruppen…</string>
@@ -277,4 +229,12 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="toggleSlave">Wie Master</string>
     <string name="menu_outlet_master_slave">Als Master für…</string>
     <string name="outlet_master_slave_title">Slaves für %1$s setzen</string>
+    <string name="preference_sync_with_neighbours">Synchronisiere mit Nachbarn</string>
+    <string name="preference_sync_with_neighbours_summary">Szenen, Gruppen, Geräte, Bilder werden automatisch mit bekannten Nachbargeräten im Wlan synchronisiert.</string>
+    <string name="scene_create_available">Verfügbar</string>
+    <string name="scene_create_added">Zugewiesene Aktionen</string>
+    <string name="preference_wakeup_energy_saving_mode">Aufwachen aus Energiesparmodus</string>
+    <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
+    <string name="activate_nfc">Aktiviere NFC in den Einstellungen</string>
+    <string name="scene_remove_item">Remove item from scene</string>
 </resources>

@@ -17,7 +17,7 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.network.DeviceSend;
 
 /**
- * Created by david on 21.02.14.
+ * A DeviceSend.Job that provide broadcast sending to anel devices.
  */
 public class AnelBroadcastSendJob implements DeviceSend.Job {
     private void sendPacket(DeviceSend deviceSend, InetAddress ip, int SendPort, byte[] message) {

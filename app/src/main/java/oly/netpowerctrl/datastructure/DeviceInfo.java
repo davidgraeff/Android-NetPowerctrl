@@ -45,15 +45,13 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     public String Temperature;
 
     // Device Ports
-    private Map<Integer, DevicePort> DevicePorts = new TreeMap<Integer, DevicePort>();
+    private final Map<Integer, DevicePort> DevicePorts = new TreeMap<Integer, DevicePort>();
 
     // Temporary state variables
     public boolean configured = false;
     private boolean reachable = false;
     public String not_reachable_reason;
     private long updated = 0;
-    private int last_hash_value;
-    private int last_hash2_value;
     private boolean hasChanged = false;
     private WeakReference<PluginInterface> pluginInterface = null;
 
@@ -130,6 +128,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         di.reachable = false;
         while (reader.hasNext()) {
             String name = reader.nextName();
+            assert name != null;
             if (name.equals("uuid")) { // TODO obsolete
                 String uuid = reader.nextString();
                 if (di.UniqueDeviceID.isEmpty())
@@ -348,7 +347,6 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.name("HttpPort").value(HttpPort);
 
         writer.name("DevicePorts").beginArray();
-        assert DevicePorts != null;
         for (Map.Entry<Integer, DevicePort> entry : DevicePorts.entrySet()) {
             entry.getValue().toJSON(writer);
         }
@@ -357,26 +355,12 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.endObject();
     }
 
-    /**
-     * Return true if the updated timestamp is after the given timestamp
-     *
-     * @param current_time A timestamp (milliseconds since Jan. 1, 1970)
-     * @return Return true if the updated timestamp is after the given timestamp
-     */
-    public boolean updatedAfter(long current_time) {
-        return updated > current_time;
-    }
-
     public long getUpdatedTime() {
         return updated;
     }
 
     public void setUpdatedNow() {
         updated = System.currentTimeMillis();
-    }
-
-    public void setUpdatedNever() {
-        updated = 0;
     }
 
     public void add(DevicePort oi) {
@@ -427,8 +411,6 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
     public boolean isNetworkDevice(NetpowerctrlService service) {
         PluginInterface pi = getPluginInterface(service);
-        if (pi == null)
-            return false;
-        return pi.isNetworkPlugin();
+        return pi != null && pi.isNetworkPlugin();
     }
 }

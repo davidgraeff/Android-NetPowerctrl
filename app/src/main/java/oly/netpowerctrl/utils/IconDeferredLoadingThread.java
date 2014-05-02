@@ -17,7 +17,7 @@ public class IconDeferredLoadingThread extends Thread {
         void setDrawable(Drawable bitmap, int position);
     }
 
-    private LinkedBlockingQueue<IconItem> q = new LinkedBlockingQueue<IconItem>();
+    private final LinkedBlockingQueue<IconItem> q = new LinkedBlockingQueue<IconItem>();
 
     public void loadIcon(IconItem job) {
         q.add(job);
@@ -42,13 +42,13 @@ public class IconDeferredLoadingThread extends Thread {
      * ViewHolder and the bitmap index.
      */
     public static class IconItem {
-        private UUID uuid;
-        private Icons.IconType iconType;
-        private Icons.IconState state;
-        private int default_resource;
-        private WeakReference<IconLoaded> target;
-        private int position;
-        private Context context;
+        private final UUID uuid;
+        private final Icons.IconType iconType;
+        private final Icons.IconState state;
+        private final int default_resource;
+        private final WeakReference<IconLoaded> target;
+        private final int position;
+        private final Context context;
 
         public IconItem(Context context, UUID uuid, Icons.IconType iconType, Icons.IconState state,
                         int default_resource, IconLoaded target, int position) {

@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by david on 14.02.14.
+ * The gridView needs stable ids. This is a helper adapter that provides stable ids.
  */
 public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamicGridAdapter {
-    private HashMap<Object, Integer> mIdMap = new HashMap<Object, Integer>();
-    int nextID = 0; // always incrementing id counter
+    private final HashMap<Object, Integer> mIdMap = new HashMap<Object, Integer>();
+    private int nextID = 0; // always incrementing id counter
 
     /**
      * Adapter must have stable id
@@ -25,7 +25,7 @@ public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamic
      *
      * @param item
      */
-    protected void addStableId(Object item) {
+    void addStableId(Object item) {
         mIdMap.put(item, nextID++);
     }
 
@@ -34,9 +34,9 @@ public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamic
      *
      * @param items
      */
-    protected void addAllStableId(List<?> items) {
-        for (int i = 0; i < items.size(); i++) {
-            mIdMap.put(items.get(i), nextID++);
+    void addAllStableId(List<?> items) {
+        for (Object item : items) {
+            mIdMap.put(item, nextID++);
         }
     }
 
@@ -59,7 +59,7 @@ public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamic
      * clear stable id map
      * should called when clear adapter data;
      */
-    protected void clearStableIdMap() {
+    void clearStableIdMap() {
         mIdMap.clear();
     }
 
@@ -68,7 +68,7 @@ public abstract class AbstractDynamicGridStableIDAdapter extends AbstractDynamic
      *
      * @param item
      */
-    protected void removeStableID(Object item) {
+    void removeStableID(Object item) {
         mIdMap.remove(item);
     }
 

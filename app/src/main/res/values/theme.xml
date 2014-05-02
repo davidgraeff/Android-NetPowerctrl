@@ -6,6 +6,10 @@
         <item name="preferences_title_light">@color/text_light</item>
         <item name="android:windowIsTranslucent">false</item>
         <item name="item_selector">@drawable/item_selector_light</item>
+        <item name="segment_button">@drawable/segment_button_light</item>
+        <item name="segment_radio_left">@drawable/segment_radio_left_light</item>
+        <item name="segment_radio_middle">@drawable/segment_radio_middle_light</item>
+        <item name="segment_radio_right">@drawable/segment_radio_right_light</item>
         <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
     </style>
@@ -14,6 +18,10 @@
         <item name="drawer_item_background">#323232</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>
         <item name="item_selector">@drawable/item_selector_dark</item>
+        <item name="segment_button">@drawable/segment_button_dark</item>
+        <item name="segment_radio_left">@drawable/segment_radio_left_dark</item>
+        <item name="segment_radio_middle">@drawable/segment_radio_middle_dark</item>
+        <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
         <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list_dark</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_dark</item>
     </style>

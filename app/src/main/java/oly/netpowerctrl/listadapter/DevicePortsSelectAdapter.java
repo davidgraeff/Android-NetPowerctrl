@@ -20,7 +20,7 @@ public class DevicePortsSelectAdapter extends DevicePortsBaseAdapter {
         super(context, null, null);
     }
 
-    SparseBooleanArray checked = new SparseBooleanArray();
+    private final SparseBooleanArray checked = new SparseBooleanArray();
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -48,8 +48,8 @@ public class DevicePortsSelectAdapter extends DevicePortsBaseAdapter {
     }
 
     public void setChecked(List<UUID> slaves) {
-        for (int i = 0; i < slaves.size(); i++) {
-            int position = getItemPositionByUUid(slaves.get(i));
+        for (UUID slave : slaves) {
+            int position = getItemPositionByUUid(slave);
             if (position == -1)
                 continue;
             checked.put(position, true);

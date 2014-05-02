@@ -19,29 +19,28 @@ import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 
 public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCollection.IScenesUpdated {
-    SceneCollection scenes;
-    private LayoutInflater inflater;
+    private final SceneCollection scenes;
+    private final LayoutInflater inflater;
     private boolean disableEditing;
     private ListItemMenu mListContextMenu = null;
     private int outlet_res_id = R.layout.grid_icon_item;
-    protected ViewHolder current_viewHolder;
-    private IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
+    private final IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
 
     //ViewHolder pattern
     protected static class ViewHolder implements View.OnClickListener, IconDeferredLoadingThread.IconLoaded {
-        ImageView imageIcon;
-        ImageView imageEdit;
+        final ImageView imageIcon;
+        final ImageView imageEdit;
         //LinearLayout mainTextView;
-        View entry;
-        TextView title;
-        TextView subtitle;
+        final View entry;
+        final TextView title;
+        final TextView subtitle;
         boolean isNew = true;
 
-        int currentBitmapIndex = 0;
-        Drawable[] drawables = new Drawable[1];
+        final int currentBitmapIndex = 0;
+        final Drawable[] drawables = new Drawable[1];
         public int position;
         private ListItemMenu mListContextMenu = null;
-        private IconDeferredLoadingThread iconCache;
+        private final IconDeferredLoadingThread iconCache;
 
         ViewHolder(View convertView, ListItemMenu listContextMenu, IconDeferredLoadingThread iconCache) {
             mListContextMenu = listContextMenu;
@@ -58,11 +57,11 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
                     uuid, iconType, state, default_resource, this, bitmapPosition));
         }
 
-        public void setCurrentBitmapIndex(int index) {
-            currentBitmapIndex = index;
-            if (drawables[index] != null)
-                imageIcon.setImageDrawable(drawables[index]);
-        }
+//        public void setCurrentBitmapIndex(int index) {
+//            currentBitmapIndex = index;
+//            if (drawables[index] != null)
+//                imageIcon.setImageDrawable(drawables[index]);
+//        }
 
         @Override
         public void onClick(View view) {
@@ -125,9 +124,11 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
     public View getView(final int position, View convertView, ViewGroup parent) {
         final Scene data = scenes.getScene(position);
 
+        ViewHolder current_viewHolder;
         if (convertView == null) {
             convertView = inflater.inflate(outlet_res_id, null);
             current_viewHolder = new ViewHolder(convertView, mListContextMenu, iconCache);
+            assert convertView != null;
             convertView.setTag(current_viewHolder);
         } else {
             current_viewHolder = (ViewHolder) convertView.getTag();

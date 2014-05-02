@@ -13,6 +13,7 @@
     <item format="integer" name="default_receive_port" type="integer">1077</item>
 
     <item format="boolean" name="use_energy_saving_mode" type="bool">True</item>
+    <item format="boolean" name="wakeup_energy_saving_mode" type="bool">False</item>
     <item format="boolean" name="use_dark_theme" type="bool">False</item>
     <item format="boolean" name="notify_on_stop" type="bool">False</item>
     <item format="boolean" name="load_plugins" type="bool">False</item>
@@ -20,8 +21,7 @@
     <item format="boolean" name="animations_enabled" type="bool">True</item>
     <item format="boolean" name="use_log_energy_saving_mod" type="bool">False</item>
 
-    <item format="integer" name="grid_columns_outlets" type="integer">1</item>
-    <item format="integer" name="grid_columns_scenes" type="integer">3</item>
+    <item format="boolean" name="sync_with_neighbours" type="bool">False</item>
 
     <item format="integer" name="max_favourites_groups" type="integer">6</item>
 

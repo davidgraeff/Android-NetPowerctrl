@@ -14,8 +14,8 @@ import oly.netpowerctrl.datastructure.Groups;
 import oly.netpowerctrl.utils.Icons;
 
 public class GroupsAdapter extends BaseAdapter implements Groups.IGroupsUpdated {
-    private LayoutInflater inflater;
-    Groups groups;
+    private final LayoutInflater inflater;
+    private final Groups groups;
 
     public GroupsAdapter(Context context, Groups data) {
         inflater = LayoutInflater.from(context);

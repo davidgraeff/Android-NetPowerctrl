@@ -11,9 +11,9 @@ import java.util.List;
  * Time: 10:49 PM
  */
 public abstract class StableIDDynamicGridAdapter extends AbstractDynamicGridStableIDAdapter {
-    private Context mContext;
+    private final Context mContext;
 
-    private ArrayList<Object> mItems = new ArrayList<Object>();
+    private final ArrayList<Object> mItems = new ArrayList<Object>();
 
     protected StableIDDynamicGridAdapter(Context context) {
         this.mContext = context;
@@ -36,7 +36,7 @@ public abstract class StableIDDynamicGridAdapter extends AbstractDynamicGridStab
         notifyDataSetChanged();
     }
 
-    public void clear() {
+    void clear() {
         clearStableIdMap();
         mItems.clear();
         notifyDataSetChanged();

@@ -1,7 +1,7 @@
 package oly.netpowerctrl.utils;
 
 /**
- * Created by david on 14.02.14.
+ * Used to provide fragments with the ability to react to the back button of the main activity.
  */
 public interface OnBackButton {
     boolean onBackButton();

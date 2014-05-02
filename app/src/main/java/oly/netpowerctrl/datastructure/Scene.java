@@ -13,12 +13,12 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class Scene {
-    public static long nextStableID = 0;
+    private static long nextStableID = 0;
 
     public String sceneName = "";
     public UUID uuid = UUID.randomUUID();
     //public Bitmap bitmap = null;
-    public long id = nextStableID++;
+    public final long id = nextStableID++;
     boolean favourite;
 
 
@@ -76,9 +76,7 @@ public class Scene {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof Scene)
-            return uuid.equals(((Scene) other).uuid);
-        return false;
+        return other instanceof Scene && uuid.equals(((Scene) other).uuid);
     }
 
     @SuppressWarnings("unused")
@@ -136,6 +134,7 @@ public class Scene {
         SceneItem item = new SceneItem();
         while (reader.hasNext()) {
             String name = reader.nextName();
+            assert name != null;
             if (name.equals("name")) {
                 item.command = reader.nextInt();
             } else if (name.equals("uuid")) {
@@ -153,6 +152,7 @@ public class Scene {
         reader.beginObject();
         while (reader.hasNext()) {
             String name = reader.nextName();
+            assert name != null;
             if (name.equals("sceneName")) {
                 scene.sceneName = reader.nextString();
             } else if (name.equals("uuid")) {
@@ -204,8 +204,8 @@ public class Scene {
     }
 
     public static class PortAndCommand {
-        public DevicePort port;
-        public Integer command;
+        public final DevicePort port;
+        public final Integer command;
 
         public PortAndCommand(DevicePort port, Integer command) {
             this.port = port;

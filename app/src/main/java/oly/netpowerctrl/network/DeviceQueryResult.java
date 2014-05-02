@@ -8,7 +8,7 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
  * on device error
  */
 public interface DeviceQueryResult {
-    void onDeviceError(DeviceInfo di, String error_message);
+    void onDeviceError(DeviceInfo di);
 
     void onDeviceTimeout(DeviceInfo di);
 

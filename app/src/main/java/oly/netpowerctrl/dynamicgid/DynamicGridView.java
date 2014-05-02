@@ -56,8 +56,8 @@ public class DynamicGridView extends GridView {
     private int mLastEventY = -1;
     private int mLastEventX = -1;
 
-    private List<Long> idList = new ArrayList<Long>();
-    AbstractDynamicGridAdapter abstractDynamicGridAdapter;
+    private final List<Long> idList = new ArrayList<Long>();
+    private AbstractDynamicGridAdapter abstractDynamicGridAdapter;
 
     private long mMobileItemId = INVALID_ID;
 
@@ -70,14 +70,14 @@ public class DynamicGridView extends GridView {
     private int mScrollState = OnScrollListener.SCROLL_STATE_IDLE;
 
     private boolean mIsEditMode = false;
-    private List<ObjectAnimator> mWobbleAnimators = new LinkedList<ObjectAnimator>();
+    private final List<ObjectAnimator> mWobbleAnimators = new LinkedList<ObjectAnimator>();
     private OnDropListener mDropListener;
     private boolean mHoverAnimation;
     private boolean mReorderAnimation;
     private boolean mWobbleInEditMode = true;
 
     private OnItemLongClickListener mUserLongClickListener;
-    private OnItemLongClickListener mLocalLongClickListener = new OnItemLongClickListener() {
+    private final OnItemLongClickListener mLocalLongClickListener = new OnItemLongClickListener() {
         public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
             if (!isEnabled() || isEditMode())
                 return false;
@@ -110,7 +110,7 @@ public class DynamicGridView extends GridView {
     };
 
     private OnItemClickListener mUserItemClickListener;
-    private OnItemClickListener mLocalItemClickListener = new OnItemClickListener() {
+    private final OnItemClickListener mLocalItemClickListener = new OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             if (!isEditMode() && isEnabled() && mUserItemClickListener != null) {
@@ -155,6 +155,7 @@ public class DynamicGridView extends GridView {
     }
 
     public void setMinimumColumnWidth(int minimumWidth) {
+        //noinspection ConstantConditions
         this.mMinimumColumnWidth = getContext().getResources().getDisplayMetrics().density * minimumWidth + 0.5f;
     }
 
@@ -242,7 +243,7 @@ public class DynamicGridView extends GridView {
         startWobbleAnimation();
     }
 
-    public void init(Context context) {
+    void init(Context context) {
         setOnScrollListener(mScrollListener);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         mSmoothScrollAmountAtEdge = (int) (SMOOTH_SCROLL_AMOUNT_AT_EDGE * metrics.density + 0.5f);
@@ -331,7 +332,7 @@ public class DynamicGridView extends GridView {
     /**
      * Retrieves the position in the grid corresponding to <code>itemId</code>
      */
-    public int getPositionForID(long itemId) {
+    int getPositionForID(long itemId) {
         View v = getViewForId(itemId);
         if (v == null) {
             return -1;
@@ -340,7 +341,7 @@ public class DynamicGridView extends GridView {
         }
     }
 
-    public View getViewForId(long itemId) {
+    View getViewForId(long itemId) {
         int firstVisiblePosition = getFirstVisiblePosition();
         for (int i = 0; i < getChildCount(); i++) {
             View v = getChildAt(i);
@@ -460,7 +461,7 @@ public class DynamicGridView extends GridView {
         mIsMobileScrolling = handleMobileCellScroll(mHoverCellCurrentBounds);
     }
 
-    public boolean handleMobileCellScroll(Rect r) {
+    boolean handleMobileCellScroll(Rect r) {
         int offset = computeVerticalScrollOffset();
         int height = getHeight();
         int extent = computeVerticalScrollExtent();
@@ -797,7 +798,7 @@ public class DynamicGridView extends GridView {
      * scrolling takes place, the gridview continuously checks if new cells became visible
      * and determines whether they are potential candidates for a cell swap.
      */
-    private OnScrollListener mScrollListener = new OnScrollListener() {
+    private final OnScrollListener mScrollListener = new OnScrollListener() {
 
         private int mPreviousFirstVisibleItem = -1;
         private int mPreviousVisibleItemCount = -1;

@@ -14,10 +14,10 @@ import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class WidgetPreferenceFragment extends PreferencesWithValuesFragment implements Icons.IconSelected {
-    int widgetId = -1;
-    Map<Preference, Icons.IconState> preference_to_state = new TreeMap<Preference, Icons.IconState>();
+    private int widgetId = -1;
+    private final Map<Preference, Icons.IconState> preference_to_state = new TreeMap<Preference, Icons.IconState>();
 
-    private Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
+    private final Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
         public boolean onPreferenceClick(final Preference preference) {
             Icons.show_select_icon_dialog(getActivity(), "widget_icons", WidgetPreferenceFragment.this, preference);
             return true;

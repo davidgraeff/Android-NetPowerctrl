@@ -27,8 +27,8 @@ import oly.netpowerctrl.preferences.SharedPrefs;
  */
 public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated, SceneCollection.IScenesUpdated {
 
-    private List<DrawerItem> mItems = new ArrayList<DrawerItem>();
-    private LayoutInflater inflater;
+    private final List<DrawerItem> mItems = new ArrayList<DrawerItem>();
+    private final LayoutInflater inflater;
     private UUID groups_position = null;
     private int groups_size = 0;
     private UUID scenes_position = null;
@@ -206,8 +206,7 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
     }
 
     public DrawerItem get(UUID id) {
-        for (int i = 0; i < mItems.size(); i++) {
-            DrawerItem item = mItems.get(i);
+        for (DrawerItem item : mItems) {
             if (item.uuid.equals(id)) {
                 return item;
             }
@@ -304,7 +303,7 @@ public class DrawerAdapter extends BaseAdapter implements Groups.IGroupsUpdated,
         public Bundle mExtra = null;
         public UUID uuid = UUID.randomUUID();
         public Bitmap bitmap = null;
-        public boolean isHeader;
+        public final boolean isHeader;
         public int intendLevel = 0;
         public View.OnClickListener clickHandler = null;
 

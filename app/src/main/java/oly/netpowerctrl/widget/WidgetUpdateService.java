@@ -20,7 +20,6 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
@@ -40,10 +39,10 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     private AppWidgetManager appWidgetManager;
-    Context context;
+    private Context context;
 
-    private List<Integer> widgetUpdateRequests = new ArrayList<Integer>();
-    private SparseArray<DevicePort> allWidgets = new SparseArray<DevicePort>();
+    private final List<Integer> widgetUpdateRequests = new ArrayList<Integer>();
+    private final SparseArray<DevicePort> allWidgets = new SparseArray<DevicePort>();
 
     @Override
     public void onDestroy() {
@@ -61,6 +60,7 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
     public void onCreate() {
         //noinspection ConstantConditions
         context = getApplicationContext();
+        assert context != null;
         appWidgetManager = AppWidgetManager.getInstance(context);
         NetpowerctrlApplication.instance.useListener();
         NetpowerctrlApplication.getDataController().registerConfiguredDeviceChangeObserver(this);
@@ -244,7 +244,7 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
     }
 
     @Override
-    public void onDeviceError(DeviceInfo di, String error_message) {
+    public void onDeviceError(DeviceInfo di) {
 
     }
 
@@ -286,6 +286,7 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
                 DeviceWidgetProvider.class);
         //noinspection ConstantConditions
         appWidgetManager = AppWidgetManager.getInstance(context);
+        assert appWidgetManager != null;
         int[] allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
         for (int appWidgetId : allWidgetIds) {
             DevicePort devicePort = allWidgets.get(appWidgetId);
@@ -309,7 +310,7 @@ public class WidgetUpdateService extends Service implements DeviceQueryResult, D
     }
 
     @Override
-    public boolean onServiceReady(NetpowerctrlService mDiscoverService) {
+    public boolean onServiceReady() {
         if (allWidgets.size() == 0)
             updateDevices();
         return true;

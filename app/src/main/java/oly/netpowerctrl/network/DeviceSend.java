@@ -28,11 +28,11 @@ public class DeviceSend {
     private static final int NETWORK_UNKNOWN_HOSTNAME = 3;
 
     // Singleton
-    static DeviceSend mInstance = new DeviceSend();
+    private static final DeviceSend mInstance = new DeviceSend();
     public DatagramSocket datagramSocket;
-    SendThread sendThread = null;
+    private SendThread sendThread = null;
 
-    public DeviceSend() {
+    private DeviceSend() {
         try {
             this.datagramSocket = new DatagramSocket();
         } catch (SocketException e) {
@@ -77,7 +77,7 @@ public class DeviceSend {
             sendThread.add(new KillJob());
             try {
                 sendThread.join();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
             sendThread = null;
         }
@@ -111,7 +111,7 @@ public class DeviceSend {
     }
 
     private static class SendThread extends Thread {
-        private LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<Job>();
+        private final LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<Job>();
 
         public void add(Job job) {
             q.add(job);
@@ -151,17 +151,17 @@ public class DeviceSend {
 
     static public class SendJob extends DeviceObserverBase implements Job {
         InetAddress ip = null;
-        DeviceInfo di;
-        List<byte[]> messages = new ArrayList<byte[]>();
-        int errorID;
+        final DeviceInfo di;
+        final List<byte[]> messages = new ArrayList<byte[]>();
+        final int errorID;
         int redoCounter = 0;
         private boolean initialized = false;
-        private long current_time = System.currentTimeMillis();
+        private final long current_time = System.currentTimeMillis();
 
-        private DeviceQueryResult deviceQueryResult = new DeviceQueryResult() {
+        private final DeviceQueryResult deviceQueryResult = new DeviceQueryResult() {
 
             @Override
-            public void onDeviceError(DeviceInfo di, String error_message) {
+            public void onDeviceError(DeviceInfo di) {
             }
 
             @Override
