@@ -10,6 +10,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ListView;
@@ -136,6 +137,12 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
 
         GDriveBackupsAdapter = new oly.netpowerctrl.transfer.GDriveBackupsAdapter(getActivity());
         list.setAdapter(GDriveBackupsAdapter);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //TODO delete files + restore files
+            }
+        });
 
         Button btn = (Button) view.findViewById(R.id.button);
         btn.setOnClickListener(new View.OnClickListener() {
