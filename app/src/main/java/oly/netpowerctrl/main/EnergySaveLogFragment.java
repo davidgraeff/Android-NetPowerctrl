@@ -33,7 +33,7 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 public class EnergySaveLogFragment extends ListFragment {
     private ArrayAdapter<String> arrayAdapter;
     private final ArrayList<String> listItems = new ArrayList<String>();
-
+    private CharSequence title_before;
 
     public EnergySaveLogFragment() {
     }
@@ -44,6 +44,14 @@ public class EnergySaveLogFragment extends ListFragment {
         arrayAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listItems);
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (title_before != null)
+            //noinspection ConstantConditions
+            getActivity().setTitle(title_before);
+        super.onDestroy();
     }
 
     @Override
@@ -86,6 +94,9 @@ public class EnergySaveLogFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //noinspection ConstantConditions
+        title_before = getActivity().getTitle();
+        getActivity().setTitle(R.string.energy_saving_mode_log);
         setListAdapter(arrayAdapter);
     }
 

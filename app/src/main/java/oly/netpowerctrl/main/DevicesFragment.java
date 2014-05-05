@@ -32,7 +32,7 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.listadapter.DevicesAdapter;
-import oly.netpowerctrl.network.DeviceQueryResult;
+import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
@@ -49,7 +49,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.devices, menu);
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_delete_all_devices).setVisible(NetpowerctrlApplication.getDataController().configuredDevices.size() > 0);
+        menu.findItem(R.id.menu_delete_all_devices).setVisible(NetpowerctrlApplication.getDataController().deviceCollection.hasDevices());
     }
 
     @Override
@@ -94,7 +94,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
-                                NetpowerctrlApplication.getDataController().deleteAllConfiguredDevices();
+                                NetpowerctrlApplication.getDataController().deviceCollection.clear();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -103,7 +103,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.findDevices(new DeviceQueryResult() {
+                NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
                     @Override
                     public void onDeviceError(DeviceInfo di) {
                     }
@@ -117,7 +117,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     }
 
                     @Override
-                    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+                    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
                         //noinspection ConstantConditions
                         Toast.makeText(getActivity(),
                                 getActivity().getString(R.string.devices_refreshed,
@@ -200,8 +200,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                                     it.next().addToGroup(uuidOfDevice);
                                 }
                                 current_device.releaseDevicePorts();
-                                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
-                                NetpowerctrlApplication.getDataController().groups.edit(uuidOfDevice, current_device.DeviceName);
+                                NetpowerctrlApplication.getDataController().deviceCollection.save();
+                                NetpowerctrlApplication.getDataController().groupCollection.edit(uuidOfDevice, current_device.DeviceName);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -216,7 +216,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                NetpowerctrlApplication.getDataController().deleteConfiguredDevice(current_device);
+                                NetpowerctrlApplication.getDataController().deviceCollection.remove(current_device);
                                 NetpowerctrlApplication.instance.findDevices(null);
                             }
                         })
@@ -245,7 +245,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             ft.addToBackStack(null);
             ((DialogFragment) fragment).show(ft, "dialog");
         } else { // for now: We just add the device to the configured devices
-            NetpowerctrlApplication.getDataController().addToConfiguredDevices(di, true);
+            NetpowerctrlApplication.getDataController().addToConfiguredDevices(di);
         }
     }
 

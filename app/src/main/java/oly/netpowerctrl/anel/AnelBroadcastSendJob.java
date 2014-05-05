@@ -14,31 +14,31 @@ import java.util.Set;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.network.DeviceSend;
+import oly.netpowerctrl.network.UDPSending;
 
 /**
  * A DeviceSend.Job that provide broadcast sending to anel devices.
  */
-public class AnelBroadcastSendJob implements DeviceSend.Job {
-    private void sendPacket(DeviceSend deviceSend, InetAddress ip, int SendPort, byte[] message) {
+public class AnelBroadcastSendJob implements UDPSending.Job {
+    private void sendPacket(UDPSending UDPSending, InetAddress ip, int SendPort, byte[] message) {
         try {
-            deviceSend.datagramSocket.setBroadcast(true);
-            deviceSend.datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
+            UDPSending.datagramSocket.setBroadcast(true);
+            UDPSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
             //Log.w("AnelBroadcastSendJob",ip.getHostAddress());
         } catch (final SocketException e) {
             if (e.getMessage().contains("ENETUNREACH"))
-                DeviceSend.onError(DeviceSend.NETWORK_UNREACHABLE, ip.getHostAddress(), SendPort, e);
+                UDPSending.onError(UDPSending.NETWORK_UNREACHABLE, ip.getHostAddress(), SendPort, e);
             else {
-                DeviceSend.onError(DeviceSend.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
+                UDPSending.onError(UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            DeviceSend.onError(DeviceSend.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
+            UDPSending.onError(UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
         }
     }
 
     @Override
-    public void process(DeviceSend deviceSend) {
+    public void process(UDPSending UDPSending) {
         Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllSendPorts();
         boolean foundBroadcastAddresses = false;
 
@@ -58,7 +58,7 @@ public class AnelBroadcastSendJob implements DeviceSend.Job {
                         InetAddress broadcast = address.getBroadcast();
                         if (broadcast == null) continue;
                         for (int port : ports)
-                            sendPacket(deviceSend, broadcast, port, "wer da?\r\n".getBytes());
+                            sendPacket(UDPSending, broadcast, port, "wer da?\r\n".getBytes());
                         foundBroadcastAddresses = true;
                     }
                 }
@@ -78,7 +78,7 @@ public class AnelBroadcastSendJob implements DeviceSend.Job {
             NetpowerctrlService service = NetpowerctrlApplication.getService();
             if (service == null)
                 return;
-            List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().configuredDevices;
+            List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
             for (DeviceInfo di : devices) {
                 if (di.pluginID.equals(AnelPlugin.PLUGIN_ID))
                     di.getPluginInterface(service).requestData(di);

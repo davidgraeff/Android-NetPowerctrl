@@ -15,6 +15,9 @@ import java.io.UnsupportedEncodingException;
  */
 public class JSONHelper {
     public static JsonReader getReader(String text) {
+        if (text == null)
+            return null;
+
         // Get JsonReader from String
         byte[] bytes;
         try {
@@ -22,17 +25,17 @@ public class JSONHelper {
         } catch (UnsupportedEncodingException ignored) {
             return null;
         }
-        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        return new JsonReader(new InputStreamReader(bais));
+        ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
+        return new JsonReader(new InputStreamReader(stream));
     }
 
-    private ByteArrayOutputStream baos;
+    private ByteArrayOutputStream output_stream;
     private JsonWriter writer;
 
     public JsonWriter createWriter() {
-        baos = new ByteArrayOutputStream();
+        output_stream = new ByteArrayOutputStream();
         try {
-            writer = new JsonWriter(new OutputStreamWriter(baos, "UTF-8"));
+            writer = new JsonWriter(new OutputStreamWriter(output_stream, "UTF-8"));
             return writer;
         } catch (UnsupportedEncodingException e) {
             return null;
@@ -41,6 +44,6 @@ public class JSONHelper {
 
     public String getString() throws IOException {
         writer.close();
-        return baos.toString();
+        return output_stream.toString();
     }
 }

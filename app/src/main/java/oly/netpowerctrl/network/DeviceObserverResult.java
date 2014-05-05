@@ -7,12 +7,12 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 /**
  * on device error
  */
-public interface DeviceQueryResult {
+public interface DeviceObserverResult {
     void onDeviceError(DeviceInfo di);
 
     void onDeviceTimeout(DeviceInfo di);
 
     void onDeviceUpdated(DeviceInfo di);
 
-    void onDeviceQueryFinished(List<DeviceInfo> timeout_devices);
+    void onObserverJobFinished(List<DeviceInfo> timeout_devices);
 }

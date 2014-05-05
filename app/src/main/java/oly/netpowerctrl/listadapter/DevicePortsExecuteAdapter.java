@@ -40,13 +40,18 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     }
 
     public void onPause() {
-        NetpowerctrlApplication.getDataController().unregisterConfiguredDeviceChangeObserver(this);
+        NetpowerctrlApplication.getDataController().deviceCollection.unregisterConfiguredDeviceChangeObserver(this);
         NetpowerctrlApplication.getDataController().unregisterRuntimeDataControllerStateChanged(this);
     }
 
     public void onResume() {
-        NetpowerctrlApplication.getDataController().registerConfiguredDeviceChangeObserver(this);
+        NetpowerctrlApplication.getDataController().deviceCollection.registerConfiguredDeviceChangeObserver(this);
         NetpowerctrlApplication.getDataController().registerRuntimeDataControllerStateChanged(this);
+    }
+
+    @Override
+    public void onDataLoaded() {
+
     }
 
     /**
@@ -163,7 +168,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
             return;
 
         if (willBeRemoved)
-            update(NetpowerctrlApplication.getDataController().configuredDevices);
+            update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
         else
             notifyDataSetChanged();
     }
@@ -171,12 +176,12 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     @Override
     public void setGroupFilter(UUID groupFilter) {
         super.setGroupFilter(groupFilter);
-        update(NetpowerctrlApplication.getDataController().configuredDevices);
+        update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
     }
 
     public void sortAlphabetically() {
         temporary_ignore_positionRequest = true;
-        update(NetpowerctrlApplication.getDataController().configuredDevices);
+        update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
         temporary_ignore_positionRequest = false;
     }
 
@@ -187,7 +192,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     public void setShowHidden(boolean b) {
         showHidden = b;
         blockUpdates = false;
-        update(NetpowerctrlApplication.getDataController().configuredDevices);
+        update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
         SharedPrefs.setShowHiddenOutlets(showHidden);
     }
 
@@ -202,7 +207,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
             return;
 
         List<DeviceInfo> not_reachable = new ArrayList<DeviceInfo>();
-        List<DeviceInfo> all_devices = NetpowerctrlApplication.getDataController().configuredDevices;
+        List<DeviceInfo> all_devices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
         for (DeviceInfo device : all_devices) {
             if (!device.isReachable())
                 not_reachable.add(device);

@@ -20,14 +20,14 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  */
-public class ConfigureDeviceFragment extends DialogFragment implements DeviceQueryResult, DeviceUpdate {
+public class ConfigureDeviceFragment extends DialogFragment implements DeviceObserverResult, DeviceUpdate {
     private static final String DEVICE_PARAMETER = "device";
 
     private enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
@@ -36,7 +36,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
     private DeviceInfo device;
     private DeviceQuery deviceQuery;
 
-    private ConfigureDeviceFragment() {
+    public ConfigureDeviceFragment() {
     }
 
     public static ConfigureDeviceFragment instantiate(Context ctx, DeviceInfo di) {
@@ -84,7 +84,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
         assert pi != null;
         pi.prepareForDevices(device);
 
-        NetpowerctrlApplication.getDataController().addToConfiguredDevices(device, true);
+        NetpowerctrlApplication.getDataController().addToConfiguredDevices(device);
         //noinspection ConstantConditions
         getFragmentManager().popBackStack();
     }
@@ -195,7 +195,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
         if (test_state == TestStates.TEST_REACHABLE) {
             // Update stored device with received values
             device.UniqueDeviceID = di.UniqueDeviceID;
-            device.DeviceName = di.DeviceName;
+            // do not copy the deviceName here, just the other values
             device.copyFreshValues(di);
             // Test user+password by setting a device port.
             test_state = TestStates.TEST_ACCESS;
@@ -232,7 +232,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceQue
     }
 
     @Override
-    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
 
     }
 

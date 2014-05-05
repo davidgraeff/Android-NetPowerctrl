@@ -351,7 +351,7 @@ public class PluginRemote implements PluginInterface {
                     di.remove(id);
                 }
                 // Save ports
-                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                NetpowerctrlApplication.getDataController().deviceCollection.save();
             }
 
             receiveFinished = true;

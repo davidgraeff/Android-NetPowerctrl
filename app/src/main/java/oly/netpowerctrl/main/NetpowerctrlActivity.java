@@ -36,13 +36,27 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.navigation_drawer.DrawerController;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.NFC;
+import oly.netpowerctrl.transfer.GDrive;
+import oly.netpowerctrl.transfer.NFC;
 
 public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static NetpowerctrlActivity instance = null;
 
     // Drawer
     private final DrawerController mDrawer = new DrawerController();
+    final GDrive gDrive = new GDrive();
+
+    @Override
+    protected void onStop() {
+        gDrive.onStop();
+        super.onStop();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        gDrive.onStart(this);
+    }
 
     @Override
     protected void onDestroy() {
@@ -51,9 +65,23 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        gDrive.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        gDrive.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         instance = this;
         super.onCreate(savedInstanceState);
+        gDrive.onCreate(savedInstanceState);
         // Set theme, call super onCreate and set content view
         if (SharedPrefs.isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
@@ -84,7 +112,7 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                mDrawer.createDrawer(NetpowerctrlActivity.this);
+                mDrawer.createDrawer(NetpowerctrlActivity.this, true);
 
                 // NFC
                 NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(NetpowerctrlActivity.this);
@@ -155,11 +183,21 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         return mDrawer.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawer.selectItem(mDrawer.drawerLastItemPosition);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setContentView(R.layout.activity_main);
+            int lastPos = mDrawer.drawerLastItemPosition;
+            mDrawer.createDrawer(NetpowerctrlActivity.this, false);
+            mDrawer.selectItem(lastPos, true);
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_main);
+            int lastPos = mDrawer.drawerLastItemPosition;
+            mDrawer.createDrawer(NetpowerctrlActivity.this, false);
+            mDrawer.selectItem(lastPos, true);
+        }
     }
 
     @Override

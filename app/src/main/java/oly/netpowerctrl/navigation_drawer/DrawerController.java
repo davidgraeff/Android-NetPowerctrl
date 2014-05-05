@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,10 +19,10 @@ import android.widget.ListView;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.main.DataTransferFragment;
 import oly.netpowerctrl.main.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackDialog;
+import oly.netpowerctrl.main.GDriveFragment;
+import oly.netpowerctrl.main.NeighbourFragment;
 import oly.netpowerctrl.main.OutletsFragment;
 import oly.netpowerctrl.main.ScenesFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
@@ -45,15 +44,13 @@ public class DrawerController {
     private boolean drawerControllableByMenuKey = false;
 
     private Fragment currentFragment;
-    private Fragment currentAccompanyFragment;
     private String currentFragmentClass;
-    private String currentAccompanyFragmentClass;
     public int drawerLastItemPosition;
 
     private WeakReference<Activity> mDrawerActivity;
 
     public boolean isLoading() {
-        return (mDrawerLayout == null);
+        return (mDrawerList == null);
     }
 
     public void setTitle(CharSequence mTitle) {
@@ -65,24 +62,24 @@ public class DrawerController {
         context.getActionBar().setTitle(mTitle);
     }
 
-    public void createDrawer(final Activity context) {
+    public void createDrawer(final Activity context, boolean changeCurrentFragment) {
         mDrawerActivity = new WeakReference<Activity>(context);
         // References for the drawer
         mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) context.findViewById(R.id.left_drawer_list);
 
         // set a custom shadow that overlays the main content when the drawer opens
-        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        if (mDrawerLayout != null)
+            mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
 
         mDrawerAdapter = new DrawerAdapter(context);
-        mDrawerAdapter.addHeader(context.getString(R.string.drawer_single_title));
+        mDrawerAdapter.addHeader(context.getString(R.string.drawer_switch_title));
         mDrawerAdapter.addItem(context.getString(R.string.drawer_overview), "",
                 OutletsFragment.class.getName(), false);
 
         mDrawerAdapter.usePositionForGroups();
 
-        mDrawerAdapter.addHeader(context.getString(R.string.drawer_multiple_title));
         mDrawerAdapter.addItem(context.getString(R.string.drawer_scenes), "",
                 ScenesFragment.class.getName(), false);
         mDrawerAdapter.usePositionForScenes();
@@ -90,7 +87,8 @@ public class DrawerController {
         mDrawerAdapter.add(context.getResources().getStringArray(R.array.drawer_titles_app),
                 context.getResources().getStringArray(R.array.drawer_descriptions_app),
                 new String[]{"", DevicesFragment.class.getName(),
-                        PreferencesFragment.class.getName(), DataTransferFragment.class.getName()}
+                        PreferencesFragment.class.getName(), GDriveFragment.class.getName(),
+                        NeighbourFragment.class.getName()}
         );
 
         String version = context.getString(R.string.Version) + " ";
@@ -109,39 +107,48 @@ public class DrawerController {
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
 
-        // ActionBarDrawerToggle ties together the the proper interactions
-        // between the sliding drawer and the action bar app icon
-        mDrawerToggle = new ActionBarDrawerToggle(
-                context,                  /* host Activity */
-                mDrawerLayout,         /* DrawerLayout object */
-                R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
-                R.string.drawer_open,  /* "open drawer" description for accessibility */
-                R.string.drawer_close  /* "close drawer" description for accessibility */
-        ) {
-            public void onDrawerClosed(View view) {
-                context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            }
+        if (mDrawerLayout != null) {
+            // ActionBarDrawerToggle ties together the the proper interactions
+            // between the sliding drawer and the action bar app icon
+            mDrawerToggle = new ActionBarDrawerToggle(
+                    context,                  /* host Activity */
+                    mDrawerLayout,         /* DrawerLayout object */
+                    R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
+                    R.string.drawer_open,  /* "open drawer" description for accessibility */
+                    R.string.drawer_close  /* "close drawer" description for accessibility */
+            ) {
+                public void onDrawerClosed(View view) {
+                    context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                }
 
-            public void onDrawerOpened(View drawerView) {
-                //getActionBar().setTitle(mDrawerTitle);
-                context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                onBackPressed();
-            }
-        };
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        // Restore the last visited screen
-        int pos = mDrawerAdapter.indexOf(SharedPrefs.getFirstTab());
-        if (pos == -1) {
-            pos = mDrawerAdapter.indexOf(OutletsFragment.class.getName());
+                public void onDrawerOpened(View drawerView) {
+                    //getActionBar().setTitle(mDrawerTitle);
+                    context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                    onBackPressed();
+                }
+            };
+            mDrawerLayout.setDrawerListener(mDrawerToggle);
         }
-        selectItem(pos);
 
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
+        if (changeCurrentFragment) {
+            // Restore the last visited screen
+            int pos = mDrawerAdapter.indexOf(SharedPrefs.getFirstTab());
+            if (pos == -1) {
+                pos = mDrawerAdapter.indexOf(OutletsFragment.class.getName());
+            }
+            selectItem(pos, false);
+        }
+
+        if (mDrawerLayout != null) {
+            // Sync the toggle state after onRestoreInstanceState has occurred.
+            mDrawerToggle.syncState();
+        }
     }
 
     public void onPrepareOptionsMenu(Menu menu) {
+        if (mDrawerLayout == null)
+            return;
+
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
         drawerControllableByMenuKey = menu.size() <= 2;
@@ -152,7 +159,7 @@ public class DrawerController {
     }
 
     public void menuKeyPressed() {
-        if (isLoading())
+        if (isLoading() || mDrawerLayout == null)
             return;
 
         if (drawerControllableByMenuKey) {
@@ -177,15 +184,15 @@ public class DrawerController {
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (mDrawerLayout == null)
+            return false;
+
         return mDrawerToggle.onOptionsItemSelected(item);
     }
 
     public boolean onBackPressed() {
         if (currentFragment != null && currentFragment instanceof OnBackButton)
             if (((OnBackButton) currentFragment).onBackButton())
-                return true;
-        if (currentAccompanyFragment != null && currentAccompanyFragment instanceof OnBackButton)
-            if (((OnBackButton) currentAccompanyFragment).onBackButton())
                 return true;
         return false;
     }
@@ -195,7 +202,7 @@ public class DrawerController {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
+            selectItem(position, false);
         }
     }
 
@@ -204,10 +211,10 @@ public class DrawerController {
         if (pos == -1) {
             return;
         }
-        selectItem(pos);
+        selectItem(pos, false);
     }
 
-    public void selectItem(final int position) {
+    public void selectItem(final int position, boolean overrideCurrent) {
         Activity context = mDrawerActivity.get();
         if (context == null) // should never happen
             return;
@@ -234,7 +241,7 @@ public class DrawerController {
         if (item.fragmentClassName == null || item.fragmentClassName.isEmpty())
             return;
 
-        if (currentFragment == null || !item.fragmentClassName.equals(currentFragmentClass)) {
+        if (currentFragment == null || overrideCurrent || !item.fragmentClassName.equals(currentFragmentClass)) {
             currentFragment = Fragment.instantiate(context, item.fragmentClassName);
             currentFragmentClass = item.fragmentClassName;
         }
@@ -260,33 +267,8 @@ public class DrawerController {
                 }
             });
         } else {
-            DisplayMetrics m = context.getResources().getDisplayMetrics();
+            fragmentManager.beginTransaction().replace(R.id.content_frame, currentFragment).commit();
 
-            // If there is enough space, show the accompany fragment, too.
-            // Only show scene fragment as accompany fragment, if there are scenes available.
-            boolean isAccompanyScene = item.mAccompanyClazz != null &&
-                    item.mAccompanyClazz.equals(ScenesFragment.class.getName());
-
-            if (m.widthPixels / m.density >= 800 && item.mAccompanyClazz != null &&
-                    (!isAccompanyScene || NetpowerctrlApplication.getDataController().scenes.length() > 0)) {
-
-                context.findViewById(R.id.content_frame2).setVisibility(View.VISIBLE);
-                if (currentAccompanyFragment == null || !item.mAccompanyClazz.equals(currentAccompanyFragmentClass)) {
-                    currentAccompanyFragment = Fragment.instantiate(context, item.mAccompanyClazz);
-                    currentAccompanyFragmentClass = item.mAccompanyClazz;
-                }
-                fragmentManager.beginTransaction().replace(R.id.content_frame, currentFragment).
-                        replace(R.id.content_frame2, currentAccompanyFragment).commit();
-            } else {
-                if (currentAccompanyFragment != null) {
-                    fragmentManager.beginTransaction().replace(R.id.content_frame, currentFragment).
-                            remove(currentAccompanyFragment).commit();
-                    currentAccompanyFragment = null;
-                    currentAccompanyFragmentClass = null;
-                    context.findViewById(R.id.content_frame2).setVisibility(View.GONE);
-                } else
-                    fragmentManager.beginTransaction().replace(R.id.content_frame, currentFragment).commit();
-            }
             // update selected item and title
             mDrawerList.setItemChecked(position, true);
             setTitle(item.mTitle);
@@ -294,7 +276,7 @@ public class DrawerController {
         }
 
         // close the drawer
-        if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
+        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mDrawerList)) {
             Handler mHandler = new Handler();
             mHandler.postDelayed(new Runnable() {
                 @Override

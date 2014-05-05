@@ -17,13 +17,13 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ShowToast;
 
-public class ExecutionActivity extends Activity implements DeviceQueryResult, ExecutionFinished {
+public class ExecutionActivity extends Activity implements DeviceObserverResult, ExecutionFinished {
     private Scene scene = null;
     private int scene_commands = 0;
     private int scene_executed_commands = 0;
@@ -137,7 +137,7 @@ public class ExecutionActivity extends Activity implements DeviceQueryResult, Ex
     }
 
     @Override
-    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
         NetpowerctrlApplication.getDataController().execute(scene, this);
     }
 

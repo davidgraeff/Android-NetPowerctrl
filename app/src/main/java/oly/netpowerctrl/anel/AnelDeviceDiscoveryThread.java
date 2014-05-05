@@ -2,63 +2,21 @@ package oly.netpowerctrl.anel;
 
 import android.os.Handler;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.io.UnsupportedEncodingException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.ShowToast;
 
-class AnelDeviceDiscoveryThread extends Thread {
-    private final int receive_port;
-    private boolean keep_running;
-    private DatagramSocket socket;
+class AnelDeviceDiscoveryThread extends UDPReceiving {
     private final AnelPlugin anelPlugin;
 
     public AnelDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
+        super(port);
         this.anelPlugin = anelPlugin;
-        receive_port = port;
-        socket = null;
-    }
-
-    public void run() {
-
-        keep_running = true;
-        while (keep_running) {
-            try {
-                byte[] message = new byte[1500];
-                DatagramPacket p = new DatagramPacket(message, message.length);
-                socket = new DatagramSocket(receive_port);
-                socket.setReuseAddress(true);
-                while (keep_running) {
-                    socket.receive(p);
-                    parsePacket(new String(message, 0, p.getLength(), "latin-1"), receive_port);
-                }
-                socket.close();
-            } catch (final IOException e) {
-                if (keep_running) { // no message if we were interrupt()ed
-                    String msg = String.format(NetpowerctrlApplication.instance.getResources().getString(R.string.error_listen_thread_exception), receive_port);
-                    msg += e.getLocalizedMessage();
-                    if (receive_port < 1024)
-                        msg += NetpowerctrlApplication.instance.getResources().getString(R.string.error_port_lt_1024);
-                    ShowToast.FromOtherThread(NetpowerctrlApplication.instance, msg);
-                }
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void interrupt() {
-        keep_running = false;
-        if (socket != null) {
-            socket.close();
-        }
-        super.interrupt();
     }
 
     private DeviceInfo createReceivedAnelDevice(String DeviceName, String HostName,
@@ -78,8 +36,15 @@ class AnelDeviceDiscoveryThread extends Thread {
         return di;
     }
 
-    void parsePacket(final String message, int receive_port) {
-        final String msg[] = message.split(":");
+    @Override
+    public void parsePacket(final byte[] message, int length, int receive_port) {
+        final String msg[];
+        try {
+            msg = new String(message, 0, length, "iso8859-1").split(":");
+        } catch (UnsupportedEncodingException e) {
+            return;
+        }
+
         if (msg.length < 3) {
             return;
         }
@@ -116,15 +81,20 @@ class AnelDeviceDiscoveryThread extends Thread {
             }
             // IO ports
             if (msg.length > 23) {
+                // 1-based id. IO output range: 11..19, IO input range is 21..29
+                int io_id = 10;
                 for (int i = 16; i <= 23; ++i) {
+                    io_id++;
                     String io_port[] = msg[i].split(",");
                     if (io_port.length != 3) continue;
-                    // Filter out inputs
-                    if (io_port[1].equals("1"))
-                        continue;
 
                     DevicePort oi = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
-                    oi.id = (i - 16 + 1) + 10; // 1-based, and for IO we add 10. range: 11..19
+
+                    if (io_port[1].equals("1")) // input
+                        oi.id = io_id + 10;
+                    else
+                        oi.id = io_id;
+
                     oi.setDescription(io_port[0]);
                     oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
                     di.add(oi);
@@ -155,12 +125,5 @@ class AnelDeviceDiscoveryThread extends Thread {
         }
 
         NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(di);
-    }
-
-    /**
-     * @return Return the receive port of this thread
-     */
-    public int getPort() {
-        return receive_port;
     }
 }

@@ -81,7 +81,7 @@ public class ScenesFragment extends Fragment implements
         inflater.inflate(R.menu.scenes, menu);
 
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_add_scene).setVisible(NetpowerctrlApplication.getDataController().configuredDevices.size() > 0);
+        menu.findItem(R.id.menu_add_scene).setVisible(NetpowerctrlApplication.getDataController().deviceCollection.hasDevices());
 
         if (scenesAdapter == null || scenesAdapter.getCount() == 0) {
             //noinspection ConstantConditions
@@ -164,7 +164,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        scenes = NetpowerctrlApplication.getDataController().scenes;
+        scenes = NetpowerctrlApplication.getDataController().sceneCollection;
         setHasOptionsMenu(true);
     }
 
@@ -188,7 +188,7 @@ public class ScenesFragment extends Fragment implements
         scenesAdapter = new ScenesAdapter(getActivity(), scenes);
         scenesAdapter.setListContextMenu(this);
         setListOrGrid(SharedPrefs.getScenesList());
-        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0) {
+        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes_no_devices));
             Button btnEmpty = ((Button) view.findViewById(R.id.btnChangeToDevices));
@@ -283,7 +283,7 @@ public class ScenesFragment extends Fragment implements
     public void setIcon(Object context_object, Bitmap bitmap) {
         if (context_object == null)
             return;
-        NetpowerctrlApplication.getDataController().scenes.setBitmap(getActivity(),
+        NetpowerctrlApplication.getDataController().sceneCollection.setBitmap(getActivity(),
                 (Scene) context_object, bitmap);
     }
 

@@ -11,6 +11,7 @@ import java.util.List;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.Icons;
+import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  * List of scenes
@@ -36,6 +37,8 @@ public class SceneCollection {
     public static SceneCollection fromJSON(JsonReader reader, IScenesSave storage) throws IOException {
         SceneCollection dc = new SceneCollection(storage);
         dc.scenes = new ArrayList<Scene>();
+        if (reader == null)
+            return dc;
 
         reader.beginArray();
         while (reader.hasNext()) {
@@ -65,6 +68,31 @@ public class SceneCollection {
 
     public int length() {
         return scenes.size();
+    }
+
+    /**
+     * Return the json representation of all groups
+     *
+     * @return JSON String
+     */
+    @Override
+    public String toString() {
+        return toJSON();
+    }
+
+    /**
+     * Return the json representation of this scene
+     *
+     * @return JSON String
+     */
+    public String toJSON() {
+        try {
+            JSONHelper h = new JSONHelper();
+            toJSON(h.createWriter());
+            return h.getString();
+        } catch (IOException ignored) {
+            return null;
+        }
     }
 
     public void toJSON(JsonWriter writer) throws IOException {

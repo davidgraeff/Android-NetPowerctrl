@@ -10,22 +10,22 @@ import android.widget.TextView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.Groups;
+import oly.netpowerctrl.datastructure.GroupCollection;
 import oly.netpowerctrl.utils.Icons;
 
-public class GroupsAdapter extends BaseAdapter implements Groups.IGroupsUpdated {
+public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroupsUpdated {
     private final LayoutInflater inflater;
-    private final Groups groups;
+    private final GroupCollection groupCollection;
 
-    public GroupsAdapter(Context context, Groups data) {
+    public GroupsAdapter(Context context, GroupCollection data) {
         inflater = LayoutInflater.from(context);
-        groups = data;
-        groups.registerObserver(this);
+        groupCollection = data;
+        groupCollection.registerObserver(this);
     }
 
     @Override
     public int getCount() {
-        return groups.length();
+        return groupCollection.length();
     }
 
     @Override
@@ -35,12 +35,12 @@ public class GroupsAdapter extends BaseAdapter implements Groups.IGroupsUpdated 
 
     @Override
     public Object getItem(int position) {
-        return groups.groupItems.get(position);
+        return groupCollection.groupItems.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return groups.groupItems.get(position).id;
+        return groupCollection.groupItems.get(position).id;
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -49,7 +49,7 @@ public class GroupsAdapter extends BaseAdapter implements Groups.IGroupsUpdated 
             convertView = inflater.inflate(R.layout.grid_icon_item, parent);
         }
 
-        Groups.GroupItem data = groups.groupItems.get(position);
+        GroupCollection.GroupItem data = groupCollection.groupItems.get(position);
 
         assert convertView != null;
         TextView tvName = (TextView) convertView.findViewById(R.id.text1);

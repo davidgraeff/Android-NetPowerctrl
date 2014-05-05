@@ -29,8 +29,8 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.network.DevicePortRenamed;
-import oly.netpowerctrl.network.DeviceSend;
 import oly.netpowerctrl.network.ExecutionFinished;
+import oly.netpowerctrl.network.UDPSending;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
@@ -87,7 +87,7 @@ final public class AnelPlugin implements PluginInterface {
 
     public void stopDiscoveryThreads(NetpowerctrlService service) {
         RuntimeDataController d = NetpowerctrlApplication.getDataController();
-        for (DeviceInfo di : d.configuredDevices) {
+        for (DeviceInfo di : d.deviceCollection.devices) {
             if (this.equals(di.getPluginInterface(service))) {
                 di.setNotReachable("Energiesparmodus");
                 d.onDeviceUpdated(di);
@@ -130,6 +130,14 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     private static void executeDeviceBatch(DeviceInfo di, List<Scene.PortAndCommand> command_list, ExecutionFinished callback) {
+        // Get necessary objects
+        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        if (service == null)
+            return;
+        UDPSending udpSending = service.getUDPSending();
+        if (udpSending == null)
+            return;
+
         // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
         // “Sw” + Steckdosen + User + Passwort
         // Steckdosen = Zustand aller Steckdosen binär
@@ -139,6 +147,7 @@ final public class AnelPlugin implements PluginInterface {
         byte data_io = 0;
         boolean containsOutlets = false;
         boolean containsIO = false;
+        int valid_commands = 0;
 
         // First step: Setup data byte (outlet, io) to reflect the current state of the device ports.
         di.lockDevicePorts();
@@ -148,43 +157,51 @@ final public class AnelPlugin implements PluginInterface {
             if (oi.Disabled || oi.current_value == 0)
                 continue;
             int id = oi.id;
-            if (id >= 10) {
+            if (id >= 10 && id < 20) {
                 data_io = switchOn(data_io, id - 10);
-            } else {
+                ++valid_commands;
+            } else if (id >= 0) {
                 data_outlet = switchOn(data_outlet, id);
+                ++valid_commands;
             }
         }
         di.releaseDevicePorts();
+
+        if (valid_commands == 0) {
+            if (callback != null)
+                callback.onExecutionFinished(command_list.size());
+            return;
+        }
 
         // Second step: Apply commands
         for (Scene.PortAndCommand c : command_list) {
             c.port.last_command_timecode = System.currentTimeMillis();
 
             int id = c.port.id;
-            if (id >= 10) {
+            if (id >= 10 && id < 20) {
                 containsIO = true;
-            } else {
+            } else if (id >= 0) {
                 containsOutlets = true;
             }
             switch (c.command) {
                 case DevicePort.OFF:
-                    if (id >= 10) {
+                    if (id >= 10 && id < 20) {
                         data_io = switchOff(data_io, id - 10);
-                    } else {
+                    } else if (id >= 0) {
                         data_outlet = switchOff(data_outlet, id);
                     }
                     break;
                 case DevicePort.ON:
-                    if (id >= 10) {
+                    if (id >= 10 && id < 20) {
                         data_io = switchOn(data_io, id - 10);
-                    } else {
+                    } else if (id >= 0) {
                         data_outlet = switchOn(data_outlet, id);
                     }
                     break;
                 case DevicePort.TOGGLE:
-                    if (id >= 10) {
+                    if (id >= 10 && id < 20) {
                         data_io = toggle(data_io, id - 10);
-                    } else {
+                    } else if (id >= 0) {
                         data_outlet = toggle(data_outlet, id);
                     }
                     break;
@@ -200,13 +217,13 @@ final public class AnelPlugin implements PluginInterface {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, requestMessage, DeviceSend.INQUERY_REQUEST));
+            udpSending.addJob(new UDPSending.SendAndObserveJob(di, data, requestMessage, UDPSending.INQUERY_REQUEST));
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            DeviceSend.instance().addJob(new DeviceSend.SendJob(di, data, requestMessage, DeviceSend.INQUERY_REQUEST));
+            udpSending.addJob(new UDPSending.SendAndObserveJob(di, data, requestMessage, UDPSending.INQUERY_REQUEST));
         }
 
         if (callback != null)
@@ -223,6 +240,14 @@ final public class AnelPlugin implements PluginInterface {
      * @param callback This callback will be called when the execution finished
      */
     public void execute(DevicePort port, int command, ExecutionFinished callback) {
+        // Get necessary objects
+        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        if (service == null)
+            return;
+        UDPSending udpSending = service.getUDPSending();
+        if (udpSending == null)
+            return;
+
         port.last_command_timecode = System.currentTimeMillis();
         boolean bValue = false;
         if (command == DevicePort.ON)
@@ -233,18 +258,21 @@ final public class AnelPlugin implements PluginInterface {
             bValue = port.current_value <= 0;
 
         byte[] data;
-        if (port.id >= 10) {
+        UDPSending.Job j = null;
+        if (port.id >= 10 && port.id < 20) {
             // IOS
             data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                     port.id - 10, port.device.UserName, port.device.Password).getBytes();
-        } else {
+            j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
+        } else if (port.id >= 0) {
             // Outlets
             data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                     port.id, port.device.UserName, port.device.Password).getBytes();
+            j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
         }
 
-        DeviceSend.Job j = new DeviceSend.SendJob(port.device, data, requestMessage, DeviceSend.INQUERY_REQUEST);
-        DeviceSend.instance().addJob(j);
+        if (j != null)
+            udpSending.addJob(j);
 
         if (callback != null)
             callback.onExecutionFinished(1);
@@ -259,12 +287,28 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void requestData() {
-        DeviceSend.instance().addJob(new AnelBroadcastSendJob());
+        // Get necessary objects
+        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        if (service == null)
+            return;
+        UDPSending udpSending = service.getUDPSending();
+        if (udpSending == null)
+            return;
+
+        udpSending.addJob(new AnelBroadcastSendJob());
     }
 
     @Override
     public void requestData(DeviceInfo di) {
-        DeviceSend.instance().addJob(new DeviceSend.SendJob(di, requestMessage, DeviceSend.INQUERY_REQUEST));
+        // Get necessary objects
+        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        if (service == null)
+            return;
+        UDPSending udpSending = service.getUDPSending();
+        if (udpSending == null)
+            return;
+
+        udpSending.addJob(new UDPSending.SendAndObserveJob(di, requestMessage, UDPSending.INQUERY_REQUEST));
     }
 
     @Override
@@ -384,7 +428,7 @@ final public class AnelPlugin implements PluginInterface {
 //
 //    public boolean onlyLinkLocalDevices() {
 //        boolean linkLocals = true;
-//        for (DeviceInfo di : configuredDevices) {
+//        for (DeviceInfo di : deviceCollection) {
 //            if (di.pluginID != DeviceInfo.DeviceType.AnelDevice)
 //                continue;
 //

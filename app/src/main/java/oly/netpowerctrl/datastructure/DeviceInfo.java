@@ -74,6 +74,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 //    }
 
     private final Semaphore lock = new Semaphore(1);
+    public boolean PreferTCP;
 
     private DeviceInfo(String pluginID) {
         this.pluginID = pluginID;
@@ -83,6 +84,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         UserName = "";
         Password = "";
         DefaultPorts = true;
+        PreferTCP = false;
         SendPort = -1;
         ReceivePort = -1;
         HttpPort = 80;
@@ -149,6 +151,8 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
                 di.Version = reader.nextString();
             } else if (name.equals("DefaultPorts")) {
                 di.DefaultPorts = reader.nextBoolean();
+            } else if (name.equals("PreferTCP")) {
+                di.PreferTCP = reader.nextBoolean();
             } else if (name.equals("SendPort")) {
                 di.SendPort = reader.nextInt();
             } else if (name.equals("Type")) {
@@ -341,6 +345,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.name("Password").value(Password);
         writer.name("Temperature").value(Temperature);
         writer.name("Version").value(Version);
+        writer.name("PreferTCP").value(PreferTCP);
         writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("SendPort").value(SendPort);
         writer.name("ReceivePort").value(ReceivePort);

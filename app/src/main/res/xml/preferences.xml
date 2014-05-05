@@ -53,12 +53,6 @@
         android:summary="@string/preference_load_plugins_summary" />
 
     <CheckBoxPreference
-        android:key="sync_with_neighbours"
-        android:title="@string/preference_sync_with_neighbours"
-        android:defaultValue="@bool/sync_with_neighbours"
-        android:summary="@string/preference_sync_with_neighbours_summary" />
-
-    <CheckBoxPreference
         android:key="use_energy_saving_mode"
         android:title="@string/preference_use_energy_saving_mode"
         android:defaultValue="@bool/use_energy_saving_mode"
