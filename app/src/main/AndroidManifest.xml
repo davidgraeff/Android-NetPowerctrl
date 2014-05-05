@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="oly.netpowerctrl"
-    android:versionCode="47"
-    android:versionName="3.1">
+    android:versionCode="50"
+    android:versionName="4.0">
 
     <!-- Api level 14: Android 4.0 15. Dezember 2011 -->
     <!-- Api level 16: Android 4.1 27. Juni 2012 -->
@@ -15,20 +15,26 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <!--<uses-permission android:name="android.permission.GET_ACCOUNTS" />-->
 
-    <permission
-        android:name="oly.netpowerctrl.plugins"
-        android:label="@string/app_name"
-        android:description="@string/app_name"
-        android:protectionLevel="signature" />
+    <!--<permission-->
+    <!--android:name="oly.netpowerctrl.plugins"-->
+    <!--android:label="@string/app_name"-->
+    <!--android:description="@string/app_name"-->
+    <!--android:protectionLevel="signature" />-->
 
     <application
         android:name=".application_state.NetpowerctrlApplication"
         android:icon="@drawable/netpowerctrl"
         android:label="@string/app_name"
         android:allowBackup="true">
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <activity
             android:name="oly.netpowerctrl.main.NetpowerctrlActivity"
             android:label="@string/app_name"

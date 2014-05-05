@@ -240,7 +240,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     @Override
     public void finishedReordering() {
-        NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+        NetpowerctrlApplication.getDataController().deviceCollection.save();
     }
 
     public void addItem(DevicePort oi, int command_value) {

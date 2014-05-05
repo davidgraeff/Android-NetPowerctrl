@@ -15,7 +15,7 @@
     <string name="delete_all_devices">Delete all devices</string>
 
     <string name="save">Save</string>
-    <string name="error_reading_configured_devices">Error reading configured devices</string>
+    <string name="error_reading_devices">Error reading configured devices</string>
     <string name="error_saving_configured_devices">Error saving configured devices</string>
     <string name="error_sending_inquiry">Error sending inquiry packet to %1$s</string>
     <string name="error_sending_broadcast_inquiry">Error sending broadcast inquiry packet on port %d</string>
@@ -74,23 +74,24 @@
         <item>Donate via %s</item>
     </string-array>
 
-    <string name="drawer_single_title">Trigger one action</string>
+    <string name="drawer_switch_title">Trigger actions</string>
     <string name="drawer_overview">Overview</string>
-    <string name="drawer_multiple_title">Multiple actions</string>
     <string name="drawer_scenes">Scene Overview</string>
 
     <string-array name="drawer_titles_app">
         <item>App and Devices</item>
         <item>Devices</item>
         <item>Preferences</item>
-        <item>Transfer/Backup</item>
+        <item>GDrive Backup</item>
+        <item>Neighbour Sync</item>
     </string-array>
 
     <string-array name="drawer_descriptions_app">
         <item>-</item>
         <item>New and configured devices</item>
         <item>Ports, Widgets, Theme, …</item>
-        <item>Copy configured devices/outlets</item>
+        <item>Backup of scenes, devices</item>
+        <item>Sync mobiles, tablets</item>
     </string-array>
 
     <string name="drawer_open">Open navigation drawer</string>
@@ -132,7 +133,8 @@
 A scene combines multiple actions and execute them at once.</string>
     <string name="empty_no_outlets">No outlets to display.\n\n
 If you would like to configure new devices, change to the Devices screen.</string>
-    <string name="empty_no_devices">No devices found. You may have setup wrong ports in the preferences.</string>
+    <string name="empty_no_devices">There were no devices found by the automatic device search.\n\n
+Please double check that you are in the same network as your devices, UDP on the devices is activated and the network ports in the preferences are correct.\n\nAlternatively use the (+) icon located in the top-left bar to manually enter device data.</string>
     <string name="devices_refreshed">Found %1$d known and %2$d unknown devices on this network</string>
     <string name="error_not_in_range">Destination network %1$s not in range</string>
     <string name="scene_executed">Scene %1$s executed</string>
@@ -169,7 +171,7 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="error_scene_no_actions">No actions defined. Saving disabled!</string>
     <string name="error_scene_no_name">No name set. Saving disabled!</string>
     <string name="scene_create_helptext_available">No more actions. You already have used all available or there are no one available.</string>
-    <string name="error_reading_scenes_old">The internal structure changed. Importing your scenes failed :(</string>
+    <string name="error_reading_groups">Reading groups failed</string>
     <string name="scene_no_name">No name!</string>
     <string name="widget_on">(On)</string>
     <string name="widget_off">(Off)</string>
@@ -227,7 +229,7 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="toggleSlave">Like Master</string>
     <string name="menu_outlet_master_slave">Master for…</string>
     <string name="outlet_master_slave_title">Slaves for %1$s</string>
-    <string name="preference_sync_with_neighbours">Synchronize with neighbours</string>
+    <string name="neighbours_sync">Synchronize with neighbours</string>
     <string name="preference_sync_with_neighbours_summary">Scenes, groups, devices, icons will automatically synchronized with paired neighbours</string>
     <string name="scene_create_available">Available</string>
     <string name="scene_create_added">Attachted actions</string>
@@ -235,4 +237,22 @@ If you would like to configure new devices, change to the Devices screen.</strin
     <string name="preference_wakeup_energy_saving_mode_summary">Usually the energy saving mode will not be left automatically (except if you reopen the app). If you activate this option, part of the app will remain active and search for devices after a network change.</string>
     <string name="activate_nfc">Aktiviere NFC in den Einstellungen</string>
     <string name="scene_remove_item">Remove item from scene</string>
+    <string name="device_prefer_tcp">Langsamere, Internetstabile Verbindung bevorzugen</string>
+    <string name="gDrive_backup">Sicherung bei Google Drive</string>
+    <string name="neighbours_not_found">Keine Nachbargeräte gefunden. Bei Nachbargeräten ebenfalls in diesen Bildschirm wechseln.
+
+Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
+    <string name="neighbours_hint_activated">Suche nach Nachbargeräten aktiv. Netzwerk ID: %s</string>
+    <string name="help_neighbours">Wenn du mehrere Android Telefone oder Tablets mit dieser App zur Steuerung deiner Geräte verwendest, dann bietet dir die Nachbar-Synchronisierung den automatischen Abgleich aller Geräte, Gruppen, Szenen, Icons. Zuerst musst du Nachbargeräte koppeln. Danach kannst du deine Einstellungen per Knopfdruck auf das andere Gerät senden oder bei jeder Änderung automatisch einen Abgleich durchführen lassen. Für den automatischen Abgleich schalte den Schiebeschalter in der Titelzeile auf EIN.</string>
+    <string name="help_gDrive">Du kannst deine Geräte, Gruppen, Szenen und Icons bei Google Drive sichern. Bei einer Neuinstallation oder Installation auf einem anderem Gerät können die Einstellungen so schnell wiederhergestellt werden.</string>
+    <string name="neighbour_entry">Devices %1$d, Scenes %2$d, Groups %3$d, Icons %4$d</string>
+    <string name="neighbour_older_version">(Older version!)</string>
+    <string name="neighbour_newer_version">(Newer version!)</string>
+    <string name="gDriveConnected">Mit Google Drive verbunden</string>
+    <string name="gDriveDisconnected">Keine Verbindung zu Google Drive</string>
+    <string name="neighbour_not_same_version">Not the same version!</string>
+    <string name="neighbour_pairing_request">Pair request send</string>
+    <string name="neighbour_pairing_title">Pairing request</string>
+    <string name="neighbour_pairing_message">If you allow the pairing, the neighbour %s is allowed to send and overwrite settings on this device.</string>
+    <string name="neighbours_error_retrieve_files">Verzeichnis konnte nicht abgerufen werden</string>
 </resources>

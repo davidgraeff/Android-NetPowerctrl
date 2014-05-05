@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="4.0"
+        versioncode="50">
+        <change>GoogleDrive Backup</change>
+        <change>Weitere Mobilgeräte über das lokale Netzwerk synchronisieren</change>
+        <change>NFC nur noch als Play Store Link</change>
+        <change>Geräte können wieder manuell angelegt werden</change>
+        <change>Http statt UDP möglich (für die jenigen, welche die Steckdose übers Internet steuern
+            wollen)
+        </change>
+    </release>
+    <release
+        version="3.3"
+        versioncode="49">
+        <change>Abstürze an diversen Stellen bedingt durch automatische Optimierung behoben</change>
+    </release>
+    <release
+        version="3.2"
+        versioncode="48">
+        <change>Steckdose-Aus Icon (Rot): Sättigung verringert</change>
+        <change>Absturz bei Szenenerstellung behoben, wenn kein Master festgelegt wurde</change>
+    </release>
+    <release
         version="3.1"
         versioncode="47">
         <change>Master/Slave Steckdosen: Einer Steckdose können mehrere andere Zugeordnet werden,

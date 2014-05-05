@@ -14,41 +14,74 @@ import oly.netpowerctrl.utils.JSONHelper;
 
 public class Scene {
     private static long nextStableID = 0;
-
-    public String sceneName = "";
-    public UUID uuid = UUID.randomUUID();
     //public Bitmap bitmap = null;
     public final long id = nextStableID++;
+    public String sceneName = "";
+    public UUID uuid = UUID.randomUUID();
+    public List<SceneItem> sceneItems = new ArrayList<SceneItem>();
     boolean favourite;
+    UUID uuid_master = null;
 
+    public Scene() {
+    }
+
+    private static void readSceneItem(JsonReader reader, Scene scene) throws IOException {
+        reader.beginObject();
+        SceneItem item = new SceneItem();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            if (name.equals("name")) {
+                item.command = reader.nextInt();
+            } else if (name.equals("uuid")) {
+                item.uuid = UUID.fromString(reader.nextString());
+            } else
+                reader.skipValue();
+        }
+        reader.endObject();
+        scene.sceneItems.add(item);
+    }
+
+    public static Scene fromJSON(JsonReader reader) throws IOException {
+        Scene scene = new Scene();
+
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            if (name.equals("sceneName")) {
+                scene.sceneName = reader.nextString();
+            } else if (name.equals("uuid")) {
+                scene.uuid = UUID.fromString(reader.nextString());
+            } else if (name.equals("uuid_master")) {
+                scene.uuid_master = UUID.fromString(reader.nextString());
+            } else if (name.equals("favourite")) {
+                scene.favourite = reader.nextBoolean();
+            } else if (name.equals("groupItems")) {
+                reader.beginArray();
+                while (reader.hasNext()) {
+                    readSceneItem(reader, scene);
+                }
+                reader.endArray();
+            } else {
+                reader.skipValue();
+            }
+        }
+        reader.endObject();
+        return scene;
+    }
 
     public boolean isFavourite() {
         return favourite;
     }
 
     public void setMaster(DevicePort master) {
-        uuid_master = master.uuid;
+        uuid_master = (master != null) ? master.uuid : null;
     }
 
     public UUID getMasterUUid() {
         return uuid_master;
     }
-
-
-    public static class SceneItem {
-        public UUID uuid = UUID.randomUUID();
-        public int command;
-
-        public SceneItem() {
-        }
-
-        public SceneItem(UUID uuid, int command) {
-            this.uuid = uuid;
-            this.command = command;
-        }
-    }
-
-    public List<SceneItem> sceneItems = new ArrayList<SceneItem>();
 
     /**
      * Return null if no master is set, otherwise return the command
@@ -67,11 +100,6 @@ public class Scene {
 
     public boolean isMasterSlave() {
         return (uuid_master != null);
-    }
-
-    UUID uuid_master = null;
-
-    public Scene() {
     }
 
     @Override
@@ -129,52 +157,6 @@ public class Scene {
         }
     }
 
-    private static void readSceneItem(JsonReader reader, Scene scene) throws IOException {
-        reader.beginObject();
-        SceneItem item = new SceneItem();
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            assert name != null;
-            if (name.equals("name")) {
-                item.command = reader.nextInt();
-            } else if (name.equals("uuid")) {
-                item.uuid = UUID.fromString(reader.nextString());
-            } else
-                reader.skipValue();
-        }
-        reader.endObject();
-        scene.sceneItems.add(item);
-    }
-
-    public static Scene fromJSON(JsonReader reader) throws IOException {
-        Scene scene = new Scene();
-
-        reader.beginObject();
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            assert name != null;
-            if (name.equals("sceneName")) {
-                scene.sceneName = reader.nextString();
-            } else if (name.equals("uuid")) {
-                scene.uuid = UUID.fromString(reader.nextString());
-            } else if (name.equals("uuid_master")) {
-                scene.uuid_master = UUID.fromString(reader.nextString());
-            } else if (name.equals("favourite")) {
-                scene.favourite = reader.nextBoolean();
-            } else if (name.equals("groupItems")) {
-                reader.beginArray();
-                while (reader.hasNext()) {
-                    readSceneItem(reader, scene);
-                }
-                reader.endArray();
-            } else {
-                reader.skipValue();
-            }
-        }
-        reader.endObject();
-        return scene;
-    }
-
     public void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("sceneName").value(sceneName);
@@ -201,6 +183,19 @@ public class Scene {
             if (item.uuid.equals(uuid))
                 return item;
         return null;
+    }
+
+    public static class SceneItem {
+        public UUID uuid = UUID.randomUUID();
+        public int command;
+
+        public SceneItem() {
+        }
+
+        public SceneItem(UUID uuid, int command) {
+            this.uuid = uuid;
+            this.command = command;
+        }
     }
 
     public static class PortAndCommand {

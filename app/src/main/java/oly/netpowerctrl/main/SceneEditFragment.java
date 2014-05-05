@@ -12,6 +12,7 @@ import android.widget.GridView;
 import com.nhaarman.listviewanimations.swinginadapters.prepared.SwingBottomInAnimationAdapter;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
@@ -85,12 +86,19 @@ public class SceneEditFragment extends Fragment {
 
     public void checkEmpty() {
         final View view = getView();
+        assert view != null;
         if (mEditType == SceneEditFragment.TYPE_AVAILABLE) {
-            mListView.setEmptyView(view.findViewById(R.id.loading));
             // We assign the empty view after a short delay time,
-            // to reduce visual flicker on app start, where data
-            // is loaded with a high chance within the first 500ms.
-            new Handler().postDelayed(new Runnable() {
+            // to reduce visual flicker on activity start
+            Handler h = NetpowerctrlApplication.getMainThreadHandler();
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mListView.setEmptyView(view.findViewById(R.id.loading));
+
+                }
+            }, 10);
+            h.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     //noinspection ConstantConditions

@@ -19,7 +19,7 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.listadapter.DevicePortsSelectAdapter;
 
-class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener {
+public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener {
     private DevicePort master;
     private DevicePortsSelectAdapter adapter;
 
@@ -42,7 +42,7 @@ class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClic
 
         // Add all device ports that are not equal to master and type of toggle.
         adapter = new DevicePortsSelectAdapter(getActivity());
-        List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().configuredDevices;
+        List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
         for (DeviceInfo device : configuredDevices) {
             device.lockDevicePorts();
             Iterator<DevicePort> it_port = device.getDevicePortIterator();
@@ -65,7 +65,7 @@ class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClic
 
 
         master.setSlaves(adapter.getCheckedUUids());
-        NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+        NetpowerctrlApplication.getDataController().deviceCollection.save();
 
         //noinspection ConstantConditions
         getActivity().setTitle(R.string.drawer_overview);

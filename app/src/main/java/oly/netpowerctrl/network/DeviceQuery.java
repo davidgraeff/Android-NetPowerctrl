@@ -19,7 +19,7 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
  */
 public class DeviceQuery extends DeviceObserverBase {
 
-    public DeviceQuery(DeviceQueryResult target, DeviceInfo device_to_observe) {
+    public DeviceQuery(DeviceObserverResult target, DeviceInfo device_to_observe) {
         setDeviceQueryResult(target);
         devices_to_observe = new ArrayList<DeviceInfo>();
         devices_to_observe.add(device_to_observe);
@@ -34,7 +34,7 @@ public class DeviceQuery extends DeviceObserverBase {
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
     }
 
-    public DeviceQuery(DeviceQueryResult target, Collection<DeviceInfo> devices_to_observe) {
+    public DeviceQuery(DeviceObserverResult target, Collection<DeviceInfo> devices_to_observe) {
         setDeviceQueryResult(target);
         this.devices_to_observe = new ArrayList<DeviceInfo>(devices_to_observe);
 
@@ -55,11 +55,11 @@ public class DeviceQuery extends DeviceObserverBase {
      * Issues a broadcast query. If there is no response to that for all
      * configured devices, we will also do a device specific query.
      *
-     * @param target
+     * @param target The object where the result will be propagated to.
      */
-    public DeviceQuery(DeviceQueryResult target) {
+    public DeviceQuery(DeviceObserverResult target) {
         setDeviceQueryResult(target);
-        this.devices_to_observe = new ArrayList<DeviceInfo>(NetpowerctrlApplication.getDataController().configuredDevices);
+        this.devices_to_observe = new ArrayList<DeviceInfo>(NetpowerctrlApplication.getDataController().deviceCollection.devices);
 
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
@@ -82,12 +82,12 @@ public class DeviceQuery extends DeviceObserverBase {
         NetpowerctrlService service = NetpowerctrlApplication.getService();
         if (service == null)
             return;
+
         if (repeated)
             Log.w("DeviceObserverBase", "redo: " + di.DeviceName);
         PluginInterface remote = di.getPluginInterface(service);
-        boolean reachable = remote != null;
 
-        if (reachable) {
+        if (remote != null) {
             remote.requestData(di);
         } else {
             di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));

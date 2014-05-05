@@ -15,7 +15,7 @@
     <string name="delete_all_devices">Alle löschen</string>
 
     <string name="save">Speichern</string>
-    <string name="error_reading_configured_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
+    <string name="error_reading_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
     <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
     <string name="error_sending_inquiry">Anfrage an Gerät %1$s konnte nicht gesendet werden</string>
     <string name="error_sending_broadcast_inquiry">Anfrage an Netzwerk auf Port %d fehlgeschlagen</string>
@@ -77,23 +77,24 @@
         <item>Spenden per %s</item>
     </string-array>
 
-    <string name="drawer_single_title">Einzeln schalten</string>
+    <string name="drawer_switch_title">Schalten</string>
     <string name="drawer_overview">Übersicht</string>
-    <string name="drawer_multiple_title">Mehrere schalten</string>
     <string name="drawer_scenes">Szenenübersicht</string>
 
     <string-array name="drawer_titles_app">
         <item>App</item>
         <item>Geräte</item>
         <item>Einstellungen</item>
-        <item>Übertragen/Backup</item>
+        <item>GDrive Sicherung</item>
+        <item>Synchronisieren</item>
     </string-array>
 
     <string-array name="drawer_descriptions_app">
         <item>-</item>
         <item>Neue/eingerichte Geräte</item>
         <item>Ports, Widgets, Theme, …</item>
-        <item>Kopiere konfigurierte Geräte</item>
+        <item>Auf Google Drive sichern</item>
+        <item>Telefone, Tablets synchronisieren</item>
     </string-array>
 
     <string name="drawer_open">Öffne Navigationsleiste</string>
@@ -132,7 +133,8 @@
 Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
 Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</string>
-    <string name="empty_no_devices">Keine Geräte gefunden. Vielleicht hast du falsche Ports in den Einstellungen ausgewählt?</string>
+    <string name="empty_no_devices">Die automatische Suche hat keine Geräte gefunden.\n\n
+Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Geräte und solltest die Netzwerk-Ports der App noch einmal kontrollieren.\n\nIm Notfall kannst du über das (+) Icon oben rechts ein Gerät erstellen.</string>
     <string name="devices_refreshed">Es wurden %1$d bekannte und %2$d unbekannte Geräte gefunden</string>
     <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
     <string name="scene_executed">Szene %1$s ausgeführt</string>
@@ -149,7 +151,7 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="widget_image_on">Widget Aussehen: An</string>
     <string name="widget_image_off">Widget Aussehen: Aus</string>
     <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
-    <string name="crash_toast_text">Ooooops! Ich bin leider abgestürzt :( Aber ein Absturzbericht wird automatisch angefertigt.</string>
+    <string name="crash_toast_text">Ich bin leider abgestürzt :( Bitte sende einen Absturzbericht an meinen Entwickler</string>
     <string name="outlet_to_scene_title">Erstelle Szene</string>
     <string name="service_stopped">Power-Control Hintergrunddienst beendet</string>
     <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
@@ -169,7 +171,7 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="error_scene_no_actions">Keine Aktion zugewiesen. Speichern nicht erlaubt!</string>
     <string name="error_scene_no_name">Keinen Namen vergeben. Speichern nicht erlaubt!</string>
     <string name="scene_create_helptext_available">Keine weiteren Aktionen vorhanden! Entweder nutzt du bereits alle oder es gibt einfach keine.</string>
-    <string name="error_reading_scenes_old">Die Datenstruktur hat sich geändert. Das Importieren deiner Szenen ist fehlgeschlagen :(</string>
+    <string name="error_reading_groups">Gruppen konnten nicht geladen werden</string>
     <string name="scene_no_name">Kein Name!</string>
     <string name="widget_on">(An)</string>
     <string name="widget_off">(Aus)</string>
@@ -229,7 +231,7 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="toggleSlave">Wie Master</string>
     <string name="menu_outlet_master_slave">Als Master für…</string>
     <string name="outlet_master_slave_title">Slaves für %1$s setzen</string>
-    <string name="preference_sync_with_neighbours">Synchronisiere mit Nachbarn</string>
+    <string name="neighbours_sync">Synchronisiere mit Nachbarn</string>
     <string name="preference_sync_with_neighbours_summary">Szenen, Gruppen, Geräte, Bilder werden automatisch mit bekannten Nachbargeräten im Wlan synchronisiert.</string>
     <string name="scene_create_available">Verfügbar</string>
     <string name="scene_create_added">Zugewiesene Aktionen</string>
@@ -237,4 +239,22 @@ Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</stri
     <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
     <string name="activate_nfc">Aktiviere NFC in den Einstellungen</string>
     <string name="scene_remove_item">Remove item from scene</string>
+    <string name="device_prefer_tcp">Langsamere, Internetstabile Verbindung bevorzugen</string>
+    <string name="gDrive_backup">Sicherung bei Google Drive</string>
+    <string name="neighbours_not_found">Keine Nachbargeräte gefunden. Bei Nachbargeräten ebenfalls in diesen Bildschirm wechseln.
+
+Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
+    <string name="neighbours_hint_activated">Suche nach Nachbargeräten aktiv. Netzwerk ID: %s</string>
+    <string name="help_neighbours">Wenn du mehrere Android Telefone oder Tablets mit dieser App zur Steuerung deiner Geräte verwendest, dann bietet dir die Nachbar-Synchronisierung den automatischen Abgleich aller Geräte, Gruppen, Szenen, Icons. Zuerst musst du Nachbargeräte koppeln. Danach kannst du deine Einstellungen per Knopfdruck auf das andere Gerät senden oder bei jeder Änderung automatisch einen Abgleich durchführen lassen. Für den automatischen Abgleich schalte den Schiebeschalter in der Titelzeile auf EIN.</string>
+    <string name="help_gDrive">Du kannst deine Geräte, Gruppen, Szenen und Icons bei Google Drive sichern. Bei einer Neuinstallation oder Installation auf einem anderem Gerät können die Einstellungen so schnell wiederhergestellt werden.</string>
+    <string name="neighbour_entry">Geräte %1$d, Szenen %2$d, Gruppen %3$d, Icons %4$d</string>
+    <string name="neighbour_older_version">(Ältere version!)</string>
+    <string name="neighbour_newer_version">(Neuere version!)</string>
+    <string name="gDriveConnected">Mit Google Drive verbunden</string>
+    <string name="gDriveDisconnected">Keine Verbindung zu Google Drive</string>
+    <string name="neighbour_not_same_version">Nicht die selbe Version!</string>
+    <string name="neighbour_pairing_request">Kopplungsanfrage verschickt</string>
+    <string name="neighbour_pairing_title">Kopplungsanfrage</string>
+    <string name="neighbour_pairing_message">If you allow the pairing, the neighbour %s is allowed to send and overwrite settings on this device.</string>
+    <string name="neighbours_error_retrieve_files">Verzeichnis konnte nicht abgerufen werden</string>
 </resources>

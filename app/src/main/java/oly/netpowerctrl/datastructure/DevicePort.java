@@ -139,6 +139,8 @@ public final class DevicePort implements Comparable {
      * @return Return true if values in this object have changed because of source_oi.
      */
     public boolean copyValues(DevicePort source_oi) {
+        // We update the command timecode here, too.
+        last_command_timecode = source_oi.device.getUpdatedTime();
         boolean hasChanged;
         hasChanged = current_value != source_oi.current_value;
         current_value = source_oi.current_value;

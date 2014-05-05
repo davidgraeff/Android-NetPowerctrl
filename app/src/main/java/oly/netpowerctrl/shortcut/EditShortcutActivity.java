@@ -195,7 +195,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
         }
 
         // Load current set of available outlets
-        List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().configuredDevices;
+        List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
         adapter_available.update(configuredDevices);
         adapter_available.removeAll(adapter_included);
 
@@ -250,8 +250,8 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
             return;
 
         if (isSceneNotShortcut) {
-            NetpowerctrlApplication.getDataController().scenes.setBitmap(this, scene, scene_icon);
-            NetpowerctrlApplication.getDataController().scenes.addScene(scene);
+            NetpowerctrlApplication.getDataController().sceneCollection.setBitmap(this, scene, scene_icon);
+            NetpowerctrlApplication.getDataController().sceneCollection.addScene(scene);
         } else {
             Intent extra = Shortcuts.createShortcutExecutionIntent(EditShortcutActivity.this,
                     scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
@@ -291,7 +291,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
                 return true;
             case R.id.menu_switch_all_ignore:
                 adapter_included.clear();
-                adapter_available.update(NetpowerctrlApplication.getDataController().configuredDevices);
+                adapter_available.update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

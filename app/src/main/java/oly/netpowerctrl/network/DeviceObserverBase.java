@@ -15,12 +15,12 @@ import oly.netpowerctrl.datastructure.DeviceInfo;
  * provide the result of a query/a sending action to the DeviceQueryResult object.
  */
 public abstract class DeviceObserverBase {
-    public void setDeviceQueryResult(DeviceQueryResult target) {
+    public void setDeviceQueryResult(DeviceObserverResult target) {
         this.target = target;
     }
 
     List<DeviceInfo> devices_to_observe;
-    private DeviceQueryResult target;
+    private DeviceObserverResult target;
     final Handler mainLoopHandler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
     final Runnable timeoutRunnable = new Runnable() {
         @Override
@@ -34,7 +34,7 @@ public abstract class DeviceObserverBase {
                 target.onDeviceTimeout(di);
             }
             NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
-            target.onDeviceQueryFinished(devices_to_observe);
+            target.onObserverJobFinished(devices_to_observe);
         }
     };
 
@@ -99,7 +99,7 @@ public abstract class DeviceObserverBase {
             mainLoopHandler.removeCallbacks(timeoutRunnable);
             mainLoopHandler.removeCallbacks(redoRunnable);
             if (target != null)
-                target.onDeviceQueryFinished(devices_to_observe);
+                target.onObserverJobFinished(devices_to_observe);
             return true;
         }
         return false;
@@ -119,6 +119,6 @@ public abstract class DeviceObserverBase {
                 target.onDeviceTimeout(di);
         }
         if (target != null)
-            target.onDeviceQueryFinished(devices_to_observe);
+            target.onObserverJobFinished(devices_to_observe);
     }
 }

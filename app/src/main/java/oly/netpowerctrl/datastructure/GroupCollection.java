@@ -11,12 +11,12 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 
-public class Groups {
+public class GroupCollection {
     private static long nextStableID = 0;
+    private final IGroupsSave storage;
 
     public static class GroupItem {
         public UUID uuid;
@@ -80,7 +80,8 @@ public class Groups {
 
     public final List<GroupItem> groupItems = new ArrayList<GroupItem>();
 
-    public Groups() {
+    public GroupCollection(IGroupsSave storage) {
+        this.storage = storage;
     }
 
     //bitmap = Icons.loadIcon(NetpowerctrlApplication.instance,uuid, Icons.IconType.GroupIcon);
@@ -96,7 +97,8 @@ public class Groups {
     public UUID add(String name) {
         UUID group_uuid = UUID.randomUUID();
         groupItems.add(new GroupItem(group_uuid, name));
-        SharedPrefs.saveGroups(this);
+        if (storage != null)
+            storage.groupsSave(this);
         notifyObservers(true);
         return group_uuid;
     }
@@ -121,7 +123,9 @@ public class Groups {
             groupItems.add(new GroupItem(group_uuid, name));
         else
             groupItems.get(index).name = name;
-        SharedPrefs.saveGroups(this);
+        if (storage != null)
+            storage.groupsSave(this);
+
         notifyObservers(false);
     }
 
@@ -131,7 +135,9 @@ public class Groups {
             return false;
         }
         groupItems.remove(index);
-        SharedPrefs.saveGroups(this);
+        if (storage != null)
+            storage.groupsSave(this);
+
         notifyObservers(true);
         return true;
     }
@@ -144,8 +150,8 @@ public class Groups {
         groupItems.remove(originalPosition);
         groupItems.add(newPosition, temp);
         notifyObservers(true);
-        if (saveReordering)
-            SharedPrefs.saveGroups(this);
+        if (saveReordering && storage != null) storage.groupsSave(this);
+
     }
 
     public int length() {
@@ -177,7 +183,7 @@ public class Groups {
         }
     }
 
-    private static void readGroupItem(JsonReader reader, Groups scene) throws IOException {
+    private static void readGroupItem(JsonReader reader, GroupCollection scene) throws IOException {
         String group_name = null;
         UUID group_uuid = null;
 
@@ -200,8 +206,10 @@ public class Groups {
         scene.groupItems.add(item);
     }
 
-    public static Groups fromJSON(JsonReader reader) throws IOException {
-        Groups scene = new Groups();
+    public static GroupCollection fromJSON(JsonReader reader, IGroupsSave storage) throws IOException {
+        GroupCollection scene = new GroupCollection(storage);
+        if (reader == null)
+            return scene;
 
         reader.beginObject();
         while (reader.hasNext()) {
@@ -251,5 +259,9 @@ public class Groups {
     public boolean equalsAtIndex(int index, List<UUID> groupUUids) {
         GroupItem g = groupItems.get(index);
         return groupUUids.contains(g.uuid);
+    }
+
+    public interface IGroupsSave {
+        void groupsSave(GroupCollection groups);
     }
 }

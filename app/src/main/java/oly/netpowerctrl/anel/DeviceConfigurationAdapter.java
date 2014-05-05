@@ -67,8 +67,9 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
     private static final int UserName = 2;
     private static final int Password = 3;
     private static final int DefaultPorts = 4;
-    private static final int ReceivePort = 5;
-    private static final int SendPort = 6;
+    private static final int PreferTCP = 5;
+    private static final int ReceivePort = 6;
+    private static final int SendPort = 7;
 
     public DeviceConfigurationAdapter(Context context, DeviceInfo deviceInfo) {
         this.context = context;
@@ -79,6 +80,7 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_username), deviceInfo.UserName, UserName));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_password), deviceInfo.Password, Password));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_default_ports), deviceInfo.DefaultPorts));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_prefer_tcp), deviceInfo.PreferTCP));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_recv_udp), deviceInfo.ReceivePort, ReceivePort, !deviceInfo.DefaultPorts));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_send_udp), deviceInfo.SendPort, SendPort, !deviceInfo.DefaultPorts));
     }
@@ -169,22 +171,26 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
             item.mDisplayValueBoolean = deviceInfo.DefaultPorts;
             notifyDataSetChanged();
             return;
+        } else if (key == PreferTCP) {
+            CheckBox chk = (CheckBox) view;
+            deviceInfo.PreferTCP = chk.isChecked();
+            item.mDisplayValueBoolean = deviceInfo.PreferTCP;
+            notifyDataSetChanged();
+            return;
         }
-
-        EditText textView = new EditText(context);
+        final EditText textView = new EditText(context);
         textView.setText(((TextView) view).getText());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(item.mTitle);
         builder.setView(textView);
-
-        @SuppressWarnings("ConstantConditions")
-        final String text = textView.getText().toString();
 
         switch (key) {
             case DeviceName:
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text;
+                        //noinspection ConstantConditions
+                        item.mDisplayValueString = textView.getText().toString();
                         deviceInfo.DeviceName = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
@@ -194,7 +200,8 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text;
+                        //noinspection ConstantConditions
+                        item.mDisplayValueString = textView.getText().toString();
                         deviceInfo.HostName = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
@@ -204,7 +211,8 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text;
+                        //noinspection ConstantConditions
+                        item.mDisplayValueString = textView.getText().toString();
                         deviceInfo.UserName = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
@@ -214,7 +222,8 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueString = text;
+                        //noinspection ConstantConditions
+                        item.mDisplayValueString = textView.getText().toString();
                         deviceInfo.Password = item.mDisplayValueString;
                         notifyDataSetChanged();
                     }
@@ -225,7 +234,8 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueInt = Integer.valueOf(text);
+                        //noinspection ConstantConditions
+                        item.mDisplayValueInt = Integer.valueOf(textView.getText().toString());
                         deviceInfo.ReceivePort = item.mDisplayValueInt;
                         notifyDataSetChanged();
                     }
@@ -236,7 +246,8 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
                 builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        item.mDisplayValueInt = Integer.valueOf(text);
+                        //noinspection ConstantConditions
+                        item.mDisplayValueInt = Integer.valueOf(textView.getText().toString());
                         deviceInfo.SendPort = item.mDisplayValueInt;
                         notifyDataSetChanged();
                     }

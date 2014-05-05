@@ -23,7 +23,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nhaarman.listviewanimations.swinginadapters.prepared.SwingBottomInAnimationAdapter;
+import com.nhaarman.listviewanimations.swinginadapters.AnimationAdapter;
+import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,14 +33,14 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.Groups;
+import oly.netpowerctrl.datastructure.GroupCollection;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.listadapter.NotReachableUpdate;
+import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceQueryResult;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.shortcut.EditShortcutActivity;
 import oly.netpowerctrl.shortcut.Shortcuts;
@@ -104,7 +105,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private void assignAdapter() {
         if (SharedPrefs.getAnimationEnabled()) {
             // Add animation to the list
-            SwingBottomInAnimationAdapter animatedAdapter = new SwingBottomInAnimationAdapter(adapter);
+            AnimationAdapter animatedAdapter = new ScaleInAnimationAdapter(adapter);
+            animatedAdapter.setInitialDelayMillis(0);
+            animatedAdapter.setAnimationDelayMillis(10);
             animatedAdapter.setAbsListView(mListView);
             mListView.setAbstractDynamicGridAdapter(adapter);
             mListView.setAdapter(animatedAdapter);
@@ -116,7 +119,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private void setListOrGrid(boolean grid, int widthOfListView) {
         if (!grid) {
             adapter.setLayoutRes(R.layout.list_icon_item);
-            mListView.setMinimumColumnWidth(280);
+            mListView.setMinimumColumnWidth(270);
             mListView.setNumColumns(GridView.AUTO_FIT, widthOfListView);
             assignAdapter();
         } else {
@@ -132,7 +135,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.outlets, menu);
 
-        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0) {
+        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_showhidden).setVisible(false);
             //noinspection ConstantConditions
@@ -178,7 +181,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_removeGroup: {
-                if (!NetpowerctrlApplication.getDataController().groups.remove(groupFilter)) {
+                if (!NetpowerctrlApplication.getDataController().groupCollection.remove(groupFilter)) {
                     return true;
                 }
                 NetpowerctrlActivity.instance.changeToFragment(OutletsFragment.class.getName());
@@ -190,7 +193,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.findDevices(new DeviceQueryResult() {
+                NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
                     @Override
                     public void onDeviceError(DeviceInfo di) {
                     }
@@ -204,7 +207,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     }
 
                     @Override
-                    public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+                    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
                         //noinspection ConstantConditions
                         Toast.makeText(getActivity(),
                                 getActivity().getString(R.string.devices_refreshed,
@@ -253,7 +256,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
             case R.id.menu_sortAlphabetically: {
                 adapter.sortAlphabetically();
-                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                NetpowerctrlApplication.getDataController().deviceCollection.save();
             }
         }
         return false;
@@ -290,7 +293,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         });
         hintText = (TextView) view.findViewById(R.id.hintText);
         adapter.setNotReachableObserver(this);
-        if (NetpowerctrlApplication.getDataController().configuredDevices.size() == 0) {
+        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             mListView.setEmptyView(view.findViewById(android.R.id.empty));
             emptyText = (TextView) view.findViewById(R.id.empty_text);
             emptyText.setText(getString(R.string.empty_no_outlets_no_devices));
@@ -367,27 +370,27 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     return true;
 
                 // Save devices and devicePorts
-                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                NetpowerctrlApplication.getDataController().deviceCollection.save();
 
                 // update adapter
                 adapter.setGroupFilter(groupFilter);
                 return true;
             }
             case R.id.menu_outlet_createGroup: {
-                final Groups groups = NetpowerctrlApplication.getDataController().groups;
+                final GroupCollection groupCollection = NetpowerctrlApplication.getDataController().groupCollection;
 
                 // No groups? Ask the user to create one
-                if (groups.length() == 0) {
+                if (groupCollection.length() == 0) {
                     createGroupForDevicePort(oi);
                     return true;
                 }
 
-                CharSequence[] items = groups.getGroupsArray();
+                CharSequence[] items = groupCollection.getGroupsArray();
                 final boolean[] checked = new boolean[items.length];
 
                 // Sync checked array with items array
                 for (int i = 0; i < checked.length; ++i) {
-                    if (groups.equalsAtIndex(i, oi.groups))
+                    if (groupCollection.equalsAtIndex(i, oi.groups))
                         checked[i] = true;
                 }
 
@@ -409,10 +412,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                                     if (!checked[i]) {
                                         continue;
                                     }
-                                    oi.groups.add(groups.groupItems.get(i).uuid);
+                                    oi.groups.add(groupCollection.groupItems.get(i).uuid);
                                     ++counter;
                                 }
-                                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                                NetpowerctrlApplication.getDataController().deviceCollection.save();
                                 Toast.makeText(getActivity(), getString(R.string.outlet_added_to_groups, counter), Toast.LENGTH_SHORT).show();
                             }
                         })
@@ -430,13 +433,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 // onDeviceUpdated will either call notifyDataSetChanged if the second parameter is
                 // false or it will reconstruct the entire adapter.
                 adapter.onDeviceUpdated(null, !adapter.getIsShowingHidden());
-                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                NetpowerctrlApplication.getDataController().deviceCollection.save();
                 return true;
             }
             case R.id.menu_outlet_unhide: {
                 oi.Hidden = false;
                 adapter.notifyDataSetChanged();
-                NetpowerctrlApplication.getDataController().saveConfiguredDevices(false);
+                NetpowerctrlApplication.getDataController().deviceCollection.save();
                 return true;
             }
             case R.id.menu_add_homescreen: {
@@ -465,7 +468,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     private void renameGroup() {
-        final Groups.GroupItem groupItem = NetpowerctrlApplication.getDataController().groups.get(groupFilter);
+        final GroupCollection.GroupItem groupItem = NetpowerctrlApplication.getDataController().groupCollection.get(groupFilter);
         if (groupItem == null)
             return;
 
@@ -483,7 +486,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                NetpowerctrlApplication.getDataController().groups.edit(groupItem.uuid, name);
+                NetpowerctrlApplication.getDataController().groupCollection.edit(groupItem.uuid, name);
             }
         });
 
@@ -507,7 +510,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                UUID group_uuid = NetpowerctrlApplication.getDataController().groups.add(name);
+                UUID group_uuid = NetpowerctrlApplication.getDataController().groupCollection.add(name);
                 port.addToGroup(group_uuid);
             }
         });
@@ -601,7 +604,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void setIcon(Object context_object, Bitmap bitmap) {
         if (context_object == null)
             return;
-        NetpowerctrlApplication.getDataController().setDevicePortBitmap(getActivity(),
+        NetpowerctrlApplication.getDataController().deviceCollection.setDevicePortBitmap(getActivity(),
                 (DevicePort) context_object, bitmap);
         invalidateListViewViewHolders();
     }

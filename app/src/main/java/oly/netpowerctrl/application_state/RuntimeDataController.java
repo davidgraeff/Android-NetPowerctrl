@@ -1,8 +1,5 @@
 package oly.netpowerctrl.application_state;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,9 +10,10 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.Groups;
+import oly.netpowerctrl.datastructure.GroupCollection;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
 import oly.netpowerctrl.network.DeviceObserverBase;
@@ -24,69 +22,67 @@ import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
- * All configured/new devices are listed here, together with
- * observers.
+ * Device Updates go into this singleton object and are propagated to all observers and the device collection.
+ * There should never be more than one instance of this class, the singleton object can be accessed by the
+ * main Application class.
+ * All data collections are centralized in this class. Helper methods regarding configured devices
+ * go into this class. At the moment those are: execute, rename, countReachable, countNetworkDevices.
  */
 public class RuntimeDataController {
-    public List<DeviceInfo> configuredDevices = new ArrayList<DeviceInfo>();
     public final List<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
-    public final Groups groups;
-    public final SceneCollection scenes;
+    public DeviceCollection deviceCollection;
+    public GroupCollection groupCollection;
+    public SceneCollection sceneCollection;
+    private final LoadStoreData loadStoreData = new LoadStoreData();
     private boolean initialDataQueryCompleted = false;
 
     private final WeakHashMap<RuntimeDataControllerStateChanged, Boolean> observersStateChanged = new WeakHashMap<RuntimeDataControllerStateChanged, Boolean>();
-    private final WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<DeviceUpdate, Boolean>();
     private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<DeviceUpdate, Boolean>();
 
     private final List<DeviceObserverBase> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
 
     RuntimeDataController() {
-        groups = SharedPrefs.readGroups();
-        scenes = SharedPrefs.ReadScenes();
-        configuredDevices = SharedPrefs.ReadConfiguredDevices();
-        //notifyStateReloaded();
+        loadData(false);
     }
 
-    //! get a list of all send ports of all configured scenes plus the default send port
+    /**
+     * Call this to reload all data from disk. This is useful after NFC/Neighbour/GDrive sync.
+     *
+     * @param notifyObservers Notify all observers of the RuntimeDataControllerState that we
+     *                        reloaded data. This should invalidate all caches (icons etc).
+     */
+    public void loadData(boolean notifyObservers) {
+        groupCollection = loadStoreData.readGroups();
+        sceneCollection = loadStoreData.readScenes();
+        deviceCollection = loadStoreData.readDevices();
+        SharedPrefs.setCurrentPreferenceVersion();
+        if (notifyObservers)
+            notifyStateReloaded();
+    }
+
+    //! get a list of all send ports of all configured devices plus the default send port
     public Set<Integer> getAllSendPorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
         ports.add(SharedPrefs.getDefaultSendPort());
 
-        for (DeviceInfo di : configuredDevices)
+        for (DeviceInfo di : deviceCollection.devices)
             ports.add(di.SendPort);
 
         return ports;
     }
 
-    //! get a list of all receive ports of all configured scenes plus the default receive port
+    //! get a list of all receive ports of all configured devices plus the default receive port
     public Set<Integer> getAllReceivePorts() {
         HashSet<Integer> ports = new HashSet<Integer>();
         ports.add(SharedPrefs.getDefaultReceivePort());
 
-        for (DeviceInfo di : configuredDevices)
+        for (DeviceInfo di : deviceCollection.devices)
             ports.add(di.ReceivePort);
 
         return ports;
-    }
-
-
-    @SuppressWarnings("unused")
-    public void registerConfiguredDeviceChangeObserver(DeviceUpdate o) {
-        observersConfiguredDevice.put(o, true);
-    }
-
-    @SuppressWarnings("unused")
-    public void unregisterConfiguredDeviceChangeObserver(DeviceUpdate o) {
-        observersConfiguredDevice.remove(o);
-    }
-
-    void notifyConfiguredDeviceChangeObservers(DeviceInfo di, boolean willBeRemoved) {
-        for (DeviceUpdate o : observersConfiguredDevice.keySet())
-            o.onDeviceUpdated(di, willBeRemoved);
     }
 
     @SuppressWarnings("unused")
@@ -100,8 +96,8 @@ public class RuntimeDataController {
     }
 
     void notifyStateReloaded() {
-//        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
-//            o.onDataReloaded();
+        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
+            o.onDataLoaded();
     }
 
     void notifyStateQueryFinished() {
@@ -170,21 +166,9 @@ public class RuntimeDataController {
         notifyNewDeviceObservers(null, true);
     }
 
-    public void addToConfiguredDevices(DeviceInfo current_device, boolean write_to_disk) {
-        // Already in configured devices?
-        for (int i = configuredDevices.size() - 1; i >= 0; --i) {
-            if (current_device.equalsByUniqueID(configuredDevices.get(i))) {
-                configuredDevices.set(i, current_device);
-                if (write_to_disk) {
-                    saveConfiguredDevices(true);
-                }
-                return;
-            }
-        }
-
-        configuredDevices.add(current_device);
-        if (write_to_disk) {
-            saveConfiguredDevices(true);
+    public void addToConfiguredDevices(DeviceInfo current_device) {
+        if (deviceCollection.add(current_device)) {
+            return;
         }
 
         // Remove from new devices list
@@ -199,21 +183,6 @@ public class RuntimeDataController {
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
         if (!current_device.isReachable())
             new DeviceQuery(null, current_device);
-    }
-
-    public void deleteAllConfiguredDevices() {
-        configuredDevices.clear();
-        saveConfiguredDevices(true);
-    }
-
-    public void deleteConfiguredDevice(DeviceInfo di) {
-        int position = configuredDevices.indexOf(di);
-        if (position == -1)
-            return;
-        di.configured = false;
-        configuredDevices.remove(position);
-        notifyConfiguredDeviceChangeObservers(di, true);
-        saveConfiguredDevices(true);
     }
 
     /**
@@ -235,20 +204,11 @@ public class RuntimeDataController {
      * @param device_info
      */
     public void onDeviceUpdated(DeviceInfo device_info) {
-        // if it matches a configured device, update it's outlet states
-        for (DeviceInfo target : configuredDevices) {
-            if (!device_info.equalsByUniqueID(target))
-                continue;
-
-            if (!target.copyFreshValues(device_info)) {
-                //Log.w("RuntimeDataController", "same values: " + device_info.DeviceName);
-                notifyDeviceQueries(target);
-                return;
-            }
-
-            notifyConfiguredDeviceChangeObservers(target, false);
-            notifyDeviceQueries(target);
-
+        // if it matches a configured device, update it's outlet states and exit the method.
+        DeviceInfo existing_device = deviceCollection.update(device_info);
+        if (existing_device != null) {
+            // notify observers who are using the DeviceQuery class
+            notifyDeviceQueries(existing_device);
             return;
         }
 
@@ -279,16 +239,9 @@ public class RuntimeDataController {
         ShowToast.FromOtherThread(NetpowerctrlApplication.instance, error);
     }
 
-
-    public void saveConfiguredDevices(boolean updateObservers) {
-        SharedPrefs.SaveConfiguredDevices(configuredDevices);
-        if (updateObservers)
-            notifyStateReloaded();
-    }
-
     public int getReachableConfiguredDevices() {
         int r = 0;
-        for (DeviceInfo di : configuredDevices)
+        for (DeviceInfo di : deviceCollection.devices)
             if (di.isReachable())
                 ++r;
         return r;
@@ -298,7 +251,7 @@ public class RuntimeDataController {
         if (uuid == null)
             return null;
 
-        for (DeviceInfo di : configuredDevices) {
+        for (DeviceInfo di : deviceCollection.devices) {
             di.lockDevicePorts();
             Iterator<DevicePort> it = di.getDevicePortIterator();
             while (it.hasNext()) {
@@ -314,7 +267,7 @@ public class RuntimeDataController {
     }
 
     public DeviceInfo findDeviceByUniqueID(String uniqueID) {
-        for (DeviceInfo di : configuredDevices) {
+        for (DeviceInfo di : deviceCollection.devices) {
             if (di.UniqueDeviceID.equals(uniqueID)) {
                 return di;
             }
@@ -392,19 +345,10 @@ public class RuntimeDataController {
         return initialDataQueryCompleted;
     }
 
-    public void setDevicePortBitmap(Context context, DevicePort port, Bitmap bitmap) {
-        if (port == null)
-            return;
-
-        Icons.saveIcon(context, port.uuid,
-                Icons.resizeBitmap(context, bitmap, 128, 128),
-                Icons.IconType.DevicePortIcon, port.getIconState());
-        notifyConfiguredDeviceChangeObservers(port.device, false);
-    }
 
     public int countNetworkDevices() {
         int i = 0;
-        for (DeviceInfo di : configuredDevices)
+        for (DeviceInfo di : deviceCollection.devices)
             if (di.isNetworkDevice(NetpowerctrlApplication.getService())) ++i;
         return i;
     }

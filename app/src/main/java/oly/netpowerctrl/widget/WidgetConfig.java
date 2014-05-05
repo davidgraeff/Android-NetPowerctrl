@@ -28,7 +28,7 @@ public class WidgetConfig extends Activity implements SceneEditFragmentReady {
         } else {
             setTheme(R.style.Theme_CustomLightTheme);
         }
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_one_pane);
 
         SceneEditFragment f = new SceneEditFragment();
         f.setData(this,
@@ -64,7 +64,7 @@ public class WidgetConfig extends Activity implements SceneEditFragmentReady {
     public void sceneEditFragmentReady(SceneEditFragment fragment) {
         fragment.getListView().setOnItemClickListener(selectedOutletListener);
         this.adapter = fragment.getAdapter();
-        adapter.update(NetpowerctrlApplication.getDataController().configuredDevices);
+        adapter.update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
     }
 
     @Override

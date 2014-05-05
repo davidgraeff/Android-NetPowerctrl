@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="pref_name_width">110sp</dimen>
+    <dimen name="devices_list_padding">0dp</dimen>
 </resources>

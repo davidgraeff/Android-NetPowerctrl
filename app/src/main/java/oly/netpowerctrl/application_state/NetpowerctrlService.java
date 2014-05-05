@@ -21,9 +21,9 @@ import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.EnergySaveLogFragment;
 import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceQueryResult;
-import oly.netpowerctrl.network.DeviceSend;
+import oly.netpowerctrl.network.UDPSending;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
@@ -55,6 +55,8 @@ public class NetpowerctrlService extends Service {
         }
     };
     private final IBinder mBinder = new LocalBinder();
+    private UDPSending udpSending;
+
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
@@ -91,7 +93,7 @@ public class NetpowerctrlService extends Service {
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-            if (s.equals(SharedPrefs.PREF_use_energy_saving_mode) && isNetworkReducedMode) {
+            if (SharedPrefs.isPreferenceNameLogEnergySaveMode(s) && isNetworkReducedMode) {
                 if (SharedPrefs.logEnergySaveMode())
                     EnergySaveLogFragment.appendLog("Energiesparen abgeschaltet");
                 start();
@@ -128,9 +130,11 @@ public class NetpowerctrlService extends Service {
 
         isNetworkReducedMode = true;
         // Stop send and listen threads
-        boolean running = DeviceSend.instance().isRunning();
-        if (running)
-            DeviceSend.instance().interrupt();
+        boolean running = udpSending != null && udpSending.isRunning();
+        if (running) {
+            udpSending.interrupt();
+            udpSending = null;
+        }
 
         // Unregister plugin receiver
         if (isBroadcastListener) {
@@ -142,7 +146,7 @@ public class NetpowerctrlService extends Service {
         }
 
         // Stop listening for network changes
-        if (isNetworkChangedListener && !SharedPrefs.getWakeup_energy_saving_mode()) {
+        if (isNetworkChangedListener && !SharedPrefs.getWakeUp_energy_saving_mode()) {
             if (SharedPrefs.logEnergySaveMode())
                 EnergySaveLogFragment.appendLog("Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
             isNetworkChangedListener = false;
@@ -170,9 +174,13 @@ public class NetpowerctrlService extends Service {
         ((AnelPlugin) plugins.get(0)).startDiscoveryThreads(0);
 
         isNetworkReducedMode = false;
-        boolean alreadyRunning = DeviceSend.instance().isRunning();
-        if (!alreadyRunning) { // Start send and listen threads
-            DeviceSend.instance().start();
+
+        // Start send thread
+        if (udpSending == null)
+            udpSending = new UDPSending(false);
+        boolean alreadyRunning = udpSending.isRunning();
+        if (!alreadyRunning) {
+            udpSending.start();
         }
 
         findDevices(null);
@@ -244,7 +252,7 @@ public class NetpowerctrlService extends Service {
      */
     private boolean isDetecting = false;
 
-    public void findDevices(final DeviceQueryResult callback) {
+    public void findDevices(final DeviceObserverResult callback) {
         if (isNetworkReducedMode) {
             ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
             if (SharedPrefs.logEnergySaveMode())
@@ -267,7 +275,7 @@ public class NetpowerctrlService extends Service {
 
         // First try a broadcast
         NetpowerctrlApplication.getDataController().clearNewDevices();
-        new DeviceQuery(new DeviceQueryResult() {
+        new DeviceQuery(new DeviceObserverResult() {
             @Override
             public void onDeviceTimeout(DeviceInfo di) {
             }
@@ -281,10 +289,10 @@ public class NetpowerctrlService extends Service {
             }
 
             @Override
-            public void onDeviceQueryFinished(List<DeviceInfo> timeout_devices) {
+            public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
                 NetpowerctrlApplication.getDataController().notifyStateQueryFinished();
                 if (callback != null)
-                    callback.onDeviceQueryFinished(timeout_devices);
+                    callback.onObserverJobFinished(timeout_devices);
 
                 if (timeout_devices.size() == 0)
                     return;
@@ -300,6 +308,10 @@ public class NetpowerctrlService extends Service {
                 }
             }
         });
+    }
+
+    public UDPSending getUDPSending() {
+        return udpSending;
     }
 
 

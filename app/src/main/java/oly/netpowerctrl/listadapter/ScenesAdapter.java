@@ -154,7 +154,8 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
         current_viewHolder.title.setText(data.sceneName);
         if (data.isMasterSlave()) {
             current_viewHolder.subtitle.setText("Master/Slave");
-        }
+        } else
+            current_viewHolder.subtitle.setText("");
 
         // For a grid view with a dedicated edit button (image) we use that for
         // setOnClickListener. In the other case we use the main icon for setOnClickListener.

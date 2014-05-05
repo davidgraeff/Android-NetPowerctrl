@@ -20,9 +20,9 @@
     <item format="boolean" name="widget_show_text" type="bool">True</item>
     <item format="boolean" name="animations_enabled" type="bool">True</item>
     <item format="boolean" name="use_log_energy_saving_mod" type="bool">False</item>
+    <item format="boolean" name="showHiddenOutlets" type="bool">False</item>
 
     <item format="boolean" name="sync_with_neighbours" type="bool">False</item>
 
     <item format="integer" name="max_favourites_groups" type="integer">6</item>
-
 </resources>

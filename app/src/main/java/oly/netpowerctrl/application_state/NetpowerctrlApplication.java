@@ -19,8 +19,7 @@ import java.util.Iterator;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.EnergySaveLogFragment;
-import oly.netpowerctrl.network.DeviceQueryResult;
-import oly.netpowerctrl.network.DeviceSend;
+import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ShowToast;
 
@@ -33,7 +32,7 @@ import oly.netpowerctrl.utils.ShowToast;
         mode = ReportingInteractionMode.TOAST,
         mailTo = "david.graeff@web.de",
         forceCloseDialogAfterToast = false, // optional, default false
-        additionalSharedPreferences = {SharedPrefs.PREF_BASENAME, SharedPrefs.PREF_GROUPS_BASENAME, SharedPrefs.PREF_WIDGET_BASENAME},
+        additionalSharedPreferences = {SharedPrefs.PREF_WIDGET_BASENAME},
         resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application {
     public static NetpowerctrlApplication instance;
@@ -111,9 +110,6 @@ public class NetpowerctrlApplication extends Application {
 
             dataController.clear();
 
-            // stop send queue
-            DeviceSend.instance().interrupt();
-
             if (SharedPrefs.notifyOnStop()) {
                 ShowToast.FromOtherThread(NetpowerctrlApplication.this, getString(R.string.service_stopped));
             }
@@ -143,7 +139,7 @@ public class NetpowerctrlApplication extends Application {
     }
 
 
-    public void findDevices(final DeviceQueryResult callback) {
+    public void findDevices(final DeviceObserverResult callback) {
 
         // only if the service is available.
         if (mWaitForService)
