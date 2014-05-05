@@ -1,7 +1,6 @@
 package oly.netpowerctrl.datastructure;
 
 import android.util.JsonReader;
-import android.util.JsonToken;
 import android.util.JsonWriter;
 
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
@@ -131,15 +129,11 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         while (reader.hasNext()) {
             String name = reader.nextName();
             assert name != null;
-            if (name.equals("uuid")) { // TODO obsolete
-                String uuid = reader.nextString();
-                if (di.UniqueDeviceID.isEmpty())
-                    di.UniqueDeviceID = uuid;
-            } else if (name.equals("DeviceName")) {
+            if (name.equals("DeviceName")) {
                 di.DeviceName = reader.nextString();
             } else if (name.equals("HostName")) {
                 di.HostName = reader.nextString();
-            } else if (name.equals("UniqueDeviceID") || name.equals("MacAddress")) { // TODO obsolete
+            } else if (name.equals("UniqueDeviceID")) {
                 di.UniqueDeviceID = reader.nextString();
             } else if (name.equals("UserName")) {
                 di.UserName = reader.nextString();
@@ -156,11 +150,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
             } else if (name.equals("SendPort")) {
                 di.SendPort = reader.nextInt();
             } else if (name.equals("Type")) {
-                // // TODO obsolete
-                if (reader.peek() == JsonToken.NUMBER)
-                    di.pluginID = AnelPlugin.PLUGIN_ID;
-                else
-                    di.pluginID = reader.nextString();
+                di.pluginID = reader.nextString();
             } else if (name.equals("ReceivePort")) {
                 di.ReceivePort = reader.nextInt();
             } else if (name.equals("HttpPort")) {
