@@ -38,9 +38,11 @@ import oly.netpowerctrl.navigation_drawer.DrawerController;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.transfer.GDrive;
 import oly.netpowerctrl.transfer.NFC;
+import oly.netpowerctrl.utils.Donate;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static MainActivity instance = null;
+    public Donate donate = new Donate();
 
     // Drawer
     private final DrawerController mDrawer = new DrawerController();
@@ -61,6 +63,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        donate.onDestroy(this);
         instance = null;
     }
 
@@ -70,12 +73,13 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         gDrive.onSaveInstanceState(outState);
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         gDrive.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
+        donate.onActivityResult(this, requestCode, resultCode, data);
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +131,8 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
                     if (cl.isFirstRun())
                         cl.getLogDialog().show();
                 }
+
+                donate.start(MainActivity.this);
             }
         }, 100);
     }

@@ -271,4 +271,9 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="help_sorting">Dieser Dialog erlaubt dir die Reihenfolge der Steckdosen oder Szenen zu ändern. Du kannst entweder ein vorgefertigtes Kriterium wählen oder die Reihenfolge selber festlegen. Wenn du die Reihenfolge selber festlegst musst du alle Elemente der rechten Liste einmal in deiner gewünschten Reihenfolge anklicken. Diese verschwinden und werden auf der linken Seite hinzugefügt. Am Ende sollten alle Elemente auf der linken Seite in deiner gewünschten Reihenfolge vorliegen.</string>
     <string name="create_device_http_hint">Hinweis: HTTP Schaltvorgänge dauern etwas länger, dafür ist das Schalten übers Internet problemloser möglich.</string>
     <string name="create_device_not_all_data_set">Erstmal alle Daten ausfüllen, bitte!</string>
+    <string name="menu_donate">Spenden</string>
+    <string name="menu_beer">Spende 1 Bier</string>
+    <string name="menu_beer2">Spende 2 Bier</string>
+    <string name="menu_beer3">Spende 5 Bier</string>
+    <string name="menu_beer4">Spende 10 Bier</string>
 </resources>

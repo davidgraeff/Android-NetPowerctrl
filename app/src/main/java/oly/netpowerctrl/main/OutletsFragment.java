@@ -144,6 +144,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.outlets, menu);
 
+        menu.findItem(R.id.menu_main_donate).setVisible(MainActivity.instance.donate.donatePossible());
+
         if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_showhidden).setVisible(false);
@@ -189,6 +191,19 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_main_beer:
+                MainActivity.instance.donate.buy("beer");
+                return true;
+            case R.id.menu_main_beer2:
+                MainActivity.instance.donate.buy("beer2");
+                return true;
+            case R.id.menu_main_beer3:
+                MainActivity.instance.donate.buy("beer3");
+                return true;
+            case R.id.menu_main_beer4:
+                MainActivity.instance.donate.buy("beer4");
+                return true;
+
             case R.id.menu_removeGroup: {
                 if (!NetpowerctrlApplication.getDataController().groupCollection.remove(groupFilter)) {
                     return true;
