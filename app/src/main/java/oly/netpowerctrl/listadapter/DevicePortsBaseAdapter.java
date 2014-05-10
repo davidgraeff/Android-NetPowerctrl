@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -20,15 +21,17 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 
-public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
+public class DevicePortsBaseAdapter extends BaseAdapter {
 
     private int nextId = 0; // we need stable IDs for the gridView
     int outlet_res_id = R.layout.list_icon_item;
+    // If you change the layout or an image we increment this layout change id
+    // to invalidate ViewHolders (for reloading images or layout items).
+    int layoutChangeId = 0;
     boolean showHidden = true;
     ViewHolder current_viewHolder;
     private final IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
@@ -47,6 +50,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         final TextView title;
         final TextView subtitle;
         boolean isNew = true;
+        int layoutChangeId;
 
         int currentBitmapIndex = 0;
         final Drawable[] drawables = new Drawable[2];
@@ -54,7 +58,15 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         private ListItemMenu mListContextMenu = null;
         private final IconDeferredLoadingThread iconCache;
 
-        ViewHolder(View convertView, ListItemMenu listContextMenu, IconDeferredLoadingThread iconCache) {
+        boolean isStillValid(int layoutChangeId) {
+            boolean hasChanged = this.layoutChangeId == layoutChangeId;
+            this.layoutChangeId = layoutChangeId;
+            return hasChanged;
+        }
+
+        ViewHolder(View convertView, ListItemMenu listContextMenu,
+                   IconDeferredLoadingThread iconCache, int layoutChangeId) {
+            this.layoutChangeId = layoutChangeId;
             mListContextMenu = listContextMenu;
             this.iconCache = iconCache;
             imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
@@ -116,7 +128,6 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     final List<DevicePortListItem> all_outlets;
     private final LayoutInflater inflater;
-    boolean temporary_ignore_positionRequest;
     private UUID filterGroup = null;
 
     void setGroupFilter(UUID groupFilter) {
@@ -129,12 +140,10 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     public void setLayoutRes(int layout_res) {
         this.outlet_res_id = layout_res;
-        notifyDataSetChanged();
     }
 
-    DevicePortsBaseAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
+    DevicePortsBaseAdapter(Context context, ListItemMenu mListContextMenu) {
         this.mListContextMenu = mListContextMenu;
-        this.filterGroup = filterGroup;
         inflater = LayoutInflater.from(context);
         iconCache.start();
         all_outlets = new ArrayList<DevicePortListItem>();
@@ -198,14 +207,21 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = inflater.inflate(outlet_res_id, null);
-            current_viewHolder = new ViewHolder(convertView, mListContextMenu, iconCache);
-            assert convertView != null;
-            convertView.setTag(current_viewHolder);
-        } else {
+        if (convertView != null) {
             current_viewHolder = (ViewHolder) convertView.getTag();
-            current_viewHolder.isNew = false;
+            if (!current_viewHolder.isStillValid(layoutChangeId))
+                current_viewHolder = null;
+            else
+                current_viewHolder.isNew = false;
+        } else
+            current_viewHolder = null;
+
+
+        if (current_viewHolder == null) {
+            convertView = inflater.inflate(outlet_res_id, null);
+            assert convertView != null;
+            current_viewHolder = new ViewHolder(convertView, mListContextMenu, iconCache, layoutChangeId);
+            convertView.setTag(current_viewHolder);
         }
         current_viewHolder.position = position;
 
@@ -225,24 +241,6 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
         return convertView;
     }
 
-    @Override
-    public void reorderItems(int originalPosition, int newPosition) {
-        if (newPosition >= getCount()) {
-            return;
-        }
-        DevicePortListItem temp = all_outlets.get(originalPosition);
-        all_outlets.get(originalPosition).port.positionRequest = all_outlets.get(newPosition).port.positionRequest;
-        all_outlets.get(newPosition).port.positionRequest = temp.port.positionRequest;
-        all_outlets.remove(originalPosition);
-        all_outlets.add(newPosition, temp);
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void finishedReordering() {
-        NetpowerctrlApplication.getDataController().deviceCollection.save();
-    }
-
     public void addItem(DevicePort oi, int command_value) {
         assert oi.device != null;
         if (oi.Disabled || (oi.Hidden && !showHidden))
@@ -258,9 +256,7 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
 
         boolean found = false;
         for (int i = 0; i < all_outlets.size(); ++i) {
-            boolean behind_current = temporary_ignore_positionRequest ?
-                    all_outlets.get(i).displayText.compareTo(new_oi.displayText) > 0 :
-                    all_outlets.get(i).port.positionRequest > new_oi.port.positionRequest;
+            boolean behind_current = all_outlets.get(i).port.positionRequest > new_oi.port.positionRequest;
 
             if (behind_current) {
                 all_outlets.add(i, new_oi);
@@ -292,24 +288,24 @@ public class DevicePortsBaseAdapter extends AbstractDynamicGridAdapter {
             device.releaseDevicePorts();
         }
 
-        // Sort for positionRequest number or alphabetically
-        //Collections.sort(all_outlets);
-
-        // Assign positionRequest numbers
-        for (int i = 0; i < all_outlets.size(); ++i) {
-            all_outlets.get(i).port.positionRequest = i;
-        }
         notifyDataSetChanged();
         return not_reachable;
     }
 
     public void clear() {
         all_outlets.clear();
+        ++layoutChangeId;
         notifyDataSetChanged();
     }
 
-    public void removeAt(int position) {
+    public void removeAt(int position, boolean notifyDataChanged) {
         all_outlets.remove(position);
+        if (notifyDataChanged)
+            notifyDataSetChanged();
+    }
+
+    public void invalidateViewHolders() {
+        ++layoutChangeId;
         notifyDataSetChanged();
     }
 }

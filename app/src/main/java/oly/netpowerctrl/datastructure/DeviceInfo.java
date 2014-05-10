@@ -225,37 +225,10 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
      * @return Return true if this object copied newer values of "other".
      */
     public boolean copyFreshValues(DeviceInfo other) {
-        lock.acquireUninterruptibly();
         updated = other.updated;
 
         if (other != this) {
-            hasChanged = false;
-
-            // Iterators
-            Iterator<Map.Entry<Integer, DevicePort>> other_ports_iterator = other.DevicePorts.entrySet().iterator();
-            Set<Integer> current_port_ids = new TreeSet<Integer>(DevicePorts.keySet());
-
-            // Update each current devicePort.
-            while (other_ports_iterator.hasNext()) {
-                Map.Entry<Integer, DevicePort> entry = other_ports_iterator.next();
-                DevicePort current_devicePort = DevicePorts.get(entry.getKey());
-
-                if (current_devicePort == null) { // add missing device port
-                    DevicePorts.put(entry.getKey(), new DevicePort(entry.getValue()));
-                    hasChanged = true;
-                } else { // update port
-                    hasChanged |= current_devicePort.copyValues(entry.getValue());
-                }
-                current_port_ids.remove(entry.getKey());
-            }
-
-            // There are ports in this deviceInfo that have no updates. Remove those now.
-            if (current_port_ids.size() > 0) {
-                hasChanged = true;
-                for (Integer i : current_port_ids) {
-                    DevicePorts.remove(i);
-                }
-            }
+            hasChanged = copyFreshDevicePorts(other.DevicePorts);
 
             hasChanged |= !HostName.equals(other.HostName);
             HostName = other.HostName;
@@ -276,11 +249,43 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         }
         // Else: Same object, but the values may have changed since the last call to "copyFreshValues"
 
-        lock.release();
 
         boolean hasChangedL = hasChanged;
         hasChanged = false;
         return hasChangedL;
+    }
+
+    public boolean copyFreshDevicePorts(Map<Integer, DevicePort> other_devicePorts) {
+        lock.acquireUninterruptibly();
+        boolean hasChanged = false;
+        // Iterators
+        Iterator<Map.Entry<Integer, DevicePort>> other_ports_iterator = other_devicePorts.entrySet().iterator();
+        Set<Integer> current_port_ids = new TreeSet<Integer>(DevicePorts.keySet());
+
+        // Update each current devicePort.
+        while (other_ports_iterator.hasNext()) {
+            Map.Entry<Integer, DevicePort> entry = other_ports_iterator.next();
+            DevicePort current_devicePort = DevicePorts.get(entry.getKey());
+
+            if (current_devicePort == null) { // add missing device port
+                DevicePorts.put(entry.getKey(), new DevicePort(entry.getValue()));
+                hasChanged = true;
+            } else { // update port
+                hasChanged |= current_devicePort.copyValues(entry.getValue());
+            }
+            current_port_ids.remove(entry.getKey());
+        }
+
+        // There are ports in this deviceInfo that have no updates. Remove those now.
+        if (current_port_ids.size() > 0) {
+            hasChanged = true;
+            for (Integer i : current_port_ids) {
+                DevicePorts.remove(i);
+            }
+        }
+
+        lock.release();
+        return hasChanged;
     }
 
     /**
@@ -407,5 +412,9 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     public boolean isNetworkDevice(NetpowerctrlService service) {
         PluginInterface pi = getPluginInterface(service);
         return pi != null && pi.isNetworkPlugin();
+    }
+
+    public int count() {
+        return DevicePorts.size();
     }
 }

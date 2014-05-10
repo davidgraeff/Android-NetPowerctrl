@@ -95,7 +95,7 @@ public class RuntimeDataController {
         observersStateChanged.remove(o);
     }
 
-    void notifyStateReloaded() {
+    public void notifyStateReloaded() {
         for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
             o.onDataLoaded();
     }

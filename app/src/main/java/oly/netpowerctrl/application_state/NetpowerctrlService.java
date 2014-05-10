@@ -20,7 +20,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.main.EnergySaveLogFragment;
-import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.UDPSending;
@@ -218,7 +218,7 @@ public class NetpowerctrlService extends Service {
         }
 
         Intent i = new Intent(PLUGIN_QUERY_ACTION);
-        i.putExtra(PAYLOAD_SERVICENAME, NetpowerctrlActivity.class.getCanonicalName());
+        i.putExtra(PAYLOAD_SERVICENAME, MainActivity.class.getCanonicalName());
         NetpowerctrlApplication.instance.sendBroadcast(i);
     }
 

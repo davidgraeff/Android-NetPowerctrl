@@ -3,20 +3,14 @@ package oly.netpowerctrl.anel;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Base64;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -83,6 +77,8 @@ final public class AnelPlugin implements PluginInterface {
             } catch (InterruptedException ignored) {
             }
         }
+
+        AnelHTTP.startHTTP();
     }
 
     public void stopDiscoveryThreads(NetpowerctrlService service) {
@@ -105,6 +101,8 @@ final public class AnelPlugin implements PluginInterface {
             Thread.sleep(100);
         } catch (InterruptedException ignored) {
         }
+
+        AnelHTTP.stopHTTP();
     }
 
     private static byte switchOn(byte data, int outletNumber) {
@@ -134,6 +132,20 @@ final public class AnelPlugin implements PluginInterface {
         NetpowerctrlService service = NetpowerctrlApplication.getService();
         if (service == null)
             return;
+
+        if (di.PreferTCP) {
+            // Use Http instead of UDP for sending. For each batch command we will send a single http request
+            for (Scene.PortAndCommand c : command_list) {
+                DevicePort port = c.port;
+                if (c.command != DevicePort.TOGGLE && port.current_value == c.command)
+                    continue;
+                c.port.last_command_timecode = System.currentTimeMillis();
+                // Important: For UDP the id is 1-based. For Http the id is 0 based!
+                AnelHTTP.execute(AnelHTTP.createHTTPRunner(di, "ctrl.htm",
+                        "F" + String.valueOf(port.id - 1) + "=s", di, false, receiveSwitchResponseHtml));
+            }
+            return;
+        }
         UDPSending udpSending = service.getUDPSending();
         if (udpSending == null)
             return;
@@ -244,11 +256,9 @@ final public class AnelPlugin implements PluginInterface {
         NetpowerctrlService service = NetpowerctrlApplication.getService();
         if (service == null)
             return;
-        UDPSending udpSending = service.getUDPSending();
-        if (udpSending == null)
-            return;
 
         port.last_command_timecode = System.currentTimeMillis();
+
         boolean bValue = false;
         if (command == DevicePort.ON)
             bValue = true;
@@ -257,28 +267,43 @@ final public class AnelPlugin implements PluginInterface {
         else if (command == DevicePort.TOGGLE)
             bValue = port.current_value <= 0;
 
-        byte[] data;
-        UDPSending.Job j = null;
-        if (port.id >= 10 && port.id < 20) {
-            // IOS
-            data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
-                    port.id - 10, port.device.UserName, port.device.Password).getBytes();
-            j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
-        } else if (port.id >= 0) {
-            // Outlets
-            data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
-                    port.id, port.device.UserName, port.device.Password).getBytes();
-            j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
-        }
+        // Use Http instead of UDP for sending. For each command we will send a single http request
+        if (port.device.PreferTCP) {
+            // The http interface can only toggle. If the current state is the same as the command state
+            // then we request values instead of sending a command.
+            if (command != DevicePort.TOGGLE && port.current_value == command)
+                AnelHTTP.execute(AnelHTTP.createHTTPRunner(port.device, "strg.cfg",
+                        "", port.device, false, receiveCtrlHtml));
+            else
+                // Important: For UDP the id is 1-based. For Http the id is 0 based!
+                AnelHTTP.execute(AnelHTTP.createHTTPRunner(port.device, "ctrl.htm",
+                        "F" + String.valueOf(port.id - 1) + "=s", port.device, false, receiveSwitchResponseHtml));
+        } else {
+            UDPSending udpSending = service.getUDPSending();
+            if (udpSending == null)
+                return;
 
-        if (j != null)
-            udpSending.addJob(j);
+            byte[] data;
+            UDPSending.Job j = null;
+            if (port.id >= 10 && port.id < 20) {
+                // IOS
+                data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
+                        port.id - 10, port.device.UserName, port.device.Password).getBytes();
+                j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
+            } else if (port.id >= 0) {
+                // Outlets
+                data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
+                        port.id, port.device.UserName, port.device.Password).getBytes();
+                j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
+            }
+
+            if (j != null)
+                udpSending.addJob(j);
+        }
 
         if (callback != null)
             callback.onExecutionFinished(1);
     }
-
-    private static Thread renameThread;
 
     @Override
     public void finish() {
@@ -304,73 +329,92 @@ final public class AnelPlugin implements PluginInterface {
         NetpowerctrlService service = NetpowerctrlApplication.getService();
         if (service == null)
             return;
-        UDPSending udpSending = service.getUDPSending();
-        if (udpSending == null)
-            return;
 
-        udpSending.addJob(new UDPSending.SendAndObserveJob(di, requestMessage, UDPSending.INQUERY_REQUEST));
+        if (di.PreferTCP) {
+            AnelHTTP.execute(AnelHTTP.createHTTPRunner(di, "strg.cfg", "", di, false, receiveCtrlHtml));
+        } else {
+            UDPSending udpSending = service.getUDPSending();
+            if (udpSending == null)
+                return;
+
+            udpSending.addJob(new UDPSending.SendAndObserveJob(di, requestMessage, UDPSending.INQUERY_REQUEST));
+        }
     }
+
+    /**
+     * If we receive a response from a switch action (via http) we request updated data immediately.
+     */
+    private static AnelHTTP.HTTPCallback<DeviceInfo> receiveSwitchResponseHtml = new AnelHTTP.HTTPCallback<DeviceInfo>() {
+        @Override
+        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
+            if (!callback_success) {
+                device.setNotReachable(callback_message);
+                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+            } else
+                AnelHTTP.execute(AnelHTTP.createHTTPRunner(device, "strg.cfg", "", device, false, receiveCtrlHtml));
+        }
+    };
+
+    private static AnelHTTP.HTTPCallback<DeviceInfo> receiveCtrlHtml = new AnelHTTP.HTTPCallback<DeviceInfo>() {
+        @Override
+        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
+            if (!callback_success) {
+                device.setNotReachable(callback_message);
+                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+            } else {
+                String[] data = callback_message.split(";");
+                if (data.length < 10 || !data[0].startsWith("NET-")) {
+                    device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
+                } else {
+                    // We do not copy the network data but only the name.
+                    device.DeviceName = data[1].trim();
+                    // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
+                    // on the existing device.
+                    Map<Integer, DevicePort> ports = new TreeMap<Integer, DevicePort>();
+                    for (int i = 0; i < 8; ++i) {
+                        DevicePort port = new DevicePort(device, DevicePort.DevicePortType.TypeToggle);
+                        port.id = i + 1; // 1-based
+                        port.setDescription(data[10 + i].trim());
+                        port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
+                        port.Disabled = data[30 + i].equals("1");
+                        ports.put(port.id, port);
+                    }
+
+                    // If values have changed, update now
+                    if (device.copyFreshDevicePorts(ports)) {
+                        // To propagate this device although it is already the the configured list
+                        // we have to set the changed flag.
+                        device.setHasChanged();
+                        NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+                    }
+                }
+
+            }
+        }
+    };
 
     @Override
     public void rename(final DevicePort port, final String new_name, final DevicePortRenamed callback) {
-        if (renameThread != null)
+        final String new_name_encoded;
+        try {
+            new_name_encoded = URLEncoder.encode(new_name, "utf-8");
+        } catch (UnsupportedEncodingException e) {
             return;
+        }
+        String postData = "TN=" + new_name_encoded + "&TS=Speichern";
+        String getData = "dd.htm?DD" + String.valueOf(port.id);
 
-        renameThread = new Thread(new Runnable() {
+        AnelHTTP.execute(AnelHTTP.createHTTPRunner(port.device, getData, postData,
+                port, true, new AnelHTTP.HTTPCallback<DevicePort>() {
             @Override
-            public void run() {
-                URL url;
-                boolean success = false;
-                String error_message = null;
-                try {
-                    String new_name_encoded = URLEncoder.encode(new_name, "utf-8");
-                    String cred = port.device.UserName + ":" + port.device.Password;
-                    String command = "TN=" + new_name_encoded + "&TS=Speichern";
-                    url = new URL("http://" + port.device.HostName + ":" + port.device.HttpPort + "/dd.htm?DD" + String.valueOf(port.id));
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    con.setConnectTimeout(500);
-                    con.setRequestMethod("POST");
-                    con.setRequestProperty("Authorization", "Basic " +
-                            Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));
-                    con.getOutputStream().write(command.getBytes());
-                    con.getOutputStream().flush();
-                    switch (con.getResponseCode()) {
-                        case 200:
-                            success = true;
-                            port.setDescription(new_name_encoded);
-                            break;
-                        case 401:
-                            success = false;
-                            error_message = NetpowerctrlApplication.instance.getString(R.string.error_device_no_access);
-                            break;
-                        default:
-                            error_message = "code " + String.valueOf(con.getResponseCode());
-                            success = false;
-                    }
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                    error_message = e.getMessage();
-                } catch (ProtocolException e) {
-                    e.printStackTrace();
-                    error_message = e.getMessage();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    error_message = e.getMessage();
+            public void httpResponse(DevicePort port, boolean callback_success, String callback_error_message) {
+                if (callback_success) {
+                    port.setDescription(new_name_encoded);
                 }
-                renameThread = null;
-                if (callback != null) {
-                    final boolean callback_success = success;
-                    final String callback_error_message = error_message;
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            callback.devicePort_renamed(port, callback_success, callback_error_message);
-                        }
-                    });
-                }
+                callback.devicePort_renamed(port, callback_success, callback_error_message);
             }
-        });
-        renameThread.start();
+                }
+        ));
     }
 
     private final List<Scene.PortAndCommand> command_list = new ArrayList<Scene.PortAndCommand>();

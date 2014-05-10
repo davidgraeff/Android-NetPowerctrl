@@ -17,7 +17,7 @@ import oly.netpowerctrl.R;
  */
 public class DevicePortsSelectAdapter extends DevicePortsBaseAdapter {
     public DevicePortsSelectAdapter(Context context) {
-        super(context, null, null);
+        super(context, null);
     }
 
     private final SparseBooleanArray checked = new SparseBooleanArray();

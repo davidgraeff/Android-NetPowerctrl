@@ -1,10 +1,7 @@
 package oly.netpowerctrl.main;
 
 import android.app.AlertDialog;
-import android.app.DialogFragment;
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -35,6 +32,7 @@ import oly.netpowerctrl.listadapter.DevicesAdapter;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.ShowToast;
 
 /**
  */
@@ -70,9 +68,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_add_device: {
-                // At the moment we always create an anel device
-                DeviceInfo di = DeviceInfo.createNewDevice(AnelPlugin.PLUGIN_ID);
-                show_configure_device_dialog(di);
+                show_configure_device_dialog(null);
                 return true;
             }
 
@@ -81,7 +77,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.menu_help)
                         .setMessage(R.string.help_devices)
-                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+                        .setIcon(android.R.drawable.ic_menu_help).show();
                 return true;
             }
 
@@ -137,7 +133,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new DevicesAdapter(NetpowerctrlActivity.instance, true);
+        adapter = new DevicesAdapter(MainActivity.instance, true);
         setHasOptionsMenu(true);
     }
 
@@ -167,7 +163,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NetpowerctrlActivity.instance.changeToFragment(PreferencesFragment.class.getName());
+                MainActivity.instance.changeToFragment(PreferencesFragment.class.getName());
             }
         });
 
@@ -233,17 +229,10 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     private void show_configure_device_dialog(DeviceInfo di) {
-        if (di.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
+        // At the moment we always create an anel device
+        if (di == null || di.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
             Fragment fragment = ConfigureDeviceFragment.instantiate(getActivity(), di);
-            FragmentManager fragmentManager = getFragmentManager();
-            assert fragmentManager != null;
-            FragmentTransaction ft = fragmentManager.beginTransaction();
-            Fragment prev = fragmentManager.findFragmentByTag("dialog");
-            if (prev != null) {
-                ft.remove(prev);
-            }
-            ft.addToBackStack(null);
-            ((DialogFragment) fragment).show(ft, "dialog");
+            ShowToast.showDialogFragment(getActivity(), fragment);
         } else { // for now: We just add the device to the configured devices
             NetpowerctrlApplication.getDataController().addToConfiguredDevices(di);
         }

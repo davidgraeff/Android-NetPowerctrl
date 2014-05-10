@@ -16,7 +16,7 @@ import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.main.NetpowerctrlActivity;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.ExecutionFinished;
@@ -59,7 +59,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
 
             // Show main window
             if (extra.getBoolean("show_mainWindow")) {
-                Intent mainIt = new Intent(this, NetpowerctrlActivity.class);
+                Intent mainIt = new Intent(this, MainActivity.class);
                 startActivity(mainIt);
             }
 

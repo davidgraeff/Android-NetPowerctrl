@@ -152,7 +152,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="widget_image_off">Widget Aussehen: Aus</string>
     <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
     <string name="crash_toast_text">Ich bin leider abgestürzt :( Bitte sende einen Absturzbericht an meinen Entwickler</string>
-    <string name="outlet_to_scene_title">Erstelle Szene</string>
+    <string name="scene_rename">Szenenname</string>
     <string name="service_stopped">Power-Control Hintergrunddienst beendet</string>
     <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
     <string name="preference_notify_on_stop_summary">Diese Option hilft zu überprüfen ob wirklich alles beendet wurde.</string>
@@ -161,13 +161,14 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="devices">Zum Gerätebildschirm</string>
     <string name="preferences">Zu den Einstellungen</string>
     <string name="hint_stop_edit">Zurück drücken um das Editieren zu beenden</string>
-    <string name="scene_set_name">Namen setzen</string>
-    <string name="scene_set_icon">Bild setzen</string>
+    <string name="scene_set_name">Szenenname</string>
+    <string name="scene_set_icon">Szenenbild</string>
     <string name="dialog_icon_title">Bild</string>
     <string name="dialog_icon_default">Bild zurücksetzen</string>
     <string name="dialog_icon_select">Wähle Bild aus…</string>
     <string name="error_icon">Bild konnte nicht genutzt werden</string>
-    <string name="scene_create_helptext">Noch keine Aktionen. Ziehe den Bildschirm nach rechts um die verfügbaren Aktionen zu sehen. Klicke eine an um diese der Szene hinzuzufügen.</string>
+    <string name="scene_create_include_onepane">Noch keine Aktionen. Ziehe den Bildschirm nach rechts um die verfügbaren Aktionen zu sehen. Klicke eine an um diese der Szene hinzuzufügen.</string>
+    <string name="scene_create_include_twopane">Noch keine Aktionen. Klicke eine auf der rechten Seiten an um diese der Szene hinzuzufügen.</string>
     <string name="error_scene_no_actions">Keine Aktion zugewiesen. Speichern nicht erlaubt!</string>
     <string name="error_scene_no_name">Keinen Namen vergeben. Speichern nicht erlaubt!</string>
     <string name="scene_create_helptext_available">Keine weiteren Aktionen vorhanden! Entweder nutzt du bereits alle oder es gibt einfach keine.</string>
@@ -239,7 +240,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
     <string name="activate_nfc">Aktiviere NFC in den Einstellungen</string>
     <string name="scene_remove_item">Remove item from scene</string>
-    <string name="device_prefer_tcp">Langsamere, Internetstabile Verbindung bevorzugen</string>
+    <string name="device_prefer_tcp">HTTP statt UDP</string>
     <string name="gDrive_backup">Sicherung bei Google Drive</string>
     <string name="neighbours_not_found">Keine Nachbargeräte gefunden. Bei Nachbargeräten ebenfalls in diesen Bildschirm wechseln.
 
@@ -255,6 +256,21 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="neighbour_not_same_version">Nicht die selbe Version!</string>
     <string name="neighbour_pairing_request">Kopplungsanfrage verschickt</string>
     <string name="neighbour_pairing_title">Kopplungsanfrage</string>
-    <string name="neighbour_pairing_message">If you allow the pairing, the neighbour %s is allowed to send and overwrite settings on this device.</string>
+    <string name="neighbour_pairing_message">Mit der Kopplung erlaubst du, dass %s deine jetzigen Daten überschreiben darf.</string>
     <string name="neighbours_error_retrieve_files">Verzeichnis konnte nicht abgerufen werden</string>
+    <string name="gDrive_remove_not_supported">Daten entfernen wird aktuell nicht unterstützt</string>
+    <string name="menu_gDrive_remove">Entferne Backup</string>
+    <string name="menu_gDrive_restore">Wiederherstellen</string>
+    <string name="gDrive_restore_failed">Backup Wiederherstellung fehlgeschlagen</string>
+    <string name="gDrive_logout">Abmelden</string>
+    <string name="gDrive_make_backup">Sichern</string>
+    <string name="neighbour_pairing_accepted">Verbindungsanfrage angenommen</string>
+    <string name="neighbour_pairing_denied">Verbindungsanfrage abgelehnt</string>
+    <string name="outlet_set_icon">Zustandsbild…</string>
+    <string name="menu_sort">Anders anordnen</string>
+    <string name="sort_custom">Eigene Reihenfolge</string>
+    <string name="list_sorted">Neue Reihenfolge</string>
+    <string name="help_sorting">Dieser Dialog erlaubt dir die Reihenfolge der Steckdosen oder Szenen zu ändern. Du kannst entweder ein vorgefertigtes Kriterium wählen oder die Reihenfolge selber festlegen. Wenn du die Reihenfolge selber festlegst musst du alle Elemente der rechten Liste einmal in deiner gewünschten Reihenfolge anklicken. Diese verschwinden und werden auf der linken Seite hinzugefügt. Am Ende sollten alle Elemente auf der linken Seite in deiner gewünschten Reihenfolge vorliegen.</string>
+    <string name="create_device_http_hint">Hinweis: HTTP Schaltvorgänge dauern etwas länger, dafür ist das Schalten übers Internet problemloser möglich.</string>
+    <string name="create_device_not_all_data_set">Erstmal alle Daten ausfüllen, bitte!</string>
 </resources>

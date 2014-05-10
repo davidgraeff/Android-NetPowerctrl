@@ -12,14 +12,14 @@ import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 class AnelDeviceDiscoveryThread extends UDPReceiving {
-    private final AnelPlugin anelPlugin;
+    public static AnelPlugin anelPlugin;
 
     public AnelDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
         super(port);
         this.anelPlugin = anelPlugin;
     }
 
-    private DeviceInfo createReceivedAnelDevice(String DeviceName, String HostName,
+    public static DeviceInfo createReceivedAnelDevice(String DeviceName, String HostName,
                                                 String MacAddress, int receive_port) {
         DeviceInfo di = DeviceInfo.createNewDevice(anelPlugin.getPluginID());
         di.DeviceName = DeviceName;

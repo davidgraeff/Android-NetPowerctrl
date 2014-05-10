@@ -7,6 +7,7 @@ import android.util.JsonWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
 
@@ -97,7 +98,7 @@ public class DeviceCollection {
         observersConfiguredDevice.remove(o);
     }
 
-    public void notifyConfiguredDeviceChangeObservers(DeviceInfo di, boolean willBeRemoved) {
+    public void notifyDeviceChangeObservers(DeviceInfo di, boolean willBeRemoved) {
         for (DeviceUpdate o : observersConfiguredDevice.keySet())
             o.onDeviceUpdated(di, willBeRemoved);
     }
@@ -110,19 +111,42 @@ public class DeviceCollection {
      * @return Return true if an existing device has been replaced instead of adding a new entry.
      */
     public boolean add(DeviceInfo device) {
+        // Determine next free devicePort position.
+        // This position is only for the listView to let all devicePorts of this new device
+        // be at the end of the list.
+        int highestPosition = 0;
+        int nextPos = 0;
+        for (DeviceInfo local_device : devices) {
+            nextPos += local_device.count();
+            Iterator<DevicePort> it = device.getDevicePortIterator();
+            while (it.hasNext()) {
+                DevicePort port = it.next();
+                highestPosition = port.positionRequest > highestPosition ? port.positionRequest : highestPosition;
+            }
+        }
+        nextPos = highestPosition > nextPos ? highestPosition : nextPos;
+
+        // Assign devicePort positions
+        Iterator<DevicePort> it = device.getDevicePortIterator();
+        while (it.hasNext()) {
+            DevicePort port = it.next();
+            port.positionRequest = nextPos;
+            nextPos++;
+        }
+
         // Already in configured devices?
         for (int i = devices.size() - 1; i >= 0; --i) {
             if (device.equalsByUniqueID(devices.get(i))) {
                 devices.set(i, device);
                 if (storage != null)
                     storage.devicesSave(this);
-                notifyConfiguredDeviceChangeObservers(device, false);
+                notifyDeviceChangeObservers(device, false);
                 return true;
             }
         }
 
         devices.add(device);
-        notifyConfiguredDeviceChangeObservers(device, false);
+        notifyDeviceChangeObservers(device, false);
         if (storage != null)
             storage.devicesSave(this);
         return false;
@@ -130,9 +154,38 @@ public class DeviceCollection {
 
     public void clear() {
         devices.clear();
-        notifyConfiguredDeviceChangeObservers(null, true);
+        notifyDeviceChangeObservers(null, true);
         if (storage != null)
             storage.devicesSave(this);
+    }
+
+    /**
+     * Import String data (JSON) and either replace all existing data or merge it with the
+     * existing data.
+     *
+     * @param tryToMerge If you merge the data instead of replacing the process is slower.
+     */
+    public boolean importData(boolean tryToMerge, String data) {
+        DeviceCollection dc;
+        try {
+            dc = DeviceCollection.fromJSON(JSONHelper.getReader(data), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        if (tryToMerge) {
+            for (DeviceInfo di : dc.devices)
+                add(di);
+        } else {
+            devices.clear();
+            devices = dc.devices;
+
+            notifyDeviceChangeObservers(null, true);
+            if (storage != null)
+                storage.devicesSave(this);
+        }
+        return true;
     }
 
     public void save() {
@@ -146,7 +199,7 @@ public class DeviceCollection {
             return;
         device.configured = false;
         devices.remove(position);
-        notifyConfiguredDeviceChangeObservers(device, true);
+        notifyDeviceChangeObservers(device, true);
         if (storage != null)
             storage.devicesSave(this);
     }
@@ -157,7 +210,7 @@ public class DeviceCollection {
                 continue;
 
             if (existing_device.copyFreshValues(newValues_device)) {
-                notifyConfiguredDeviceChangeObservers(existing_device, false);
+                notifyDeviceChangeObservers(existing_device, false);
             }
 
             return existing_device;
@@ -176,7 +229,7 @@ public class DeviceCollection {
         Icons.saveIcon(context, port.uuid,
                 Icons.resizeBitmap(context, bitmap, 128, 128),
                 Icons.IconType.DevicePortIcon, port.getIconState());
-        notifyConfiguredDeviceChangeObservers(port.device, false);
+        notifyDeviceChangeObservers(port.device, false);
     }
 
     public interface IDevicesSave {

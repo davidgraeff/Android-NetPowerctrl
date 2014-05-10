@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/hintText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?drawer_item_background"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:padding="5dp"
+        android:layout_margin="5dp"
+        android:gravity="left"
+        android:visibility="gone" />
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:id="@+id/scene_edit_fragment1_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/view"
+            android:gravity="center_horizontal"
+            android:text="@string/scene_create_added" />
+
+        <fragment
+            class="oly.netpowerctrl.shortcut.SceneEditFragment"
+            android:id="@+id/scene_edit_fragment1"
+            android:layout_toLeftOf="@+id/view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@id/scene_edit_fragment1_text" />
+
+        <!-- for 3:2 layout_weight imitation -->
+        <View
+            android:id="@+id/view"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerHorizontal="true"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/scene_edit_fragment2_text"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/view"
+            android:gravity="center_horizontal"
+            android:text="@string/scene_create_available" />
+
+        <fragment
+            class="oly.netpowerctrl.shortcut.SceneEditFragment"
+            android:id="@+id/scene_edit_fragment2"
+            android:layout_toRightOf="@+id/view"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/scene_edit_fragment2_text" />
+
+    </RelativeLayout>
+
+    <Switch
+        android:id="@+id/shortcut_show_mainwindow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:paddingLeft="16dip"
+        android:visibility="gone"
+        android:text="@string/shortcut_show_mainwindow" />
+
+    <Switch
+        android:id="@+id/shortcut_enable_feedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:paddingLeft="16dip"
+        android:visibility="gone"
+        android:text="@string/shortcut_enable_feedback" />
+
+</LinearLayout>

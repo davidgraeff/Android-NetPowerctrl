@@ -35,12 +35,12 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
 
     @Override
     public Object getItem(int position) {
-        return groupCollection.groupItems.get(position);
+        return groupCollection.groups.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return groupCollection.groupItems.get(position).id;
+        return groupCollection.groups.get(position).id;
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -49,7 +49,7 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
             convertView = inflater.inflate(R.layout.grid_icon_item, parent);
         }
 
-        GroupCollection.GroupItem data = groupCollection.groupItems.get(position);
+        GroupCollection.GroupItem data = groupCollection.groups.get(position);
 
         assert convertView != null;
         TextView tvName = (TextView) convertView.findViewById(R.id.text1);

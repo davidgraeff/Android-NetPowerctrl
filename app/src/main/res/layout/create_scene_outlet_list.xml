@@ -8,12 +8,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <oly.netpowerctrl.dynamicgid.DynamicGridView
+        <ListView
             android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:numColumns="1" />
+            android:dividerHeight="0dp"
+            android:divider="#00000000" />
 
         <TextView
             android:id="@+id/hintText"
@@ -43,7 +44,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/empty_available"
+        android:id="@+id/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
@@ -52,6 +53,7 @@
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/empty_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@android:style/TextAppearance.Medium"
@@ -59,26 +61,6 @@
             android:padding="5dp"
             android:drawableLeft="@android:drawable/ic_media_rew"
             android:text="@string/scene_create_helptext_available" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/empty_included"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="10dp"
-        android:visibility="gone"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:background="?item_selector"
-            android:padding="5dp"
-            android:drawableRight="@android:drawable/ic_media_ff"
-            android:text="@string/scene_create_helptext" />
 
     </LinearLayout>
 

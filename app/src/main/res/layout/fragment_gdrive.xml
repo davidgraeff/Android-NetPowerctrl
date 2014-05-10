@@ -56,10 +56,40 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Jetzt sichern"
-        android:layout_gravity="right" />
+        android:orientation="horizontal"
+        style="?android:attr/buttonBarStyle"
+        android:gravity="bottom|right">
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/gDrive_logout"
+            style="?android:attr/buttonBarButtonStyle" />
+
+        <Button
+            android:id="@+id/btnRefresh"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/menu_refresh"
+            android:drawableLeft="@drawable/ic_menu_refresh"
+            style="?android:attr/buttonBarButtonStyle" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/gDrive_make_backup"
+            android:drawableLeft="@android:drawable/ic_menu_upload"
+            style="?android:attr/buttonBarButtonStyle" />
+
+    </LinearLayout>
+
 </LinearLayout>

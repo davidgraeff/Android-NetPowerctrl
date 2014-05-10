@@ -19,6 +19,12 @@
         android:icon="?attr/ic_action_view_as_grid" />
 
     <item
+        android:id="@+id/menu_sort"
+        android:title="@string/menu_sort"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_sort_by_size" />
+
+    <item
         android:id="@+id/menu_remove_scene"
         android:title="@string/menu_remove_all_scenes"
         android:showAsAction="ifRoom"

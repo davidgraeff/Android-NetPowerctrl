@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,10 +49,10 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
             type = 1;
         }
 
-        public ReviewItem(String title, boolean displayValue) {
+        public ReviewItem(String title, boolean displayValue, int pageKey) {
             mTitle = title;
             mDisplayValueBoolean = displayValue;
-            mPageKey = DeviceConfigurationAdapter.DefaultPorts;
+            mPageKey = pageKey;
             mEnabled = true;
             type = 2;
         }
@@ -66,8 +67,8 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
     private static final int HostName = 1;
     private static final int UserName = 2;
     private static final int Password = 3;
-    private static final int DefaultPorts = 4;
-    private static final int PreferTCP = 5;
+    private static final int PreferTCP = 4;
+    private static final int DefaultPorts = 5;
     private static final int ReceivePort = 6;
     private static final int SendPort = 7;
 
@@ -79,8 +80,8 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_ip), deviceInfo.HostName, HostName));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_username), deviceInfo.UserName, UserName));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_password), deviceInfo.Password, Password));
-        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_default_ports), deviceInfo.DefaultPorts));
-        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_prefer_tcp), deviceInfo.PreferTCP));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_prefer_tcp), deviceInfo.PreferTCP, PreferTCP));
+        deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_default_ports), deviceInfo.DefaultPorts, DefaultPorts));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_recv_udp), deviceInfo.ReceivePort, ReceivePort, !deviceInfo.DefaultPorts));
         deviceConfigurationOptions.add(new ReviewItem(context.getString(R.string.device_send_udp), deviceInfo.SendPort, SendPort, !deviceInfo.DefaultPorts));
     }
@@ -174,6 +175,9 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
         } else if (key == PreferTCP) {
             CheckBox chk = (CheckBox) view;
             deviceInfo.PreferTCP = chk.isChecked();
+            if (deviceInfo.PreferTCP) {
+                Toast.makeText(context, R.string.create_device_http_hint, Toast.LENGTH_SHORT).show();
+            }
             item.mDisplayValueBoolean = deviceInfo.PreferTCP;
             notifyDataSetChanged();
             return;

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,21 +32,21 @@ import java.nio.ByteOrder;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.network.UDPSending;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.transfer.NeighbourAdapter;
+import oly.netpowerctrl.transfer.NeighbourDiscoverReceiving;
 
 /**
  * Neighbour discovery is activated if this fragment is on screen.
  */
 public class NeighbourFragment extends Fragment {
-    private static final String TAG = "NeighbourFragment";
+    public static final String TAG = "NeighbourFragment";
 
-    NeighbourAdapter neighbourAdapter;
+    public NeighbourAdapter neighbourAdapter;
     private Switch sync_switch;
     UDPSending udpSending;
-    UDPReceiving udpReceiving;
+    NeighbourDiscoverReceiving udpReceiving;
 
     public NeighbourFragment() {
     }
@@ -75,143 +74,68 @@ public class NeighbourFragment extends Fragment {
         });
 
         neighbourAdapter = new NeighbourAdapter(getActivity());
-
-        udpReceiving = new UDPReceiving(3311) {
-            // This is executed in another thread!
-            @Override
-            public void parsePacket(final byte[] message, int length, int receive_port) {
-                if (length < 16) return;
-                ByteBuffer bb = ByteBuffer.wrap(message);
-                bb.order(ByteOrder.BIG_ENDIAN);
-                // Compare signature
-                if (bb.getInt() != 0xCAFEBABE) return;
-
-                int packetType = bb.getInt();
-
-                // Get unique id, 4 bytes
-                final long uniqueID = bb.getLong();
-
-                // Ignore own broadcast packet
-                if (Utils.getMacAsLong() == uniqueID)
-                    return;
-
-                Log.w(TAG, "receive" + String.valueOf(packetType));
-
-                switch (packetType) {
-                    //noinspection ConstantConditions
-                    case 0xCCCCAAAA: // Discover packet
-                        parseDiscoverPacket(bb, uniqueID);
-                        break;
-                    //noinspection ConstantConditions
-                    case 0xCCCCAAAB: // Pair init
-                        parsePairInitPacket(uniqueID);
-                        break;
-                    //noinspection ConstantConditions
-                    case 0xCCCCAAAC: // Pair (n)ack
-                        parsePairResultPacket(bb, uniqueID);
-                        break;
-                }
-            }
-
-            private void parsePairResultPacket(ByteBuffer bb, final long uniqueID) {
-                if (bb.remaining() < 1) return;
-
-                final NeighbourAdapter.AdapterItem item = neighbourAdapter.getItemByID(uniqueID);
-                if (item == null || !item.pairingRequest)
-                    return;
-
-                item.pairingRequest = false;
-
-                final byte c = bb.get();
-                if (c > 1) {
-                    Log.e(TAG, "parsePairResultPacket unexpected code");
-                    return;
-                }
-
-                NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        pairResult(item, c == 1);
-                    }
-                });
-            }
-
-            private void parsePairInitPacket(final long uniqueID) {
-
-                final NeighbourAdapter.AdapterItem item = neighbourAdapter.getItemByID(uniqueID);
-                if (item == null)
-                    return;
-
-                NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        askForPairing(item);
-                    }
-                });
-            }
-
-            void parseDiscoverPacket(ByteBuffer bb, final long uniqueID) {
-                if (bb.remaining() < 10) return;
-
-                // Get others and own version
-                final int version = bb.getInt();
-                final int versionCode;
-                Context c = NetpowerctrlApplication.instance;
-                try {
-                    //noinspection ConstantConditions
-                    versionCode = c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
-                } catch (PackageManager.NameNotFoundException e) {
-                    return;
-                }
-                final short devices = bb.getShort();
-                final short scenes = bb.getShort();
-                final short groups = bb.getShort();
-                final short icons = bb.getShort();
-
-                // Get name length and name bytes
-                final short nameLength = bb.getShort();
-                if (nameLength > bb.remaining()) {
-                    Log.e(TAG, "SecurityException. Datagram is smaller than advertised");
-                    return;
-                }
-
-                final String name;
-                try {
-                    name = new String(bb.array(), bb.position(), nameLength, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    return;
-                }
-
-                // Post to main thread
-                NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (neighbourAdapter == null)
-                            return;
-                        neighbourAdapter.add(name, uniqueID, version, versionCode,
-                                devices, scenes, groups, icons, receivedDatagram.getAddress(), false);
-                    }
-                });
-            }
-        };
-        udpReceiving.start();
-
-        udpSending = new UDPSending(true);
-        udpSending.start();
-
-        advanceTimeRunnable.run();
     }
 
-    private void pairResult(final NeighbourAdapter.AdapterItem item, boolean accepted) {
+
+    @Override
+    public void onDetach() {
+        neighbourAdapter = null;
+
+        super.onDetach();
+        ActionBar bar = getActivity().getActionBar();
+        assert bar != null;
+        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP |
+                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (udpSending != null) {
+            udpSending.interrupt();
+            udpSending = null;
+        }
+        if (udpReceiving != null) {
+            if (udpReceiving.isAlive())
+                udpReceiving.interrupt();
+            udpReceiving = null;
+        }
+
+        NetpowerctrlApplication.getMainThreadHandler().removeCallbacks(advanceTimeRunnable);
+        NetpowerctrlApplication.getMainThreadHandler().removeCallbacks(sendDiscoverMessageRunnable);
+        //noinspection ConstantConditions
+        getActivity().unregisterReceiver(wifiChanged);
+        wifiChanged = null;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        udpSending = new UDPSending(true);
+        udpSending.start();
+        udpReceiving = new NeighbourDiscoverReceiving(this);
+        udpReceiving.start();
+        advanceTimeRunnable.run();
+        createDiscoverMessage();
+        if (!discoverIsRunning)
+            sendDiscoverMessageRunnable.run();
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        //noinspection ConstantConditions
+        getActivity().registerReceiver(wifiChanged, intentFilter);
+    }
+
+    public void pairResult(final NeighbourAdapter.AdapterItem item, boolean accepted) {
         if (accepted) {
-            Toast.makeText(getActivity(), "Pairing accepted", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.neighbour_pairing_accepted, Toast.LENGTH_SHORT).show();
             neighbourAdapter.setPaired(item, true);
         } else {
-            Toast.makeText(getActivity(), "Pairing not accepted", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.neighbour_pairing_denied, Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void askForPairing(final NeighbourAdapter.AdapterItem item) {
+    public void askForPairing(final NeighbourAdapter.AdapterItem item) {
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
         alert.setTitle(R.string.neighbour_pairing_title);
@@ -247,7 +171,7 @@ public class NeighbourFragment extends Fragment {
         RuntimeDataController r = NetpowerctrlApplication.getDataController();
         bb.putShort((short) r.deviceCollection.devices.size());
         bb.putShort((short) r.sceneCollection.scenes.size());
-        bb.putShort((short) r.groupCollection.groupItems.size());
+        bb.putShort((short) r.groupCollection.groups.size());
         bb.putShort((short) 0);
 
         // We have 28 Bytes now.
@@ -293,15 +217,19 @@ public class NeighbourFragment extends Fragment {
         udpSending.addJob(new UDPSending.SendRawJob(bb.array(), address, 3311));
     }
 
+    boolean discoverIsRunning = false;
     Runnable sendDiscoverMessageRunnable = new Runnable() {
         @Override
         public void run() {
             if (broadcastSendJob == null)
                 return;
 
+            discoverIsRunning = true;
+
+//            Log.w(TAG, "send");
             udpSending.addJob(broadcastSendJob);
 
-            NetpowerctrlApplication.getMainThreadHandler().postDelayed(this, 5000);
+            NetpowerctrlApplication.getMainThreadHandler().postDelayed(this, 2500);
         }
     };
 
@@ -316,31 +244,6 @@ public class NeighbourFragment extends Fragment {
             NetpowerctrlApplication.getMainThreadHandler().postDelayed(this, 5000);
         }
     };
-
-    @Override
-    public void onDetach() {
-        NetpowerctrlApplication.getMainThreadHandler().removeCallbacks(advanceTimeRunnable);
-        NetpowerctrlApplication.getMainThreadHandler().removeCallbacks(sendDiscoverMessageRunnable);
-        if (udpSending != null) {
-            udpSending.interrupt();
-            udpSending = null;
-        }
-        if (udpReceiving != null) {
-            udpReceiving.interrupt();
-            udpReceiving = null;
-        }
-        neighbourAdapter = null;
-
-        //noinspection ConstantConditions
-        getActivity().unregisterReceiver(wifiChanged);
-        wifiChanged = null;
-
-        super.onDetach();
-        ActionBar bar = getActivity().getActionBar();
-        assert bar != null;
-        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP |
-                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
-    }
 
     private void enableSync(boolean enable) {
         if (enable) {
@@ -364,7 +267,7 @@ public class NeighbourFragment extends Fragment {
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.menu_help)
                         .setMessage(R.string.help_neighbours)
-                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+                        .setIcon(android.R.drawable.ic_menu_help).show();
                 return true;
             }
         }
@@ -404,30 +307,33 @@ public class NeighbourFragment extends Fragment {
             }
         });
 
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-        //noinspection ConstantConditions
-        getActivity().registerReceiver(wifiChanged, intentFilter);
-
         return view;
     }
 
-    void updateNetworkIDText() {
+    private int updateNetworkIDText() {
         //noinspection ConstantConditions
         WifiManager wifi = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
-        String networkID = (wifi != null) ? String.valueOf(wifi.getDhcpInfo().gateway) : "n/a";
+        int gateway = (wifi != null) ? wifi.getDhcpInfo().gateway : 0;
+        String networkID = (gateway != 0) ? String.valueOf(gateway) : "n/a";
 
         //noinspection ConstantConditions
         networkIDText.setText(getActivity().getString(R.string.neighbours_hint_activated, networkID));
-
-        createDiscoverMessage();
-        sendDiscoverMessageRunnable.run();
+        return gateway;
     }
 
+    private int lastGateway = 0;
     private BroadcastReceiver wifiChanged = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            updateNetworkIDText();
+            int g = updateNetworkIDText();
+            if (lastGateway == g)
+                return;
+            lastGateway = g;
+            createDiscoverMessage();
+            Log.w(TAG, "wifi changed");
+            if (!discoverIsRunning)
+                sendDiscoverMessageRunnable.run();
         }
     };
+
 }
