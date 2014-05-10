@@ -11,7 +11,7 @@ import oly.netpowerctrl.datastructure.DevicePort;
 
 public class DevicePortsAvailableAdapter extends DevicePortsBaseAdapter {
     public DevicePortsAvailableAdapter(Context context) {
-        super(context, null, null);
+        super(context, null);
     }
 
     @Override

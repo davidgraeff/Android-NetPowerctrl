@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,11 +13,13 @@ import java.util.List;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
+import oly.netpowerctrl.utils.SortCriteriaInterface;
+import oly.netpowerctrl.utils.Sorting;
 
 /**
  * List of scenes
  */
-public class SceneCollection {
+public class SceneCollection implements SortCriteriaInterface {
     public List<Scene> scenes;
     private final IScenesSave storage;
     private final ArrayList<IScenesUpdated> observers = new ArrayList<IScenesUpdated>();
@@ -130,7 +133,7 @@ public class SceneCollection {
         NetpowerctrlApplication.getDataController().execute(getScene(position), null);
     }
 
-    public void addScene(Scene data) {
+    public void add(Scene data) {
         if (data == null)
             return;
 
@@ -149,38 +152,26 @@ public class SceneCollection {
             scenes.add(data);
         }
 
-        if (storage != null)
-            storage.scenesSave(this);
+        save();
         notifyObservers(true);
     }
 
     public void removeScene(int position) {
         if (position < 0 || position > scenes.size()) return;
         scenes.remove(position);
-        storage.scenesSave(this);
+        save();
         notifyObservers(true);
     }
 
     public void deleteAll() {
         scenes.clear();
-        storage.scenesSave(this);
+        save();
         notifyObservers(true);
     }
 
-    public void reorderItems(int originalPosition, int newPosition, boolean saveReordering) {
-        if (newPosition >= scenes.size()) {
-            return;
-        }
-        Scene temp = scenes.get(originalPosition);
-        scenes.remove(originalPosition);
-        scenes.add(newPosition, temp);
-        notifyObservers(true);
-        if (saveReordering)
+    public void save() {
+        if (storage != null)
             storage.scenesSave(this);
-    }
-
-    public void saveScenes() {
-        storage.scenesSave(this);
     }
 
     public boolean contains(Scene scene) {
@@ -192,6 +183,93 @@ public class SceneCollection {
 
     public Scene getScene(int position) {
         return scenes.get(position);
+    }
+
+
+    /**
+     * Import String data (JSON) and either replace all existing data or merge it with the
+     * existing data.
+     *
+     * @param tryToMerge If you merge the data instead of replacing the process is slower.
+     */
+    public boolean importData(boolean tryToMerge, String data) {
+        SceneCollection dc;
+        try {
+            dc = SceneCollection.fromJSON(JSONHelper.getReader(data), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        if (tryToMerge) {
+            for (Scene di : dc.scenes)
+                add(di);
+        } else {
+            scenes.clear();
+            scenes = dc.scenes;
+
+            notifyObservers(true);
+            save();
+        }
+        return true;
+    }
+
+    @Override
+    public String[] getContentList() {
+        String[] l = new String[scenes.size()];
+        for (int i = 0; i < scenes.size(); ++i) {
+            l[i] = scenes.get(i).sceneName;
+        }
+        return l;
+    }
+
+    @Override
+    public String[] getSortCriteria() {
+        String[] s = new String[1];
+        s[0] = "Alphabetisch";
+        return s;
+    }
+
+    @Override
+    public void applySortCriteria(final boolean[] criteria) {
+        Sorting.qSort(scenes, 0, scenes.size() - 1, new Sorting.qSortComparable<Scene>() {
+            @Override
+            public boolean isGreater(Scene first, Scene second) {
+                boolean isGreater = false;
+                if (criteria[0] &&
+                        first.sceneName.compareTo(second.sceneName) > 0) { // alphabetical
+                    isGreater = true;
+                }
+                return isGreater;
+            }
+        });
+
+        notifyObservers(false);
+        save();
+    }
+
+    @Override
+    public boolean allowCustomSort() {
+        return true;
+    }
+
+    @Override
+    public void setSortOrder(int[] sortOrder) {
+        if (sortOrder.length != scenes.size()) {
+            Log.e("scenes", "setSortOrder length wrong");
+            return;
+        }
+
+        List<Scene> copy = scenes;
+        scenes = new ArrayList<Scene>();
+
+        // Assign new positions
+        for (int i = 0; i < copy.size(); ++i) {
+            scenes.add(copy.get(sortOrder[i]));
+        }
+
+        notifyObservers(false);
+        save();
     }
 
     public interface IScenesUpdated {

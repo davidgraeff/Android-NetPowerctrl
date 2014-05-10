@@ -80,7 +80,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
     };
 
     public DevicePortsCreateSceneAdapter(Context context) {
-        super(context, null, null);
+        super(context, null);
     }
 
     public int getViewTypeCount() {

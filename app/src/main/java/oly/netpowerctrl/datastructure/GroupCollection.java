@@ -78,7 +78,7 @@ public class GroupCollection {
             o.groupsUpdated(addedOrRemoved);
     }
 
-    public final List<GroupItem> groupItems = new ArrayList<GroupItem>();
+    public List<GroupItem> groups = new ArrayList<GroupItem>();
 
     public GroupCollection(IGroupsSave storage) {
         this.storage = storage;
@@ -96,7 +96,7 @@ public class GroupCollection {
 
     public UUID add(String name) {
         UUID group_uuid = UUID.randomUUID();
-        groupItems.add(new GroupItem(group_uuid, name));
+        groups.add(new GroupItem(group_uuid, name));
         if (storage != null)
             storage.groupsSave(this);
         notifyObservers(true);
@@ -104,11 +104,11 @@ public class GroupCollection {
     }
 
     public GroupItem get(UUID group_uuid) {
-        int index = groupItems.indexOf(groupItemIndexOfHelper.setUUIDandReturn(group_uuid));
+        int index = groups.indexOf(groupItemIndexOfHelper.setUUIDandReturn(group_uuid));
         if (index == -1) {
             return null;
         }
-        return groupItems.get(index);
+        return groups.get(index);
     }
 
     /**
@@ -118,11 +118,11 @@ public class GroupCollection {
      * @param name       New name for the group
      */
     public void edit(UUID group_uuid, String name) {
-        int index = groupItems.indexOf(groupItemIndexOfHelper.setUUIDandReturn(group_uuid));
+        int index = groups.indexOf(groupItemIndexOfHelper.setUUIDandReturn(group_uuid));
         if (index == -1)
-            groupItems.add(new GroupItem(group_uuid, name));
+            groups.add(new GroupItem(group_uuid, name));
         else
-            groupItems.get(index).name = name;
+            groups.get(index).name = name;
         if (storage != null)
             storage.groupsSave(this);
 
@@ -130,11 +130,11 @@ public class GroupCollection {
     }
 
     public boolean remove(UUID group_uuid) {
-        int index = groupItems.indexOf(groupItemIndexOfHelper.setUUIDandReturn(group_uuid));
+        int index = groups.indexOf(groupItemIndexOfHelper.setUUIDandReturn(group_uuid));
         if (index == -1) {
             return false;
         }
-        groupItems.remove(index);
+        groups.remove(index);
         if (storage != null)
             storage.groupsSave(this);
 
@@ -143,19 +143,19 @@ public class GroupCollection {
     }
 
     public void reorderItems(int originalPosition, int newPosition, boolean saveReordering) {
-        if (newPosition >= groupItems.size()) {
+        if (newPosition >= groups.size()) {
             return;
         }
-        GroupItem temp = groupItems.get(originalPosition);
-        groupItems.remove(originalPosition);
-        groupItems.add(newPosition, temp);
+        GroupItem temp = groups.get(originalPosition);
+        groups.remove(originalPosition);
+        groups.add(newPosition, temp);
         notifyObservers(true);
         if (saveReordering && storage != null) storage.groupsSave(this);
 
     }
 
     public int length() {
-        return groupItems.size();
+        return groups.size();
     }
 
     /**
@@ -203,13 +203,13 @@ public class GroupCollection {
         if (group_name == null || group_uuid == null)
             return;
         GroupItem item = new GroupItem(group_uuid, group_name);
-        scene.groupItems.add(item);
+        scene.groups.add(item);
     }
 
     public static GroupCollection fromJSON(JsonReader reader, IGroupsSave storage) throws IOException {
-        GroupCollection scene = new GroupCollection(storage);
+        GroupCollection groupCollection = new GroupCollection(storage);
         if (reader == null)
-            return scene;
+            return groupCollection;
 
         reader.beginObject();
         while (reader.hasNext()) {
@@ -218,7 +218,7 @@ public class GroupCollection {
             if (name.equals("groupItems")) {
                 reader.beginArray();
                 while (reader.hasNext()) {
-                    readGroupItem(reader, scene);
+                    readGroupItem(reader, groupCollection);
                 }
                 reader.endArray();
             } else {
@@ -226,13 +226,13 @@ public class GroupCollection {
             }
         }
         reader.endObject();
-        return scene;
+        return groupCollection;
     }
 
     void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("groupItems").beginArray();
-        for (GroupItem c : groupItems) {
+        for (GroupItem c : groups) {
             writer.beginObject();
             writer.name("uuid").value(c.uuid.toString());
             writer.name("name").value(c.name);
@@ -243,10 +243,39 @@ public class GroupCollection {
     }
 
     public String[] getGroupsArray() {
-        String[] a = new String[groupItems.size()];
+        String[] a = new String[groups.size()];
         for (int i = 0; i < a.length; ++i)
-            a[i] = groupItems.get(i).name;
+            a[i] = groups.get(i).name;
         return a;
+    }
+
+    /**
+     * Import String data (JSON) and either replace all existing data or merge it with the
+     * existing data.
+     *
+     * @param tryToMerge If you merge the data instead of replacing the process is slower.
+     */
+    public boolean importData(boolean tryToMerge, String data) {
+        GroupCollection dc;
+        try {
+            dc = GroupCollection.fromJSON(JSONHelper.getReader(data), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        if (tryToMerge) {
+            for (GroupItem di : dc.groups)
+                edit(di.uuid, di.name);
+        } else {
+            groups.clear();
+            groups = dc.groups;
+
+            notifyObservers(true);
+            if (storage != null)
+                storage.groupsSave(this);
+        }
+        return true;
     }
 
     /**
@@ -257,7 +286,7 @@ public class GroupCollection {
      * @return
      */
     public boolean equalsAtIndex(int index, List<UUID> groupUUids) {
-        GroupItem g = groupItems.get(index);
+        GroupItem g = groups.get(index);
         return groupUUids.contains(g.uuid);
     }
 

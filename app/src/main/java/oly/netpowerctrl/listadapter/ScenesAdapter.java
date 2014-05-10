@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,15 +14,13 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.datastructure.Scene;
 import oly.netpowerctrl.datastructure.SceneCollection;
-import oly.netpowerctrl.dynamicgid.AbstractDynamicGridAdapter;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 
-public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCollection.IScenesUpdated {
+public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScenesUpdated {
     private final SceneCollection scenes;
     private final LayoutInflater inflater;
-    private boolean disableEditing;
     private ListItemMenu mListContextMenu = null;
     private int outlet_res_id = R.layout.grid_icon_item;
     private final IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
@@ -92,11 +91,6 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
         scenes.registerObserver(this);
     }
 
-    public void setDisableEditing(boolean disableEditing) {
-        this.disableEditing = disableEditing;
-        notifyDataSetChanged();
-    }
-
     public void setListContextMenu(ListItemMenu listItemMenu) {
         this.mListContextMenu = listItemMenu;
     }
@@ -161,26 +155,12 @@ public class ScenesAdapter extends AbstractDynamicGridAdapter implements SceneCo
         // setOnClickListener. In the other case we use the main icon for setOnClickListener.
         ImageView image_edit = current_viewHolder.imageEdit;
         if (image_edit != null)
-            image_edit.setVisibility(disableEditing ? View.GONE : View.VISIBLE);
+            image_edit.setVisibility(View.VISIBLE);
         return convertView;
-    }
-
-    @Override
-    public void reorderItems(int originalPosition, int newPosition) {
-        scenes.reorderItems(originalPosition, newPosition, false);
-    }
-
-    @Override
-    public void finishedReordering() {
-        scenes.saveScenes();
     }
 
     @Override
     public void scenesUpdated(boolean addedOrRemoved) {
         notifyDataSetChanged();
     }
-//
-//    public interface IEditSceneRequest {
-//        void editScene(int position, View view);
-//    }
 }

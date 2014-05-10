@@ -1,29 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/devices_list_padding"
+    android:paddingRight="@dimen/devices_list_padding">
 
-    <LinearLayout
+    <GridView
+        android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <oly.netpowerctrl.dynamicgid.DynamicGridView
-            android:id="@android:id/list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/hintText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?drawer_item_background"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:gravity="left"
-            android:padding="5dp"
-            android:visibility="gone" />
-    </LinearLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <LinearLayout
         android:id="@android:id/empty"
@@ -50,4 +37,13 @@
             android:text="@string/devices" />
     </LinearLayout>
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/hintText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?drawer_item_background"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:gravity="left"
+        android:padding="5dp"
+        android:visibility="gone" />
+</LinearLayout>

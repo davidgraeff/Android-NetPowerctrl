@@ -10,8 +10,8 @@ import android.widget.AdapterView;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
-import oly.netpowerctrl.main.SceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.shortcut.SceneEditFragment;
 import oly.netpowerctrl.shortcut.SceneEditFragmentReady;
 
 public class WidgetConfig extends Activity implements SceneEditFragmentReady {
@@ -65,6 +65,11 @@ public class WidgetConfig extends Activity implements SceneEditFragmentReady {
         fragment.getListView().setOnItemClickListener(selectedOutletListener);
         this.adapter = fragment.getAdapter();
         adapter.update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
+    }
+
+    @Override
+    public void entryDismiss(SceneEditFragment fragment, int position) {
+
     }
 
     @Override

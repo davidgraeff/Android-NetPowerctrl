@@ -11,14 +11,12 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveApi;
-import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.DriveId;
+import com.google.android.gms.drive.Metadata;
+import com.google.android.gms.plus.Plus;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
@@ -28,8 +26,26 @@ public class GDrive implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
+    /**
+     * Request code for auto Google Play Services error resolution.
+     */
+    protected static final int REQUEST_CODE_RESOLUTION = 1001;
+    private static final String TAG = "GooglePlayServicesActivity";
+    private static final String KEY_IN_RESOLUTION = "is_in_resolution";
+    GDriveConnectionState observer;
+
     private boolean error = false;
     private String errorMessage;
+    /**
+     * Google API client.
+     */
+    private GoogleApiClient mGoogleApiClient; // Google API service
+    /**
+     * Determines if the client is in a resolution state, and
+     * waiting for resolution intent to return.
+     */
+    private boolean mIsInResolution;
+    private Activity context;
 
     public boolean isError() {
         return error;
@@ -39,106 +55,28 @@ public class GDrive implements
         return errorMessage;
     }
 
-
-    public void getListOfBackups() {
+    public void getListOfBackups(GDriveBackupsAdapter GDriveBackupsAdapter) {
         if (!mGoogleApiClient.isConnected())
             return;
 
-        if (observer != null)
-            observer.showProgress(true, "Get files...");
-
-        DriveFolder appDataDir = Drive.DriveApi.getAppFolder(mGoogleApiClient);
-        appDataDir.listChildren(mGoogleApiClient)
-                .setResultCallback(metadataResult);
+        new GDriveRefreshBackupListTask(mGoogleApiClient, observer, GDriveBackupsAdapter).execute();
     }
 
-    GDriveBackupsAdapter mGDriveBackupsAdapter;
-
-    final private ResultCallback<DriveApi.MetadataBufferResult> metadataResult = new
-            ResultCallback<DriveApi.MetadataBufferResult>() {
-                @Override
-                public void onResult(DriveApi.MetadataBufferResult result) {
-                    if (!result.getStatus().isSuccess()) {
-                        if (observer != null)
-                            observer.showProgress(false, context.getString(R.string.neighbours_error_retrieve_files));
-                        return;
-                    }
-
-                    if (mGDriveBackupsAdapter == null)
-                        return;
-
-                    mGDriveBackupsAdapter.clear();
-                    mGDriveBackupsAdapter.append(result.getMetadataBuffer());
-
-                    if (observer != null)
-                        observer.showProgress(false, context.getString(R.string.gDriveConnected));
-                }
-            };
-
-    public interface GDriveConnectionState {
-        void gDriveConnected(boolean connected, boolean canceled);
-
-        void showProgress(boolean inProgress, String text);
+    public void deleteBackup(Metadata item) {
+        Toast.makeText(context, R.string.gDrive_remove_not_supported, Toast.LENGTH_SHORT).show();
     }
 
-    public void createNewBackup() {
-        if (observer != null)
-            observer.showProgress(true, "Create backup..");
-
-        DriveFolder appDataDir = Drive.DriveApi.getAppFolder(mGoogleApiClient);
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle(Utils.getDeviceName() + " " + Utils.getDateTime()).build();
-        appDataDir.createFolder(mGoogleApiClient, changeSet)
-                .setResultCallback(createFolderCallback);
+    public void createNewBackup(GDriveCreateBackupTask.BackupDoneSuccess done) {
+        new GDriveCreateBackupTask(mGoogleApiClient, observer, done).execute();
     }
 
-    final ResultCallback<DriveFolder.DriveFolderResult> createFolderCallback = new
-            ResultCallback<DriveFolder.DriveFolderResult>() {
+    public void restoreBackup(DriveId drive_id) {
+        new GDriveRestoreBackupTask(mGoogleApiClient, observer, drive_id).execute();
+    }
 
-                @Override
-                public void onResult(DriveFolder.DriveFolderResult result) {
-                    if (!result.getStatus().isSuccess()) {
-                        if (observer != null)
-                            observer.showProgress(false, "Problem while trying to create a folder");
-                        return;
-                    }
-
-                    //TODO create files
-
-                    if (observer != null)
-                        observer.showProgress(false, "Backup created");
-
-                    getListOfBackups();
-                }
-            };
-
-    public void setObserver(GDriveConnectionState observer, GDriveBackupsAdapter adapter) {
+    public void setObserver(GDriveConnectionState observer) {
         this.observer = observer;
-        mGDriveBackupsAdapter = adapter;
     }
-
-    GDriveConnectionState observer;
-
-    private static final String TAG = "GooglePlayServicesActivity";
-    private static final String KEY_IN_RESOLUTION = "is_in_resolution";
-
-    /**
-     * Request code for auto Google Play Services error resolution.
-     */
-    protected static final int REQUEST_CODE_RESOLUTION = 1001;
-
-    /**
-     * Google API client.
-     */
-    private GoogleApiClient mGoogleApiClient;
-
-    /**
-     * Determines if the client is in a resolution state, and
-     * waiting for resolution intent to return.
-     */
-    private boolean mIsInResolution;
-
-    private Activity context;
 
     /**
      * Called when the activity is starting. Restores the activity state.
@@ -165,6 +103,7 @@ public class GDrive implements
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(context)
                     .addApi(Drive.API)
+                    .addApi(Plus.API)
                     .addScope(Drive.SCOPE_APPFOLDER)
                             // Optionally, add additional APIs and scopes if required.
                     .addConnectionCallbacks(this)
@@ -193,7 +132,14 @@ public class GDrive implements
         if (mGoogleApiClient != null) {
             mGoogleApiClient.disconnect();
         }
+        if (observer != null)
+            observer.gDriveConnected(false, false);
         context = null;
+    }
+
+    public void resetAccount() {
+        Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+        onStop();
     }
 
     /**
@@ -236,7 +182,7 @@ public class GDrive implements
      */
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.w(TAG, "GoogleApiClient connected");
+//        Log.w(TAG, "GoogleApiClient connected");
         error = false;
         if (observer != null)
             observer.gDriveConnected(true, false);
@@ -247,7 +193,7 @@ public class GDrive implements
      */
     @Override
     public void onConnectionSuspended(int cause) {
-        Log.w(TAG, "GoogleApiClient connection suspended");
+//        Log.w(TAG, "GoogleApiClient connection suspended");
         retryConnecting();
     }
 
@@ -258,7 +204,7 @@ public class GDrive implements
      */
     @Override
     public void onConnectionFailed(ConnectionResult result) {
-        Log.w(TAG, "GoogleApiClient connection failed: " + result.toString());
+//        Log.w(TAG, "GoogleApiClient connection failed: " + result.toString());
 
         error = true;
 
@@ -302,8 +248,13 @@ public class GDrive implements
         }
     }
 
-
     public boolean isConnected() {
         return mGoogleApiClient != null && mGoogleApiClient.isConnected();
+    }
+
+    public interface GDriveConnectionState {
+        void gDriveConnected(boolean connected, boolean canceled);
+
+        void showProgress(boolean inProgress, String text);
     }
 }

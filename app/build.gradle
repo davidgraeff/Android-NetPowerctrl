@@ -25,9 +25,10 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.google.android.gms:play-services:4.3.23'
-    compile 'ch.acra:acra:4.5.0@jar'
+    compile 'com.google.android.gms:play-services:4.3+'
+
+    compile 'ch.acra:acra:4.5+'
     compile 'com.android.support:support-v13:+'
-    compile 'de.cketti.library.changelog:ckchangelog:1.2.0'
-    compile 'com.nhaarman.listviewanimations:library:2.6.0'
+    compile 'de.cketti.library.changelog:ckchangelog:1.2+'
+    compile 'com.nhaarman.listviewanimations:library:2.6+'
 }

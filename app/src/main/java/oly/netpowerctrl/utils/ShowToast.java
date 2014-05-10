@@ -1,5 +1,10 @@
 package oly.netpowerctrl.utils;
 
+import android.app.Activity;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Handler;
 import android.widget.Toast;
@@ -40,5 +45,16 @@ public class ShowToast {
                 toast.cancel();
             }
         }, length);
+    }
+
+    public static void showDialogFragment(Activity context, Fragment fragment) {
+        FragmentManager fragmentManager = context.getFragmentManager();
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        Fragment prev = fragmentManager.findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        ((DialogFragment) fragment).show(ft, "dialog");
     }
 }

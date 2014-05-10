@@ -59,7 +59,7 @@ public class DrawerAdapter extends BaseAdapter implements GroupCollection.IGroup
 
             // Readd groups
             for (int i = 0; i < maxLength; ++i) {
-                GroupCollection.GroupItem groupItem = g.groupItems.get(i);
+                GroupCollection.GroupItem groupItem = g.groups.get(i);
                 DrawerItem item = new DrawerItem(groupItem.name, "");
                 item.uuid = groupItem.uuid;
                 item.bitmap = groupItem.getBitmap();
@@ -73,7 +73,7 @@ public class DrawerAdapter extends BaseAdapter implements GroupCollection.IGroup
             notifyDataSetChanged();
         } else { // just update names
             for (int i = 0; i < groups_size; ++i) {
-                GroupCollection.GroupItem groupItem = g.groupItems.get(i);
+                GroupCollection.GroupItem groupItem = g.groups.get(i);
                 DrawerItem item = mItems.get(i + startPosition);
                 item.bitmap = groupItem.getBitmap();
                 item.mTitle = groupItem.name;

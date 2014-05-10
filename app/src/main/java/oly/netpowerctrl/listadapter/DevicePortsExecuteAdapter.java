@@ -1,6 +1,7 @@
 package oly.netpowerctrl.listadapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
@@ -13,30 +14,45 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataControllerStateChanged;
+import oly.netpowerctrl.datastructure.DeviceCollection;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
+import oly.netpowerctrl.utils.SortCriteriaInterface;
+import oly.netpowerctrl.utils.Sorting;
 
 public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
-        DeviceUpdate, SeekBar.OnSeekBarChangeListener, RuntimeDataControllerStateChanged {
+        DeviceUpdate, SeekBar.OnSeekBarChangeListener, RuntimeDataControllerStateChanged, SortCriteriaInterface {
 
     // We block updates while moving the range slider
     private boolean blockUpdates = false;
+    private boolean isLoaded = false;
     private static final String TAG = "PortAdapter";
 
     // Some observers
     private WeakReference<NotReachableUpdate> notReachableObserver;
 
-    public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, UUID filterGroup) {
-        super(context, mListContextMenu, filterGroup);
+    /**
+     * The constructor will not load the adapter data! Call setGroupFilter to load data!
+     *
+     * @param context
+     * @param mListContextMenu
+     */
+    public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu) {
+        super(context, mListContextMenu);
         showHidden = SharedPrefs.getShowHiddenOutlets();
-        blockUpdates = !NetpowerctrlApplication.getDataController().isInitialDataQueryCompleted();
+    }
+
+    @Override
+    public void setGroupFilter(UUID groupFilter) {
+        super.setGroupFilter(groupFilter);
+        isLoaded = true;
+
         onResume();
-        if (!blockUpdates)
-            onDeviceUpdated(null, true);
+        onDeviceUpdated(null, true);
     }
 
     public void onPause() {
@@ -59,7 +75,6 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
      */
     @Override
     public void onDataQueryFinished() {
-        blockUpdates = false;
         onDeviceUpdated(null, true);
     }
 
@@ -164,7 +179,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 //        Log.w(TAG, "id " + String.valueOf(Thread.currentThread().getId()) +
 //                "id main " + String.valueOf(NetpowerctrlApplication.instance.getMainLooper().getThread().getId()));
 
-        if (blockUpdates)
+        if (blockUpdates || !isLoaded || !NetpowerctrlApplication.getDataController().isInitialDataQueryCompleted())
             return;
 
         if (willBeRemoved)
@@ -174,15 +189,71 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     }
 
     @Override
-    public void setGroupFilter(UUID groupFilter) {
-        super.setGroupFilter(groupFilter);
-        update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
+    public String[] getContentList() {
+        String[] l = new String[all_outlets.size()];
+        for (int i = 0; i < all_outlets.size(); ++i) {
+            DevicePort port = all_outlets.get(i).port;
+            l[i] = port.device.DeviceName + ": " + port.getDescription();
+        }
+        return l;
     }
 
-    public void sortAlphabetically() {
-        temporary_ignore_positionRequest = true;
-        update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
-        temporary_ignore_positionRequest = false;
+    @Override
+    public String[] getSortCriteria() {
+        String[] s = new String[2];
+        s[0] = "Alphabetisch";
+        s[1] = "Nach Geräten";
+        return s;
+    }
+
+    @Override
+    public void applySortCriteria(final boolean[] criteria) {
+        Sorting.qSort(all_outlets, 0, all_outlets.size() - 1, new Sorting.qSortComparable<DevicePortListItem>() {
+            @Override
+            public boolean isGreater(DevicePortListItem first, DevicePortListItem second) {
+                boolean isGreater = false;
+                if (criteria[0] &&
+                        first.port.getDescription().compareTo(second.port.getDescription()) > 0) { // alphabetical
+                    isGreater = true;
+                }
+                if (criteria[1] &&
+                        first.port.device.DeviceName.compareTo(second.port.device.DeviceName) > 0) {
+                    isGreater = true;
+                }
+                return isGreater;
+            }
+        });
+
+        // Assign positionRequest numbers
+        for (int i = 0; i < all_outlets.size(); ++i) {
+            all_outlets.get(i).port.positionRequest = i;
+        }
+
+        DeviceCollection c = NetpowerctrlApplication.getDataController().deviceCollection;
+        update(c.devices);
+        c.save();
+    }
+
+    @Override
+    public boolean allowCustomSort() {
+        return true;
+    }
+
+    @Override
+    public void setSortOrder(int[] sortOrder) {
+        if (sortOrder.length != all_outlets.size()) {
+            Log.e(TAG, "setSortOrder length wrong");
+            return;
+        }
+
+        // Assign positionRequest numbers
+        for (int i = 0; i < all_outlets.size(); ++i) {
+            all_outlets.get(sortOrder[i]).port.positionRequest = i;
+        }
+
+        DeviceCollection c = NetpowerctrlApplication.getDataController().deviceCollection;
+        update(c.devices);
+        c.save();
     }
 
     public boolean getIsShowingHidden() {

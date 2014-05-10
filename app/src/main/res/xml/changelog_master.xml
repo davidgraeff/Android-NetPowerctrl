@@ -3,11 +3,15 @@
     <release
         version="4.0"
         versioncode="50">
+        <change>Szenenerstellung für Tablets verbessert</change>
+        <change>Neue Sortierkriterien für Steckdoseübersicht</change>
         <change>GoogleDrive Backup</change>
-        <change>Weitere Mobilgeräte über das lokale Netzwerk synchronisieren</change>
-        <change>NFC nur noch als Play Store Link</change>
-        <change>Geräte können wieder manuell angelegt werden</change>
-        <change>Http statt UDP möglich (für die jenigen, welche die Steckdose übers Internet steuern
+        <change>Über das lokale Netzwerk können Einrichtungsdaten (Geräte, Szenen, Gruppen, Icons)
+            schnell an andere Android Mobilgeräte verteilt werden
+        </change>
+        <change>NFC wird nur noch als Play Store Link genutzt</change>
+        <change>Bugfix: Geräte können wieder manuell angelegt werden</change>
+        <change>Http statt UDP möglich (für diejenigen, welche die Steckdose übers Internet steuern
             wollen)
         </change>
     </release>

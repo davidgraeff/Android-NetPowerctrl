@@ -41,15 +41,22 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceObs
 
     public static ConfigureDeviceFragment instantiate(Context ctx, DeviceInfo di) {
         ConfigureDeviceFragment fragment = (ConfigureDeviceFragment) Fragment.instantiate(ctx, ConfigureDeviceFragment.class.getName());
-        Bundle args = new Bundle();
-        args.putString(DEVICE_PARAMETER, di.toJSON());
-        fragment.setArguments(args);
+        if (di != null) {
+            Bundle args = new Bundle();
+            args.putString(DEVICE_PARAMETER, di.toJSON());
+            fragment.setArguments(args);
+        }
         return fragment;
     }
 
     private void testDevice() {
         if (test_state != TestStates.TEST_INIT && test_state != TestStates.TEST_OK)
             return;
+
+        if (device.HostName.isEmpty() || device.UserName.isEmpty() || device.Password.isEmpty()) {
+            Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         test_state = TestStates.TEST_REACHABLE;
 
@@ -61,6 +68,11 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceObs
     }
 
     private void saveDevice() {
+        if (device.HostName.isEmpty() || device.UserName.isEmpty() || device.Password.isEmpty()) {
+            Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (test_state != TestStates.TEST_OK) {
             //noinspection ConstantConditions
             new AlertDialog.Builder(getActivity())
@@ -97,26 +109,26 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceObs
         DeviceConfigurationAdapter adapter = new DeviceConfigurationAdapter(getActivity(), device);
         view.setAdapter(adapter);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.configure_device);
-        builder.setView(view);
-        builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-            }
-        });
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-            }
-        });
-        builder.setNeutralButton(R.string.device_test, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-            }
-        });
-
-        return builder.create();
+        return new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.configure_device)
+                .setIcon(android.R.drawable.ic_menu_edit)
+                .setView(view)
+                .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                })
+                .setNeutralButton(R.string.device_test, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                    }
+                })
+                .create();
     }
 
     @Override
@@ -162,12 +174,10 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceObs
         }
 
         if (device == null) {
-            //noinspection ConstantConditions
-            Toast.makeText(getActivity(),
-                    getString(R.string.error_unknown_device),
-                    Toast.LENGTH_LONG).show();
-            //noinspection ConstantConditions
-            getFragmentManager().popBackStack();
+            device = DeviceInfo.createNewDevice(AnelDeviceDiscoveryThread.anelPlugin.getPluginID());
+            // Default values for user and password
+            device.UserName = "admin";
+            device.Password = "anel";
         }
     }
 

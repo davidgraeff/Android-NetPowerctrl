@@ -152,7 +152,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="widget_image_off">Widget image: Off state</string>
     <string name="widget_image_not_reachable">Widget image: Not available</string>
     <string name="crash_toast_text">Ooooops ! I crashed, but a report can be sent to my developer to help fix the issue!</string>
-    <string name="outlet_to_scene_title">Create scene</string>
+    <string name="scene_rename">Scene name</string>
     <string name="service_stopped">Power-Control Background Service stopped</string>
     <string name="preference_notify_on_stop">Notify on app shutdown</string>
     <string name="preference_notify_on_stop_summary">Activate this to see if really all parts of the app are shutdown on close.</string>
@@ -167,7 +167,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="dialog_icon_default">Default Icon</string>
     <string name="dialog_icon_select">Select Scene Icon…</string>
     <string name="error_icon">Failed to set icon</string>
-    <string name="scene_create_helptext">No actions so far! Swipe the screen to the right to unveil available actions. Click on one of them to add that to the scene.</string>
+    <string name="scene_create_include_onepane">No actions so far! Swipe the screen to the right to unveil available actions. Click on one of them to add it to the scene.</string>
+    <string name="scene_create_include_twopane">No actions so far! Click on one of the right actions to add it to the scene.</string>
     <string name="error_scene_no_actions">No actions defined. Saving disabled!</string>
     <string name="error_scene_no_name">No name set. Saving disabled!</string>
     <string name="scene_create_helptext_available">No more actions. You already have used all available or there are no one available.</string>
@@ -255,4 +256,19 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="neighbour_pairing_title">Pairing request</string>
     <string name="neighbour_pairing_message">If you allow the pairing, the neighbour %s is allowed to send and overwrite settings on this device.</string>
     <string name="neighbours_error_retrieve_files">Verzeichnis konnte nicht abgerufen werden</string>
+    <string name="gDrive_remove_not_supported">Removing is not supported by Google Drive API at the moment</string>
+    <string name="menu_gDrive_remove">Remove backup</string>
+    <string name="menu_gDrive_restore">Restore backup</string>
+    <string name="gDrive_restore_failed">Restoring the backup failed</string>
+    <string name="gDrive_logout">Abmelden</string>
+    <string name="gDrive_make_backup">Sichern</string>
+    <string name="neighbour_pairing_accepted">Pairing accepted</string>
+    <string name="neighbour_pairing_denied">Pairing not accepted</string>
+    <string name="outlet_set_icon">Icon for state…</string>
+    <string name="menu_sort">Anders anordnen</string>
+    <string name="sort_custom">Custom sort</string>
+    <string name="list_sorted">Neue Reihenfolge</string>
+    <string name="help_sorting">Dieser Dialog erlaubt dir die Reihenfolge der Steckdosen oder Szenen zu ändern. Du kannst entweder ein vorgefertigtes Kriterium wählen oder die Reihenfolge selber festlegen. Wenn du die Reihenfolge selber festlegst musst du alle Elemente der rechten Liste einmal in deiner gewünschten Reihenfolge anklicken. Diese verschwinden und werden auf der linken Seite hinzugefügt. Am Ende sollten alle Elemente auf der linken Seite in deiner gewünschten Reihenfolge vorliegen.</string>
+    <string name="create_device_http_hint">Hinweis: HTTP Schaltvorgänge dauern etwas länger, dafür ist das Schalten übers Internet problemloser möglich.</string>
+    <string name="create_device_not_all_data_set">Erstmal alle Daten ausfüllen, bitte!</string>
 </resources>

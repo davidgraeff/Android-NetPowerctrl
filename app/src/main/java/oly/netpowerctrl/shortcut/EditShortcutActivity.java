@@ -3,15 +3,14 @@ package oly.netpowerctrl.shortcut;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,10 +29,8 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
 import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsAvailableAdapter;
 import oly.netpowerctrl.listadapter.DevicePortsCreateSceneAdapter;
-import oly.netpowerctrl.main.SceneEditFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -59,7 +56,6 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
     private Switch show_mainWindow;
     private Switch enable_feedback;
     private View btnDone;
-    private DynamicGridView grid_available;
     private DevicePortsAvailableAdapter adapter_available;
     private DevicePortsCreateSceneAdapter adapter_included;
 
@@ -70,49 +66,9 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
 
     // Scene Icon
     private Bitmap scene_icon;
-
-    /**
-     * This adapter is for the FragmentPager to show two OutletsFragments
-     * (Available actions, scene included actions)
-     */
-    private class Available_Added_Adapter extends FragmentPagerAdapter {
-        private final Fragment[] frag;
-
-        public Available_Added_Adapter(FragmentManager fm) {
-            super(fm);
-
-            SceneEditFragment f1 = new SceneEditFragment();
-            f1.setData(EditShortcutActivity.this,
-                    SceneEditFragment.TYPE_INCLUDED,
-                    EditShortcutActivity.this);
-            SceneEditFragment f2 = new SceneEditFragment();
-            f2.setData(EditShortcutActivity.this,
-                    SceneEditFragment.TYPE_AVAILABLE,
-                    EditShortcutActivity.this);
-            frag = new Fragment[]{f1, f2};
-        }
-
-        @Override
-        public Fragment getItem(int i) {
-            return frag[i];
-        }
-
-        @Override
-        public int getCount() {
-            return frag.length;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.scene_create_added);
-                case 1:
-                    return getString(R.string.scene_create_available);
-            }
-            return "";
-        }
-    }
+    private SceneEditFragment fragment_included;
+    private SceneEditFragment fragment_available;
+    private boolean twoPane = false;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -124,11 +80,10 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
             setTheme(R.style.Theme_CustomLightTheme);
         }
 
-        // Default result and set content view, get references to widgets
+        // Default result
         setResult(RESULT_CANCELED, null);
-        setContentView(R.layout.create_scene_activity);
-        show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
-        enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
+
+        reInitUI();
 
         //set the actionbar to use the custom view (can also be done with a style)
         ActionBar bar = getActionBar();
@@ -152,10 +107,50 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
                 finish();
             }
         });
+    }
 
-        // ViewPager init
+    private void reInitUI() {
+        // set content view, get references to widgets
+        setContentView(R.layout.activity_create_scene);
+        show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
+        enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
+
+        FragmentManager m = getFragmentManager();
+
+        // Show the included and available list for the scene. Both are fragments. Either in a
+        // viewPager (small width) or both visible at the same time.
+        // If there is a viewPager, use that. Otherwise we show both fragments next to each other.
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
-        pager.setAdapter(new Available_Added_Adapter(getFragmentManager()));
+        if (pager != null) {
+            twoPane = false;
+            EditShortcutPagerAdapter pagerAdapter = new EditShortcutPagerAdapter(m);
+            fragment_included = pagerAdapter.getFragmentIncluded();
+            fragment_available = pagerAdapter.getFragmentAvailable();
+            pager.setAdapter(pagerAdapter);
+        } else {
+            twoPane = true;
+            fragment_included = (SceneEditFragment) m.findFragmentById(R.id.scene_edit_fragment1);
+            fragment_available = (SceneEditFragment) m.findFragmentById(R.id.scene_edit_fragment2);
+        }
+
+        // Assign data to the fragments
+        fragment_included.setData(this,
+                SceneEditFragment.TYPE_INCLUDED,
+                this);
+        fragment_available.setData(this,
+                SceneEditFragment.TYPE_AVAILABLE,
+                this);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            reInitUI();
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            reInitUI();
+        }
     }
 
     @Override
@@ -208,13 +203,13 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
 
         // Add click listener to available gridGrid to move the clicked action
         // to the included gridView.
-        grid_available.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        fragment_available.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 DevicePort oi = adapter_available.getItem(position);
-                adapter_available.removeAt(position);
+                fragment_available.dismissItem(position);
                 adapter_included.addItem(oi, DevicePort.TOGGLE);
-                adapter_included.notifyDataSetChanged();
+                fragment_included.notifyDataSetChanged();
                 invalidateOptionsMenu();
             }
         });
@@ -232,6 +227,9 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
         }
 
         sceneNameChanged();
+
+        fragment_available.checkEmpty(twoPane);
+        fragment_included.checkEmpty(twoPane);
     }
 
 
@@ -251,7 +249,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
 
         if (isSceneNotShortcut) {
             NetpowerctrlApplication.getDataController().sceneCollection.setBitmap(this, scene, scene_icon);
-            NetpowerctrlApplication.getDataController().sceneCollection.addScene(scene);
+            NetpowerctrlApplication.getDataController().sceneCollection.add(scene);
         } else {
             Intent extra = Shortcuts.createShortcutExecutionIntent(EditShortcutActivity.this,
                     scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
@@ -301,8 +299,7 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
     private void requestName(final Scene scene) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-        alert.setTitle(this.getString(R.string.outlet_to_scene_title));
-        alert.setMessage(this.getString(R.string.scene_set_name));
+        alert.setTitle(this.getString(R.string.scene_rename));
 
         final EditText input = new EditText(alert.getContext());
         input.setText(scene.sceneName);
@@ -362,8 +359,8 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
     @Override
     public void onMenuItemClicked(View v, int position) {
         adapter_available.addItem(adapter_included.getItem(position), DevicePort.TOGGLE);
-        adapter_available.notifyDataSetChanged();
-        adapter_included.removeAt(position);
+        fragment_available.notifyDataSetChanged();
+        fragment_included.dismissItem(position);
         invalidateOptionsMenu();
     }
 
@@ -391,7 +388,6 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
     public void sceneEditFragmentReady(final SceneEditFragment fragment) {
         final int type = fragment.getType();
         if (type == SceneEditFragment.TYPE_AVAILABLE) {
-            grid_available = fragment.getListView();
             adapter_available = (DevicePortsAvailableAdapter) fragment.getAdapter();
         } else if (type == SceneEditFragment.TYPE_INCLUDED) {
             adapter_included = (DevicePortsCreateSceneAdapter) fragment.getAdapter();
@@ -405,10 +401,23 @@ public class EditShortcutActivity extends Activity implements ListItemMenu, Scen
                 @Override
                 public void run() {
                     loadContent();
-                    fragment.checkEmpty();
                 }
             }, 50);
         }
+    }
+
+    /**
+     * Called by one of the fragments if animations are activated and on_swipe_to_dismiss has been
+     * used (an entry has been swiped away). Because swiping is only enabled on the included adapter
+     * for now, we do not check the fragment argument.
+     *
+     * @param fragment
+     * @param position
+     */
+    @Override
+    public void entryDismiss(SceneEditFragment fragment, int position) {
+        // It's the same as if the user clicked the remove button.
+        onMenuItemClicked(null, position);
     }
 
 }

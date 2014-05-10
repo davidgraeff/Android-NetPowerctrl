@@ -20,7 +20,7 @@
         android:title="@string/menu_outlet_removeFromGroup" />
     <item
         android:id="@+id/menu_icon"
-        android:title="@string/scene_set_icon" />
+        android:title="@string/outlet_set_icon" />
     <item
         android:id="@+id/menu_outlet_master_slave"
         android:title="@string/menu_outlet_master_slave" />

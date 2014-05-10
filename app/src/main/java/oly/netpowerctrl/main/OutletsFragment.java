@@ -8,7 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,8 +24,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nhaarman.listviewanimations.swinginadapters.AnimationAdapter;
-import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
+import com.nhaarman.listviewanimations.swinginadapters.prepared.AlphaInAnimationAdapter;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,9 +33,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.datastructure.DeviceInfo;
 import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.GroupCollection;
 import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.dynamicgid.DynamicGridView;
 import oly.netpowerctrl.listadapter.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.listadapter.NotReachableUpdate;
 import oly.netpowerctrl.network.DeviceObserverResult;
@@ -45,15 +43,17 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.shortcut.EditShortcutActivity;
 import oly.netpowerctrl.shortcut.Shortcuts;
 import oly.netpowerctrl.utils.ChangeArgumentsFragment;
+import oly.netpowerctrl.utils.Groups;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
-import oly.netpowerctrl.utils.OnBackButton;
+import oly.netpowerctrl.utils.ShowToast;
 
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        NotReachableUpdate, OnBackButton, ListItemMenu, ChangeArgumentsFragment, DevicePortRenamed, Icons.IconSelected {
+        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, DevicePortRenamed, Icons.IconSelected {
     private DevicePortsExecuteAdapter adapter;
+    private AlphaInAnimationAdapter animatedAdapter;
     private TextView hintText;
     private TextView emptyText;
     private Button btnEmpty;
@@ -84,6 +84,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        loadAdapterData();
+    }
+
+    @Override
     public void changeArguments(Bundle mExtra) {
 
         if (mExtra != null && mExtra.containsKey("filter"))
@@ -97,38 +103,41 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             if (emptyText != null)
                 emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
         }
-        if (adapter != null) {
-            adapter.setGroupFilter(groupFilter);
-        }
     }
 
-    private void assignAdapter() {
-        if (SharedPrefs.getAnimationEnabled()) {
-            // Add animation to the list
-            AnimationAdapter animatedAdapter = new ScaleInAnimationAdapter(adapter);
-            animatedAdapter.setInitialDelayMillis(0);
-            animatedAdapter.setAnimationDelayMillis(10);
-            animatedAdapter.setAbsListView(mListView);
-            mListView.setAbstractDynamicGridAdapter(adapter);
-            mListView.setAdapter(animatedAdapter);
-        } else {
-            mListView.setAdapter(adapter);
-        }
+    private boolean isLoading = false;
+
+    private void loadAdapterData() {
+        if (isLoading)
+            return;
+        isLoading = true;
+        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                adapter.setGroupFilter(groupFilter);
+                isLoading = false;
+            }
+        }, 100);
     }
 
     private void setListOrGrid(boolean grid, int widthOfListView) {
+        SharedPrefs.setOutletsGrid(grid);
+
+        float width;
         if (!grid) {
             adapter.setLayoutRes(R.layout.list_icon_item);
-            mListView.setMinimumColumnWidth(270);
-            mListView.setNumColumns(GridView.AUTO_FIT, widthOfListView);
-            assignAdapter();
+            width = getResources().getDimension(R.dimen.min_list_item_width);
         } else {
             adapter.setLayoutRes(R.layout.grid_icon_item);
-            mListView.setMinimumColumnWidth(150);
-            mListView.setNumColumns(GridView.AUTO_FIT, widthOfListView);
-            assignAdapter();
+            width = getResources().getDimension(R.dimen.min_grid_item_width);
         }
-        SharedPrefs.setOutletsGrid(grid);
+
+        DisplayMetrics m = getResources().getDisplayMetrics();
+        float scaledWidth = (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, m));
+        mListView.setColumnWidth((int) scaledWidth);
+        mListView.setNumColumns(GridView.AUTO_FIT);
+
+        mListView.setAdapter(animatedAdapter != null ? animatedAdapter : adapter);
     }
 
     @Override
@@ -149,7 +158,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_view_grid).setVisible(false);
             //noinspection ConstantConditions
-            menu.findItem(R.id.menu_sortAlphabetically).setVisible(false);
+            menu.findItem(R.id.menu_sort).setVisible(false);
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_add_scene).setVisible(false);
             //noinspection ConstantConditions
@@ -184,11 +193,11 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 if (!NetpowerctrlApplication.getDataController().groupCollection.remove(groupFilter)) {
                     return true;
                 }
-                NetpowerctrlActivity.instance.changeToFragment(OutletsFragment.class.getName());
+                MainActivity.instance.changeToFragment(OutletsFragment.class.getName());
                 return true;
             }
             case R.id.menu_renameGroup: {
-                renameGroup();
+                Groups.renameGroup(getActivity(), groupFilter);
                 return true;
             }
 
@@ -254,45 +263,30 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
 
-            case R.id.menu_sortAlphabetically: {
-                adapter.sortAlphabetically();
-                NetpowerctrlApplication.getDataController().deviceCollection.save();
+            case R.id.menu_sort: {
+                Fragment fragment = SortCriteriaDialog.instantiate(getActivity(), adapter);
+                ShowToast.showDialogFragment(getActivity(), fragment);
             }
         }
         return false;
     }
 
-    private DynamicGridView mListView;
+    private GridView mListView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-
-        // Create adapter first
-        if (adapter == null) {
-            adapter = new DevicePortsExecuteAdapter(getActivity(), this, groupFilter);
-        }
 
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
         assert view != null;
-        mListView = (DynamicGridView) view.findViewById(android.R.id.list);
+        mListView = (GridView) view.findViewById(android.R.id.list);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 adapter.handleClick(position);
             }
         });
-        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                //noinspection ConstantConditions
-                Toast.makeText(getActivity(), getActivity().getString(R.string.hint_stop_edit), Toast.LENGTH_SHORT).show();
-                mListView.startEditMode();
-                return false;
-            }
-        });
         hintText = (TextView) view.findViewById(R.id.hintText);
-        adapter.setNotReachableObserver(this);
         if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             mListView.setEmptyView(view.findViewById(android.R.id.empty));
             emptyText = (TextView) view.findViewById(R.id.empty_text);
@@ -302,7 +296,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             // We assign the empty view after a short delay time,
             // to reduce visual flicker on app start, where data
             // is loaded with a high chance within the first 500ms.
-            new Handler().postDelayed(new Runnable() {
+            NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     if (!isAdded())
@@ -313,21 +307,32 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         v.setVisibility(View.GONE);
                     mListView.setEmptyView(view.findViewById(android.R.id.empty));
                     emptyText = (TextView) view.findViewById(R.id.empty_text);
-                    emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
+                    emptyText.setText(groupFilter == null ?
+                            getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
 
                 }
             }, 1000);
         }
-        setListOrGrid(SharedPrefs.getOutletsGrid(), container.getWidth());
 
         btnEmpty = (Button) view.findViewById(R.id.btnChangeToDevices);
         btnEmpty.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
         btnEmpty.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NetpowerctrlActivity.instance.changeToFragment(DevicesFragment.class.getName());
+                MainActivity.instance.changeToFragment(DevicesFragment.class.getName());
             }
         });
+
+        // Create adapter first
+        adapter = new DevicePortsExecuteAdapter(getActivity(), this);
+        adapter.setNotReachableObserver(this);
+
+        // Assign adapter, either pure or animated
+        if (SharedPrefs.getAnimationEnabled()) {
+            animatedAdapter = new AlphaInAnimationAdapter(adapter);
+            animatedAdapter.setAbsListView(mListView);
+        }
+        setListOrGrid(SharedPrefs.getOutletsGrid(), container.getWidth());
 
         return view;
     }
@@ -342,7 +347,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 //noinspection ConstantConditions
                 AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-                alert.setTitle(getString(R.string.outlet_rename_title));
+                alert.setTitle(R.string.outlet_rename_title);
                 alert.setMessage(getString(R.string.outlet_rename_message, oi.getDescription()));
 
                 final EditText input = new EditText(alert.getContext());
@@ -377,55 +382,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_outlet_createGroup: {
-                final GroupCollection groupCollection = NetpowerctrlApplication.getDataController().groupCollection;
-
-                // No groups? Ask the user to create one
-                if (groupCollection.length() == 0) {
-                    createGroupForDevicePort(oi);
-                    return true;
-                }
-
-                CharSequence[] items = groupCollection.getGroupsArray();
-                final boolean[] checked = new boolean[items.length];
-
-                // Sync checked array with items array
-                for (int i = 0; i < checked.length; ++i) {
-                    if (groupCollection.equalsAtIndex(i, oi.groups))
-                        checked[i] = true;
-                }
-
-                //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(getString(R.string.outlet_to_group_title, oi.getDescription()))
-                        .setIcon(android.R.drawable.ic_dialog_info)
-                        .setMultiChoiceItems(items, checked, new DialogInterface.OnMultiChoiceClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i, boolean b) {
-                                checked[i] = b;
-                            }
-                        })
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                oi.groups.clear();
-                                int counter = 0;
-                                for (int i = 0; i < checked.length; ++i) {
-                                    if (!checked[i]) {
-                                        continue;
-                                    }
-                                    oi.groups.add(groupCollection.groupItems.get(i).uuid);
-                                    ++counter;
-                                }
-                                NetpowerctrlApplication.getDataController().deviceCollection.save();
-                                Toast.makeText(getActivity(), getString(R.string.outlet_added_to_groups, counter), Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .setNeutralButton(R.string.createGroup, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                createGroupForDevicePort(oi);
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, null).show();
+                Groups.createGroup(getActivity(), oi);
                 return true;
             }
             case R.id.menu_outlet_hide: {
@@ -467,58 +424,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         return false;
     }
 
-    private void renameGroup() {
-        final GroupCollection.GroupItem groupItem = NetpowerctrlApplication.getDataController().groupCollection.get(groupFilter);
-        if (groupItem == null)
-            return;
-
-        //noinspection ConstantConditions
-        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-
-        alert.setTitle(getString(R.string.menu_rename_group));
-
-        final EditText input = new EditText(alert.getContext());
-        input.setText(groupItem.name);
-        alert.setView(input);
-        alert.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //noinspection ConstantConditions
-                String name = input.getText().toString().trim();
-                if (name.isEmpty())
-                    return;
-                NetpowerctrlApplication.getDataController().groupCollection.edit(groupItem.uuid, name);
-            }
-        });
-
-        alert.setNegativeButton(getString(android.R.string.cancel), null);
-        alert.show();
-    }
-
-    private void createGroupForDevicePort(final DevicePort port) {
-        //noinspection ConstantConditions
-        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-
-        alert.setTitle(getString(R.string.outlet_to_group_title));
-        alert.setMessage(getString(R.string.group_create));
-
-        final EditText input = new EditText(alert.getContext());
-        input.setText(port.getDescription());
-        alert.setView(input);
-        alert.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //noinspection ConstantConditions
-                String name = input.getText().toString().trim();
-                if (name.isEmpty())
-                    return;
-                UUID group_uuid = NetpowerctrlApplication.getDataController().groupCollection.add(name);
-                port.addToGroup(group_uuid);
-            }
-        });
-
-        alert.setNegativeButton(getString(android.R.string.cancel), null);
-        alert.show();
-    }
-
     @Override
     public void onNotReachableUpdate(List<DeviceInfo> not_reachable) {
         if (not_reachable.size() > 0) {
@@ -531,15 +436,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         } else {
             hintText.setVisibility(View.GONE);
         }
-    }
-
-    @Override
-    public boolean onBackButton() {
-        if (mListView.isEditMode()) {
-            mListView.stopEditMode();
-            return true;
-        }
-        return false;
     }
 
     @Override
@@ -606,13 +502,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             return;
         NetpowerctrlApplication.getDataController().deviceCollection.setDevicePortBitmap(getActivity(),
                 (DevicePort) context_object, bitmap);
-        invalidateListViewViewHolders();
-    }
 
-    void invalidateListViewViewHolders() {
-        int c = mListView.getFirstVisiblePosition();
-        mListView.setAdapter(adapter);
-        mListView.setSelection(c);
+        adapter.invalidateViewHolders();
     }
 
     @Override

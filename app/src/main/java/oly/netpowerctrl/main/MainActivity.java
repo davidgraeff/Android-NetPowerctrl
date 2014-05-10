@@ -39,8 +39,8 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.transfer.GDrive;
 import oly.netpowerctrl.transfer.NFC;
 
-public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
-    public static NetpowerctrlActivity instance = null;
+public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
+    public static MainActivity instance = null;
 
     // Drawer
     private final DrawerController mDrawer = new DrawerController();
@@ -112,18 +112,18 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                mDrawer.createDrawer(NetpowerctrlActivity.this, true);
+                mDrawer.createDrawer(MainActivity.this, true);
 
                 // NFC
-                NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(NetpowerctrlActivity.this);
+                NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(MainActivity.this);
                 if (mNfcAdapter != null) {
                     // Register callback
-                    mNfcAdapter.setNdefPushMessageCallback(NetpowerctrlActivity.this,
-                            NetpowerctrlActivity.this);
+                    mNfcAdapter.setNdefPushMessageCallback(MainActivity.this,
+                            MainActivity.this);
                 }
 
                 if (!SharedPrefs.isFirstRun()) {
-                    ChangeLog cl = new ChangeLog(NetpowerctrlActivity.this);
+                    ChangeLog cl = new ChangeLog(MainActivity.this);
                     if (cl.isFirstRun())
                         cl.getLogDialog().show();
                 }
@@ -190,12 +190,12 @@ public class NetpowerctrlActivity extends Activity implements NfcAdapter.CreateN
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             setContentView(R.layout.activity_main);
             int lastPos = mDrawer.drawerLastItemPosition;
-            mDrawer.createDrawer(NetpowerctrlActivity.this, false);
+            mDrawer.createDrawer(MainActivity.this, false);
             mDrawer.selectItem(lastPos, true);
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setContentView(R.layout.activity_main);
             int lastPos = mDrawer.drawerLastItemPosition;
-            mDrawer.createDrawer(NetpowerctrlActivity.this, false);
+            mDrawer.createDrawer(MainActivity.this, false);
             mDrawer.selectItem(lastPos, true);
         }
     }

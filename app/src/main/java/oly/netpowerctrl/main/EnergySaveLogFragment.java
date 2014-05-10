@@ -148,7 +148,7 @@ public class EnergySaveLogFragment extends ListFragment {
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.menu_help)
                         .setMessage(R.string.help_log)
-                        .setIcon(android.R.drawable.ic_dialog_alert).show();
+                        .setIcon(android.R.drawable.ic_menu_help).show();
                 return true;
             }
         }
