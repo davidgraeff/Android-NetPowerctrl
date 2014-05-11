@@ -4,5 +4,4 @@
     <item name="activity_main" type="layout">@layout/activity_main_two_pane</item>
     <item name="activity_create_scene" type="layout">@layout/activity_create_scene_two_pane</item>
     <bool name="has_two_panes">true</bool>
-    <item format="integer" name="screen_vertical_use" type="integer">0</item>
 </resources>

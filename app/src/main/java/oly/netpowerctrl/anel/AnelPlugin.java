@@ -19,91 +19,73 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.Scene;
+import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.ExecutionFinished;
+import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSending;
+import oly.netpowerctrl.scenes.Scene;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
  * This is a specialized class for Anel devices.
  */
 final public class AnelPlugin implements PluginInterface {
-    private final List<AnelDeviceDiscoveryThread> discoveryThreads = new ArrayList<AnelDeviceDiscoveryThread>();
+    public static final String PLUGIN_ID = "org.anel.outlets_and_io";
+    private static final byte[] requestMessage = "wer da?\r\n".getBytes();
+    private static final HttpThreadPool.HTTPCallback<DeviceInfo> receiveCtrlHtml = new HttpThreadPool.HTTPCallback<DeviceInfo>() {
+        @Override
+        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
+            if (!callback_success) {
+                device.setNotReachable(callback_message);
+                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+            } else {
+                String[] data = callback_message.split(";");
+                if (data.length < 10 || !data[0].startsWith("NET-")) {
+                    device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
+                } else {
+                    // We do not copy the network data but only the name.
+                    device.DeviceName = data[1].trim();
+                    // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
+                    // on the existing device.
+                    Map<Integer, DevicePort> ports = new TreeMap<>();
+                    for (int i = 0; i < 8; ++i) {
+                        DevicePort port = new DevicePort(device, DevicePort.DevicePortType.TypeToggle);
+                        port.id = i + 1; // 1-based
+                        port.setDescription(data[10 + i].trim());
+                        port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
+                        port.Disabled = data[30 + i].equals("1");
+                        ports.put(port.id, port);
+                    }
 
-    public void startDiscoveryThreads(int additional_port) {
-        // Get all ports of configured devices and add the additional_port if != 0
-        Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllReceivePorts();
-        if (additional_port != 0)
-            ports.add(additional_port);
-
-        boolean new_threads_started = false;
-        List<AnelDeviceDiscoveryThread> unusedThreads = new ArrayList<AnelDeviceDiscoveryThread>(discoveryThreads);
-
-        // Go through all ports and start a thread for it if none is running for it so far
-        for (int port : ports) {
-            boolean already_running = false;
-            for (AnelDeviceDiscoveryThread running_thread : discoveryThreads) {
-                if (running_thread.getPort() == port) {
-                    already_running = true;
-                    unusedThreads.remove(running_thread);
-                    break;
+                    // If values have changed, update now
+                    if (device.copyFreshDevicePorts(ports)) {
+                        // To propagate this device although it is already the the configured list
+                        // we have to set the changed flag.
+                        device.setHasChanged();
+                        NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+                    }
                 }
-            }
 
-            if (already_running) {
-                continue;
-            }
-
-            new_threads_started = true;
-            AnelDeviceDiscoveryThread thr = new AnelDeviceDiscoveryThread(this, port);
-            thr.start();
-            discoveryThreads.add(thr);
-        }
-
-        if (unusedThreads.size() > 0) {
-            for (AnelDeviceDiscoveryThread thr : unusedThreads) {
-                thr.interrupt();
-                discoveryThreads.remove(thr);
             }
         }
-
-        if (new_threads_started) {
-            // give the threads a chance to start
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignored) {
-            }
+    };
+    /**
+     * If we receive a response from a switch action (via http) we request updated data immediately.
+     */
+    private static final HttpThreadPool.HTTPCallback<DeviceInfo> receiveSwitchResponseHtml = new HttpThreadPool.HTTPCallback<DeviceInfo>() {
+        @Override
+        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
+            if (!callback_success) {
+                device.setNotReachable(callback_message);
+                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+            } else
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(device, "strg.cfg", "", device, false, receiveCtrlHtml));
         }
-
-        AnelHTTP.startHTTP();
-    }
-
-    public void stopDiscoveryThreads(NetpowerctrlService service) {
-        RuntimeDataController d = NetpowerctrlApplication.getDataController();
-        for (DeviceInfo di : d.deviceCollection.devices) {
-            if (this.equals(di.getPluginInterface(service))) {
-                di.setNotReachable("Energiesparmodus");
-                d.onDeviceUpdated(di);
-            }
-        }
-
-        if (discoveryThreads.size() == 0)
-            return;
-
-        for (AnelDeviceDiscoveryThread thr : discoveryThreads)
-            thr.interrupt();
-        discoveryThreads.clear();
-        // socket needs minimal time to really go away
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ignored) {
-        }
-
-        AnelHTTP.stopHTTP();
-    }
+    };
+    private final List<AnelDeviceDiscoveryThread> discoveryThreads = new ArrayList<>();
+    private final List<Scene.PortAndCommand> command_list = new ArrayList<>();
 
     private static byte switchOn(byte data, int outletNumber) {
         data |= ((byte) (1 << outletNumber - 1));
@@ -141,7 +123,7 @@ final public class AnelPlugin implements PluginInterface {
                     continue;
                 c.port.last_command_timecode = System.currentTimeMillis();
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                AnelHTTP.execute(AnelHTTP.createHTTPRunner(di, "ctrl.htm",
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(di, "ctrl.htm",
                         "F" + String.valueOf(port.id - 1) + "=s", di, false, receiveSwitchResponseHtml));
             }
             return;
@@ -242,7 +224,77 @@ final public class AnelPlugin implements PluginInterface {
             callback.onExecutionFinished(command_list.size());
     }
 
-    private static final byte[] requestMessage = "wer da?\r\n".getBytes();
+    public void startDiscoveryThreads(int additional_port) {
+        // Get all ports of configured devices and add the additional_port if != 0
+        Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllReceivePorts();
+        if (additional_port != 0)
+            ports.add(additional_port);
+
+        boolean new_threads_started = false;
+        List<AnelDeviceDiscoveryThread> unusedThreads = new ArrayList<>(discoveryThreads);
+
+        // Go through all ports and start a thread for it if none is running for it so far
+        for (int port : ports) {
+            boolean already_running = false;
+            for (AnelDeviceDiscoveryThread running_thread : discoveryThreads) {
+                if (running_thread.getPort() == port) {
+                    already_running = true;
+                    unusedThreads.remove(running_thread);
+                    break;
+                }
+            }
+
+            if (already_running) {
+                continue;
+            }
+
+            new_threads_started = true;
+            AnelDeviceDiscoveryThread thr = new AnelDeviceDiscoveryThread(this, port);
+            thr.start();
+            discoveryThreads.add(thr);
+        }
+
+        if (unusedThreads.size() > 0) {
+            for (AnelDeviceDiscoveryThread thr : unusedThreads) {
+                thr.interrupt();
+                discoveryThreads.remove(thr);
+            }
+        }
+
+        if (new_threads_started) {
+            // give the threads a chance to start
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ignored) {
+            }
+        }
+
+        HttpThreadPool.startHTTP();
+    }
+
+    public void stopDiscoveryThreads(NetpowerctrlService service) {
+        RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        for (DeviceInfo di : d.deviceCollection.devices) {
+            if (this.equals(di.getPluginInterface(service))) {
+                di.setNotReachable("Energiesparmodus");
+                d.onDeviceUpdated(di);
+            }
+        }
+
+        if (discoveryThreads.size() == 0)
+            return;
+
+        for (AnelDeviceDiscoveryThread thr : discoveryThreads)
+            thr.interrupt();
+        discoveryThreads.clear();
+        // socket needs minimal time to really go away
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ignored) {
+        }
+
+        HttpThreadPool.stopHTTP();
+    }
 
     /**
      * Switch a single outlet or io port
@@ -272,11 +324,11 @@ final public class AnelPlugin implements PluginInterface {
             // The http interface can only toggle. If the current state is the same as the command state
             // then we request values instead of sending a command.
             if (command != DevicePort.TOGGLE && port.current_value == command)
-                AnelHTTP.execute(AnelHTTP.createHTTPRunner(port.device, "strg.cfg",
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, "strg.cfg",
                         "", port.device, false, receiveCtrlHtml));
             else
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                AnelHTTP.execute(AnelHTTP.createHTTPRunner(port.device, "ctrl.htm",
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, "ctrl.htm",
                         "F" + String.valueOf(port.id - 1) + "=s", port.device, false, receiveSwitchResponseHtml));
         } else {
             UDPSending udpSending = service.getUDPSending();
@@ -331,7 +383,7 @@ final public class AnelPlugin implements PluginInterface {
             return;
 
         if (di.PreferTCP) {
-            AnelHTTP.execute(AnelHTTP.createHTTPRunner(di, "strg.cfg", "", di, false, receiveCtrlHtml));
+            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(di, "strg.cfg", "", di, false, receiveCtrlHtml));
         } else {
             UDPSending udpSending = service.getUDPSending();
             if (udpSending == null)
@@ -340,58 +392,6 @@ final public class AnelPlugin implements PluginInterface {
             udpSending.addJob(new UDPSending.SendAndObserveJob(di, requestMessage, UDPSending.INQUERY_REQUEST));
         }
     }
-
-    /**
-     * If we receive a response from a switch action (via http) we request updated data immediately.
-     */
-    private static AnelHTTP.HTTPCallback<DeviceInfo> receiveSwitchResponseHtml = new AnelHTTP.HTTPCallback<DeviceInfo>() {
-        @Override
-        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
-            if (!callback_success) {
-                device.setNotReachable(callback_message);
-                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
-            } else
-                AnelHTTP.execute(AnelHTTP.createHTTPRunner(device, "strg.cfg", "", device, false, receiveCtrlHtml));
-        }
-    };
-
-    private static AnelHTTP.HTTPCallback<DeviceInfo> receiveCtrlHtml = new AnelHTTP.HTTPCallback<DeviceInfo>() {
-        @Override
-        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
-            if (!callback_success) {
-                device.setNotReachable(callback_message);
-                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
-            } else {
-                String[] data = callback_message.split(";");
-                if (data.length < 10 || !data[0].startsWith("NET-")) {
-                    device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
-                } else {
-                    // We do not copy the network data but only the name.
-                    device.DeviceName = data[1].trim();
-                    // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
-                    // on the existing device.
-                    Map<Integer, DevicePort> ports = new TreeMap<Integer, DevicePort>();
-                    for (int i = 0; i < 8; ++i) {
-                        DevicePort port = new DevicePort(device, DevicePort.DevicePortType.TypeToggle);
-                        port.id = i + 1; // 1-based
-                        port.setDescription(data[10 + i].trim());
-                        port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
-                        port.Disabled = data[30 + i].equals("1");
-                        ports.put(port.id, port);
-                    }
-
-                    // If values have changed, update now
-                    if (device.copyFreshDevicePorts(ports)) {
-                        // To propagate this device although it is already the the configured list
-                        // we have to set the changed flag.
-                        device.setHasChanged();
-                        NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
-                    }
-                }
-
-            }
-        }
-    };
 
     @Override
     public void rename(final DevicePort port, final String new_name, final DevicePortRenamed callback) {
@@ -404,20 +404,18 @@ final public class AnelPlugin implements PluginInterface {
         String postData = "TN=" + new_name_encoded + "&TS=Speichern";
         String getData = "dd.htm?DD" + String.valueOf(port.id);
 
-        AnelHTTP.execute(AnelHTTP.createHTTPRunner(port.device, getData, postData,
-                port, true, new AnelHTTP.HTTPCallback<DevicePort>() {
-            @Override
-            public void httpResponse(DevicePort port, boolean callback_success, String callback_error_message) {
-                if (callback_success) {
-                    port.setDescription(new_name_encoded);
-                }
-                callback.devicePort_renamed(port, callback_success, callback_error_message);
-            }
+        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, postData,
+                port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                    @Override
+                    public void httpResponse(DevicePort port, boolean callback_success, String callback_error_message) {
+                        if (callback_success) {
+                            port.setDescription(new_name_encoded);
+                        }
+                        callback.devicePort_renamed(port, callback_success, callback_error_message);
+                    }
                 }
         ));
     }
-
-    private final List<Scene.PortAndCommand> command_list = new ArrayList<Scene.PortAndCommand>();
 
     @Override
     public void addToTransaction(DevicePort port, int command) {
@@ -427,7 +425,7 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public void executeTransaction(ExecutionFinished callback) {
         TreeMap<DeviceInfo, List<Scene.PortAndCommand>> commands_grouped_by_devices =
-                new TreeMap<DeviceInfo, List<Scene.PortAndCommand>>();
+                new TreeMap<>();
 
         // add to tree
         for (Scene.PortAndCommand portAndCommand : command_list) {
@@ -444,8 +442,6 @@ final public class AnelPlugin implements PluginInterface {
 
         command_list.clear();
     }
-
-    public static final String PLUGIN_ID = "org.anel.outlets_and_io";
 
     @Override
     public String getPluginID() {

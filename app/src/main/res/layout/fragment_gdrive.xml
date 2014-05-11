@@ -21,8 +21,7 @@
         android:layout_margin="5dp"
         android:padding="5dp"
         android:paddingLeft="@dimen/devices_list_padding"
-        android:paddingRight="@dimen/devices_list_padding"
-        android:text="Sichere Daten in Google Drive..." />
+        android:paddingRight="@dimen/devices_list_padding" />
 
     <ListView
         android:id="@+id/list"
@@ -50,7 +49,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="@android:style/TextAppearance.Medium"
             android:background="?item_selector"
-            android:text="Es existieren noch keine Google Drive Sicherungen."
+            android:text="@string/gDrive_no_data"
             android:maxWidth="300dp"
             android:padding="5dp" />
 

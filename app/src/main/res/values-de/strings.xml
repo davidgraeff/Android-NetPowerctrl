@@ -16,10 +16,8 @@
 
     <string name="save">Speichern</string>
     <string name="error_reading_devices">Fehler beim Auslesen der konfigurierten Geräte</string>
-    <string name="error_saving_configured_devices">Fehler beim Speichern der konfigurierten Geräte</string>
     <string name="error_sending_inquiry">Anfrage an Gerät %1$s konnte nicht gesendet werden</string>
     <string name="error_sending_broadcast_inquiry">Anfrage an Netzwerk auf Port %d fehlgeschlagen</string>
-    <string name="error_unknown_device">Interner Programmfehler: unbekanntes Gerät!</string>
     <string name="error_packet_received">Fehler vom Gerät gemeldet</string>
     <string name="error_nopass">Ungültiger Benutzerame/Passwort</string>
     <string name="error_listen_thread_exception">Kann nicht Port %d zum Empfangen öffnen:\n</string>
@@ -108,19 +106,12 @@
     <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Szene bearbeiten</string>
-    <string name="nfc_failed">Android Beam ist fehlgeschlagen</string>
-    <string name="nfc_select_devices_title">Wähle zu installierende Geräte aus</string>
     <string name="menu_add_homescreen">Zum Startbildschirm hinzufügen</string>
-    <string name="error_saving_scenes">Speichern der Szenen fehlgeschlagen</string>
-    <string name="nfc_failed_version">NFC fehlgeschlagen: Version ungleich! Bitte beide Apps updaten.</string>
-    <string name="nfc_select_scenes_title">Wähle eine Szene zum installieren</string>
     <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
     <string name="preference_use_energy_saving_mode">Energiesparmodus</string>
     <string name="preference_use_energy_saving_mode_summary">Sobald deine Geräte nach einem Netwerkwechsel (WLan/2G/3G/4G) nicht mehr erreichbar sind, werden alle Netzwerkkomponenten abgeschaltet um Energie zu sparen.</string>
-    <string name="scene_replace">(Aktualisieren)</string>
-    <string name="menu_sortAlphabetically">Alphabetisch anordnen</string>
     <string name="menu_switch_all_on">Alle auf Einschalten</string>
     <string name="menu_switch_all_off">Alle auf Ausschalten</string>
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
@@ -160,7 +151,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="configured_devices">Konfigurierte Geräte</string>
     <string name="devices">Zum Gerätebildschirm</string>
     <string name="preferences">Zu den Einstellungen</string>
-    <string name="hint_stop_edit">Zurück drücken um das Editieren zu beenden</string>
     <string name="scene_set_name">Szenenname</string>
     <string name="scene_set_icon">Szenenbild</string>
     <string name="dialog_icon_title">Bild</string>
@@ -183,17 +173,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
     <string name="preference_max_favourites_groups">Max. Gruppen in Hauptmenü</string>
     <string name="preference_max_favourites_groups_summary">Die ANzahl der maximal angezeigten Gruppen im seitlichen Hauptmenü.</string>
-    <string name="help_nfc"><![CDATA[
-    Dein Gerät unterstützt Nahfunk (NFC). Du kannst Geräte, Gruppen, Szenen und Icons einfach auf ein anderes Gerät mit Nahfunk Unterstützung übertragen:<br /><ul>
-    <li>* Beide Geräte entsperren</li><br />
-    <li>* NFC einschalten</li><br />
-    <li>* Geräte aneinander halten</li></ul><br /><br />
-    Android wird nun nach einer Bestätigung fragen, ob <i>Beam</i> genutzt werden soll.
-    Sofern das Zielgerät diese App noch nicht installiert hat, wird Google Play aufgerufen.
-    Wenn <i>Beam</i> bestätigt worden ist, dann können auf dem Zielgerät die gewünschten Konfigurationen
-    eingerichtet werden.]]></string>
-    <string name="help_backup"><![CDATA[
-    Diese Funktion ist in der nächsten größeren Version geplant.]]></string>
     <string name="createGroup">Gruppe erstellen</string>
     <string name="outlet_added_to_groups">Gehört zu %1$d Gruppen</string>
     <string name="outlet_to_group_title">%1$s in Gruppen…</string>
@@ -233,12 +212,10 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_outlet_master_slave">Als Master für…</string>
     <string name="outlet_master_slave_title">Slaves für %1$s setzen</string>
     <string name="neighbours_sync">Synchronisiere mit Nachbarn</string>
-    <string name="preference_sync_with_neighbours_summary">Szenen, Gruppen, Geräte, Bilder werden automatisch mit bekannten Nachbargeräten im Wlan synchronisiert.</string>
     <string name="scene_create_available">Verfügbar</string>
     <string name="scene_create_added">Zugewiesene Aktionen</string>
     <string name="preference_wakeup_energy_saving_mode">Aufwachen aus Energiesparmodus</string>
     <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
-    <string name="activate_nfc">Aktiviere NFC in den Einstellungen</string>
     <string name="scene_remove_item">Remove item from scene</string>
     <string name="device_prefer_tcp">HTTP statt UDP</string>
     <string name="gDrive_backup">Sicherung bei Google Drive</string>
@@ -278,4 +255,9 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="menu_beer2">Spende 2 Bier</string>
     <string name="menu_beer3">Spende 5 Bier</string>
     <string name="menu_beer4">Spende 10 Bier</string>
+    <string name="gDrive_no_data">Es existieren noch keine Google Drive Sicherungen.</string>
+    <string name="neighbour_paired">Gekoppelt</string>
+    <string name="neighbour_paired_not_found">Nicht gefunden</string>
+    <string name="menu_neighbour_remove">Kopplung auflösen</string>
+    <string name="menu_neighbour_push">Jetzt Daten senden</string>
 </resources>

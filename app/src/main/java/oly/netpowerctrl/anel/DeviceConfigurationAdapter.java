@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.devices.DeviceInfo;
 
 /**
  * For displaying DeviceInfo fields in a ListView
@@ -58,7 +58,7 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
         }
     }
 
-    private final List<ReviewItem> deviceConfigurationOptions = new ArrayList<ReviewItem>();
+    private final List<ReviewItem> deviceConfigurationOptions = new ArrayList<>();
     private final Context context;
     private final DeviceInfo deviceInfo;
     private final LayoutInflater inflater;
@@ -119,7 +119,7 @@ class DeviceConfigurationAdapter extends BaseAdapter implements View.OnClickList
     @Override
     public View getView(int position, View convertView, ViewGroup container) {
         if (convertView == null)
-            convertView = inflater.inflate(R.layout.device_configuration_item, null);
+            convertView = inflater.inflate(R.layout.device_configuration_item, container, false);
 
         ReviewItem reviewItem = deviceConfigurationOptions.get(position);
         assert convertView != null;

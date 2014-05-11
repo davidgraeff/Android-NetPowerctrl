@@ -15,7 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -107,7 +107,7 @@ public class UDPSending {
     }
 
     private static class SendThread extends Thread {
-        private final LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<Job>();
+        private final LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<>();
         private final UDPSending UDPSending;
 
         SendThread(UDPSending UDPSending) {
@@ -153,7 +153,7 @@ public class UDPSending {
     static public class SendAndObserveJob extends DeviceObserverBase implements Job {
         InetAddress ip = null;
         final DeviceInfo di;
-        final List<byte[]> messages = new ArrayList<byte[]>();
+        final List<byte[]> messages = new ArrayList<>();
         final int errorID;
         int redoCounter = 0;
         private boolean initialized = false;
@@ -221,7 +221,7 @@ public class UDPSending {
 
                 //DeviceObserverBase
                 setDeviceQueryResult(deviceObserverResult);
-                devices_to_observe = new ArrayList<DeviceInfo>();
+                devices_to_observe = new ArrayList<>();
                 devices_to_observe.add(di);
 
                 // Register on main application object to receive device updates
@@ -264,7 +264,7 @@ public class UDPSending {
     static public class SendRawJob implements Job {
         public InetAddress ip = null;
         final byte[] message;
-        int sendPort;
+        final int sendPort;
 
         public SendRawJob(byte[] message, InetAddress ip, int sendPort) {
             this.message = message;

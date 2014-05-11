@@ -16,10 +16,8 @@
 
     <string name="save">Save</string>
     <string name="error_reading_devices">Error reading configured devices</string>
-    <string name="error_saving_configured_devices">Error saving configured devices</string>
     <string name="error_sending_inquiry">Error sending inquiry packet to %1$s</string>
     <string name="error_sending_broadcast_inquiry">Error sending broadcast inquiry packet on port %d</string>
-    <string name="error_unknown_device">Internal program error: device unknown!</string>
     <string name="error_packet_received">Device reports an error</string>
     <string name="error_nopass">Invalid username / password combination</string>
     <string name="error_listen_thread_exception">Could not listen on port %d:\n</string>
@@ -107,20 +105,13 @@
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Edit scene</string>
-    <string name="nfc_failed">Android Beam failed</string>
-    <string name="nfc_select_devices_title">Select devices to install</string>
     <string name="menu_add_homescreen">Add to homescreen</string>
     <string name="error_reading_scenes">Error reading scenes</string>
-    <string name="error_saving_scenes">Error saving scenes</string>
-    <string name="nfc_failed_version">NFC failed, Version mismatch! Please update both apps.</string>
-    <string name="nfc_select_scenes_title">Select scenes to install</string>
     <string name="error_device_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
     <string name="device_test_ok">Test OK</string>
     <string name="preference_use_energy_saving_mode">Use energy saving mode</string>
     <string name="preference_use_energy_saving_mode_summary">If your devices can not be reached after a network (WiFi/2G/3G/4G) change, all network parts of the app go into a standby mode.</string>
-    <string name="scene_replace">(Update)</string>
-    <string name="menu_sortAlphabetically">Sort alphabetically</string>
     <string name="menu_switch_all_on">All on</string>
     <string name="menu_switch_all_off">All off</string>
     <string name="menu_switch_all_toogle">All toggle</string>
@@ -160,7 +151,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="configured_devices">Configured devices</string>
     <string name="devices">Change to Devices screen</string>
     <string name="preferences">Change to Preferences screen</string>
-    <string name="hint_stop_edit">Press back to stop editing</string>
     <string name="scene_set_name">Set name</string>
     <string name="scene_set_icon">Set icon</string>
     <string name="dialog_icon_title">Icon</string>
@@ -183,18 +173,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
     <string name="preference_max_favourites_groups">Groups in navigation list</string>
     <string name="preference_max_favourites_groups_summary">Maximum groups in navigation list</string>
-    <string name="help_nfc"><![CDATA[If you would like to transfer your configuration to another device and both devices have NFC capability, then do the following:<br />
-        <ul><li>* Unlock both devices</li><br />
-        <li>* Enable NFC on both</li><br />
-        <li>* Hold them together</li></ul><br />
-    <br />
-    Android now want you to confirm to use the <i>beam</i> functionality.
-    If this App is not installed on the destination device, Google Play will be started.
-    If you confirm <i>beam</i>, the destination device will ask you which configurations should be transferred.]]></string>
-    <string name="help_backup"><![CDATA[
-    Your devices configuration is automatically backed up by the Google app-data Backup Service.
-        If you uninstall and reinstall the application, your configuration should be restored.
-        At the moment there is no way to manually save and restore configurations.]]></string>
     <string name="createGroup">Create group</string>
     <string name="outlet_added_to_groups">Belong to %1$d groups</string>
     <string name="outlet_to_group_title">Groups of %1$s</string>
@@ -231,12 +209,10 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="menu_outlet_master_slave">Master for…</string>
     <string name="outlet_master_slave_title">Slaves for %1$s</string>
     <string name="neighbours_sync">Synchronize with neighbours</string>
-    <string name="preference_sync_with_neighbours_summary">Scenes, groups, devices, icons will automatically synchronized with paired neighbours</string>
     <string name="scene_create_available">Available</string>
     <string name="scene_create_added">Attachted actions</string>
     <string name="preference_wakeup_energy_saving_mode">Wake up from energy saving mode</string>
     <string name="preference_wakeup_energy_saving_mode_summary">Usually the energy saving mode will not be left automatically (except if you reopen the app). If you activate this option, part of the app will remain active and search for devices after a network change.</string>
-    <string name="activate_nfc">Aktiviere NFC in den Einstellungen</string>
     <string name="scene_remove_item">Remove item from scene</string>
     <string name="device_prefer_tcp">Langsamere, Internetstabile Verbindung bevorzugen</string>
     <string name="gDrive_backup">Sicherung bei Google Drive</string>
@@ -276,4 +252,9 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="menu_beer2">Spende 2 Bier</string>
     <string name="menu_beer3">Spende 5 Bier</string>
     <string name="menu_beer4">Spende 10 Bier</string>
+    <string name="gDrive_no_data">Es existieren noch keine Google Drive Sicherungen.</string>
+    <string name="neighbour_paired">Gekoppelt</string>
+    <string name="neighbour_paired_not_found">Nicht gefunden</string>
+    <string name="menu_neighbour_remove">Kopplung auflösen</string>
+    <string name="menu_neighbour_push">Jetzt Daten senden</string>
 </resources>

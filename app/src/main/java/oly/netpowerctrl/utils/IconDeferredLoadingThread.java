@@ -17,7 +17,7 @@ public class IconDeferredLoadingThread extends Thread {
         void setDrawable(Drawable bitmap, int position);
     }
 
-    private final LinkedBlockingQueue<IconItem> q = new LinkedBlockingQueue<IconItem>();
+    private final LinkedBlockingQueue<IconItem> q = new LinkedBlockingQueue<>();
 
     public void loadIcon(IconItem job) {
         q.add(job);
@@ -57,7 +57,7 @@ public class IconDeferredLoadingThread extends Thread {
             this.iconType = iconType;
             this.state = state;
             this.default_resource = default_resource;
-            this.target = new WeakReference<IconLoaded>(target);
+            this.target = new WeakReference<>(target);
             this.position = position;
         }
 

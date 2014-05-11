@@ -8,16 +8,16 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.datastructure.DeviceCollection;
-import oly.netpowerctrl.datastructure.GroupCollection;
-import oly.netpowerctrl.datastructure.SceneCollection;
+import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  * For loading and storing scenes, groups, devices to local storage, google drive, neighbours.
  * Storing data is done in a thread.
  */
-public class LoadStoreData {
+class LoadStoreData {
     private final static String GROUPS_DIR = "groups";
     private final static String DEVICES_DIR = "devices";
     private final static String SCENES_DIR = "scenes";

@@ -29,10 +29,10 @@ public class GDrive implements
     /**
      * Request code for auto Google Play Services error resolution.
      */
-    protected static final int REQUEST_CODE_RESOLUTION = 1001;
+    private static final int REQUEST_CODE_RESOLUTION = 1001;
     private static final String TAG = "GooglePlayServicesActivity";
     private static final String KEY_IN_RESOLUTION = "is_in_resolution";
-    GDriveConnectionState observer;
+    private GDriveConnectionState observer;
 
     private boolean error = false;
     private String errorMessage;

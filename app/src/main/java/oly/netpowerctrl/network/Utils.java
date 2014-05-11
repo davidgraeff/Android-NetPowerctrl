@@ -21,7 +21,7 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
  * Get network address, get broadcast address
  */
 public class Utils {
-    public static final String TAG = "NetworkUtils";
+    private static final String TAG = "NetworkUtils";
 
     /**
      * Return broadcast address of given IP or null if no broadcast address exists (IPv6).
@@ -56,8 +56,8 @@ public class Utils {
     public static InetAddress getIpv4Address() {
         try {
 
-            InetAddress inetAddress = null;
-            InetAddress myAddress = null;
+            InetAddress inetAddress;
+            InetAddress myAddress;
 
             for (Enumeration<NetworkInterface> networkInterface = NetworkInterface.getNetworkInterfaces();
                  networkInterface.hasMoreElements(); ) {
@@ -106,7 +106,7 @@ public class Utils {
         }
     }
 
-    public static long MacToLong(byte[] macAddress) {
+    private static long MacToLong(byte[] macAddress) {
         if (macAddress == null || macAddress.length != 6)
             return 0;
 
@@ -119,7 +119,7 @@ public class Utils {
     }
 
     public static long getMacAsLong() {
-        NetworkInterface ni = null;
+        NetworkInterface ni;
         try {
             ni = NetworkInterface.getByInetAddress(Utils.getIpv4Address());
             ni.getHardwareAddress();

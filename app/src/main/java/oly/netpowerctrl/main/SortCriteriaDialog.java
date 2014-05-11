@@ -38,8 +38,8 @@ public class SortCriteriaDialog extends DialogFragment {
     private boolean criteriaOnly = true;
 
     private static class AdapterItem {
-        String text;
-        int originalIndex;
+        final String text;
+        final int originalIndex;
 
         private AdapterItem(String text, int originalIndex) {
             this.text = text;
@@ -52,9 +52,9 @@ public class SortCriteriaDialog extends DialogFragment {
         }
     }
 
-    private List<AdapterItem> sortedList = new ArrayList<AdapterItem>();
+    private final List<AdapterItem> sortedList = new ArrayList<>();
     private ArrayAdapter<AdapterItem> sortedAdapter;
-    private List<AdapterItem> availableList = new ArrayList<AdapterItem>();
+    private final List<AdapterItem> availableList = new ArrayList<>();
     private ArrayAdapter<AdapterItem> availableAdapter;
 
     private void setData(SortCriteriaInterface sortCriteriaInterface) {
@@ -97,8 +97,8 @@ public class SortCriteriaDialog extends DialogFragment {
         return builder.create();
     }
 
-    public View createView(LayoutInflater inflater, final ViewGroup container,
-                           Bundle savedInstanceState) {
+    View createView(LayoutInflater inflater, final ViewGroup container,
+                    Bundle savedInstanceState) {
 
         final View view = inflater.inflate(R.layout.fragment_sort_criteria, container, false);
         assert view != null;
@@ -151,12 +151,12 @@ public class SortCriteriaDialog extends DialogFragment {
         for (String d : data)
             availableList.add(new AdapterItem(d, index++));
 
-        availableAdapter = new ArrayAdapter<AdapterItem>(
+        availableAdapter = new ArrayAdapter<>(
                 getActivity(),
                 android.R.layout.simple_list_item_1,
                 availableList);
 
-        sortedAdapter = new ArrayAdapter<AdapterItem>(
+        sortedAdapter = new ArrayAdapter<>(
                 getActivity(),
                 android.R.layout.simple_list_item_1,
                 sortedList);

@@ -31,21 +31,22 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.listadapter.DevicePortsExecuteAdapter;
-import oly.netpowerctrl.listadapter.NotReachableUpdate;
+import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.devices.DevicePortsExecuteAdapter;
+import oly.netpowerctrl.devices.DevicesFragment;
+import oly.netpowerctrl.devices.NotReachableUpdate;
+import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.shortcut.EditShortcutActivity;
-import oly.netpowerctrl.shortcut.Shortcuts;
+import oly.netpowerctrl.scenes.EditSceneActivity;
+import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.ChangeArgumentsFragment;
-import oly.netpowerctrl.utils.Groups;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
+import oly.netpowerctrl.utils.Shortcuts;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -212,7 +213,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_renameGroup: {
-                Groups.renameGroup(getActivity(), groupFilter);
+                GroupUtilities.renameGroup(getActivity(), groupFilter);
                 return true;
             }
 
@@ -260,9 +261,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 Scene scene = new Scene();
                 scene.sceneItems = adapter.getScene();
                 final String sceneJSON = scene.toJSON();
-                Intent it = new Intent(getActivity(), EditShortcutActivity.class);
-                it.putExtra(EditShortcutActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                it.putExtra(EditShortcutActivity.LOAD_SCENE, sceneJSON);
+                Intent it = new Intent(getActivity(), EditSceneActivity.class);
+                it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
+                it.putExtra(EditSceneActivity.LOAD_SCENE, sceneJSON);
                 startActivity(it);
                 return true;
             case R.id.menu_showhidden: {
@@ -397,7 +398,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_outlet_createGroup: {
-                Groups.createGroup(getActivity(), oi);
+                GroupUtilities.createGroup(getActivity(), oi);
                 return true;
             }
             case R.id.menu_outlet_hide: {

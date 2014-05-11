@@ -10,18 +10,18 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.datastructure.DeviceCollection;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.datastructure.GroupCollection;
-import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.datastructure.SceneCollection;
+import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.network.DeviceObserverBase;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -32,21 +32,17 @@ import oly.netpowerctrl.utils.ShowToast;
  * go into this class. At the moment those are: execute, rename, countReachable, countNetworkDevices.
  */
 public class RuntimeDataController {
-    public final List<DeviceInfo> newDevices = new ArrayList<DeviceInfo>();
+    public final List<DeviceInfo> newDevices = new ArrayList<>();
     public DeviceCollection deviceCollection;
     public GroupCollection groupCollection;
     public SceneCollection sceneCollection;
     private final LoadStoreData loadStoreData = new LoadStoreData();
     private boolean initialDataQueryCompleted = false;
 
-    private final WeakHashMap<RuntimeDataControllerStateChanged, Boolean> observersStateChanged = new WeakHashMap<RuntimeDataControllerStateChanged, Boolean>();
-    private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<DeviceUpdate, Boolean>();
+    private final WeakHashMap<RuntimeDataControllerStateChanged, Boolean> observersStateChanged = new WeakHashMap<>();
+    private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<>();
 
     private final List<DeviceObserverBase> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
-
-    RuntimeDataController() {
-        loadData(false);
-    }
 
     /**
      * Call this to reload all data from disk. This is useful after NFC/Neighbour/GDrive sync.
@@ -54,7 +50,7 @@ public class RuntimeDataController {
      * @param notifyObservers Notify all observers of the RuntimeDataControllerState that we
      *                        reloaded data. This should invalidate all caches (icons etc).
      */
-    public void loadData(boolean notifyObservers) {
+    void loadData(boolean notifyObservers) {
         groupCollection = loadStoreData.readGroups();
         sceneCollection = loadStoreData.readScenes();
         deviceCollection = loadStoreData.readDevices();
@@ -65,7 +61,7 @@ public class RuntimeDataController {
 
     //! get a list of all send ports of all configured devices plus the default send port
     public Set<Integer> getAllSendPorts() {
-        HashSet<Integer> ports = new HashSet<Integer>();
+        HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getDefaultSendPort());
 
         for (DeviceInfo di : deviceCollection.devices)
@@ -76,7 +72,7 @@ public class RuntimeDataController {
 
     //! get a list of all receive ports of all configured devices plus the default receive port
     public Set<Integer> getAllReceivePorts() {
-        HashSet<Integer> ports = new HashSet<Integer>();
+        HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getDefaultReceivePort());
 
         for (DeviceInfo di : deviceCollection.devices)
@@ -289,7 +285,10 @@ public class RuntimeDataController {
     }
 
     public void execute(Scene scene, ExecutionFinished callback) {
-        List<PluginInterface> pluginInterfaces = new ArrayList<PluginInterface>();
+        List<PluginInterface> pluginInterfaces = new ArrayList<>();
+
+        // Master/Slave
+        int master_command = scene.getMasterCommand();
 
         for (Scene.SceneItem item : scene.sceneItems) {
             DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(item.uuid);
@@ -300,7 +299,12 @@ public class RuntimeDataController {
             if (remote == null)
                 continue;
 
-            remote.addToTransaction(p, item.command);
+            int command = item.command;
+            // Replace toggle by master command if master is set
+            if (master_command != DevicePort.INVALID && item.command == DevicePort.TOGGLE)
+                command = master_command;
+
+            remote.addToTransaction(p, command);
             if (!pluginInterfaces.contains(remote))
                 pluginInterfaces.add(remote);
         }

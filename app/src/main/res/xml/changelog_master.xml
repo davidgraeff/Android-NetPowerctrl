@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="4.2"
+        versioncode="52">
+        <change>Kopplung mit Nachbargeräten verbessert</change>
+    </release>
+    <release
+        version="4.1"
+        versioncode="51">
+        <change>Absturz beim Erstellen eines Widgets behoben</change>
+        <change>Absturz bei Nachbarerkennung behoben</change>
+        <change>Absturz beim Szenenerstellen behoben</change>
+        <change>GoogleDrive Backup jetzt auch für Bilder</change>
+        <change>Automatische Optimierung jetzt aktiv</change>
+        <change>Master/Slave bei Szenenausführung über mehrere Geräte hinweg funktionierte nicht
+            richtig: Behoben
+        </change>
+    </release>
+    <release
         version="4.0"
         versioncode="50">
         <change>Szenenerstellung für Tablets verbessert</change>
