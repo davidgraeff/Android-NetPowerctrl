@@ -19,14 +19,14 @@ import android.widget.ListView;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.DevicesFragment;
+import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackDialog;
-import oly.netpowerctrl.main.GDriveFragment;
-import oly.netpowerctrl.main.NeighbourFragment;
 import oly.netpowerctrl.main.OutletsFragment;
-import oly.netpowerctrl.main.ScenesFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.scenes.ScenesFragment;
+import oly.netpowerctrl.transfer.GDriveFragment;
+import oly.netpowerctrl.transfer.NeighbourFragment;
 import oly.netpowerctrl.utils.ChangeArgumentsFragment;
 import oly.netpowerctrl.utils.OnBackButton;
 
@@ -63,7 +63,7 @@ public class DrawerController {
     }
 
     public void createDrawer(final Activity context, boolean changeCurrentFragment) {
-        mDrawerActivity = new WeakReference<Activity>(context);
+        mDrawerActivity = new WeakReference<>(context);
         // References for the drawer
         mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) context.findViewById(R.id.left_drawer_list);
@@ -184,10 +184,8 @@ public class DrawerController {
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (mDrawerLayout == null)
-            return false;
+        return mDrawerLayout != null && mDrawerToggle.onOptionsItemSelected(item);
 
-        return mDrawerToggle.onOptionsItemSelected(item);
     }
 
     public boolean onBackPressed() {

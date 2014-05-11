@@ -5,7 +5,7 @@
       <entry_point TYPE="method" FQNAME="oly.netpowerctrl.datastructure.DevicePort void toJSON(android.util.JsonWriter writer)" />
     </entry_points>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" assert-keyword="true" jdk-15="true" project-jdk-name="JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

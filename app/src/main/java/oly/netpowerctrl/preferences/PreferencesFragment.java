@@ -10,16 +10,27 @@ import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.main.EnergySaveLogFragment;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment {
+    private static class WidgetData {
+        CharSequence data;
+        String prefName;
+
+        private WidgetData(CharSequence data, String prefName) {
+            this.data = data;
+            this.prefName = prefName;
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,8 +75,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 DeviceWidgetProvider.class);
         //noinspection ConstantConditions
         final int[] allWidgetIds = appWidgetManager.getAppWidgetIds(deviceWidgetWidget);
-        CharSequence[] entries = new CharSequence[allWidgetIds.length];
-        String[] entryValues = new String[allWidgetIds.length];
+        List<WidgetData> widgetDataList = new ArrayList<>();
         int index = 0;
         for (int appWidgetId : allWidgetIds) {
             String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
@@ -76,24 +86,25 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 Log.w("PREFERENCES", "Strange widget ID!");
                 continue;
             }
-            entries[index] = port.device.DeviceName + ", " + port.getDescription();
-            entryValues[index] = prefName;
+            widgetDataList.add(new WidgetData(
+                    port.device.DeviceName + ", " + port.getDescription(),
+                    prefName));
             ++index;
         }
 
         PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.PREF_widgets);
         assert lp != null;
-        if (entries.length == 0) {
+        if (widgetDataList.isEmpty()) {
             getPreferenceScreen().removePreference(lp);
         } else {
-            for (int i = 0; i < entries.length; ++i) {
+            for (int i = 0; i < widgetDataList.size(); ++i) {
                 final int widgetID = allWidgetIds[i];
                 //noinspection ConstantConditions
                 PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
                 assert s != null;
-                s.setKey(entryValues[i]);
+                s.setKey(widgetDataList.get(i).prefName);
                 s.setFragment(WidgetPreferenceFragment.class.getName());
-                s.setTitle(entries[i]);
+                s.setTitle(widgetDataList.get(i).data);
                 s.setIcon(Icons.loadDrawable(getActivity(), Icons.uuidFromWidgetID(widgetID),
                         Icons.IconType.WidgetIcon, Icons.IconState.StateOn,
                         Icons.getResIdForState(Icons.IconState.StateOn)));

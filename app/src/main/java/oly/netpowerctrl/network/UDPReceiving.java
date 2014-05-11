@@ -9,12 +9,12 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.ShowToast;
 
 abstract public class UDPReceiving extends Thread {
-    protected final int receive_port;
-    protected boolean keep_running;
-    protected DatagramSocket socket;
+    private final int receive_port;
+    private boolean keep_running;
+    private DatagramSocket socket;
     protected DatagramPacket receivedDatagram;
 
-    public UDPReceiving(int port) {
+    protected UDPReceiving(int port) {
         receive_port = port;
         socket = null;
     }
@@ -54,7 +54,7 @@ abstract public class UDPReceiving extends Thread {
         super.interrupt();
     }
 
-    public abstract void parsePacket(final byte[] message, int length, int receive_port);
+    protected abstract void parsePacket(final byte[] message, int length, int receive_port);
 
     /**
      * @return Return the receive port of this thread

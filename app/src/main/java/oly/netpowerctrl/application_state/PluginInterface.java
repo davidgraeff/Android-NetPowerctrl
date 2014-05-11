@@ -2,8 +2,8 @@ package oly.netpowerctrl.application_state;
 
 import android.content.Context;
 
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.ExecutionFinished;
 

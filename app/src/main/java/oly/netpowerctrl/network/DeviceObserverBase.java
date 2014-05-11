@@ -7,7 +7,7 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.devices.DeviceInfo;
 
 /**
  * This base class is used by the device query and device-resend-command class.

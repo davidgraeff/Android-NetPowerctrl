@@ -15,9 +15,9 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.DevicePort;
-import oly.netpowerctrl.listadapter.DevicePortsSelectAdapter;
+import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.devices.DevicePortsSelectAdapter;
 
 public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener {
     private DevicePort master;

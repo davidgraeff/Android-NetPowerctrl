@@ -142,7 +142,7 @@ public class SharedPrefs {
         return wakeUp_energy_saving_mode;
     }
 
-    public static String PREF_use_dark_theme = "use_dark_theme";
+    public static final String PREF_use_dark_theme = "use_dark_theme";
 
     public static boolean isDarkTheme() {
         Context context = NetpowerctrlApplication.instance;
@@ -241,5 +241,29 @@ public class SharedPrefs {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("gDrive", enabled).commit();
+    }
+
+    public static void saveNeighbours(String json) {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putString("neighbours", json).commit();
+    }
+
+    public static String loadNeighbours() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString("neighbours", null);
+    }
+
+    public static boolean isNeighbourAutoSync() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("neighbour_sync", false);
+    }
+
+    public static void setNeighbourAutoSync(boolean enabled) {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putBoolean("neighbour_sync", enabled).commit();
     }
 }

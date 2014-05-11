@@ -42,11 +42,11 @@ import oly.netpowerctrl.utils.Donate;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static MainActivity instance = null;
-    public Donate donate = new Donate();
+    public final Donate donate = new Donate();
 
     // Drawer
     private final DrawerController mDrawer = new DrawerController();
-    final GDrive gDrive = new GDrive();
+    public final GDrive gDrive = new GDrive();
 
     @Override
     protected void onStop() {

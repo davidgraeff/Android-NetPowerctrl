@@ -11,7 +11,7 @@ import com.google.android.gms.drive.widget.DataBufferAdapter;
 /**
  * A DataBufferAdapter to display the results of file listing/querying requests.
  */
-public class GDriveBackupsAdapter extends DataBufferAdapter<Metadata> {
+class GDriveBackupsAdapter extends DataBufferAdapter<Metadata> {
 
     public GDriveBackupsAdapter(Context context) {
         super(context, android.R.layout.simple_list_item_1);

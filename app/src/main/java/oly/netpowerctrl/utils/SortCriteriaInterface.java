@@ -1,7 +1,7 @@
 package oly.netpowerctrl.utils;
 
 /**
- * Created by david on 10.05.14.
+ * For all collections that support sorting
  */
 public interface SortCriteriaInterface {
     public String[] getContentList();

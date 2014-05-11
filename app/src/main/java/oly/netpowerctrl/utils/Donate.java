@@ -27,7 +27,7 @@ import oly.netpowerctrl.main.MainActivity;
  */
 public class Donate {
     private static final int INAPP_REQUEST = 12345;
-    WeakReference<Activity> activityWeakReference;
+    private WeakReference<Activity> activityWeakReference;
 
     public void onActivityResult(final Activity activity, int requestCode, int resultCode, final Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == INAPP_REQUEST) {
@@ -40,9 +40,7 @@ public class Donate {
                     try {
                         JSONObject json = new JSONObject(data.getStringExtra("INAPP_PURCHASE_DATA"));
                         mService.consumePurchase(3, activity.getPackageName(), json.getString("purchaseToken"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (RemoteException e) {
+                    } catch (JSONException | RemoteException e) {
                         e.printStackTrace();
                     }
                 }
@@ -52,9 +50,7 @@ public class Donate {
     }
 
     public void onDestroy(Activity activity) {
-        if (mServiceConn != null) {
-            activity.unbindService(mServiceConn);
-        }
+        activity.unbindService(mServiceConn);
     }
 
     public boolean donatePossible() {
@@ -63,7 +59,7 @@ public class Donate {
 
     private IInAppBillingService mService;
 
-    private ServiceConnection mServiceConn = new ServiceConnection() {
+    private final ServiceConnection mServiceConn = new ServiceConnection() {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mService = null;
@@ -90,16 +86,13 @@ public class Donate {
                             ArrayList<String> purchaseDataList = ownedItems.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
 
                             if (purchaseDataList != null) {
-                                for (int i = 0; i < purchaseDataList.size(); ++i) {
-                                    String purchaseData = purchaseDataList.get(i);
+                                for (String purchaseData : purchaseDataList) {
                                     JSONObject json = new JSONObject(purchaseData);
                                     mService.consumePurchase(3, activity.getPackageName(), json.getString("purchaseToken"));
                                 }
                             }
                         }
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
+                    } catch (RemoteException | JSONException e) {
                         e.printStackTrace();
                     }
                 }
@@ -117,11 +110,9 @@ public class Donate {
             PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
             if (pendingIntent != null) {
                 activity.startIntentSenderForResult(pendingIntent.getIntentSender(), INAPP_REQUEST,
-                        new Intent(), Integer.valueOf(0), Integer.valueOf(0), Integer.valueOf(0));
+                        new Intent(), 0, 0, 0);
             }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (IntentSender.SendIntentException e) {
+        } catch (RemoteException | IntentSender.SendIntentException e) {
             e.printStackTrace();
         }
     }

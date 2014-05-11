@@ -13,17 +13,17 @@ import java.util.Set;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.network.UDPSending;
 
 /**
  * A DeviceSend.Job that provide broadcast sending to anel devices.
  */
 public class AnelBroadcastSendJob implements UDPSending.Job {
-    private void sendPacket(UDPSending UDPSending, InetAddress ip, int SendPort, byte[] message) {
+    private void sendPacket(UDPSending udpSending, InetAddress ip, int SendPort, byte[] message) {
         try {
-            UDPSending.datagramSocket.setBroadcast(true);
-            UDPSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
+            udpSending.datagramSocket.setBroadcast(true);
+            udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
             //Log.w("AnelBroadcastSendJob",ip.getHostAddress());
         } catch (final SocketException e) {
             if (e.getMessage().contains("ENETUNREACH"))

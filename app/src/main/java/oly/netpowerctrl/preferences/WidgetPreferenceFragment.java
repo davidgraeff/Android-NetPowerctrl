@@ -15,7 +15,7 @@ import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class WidgetPreferenceFragment extends PreferencesWithValuesFragment implements Icons.IconSelected {
     private int widgetId = -1;
-    private final Map<Preference, Icons.IconState> preference_to_state = new TreeMap<Preference, Icons.IconState>();
+    private final Map<Preference, Icons.IconState> preference_to_state = new TreeMap<>();
 
     private final Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
         public boolean onPreferenceClick(final Preference preference) {
@@ -78,7 +78,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             return;
         Preference current = (Preference) context_object;
         Icons.IconState state = preference_to_state.get(context_object);
-        Icons.saveIcon(getActivity(), Icons.uuidFromWidgetID(widgetId), bitmap, Icons.IconType.WidgetIcon, state);
+        Icons.saveIcon(getActivity(), bitmap, Icons.uuidFromWidgetID(widgetId), Icons.IconType.WidgetIcon, state);
         if (bitmap == null) {
             current.setIcon(Icons.getResIdForState(state));
         } else {

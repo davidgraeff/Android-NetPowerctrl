@@ -23,11 +23,14 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
 /**
  * Util for scenes
@@ -74,7 +77,7 @@ public class Icons {
         return 0;
     }
 
-    public static void saveIcon(Context context, UUID uuid, Bitmap bitmap, IconType iconType, IconState state) {
+    public static void saveIcon(Context context, Bitmap bitmap, UUID uuid, IconType iconType, IconState state) {
         @SuppressWarnings("ConstantConditions")
         String root = context.getExternalFilesDir(iconType.name() + state.name()).toString();
         File myDir = new File(root);
@@ -163,6 +166,57 @@ public class Icons {
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 
+    public static class IconFile {
+        public final File file;
+        public final IconState state;
+        public final IconType type;
+
+        public IconFile(File file, IconState state, IconType type) {
+            this.file = file;
+            this.state = state;
+            this.type = type;
+        }
+    }
+
+    public static IconFile[] getAllIcons() {
+        Context context = NetpowerctrlApplication.instance;
+
+        List<IconFile> list = new ArrayList<>();
+        for (Icons.IconType iconType : Icons.IconType.values()) {
+            for (Icons.IconState state : Icons.IconState.values()) {
+                //noinspection ConstantConditions
+                String root = context.getExternalFilesDir(iconType.name() + state.name()).toString();
+                File myDir = new File(root);
+                for (File file : myDir.listFiles()) {
+                    list.add(new IconFile(file, state, iconType));
+                }
+            }
+        }
+
+        return list.toArray(new IconFile[list.size()]);
+    }
+
+    public static void saveIcon(String fileName, IconType iconType, IconState state, InputStream input) {
+        Context context = NetpowerctrlApplication.instance;
+        @SuppressWarnings("ConstantConditions")
+        String root = context.getExternalFilesDir(iconType.name() + state.name()).toString();
+        File myDir = new File(root);
+
+        try {
+            byte[] buffer = new byte[4096]; // To hold file contents
+            int bytes_read; // How many bytes in buffer
+            FileOutputStream out = new FileOutputStream(new File(myDir, fileName));
+            while ((bytes_read = input.read(buffer)) != -1)
+                // Read until EOF
+                out.write(buffer, 0, bytes_read); // write
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static interface IconSelected {
         void setIcon(Object context_object, Bitmap bitmap);
 
@@ -214,7 +268,7 @@ public class Icons {
                     callback.setIcon(callback_context_object, null);
                 } else if (i == 1) {
                     if (callback_context_object != null)
-                        icon_callback_context_object = new WeakReference<Object>(callback_context_object);
+                        icon_callback_context_object = new WeakReference<>(callback_context_object);
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
                         Intent intent = new Intent();
                         intent.setType("image/*");

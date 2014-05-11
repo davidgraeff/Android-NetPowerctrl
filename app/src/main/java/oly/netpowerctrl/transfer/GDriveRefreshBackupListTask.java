@@ -14,10 +14,10 @@ import com.google.android.gms.drive.MetadataBuffer;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
-public class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer> {
-    private GoogleApiClient mClient;
-    private GDrive.GDriveConnectionState observer;
-    private GDriveBackupsAdapter GDriveBackupsAdapter;
+class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer> {
+    private final GoogleApiClient mClient;
+    private final GDrive.GDriveConnectionState observer;
+    private final GDriveBackupsAdapter GDriveBackupsAdapter;
 
     public GDriveRefreshBackupListTask(GoogleApiClient client,
                                        GDrive.GDriveConnectionState observer,

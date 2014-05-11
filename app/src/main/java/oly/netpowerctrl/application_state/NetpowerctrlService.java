@@ -18,13 +18,13 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.main.EnergySaveLogFragment;
+import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.UDPSending;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -72,11 +72,11 @@ public class NetpowerctrlService extends Service {
                     ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
                 }
                 if (SharedPrefs.logEnergySaveMode())
-                    EnergySaveLogFragment.appendLog("Energiesparen aus: Netzwechsel erkannt");
+                    Logging.appendLog("Energiesparen aus: Netzwechsel erkannt");
                 start();
             } else {
                 if (SharedPrefs.logEnergySaveMode())
-                    EnergySaveLogFragment.appendLog("Energiesparen an: Kein Netzwerk");
+                    Logging.appendLog("Energiesparen an: Kein Netzwerk");
                 finish();
                 if (SharedPrefs.notifyOnStop()) {
                     ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_unreachable));
@@ -89,13 +89,13 @@ public class NetpowerctrlService extends Service {
      */
 
     private boolean isNetworkChangedListener = false;
-    private final List<PluginInterface> plugins = new ArrayList<PluginInterface>();
+    private final List<PluginInterface> plugins = new ArrayList<>();
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
             if (SharedPrefs.isPreferenceNameLogEnergySaveMode(s) && isNetworkReducedMode) {
                 if (SharedPrefs.logEnergySaveMode())
-                    EnergySaveLogFragment.appendLog("Energiesparen abgeschaltet");
+                    Logging.appendLog("Energiesparen abgeschaltet");
                 start();
                 if (SharedPrefs.notifyOnStop()) {
                     ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
@@ -116,7 +116,7 @@ public class NetpowerctrlService extends Service {
             unregisterReceiver(networkChangedListener);
         }
         if (SharedPrefs.logEnergySaveMode())
-            EnergySaveLogFragment.appendLog("ENDE: Hintergrunddienste aus");
+            Logging.appendLog("ENDE: Hintergrunddienste aus");
         finish();
         return super.onUnbind(intent);
     }
@@ -148,7 +148,7 @@ public class NetpowerctrlService extends Service {
         // Stop listening for network changes
         if (isNetworkChangedListener && !SharedPrefs.getWakeUp_energy_saving_mode()) {
             if (SharedPrefs.logEnergySaveMode())
-                EnergySaveLogFragment.appendLog("Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
+                Logging.appendLog("Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
             isNetworkChangedListener = false;
             unregisterReceiver(networkChangedListener);
         }
@@ -163,7 +163,7 @@ public class NetpowerctrlService extends Service {
 
         if (!isNetworkChangedListener && SharedPrefs.getUse_energy_saving_mode()) {
             if (SharedPrefs.logEnergySaveMode())
-                EnergySaveLogFragment.appendLog("Netzwerkwechsel überwacht");
+                Logging.appendLog("Netzwerkwechsel überwacht");
             isNetworkChangedListener = true;
             IntentFilter filter = new IntentFilter();
             filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
@@ -188,6 +188,9 @@ public class NetpowerctrlService extends Service {
 
     private void createRemotePlugin(String serviceName,
                                     String localized_name, String packageName) {
+
+        if (serviceName == null || serviceName.isEmpty() || packageName == null || packageName.isEmpty())
+            return;
 
         /**
          * We received a message from a plugin, we already know: ignore
@@ -256,7 +259,7 @@ public class NetpowerctrlService extends Service {
         if (isNetworkReducedMode) {
             ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
             if (SharedPrefs.logEnergySaveMode())
-                EnergySaveLogFragment.appendLog("Energiesparen aus: Suche Geräte");
+                Logging.appendLog("Energiesparen aus: Suche Geräte");
             start();
             return;
         }
@@ -300,7 +303,7 @@ public class NetpowerctrlService extends Service {
                 // Do we need to go into network reduced mode?
                 if (timeout_devices.size() == NetpowerctrlApplication.getDataController().countNetworkDevices()) {
                     if (SharedPrefs.logEnergySaveMode())
-                        EnergySaveLogFragment.appendLog("Energiesparen an: Keine Geräte gefunden");
+                        Logging.appendLog("Energiesparen an: Keine Geräte gefunden");
                     finish();
                     if (SharedPrefs.notifyOnStop()) {
                         ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_no_devices));

@@ -5,23 +5,23 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.main.NeighbourFragment;
 import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.network.Utils;
 
 /**
- * Created by david on 06.05.14.
+ * Neighbour discovery
  */
 public class NeighbourDiscoverReceiving extends UDPReceiving {
-    private NeighbourFragment neighbourFragment;
+    private final WeakReference<NeighbourFragment> neighbourFragmentWeakReference;
 
     public NeighbourDiscoverReceiving(NeighbourFragment neighbourFragment) {
         super(3311);
-        this.neighbourFragment = neighbourFragment;
+        this.neighbourFragmentWeakReference = new WeakReference<>(neighbourFragment);
     }
 
     // This is executed in another thread!
@@ -63,6 +63,12 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
     private void parsePairResultPacket(ByteBuffer bb, final long uniqueID) {
         if (bb.remaining() < 1) return;
 
+        final NeighbourFragment neighbourFragment = neighbourFragmentWeakReference.get();
+        if (neighbourFragment == null) {
+            interrupt();
+            return;
+        }
+
         final NeighbourAdapter.AdapterItem item = neighbourFragment.neighbourAdapter.getItemByID(uniqueID);
         if (item == null || !item.pairingRequest)
             return;
@@ -84,6 +90,11 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
     }
 
     private void parsePairInitPacket(final long uniqueID) {
+        final NeighbourFragment neighbourFragment = neighbourFragmentWeakReference.get();
+        if (neighbourFragment == null) {
+            interrupt();
+            return;
+        }
 
         final NeighbourAdapter.AdapterItem item = neighbourFragment.neighbourAdapter.getItemByID(uniqueID);
         if (item == null)
@@ -98,6 +109,12 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
     }
 
     void parseDiscoverPacket(ByteBuffer bb, final long uniqueID) {
+        final NeighbourFragment neighbourFragment = neighbourFragmentWeakReference.get();
+        if (neighbourFragment == null) {
+            interrupt();
+            return;
+        }
+
         if (bb.remaining() < 10) return;
 
         // Get others and own version
@@ -136,7 +153,7 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
                 if (neighbourFragment.neighbourAdapter == null)
                     return;
                 neighbourFragment.neighbourAdapter.add(name, uniqueID, version, versionCode,
-                        devices, scenes, groups, icons, receivedDatagram.getAddress(), false);
+                        devices, scenes, groups, icons, receivedDatagram.getAddress());
             }
         });
     }

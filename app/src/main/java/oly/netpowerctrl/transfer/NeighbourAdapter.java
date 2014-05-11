@@ -1,12 +1,16 @@
 package oly.netpowerctrl.transfer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.JsonReader;
+import android.util.JsonWriter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,16 +18,19 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.JSONHelper;
 
 /**
- * Created by david on 05.05.14.
+ * Adapter showing all detected neighbours. It also loads and saves paired neighbours.
  */
 public class NeighbourAdapter extends BaseAdapter {
     private final LayoutInflater inflater;
-    private List<AdapterItem> items = new ArrayList<AdapterItem>();
+    private List<AdapterItem> items = new ArrayList<>();
 
     public void setPaired(AdapterItem item, boolean paired) {
         item.isPaired = paired;
+        save();
         notifyDataSetChanged();
     }
 
@@ -34,26 +41,193 @@ public class NeighbourAdapter extends BaseAdapter {
         private long uniqueID;
         public InetAddress address;
         public boolean isPaired;
+        public boolean isOnline;
         public boolean pairingRequest = false;
         private String name;
+        public int version;
+        public int versionCode;
+        public short devices;
+        public short scenes;
+        public short groups;
+        public short icons;
 
-        private AdapterItem(String name, String data, boolean isSameVersion, long uniqueID, InetAddress address, boolean paired) {
+        /**
+         * Use this constructor for loaded, paired neighbours
+         */
+        AdapterItem() {
+            this.isPaired = true;
+            this.isOnline = false;
+        }
+
+        /**
+         * Use this constructor for discovered neighbours who are not paired.
+         */
+        private AdapterItem(String name, int version, int versionCode,
+                            long uniqueID, InetAddress address,
+                            short devices, short scenes, short groups, short icons) {
             this.name = name;
-            this.data = data;
-            this.isSameVersion = isSameVersion;
+            this.version = version;
+            this.versionCode = versionCode;
             this.uniqueID = uniqueID;
             this.address = address;
-            this.isPaired = paired;
+            this.devices = devices;
+            this.scenes = scenes;
+            this.groups = groups;
+            this.icons = icons;
+
+            this.isPaired = false;
+            this.isOnline = true;
         }
 
         public String getName() {
             return name;
         }
+
+        public void updateData() {
+            data = String.valueOf(uniqueID) + ": ";
+            if (version < versionCode)
+                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_older_version) + " ";
+            else if (version > versionCode)
+                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_newer_version) + " ";
+
+            data += NetpowerctrlApplication.instance.getString(R.string.neighbour_entry, devices, scenes, groups, icons);
+            if (isPaired)
+                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired);
+            if (!isOnline)
+                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired_not_found);
+
+            this.isSameVersion = versionCode == version;
+        }
     }
 
+    private void save() {
+        SharedPrefs.saveNeighbours(toJSON());
+    }
 
     public NeighbourAdapter(Context context) {
         inflater = LayoutInflater.from(context);
+
+        // Load
+        String json = SharedPrefs.loadNeighbours();
+        if (json == null)
+            return;
+
+        JsonReader reader = JSONHelper.getReader(json);
+        if (reader == null)
+            return;
+
+        try {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                String name = reader.nextName();
+                assert name != null;
+                if (name.equals("items")) {
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        readAdapterItem(reader);
+                    }
+                    reader.endArray();
+                } else {
+                    reader.skipValue();
+                }
+            }
+            reader.endObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Return the json representation of all groups
+     *
+     * @return JSON String
+     */
+    @Override
+    public String toString() {
+        return toJSON();
+    }
+
+    /**
+     * Return the json representation of this scene
+     *
+     * @return JSON String
+     */
+    public String toJSON() {
+        try {
+            JSONHelper h = new JSONHelper();
+            toJSON(h.createWriter());
+            return h.getString();
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+
+    void toJSON(JsonWriter writer) throws IOException {
+        writer.beginObject();
+        writer.name("items").beginArray();
+        for (AdapterItem c : items) {
+            writer.beginObject();
+            writer.name("name").value(c.name);
+            writer.name("version").value(c.version);
+            writer.name("versionCode").value(c.versionCode);
+            writer.name("devices").value(c.devices);
+            writer.name("scenes").value(c.scenes);
+            writer.name("icons").value(c.icons);
+            writer.name("versionCode").value(c.versionCode);
+            writer.name("uniqueID").value(c.uniqueID);
+            writer.name("address").value(c.address.getHostAddress());
+            writer.endObject();
+        }
+        writer.endArray();
+        writer.endObject();
+    }
+
+    private void readAdapterItem(JsonReader reader) throws IOException {
+        AdapterItem item = new AdapterItem();
+
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            switch (name) {
+                case "name":
+                    item.name = reader.nextString();
+                    break;
+                case "version":
+                    item.version = reader.nextInt();
+                    break;
+                case "versionCode":
+                    item.versionCode = reader.nextInt();
+                    break;
+                case "groups":
+                    item.groups = (short) reader.nextInt();
+                    break;
+                case "scenes":
+                    item.scenes = (short) reader.nextInt();
+                    break;
+                case "devices":
+                    item.devices = (short) reader.nextInt();
+                    break;
+                case "icons":
+                    item.icons = (short) reader.nextInt();
+                    break;
+                case "uniqueID":
+                    item.uniqueID = reader.nextLong();
+                    break;
+                case "address":
+                    item.address = InetAddress.getByName(reader.nextString());
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+        reader.endObject();
+
+        item.updateData();
+        items.add(item);
     }
 
     @Override
@@ -61,9 +235,8 @@ public class NeighbourAdapter extends BaseAdapter {
         return items.size();
     }
 
-    @Override
-    public Object getItem(int i) {
-        return null;
+    public AdapterItem getItem(int i) {
+        return items.get(i);
     }
 
     @Override
@@ -74,29 +247,25 @@ public class NeighbourAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
+            convertView = inflater.inflate(android.R.layout.two_line_list_item, null);
         }
+
+        AdapterItem item = items.get(i);
 
         assert convertView != null;
         TextView tvName = (TextView) convertView.findViewById(android.R.id.text1);
-        tvName.setText(items.get(i).data);
+        tvName.setText(item.name);
+
+        TextView tvData = (TextView) convertView.findViewById(android.R.id.text2);
+        tvData.setText(item.data);
 
         return convertView;
     }
 
+    @SuppressLint("StringFormatMatches")
     public void add(String name, long uniqueID, int version, int versionCode,
                     short devices, short scenes, short groups, short icons,
-                    InetAddress address, boolean paired) {
-
-        String s = name + " (" + String.valueOf(uniqueID) + ") ";
-        if (version < versionCode)
-            s += NetpowerctrlApplication.instance.getString(R.string.neighbour_older_version) + "\n";
-        else if (version > versionCode)
-            s += NetpowerctrlApplication.instance.getString(R.string.neighbour_newer_version) + "\n";
-        else
-            s += "\n";
-
-        s += NetpowerctrlApplication.instance.getString(R.string.neighbour_entry, devices, scenes, groups, icons);
+                    InetAddress address) {
 
         int position = -1;
         for (int i = 0; i < items.size(); ++i)
@@ -107,10 +276,21 @@ public class NeighbourAdapter extends BaseAdapter {
 
         if (position != -1) {
             AdapterItem item = items.get(position);
-            item.data = s;
+            item.name = name;
+            item.version = version;
+            item.versionCode = versionCode;
+            item.devices = devices;
+            item.scenes = scenes;
+            item.groups = groups;
+            item.icons = icons;
             item.times = 0;
+            item.updateData();
+            item.isOnline = true;
         } else {
-            items.add(new AdapterItem(name, s, version == versionCode, uniqueID, address, paired));
+            AdapterItem item = new AdapterItem(name, version, versionCode, uniqueID, address,
+                    devices, scenes, groups, icons);
+            item.updateData();
+            items.add(item);
         }
         notifyDataSetChanged();
     }
@@ -129,14 +309,16 @@ public class NeighbourAdapter extends BaseAdapter {
         return null;
     }
 
-
     public void advanceTime() {
         boolean changed = false;
         Iterator<AdapterItem> itemIterator = items.iterator();
         while (itemIterator.hasNext()) {
             AdapterItem item = itemIterator.next();
             if (++item.times > 1) {
-                itemIterator.remove();
+                if (!item.isPaired)
+                    itemIterator.remove();
+                item.isOnline = false;
+                item.updateData();
                 changed = true;
             }
         }

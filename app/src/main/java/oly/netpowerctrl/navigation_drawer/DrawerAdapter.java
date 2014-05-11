@@ -16,18 +16,18 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.datastructure.GroupCollection;
-import oly.netpowerctrl.datastructure.Scene;
-import oly.netpowerctrl.datastructure.SceneCollection;
+import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.main.OutletsFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.scenes.SceneCollection;
 
 /**
  * Adapter with items and headers
  */
 public class DrawerAdapter extends BaseAdapter implements GroupCollection.IGroupsUpdated, SceneCollection.IScenesUpdated {
 
-    private final List<DrawerItem> mItems = new ArrayList<DrawerItem>();
+    private final List<DrawerItem> mItems = new ArrayList<>();
     private final LayoutInflater inflater;
     private UUID groups_position = null;
     private int groups_size = 0;

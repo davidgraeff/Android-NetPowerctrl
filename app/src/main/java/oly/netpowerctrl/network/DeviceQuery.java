@@ -9,7 +9,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.devices.DeviceInfo;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -21,7 +21,7 @@ public class DeviceQuery extends DeviceObserverBase {
 
     public DeviceQuery(DeviceObserverResult target, DeviceInfo device_to_observe) {
         setDeviceQueryResult(target);
-        devices_to_observe = new ArrayList<DeviceInfo>();
+        devices_to_observe = new ArrayList<>();
         devices_to_observe.add(device_to_observe);
 
         // Register on main application object to receive device updates
@@ -36,7 +36,7 @@ public class DeviceQuery extends DeviceObserverBase {
 
     public DeviceQuery(DeviceObserverResult target, Collection<DeviceInfo> devices_to_observe) {
         setDeviceQueryResult(target);
-        this.devices_to_observe = new ArrayList<DeviceInfo>(devices_to_observe);
+        this.devices_to_observe = new ArrayList<>(devices_to_observe);
 
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
@@ -59,7 +59,7 @@ public class DeviceQuery extends DeviceObserverBase {
      */
     public DeviceQuery(DeviceObserverResult target) {
         setDeviceQueryResult(target);
-        this.devices_to_observe = new ArrayList<DeviceInfo>(NetpowerctrlApplication.getDataController().deviceCollection.devices);
+        this.devices_to_observe = new ArrayList<>(NetpowerctrlApplication.getDataController().deviceCollection.devices);
 
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);

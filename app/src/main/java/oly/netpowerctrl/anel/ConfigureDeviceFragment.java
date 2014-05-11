@@ -18,8 +18,8 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
@@ -36,6 +36,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceObs
     private DeviceInfo device;
     private DeviceQuery deviceQuery;
 
+    @SuppressWarnings("WeakerAccess")
     public ConfigureDeviceFragment() {
     }
 
@@ -168,8 +169,7 @@ public class ConfigureDeviceFragment extends DialogFragment implements DeviceObs
         if (getArguments() != null) {
             try {
                 device = DeviceInfo.fromJSON(JSONHelper.getReader(getArguments().getString(DEVICE_PARAMETER)));
-            } catch (IOException ignored) {
-            } catch (ClassNotFoundException ignored) {
+            } catch (IOException | ClassNotFoundException ignored) {
             }
         }
 

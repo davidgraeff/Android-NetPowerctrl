@@ -18,9 +18,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.EnergySaveLogFragment;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.transfer.NeighbourDataReceiveService;
+import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -42,7 +43,7 @@ public class NetpowerctrlApplication extends Application {
     private int mDiscoverServiceRefCount = 0;
     private NetpowerctrlService mDiscoverService;
     private boolean mWaitForService;
-    private final ArrayList<ServiceReady> observersServiceReady = new ArrayList<ServiceReady>();
+    private final ArrayList<ServiceReady> observersServiceReady = new ArrayList<>();
 
     public boolean isServiceReady() {
         return (mDiscoverService != null);
@@ -86,15 +87,16 @@ public class NetpowerctrlApplication extends Application {
 
         // Start listen service and listener for wifi changes
         mWaitForService = true;
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
+        Thread t = new Thread() {
             public void run() {
+                dataController.loadData(false);
                 Intent intent = new Intent(instance, NetpowerctrlService.class);
                 startService(intent);
                 bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+                NeighbourDataReceiveService.startAutoSync();
             }
-        }, 180);
+        };
+        t.start();
     }
 
     private final Handler stopServiceHandler = new Handler();
@@ -166,7 +168,7 @@ public class NetpowerctrlApplication extends Application {
                 mDiscoverServiceRefCount = 1;
             mWaitForService = false;
             if (SharedPrefs.logEnergySaveMode())
-                EnergySaveLogFragment.appendLog("Hintergrunddienst gestartet");
+                Logging.appendLog("Hintergrunddienst gestartet");
             mDiscoverService.start();
 
             // Notify all observers that we are ready

@@ -2,7 +2,7 @@ package oly.netpowerctrl.network;
 
 import java.util.List;
 
-import oly.netpowerctrl.datastructure.DeviceInfo;
+import oly.netpowerctrl.devices.DeviceInfo;
 
 /**
  * on device error

@@ -30,7 +30,7 @@ public class NFC {
 
     // Check to see that the Activity started due to an Android Beam
     public static void checkIntentForNFC(Context context, Intent intent) {
-        String intentAction = intent.getAction();
+//        String intentAction = intent.getAction();
 
 //        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intentAction)) {
 //            Parcelable[] rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);

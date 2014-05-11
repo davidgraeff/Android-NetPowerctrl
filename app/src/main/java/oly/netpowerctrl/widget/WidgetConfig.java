@@ -9,12 +9,12 @@ import android.widget.AdapterView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.listadapter.DevicePortsBaseAdapter;
+import oly.netpowerctrl.devices.DevicePortsBaseAdapter;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.shortcut.SceneEditFragment;
-import oly.netpowerctrl.shortcut.SceneEditFragmentReady;
+import oly.netpowerctrl.scenes.EditSceneFragment;
+import oly.netpowerctrl.scenes.EditSceneFragmentReady;
 
-public class WidgetConfig extends Activity implements SceneEditFragmentReady {
+public class WidgetConfig extends Activity implements EditSceneFragmentReady {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private DevicePortsBaseAdapter adapter;
 
@@ -30,9 +30,9 @@ public class WidgetConfig extends Activity implements SceneEditFragmentReady {
         }
         setContentView(R.layout.activity_main_one_pane);
 
-        SceneEditFragment f = new SceneEditFragment();
+        EditSceneFragment f = new EditSceneFragment();
         f.setData(this,
-                SceneEditFragment.TYPE_AVAILABLE,
+                EditSceneFragment.TYPE_AVAILABLE,
                 this);
 
         getFragmentManager().beginTransaction().replace(R.id.content_frame, f).commit();
@@ -61,14 +61,14 @@ public class WidgetConfig extends Activity implements SceneEditFragmentReady {
     };
 
     @Override
-    public void sceneEditFragmentReady(SceneEditFragment fragment) {
+    public void sceneEditFragmentReady(EditSceneFragment fragment) {
         fragment.getListView().setOnItemClickListener(selectedOutletListener);
         this.adapter = fragment.getAdapter();
         adapter.update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
     }
 
     @Override
-    public void entryDismiss(SceneEditFragment fragment, int position) {
+    public void entryDismiss(EditSceneFragment fragment, int position) {
 
     }
 

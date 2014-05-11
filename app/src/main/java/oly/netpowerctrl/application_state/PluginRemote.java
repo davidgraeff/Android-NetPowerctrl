@@ -15,8 +15,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.datastructure.DeviceInfo;
-import oly.netpowerctrl.datastructure.DevicePort;
+import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
@@ -243,9 +243,7 @@ public class PluginRemote implements PluginInterface {
                     service.updateBooleanValue(port.id, command == DevicePort.ON);
                     break;
             }
-        } catch (NullPointerException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
-        } catch (android.os.RemoteException e) {
+        } catch (NullPointerException | RemoteException e) {
             ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         }
 
@@ -265,7 +263,7 @@ public class PluginRemote implements PluginInterface {
             di.HostName = serviceName;
             di.setHasChanged();
             // Copy of current device port IDs
-            devicePortIDs = new TreeSet<Integer>(di.getDevicePortIDs());
+            devicePortIDs = new TreeSet<>(di.getDevicePortIDs());
         }
 
         @Override
