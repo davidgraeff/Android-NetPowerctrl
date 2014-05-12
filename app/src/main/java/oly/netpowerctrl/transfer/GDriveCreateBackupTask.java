@@ -10,13 +10,7 @@ import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.Metadata;
-import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filter;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -25,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
@@ -68,8 +61,9 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
 
         RuntimeDataController c = NetpowerctrlApplication.getDataController();
 
-        // Create folder
-        DriveFolder appDataDir = Drive.DriveApi.getAppFolder(mClient);
+        // Enter dir
+        DriveFolder appDataDir = GDrive.getAppFolder(mClient);
+
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                 .setTitle(Utils.getDeviceName() + " " + Utils.getDateTime()).build();
         DriveFolder.DriveFolderResult result = appDataDir.createFolder(mClient, changeSet).await();
@@ -80,9 +74,9 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
         DriveFolder target = result.getDriveFolder();
 
         boolean s;
-        s = createFile(c.sceneCollection.toJSON(), "scenes.json", target);
-        s &= createFile(c.groupCollection.toJSON(), "groups.json", target);
-        s &= createFile(c.deviceCollection.toJSON(), "devices.json", target);
+        s = createFile(c.sceneCollection.toJSON(), "scenes.json", target, "text/plain");
+        s &= createFile(c.groupCollection.toJSON(), "groups.json", target, "text/plain");
+        s &= createFile(c.deviceCollection.toJSON(), "devices.json", target, "text/plain");
 
         // Create icons folder
         changeSet = new MetadataChangeSet.Builder().setTitle("icons").build();
@@ -100,7 +94,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
             try {
                 // Open sub folder
                 String relativePath = f.type.name() + f.state.name();
-                DriveId subFolderID = findAll(relativePath, iconsFolder);
+                DriveId subFolderID = GDrive.findChild(mClient, relativePath, iconsFolder);
                 DriveFolder subFolder;
                 if (subFolderID == null) { // not existing, create it
                     changeSet = new MetadataChangeSet.Builder().setTitle(relativePath).build();
@@ -116,7 +110,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
                     subFolder = Drive.DriveApi.getFolder(mClient, subFolderID);
 
                 FileInputStream stream = new FileInputStream(f.file);
-                createFile(stream, f.file.getName(), subFolder);
+                createFile(stream, f.file.getName(), subFolder, f.file.getName().endsWith("png") ? "image/png" : "image/jpeg");
             } catch (FileNotFoundException ignored) {
             }
         }
@@ -125,36 +119,11 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
         return s;
     }
 
-    DriveId findAll(String title, DriveFolder baseFolder) {
-        ArrayList<Filter> fltrs = new ArrayList<>();
-        fltrs.add(Filters.eq(SearchableField.TRASHED, false));
-        if (title != null) fltrs.add(Filters.eq(SearchableField.TITLE, title));
-        Query qry = new Query.Builder().addFilter(Filters.and(fltrs)).build();
-        DriveApi.MetadataBufferResult rslt = (baseFolder == null) ?
-                Drive.DriveApi.query(mClient, qry).await() :
-                baseFolder.queryChildren(mClient, qry).await();
-        if (rslt.getStatus().isSuccess()) {
-            MetadataBuffer mdb = null;
-            try {
-                mdb = rslt.getMetadataBuffer();
-                if (mdb != null) {
-                    for (Metadata md : mdb) {
-                        if (md == null) continue;
-                        return md.getDriveId();      // here is the "Drive ID"
-                    }
-                }
-            } finally {
-                if (mdb != null) mdb.close();
-            }
-        }
-        return null;
+    boolean createFile(String content, String filename, DriveFolder target, String mimetype) {
+        return createFile(new ByteArrayInputStream(content.getBytes(Charset.defaultCharset())), filename, target, mimetype);
     }
 
-    boolean createFile(String content, String filename, DriveFolder target) {
-        return createFile(new ByteArrayInputStream(content.getBytes(Charset.defaultCharset())), filename, target);
-    }
-
-    boolean createFile(InputStream input, String filename, DriveFolder target) {
+    boolean createFile(InputStream input, String filename, DriveFolder target, String mimetype) {
         // New content
         DriveApi.ContentsResult contentsResult =
                 Drive.DriveApi.newContents(mClient).await();
@@ -181,7 +150,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
         // Create the metadata
         MetadataChangeSet originalMetadata = new MetadataChangeSet.Builder()
                 .setTitle(filename)
-                .setMimeType("text/plain").build();
+                .setMimeType(mimetype).build();
 
         // Create the file
         DriveFolder.DriveFileResult fileResult = target.createFile(

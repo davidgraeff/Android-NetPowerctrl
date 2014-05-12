@@ -28,17 +28,11 @@ public class NeighbourAdapter extends BaseAdapter {
     private final LayoutInflater inflater;
     private List<AdapterItem> items = new ArrayList<>();
 
-    public void setPaired(AdapterItem item, boolean paired) {
-        item.isPaired = paired;
-        save();
-        notifyDataSetChanged();
-    }
-
     public static class AdapterItem {
         private String data;
         public boolean isSameVersion;
         private int times = 0;
-        private long uniqueID;
+        long uniqueID;
         public InetAddress address;
         public boolean isPaired;
         public boolean isOnline;
@@ -97,6 +91,25 @@ public class NeighbourAdapter extends BaseAdapter {
                 data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired_not_found);
 
             this.isSameVersion = versionCode == version;
+        }
+    }
+
+    public void setPaired(AdapterItem item, boolean paired) {
+        item.isPaired = paired;
+        item.updateData();
+        save();
+        notifyDataSetChanged();
+    }
+
+    public void removePairing(long uniqueID) {
+        for (AdapterItem item : items) {
+            if (item.uniqueID == uniqueID) {
+                item.isPaired = false;
+                item.updateData();
+                save();
+                notifyDataSetChanged();
+                return;
+            }
         }
     }
 
@@ -168,6 +181,8 @@ public class NeighbourAdapter extends BaseAdapter {
         writer.beginObject();
         writer.name("items").beginArray();
         for (AdapterItem c : items) {
+            if (!c.isPaired)
+                continue;
             writer.beginObject();
             writer.name("name").value(c.name);
             writer.name("version").value(c.version);

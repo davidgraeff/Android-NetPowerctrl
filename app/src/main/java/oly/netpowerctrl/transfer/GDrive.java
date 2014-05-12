@@ -12,9 +12,19 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
+import com.google.android.gms.drive.MetadataBuffer;
+import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.query.Filter;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
 import com.google.android.gms.plus.Plus;
+
+import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -105,6 +115,7 @@ public class GDrive implements
                     .addApi(Drive.API)
                     .addApi(Plus.API)
                     .addScope(Drive.SCOPE_APPFOLDER)
+                    .addScope(Drive.SCOPE_FILE)
                             // Optionally, add additional APIs and scopes if required.
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
@@ -252,9 +263,56 @@ public class GDrive implements
         return mGoogleApiClient != null && mGoogleApiClient.isConnected();
     }
 
+    public static DriveFolder getAppFolder(GoogleApiClient mClient) {
+        DriveFolder appDataDir = Drive.DriveApi.getRootFolder(mClient);
+        DriveId id = GDrive.findChild(mClient, "PowerControlApp_Backup", appDataDir);
+        if (id == null) {
+            DriveFolder.DriveFolderResult result = GDrive.createAppDir(mClient, appDataDir);
+            if (!result.getStatus().isSuccess()) {
+                // We failed, stop the task and return.
+                return null;
+            }
+            return result.getDriveFolder();
+        } else
+            return Drive.DriveApi.getFolder(mClient, id);
+    }
+
     public interface GDriveConnectionState {
         void gDriveConnected(boolean connected, boolean canceled);
 
         void showProgress(boolean inProgress, String text);
     }
+
+    public static DriveFolder.DriveFolderResult createAppDir(GoogleApiClient mClient, DriveFolder baseFolder) {
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setTitle("PowerControlApp_Backup").build();
+        return baseFolder.createFolder(mClient, changeSet).await();
+    }
+
+
+    public static DriveId findChild(GoogleApiClient mClient, String title, DriveFolder baseFolder) {
+        ArrayList<Filter> fltrs = new ArrayList<>();
+        fltrs.add(Filters.eq(SearchableField.TRASHED, false));
+        if (title != null) fltrs.add(Filters.eq(SearchableField.TITLE, title));
+        Query qry = new Query.Builder().addFilter(Filters.and(fltrs)).build();
+        DriveApi.MetadataBufferResult rslt = (baseFolder == null) ?
+                Drive.DriveApi.query(mClient, qry).await() :
+                baseFolder.queryChildren(mClient, qry).await();
+        if (rslt.getStatus().isSuccess()) {
+            MetadataBuffer mdb = null;
+            try {
+                mdb = rslt.getMetadataBuffer();
+                if (mdb != null) {
+                    for (Metadata md : mdb) {
+                        if (md == null) continue;
+                        return md.getDriveId();      // here is the "Drive ID"
+                    }
+                }
+            } finally {
+                if (mdb != null) mdb.close();
+            }
+        }
+        return null;
+    }
+
 }

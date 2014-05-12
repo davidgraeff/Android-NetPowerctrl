@@ -197,6 +197,7 @@ public class SceneCollection implements SortCriteriaInterface {
         try {
             dc = SceneCollection.fromJSON(JSONHelper.getReader(data), null);
         } catch (IOException e) {
+            Log.e("importData", "failed: " + data);
             e.printStackTrace();
             return false;
         }

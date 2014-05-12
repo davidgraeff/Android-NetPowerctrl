@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,11 +27,12 @@ import android.widget.Toast;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.network.UDPSending;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Neighbour discovery is activated if this fragment is on screen.
  */
-public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemClickListener {
+public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, NeighbourDataSync.NeighbourDataCommunication {
     public static final String TAG = "NeighbourFragment";
 
     public NeighbourAdapter neighbourAdapter;
@@ -58,6 +58,7 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
         bar.setCustomView(R.layout.neighbour_sync_switch);
 
         sync_switch = (Switch) getActivity().findViewById(R.id.neighbour_sync_switch);
+        sync_switch.setChecked(SharedPrefs.isNeighbourAutoSync());
         sync_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -119,12 +120,18 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
             sendDiscoverMessageRunnable.run();
 
         // Start tcp receiver
-        NeighbourDataReceiveService.start();
+        NeighbourDataReceiveService.start(this);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         //noinspection ConstantConditions
         getActivity().registerReceiver(wifiChanged, intentFilter);
+    }
+
+
+    public void syncTimer() {
+        NetpowerctrlApplication.getMainThreadHandler().removeCallbacks(sendDiscoverMessageRunnable);
+        sendDiscoverMessageRunnable.run();
     }
 
     public void pairResult(final NeighbourAdapter.AdapterItem item, boolean accepted) {
@@ -189,10 +196,10 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
 
     private void enableSync(boolean enable) {
         if (enable) {
-            sync_switch.setChecked(false);
-            //TODO auto abgleich
-            //noinspection ConstantConditions
-            Toast.makeText(getActivity(), "Automatischer Abgleich noch nicht unterstützt", Toast.LENGTH_SHORT).show();
+            SharedPrefs.setNeighbourAutoSync(true);
+            NeighbourDataReceiveService.startAutoSync();
+        } else {
+            SharedPrefs.setNeighbourAutoSync(false);
         }
     }
 
@@ -237,7 +244,8 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
                     PopupMenu popup = new PopupMenu(getActivity(), view);
                     MenuInflater inflater = popup.getMenuInflater();
                     inflater.inflate(R.menu.neighbour_entry, popup.getMenu());
-                    popup.getMenu().findItem(R.id.menu_neighbour_push).setEnabled(item.isOnline);
+                    popup.getMenu().findItem(R.id.menu_neighbour_push).setEnabled(item.isOnline && item.isSameVersion);
+                    popup.getMenu().findItem(R.id.menu_neighbour_remove).setEnabled(item.isOnline);
                     popup.setOnMenuItemClickListener(NeighbourFragment.this);
                     popup.show();
                     return;
@@ -268,11 +276,11 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
 
         switch (menuItem.getItemId()) {
             case R.id.menu_neighbour_remove: {
-
+                NeighbourDataSync.sendData(item.address, item.uniqueID, this, true);
                 return true;
             }
             case R.id.menu_neighbour_push: {
-
+                NeighbourDataSync.sendData(item.address, item.uniqueID, this, false);
                 return true;
             }
         }
@@ -299,10 +307,34 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
                 return;
             lastGateway = g;
             broadcastSendJob = NeighbourDiscoverSending.createDiscoverMessage();
-            Log.w(TAG, "wifi changed");
             if (!discoverIsRunning)
                 sendDiscoverMessageRunnable.run();
         }
     };
 
+    @Override
+    public void pairingRemoved(long uniqueID) {
+        neighbourAdapter.removePairing(uniqueID);
+    }
+
+    @Override
+    public void pairingRemoveDenied(long uniqueID) {
+        Toast.makeText(getActivity(), R.string.neighbour_pairing_removal_denied, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void dataReceived(long uniqueID) {
+        NeighbourAdapter.AdapterItem item = neighbourAdapter.getItemByID(uniqueID);
+        if (item == null) return;
+        Toast.makeText(getActivity(), getString(R.string.neighbour_data_received, item.getName()),
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void dataProgress(long uniqueID, String progress) {
+        if (progress != null)
+            networkIDText.setText(progress);
+        else
+            updateNetworkIDText();
+    }
 }
