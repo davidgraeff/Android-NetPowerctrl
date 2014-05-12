@@ -3,6 +3,7 @@ package oly.netpowerctrl.groups;
 import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -265,6 +266,7 @@ public class GroupCollection {
         try {
             dc = GroupCollection.fromJSON(JSONHelper.getReader(data), null);
         } catch (IOException e) {
+            Log.e("importData", "failed: " + data);
             e.printStackTrace();
             return false;
         }

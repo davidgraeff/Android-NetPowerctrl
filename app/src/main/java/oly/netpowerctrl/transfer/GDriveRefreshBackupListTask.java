@@ -3,7 +3,6 @@ package oly.netpowerctrl.transfer;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
@@ -41,14 +40,19 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
 
     @Override
     protected MetadataBuffer doInBackground(Void... params) {
+        // Request sync
         Drive.DriveApi.requestSync(mClient).await();
 
-        DriveFolder appDataDir = Drive.DriveApi.getAppFolder(mClient);
+        // Enter dir
+        DriveFolder appDataDir = GDrive.getAppFolder(mClient);
+
+        // Get childs
         DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await();
         if (!result.getStatus().isSuccess()) {
             // We failed, stop the task and return.
             return null;
         }
+
         return result.getMetadataBuffer();
     }
 
@@ -61,7 +65,6 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
             return;
         }
 
-        Log.w("debug", "folders:" + String.valueOf(metadataBuffer.getCount()));
         GDriveBackupsAdapter.clear();
         GDriveBackupsAdapter.append(metadataBuffer);
 

@@ -154,6 +154,7 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
                     return;
                 neighbourFragment.neighbourAdapter.add(name, uniqueID, version, versionCode,
                         devices, scenes, groups, icons, receivedDatagram.getAddress());
+                neighbourFragment.syncTimer();
             }
         });
     }

@@ -257,4 +257,6 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="neighbour_paired_not_found">Nicht gefunden</string>
     <string name="menu_neighbour_remove">Kopplung auflösen</string>
     <string name="menu_neighbour_push">Jetzt Daten senden</string>
+    <string name="neighbour_pairing_removal_denied">Pairing removal denied</string>
+    <string name="neighbour_data_received">Nachbardaten von $s empfangen</string>
 </resources>

@@ -118,8 +118,9 @@ public class Donate {
     }
 
     public void start(MainActivity mainActivity) {
-        mainActivity.bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND"),
-                mServiceConn, Context.BIND_AUTO_CREATE);
+        Intent i = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+        i.setPackage("com.android.vending");
+        mainActivity.bindService(i, mServiceConn, Context.BIND_AUTO_CREATE);
         activityWeakReference = new WeakReference<Activity>(mainActivity);
     }
 }
