@@ -8,8 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -133,9 +131,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             width = getResources().getDimension(R.dimen.min_grid_item_width);
         }
 
-        DisplayMetrics m = getResources().getDisplayMetrics();
-        float scaledWidth = (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, m));
-        mListView.setColumnWidth((int) scaledWidth);
+        mListView.setColumnWidth((int) width);
         mListView.setNumColumns(GridView.AUTO_FIT);
 
         mListView.setAdapter(animatedAdapter != null ? animatedAdapter : adapter);

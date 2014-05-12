@@ -9,12 +9,17 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.network.UDPSending;
 import oly.netpowerctrl.network.Utils;
+import oly.netpowerctrl.utils.Icons;
 
 /**
  * Neighbour discover messages
  */
 class NeighbourDiscoverSending {
+    public static int icon_size_cache = -1;
     public static UDPSending.SendRawJob createDiscoverMessage() {
+        if (icon_size_cache == -1)
+            icon_size_cache = Icons.getAllIcons().length;
+
         ByteBuffer bb = ByteBuffer.allocate(200);
         bb.order(ByteOrder.BIG_ENDIAN);
         // Signature 8 Bytes
@@ -28,7 +33,7 @@ class NeighbourDiscoverSending {
         bb.putShort((short) r.deviceCollection.devices.size());
         bb.putShort((short) r.sceneCollection.scenes.size());
         bb.putShort((short) r.groupCollection.groups.size());
-        bb.putShort((short) 0);
+        bb.putShort((short) icon_size_cache);
 
         // We have 28 Bytes now.
 

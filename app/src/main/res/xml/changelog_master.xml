@@ -4,6 +4,9 @@
         version="4.2"
         versioncode="52">
         <change>Kopplung mit Nachbargeräten verbessert</change>
+        <change>Die GoogleDrive Backup Funktion speichert nun im öffentlichen Ordner in
+            PowerControlApp_Backup
+        </change>
     </release>
     <release
         version="4.1"
