@@ -115,9 +115,12 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
         udpReceiving = new NeighbourDiscoverReceiving(this);
         udpReceiving.start();
         advanceTimeRunnable.run();
+        // Reset icon size cache, will be set on next sending
+        NeighbourDiscoverSending.icon_size_cache = -1;
         broadcastSendJob = NeighbourDiscoverSending.createDiscoverMessage();
         if (!discoverIsRunning)
             sendDiscoverMessageRunnable.run();
+
 
         // Start tcp receiver
         NeighbourDataReceiveService.start(this);
