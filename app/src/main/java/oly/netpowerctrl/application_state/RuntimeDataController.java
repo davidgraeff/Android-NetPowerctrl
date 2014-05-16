@@ -39,7 +39,7 @@ public class RuntimeDataController {
     private final LoadStoreData loadStoreData = new LoadStoreData();
     private boolean initialDataQueryCompleted = false;
 
-    private final WeakHashMap<RuntimeDataControllerStateChanged, Boolean> observersStateChanged = new WeakHashMap<>();
+    private final WeakHashMap<RuntimeStateChanged, Boolean> observersStateChanged = new WeakHashMap<>();
     private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<>();
 
     private final List<DeviceObserverBase> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
@@ -81,25 +81,40 @@ public class RuntimeDataController {
         return ports;
     }
 
-    @SuppressWarnings("unused")
-    public void registerRuntimeDataControllerStateChanged(RuntimeDataControllerStateChanged o) {
+    /**
+     * @param o                                 The callback object
+     * @param notifyIfInitialDataQueryCompleted If the initial data query already finished, you can be
+     *                                          notified immediately. Depending on the result of the
+     *                                          callback method your object will either be registered
+     *                                          or not.
+     */
+    public void registerStateChanged(RuntimeStateChanged o, boolean notifyIfInitialDataQueryCompleted) {
+        if (notifyIfInitialDataQueryCompleted && initialDataQueryCompleted) {
+            // If the object return false we do not register it for further changes.
+            if (!o.onDataQueryFinished())
+                return;
+        }
         observersStateChanged.put(o, true);
     }
 
     @SuppressWarnings("unused")
-    public void unregisterRuntimeDataControllerStateChanged(RuntimeDataControllerStateChanged o) {
+    public void unregisterStateChanged(RuntimeStateChanged o) {
         observersStateChanged.remove(o);
     }
 
     public void notifyStateReloaded() {
-        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
-            o.onDataLoaded();
+        Iterator<RuntimeStateChanged> i = observersStateChanged.keySet().iterator();
+        while (i.hasNext())
+            if (!i.next().onDataLoaded())
+                i.remove();
     }
 
     void notifyStateQueryFinished() {
         initialDataQueryCompleted = true;
-        for (RuntimeDataControllerStateChanged o : observersStateChanged.keySet())
-            o.onDataQueryFinished();
+        Iterator<RuntimeStateChanged> i = observersStateChanged.keySet().iterator();
+        while (i.hasNext())
+            if (!i.next().onDataQueryFinished())
+                i.remove();
     }
 
     @SuppressWarnings("unused")
@@ -143,12 +158,6 @@ public class RuntimeDataController {
     }
 
     public void clear() {
-        //            Log.w("stopUseListener","ObserverConfigured: "+Integer.valueOf(observersStateChanged.size()).toString() +
-//                    " ObserverNew: "+Integer.valueOf(observersNew.size()).toString()+
-//                    " updateDevices: "+Integer.valueOf(updateDeviceStateList.size()).toString());
-//            for (RuntimeDataControllerStateChanged dq: observersStateChanged)
-//                Log.w("ObserverConfigured_",dq.getClass().toString());
-
         // There shouldn't be any device-listen observers anymore,
         // but we clear the list here nevertheless.
         for (DeviceObserverBase dq : updateDeviceStateList)

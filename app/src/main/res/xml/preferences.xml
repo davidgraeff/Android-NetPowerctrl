@@ -37,6 +37,20 @@
         android:defaultValue="@bool/use_dark_theme"
         android:summary="@string/preference_use_dark_theme_summary" />
 
+    <PreferenceCategory android:title="@string/extensions" />
+
+    <CheckBoxPreference
+        android:key="load_extensions"
+        android:title="@string/preference_load_extensions"
+        android:defaultValue="@bool/load_extensions"
+        android:summary="@string/preference_load_extensions_summary" />
+
+    <PreferenceScreen
+        android:key="show_extensions"
+        android:title="@string/show_extensions_in_market" />
+
+    <PreferenceCategory android:title="@string/preferences_category_save_energy" />
+
     <CheckBoxPreference
         android:key="animations_enabled"
         android:title="@string/preference_animations_enabled"
@@ -48,12 +62,6 @@
         android:title="@string/preference_notify_on_stop"
         android:defaultValue="@bool/notify_on_stop"
         android:summary="@string/preference_notify_on_stop_summary" />
-
-    <CheckBoxPreference
-        android:key="load_plugins"
-        android:title="@string/preference_load_plugins"
-        android:defaultValue="@bool/load_plugins"
-        android:summary="@string/preference_load_plugins_summary" />
 
     <CheckBoxPreference
         android:key="use_energy_saving_mode"

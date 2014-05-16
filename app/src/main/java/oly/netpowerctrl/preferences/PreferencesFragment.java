@@ -3,6 +3,8 @@ package oly.netpowerctrl.preferences;
 import android.app.Fragment;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -24,10 +26,12 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
     private static class WidgetData {
         CharSequence data;
         String prefName;
+        int widgetID;
 
-        private WidgetData(CharSequence data, String prefName) {
+        private WidgetData(CharSequence data, String prefName, int widgetID) {
             this.data = data;
             this.prefName = prefName;
+            this.widgetID = widgetID;
         }
     }
 
@@ -59,6 +63,18 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
         });
 
         //noinspection ConstantConditions
+        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                @SuppressWarnings("ConstantConditions")
+                Intent browse = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("market://search?q=pub:David Gräff&c=apps"));
+                getActivity().startActivity(browse);
+                return false;
+            }
+        });
+
+        //noinspection ConstantConditions
         findPreference("use_log_energy_saving_mode").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 if ((Boolean) newValue) {
@@ -74,22 +90,25 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
         ComponentName deviceWidgetWidget = new ComponentName(getActivity(),
                 DeviceWidgetProvider.class);
         //noinspection ConstantConditions
-        final int[] allWidgetIds = appWidgetManager.getAppWidgetIds(deviceWidgetWidget);
+        int[] allWidgetIds = appWidgetManager.getAppWidgetIds(deviceWidgetWidget);
         List<WidgetData> widgetDataList = new ArrayList<>();
-        int index = 0;
+
         for (int appWidgetId : allWidgetIds) {
             String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
             String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
+            if (port_uuid == null) {
+                Log.e("PREFERENCES", "Loading widget failed: " + String.valueOf(appWidgetId));
+                continue;
+            }
             DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(
-                    port_uuid == null ? null : UUID.fromString(port_uuid));
+                    UUID.fromString(port_uuid));
             if (port == null) {
-                Log.w("PREFERENCES", "Strange widget ID!");
+                Log.e("PREFERENCES", "Port for widget not found: " + String.valueOf(appWidgetId));
                 continue;
             }
             widgetDataList.add(new WidgetData(
                     port.device.DeviceName + ", " + port.getDescription(),
-                    prefName));
-            ++index;
+                    prefName, appWidgetId));
         }
 
         PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.PREF_widgets);
@@ -97,15 +116,14 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
         if (widgetDataList.isEmpty()) {
             getPreferenceScreen().removePreference(lp);
         } else {
-            for (int i = 0; i < widgetDataList.size(); ++i) {
-                final int widgetID = allWidgetIds[i];
+            for (final WidgetData aWidgetDataList : widgetDataList) {
                 //noinspection ConstantConditions
                 PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
                 assert s != null;
-                s.setKey(widgetDataList.get(i).prefName);
+                s.setKey(aWidgetDataList.prefName);
                 s.setFragment(WidgetPreferenceFragment.class.getName());
-                s.setTitle(widgetDataList.get(i).data);
-                s.setIcon(Icons.loadDrawable(getActivity(), Icons.uuidFromWidgetID(widgetID),
+                s.setTitle(aWidgetDataList.data);
+                s.setIcon(Icons.loadDrawable(getActivity(), Icons.uuidFromWidgetID(aWidgetDataList.widgetID),
                         Icons.IconType.WidgetIcon, Icons.IconState.StateOn,
                         Icons.getResIdForState(Icons.IconState.StateOn)));
                 lp.addPreference(s);
@@ -117,7 +135,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                         Fragment fragment = Fragment.instantiate(getActivity(), preference.getFragment());
                         Bundle b = new Bundle();
                         b.putString("key", preference.getKey());
-                        b.putInt("widgetId", widgetID);
+                        b.putInt("widgetId", aWidgetDataList.widgetID);
                         fragment.setArguments(b);
                         //noinspection ConstantConditions
                         getFragmentManager().beginTransaction().addToBackStack(null).

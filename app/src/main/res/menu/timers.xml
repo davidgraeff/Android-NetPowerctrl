@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_add_timer"
+        android:title="@string/menu_add_timer"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_add" />
+
+    <item
+        android:id="@+id/menu_remove_all_timer"
+        android:title="@string/menu_remove_all"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_delete" />
+
+    <item
+        android:id="@+id/menu_help"
+        android:title="@string/menu_help"
+        android:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_help" />
+</menu>

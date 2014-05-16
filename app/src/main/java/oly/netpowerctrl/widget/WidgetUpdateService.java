@@ -35,7 +35,7 @@ import oly.netpowerctrl.utils.Shortcuts;
  * Widget Update Service
  */
 public class WidgetUpdateService extends Service implements DeviceObserverResult, DeviceUpdate, ServiceReady {
-    private static final String LOG = "WidgetUpdateService";
+    private static final String TAG = "WidgetUpdateService";
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     private AppWidgetManager appWidgetManager;
@@ -82,12 +82,19 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         int[] allWidgetIds = getAllWidgetIDs();
         for (int appWidgetId : allWidgetIds) {
             String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
+            if (port_uuid == null) {
+                Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId));
+                setWidgetStateBroken(appWidgetId);
+                continue;
+            }
             DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(
-                    port_uuid == null ? null : UUID.fromString(port_uuid));
+                    UUID.fromString(port_uuid));
             if (port == null) {
                 setWidgetStateBroken(appWidgetId);
                 continue;
             }
+
+            // Log.e(TAG, "Load widget: "+String.valueOf(appWidgetId));
 
             allWidgets.append(appWidgetId, port);
             if (port.device.getUpdatedTime() > 0)

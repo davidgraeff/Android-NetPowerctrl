@@ -6,6 +6,6 @@
     android:minWidth="40dp"
     android:updatePeriodMillis="0"
     android:previewImage="@drawable/netpowerctrl"
-    android:configure="oly.netpowerctrl.widget.WidgetConfig"
+    android:configure="oly.netpowerctrl.widget.WidgetConfigActivity"
     android:widgetCategory="home_screen|keyguard"
     tools:ignore="UnusedAttribute" />

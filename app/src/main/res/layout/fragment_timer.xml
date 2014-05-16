@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/list_outer_padding"
+    android:paddingRight="@dimen/list_outer_padding">
+
+    <LinearLayout
+        android:id="@+id/wipPart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/wipPart_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:background="?item_selector"
+            android:padding="5dp"
+            android:text="Bei bestimmten Zeiten deine Steckdosen schalten kommt bald :) Vielleicht möchtest du in der Zeit deine Vorschläge an mich per E-Mail senden oder mir ein Bier spendieren." />
+
+        <Button
+            android:id="@+id/btnDonate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="Bier spendieren" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/list_timer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/empty_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:background="?item_selector"
+            android:text="Es sind noch keine Zeitschaltungen eingerichtet."
+            android:padding="5dp" />
+
+        <Button
+            android:id="@+id/btnChangeToDevices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/devices" />
+    </LinearLayout>
+
+</LinearLayout>

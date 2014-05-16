@@ -69,9 +69,9 @@ public class SharedPrefs {
     public static boolean getLoadExtensions() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.load_plugins);
+        boolean keep_widget_service_running = context.getResources().getBoolean(R.bool.load_extensions);
         try {
-            keep_widget_service_running = prefs.getBoolean("load_plugins", false);
+            keep_widget_service_running = prefs.getBoolean("load_extensions", false);
         } catch (Exception ignored) {
         }
         return keep_widget_service_running;

@@ -13,13 +13,13 @@
         android:gravity="left"
         android:layout_margin="5dp"
         android:padding="5dp"
-        android:paddingLeft="@dimen/devices_list_padding"
-        android:paddingRight="@dimen/devices_list_padding" />
+        android:paddingLeft="@dimen/list_outer_padding"
+        android:paddingRight="@dimen/list_outer_padding" />
 
     <ListView
         android:id="@+id/list"
-        android:paddingLeft="@dimen/devices_list_padding"
-        android:paddingRight="@dimen/devices_list_padding"
+        android:paddingLeft="@dimen/list_outer_padding"
+        android:paddingRight="@dimen/list_outer_padding"
         android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp" />
@@ -29,8 +29,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingLeft="@dimen/devices_list_padding"
-        android:paddingRight="@dimen/devices_list_padding"
+        android:paddingLeft="@dimen/list_outer_padding"
+        android:paddingRight="@dimen/list_outer_padding"
         android:gravity="center"
         android:padding="10dp"
         android:visibility="gone"

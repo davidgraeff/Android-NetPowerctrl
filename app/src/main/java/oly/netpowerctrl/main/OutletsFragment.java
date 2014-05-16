@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.backup.drive.GDriveFragment;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.DevicePortsExecuteAdapter;
@@ -41,11 +42,11 @@ import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.ChangeArgumentsFragment;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
 import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.gui.ChangeArgumentsFragment;
 
 /**
  */
@@ -55,7 +56,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private AlphaInAnimationAdapter animatedAdapter;
     private TextView hintText;
     private TextView emptyText;
-    private Button btnEmpty;
+    private Button btnChangeToDevices;
+    private Button btnChangeToBackup;
     private UUID groupFilter = null;
 
     public OutletsFragment() {
@@ -97,8 +99,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             groupFilter = null;
 
         if (isAdded()) {
-            if (btnEmpty != null)
-                btnEmpty.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+            if (btnChangeToDevices != null)
+                btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+            if (btnChangeToBackup != null)
+                btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
             if (emptyText != null)
                 emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
         }
@@ -326,9 +330,17 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }, 1000);
         }
 
-        btnEmpty = (Button) view.findViewById(R.id.btnChangeToDevices);
-        btnEmpty.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
-        btnEmpty.setOnClickListener(new View.OnClickListener() {
+        btnChangeToBackup = (Button) view.findViewById(R.id.btnChangeToBackup);
+        btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+        btnChangeToBackup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.instance.changeToFragment(GDriveFragment.class.getName());
+            }
+        });
+        btnChangeToDevices = (Button) view.findViewById(R.id.btnChangeToDevices);
+        btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+        btnChangeToDevices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 MainActivity.instance.changeToFragment(DevicesFragment.class.getName());

@@ -36,7 +36,7 @@
     <string name="menu_add_device">Add device</string>
     <string name="menu_add_scene">Add scene</string>
     <string name="menu_remove_scene">Delete</string>
-    <string name="menu_remove_all_scenes">Delete all</string>
+    <string name="menu_remove_all">Delete all</string>
     <string name="menu_edit_scene">Edit</string>
     <string name="menu_cancel">Cancel</string>
     <string name="menu_delete_all">Delete all</string>
@@ -133,8 +133,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_use_dark_theme">Dark theme</string>
     <string name="preference_use_dark_theme_summary">Switch between dark and light theme.</string>
     <string name="error_plugin_failed">Plugin failed: %1$s</string>
-    <string name="preference_load_plugins">Allow extensions</string>
-    <string name="preference_load_plugins_summary">Show controls from supported applications in this app.</string>
+    <string name="preference_load_extensions">Allow extensions</string>
+    <string name="preference_load_extensions_summary">Show controls from supported applications in this app.</string>
     <string name="error_widget_device_removed">Device removed!</string>
     <string name="widget_outlet_not_reachable">(not reachable)</string>
     <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
@@ -259,4 +259,11 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="menu_neighbour_push">Jetzt Daten senden</string>
     <string name="neighbour_pairing_removal_denied">Pairing removal denied</string>
     <string name="neighbour_data_received">Nachbardaten von $s empfangen</string>
+    <string name="drawer_timer">Zeitschaltung</string>
+    <string name="toBackup">Zu den Backups</string>
+    <string name="menu_add_timer">Automatischen Schaltvorgang hinzufügen</string>
+    <string name="help_timers">Hier kannst du Zeitschaltvorgänge einstellen. Jedes eingerichtete Gerät kann unterschiedlich viele und unterschiedlich mächtige Zeitschalter unterstützen, in der Regel sind 5 Zeitschaltvorgänge auf einem Gerät möglich. Alle darüber hinaus eingerichteten Zeitschaltungen sowie die Zeitschaltungen für Szenen werden von deinem Android Mobiltelefon oder Tablet ausgelöst. Dieses muss zum entsprechenm Zeitpunkt aktiviertes WLan haben und in Reichweite der Steckdosen sein, Ob ein Alarm auf dem Gerät oder über Android ausgelöst wird steht bei jedem Alarm Eintrag dabei.</string>
+    <string name="show_extensions_in_market">Zeige Erweiterungen im Play Store</string>
+    <string name="extensions">Erweiterungen</string>
+    <string name="preferences_category_save_energy">Akku schonen</string>
 </resources>
