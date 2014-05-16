@@ -3,7 +3,7 @@
 
     <style name="Theme.CustomLightTheme" parent="android:Theme.Holo.Light">
         <item name="drawer_item_background">#F3F3F4</item>
-        <item name="preferences_title_light">@color/text_light</item>
+        <item name="preferences_title_light">#66000000</item>
         <item name="android:windowIsTranslucent">false</item>
         <item name="item_selector">@drawable/item_selector_light</item>
         <item name="segment_button">@drawable/segment_button_light</item>
@@ -12,6 +12,7 @@
         <item name="segment_radio_right">@drawable/segment_radio_right_light</item>
         <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
+        <item name="android:actionBarStyle">@style/CustomLightThemeActionBar</item>
     </style>
 
     <style name="Theme.CustomDarkTheme" parent="android:Theme.Holo">
@@ -24,6 +25,7 @@
         <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
         <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list_dark</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_dark</item>
+        <item name="android:actionBarStyle">@style/CustomDarkThemeActionBar</item>
     </style>
 
     <style name="Theme.Transparent" parent="android:Theme.Translucent.NoTitleBar">
@@ -37,6 +39,15 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="CustomLightThemeActionBar" parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
+        <item name="android:background">@drawable/actionbar_background_textured</item>
+    </style>
+
+    <style name="CustomDarkThemeActionBar" parent="@android:style/Widget.Holo.ActionBar.Solid">
+        <item name="android:background">@drawable/actionbar_background_textured_dark</item>
     </style>
 
     <style name="Drawer" parent="@android:style/Widget.TextView" />

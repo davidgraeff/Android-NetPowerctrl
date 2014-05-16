@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.RuntimeDataControllerStateChanged;
+import oly.netpowerctrl.application_state.RuntimeStateChanged;
 import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
@@ -22,7 +22,7 @@ import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
 
 public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
-        DeviceUpdate, SeekBar.OnSeekBarChangeListener, RuntimeDataControllerStateChanged, SortCriteriaInterface {
+        DeviceUpdate, SeekBar.OnSeekBarChangeListener, RuntimeStateChanged, SortCriteriaInterface {
 
     // We block updates while moving the range slider
     private boolean blockUpdates = false;
@@ -54,25 +54,26 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     public void onPause() {
         NetpowerctrlApplication.getDataController().deviceCollection.unregisterDeviceObserver(this);
-        NetpowerctrlApplication.getDataController().unregisterRuntimeDataControllerStateChanged(this);
+        NetpowerctrlApplication.getDataController().unregisterStateChanged(this);
     }
 
     public void onResume() {
         NetpowerctrlApplication.getDataController().deviceCollection.registerDeviceObserver(this);
-        NetpowerctrlApplication.getDataController().registerRuntimeDataControllerStateChanged(this);
+        NetpowerctrlApplication.getDataController().registerStateChanged(this, false);
     }
 
     @Override
-    public void onDataLoaded() {
-
+    public boolean onDataLoaded() {
+        return true;
     }
 
     /**
      * Update view with outlets after a complete device query finished
      */
     @Override
-    public void onDataQueryFinished() {
+    public boolean onDataQueryFinished() {
         onDeviceUpdated(null, true);
+        return true;
     }
 
     @Override

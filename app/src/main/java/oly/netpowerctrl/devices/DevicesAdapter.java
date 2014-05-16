@@ -11,10 +11,10 @@ import android.widget.TextView;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.RuntimeDataControllerStateChanged;
+import oly.netpowerctrl.application_state.RuntimeStateChanged;
 import oly.netpowerctrl.network.DeviceUpdate;
 
-public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, RuntimeDataControllerStateChanged {
+public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, RuntimeStateChanged {
     private final LayoutInflater inflater;
     private final boolean showNewDevices;
     private DeviceCollection deviceCollection;
@@ -28,12 +28,12 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
 
     public void onPause() {
         deviceCollection.unregisterDeviceObserver(this);
-        NetpowerctrlApplication.getDataController().unregisterRuntimeDataControllerStateChanged(this);
+        NetpowerctrlApplication.getDataController().unregisterStateChanged(this);
         NetpowerctrlApplication.getDataController().unregisterNewDeviceObserver(this);
     }
 
     public void onResume() {
-        NetpowerctrlApplication.getDataController().registerRuntimeDataControllerStateChanged(this);
+        NetpowerctrlApplication.getDataController().registerStateChanged(this, false);
         onDataLoaded();
         if (showNewDevices) {
             NetpowerctrlApplication.getDataController().registerNewDeviceObserver(this);
@@ -150,14 +150,14 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     }
 
     @Override
-    public void onDataLoaded() {
+    public boolean onDataLoaded() {
         deviceCollection = NetpowerctrlApplication.getDataController().deviceCollection;
         deviceCollection.registerDeviceObserver(this);
-
+        return true;
     }
 
     @Override
-    public void onDataQueryFinished() {
-
+    public boolean onDataQueryFinished() {
+        return true;
     }
 }

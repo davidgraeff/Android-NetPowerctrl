@@ -110,12 +110,15 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     }
 
     private void reInitUI() {
+        FragmentManager m = getFragmentManager();
+        if (fragment_available != null && fragment_included != null)
+            m.beginTransaction().remove(fragment_available).remove(fragment_included).commit();
+
         // set content view, get references to widgets
         setContentView(R.layout.activity_create_scene);
         show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
         enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
 
-        FragmentManager m = getFragmentManager();
 
         // Show the included and available list for the scene. Both are fragments. Either in a
         // viewPager (small width) or both visible at the same time.

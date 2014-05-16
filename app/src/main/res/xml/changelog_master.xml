@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="5.0"
+        versioncode="55">
+        <change>Alarm/Zeitschaltungen einstellbar</change>
+    </release>
+    <release
+        version="4.4"
+        versioncode="54">
+        <change>Theme leicht verändert</change>
+        <change>GoogleDrive Backup erkennt eine fehlende Datenverbindung schneller</change>
+        <change>(Seltener) Absturz bei Widgetausführung behoben</change>
+        <change>Absturz bei Nachbarerkennung behoben</change>
+        <change>Startablauf der App verbessert (kann zu Abstürzen führen, Fehlerberichte
+            willkommen)
+        </change>
+        <change>Vorbereitung für Zeitschaltungen</change>
+    </release>
+    <release
+        version="4.3"
+        versioncode="53">
+        <change>Das Setzen von Widget Icons funktioniert nun auch bei etwas kaputten Launchern
+        </change>
+        <change>Steckdosen-Auswahlliste für das Anlegen eines Widgets wurde nicht immer gefüllt:
+            Behoben
+        </change>
+        <change>Absturz behoben, wenn mehrmals die Ansicht im Szene-Erstellen Dialog gedreht wurde
+        </change>
+    </release>
+    <release
         version="4.2"
         versioncode="52">
         <change>Kopplung mit Nachbargeräten verbessert</change>

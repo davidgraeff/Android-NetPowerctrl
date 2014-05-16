@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="pref_name_width">200sp</dimen>
-    <dimen name="devices_list_padding">25dp</dimen>
+    <dimen name="list_outer_padding">25dp</dimen>
+    <dimen name="list_inner_padding">10dp</dimen>
 </resources>

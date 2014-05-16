@@ -39,7 +39,7 @@
     <string name="menu_add_device">Neues Gerät</string>
     <string name="menu_add_scene">Neue Szene</string>
     <string name="menu_remove_scene">Entfernen</string>
-    <string name="menu_remove_all_scenes">Entferne alle Szenen</string>
+    <string name="menu_remove_all">Entferne alle Szenen</string>
     <string name="menu_edit_scene">Szene bearbeiten</string>
     <string name="menu_cancel">Abbruch</string>
     <string name="menu_delete_all">Alle löschen</string>
@@ -133,8 +133,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_use_dark_theme">Dunkles Thema</string>
     <string name="preference_use_dark_theme_summary">Zwischen hellem und dunklem Thema wechseln.</string>
     <string name="error_plugin_failed">Plugin Fehler: %1$s</string>
-    <string name="preference_load_plugins">Erlaube Erweiterungen</string>
-    <string name="preference_load_plugins_summary">Zeige Kontrollmöglichkeiten unterstützter Anwendungen in dieser App.</string>
+    <string name="preference_load_extensions">Erlaube Erweiterungen</string>
+    <string name="preference_load_extensions_summary">Zeige Kontrollmöglichkeiten unterstützter Anwendungen in dieser App.</string>
     <string name="error_widget_device_removed">Gerät entfernt!</string>
     <string name="widget_outlet_not_reachable">(nicht erreichbar)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
@@ -198,7 +198,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="network_unreachable">Keine Netzwerkverbindung: Energiesparmodus.</string>
     <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombineren. Zuerst musst du aber Geräte einrichten.</string>
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Benutze den Plus-Button um ein Gerät zu erstellen, was nicht automatisch gefunden worden ist.\n\nDu musst auf deinen Geräten UDP eingeschaltet haben!</string>
-    <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten. Über das Menü, welches du mit einem Fingerwisch von links aufmachst kannst du danach zur Steckdosenübersicht zurück.</string>
+    <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten. Über das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurück.</string>
     <string name="preference_animations_enabled">Animationen</string>
     <string name="preference_animations_enabled_summary">Schaltet Listen- und Rasteranimationen ein und aus.</string>
     <string name="energy_saving_mode_log">Logbuch</string>
@@ -262,4 +262,11 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="menu_neighbour_push">Jetzt Daten senden</string>
     <string name="neighbour_pairing_removal_denied">Pairing removal denied</string>
     <string name="neighbour_data_received">Nachbardaten von $s empfangen</string>
+    <string name="drawer_timer">Zeitschaltung</string>
+    <string name="toBackup">Zu den Backups</string>
+    <string name="menu_add_timer">Automatischen Schaltvorgang hinzufügen</string>
+    <string name="help_timers">Hier kannst du Zeitschaltvorgänge einstellen. Jedes eingerichtete Gerät kann unterschiedlich viele und unterschiedlich mächtige Zeitschalter unterstützen.\n\nAnel Geräte bieten i.d.R. 4 kombinierte An/Aus Zeitschaltvorgänge.\n\nAlle darüber hinaus eingerichteten Zeitschaltungen sowie die Zeitschaltungen für Szenen werden von deinem Android Mobiltelefon oder Tablet ausgelöst. Dieses muss zum entsprechendem Zeitpunkt aktiviertes WLan haben und in Reichweite der Steckdosen sein. Die App muss einmalig nach einem Neustart aufgerufen werden, damit die Zeiten beim Betriebssystem angemeldet werden können.\nOb ein Alarm auf dem Gerät oder über Android ausgelöst wird steht bei jedem Alarm Eintrag dabei.</string>
+    <string name="show_extensions_in_market">Zeige Erweiterungen im Play Store</string>
+    <string name="extensions">Erweiterungen</string>
+    <string name="preferences_category_save_energy">Akku schonen</string>
 </resources>

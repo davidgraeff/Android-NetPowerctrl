@@ -70,15 +70,16 @@ public class FeedbackDialog extends DialogFragment {
                         getActivity().startActivity(browse);
                     }
                     break;
-                    case 2: {
+                    case 2: { // github
                         @SuppressWarnings("ConstantConditions")
                         Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/davidgraeff/Android-NetPowerctrl"));
                         getActivity().startActivity(browse);
                     }
                     break;
-                    case 3: {
+                    case 3: { // market
                         @SuppressWarnings("ConstantConditions")
-                        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getActivity().getPackageName()));
+                        Intent browse = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("market://details?id=" + getActivity().getPackageName()));
                         getActivity().startActivity(browse);
                     }
                     break;

@@ -3,5 +3,5 @@
     <item android:state_pressed="true" android:drawable="@drawable/long_click_transition_dark" />
     <item android:state_focused="true" android:drawable="@drawable/long_click_transition_dark" />
     <item android:state_selected="true" android:drawable="@drawable/long_click_transition_dark" />
-    <item android:drawable="@android:drawable/dialog_holo_dark_frame" />
+    <item android:drawable="@drawable/card_dark" />
 </selector>

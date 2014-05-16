@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.backup.neighbours.NeighbourDataReceiveService;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.transfer.NeighbourDataReceiveService;
 import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.ShowToast;
 
@@ -77,6 +77,10 @@ public class NetpowerctrlApplication extends Application {
         }
     }
 
+    /**
+     * We do not do any loading or starting when the application is loaded.
+     * This can be requested by using useListener()
+     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -84,19 +88,6 @@ public class NetpowerctrlApplication extends Application {
         ACRA.init(this);
         instance = this;
         dataController = new RuntimeDataController();
-
-        // Start listen service and listener for wifi changes
-        mWaitForService = true;
-        Thread t = new Thread() {
-            public void run() {
-                dataController.loadData(false);
-                Intent intent = new Intent(instance, NetpowerctrlService.class);
-                startService(intent);
-                bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-                NeighbourDataReceiveService.startAutoSync();
-            }
-        };
-        t.start();
     }
 
     private final Handler stopServiceHandler = new Handler();
@@ -125,9 +116,16 @@ public class NetpowerctrlApplication extends Application {
         // Service is not running anymore, restart it
         if (mDiscoverService == null && !mWaitForService) {
             mWaitForService = true;
-            Intent intent = new Intent(instance, NetpowerctrlService.class);
-            startService(intent);
-            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+            Thread t = new Thread() {
+                public void run() {
+                    dataController.loadData(false);
+                    Intent intent = new Intent(instance, NetpowerctrlService.class);
+                    startService(intent);
+                    bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+                    NeighbourDataReceiveService.startAutoSync();
+                }
+            };
+            t.start();
         }
     }
 

@@ -12,7 +12,7 @@ import java.util.Iterator;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.SegmentedRadioGroup;
+import oly.netpowerctrl.utils.gui.SegmentedRadioGroup;
 
 public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
     private DevicePortListItem master = null;

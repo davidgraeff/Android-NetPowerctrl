@@ -34,11 +34,11 @@ import java.lang.reflect.Field;
 import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.navigation_drawer.DrawerController;
+import oly.netpowerctrl.backup.drive.GDrive;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.transfer.GDrive;
-import oly.netpowerctrl.transfer.NFC;
 import oly.netpowerctrl.utils.Donate;
+import oly.netpowerctrl.utils.NFC;
+import oly.netpowerctrl.utils.gui.DrawerController;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
     public static MainActivity instance = null;
@@ -107,10 +107,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
             // Ignore
         }
 
-        // enable ActionBar app icon to behave as action to toggle nav drawer
-        //noinspection ConstantConditions
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        checkUseHomeButton();
 
         // Delayed loading of drawer and nfc
         new Handler().postDelayed(new Runnable() {
@@ -198,12 +195,22 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
             int lastPos = mDrawer.drawerLastItemPosition;
             mDrawer.createDrawer(MainActivity.this, false);
             mDrawer.selectItem(lastPos, true);
+            checkUseHomeButton();
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setContentView(R.layout.activity_main);
             int lastPos = mDrawer.drawerLastItemPosition;
             mDrawer.createDrawer(MainActivity.this, false);
             mDrawer.selectItem(lastPos, true);
+            checkUseHomeButton();
         }
+    }
+
+    private void checkUseHomeButton() {
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
+        //noinspection ConstantConditions
+        getActionBar().setDisplayHomeAsUpEnabled(!has_two_panes);
+        getActionBar().setHomeButtonEnabled(!has_two_panes);
     }
 
     @Override
