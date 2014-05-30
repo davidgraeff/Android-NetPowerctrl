@@ -59,7 +59,7 @@ public class HttpThreadPool {
     }
 
     public static interface HTTPCallback<T> {
-        void httpResponse(T additional, boolean callback_success, String callback_error_message);
+        void httpResponse(T additional, boolean callback_success, String response_message);
     }
 
     public static <T> Runnable createHTTPRunner(final DeviceInfo device, final String getData,
@@ -79,7 +79,8 @@ public class HttpThreadPool {
                     con.setRequestMethod("POST");
                     con.setRequestProperty("Authorization", "Basic " +
                             Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));
-                    con.getOutputStream().write(postData.getBytes());
+                    if (postData != null)
+                        con.getOutputStream().write(postData.getBytes());
                     con.getOutputStream().flush();
                     switch (con.getResponseCode()) {
                         case 200:

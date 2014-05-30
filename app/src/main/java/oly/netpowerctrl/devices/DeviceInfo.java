@@ -72,7 +72,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 //    }
 
     private final Semaphore lock = new Semaphore(1);
-    public boolean PreferTCP;
+    public boolean PreferHTTP;
 
     private DeviceInfo(String pluginID) {
         this.pluginID = pluginID;
@@ -82,7 +82,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         UserName = "";
         Password = "";
         DefaultPorts = true;
-        PreferTCP = false;
+        PreferHTTP = false;
         SendPort = -1;
         ReceivePort = -1;
         HttpPort = 80;
@@ -154,8 +154,9 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
                 case "DefaultPorts":
                     di.DefaultPorts = reader.nextBoolean();
                     break;
-                case "PreferTCP":
-                    di.PreferTCP = reader.nextBoolean();
+                case "PreferTCP": // legacy
+                case "PreferHTTP":
+                    di.PreferHTTP = reader.nextBoolean();
                     break;
                 case "SendPort":
                     di.SendPort = reader.nextInt();
@@ -237,14 +238,18 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     }
 
     /**
+     * Copy values from another device.
+     *
      * @param other Another DeviceInfo object from where to copy data from.
-     * @return Return true if this object copied newer values of "other".
+     * @return Return true if this object copied newer values of "other" or if setHasChanged
+     * has been called before.
      */
     public boolean copyFreshValues(DeviceInfo other) {
         updated = other.updated;
 
         if (other != this) {
-            hasChanged = copyFreshDevicePorts(other.DevicePorts);
+            // Use or for the first assignment, to allow setHasChanged to be called on the device
+            hasChanged |= copyFreshDevicePorts(other.DevicePorts);
 
             hasChanged |= !HostName.equals(other.HostName);
             HostName = other.HostName;
@@ -356,7 +361,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.name("Password").value(Password);
         writer.name("Temperature").value(Temperature);
         writer.name("Version").value(Version);
-        writer.name("PreferTCP").value(PreferTCP);
+        writer.name("PreferHTTP").value(PreferHTTP);
         writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("SendPort").value(SendPort);
         writer.name("ReceivePort").value(ReceivePort);

@@ -491,16 +491,16 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void devicePort_renamed(DevicePort oi, boolean success, String error_message) {
-        if (progressDialog == null)
-            return;
-
-        progressDialog.dismiss();
-        progressDialog = null;
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
 
         if (!success) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(), getString(R.string.renameFailed, error_message), Toast.LENGTH_SHORT).show();
         } else {
+            oi.device.setHasChanged();
             new DeviceQuery(null, oi.device);
         }
     }

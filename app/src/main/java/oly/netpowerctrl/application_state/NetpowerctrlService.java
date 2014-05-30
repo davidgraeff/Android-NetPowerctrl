@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.main.MainActivity;
@@ -225,6 +226,17 @@ public class NetpowerctrlService extends Service {
         NetpowerctrlApplication.instance.sendBroadcast(i);
     }
 
+    public List<Alarm> getAllAlarms() {
+        List<Alarm> alarms = new ArrayList<>();
+        for (PluginInterface pluginInterface : plugins) {
+            List<Alarm> plugin_alarms = pluginInterface.getAlarms();
+            if (plugin_alarms != null)
+                alarms.addAll(plugin_alarms);
+        }
+
+        return alarms;
+    }
+
     public void remove(PluginRemote plugin) {
         plugins.remove(plugin);
     }
@@ -293,7 +305,8 @@ public class NetpowerctrlService extends Service {
 
             @Override
             public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-                NetpowerctrlApplication.getDataController().notifyStateQueryFinished();
+                RuntimeDataController c = NetpowerctrlApplication.getDataController();
+                c.notifyStateQueryFinished();
                 if (callback != null)
                     callback.onObserverJobFinished(timeout_devices);
 
@@ -301,7 +314,7 @@ public class NetpowerctrlService extends Service {
                     return;
 
                 // Do we need to go into network reduced mode?
-                if (timeout_devices.size() == NetpowerctrlApplication.getDataController().countNetworkDevices()) {
+                if (timeout_devices.size() == c.countNetworkDevices(NetpowerctrlService.this)) {
                     if (SharedPrefs.logEnergySaveMode())
                         Logging.appendLog("Energiesparen an: Keine Geräte gefunden");
                     finish();

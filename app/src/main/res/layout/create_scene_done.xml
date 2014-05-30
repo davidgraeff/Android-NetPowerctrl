@@ -32,6 +32,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:scaleType="fitCenter"
-        android:src="?android:attr/actionModeCloseDrawable"
+        android:src="@android:drawable/ic_menu_save"
         android:visibility="gone" />
 </LinearLayout>

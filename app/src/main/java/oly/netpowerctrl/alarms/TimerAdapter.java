@@ -1,4 +1,4 @@
-package oly.netpowerctrl.groups;
+package oly.netpowerctrl.alarms;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -12,23 +12,26 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.Icons;
 
-public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroupsUpdated {
+/**
+ * List all alarms of the timer controller
+ */
+public class TimerAdapter extends BaseAdapter implements TimerController.IAlarmsUpdated {
     private final LayoutInflater inflater;
-    private final GroupCollection groupCollection;
+    private final TimerController controller;
 
-    public GroupsAdapter(Context context, GroupCollection data) {
+    public TimerAdapter(Context context, TimerController controller) {
         inflater = LayoutInflater.from(context);
-        groupCollection = data;
-        groupCollection.registerObserver(this);
+        this.controller = controller;
+        controller.registerObserver(this);
     }
 
     public void finish() {
-        groupCollection.unregisterObserver(this);
+        controller.unregisterObserver(this);
     }
 
     @Override
     public int getCount() {
-        return groupCollection.length();
+        return controller.getCount();
     }
 
     @Override
@@ -38,12 +41,12 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
 
     @Override
     public Object getItem(int position) {
-        return groupCollection.groups.get(position);
+        return controller.getItem(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return groupCollection.groups.get(position).id;
+        return controller.getItem(position).id;
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -52,7 +55,7 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
             convertView = inflater.inflate(R.layout.grid_icon_item, parent);
         }
 
-        GroupCollection.GroupItem data = groupCollection.groups.get(position);
+        Alarm data = controller.getItem(position);
 
         assert convertView != null;
         TextView tvName = (TextView) convertView.findViewById(R.id.text1);
@@ -69,7 +72,7 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
     }
 
     @Override
-    public void groupsUpdated(boolean addedOrRemoved) {
+    public void alarmsUpdated(boolean addedOrRemoved) {
         notifyDataSetChanged();
     }
 }

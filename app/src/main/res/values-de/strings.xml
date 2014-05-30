@@ -30,8 +30,8 @@
     <string name="device_name">Name</string>
     <string name="device_ip">Hostname or IP</string>
     <string name="device_default_ports">Standard UDP-Ports?</string>
-    <string name="device_send_udp">UDP-Port zum Senden</string>
-    <string name="device_recv_udp">UDP-Port zum Empfangen</string>
+    <string name="device_send_udp_port">UDP-Port zum Senden</string>
+    <string name="device_receive_udp_port">UDP-Port zum Empfangen</string>
     <string name="device_username">Benutzername</string>
     <string name="device_password">Passwort</string>
     <string name="device_save_without_test">Das Gerät ist mit diesen Einstellungen noch nicht getestet worden. Dennoch speichern?</string>
@@ -217,7 +217,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_wakeup_energy_saving_mode">Aufwachen aus Energiesparmodus</string>
     <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
     <string name="scene_remove_item">Remove item from scene</string>
-    <string name="device_prefer_tcp">HTTP statt UDP</string>
+    <string name="device_prefer_http">HTTP statt UDP</string>
     <string name="gDrive_backup">Sicherung bei Google Drive</string>
     <string name="neighbours_not_found">Keine Nachbargeräte gefunden. Bei Nachbargeräten ebenfalls in diesen Bildschirm wechseln.
 
@@ -269,4 +269,15 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="show_extensions_in_market">Zeige Erweiterungen im Play Store</string>
     <string name="extensions">Erweiterungen</string>
     <string name="preferences_category_save_energy">Akku schonen</string>
+    <string name="device_connection_preferences">Verbindungseinstellungen</string>
+    <string name="device_udp">UDP Verbindung</string>
+    <string name="device_http">HTTP</string>
+    <string name="device_http_port">HTTP Port</string>
+    <string name="device_name_summary">Der Name für die Geräteanzeige in der App. Der Name wird für die Verbindung nicht benötigt und kann frei gewählt werden.</string>
+    <string name="device_username_summary">Der Benutzername für das Gerät. Auf der Webseite des Geräts können bis zu acht Benutzer mit unterschiedlichen Zugriffsrechten eingerichtet werden.</string>
+    <string name="device_password_summary">Das Gerätepasswort. Das Passwort wird unverschlüsselt über das Netzwerk geschickt!</string>
+    <string name="device_ip_summary">Die IP-Adresse oder der DNS-Name des Geräts.</string>
+    <string name="device_prefer_http_summary">UDP funktioniert nur zuverlässig bis zum nächsten Router (lokales Netzwerk). HTTP ist langsamer, eignet sich für die Steuerung aus dem Internet aber besser.</string>
+    <string name="device_default_ports_summary">Die Standard-Ports aus den Einstellungen werden benutzt.</string>
+    <string name="device_http_port_summary">Der HTTP Port des Geräts. Das ist der selbe, welcher auch für den Webzugriff genutzt wird.</string>
 </resources>

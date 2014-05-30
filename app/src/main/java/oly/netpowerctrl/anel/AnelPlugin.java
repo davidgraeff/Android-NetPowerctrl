@@ -4,6 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
+
+import java.io.IOException;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -15,6 +23,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
@@ -36,12 +45,12 @@ final public class AnelPlugin implements PluginInterface {
     private static final byte[] requestMessage = "wer da?\r\n".getBytes();
     private static final HttpThreadPool.HTTPCallback<DeviceInfo> receiveCtrlHtml = new HttpThreadPool.HTTPCallback<DeviceInfo>() {
         @Override
-        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
+        public void httpResponse(DeviceInfo device, boolean callback_success, String response_message) {
             if (!callback_success) {
-                device.setNotReachable(callback_message);
+                device.setNotReachable(response_message);
                 NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
             } else {
-                String[] data = callback_message.split(";");
+                String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
                     device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
                 } else {
@@ -76,9 +85,9 @@ final public class AnelPlugin implements PluginInterface {
      */
     private static final HttpThreadPool.HTTPCallback<DeviceInfo> receiveSwitchResponseHtml = new HttpThreadPool.HTTPCallback<DeviceInfo>() {
         @Override
-        public void httpResponse(DeviceInfo device, boolean callback_success, String callback_message) {
+        public void httpResponse(DeviceInfo device, boolean callback_success, String response_message) {
             if (!callback_success) {
-                device.setNotReachable(callback_message);
+                device.setNotReachable(response_message);
                 NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
             } else
                 HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(device, "strg.cfg", "", device, false, receiveCtrlHtml));
@@ -115,7 +124,7 @@ final public class AnelPlugin implements PluginInterface {
         if (service == null)
             return;
 
-        if (di.PreferTCP) {
+        if (di.PreferHTTP) {
             // Use Http instead of UDP for sending. For each batch command we will send a single http request
             for (Scene.PortAndCommand c : command_list) {
                 DevicePort port = c.port;
@@ -320,7 +329,7 @@ final public class AnelPlugin implements PluginInterface {
             bValue = port.current_value <= 0;
 
         // Use Http instead of UDP for sending. For each command we will send a single http request
-        if (port.device.PreferTCP) {
+        if (port.device.PreferHTTP) {
             // The http interface can only toggle. If the current state is the same as the command state
             // then we request values instead of sending a command.
             if (command != DevicePort.TOGGLE && port.current_value == command)
@@ -382,7 +391,7 @@ final public class AnelPlugin implements PluginInterface {
         if (service == null)
             return;
 
-        if (di.PreferTCP) {
+        if (di.PreferHTTP) {
             HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(di, "strg.cfg", "", di, false, receiveCtrlHtml));
         } else {
             UDPSending udpSending = service.getUDPSending();
@@ -394,27 +403,155 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void rename(final DevicePort port, final String new_name, final DevicePortRenamed callback) {
-        final String new_name_encoded;
-        try {
-            new_name_encoded = URLEncoder.encode(new_name, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            return;
-        }
-        String postData = "TN=" + new_name_encoded + "&TS=Speichern";
-        String getData = "dd.htm?DD" + String.valueOf(port.id);
+    public List<Alarm> getAlarms() {
+        List<Alarm> alarms = new ArrayList<>();
 
-        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, postData,
+        return alarms;
+    }
+
+    /**
+     * Parses a http response of dd.htm and construct the HTTP POST data to send to dd.htm, depending on the
+     * methods arguments.
+     *
+     * @param response_message The http response message to parse the old values from
+     * @param newName          New name or null for the old value
+     * @param newAlarm0        New alarm (like: T10=1234567&T20=00:00&T30=23:59) or null for the old value
+     * @param newAlarm1        New alarm (like: T11=1234567&T21=00:00&T31=23:59) or null for the old value
+     * @param newAlarm2        New alarm (like: T12=1234567&T22=00:00&T32=23:59) or null for the old value
+     * @param newAlarm3        New alarm (like: T13=1234567&T23=00:00&T33=23:59) or null for the old value
+     * @param newAlarm4        New alarm (like: T14=1234567&T24=00:00&T34=23:59) or null for the old value
+     * @return Return the new data for a HTTP POST.
+     * @throws SAXException
+     * @throws IOException
+     */
+    private String parseHttpResponseData(String response_message,
+                                         final String newName, final String newAlarm0,
+                                         final String newAlarm1, final String newAlarm2,
+                                         final String newAlarm3, final String newAlarm4) throws SAXException, IOException {
+
+        final String[] complete_post_data = {""};
+
+        XMLReader parser = XMLReaderFactory.createXMLReader("org.ccil.cowan.tagsoup.Parser");
+        org.xml.sax.ContentHandler handler = new DefaultHandler() {
+            @SuppressWarnings("deprecation")
+            @Override
+            public void startElement(java.lang.String uri,
+                                     java.lang.String localName,
+                                     java.lang.String qName,
+                                     org.xml.sax.Attributes attributes) throws org.xml.sax.SAXException {
+                if (!qName.equals("input"))
+                    return;
+                String name = attributes.getValue("name");
+                String value = attributes.getValue("value");
+                String checked = attributes.getValue("checked");
+
+                if (name == null)
+                    return;
+
+                if (checked != null && (
+                        (name.equals("T00") && newAlarm0 == null) ||
+                                (name.equals("T01") && newAlarm1 == null) ||
+                                (name.equals("T02") && newAlarm2 == null) ||
+                                (name.equals("T03") && newAlarm3 == null) ||
+                                (name.equals("T04") && newAlarm4 == null))) {
+                    complete_post_data[0] += name + "on" + "&";
+                    return;
+                }
+
+                if (value == null)
+                    return;
+
+                if (checked != null && name.equals("TF")) {
+                    complete_post_data[0] += name + "=" + value + "&";
+                    return;
+                }
+
+                if (name.equals("T4") ||
+                        (name.equals("TN") && newName == null) ||
+                        (name.equals("T10") || name.equals("T20") || name.equals("T30") && newAlarm0 == null) ||
+                        (name.equals("T11") || name.equals("T21") || name.equals("T31") && newAlarm1 == null) ||
+                        (name.equals("T12") || name.equals("T22") || name.equals("T32") && newAlarm2 == null) ||
+                        (name.equals("T13") || name.equals("T23") || name.equals("T33") && newAlarm3 == null) ||
+                        (name.equals("T14") || name.equals("T24") || name.equals("T34") && newAlarm4 == null)
+                        )
+                    complete_post_data[0] += name + "=" + URLEncoder.encode(value) + "&";
+            }
+        };
+        parser.setContentHandler(handler);
+        parser.parse(new InputSource(new StringReader(response_message)));
+
+        if (newName != null)
+            complete_post_data[0] += "TN=" + URLEncoder.encode(newName, "utf-8") + "&";
+        if (newAlarm0 != null)
+            complete_post_data[0] += "T00=on&" + URLEncoder.encode(newAlarm0, "utf-8") + "&";
+        if (newAlarm1 != null)
+            complete_post_data[0] += "T01=on&" + URLEncoder.encode(newAlarm1, "utf-8") + "&";
+        if (newAlarm2 != null)
+            complete_post_data[0] += "T02=on&" + URLEncoder.encode(newAlarm2, "utf-8") + "&";
+        if (newAlarm3 != null)
+            complete_post_data[0] += "T03=on&" + URLEncoder.encode(newAlarm3, "utf-8") + "&";
+        if (newAlarm4 != null)
+            complete_post_data[0] += "T04=on&" + URLEncoder.encode(newAlarm4, "utf-8") + "&";
+
+        return complete_post_data[0] + "TS=Speichern";
+    }
+
+    /**
+     * Renaming is done via http and the dd.htm page on the ANEL devices.
+     *
+     * @param port     The device port to rename.
+     * @param new_name The new name
+     * @param callback A callback for the done/failed message.
+     */
+    @Override
+    public void rename(final DevicePort port, final String new_name, final DevicePortRenamed callback) {
+        // First call the dd.htm page to get all current values (we only want to change one of those
+        // and have to set all the others to the same values as before)
+        final String getData = "dd.htm?DD" + String.valueOf(port.id);
+
+        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, null,
                 port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                     @Override
-                    public void httpResponse(DevicePort port, boolean callback_success, String callback_error_message) {
-                        if (callback_success) {
-                            port.setDescription(new_name_encoded);
+                    public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
+                        if (!callback_success) {
+                            callback.devicePort_renamed(port, false, response_message);
+                            return;
                         }
-                        callback.devicePort_renamed(port, callback_success, callback_error_message);
+
+                        String postData;
+                        // Parse received web page
+                        try {
+                            postData = parseHttpResponseData(response_message, new_name, null, null, null, null, null);
+                        } catch (UnsupportedEncodingException e) {
+                            callback.devicePort_renamed(port, false, "url_encode failed");
+                            return;
+                        } catch (SAXException e) {
+                            e.printStackTrace();
+                            callback.devicePort_renamed(port, false, "Html Parsing failed");
+                            return;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            callback.devicePort_renamed(port, false, "Html IO Parsing failed");
+                            return;
+                        }
+
+                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, postData,
+                                port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                                    @Override
+                                    public void httpResponse(DevicePort port, boolean callback_success,
+                                                             String response_message) {
+                                        if (callback_success) {
+                                            port.setDescription(new_name);
+                                        }
+                                        callback.devicePort_renamed(port, callback_success, response_message);
+                                    }
+                                }
+                        ));
                     }
                 }
         ));
+
+
     }
 
     @Override

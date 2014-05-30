@@ -19,12 +19,12 @@ import android.widget.ListView;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.alarms.TimerFragment;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
 import oly.netpowerctrl.backup.neighbours.NeighbourFragment;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackDialog;
 import oly.netpowerctrl.main.OutletsFragment;
-import oly.netpowerctrl.main.TimerFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.ScenesFragment;

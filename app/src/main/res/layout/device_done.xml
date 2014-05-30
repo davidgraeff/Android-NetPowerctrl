@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingStart="8dip"
+    android:layout_width="wrap_content"
+    android:layout_weight="1"
+    android:gravity="right"
+    android:orientation="horizontal"
+    android:layout_gravity="right"
+    android:layout_height="match_parent"
+    android:layout_marginEnd="5dip">
+
+    <Button
+        android:id="@+id/action_mode_close_button"
+        style="?android:attr/actionModeCloseButtonStyle"
+        android:textAppearance="?android:attr/actionMenuTextAppearance"
+        android:textColor="?android:attr/actionMenuTextColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:scaleType="fitCenter"
+        android:drawableLeft="?android:attr/actionModeCloseDrawable"
+        android:text="@string/menu_cancel" />
+
+    <Button
+        android:id="@+id/action_mode_test_button"
+        style="?android:attr/actionModeCloseButtonStyle"
+        android:textAppearance="?android:attr/actionMenuTextAppearance"
+        android:textColor="?android:attr/actionMenuTextColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:scaleType="fitCenter"
+        android:text="@string/device_test" />
+
+    <Button
+        android:id="@+id/action_mode_save_button"
+        style="?android:attr/actionModeCloseButtonStyle"
+        android:textAppearance="?android:attr/actionMenuTextAppearance"
+        android:textColor="?android:attr/actionMenuTextColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:scaleType="fitCenter"
+        android:drawableLeft="@android:drawable/ic_menu_save"
+        android:text="@string/save" />
+</LinearLayout>
