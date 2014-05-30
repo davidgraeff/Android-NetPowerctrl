@@ -1,4 +1,4 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl.alarms;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -16,6 +16,7 @@ import android.widget.PopupMenu;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.DevicesFragment;
+import oly.netpowerctrl.main.MainActivity;
 
 public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClickListener {
 
@@ -42,7 +43,11 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
         });
 
         View empty = view.findViewById(android.R.id.empty);
-        ((ListView) view.findViewById(R.id.list_timer)).setEmptyView(empty);
+        ListView l = (ListView) view.findViewById(R.id.list_timer);
+        l.setEmptyView(empty);
+        TimerAdapter timerAdapter = new TimerAdapter(getActivity(),
+                NetpowerctrlApplication.getDataController().timerController);
+        l.setAdapter(timerAdapter);
 
         Button btnChangeToDevices = (Button) view.findViewById(R.id.btnChangeToDevices);
         boolean hasDevices = NetpowerctrlApplication.getDataController().deviceCollection != null && NetpowerctrlApplication.getDataController().deviceCollection.hasDevices();

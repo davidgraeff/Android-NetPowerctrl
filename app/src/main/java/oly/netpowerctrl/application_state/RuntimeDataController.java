@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
@@ -36,13 +37,15 @@ public class RuntimeDataController {
     public DeviceCollection deviceCollection;
     public GroupCollection groupCollection;
     public SceneCollection sceneCollection;
+    public TimerController timerController;
     private final LoadStoreData loadStoreData = new LoadStoreData();
     private boolean initialDataQueryCompleted = false;
 
     private final WeakHashMap<RuntimeStateChanged, Boolean> observersStateChanged = new WeakHashMap<>();
     private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<>();
 
-    private final List<DeviceObserverBase> updateDeviceStateList = Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
+    private final List<DeviceObserverBase> updateDeviceStateList =
+            Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
 
     /**
      * Call this to reload all data from disk. This is useful after NFC/Neighbour/GDrive sync.
@@ -54,6 +57,7 @@ public class RuntimeDataController {
         groupCollection = loadStoreData.readGroups();
         sceneCollection = loadStoreData.readScenes();
         deviceCollection = loadStoreData.readDevices();
+        timerController = new TimerController();
         SharedPrefs.setCurrentPreferenceVersion();
         if (notifyObservers)
             notifyStateReloaded();
@@ -287,12 +291,16 @@ public class RuntimeDataController {
         PluginInterface remote = port.device.getPluginInterface(NetpowerctrlApplication.getService());
         if (remote != null) {
             remote.rename(port, new_name, callback);
-            if (callback != null)
-                callback.devicePort_renamed(port, true, null);
         } else if (callback != null)
             callback.devicePort_renamed(port, false, NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
     }
 
+    /**
+     * Notice: Only call this method if the NetpowerctrlService service is running!
+     *
+     * @param scene    The scene to execute
+     * @param callback The callback for the execution-done messages
+     */
     public void execute(Scene scene, ExecutionFinished callback) {
         List<PluginInterface> pluginInterfaces = new ArrayList<>();
 
@@ -323,6 +331,13 @@ public class RuntimeDataController {
         }
     }
 
+    /**
+     * Notice: Only call this method if the NetpowerctrlService service is running!
+     *
+     * @param port     The device port
+     * @param command  The command to execute
+     * @param callback The callback for the execution-done messages
+     */
     public void execute(final DevicePort port, final int command, final ExecutionFinished callback) {
         PluginInterface remote = port.device.getPluginInterface(NetpowerctrlApplication.getService());
         if (remote != null) {
@@ -359,10 +374,10 @@ public class RuntimeDataController {
     }
 
 
-    public int countNetworkDevices() {
+    public int countNetworkDevices(NetpowerctrlService service) {
         int i = 0;
         for (DeviceInfo di : deviceCollection.devices)
-            if (di.isNetworkDevice(NetpowerctrlApplication.getService())) ++i;
+            if (di.isNetworkDevice(service)) ++i;
         return i;
     }
 }

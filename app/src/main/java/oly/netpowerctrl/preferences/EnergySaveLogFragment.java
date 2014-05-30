@@ -24,12 +24,13 @@ import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 import oly.netpowerctrl.utils.Logging;
 
 public class EnergySaveLogFragment extends ListFragment {
     private ArrayAdapter<String> arrayAdapter;
     private final ArrayList<String> listItems = new ArrayList<>();
-    private CharSequence title_before;
+    DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
 
     public EnergySaveLogFragment() {
     }
@@ -43,11 +44,12 @@ public class EnergySaveLogFragment extends ListFragment {
     }
 
     @Override
-    public void onDestroy() {
-        if (title_before != null)
-            //noinspection ConstantConditions
-            getActivity().setTitle(title_before);
-        super.onDestroy();
+    public void onStart() {
+        super.onStart();
+
+        //noinspection ConstantConditions
+        doneCancelFragmentHelper.setTitle(getActivity(), R.string.energy_saving_mode_log);
+        setListAdapter(arrayAdapter);
     }
 
     @Override
@@ -62,6 +64,12 @@ public class EnergySaveLogFragment extends ListFragment {
                     v.setItemChecked(arrayAdapter.getCount() - 1, true);
             }
         }, 10);
+    }
+
+    @Override
+    public void onDestroy() {
+        doneCancelFragmentHelper.restoreTitle(getActivity());
+        super.onDestroy();
     }
 
     private void loadData() {
@@ -84,16 +92,6 @@ public class EnergySaveLogFragment extends ListFragment {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        //noinspection ConstantConditions
-        title_before = getActivity().getTitle();
-        getActivity().setTitle(R.string.energy_saving_mode_log);
-        setListAdapter(arrayAdapter);
     }
 
     @Override

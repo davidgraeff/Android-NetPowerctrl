@@ -37,54 +37,55 @@
         android:defaultValue="@bool/use_dark_theme"
         android:summary="@string/preference_use_dark_theme_summary" />
 
-    <PreferenceCategory android:title="@string/extensions" />
+    <PreferenceCategory android:title="@string/extensions">
+        <CheckBoxPreference
+            android:key="load_extensions"
+            android:title="@string/preference_load_extensions"
+            android:defaultValue="@bool/load_extensions"
+            android:summary="@string/preference_load_extensions_summary" />
 
-    <CheckBoxPreference
-        android:key="load_extensions"
-        android:title="@string/preference_load_extensions"
-        android:defaultValue="@bool/load_extensions"
-        android:summary="@string/preference_load_extensions_summary" />
+        <PreferenceScreen
+            android:key="show_extensions"
+            android:title="@string/show_extensions_in_market" />
 
-    <PreferenceScreen
-        android:key="show_extensions"
-        android:title="@string/show_extensions_in_market" />
+    </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/preferences_category_save_energy" />
+    <PreferenceCategory android:title="@string/preferences_category_save_energy">
+        <CheckBoxPreference
+            android:key="animations_enabled"
+            android:title="@string/preference_animations_enabled"
+            android:defaultValue="@bool/animations_enabled"
+            android:summary="@string/preference_animations_enabled_summary" />
 
-    <CheckBoxPreference
-        android:key="animations_enabled"
-        android:title="@string/preference_animations_enabled"
-        android:defaultValue="@bool/animations_enabled"
-        android:summary="@string/preference_animations_enabled_summary" />
+        <CheckBoxPreference
+            android:key="notify_on_stop"
+            android:title="@string/preference_notify_on_stop"
+            android:defaultValue="@bool/notify_on_stop"
+            android:summary="@string/preference_notify_on_stop_summary" />
 
-    <CheckBoxPreference
-        android:key="notify_on_stop"
-        android:title="@string/preference_notify_on_stop"
-        android:defaultValue="@bool/notify_on_stop"
-        android:summary="@string/preference_notify_on_stop_summary" />
+        <CheckBoxPreference
+            android:key="use_energy_saving_mode"
+            android:title="@string/preference_use_energy_saving_mode"
+            android:defaultValue="@bool/use_energy_saving_mode"
+            android:summary="@string/preference_use_energy_saving_mode_summary" />
 
-    <CheckBoxPreference
-        android:key="use_energy_saving_mode"
-        android:title="@string/preference_use_energy_saving_mode"
-        android:defaultValue="@bool/use_energy_saving_mode"
-        android:summary="@string/preference_use_energy_saving_mode_summary" />
+        <CheckBoxPreference
+            android:key="wakeup_energy_saving_mode"
+            android:title="@string/preference_wakeup_energy_saving_mode"
+            android:defaultValue="@bool/wakeup_energy_saving_mode"
+            android:summary="@string/preference_wakeup_energy_saving_mode_summary" />
 
-    <CheckBoxPreference
-        android:key="wakeup_energy_saving_mode"
-        android:title="@string/preference_wakeup_energy_saving_mode"
-        android:defaultValue="@bool/wakeup_energy_saving_mode"
-        android:summary="@string/preference_wakeup_energy_saving_mode_summary" />
+        <CheckBoxPreference
+            android:key="use_log_energy_saving_mode"
+            android:title="@string/preference_use_log_energy_saving_mode"
+            android:defaultValue="@bool/use_log_energy_saving_mod"
+            android:summary="@string/preference_use_log_energy_saving_mod_summary"
+            android:dependency="use_energy_saving_mode" />
 
-    <CheckBoxPreference
-        android:key="use_log_energy_saving_mode"
-        android:title="@string/preference_use_log_energy_saving_mode"
-        android:defaultValue="@bool/use_log_energy_saving_mod"
-        android:summary="@string/preference_use_log_energy_saving_mod_summary"
-        android:dependency="use_energy_saving_mode" />
-
-    <PreferenceScreen
-        android:key="open_log"
-        android:title="@string/energy_saving_mode_log" />
+        <PreferenceScreen
+            android:key="open_log"
+            android:title="@string/energy_saving_mode_log" />
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:title="@string/pref_widgets"

@@ -27,7 +27,8 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     }
 
     public void onPause() {
-        deviceCollection.unregisterDeviceObserver(this);
+        if (deviceCollection != null)
+            deviceCollection.unregisterDeviceObserver(this);
         NetpowerctrlApplication.getDataController().unregisterStateChanged(this);
         NetpowerctrlApplication.getDataController().unregisterNewDeviceObserver(this);
     }
@@ -128,6 +129,8 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
                 subtext += ", " + di.Version;
             if (!di.isReachable())
                 subtext += ", " + di.not_reachable_reason;
+            if (di.PreferHTTP)
+                subtext += ", HTTP";
             tvIP.setText(subtext);
 
             tvIP.setTag(position);
@@ -152,6 +155,8 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     @Override
     public boolean onDataLoaded() {
         deviceCollection = NetpowerctrlApplication.getDataController().deviceCollection;
+        if (deviceCollection == null)
+            return true;
         deviceCollection.registerDeviceObserver(this);
         return true;
     }
