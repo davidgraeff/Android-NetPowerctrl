@@ -2,9 +2,6 @@ package oly.netpowerctrl.application_state;
 
 import android.content.Context;
 
-import java.util.List;
-
-import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
@@ -28,7 +25,7 @@ public interface PluginInterface {
 
     void executeTransaction(ExecutionFinished callback);
 
-    List<Alarm> getAlarms();
+    void requestAlarms(DeviceInfo di);
 
     String getPluginID();
 

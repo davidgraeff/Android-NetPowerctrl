@@ -6,6 +6,14 @@
     android:paddingLeft="@dimen/list_outer_padding"
     android:paddingRight="@dimen/list_outer_padding">
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/wipPart"
         android:layout_width="match_parent"

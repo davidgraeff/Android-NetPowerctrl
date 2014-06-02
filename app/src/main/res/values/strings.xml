@@ -277,4 +277,10 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="device_prefer_http_summary">UDP funktioniert nur zuverlässig bis zum nächsten Router (lokales Netzwerk). HTTP ist langsamer, eignet sich für die Steuerung aus dem Internet aber besser.</string>
     <string name="device_default_ports_summary">Die Standard-Ports aus den Einstellungen werden benutzt.</string>
     <string name="device_http_port_summary">Der HTTP Port des Geräts. Das ist der selbe, welcher auch für den Webzugriff genutzt wird.</string>
+    <string name="alarm_weekdays_range">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s</string>
+    <string name="alarm_weekdays_range_alarm">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s, Zufälliges Umschaltinterval: %4$s</string>
+    <string name="alarm_once">Einmalig ausführen: $s</string>
+    <string name="preference_standard_ports">Standard network ports</string>
+    <string name="preference_show_persistent_notification">In Statusbar anzeigen</string>
+    <string name="preference_show_persistent_notification_summary">Aktivieren um favorisierte Szenen in der Statusleiste zum schnellen auswählen einzublenden.</string>
 </resources>

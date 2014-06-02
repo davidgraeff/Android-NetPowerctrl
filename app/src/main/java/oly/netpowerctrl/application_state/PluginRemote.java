@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DevicePortRenamed;
@@ -192,8 +191,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public List<Alarm> getAlarms() {
-        return null;
+    public void requestAlarms(DeviceInfo di) {
     }
 
     @Override

@@ -66,6 +66,7 @@ public class NetpowerctrlApplication extends Application {
     private void notifyServiceReady() {
         Iterator<ServiceReady> it = observersServiceReady.iterator();
         while (it.hasNext()) {
+            // If onServiceReady return false: remove listener (one-time listener)
             if (!it.next().onServiceReady())
                 it.remove();
         }

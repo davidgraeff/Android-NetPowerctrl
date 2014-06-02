@@ -12,15 +12,32 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 
-public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClickListener {
-
+public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, TimerController.IAlarmsUpdated {
+    private TimerAdapter timerAdapter;
+    private ProgressBar progressBar;
     public TimerFragment() {
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        progressBar.setVisibility(View.VISIBLE);
+        timerAdapter.start();
+        NetpowerctrlApplication.getDataController().timerController.registerObserver(this);
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        timerAdapter.finish();
     }
 
     @Override
@@ -28,6 +45,10 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
                              Bundle savedInstanceState) {
 
         final View view = inflater.inflate(R.layout.fragment_timer, container, false);
+        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+
+        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        timerAdapter = new TimerAdapter(getActivity(), c);
 
         Button btn = (Button) view.findViewById(R.id.btnDonate);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -45,8 +66,6 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
         View empty = view.findViewById(android.R.id.empty);
         ListView l = (ListView) view.findViewById(R.id.list_timer);
         l.setEmptyView(empty);
-        TimerAdapter timerAdapter = new TimerAdapter(getActivity(),
-                NetpowerctrlApplication.getDataController().timerController);
         l.setAdapter(timerAdapter);
 
         Button btnChangeToDevices = (Button) view.findViewById(R.id.btnChangeToDevices);
@@ -114,6 +133,14 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
                 MainActivity.instance.donate.buy("beer4");
                 return true;
         }
+        return false;
+    }
+
+    @Override
+    public boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress) {
+        if (inProgress)
+            return true;
+        progressBar.setVisibility(View.GONE);
         return false;
     }
 }
