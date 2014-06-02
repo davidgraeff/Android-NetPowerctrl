@@ -283,4 +283,20 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="preference_standard_ports">Standard network ports</string>
     <string name="preference_show_persistent_notification">In Statusbar anzeigen</string>
     <string name="preference_show_persistent_notification_summary">Aktivieren um favorisierte Szenen in der Statusleiste zum schnellen auswählen einzublenden.</string>
+    <string name="alarm_edit">Alarm editieren</string>
+    <string name="alarm_device_name">Alarm Ziel</string>
+    <string name="alarm_device_name_summary">Wähle das Ziel dieses Alarms (Gerät, Anschluss)</string>
+    <string name="alarm_type_weekdays">Wochentage</string>
+    <string name="alarm_type_absolute">Einmaliger Alarm</string>
+    <string name="alarm_type_absolute_summary">Ein einmaliger Alarm benötigt ein festes Datum, für welches die Ein- und Auszeiten gelten sollen.</string>
+    <string name="alarm_start_time">Einschaltzeit</string>
+    <string name="alarm_stop_time">Ausschaltzeit</string>
+    <string name="alarm_start_time_summary">Die Angabe der Einschaltzeit ist optional, sofern eine Ausschaltzeit angegeben wurde.</string>
+    <string name="alarm_stop_time_summary">Die Angabe der Ausschaltzeit ist optional, sofern eine Einschaltzeit angegeben wurde.</string>
+    <string name="alarm_date">Alarm Datum</string>
+    <string name="master_slave">Wähle Slaves</string>
+    <string name="alarm_no_device_alarm">Kein freier Gerätealarm mehr verfügbar. App Alarm noch nicht unterstützt.</string>
+    <string name="alarm_enabled">Alarm einschalten</string>
+    <string name="alarm_enabled_summary">Ein Alarm kann auch eingerichtet werden, ohne diesen einzuschalten</string>
+    <string name="remove">Löschen</string>
 </resources>

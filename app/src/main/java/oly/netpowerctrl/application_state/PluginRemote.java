@@ -15,9 +15,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.network.DevicePortRenamed;
+import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
@@ -159,7 +160,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void rename(DevicePort port, String new_name, DevicePortRenamed callback) {
+    public void rename(DevicePort port, String new_name, AsyncRunnerResult callback) {
         try {
             if (service != null) {
                 service.rename(port.id, new_name);
@@ -223,6 +224,16 @@ public class PluginRemote implements PluginInterface {
     @Override
     public boolean isNetworkPlugin() {
         return false;
+    }
+
+    @Override
+    public Alarm getNextFreeAlarm(DevicePort port) {
+        return null;
+    }
+
+    @Override
+    public void saveAlarm(Alarm alarm, final AsyncRunnerResult callback) {
+
     }
 
     @Override

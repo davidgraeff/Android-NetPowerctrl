@@ -9,34 +9,42 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 
-public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, TimerController.IAlarmsUpdated {
+public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, TimerController.IAlarmsUpdated, AdapterView.OnItemClickListener {
     private TimerAdapter timerAdapter;
     private ProgressBar progressBar;
+    private TextView progressText;
     public TimerFragment() {
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        progressBar.setVisibility(View.VISIBLE);
         timerAdapter.start();
-        NetpowerctrlApplication.getDataController().timerController.registerObserver(this);
+    }
 
+    private void update() {
+        progressBar.setVisibility(View.VISIBLE);
+        progressText.setVisibility(View.VISIBLE);
+        alarmsUpdated(false, true);
+        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        c.requestData();
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onDestroy() {
+        super.onDestroy();
         timerAdapter.finish();
     }
 
@@ -46,9 +54,11 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
 
         final View view = inflater.inflate(R.layout.fragment_timer, container, false);
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        progressText = (TextView) view.findViewById(R.id.progressText);
 
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
         timerAdapter = new TimerAdapter(getActivity(), c);
+        c.registerObserver(this);
 
         Button btn = (Button) view.findViewById(R.id.btnDonate);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +75,7 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
 
         View empty = view.findViewById(android.R.id.empty);
         ListView l = (ListView) view.findViewById(R.id.list_timer);
+        l.setOnItemClickListener(this);
         l.setEmptyView(empty);
         l.setAdapter(timerAdapter);
 
@@ -79,6 +90,8 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
             }
         });
 
+        update();
+
         return view;
     }
 
@@ -86,15 +99,21 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.timers, menu);
-        menu.findItem(R.id.menu_remove_all_timer).setEnabled(false);
-        menu.findItem(R.id.menu_add_timer).setEnabled(false);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_requery:
+                update();
+                return true;
             case R.id.menu_add_timer:
+                AlarmEditPreferences fragment = (AlarmEditPreferences)
+                        Fragment.instantiate(getActivity(), AlarmEditPreferences.class.getName());
+                fragment.setParameter(null);
+                //noinspection ConstantConditions
+                getFragmentManager().beginTransaction().addToBackStack(null).
+                        replace(R.id.content_frame, fragment).commit();
                 return true;
             case R.id.menu_remove_all_timer:
                 return true;
@@ -138,9 +157,22 @@ public class TimerFragment extends Fragment implements PopupMenu.OnMenuItemClick
 
     @Override
     public boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress) {
-        if (inProgress)
-            return true;
-        progressBar.setVisibility(View.GONE);
-        return false;
+        progressBar.setVisibility(inProgress ? View.VISIBLE : View.GONE);
+        progressText.setVisibility(inProgress ? View.VISIBLE : View.GONE);
+        if (inProgress) {
+            TimerController c = NetpowerctrlApplication.getDataController().timerController;
+            progressText.setText("Empfange alarm " + String.valueOf(c.countAllDeviceAlarms()));
+        }
+        return true;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        AlarmEditPreferences fragment = (AlarmEditPreferences)
+                Fragment.instantiate(getActivity(), AlarmEditPreferences.class.getName());
+        fragment.setParameter(timerAdapter.getAlarm(i));
+        //noinspection ConstantConditions
+        getFragmentManager().beginTransaction().addToBackStack(null).
+                replace(R.id.content_frame, fragment).commit();
     }
 }

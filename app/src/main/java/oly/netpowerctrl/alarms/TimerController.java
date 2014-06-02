@@ -16,6 +16,7 @@ import oly.netpowerctrl.application_state.ServiceReady;
  */
 public class TimerController {
     private List<Alarm> alarms = new ArrayList<>();
+    private List<Alarm> available_alarms = new ArrayList<>();
     private final WeakHashMap<IAlarmsUpdated, Boolean> observers = new WeakHashMap<>();
     private Runnable notifyRunnable = new Runnable() {
         @Override
@@ -34,17 +35,30 @@ public class TimerController {
         }
     };
 
+    public int countAllDeviceAlarms() {
+        return alarms.size() + available_alarms.size();
+    }
+
     /**
      * Called by plugins to propagate alarms.
      *
      * @param alarms All alarms of the plugin.
      */
     synchronized public void alarmsFromPlugin(List<Alarm> alarms) {
-        this.alarms.addAll(alarms);
+        for (Alarm alarm : alarms) {
+            if (alarm.freeDeviceAlarm)
+                available_alarms.add(alarm);
+            else
+                this.alarms.add(alarm);
+        }
         Handler h = NetpowerctrlApplication.getMainThreadHandler();
         h.removeCallbacks(notifyRunnable);
-        h.postDelayed(notifyRunnable, 700);
+        h.postDelayed(notifyRunnable, 1200);
         h.postDelayed(notifyRunnableNow, 100);
+    }
+
+    public List<Alarm> getAvailableDeviceAlarms() {
+        return available_alarms;
     }
 
     public interface IAlarmsUpdated {
@@ -64,11 +78,11 @@ public class TimerController {
     public void registerObserver(IAlarmsUpdated o) {
         if (!observers.containsKey(o)) {
             observers.put(o, true);
-            requestData();
         }
     }
 
-    private void requestData() {
+    public void requestData() {
+
         NetpowerctrlService service = NetpowerctrlApplication.getService();
         if (service == null) {
             NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
@@ -83,8 +97,9 @@ public class TimerController {
 
                 }
             });
-        } else
+        } else {
             requestData(service);
+        }
     }
 
     /**
@@ -94,6 +109,8 @@ public class TimerController {
      */
     public void requestData(NetpowerctrlService service) {
         alarms.clear();
+        available_alarms.clear();
+
         service.requestAllAlarms();
     }
 

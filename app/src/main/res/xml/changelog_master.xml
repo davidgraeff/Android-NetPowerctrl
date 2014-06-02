@@ -12,6 +12,8 @@
         <change>Bei Änderung der Steckdosennamen werden die dazugehörigen Zeitschaltungen nicht mehr
             gelöscht
         </change>
+        <change>Master/Slave Auswahl verbessert</change>
+        <change>Alarm Abfrage und einfaches Erstellen+Bearbeiten</change>
         <change>Fehler behoben</change>
     </release>
     <release
