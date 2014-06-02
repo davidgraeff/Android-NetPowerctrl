@@ -3,6 +3,7 @@ package oly.netpowerctrl.anel;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -24,6 +25,7 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.alarms.Alarm;
+import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
@@ -54,7 +56,7 @@ final public class AnelPlugin implements PluginInterface {
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
                     device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
                 } else {
-                    // We do not copy the network data but only the name.
+                    // The name is the second ";" separated entry of the response_message.
                     device.DeviceName = data[1].trim();
                     // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
                     // on the existing device.
@@ -403,10 +405,138 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public List<Alarm> getAlarms() {
-        List<Alarm> alarms = new ArrayList<>();
+    public void requestAlarms(final DeviceInfo di) {
+        // Get the timerController object. We will add all alarms to that instance.
+        final TimerController timerController = NetpowerctrlApplication.getDataController().timerController;
 
-        return alarms;
+        // Request alarms for every port
+        di.lockDevicePorts();
+        Iterator<DevicePort> it = di.getDevicePortIterator();
+        while (it.hasNext()) {
+            final DevicePort port = it.next();
+            if (port.Disabled)
+                continue;
+
+            final String getData = "dd.htm?DD" + String.valueOf(port.id);
+
+            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, null,
+                    port, false, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                        @Override
+                        public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
+                            if (!callback_success) {
+                                return;
+                            }
+                            try {
+                                timerController.alarmsFromPlugin(extractAlarms(port, response_message));
+                            } catch (SAXException | IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+            ));
+        }
+        di.releaseDevicePorts();
+    }
+
+    private List<Alarm> extractAlarms(final DevicePort port, final String html) throws SAXException, IOException {
+        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        final List<Alarm> l = new ArrayList<>();
+        l.add(new Alarm(true));
+        l.add(new Alarm(true));
+        l.add(new Alarm(true));
+        l.add(new Alarm(true));
+        l.add(new Alarm(true));
+
+        XMLReader parser = XMLReaderFactory.createXMLReader("org.ccil.cowan.tagsoup.Parser");
+        org.xml.sax.ContentHandler handler = new DefaultHandler() {
+            @SuppressWarnings("deprecation")
+            @Override
+            public void startElement(java.lang.String uri,
+                                     java.lang.String localName,
+                                     java.lang.String qName,
+                                     org.xml.sax.Attributes attributes) throws org.xml.sax.SAXException {
+                if (!qName.equals("input"))
+                    return;
+
+                // We parse this: <input ... name="T24" value="00:00">
+                // Where T24 mean: Timer 5 (0 based counting) and 2 is the start time. T34 the stop time.
+                // T14 refers to the activated weekdays identified as numbers: "1234567" means all days.
+                // 1 is Sunday. 2 is Monday...
+                String name = attributes.getValue("name");
+                String value = attributes.getValue("value");
+                String checked = attributes.getValue("checked");
+
+                if (name == null || name.length() < 2)
+                    return;
+
+                byte[] nameBytes = name.getBytes();
+
+                if (nameBytes[0] != 'T')
+                    return;
+
+                int dataIndex = name.charAt(1) - '0';
+                int timerNumber = name.length() == 2 ? 4 : name.charAt(2) - '0';
+
+                if (dataIndex < 0 || dataIndex > 9 || timerNumber < 0 || timerNumber > 9)
+                    return;
+
+                Alarm alarm = l.get(timerNumber);
+
+
+                switch (dataIndex) {
+                    case 0: { // enabled / disabled
+                        alarm.unique_device_id = port.device.UniqueDeviceID;
+                        alarm.enabled = checked != null;
+                        alarm.id = port.id;
+                        alarm.type = timerNumber < 4 ? Alarm.TYPE_RANGE_ON_WEEKDAYS : Alarm.TYPE_RANGE_ON_RANDOM_WEEKDAYS;
+                        alarm.port = port;
+                        break;
+                    }
+                    case 1: { // weekdays
+                        for (int i = 0; i < value.length(); ++i) {
+                            int weekday_index = (value.charAt(i) - '1');
+                            alarm.weekdays[weekday_index % 7] = true;
+                        }
+                        break;
+                    }
+                    case 2: { // start time like 00:01
+                        String[] e = value.split(":");
+                        if (e.length != 2) {
+                            Log.e(PLUGIN_ID, "alarm:parse:start_time failed " + value);
+                            return;
+                        }
+                        alarm.hour_minute_start = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        break;
+                    }
+                    case 3: { // end time like 00:01
+                        String[] e = value.split(":");
+                        if (e.length != 2) {
+                            Log.e(PLUGIN_ID, "alarm:parse:start_time failed " + value);
+                            return;
+                        }
+                        alarm.hour_minute_stop = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        break;
+                    }
+                    case 4: { // random interval time like 00:01
+                        String[] e = value.split(":");
+                        if (e.length != 2) {
+                            Log.e(PLUGIN_ID, "alarm:parse:start_time failed " + value);
+                            return;
+                        }
+                        alarm.hour_minute_random_interval = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        break;
+                    }
+                }
+            }
+        };
+        parser.setContentHandler(handler);
+        parser.parse(new InputSource(new StringReader(html)));
+
+        for (Alarm alarm : l) {
+            if (!alarm.enabled && alarm.hour_minute_start == 0 && alarm.hour_minute_stop == 23 * 60 + 59)
+                alarm.freeDeviceAlarm = true;
+        }
+        return l;
     }
 
     /**
@@ -424,10 +554,11 @@ final public class AnelPlugin implements PluginInterface {
      * @throws SAXException
      * @throws IOException
      */
-    private String parseHttpResponseData(String response_message,
-                                         final String newName, final String newAlarm0,
-                                         final String newAlarm1, final String newAlarm2,
-                                         final String newAlarm3, final String newAlarm4) throws SAXException, IOException {
+    private String createHTTP_Post_byHTTP_response(String response_message,
+                                                   final String newName, final String newAlarm0,
+                                                   final String newAlarm1, final String newAlarm2,
+                                                   final String newAlarm3, final String newAlarm4)
+            throws SAXException, IOException {
 
         final String[] complete_post_data = {""};
 
@@ -521,7 +652,7 @@ final public class AnelPlugin implements PluginInterface {
                         String postData;
                         // Parse received web page
                         try {
-                            postData = parseHttpResponseData(response_message, new_name, null, null, null, null, null);
+                            postData = createHTTP_Post_byHTTP_response(response_message, new_name, null, null, null, null, null);
                         } catch (UnsupportedEncodingException e) {
                             callback.devicePort_renamed(port, false, "url_encode failed");
                             return;

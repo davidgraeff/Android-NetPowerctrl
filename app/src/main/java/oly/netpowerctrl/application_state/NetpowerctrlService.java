@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.anel.AnelPlugin;
+import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverResult;
@@ -226,15 +226,12 @@ public class NetpowerctrlService extends Service {
         NetpowerctrlApplication.instance.sendBroadcast(i);
     }
 
-    public List<Alarm> getAllAlarms() {
-        List<Alarm> alarms = new ArrayList<>();
-        for (PluginInterface pluginInterface : plugins) {
-            List<Alarm> plugin_alarms = pluginInterface.getAlarms();
-            if (plugin_alarms != null)
-                alarms.addAll(plugin_alarms);
+    public void requestAllAlarms() {
+        DeviceCollection c = NetpowerctrlApplication.getDataController().deviceCollection;
+        // Request alarms for all devices
+        for (DeviceInfo di : c.devices) {
+            di.getPluginInterface(this).requestAlarms(di);
         }
-
-        return alarms;
     }
 
     public void remove(PluginRemote plugin) {

@@ -5,23 +5,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
-
-import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.utils.Icons;
 
 /**
  * List all alarms of the timer controller
  */
 public class TimerAdapter extends BaseAdapter implements TimerController.IAlarmsUpdated {
-    private final LayoutInflater inflater;
+    private LayoutInflater inflater;
     private final TimerController controller;
+    private Context context;
 
-    public TimerAdapter(Context context, TimerController controller) {
+    public TimerAdapter(Context context, TimerController timerController) {
+        this.context = context;
         inflater = LayoutInflater.from(context);
-        this.controller = controller;
+        this.controller = timerController;
+    }
+
+    public void start() {
         controller.registerObserver(this);
     }
 
@@ -52,27 +52,22 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.grid_icon_item, parent);
+            convertView = inflater.inflate(android.R.layout.simple_list_item_1, null);
         }
 
         Alarm data = controller.getItem(position);
 
         assert convertView != null;
-        TextView tvName = (TextView) convertView.findViewById(R.id.text1);
-        tvName.setText(data.name);
+        TextView tvName = (TextView) convertView.findViewById(android.R.id.text1);
+        tvName.setText(data.toString(context));
 
-        ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
-        if (data.bitmap == null) {
-            data.bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, data.uuid,
-                    Icons.IconType.GroupIcon, Icons.IconState.StateUnknown, R.drawable.stateon);
-        }
-
-        image.setImageBitmap(data.bitmap);
         return convertView;
     }
 
     @Override
-    public void alarmsUpdated(boolean addedOrRemoved) {
+    public boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress) {
         notifyDataSetChanged();
+        return true;
     }
+
 }
