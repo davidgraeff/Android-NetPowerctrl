@@ -13,6 +13,12 @@
         android:icon="@android:drawable/ic_menu_delete" />
 
     <item
+        android:id="@+id/menu_requery"
+        android:title="@string/menu_refresh"
+        android:showAsAction="always"
+        android:icon="@drawable/ic_menu_refresh" />
+
+    <item
         android:id="@+id/menu_help"
         android:title="@string/menu_help"
         android:showAsAction="ifRoom"

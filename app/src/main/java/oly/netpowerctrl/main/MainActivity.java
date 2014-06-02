@@ -28,7 +28,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewConfiguration;
-import android.view.Window;
 
 import java.lang.reflect.Field;
 
@@ -93,8 +92,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         } else {
             setTheme(R.style.Theme_CustomLightTheme);
         }
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        requestWindowFeature(Window.FEATURE_PROGRESS);
+
         setContentView(R.layout.activity_main);
 
         // Hack to always show the overflow of the actionbar instead of

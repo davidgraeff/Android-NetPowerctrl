@@ -36,8 +36,8 @@ import oly.netpowerctrl.devices.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.devices.NotReachableUpdate;
 import oly.netpowerctrl.groups.GroupUtilities;
+import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceObserverResult;
-import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneActivity;
@@ -51,7 +51,7 @@ import oly.netpowerctrl.utils.gui.ChangeArgumentsFragment;
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, DevicePortRenamed, Icons.IconSelected {
+        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult, Icons.IconSelected {
     private DevicePortsExecuteAdapter adapter;
     private AlphaInAnimationAdapter animatedAdapter;
     private TextView hintText;
@@ -490,7 +490,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private ProgressDialog progressDialog;
 
     @Override
-    public void devicePort_renamed(DevicePort oi, boolean success, String error_message) {
+    public void asyncRunnerResult(DevicePort oi, boolean success, String error_message) {
         if (progressDialog != null) {
             progressDialog.dismiss();
             progressDialog = null;
@@ -506,7 +506,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     @Override
-    public void devicePort_start_rename(DevicePort oi) {
+    public void asyncRunnerStart(DevicePort oi) {
         Context context = getActivity();
         if (context == null)
             return;

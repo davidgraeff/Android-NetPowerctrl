@@ -15,8 +15,8 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceObserverBase;
-import oly.netpowerctrl.network.DevicePortRenamed;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.network.ExecutionFinished;
@@ -284,15 +284,15 @@ public class RuntimeDataController {
         return null;
     }
 
-    public void rename(DevicePort port, String new_name, DevicePortRenamed callback) {
+    public void rename(DevicePort port, String new_name, AsyncRunnerResult callback) {
         if (callback != null)
-            callback.devicePort_start_rename(port);
+            callback.asyncRunnerStart(port);
 
         PluginInterface remote = port.device.getPluginInterface(NetpowerctrlApplication.getService());
         if (remote != null) {
             remote.rename(port, new_name, callback);
         } else if (callback != null)
-            callback.devicePort_renamed(port, false, NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+            callback.asyncRunnerResult(port, false, NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
     }
 
     /**

@@ -1,5 +1,6 @@
 package oly.netpowerctrl.main;
 
+import android.app.Activity;
 import android.app.ListFragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,8 +19,10 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.DevicePortsSelectAdapter;
+import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener {
+    DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
     private DevicePort master;
     private DevicePortsSelectAdapter adapter;
 
@@ -27,8 +30,36 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        doneCancelFragmentHelper.setTitle(getActivity(), R.string.master_slave);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        doneCancelFragmentHelper.addCancelDone(getActivity(), R.layout.device_done);
+
+        Activity a = getActivity();
+        View btnDone = a.findViewById(R.id.action_mode_save_button);
+        btnDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                save();
+            }
+        });
+        View btnTest = a.findViewById(R.id.action_mode_test_button);
+        btnTest.setVisibility(View.GONE);
+        View btnCancel = a.findViewById(R.id.action_mode_close_button);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //noinspection ConstantConditions
+                getFragmentManager().popBackStack();
+            }
+        });
+
         Bundle b = getArguments();
         if (b == null)
             return;
@@ -58,17 +89,19 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
         setHasOptionsMenu(true);
     }
 
-    @Override
-    public void onDestroy() {
+    private void save() {
         if (master == null)
             return;
 
-
         master.setSlaves(adapter.getCheckedUUids());
         NetpowerctrlApplication.getDataController().deviceCollection.save();
+    }
 
-        //noinspection ConstantConditions
-        getActivity().setTitle(R.string.drawer_overview);
+    @Override
+    public void onDestroy() {
+        doneCancelFragmentHelper.restoreTitle(getActivity());
+        doneCancelFragmentHelper.restoreActionBar(getActivity());
+
         super.onDestroy();
     }
 

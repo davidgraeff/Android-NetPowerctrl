@@ -32,7 +32,7 @@ import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.network.DevicePortRenamed;
+import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSending;
@@ -487,7 +487,7 @@ final public class AnelPlugin implements PluginInterface {
                     case 0: { // enabled / disabled
                         alarm.unique_device_id = port.device.UniqueDeviceID;
                         alarm.enabled = checked != null;
-                        alarm.id = port.id;
+                        alarm.id = (port.id & 255) | timerNumber << 8;
                         alarm.type = timerNumber < 4 ? Alarm.TYPE_RANGE_ON_WEEKDAYS : Alarm.TYPE_RANGE_ON_RANDOM_WEEKDAYS;
                         alarm.port = port;
                         break;
@@ -506,6 +506,8 @@ final public class AnelPlugin implements PluginInterface {
                             return;
                         }
                         alarm.hour_minute_start = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        if (alarm.hour_minute_start == 99 * 60 + 99) // disabled if time is 99:99
+                            alarm.hour_minute_start = -1;
                         break;
                     }
                     case 3: { // end time like 00:01
@@ -515,6 +517,8 @@ final public class AnelPlugin implements PluginInterface {
                             return;
                         }
                         alarm.hour_minute_stop = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        if (alarm.hour_minute_stop == 99 * 60 + 99) // disabled if time is 99:99
+                            alarm.hour_minute_stop = -1;
                         break;
                     }
                     case 4: { // random interval time like 00:01
@@ -524,6 +528,8 @@ final public class AnelPlugin implements PluginInterface {
                             return;
                         }
                         alarm.hour_minute_random_interval = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        if (alarm.hour_minute_random_interval == 99 * 60 + 99) // disabled if time is 99:99
+                            alarm.hour_minute_random_interval = -1;
                         break;
                     }
                 }
@@ -545,19 +551,13 @@ final public class AnelPlugin implements PluginInterface {
      *
      * @param response_message The http response message to parse the old values from
      * @param newName          New name or null for the old value
-     * @param newAlarm0        New alarm (like: T10=1234567&T20=00:00&T30=23:59) or null for the old value
-     * @param newAlarm1        New alarm (like: T11=1234567&T21=00:00&T31=23:59) or null for the old value
-     * @param newAlarm2        New alarm (like: T12=1234567&T22=00:00&T32=23:59) or null for the old value
-     * @param newAlarm3        New alarm (like: T13=1234567&T23=00:00&T33=23:59) or null for the old value
-     * @param newAlarm4        New alarm (like: T14=1234567&T24=00:00&T34=23:59) or null for the old value
+     * @param newAlarm        List of new alarms (like: T10=1234567&T20=00:00&T30=23:59) or nulls for the old values
      * @return Return the new data for a HTTP POST.
      * @throws SAXException
      * @throws IOException
      */
     private String createHTTP_Post_byHTTP_response(String response_message,
-                                                   final String newName, final String newAlarm0,
-                                                   final String newAlarm1, final String newAlarm2,
-                                                   final String newAlarm3, final String newAlarm4)
+                                                   final String newName, final Alarm[] newAlarm)
             throws SAXException, IOException {
 
         final String[] complete_post_data = {""};
@@ -580,11 +580,11 @@ final public class AnelPlugin implements PluginInterface {
                     return;
 
                 if (checked != null && (
-                        (name.equals("T00") && newAlarm0 == null) ||
-                                (name.equals("T01") && newAlarm1 == null) ||
-                                (name.equals("T02") && newAlarm2 == null) ||
-                                (name.equals("T03") && newAlarm3 == null) ||
-                                (name.equals("T04") && newAlarm4 == null))) {
+                        (name.equals("T00") && newAlarm[0] == null) ||
+                                (name.equals("T01") && newAlarm[1] == null) ||
+                                (name.equals("T02") && newAlarm[2] == null) ||
+                                (name.equals("T03") && newAlarm[3] == null) ||
+                                (name.equals("T04") && newAlarm[4] == null))) {
                     complete_post_data[0] += name + "on" + "&";
                     return;
                 }
@@ -599,11 +599,11 @@ final public class AnelPlugin implements PluginInterface {
 
                 if (name.equals("T4") ||
                         (name.equals("TN") && newName == null) ||
-                        (name.equals("T10") || name.equals("T20") || name.equals("T30") && newAlarm0 == null) ||
-                        (name.equals("T11") || name.equals("T21") || name.equals("T31") && newAlarm1 == null) ||
-                        (name.equals("T12") || name.equals("T22") || name.equals("T32") && newAlarm2 == null) ||
-                        (name.equals("T13") || name.equals("T23") || name.equals("T33") && newAlarm3 == null) ||
-                        (name.equals("T14") || name.equals("T24") || name.equals("T34") && newAlarm4 == null)
+                        (name.equals("T10") || name.equals("T20") || name.equals("T30") && newAlarm[0] == null) ||
+                        (name.equals("T11") || name.equals("T21") || name.equals("T31") && newAlarm[1] == null) ||
+                        (name.equals("T12") || name.equals("T22") || name.equals("T32") && newAlarm[2] == null) ||
+                        (name.equals("T13") || name.equals("T23") || name.equals("T33") && newAlarm[3] == null) ||
+                        (name.equals("T14") || name.equals("T24") || name.equals("T34") && newAlarm[4] == null)
                         )
                     complete_post_data[0] += name + "=" + URLEncoder.encode(value) + "&";
             }
@@ -613,16 +613,56 @@ final public class AnelPlugin implements PluginInterface {
 
         if (newName != null)
             complete_post_data[0] += "TN=" + URLEncoder.encode(newName, "utf-8") + "&";
-        if (newAlarm0 != null)
-            complete_post_data[0] += "T00=on&" + URLEncoder.encode(newAlarm0, "utf-8") + "&";
-        if (newAlarm1 != null)
-            complete_post_data[0] += "T01=on&" + URLEncoder.encode(newAlarm1, "utf-8") + "&";
-        if (newAlarm2 != null)
-            complete_post_data[0] += "T02=on&" + URLEncoder.encode(newAlarm2, "utf-8") + "&";
-        if (newAlarm3 != null)
-            complete_post_data[0] += "T03=on&" + URLEncoder.encode(newAlarm3, "utf-8") + "&";
-        if (newAlarm4 != null)
-            complete_post_data[0] += "T04=on&" + URLEncoder.encode(newAlarm4, "utf-8") + "&";
+
+        for (int i = 0; i < newAlarm.length; ++i) {
+            Alarm current = newAlarm[i];
+            if (current == null)
+                continue;
+
+            String timer = String.valueOf(i);
+
+            //  T10=1234567 & T20=00:00 & T30=23:59
+
+            if (current.enabled)
+                complete_post_data[0] += "T0" + timer + "=on&";
+
+            // Weekdays
+            complete_post_data[0] += "T1" + timer + "=";
+            for (int w = 0; w < current.weekdays.length; ++w)
+                if (current.weekdays[w])
+                    complete_post_data[0] += String.valueOf(w + 1);
+            complete_post_data[0] += "&";
+
+            if (current.hour_minute_random_interval == -1)
+                current.hour_minute_random_interval = 99 * 60 + 99;
+
+            // on-time
+            complete_post_data[0] += "T2" + timer + "=";
+            if (current.hour_minute_start == -1)
+                complete_post_data[0] += "99:99";
+            else
+                complete_post_data[0] += URLEncoder.encode(current.time(current.hour_minute_start), "utf-8");
+            complete_post_data[0] += "&";
+
+            // off-time
+            complete_post_data[0] += "T3" + timer + "=";
+            if (current.hour_minute_stop == -1)
+                complete_post_data[0] += "99:99";
+            else
+                complete_post_data[0] += URLEncoder.encode(current.time(current.hour_minute_stop), "utf-8");
+            complete_post_data[0] += "&";
+
+            if (i == 4) {
+                // random-time
+                complete_post_data[0] += "T4=";
+                if (current.hour_minute_random_interval == -1)
+                    complete_post_data[0] += "99:99";
+                else
+                    complete_post_data[0] += URLEncoder.encode(current.time(current.hour_minute_random_interval), "utf-8");
+                complete_post_data[0] += "&";
+            }
+        }
+
 
         return complete_post_data[0] + "TS=Speichern";
     }
@@ -635,7 +675,7 @@ final public class AnelPlugin implements PluginInterface {
      * @param callback A callback for the done/failed message.
      */
     @Override
-    public void rename(final DevicePort port, final String new_name, final DevicePortRenamed callback) {
+    public void rename(final DevicePort port, final String new_name, final AsyncRunnerResult callback) {
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
@@ -645,24 +685,24 @@ final public class AnelPlugin implements PluginInterface {
                     @Override
                     public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
                         if (!callback_success) {
-                            callback.devicePort_renamed(port, false, response_message);
+                            callback.asyncRunnerResult(port, false, response_message);
                             return;
                         }
 
                         String postData;
                         // Parse received web page
                         try {
-                            postData = createHTTP_Post_byHTTP_response(response_message, new_name, null, null, null, null, null);
+                            postData = createHTTP_Post_byHTTP_response(response_message, new_name, new Alarm[5]);
                         } catch (UnsupportedEncodingException e) {
-                            callback.devicePort_renamed(port, false, "url_encode failed");
+                            callback.asyncRunnerResult(port, false, "url_encode failed");
                             return;
                         } catch (SAXException e) {
                             e.printStackTrace();
-                            callback.devicePort_renamed(port, false, "Html Parsing failed");
+                            callback.asyncRunnerResult(port, false, "Html Parsing failed");
                             return;
                         } catch (IOException e) {
                             e.printStackTrace();
-                            callback.devicePort_renamed(port, false, "Html IO Parsing failed");
+                            callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
                             return;
                         }
 
@@ -674,15 +714,13 @@ final public class AnelPlugin implements PluginInterface {
                                         if (callback_success) {
                                             port.setDescription(new_name);
                                         }
-                                        callback.devicePort_renamed(port, callback_success, response_message);
+                                        callback.asyncRunnerResult(port, callback_success, response_message);
                                     }
                                 }
                         ));
                     }
                 }
         ));
-
-
     }
 
     @Override
@@ -731,6 +769,70 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public boolean isNetworkPlugin() {
         return true;
+    }
+
+    @Override
+    public Alarm getNextFreeAlarm(DevicePort port) {
+        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        List<Alarm> available_alarms = c.getAvailableDeviceAlarms();
+        for (Alarm available : available_alarms) {
+            // Find alarm for the selected port
+            if ((available.id & 255) == port.id) {
+                return available;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void saveAlarm(final Alarm alarm, final AsyncRunnerResult callback) {
+        // First call the dd.htm page to get all current values (we only want to change one of those
+        // and have to set all the others to the same values as before)
+        final String getData = "dd.htm?DD" + String.valueOf(alarm.port.id);
+        final int timerNumber = (int) (alarm.id >> 8);
+
+        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(alarm.port.device, getData, null,
+                alarm.port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                    @Override
+                    public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
+                        if (!callback_success) {
+                            callback.asyncRunnerResult(port, false, response_message);
+                            return;
+                        }
+
+                        Alarm[] alarms = new Alarm[5];
+                        alarms[timerNumber] = alarm;
+
+                        String postData;
+                        // Parse received web page
+                        try {
+                            postData = createHTTP_Post_byHTTP_response(response_message,
+                                    null, alarms);
+                        } catch (UnsupportedEncodingException e) {
+                            callback.asyncRunnerResult(port, false, "url_encode failed");
+                            return;
+                        } catch (SAXException e) {
+                            e.printStackTrace();
+                            callback.asyncRunnerResult(port, false, "Html Parsing failed");
+                            return;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
+                            return;
+                        }
+
+                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, postData,
+                                port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                                    @Override
+                                    public void httpResponse(DevicePort port, boolean callback_success,
+                                                             String response_message) {
+                                        callback.asyncRunnerResult(port, callback_success, response_message);
+                                    }
+                                }
+                        ));
+                    }
+                }
+        ));
     }
 
 //

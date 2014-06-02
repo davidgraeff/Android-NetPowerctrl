@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceScreen
+        android:persistent="false"
+        android:key="alarm_device_port"
+        android:title="@string/alarm_device_name"
+        android:summary="@string/alarm_device_name_summary" />
+
+    <CheckBoxPreference
+        android:persistent="false"
+        android:key="alarm_enabled"
+        android:summary="@string/alarm_enabled_summary"
+        android:title="@string/alarm_enabled" />
+
+    <CheckBoxPreference
+        android:persistent="false"
+        android:key="alarm_start_time_enabled"
+        android:summary="@string/alarm_start_time_summary"
+        android:title="@string/alarm_start_time" />
+
+    <oly.netpowerctrl.preferences.TimePreference
+        android:persistent="false"
+        android:key="alarm_start_time"
+        android:title="@string/alarm_start_time"
+        android:dialogTitle="@string/alarm_start_time" />
+
+    <CheckBoxPreference
+        android:persistent="false"
+        android:key="alarm_stop_time_enabled"
+        android:summary="@string/alarm_stop_time_summary"
+        android:title="@string/alarm_stop_time" />
+
+    <oly.netpowerctrl.preferences.TimePreference
+        android:persistent="false"
+        android:key="alarm_stop_time"
+        android:title="@string/alarm_stop_time"
+        android:dialogTitle="@string/alarm_stop_time" />
+
+    <CheckBoxPreference
+        android:persistent="false"
+        android:key="alarm_type_absolute"
+        android:title="@string/alarm_type_absolute"
+        android:summary="@string/alarm_type_absolute_summary" />
+
+    <PreferenceCategory android:title="@string/alarm_type_absolute">
+        <oly.netpowerctrl.preferences.DatePreference
+            android:persistent="false"
+            android:key="alarm_date"
+            android:title="@string/alarm_date"
+            android:defaultValue="2014.05.01" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/alarm_type_weekdays"
+        android:key="alarm_weekdays">
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

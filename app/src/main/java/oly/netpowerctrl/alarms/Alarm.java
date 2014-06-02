@@ -14,7 +14,7 @@ import oly.netpowerctrl.devices.DevicePort;
  */
 public class Alarm {
     // Unique ID
-    public long id;
+    public long id = -1;
     public String unique_device_id;
 
     // Temporary
@@ -34,14 +34,15 @@ public class Alarm {
     public boolean freeDeviceAlarm;
 
     // True if the alarm is enabled.
-    public boolean enabled;
+    public boolean enabled = false;
 
     // Alarm type
     public static final int TYPE_RANGE_ON_WEEKDAYS = 1;
     public static final int TYPE_RANGE_ON_RANDOM_WEEKDAYS = 2;
     public static final int TYPE_ONCE = 10; // fixed date+time
+    public static final int TYPES = 3;
 
-    public int type;
+    public int type = TYPE_ONCE;
 
     // Store days. Start with SUNDAY
     public boolean weekdays[] = new boolean[7];
@@ -49,17 +50,17 @@ public class Alarm {
     public Date absolute_date;
 
     // Relative alarm in minutes of the day: hour*60+minute. -1 for disabled
-    public int hour_minute_start;
+    public int hour_minute_start = -1;
     // For ranged alarms in minutes of the day: hour*60+minute
-    public int hour_minute_stop;
+    public int hour_minute_stop = -1;
     // For random alarms in minutes of the day: hour*60+minute
-    public int hour_minute_random_interval;
+    public int hour_minute_random_interval = -1;
 
     public Alarm(boolean deviceAlarm) {
         this.deviceAlarm = deviceAlarm;
     }
 
-    private String days() {
+    public String days() {
         String d = "";
         // The first entry is the empty string
         String[] weekDays_Strings = DateFormatSymbols.getInstance().getShortWeekdays();
@@ -67,10 +68,12 @@ public class Alarm {
         for (int i = 0; i < 7; ++i)
             if (weekdays[i])
                 d += weekDays_Strings[i + 1] + ", ";
+
+        d = d.substring(0, d.length() - 3);
         return d;
     }
 
-    private String time(int hour_minute) {
+    public String time(int hour_minute) {
         if (hour_minute == -1)
             return "-";
         int hour = hour_minute / 60;
@@ -94,5 +97,12 @@ public class Alarm {
                 return pre + context.getString(R.string.alarm_once, DateFormat.getInstance().format(absolute_date));
         }
         return pre;
+    }
+
+    public String getTargetName() {
+        if (port != null)
+            return port.device.DeviceName + ": " + port.getDescription();
+        else
+            return unique_device_id;
     }
 }

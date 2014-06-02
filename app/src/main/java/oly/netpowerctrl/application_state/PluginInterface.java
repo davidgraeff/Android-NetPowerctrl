@@ -2,9 +2,10 @@ package oly.netpowerctrl.application_state;
 
 import android.content.Context;
 
+import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.network.DevicePortRenamed;
+import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 
 /**
@@ -19,7 +20,7 @@ public interface PluginInterface {
 
     void execute(DevicePort port, final int command, ExecutionFinished callback);
 
-    void rename(DevicePort port, final String new_name, final DevicePortRenamed callback);
+    void rename(DevicePort port, final String new_name, final AsyncRunnerResult callback);
 
     void addToTransaction(DevicePort port, final int command);
 
@@ -41,4 +42,8 @@ public interface PluginInterface {
     void openConfigurationPage(DeviceInfo device, Context context);
 
     boolean isNetworkPlugin();
+
+    Alarm getNextFreeAlarm(DevicePort port);
+
+    void saveAlarm(Alarm alarm, final AsyncRunnerResult callback);
 }
