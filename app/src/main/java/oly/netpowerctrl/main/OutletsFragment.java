@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,11 +48,15 @@ import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
 import oly.netpowerctrl.utils.ShowToast;
 import oly.netpowerctrl.utils.gui.ChangeArgumentsFragment;
+import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
+import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult, Icons.IconSelected {
+        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult, Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks {
     private DevicePortsExecuteAdapter adapter;
     private AlphaInAnimationAdapter animatedAdapter;
     private TextView hintText;
@@ -123,7 +128,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }, 100);
     }
 
-    private void setListOrGrid(boolean grid, int widthOfListView) {
+    private void setListOrGrid(boolean grid) {
         SharedPrefs.setOutletsGrid(grid);
 
         float width;
@@ -173,6 +178,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (adapter != null) {
             hiddenShown = adapter.getIsShowingHidden();
         }
+
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_showhidden).setVisible(!hiddenShown);
         //noinspection ConstantConditions
@@ -218,41 +224,18 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
-                    @Override
-                    public void onDeviceError(DeviceInfo di) {
-                    }
-
-                    @Override
-                    public void onDeviceTimeout(DeviceInfo di) {
-                    }
-
-                    @Override
-                    public void onDeviceUpdated(DeviceInfo di) {
-                    }
-
-                    @Override
-                    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-                        //noinspection ConstantConditions
-                        Toast.makeText(getActivity(),
-                                getActivity().getString(R.string.devices_refreshed,
-                                        NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
-                                        NetpowerctrlApplication.getDataController().newDevices.size()),
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                });
+                refresh();
                 return true;
             }
             case R.id.menu_view_list: {
-                setListOrGrid(false, mListView.getWidth());
+                setListOrGrid(false);
                 //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
             }
 
             case R.id.menu_view_grid: {
-                setListOrGrid(true, mListView.getWidth());
+                setListOrGrid(true);
                 //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
@@ -288,6 +271,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     private GridView mListView;
+    private PullToRefreshLayout mPullToRefreshLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
@@ -302,6 +286,23 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 adapter.handleClick(position);
             }
         });
+
+        ///// For swiping elements out (hiding)
+        SwipeDismissListViewTouchListener touchListener =
+                new SwipeDismissListViewTouchListener(
+                        mListView, this);
+        mListView.setOnTouchListener(touchListener);
+        mListView.setOnScrollListener(touchListener.makeScrollListener());
+        ///// END: For swiping elements out (hiding)
+
+        ///// For pull to refresh
+        mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
+        ActionBarPullToRefresh.from(getActivity())
+                .allChildrenArePullable()
+                .listener(this)
+                .setup(mPullToRefreshLayout);
+        ///// END: For pull to refresh
+
         hintText = (TextView) view.findViewById(R.id.hintText);
         if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             mListView.setEmptyView(view.findViewById(android.R.id.empty));
@@ -356,7 +357,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             animatedAdapter = new AlphaInAnimationAdapter(adapter);
             animatedAdapter.setAbsListView(mListView);
         }
-        setListOrGrid(SharedPrefs.getOutletsGrid(), container.getWidth());
+        setListOrGrid(SharedPrefs.getOutletsGrid());
 
         return view;
     }
@@ -534,5 +535,55 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
         Icons.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
+    }
+
+    private void refresh() {
+        mPullToRefreshLayout.setRefreshing(true);
+        NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
+            @Override
+            public void onDeviceError(DeviceInfo di) {
+            }
+
+            @Override
+            public void onDeviceTimeout(DeviceInfo di) {
+            }
+
+            @Override
+            public void onDeviceUpdated(DeviceInfo di) {
+            }
+
+            @Override
+            public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
+                mPullToRefreshLayout.setRefreshComplete();
+                //noinspection ConstantConditions
+                Toast.makeText(getActivity(),
+                        getActivity().getString(R.string.devices_refreshed,
+                                NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
+                                NetpowerctrlApplication.getDataController().newDevices.size()),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+    }
+
+    @Override
+    public void onRefreshStarted(View view) {
+        refresh();
+    }
+
+    @Override
+    public boolean canDismiss(int position) {
+        return !adapter.getIsShowingHidden();
+    }
+
+    @Override
+    public void onDismiss(AbsListView listView, int[] reverseSortedPositions) {
+        for (int position : reverseSortedPositions) {
+            final DevicePort oi = adapter.getItem(position);
+            oi.Hidden = true;
+        }
+        adapter.onDeviceUpdated(null, !adapter.getIsShowingHidden());
+        NetpowerctrlApplication.getDataController().deviceCollection.save();
+        Toast.makeText(getActivity(), "Elemente versteckt", Toast.LENGTH_SHORT).show();
     }
 }

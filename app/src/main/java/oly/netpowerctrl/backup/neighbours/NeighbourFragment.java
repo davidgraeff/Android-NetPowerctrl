@@ -48,6 +48,11 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         //set the actionbar to use the custom view (can also be done with a style)
         //noinspection ConstantConditions
         ActionBar bar = getActivity().getActionBar();
@@ -69,17 +74,16 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
         neighbourAdapter = new NeighbourAdapter(getActivity());
     }
 
-
     @Override
-    public void onDetach() {
-        neighbourAdapter = null;
-
-        super.onDetach();
+    public void onStop() {
+        super.onStop();
         ActionBar bar = getActivity().getActionBar();
         assert bar != null;
         bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP |
                 ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        neighbourAdapter = null;
     }
+
 
     @Override
     public void onPause() {

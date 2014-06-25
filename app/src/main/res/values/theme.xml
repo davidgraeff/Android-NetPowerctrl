@@ -3,6 +3,7 @@
 
     <style name="Theme.CustomLightTheme" parent="android:Theme.Holo.Light">
         <item name="drawer_item_background">#F3F3F4</item>
+        <item name="list_item_background">@android:color/darker_gray</item>
         <item name="preferences_title_light">#66000000</item>
         <item name="android:windowIsTranslucent">false</item>
         <item name="item_selector">@drawable/item_selector_light</item>
@@ -17,6 +18,7 @@
 
     <style name="Theme.CustomDarkTheme" parent="android:Theme.Holo">
         <item name="drawer_item_background">#323232</item>
+        <item name="list_item_background">#323232</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>
         <item name="item_selector">@drawable/item_selector_dark</item>
         <item name="segment_button">@drawable/segment_button_dark</item>

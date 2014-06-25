@@ -41,23 +41,8 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
     @Override
     public void onStart() {
         super.onStart();
-        doneCancelFragmentHelper.setTitle(getActivity(), R.string.configure_device);
-    }
-
-    @Override
-    public void onDestroy() {
-        doneCancelFragmentHelper.restoreTitle(getActivity());
-        doneCancelFragmentHelper.restoreActionBar(getActivity());
-        super.onDestroy();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.anel_device_preferences);
-
         doneCancelFragmentHelper.addCancelDone(getActivity(), R.layout.device_done);
+        doneCancelFragmentHelper.setTitle(getActivity(), R.string.configure_device);
 
         Activity a = getActivity();
         View btnDone = a.findViewById(R.id.action_mode_save_button);
@@ -82,6 +67,20 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
                 getFragmentManager().popBackStack();
             }
         });
+    }
+
+    @Override
+    public void onStop() {
+        doneCancelFragmentHelper.restoreTitle(getActivity());
+        doneCancelFragmentHelper.restoreActionBar(getActivity());
+        super.onStop();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.anel_device_preferences);
 
         /** Getting the ListPreference from the Preference Resource */
         final PreferenceManager m = getPreferenceManager();
@@ -103,6 +102,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 device.UserName = (String) o;
+                preference.setTitle(getString(R.string.device_username) + ": " + device.UserName);
                 return true;
             }
         });
@@ -114,6 +114,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 device.Password = (String) o;
+                preference.setTitle(getString(R.string.device_password) + ": " + device.Password);
                 return true;
             }
         });
@@ -125,6 +126,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 device.HostName = (String) o;
+                preference.setTitle(getString(R.string.device_ip) + ": " + device.HostName);
                 return true;
             }
         });
@@ -157,7 +159,13 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                device.SendPort = Integer.valueOf((String) o);
+                int port = Integer.valueOf((String) o);
+                if (port < 1024 || port > 65555) {
+                    warn_port();
+                    return false;
+                }
+                preference.setTitle(getString(R.string.device_send_udp_port) + ": " + String.valueOf(port));
+                device.SendPort = port;
                 return true;
             }
         });
@@ -168,7 +176,13 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                device.ReceivePort = Integer.valueOf((String) o);
+                int port = Integer.valueOf((String) o);
+                if (port < 1024 || port > 65555) {
+                    warn_port();
+                    return false;
+                }
+                preference.setTitle(getString(R.string.device_receive_udp_port) + ": " + String.valueOf(port));
+                device.ReceivePort = port;
                 return true;
             }
         });
@@ -179,7 +193,13 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                device.HttpPort = Integer.valueOf((String) o);
+                int port = Integer.valueOf((String) o);
+                if (port != 80 || port < 1024 || port > 65555) {
+                    warn_port();
+                    return false;
+                }
+                preference.setTitle(getString(R.string.device_http_port) + ": " + String.valueOf(port));
+                device.HttpPort = port;
                 return true;
             }
         });
@@ -187,6 +207,10 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         p.setTitle(getString(R.string.device_http_port) + ": " + String.valueOf(device.HttpPort));
 
         checkEnabled();
+    }
+
+    private void warn_port() {
+        Toast.makeText(getActivity(), R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
     }
 
     private void checkEnabled() {

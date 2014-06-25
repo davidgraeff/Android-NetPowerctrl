@@ -1,13 +1,19 @@
 package oly.netpowerctrl.application_state;
 
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.acra.ACRA;
@@ -19,9 +25,13 @@ import java.util.Iterator;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.backup.neighbours.NeighbourDataReceiveService;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.utils.Logging;
+import oly.netpowerctrl.utils.Shortcuts;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -78,6 +88,16 @@ public class NetpowerctrlApplication extends Application {
         }
     }
 
+    SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener =
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
+                @Override
+                public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+//                    Log.w("changed", s);
+                    if (s.equals(SharedPrefs.PREF_show_persistent_notification))
+                        updateNotification();
+                }
+            };
+
     /**
      * We do not do any loading or starting when the application is loaded.
      * This can be requested by using useListener()
@@ -89,6 +109,65 @@ public class NetpowerctrlApplication extends Application {
         ACRA.init(this);
         instance = this;
         dataController = new RuntimeDataController();
+
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+    }
+
+    private void updateNotification() {
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (!SharedPrefs.isNotification()) {
+//            Log.w("r","remove");
+            mNotificationManager.cancel(1);
+            return;
+        }
+
+        Intent startMainIntent = new Intent(this, MainActivity.class);
+        startMainIntent.setAction(Intent.ACTION_MAIN);
+        PendingIntent startMainPendingIntent =
+                PendingIntent.getActivity(this, (int) System.currentTimeMillis(), startMainIntent, 0);
+
+        Notification.Builder b = new Notification.Builder(this)
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.app_name))
+                .setSmallIcon(R.drawable.netpowerctrl)
+                .setContentIntent(startMainPendingIntent)
+                .setOngoing(true);
+
+        //noinspection StatementWithEmptyBody
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            SceneCollection g = NetpowerctrlApplication.getDataController().sceneCollection;
+            int maxLength = 0;
+            for (Scene scene : g.scenes) {
+                if (!scene.isFavourite())
+                    continue;
+                if (maxLength > 3) break;
+                ++maxLength;
+
+                // This intent will be executed by a click on the widget
+                Intent clickIntent = Shortcuts.createShortcutExecutionIntent(this, scene, false, true);
+                clickIntent.setAction(Intent.ACTION_MAIN);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), clickIntent, 0);
+
+                b.addAction(0, scene.sceneName, pendingIntent);
+            }
+        } else {
+            //            RemoteViews notification_root_layout = new RemoteViews(getPackageName(), R.layout.statusbar_notification);
+//            for (int i = 0; i < 4; i++) {
+//                RemoteViews textView = new RemoteViews(getPackageName(), R.layout.widget);
+//                //textView.setTextViewText(R.id.textView1, "TextView number " + String.valueOf(i));
+//                textView.setViewVisibility(R.id.widget_status, View.GONE);
+//                textView.setTextViewText(R.id.widget_name, "test");
+//                notification_root_layout.addView(R.id.statusbar_notification, textView);
+//            }
+
+//            Notification notification = new Notification.Builder(this).
+//                    setContent(notification_root_layout).setOngoing(true).
+//                    getNotification();
+        }
+
+        mNotificationManager.notify(1, b.getNotification());
     }
 
     private final Handler stopServiceHandler = new Handler();
@@ -120,9 +199,21 @@ public class NetpowerctrlApplication extends Application {
             Thread t = new Thread() {
                 public void run() {
                     dataController.loadData(false);
+                    // show statusBar notification and update each time after changing scenes
+                    updateNotification();
+                    dataController.sceneCollection.registerObserver(new SceneCollection.IScenesUpdated() {
+                        @Override
+                        public void scenesUpdated(boolean addedOrRemoved) {
+                            updateNotification();
+                        }
+                    });
+
+                    // start service
                     Intent intent = new Intent(instance, NetpowerctrlService.class);
                     startService(intent);
                     bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+                    // neighbour sync
                     NeighbourDataReceiveService.startAutoSync();
                 }
             };
@@ -172,6 +263,7 @@ public class NetpowerctrlApplication extends Application {
 
             // Notify all observers that we are ready
             notifyServiceReady();
+
         }
 
         // Service crashed

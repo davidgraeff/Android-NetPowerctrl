@@ -266,4 +266,12 @@ public class SharedPrefs {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("neighbour_sync", enabled).commit();
     }
+
+    public static final String PREF_show_persistent_notification = "show_persistent_notification";
+
+    public static boolean isNotification() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(PREF_show_persistent_notification, false);
+    }
 }

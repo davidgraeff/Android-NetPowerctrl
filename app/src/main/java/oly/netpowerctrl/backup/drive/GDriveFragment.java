@@ -44,7 +44,11 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
         //set the actionbar to use the custom view (can also be done with a style)
         //noinspection ConstantConditions
         ActionBar bar = getActivity().getActionBar();
@@ -53,12 +57,30 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
         bar.setDisplayShowHomeEnabled(true);
         bar.setDisplayShowTitleEnabled(false);
         bar.setCustomView(R.layout.gdrive_switch);
+
+        gDrive_switch = (Switch) getActivity().findViewById(R.id.gDrive_switch);
+        if (SharedPrefs.gDriveEnabled() && MainActivity.instance.gDrive.isConnected())
+            gDriveConnected(true, false);
+        else
+            gDriveConnected(false, false);
+        gDrive_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                enableGDrive(b);
+            }
+        });
     }
 
     @Override
     public void onStop() {
         super.onStop();
         GDriveBackupsAdapter.clear();
+        MainActivity.instance.gDrive.setObserver(null);
+        //noinspection ConstantConditions
+        ActionBar bar = getActivity().getActionBar();
+        assert bar != null;
+        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP |
+                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
     }
 
     @Override
@@ -67,7 +89,8 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
             SharedPrefs.setGDriveEnabled(connected);
 
         suspendSwitch = true;
-        gDrive_switch.setChecked(connected);
+        if (gDrive_switch != null)
+            gDrive_switch.setChecked(connected);
         suspendSwitch = false;
         progressBar.setVisibility(View.GONE);
 
@@ -90,18 +113,6 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
     public void showProgress(boolean inProgress, String text) {
         statusText.setText(text);
         progressBar.setVisibility(inProgress ? View.VISIBLE : View.GONE);
-    }
-
-    @Override
-    public void onDetach() {
-        MainActivity.instance.gDrive.setObserver(null);
-
-        super.onDetach();
-        //noinspection ConstantConditions
-        ActionBar bar = getActivity().getActionBar();
-        assert bar != null;
-        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP |
-                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
     }
 
     private void enableGDrive(boolean enable) {
@@ -196,18 +207,6 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
         controlsIfLoggedIn = view.findViewById(R.id.buttons);
 
         MainActivity.instance.gDrive.setObserver(this);
-
-        gDrive_switch = (Switch) getActivity().findViewById(R.id.gDrive_switch);
-        if (SharedPrefs.gDriveEnabled() && MainActivity.instance.gDrive.isConnected())
-            gDriveConnected(true, false);
-        else
-            gDriveConnected(false, false);
-        gDrive_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                enableGDrive(b);
-            }
-        });
 
         return view;
     }

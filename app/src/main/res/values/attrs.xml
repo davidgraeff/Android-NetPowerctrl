@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr format="color" name="drawer_item_background" />
+    <attr format="color" name="list_item_background" />
     <attr format="color" name="preferences_title_light" />
     <attr format="reference" name="item_selector" />
     <attr format="reference" name="segment_button" />

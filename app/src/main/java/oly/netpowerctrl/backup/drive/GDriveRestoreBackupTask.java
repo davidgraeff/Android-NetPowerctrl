@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.utils.Icons;
+import oly.netpowerctrl.utils.JSONHelper;
 
 class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
     public interface BackupDoneSuccess {
@@ -177,9 +178,21 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
             if (observer != null)
                 observer.showProgress(false, "Backup restored");
             RuntimeDataController d = NetpowerctrlApplication.getDataController();
-            d.deviceCollection.importData(false, devices);
-            d.sceneCollection.importData(false, scenes);
-            d.groupCollection.importData(false, groups);
+            try {
+                d.deviceCollection.fromJSON(JSONHelper.getReader(devices), false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                d.sceneCollection.fromJSON(JSONHelper.getReader(scenes), false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                d.groupCollection.fromJSON(JSONHelper.getReader(groups), false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             d.notifyStateReloaded();
         } else {
             if (observer != null)

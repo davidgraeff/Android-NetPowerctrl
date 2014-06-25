@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
-import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,29 +19,40 @@ import oly.netpowerctrl.utils.JSONHelper;
  * Contains DeviceInfos. Used for NFC and backup transfers
  */
 public class DeviceCollection {
-    public List<DeviceInfo> devices;
-    private final IDevicesSave storage;
-
-    public DeviceCollection(IDevicesSave storage) {
-        this.storage = storage;
-    }
+    public List<DeviceInfo> devices = new ArrayList<>();
+    private IDevicesSave storage;
 
     public static DeviceCollection fromDevices(List<DeviceInfo> devices, IDevicesSave storage) {
-        DeviceCollection dc = new DeviceCollection(storage);
+        DeviceCollection dc = new DeviceCollection();
+        dc.storage = storage;
         dc.devices = devices;
         return dc;
     }
 
-    public static DeviceCollection fromJSON(JsonReader reader, IDevicesSave storage) throws IOException, IllegalStateException {
-        DeviceCollection dc = new DeviceCollection(storage);
-        dc.devices = new ArrayList<>();
+    /**
+     * @param reader     A json reader
+     * @param tryToMerge If you merge the data instead of replacing the process is slower.
+     * @throws IOException
+     * @throws IllegalStateException
+     */
+    public void fromJSON(JsonReader reader, boolean tryToMerge)
+            throws IOException, IllegalStateException {
+
         if (reader == null)
-            return dc;
+            return;
+
+        if (!tryToMerge)
+            devices = new ArrayList<>();
 
         reader.beginArray();
         while (reader.hasNext()) {
             try {
-                dc.devices.add(DeviceInfo.fromJSON(reader));
+                DeviceInfo di = DeviceInfo.fromJSON(reader);
+                if (!tryToMerge)
+                    devices.add(di);
+                else {
+                    add(di);
+                }
             } catch (ClassNotFoundException e) {
                 // If we read a device description, where we do not support that device type,
                 // we just ignore that device and go on. Nevertheless print a backtrace.
@@ -50,7 +60,6 @@ public class DeviceCollection {
             }
         }
         reader.endArray();
-        return dc;
     }
 
     /**
@@ -160,36 +169,6 @@ public class DeviceCollection {
             storage.devicesSave(this);
     }
 
-    /**
-     * Import String data (JSON) and either replace all existing data or merge it with the
-     * existing data.
-     *
-     * @param tryToMerge If you merge the data instead of replacing the process is slower.
-     */
-    public boolean importData(boolean tryToMerge, String data) {
-        DeviceCollection dc;
-        try {
-            dc = DeviceCollection.fromJSON(JSONHelper.getReader(data), null);
-        } catch (IOException e) {
-            Log.e("importData", "failed: " + data);
-            e.printStackTrace();
-            return false;
-        }
-
-        if (tryToMerge) {
-            for (DeviceInfo di : dc.devices)
-                add(di);
-        } else {
-            devices.clear();
-            devices = dc.devices;
-
-            notifyDeviceObservers(null, true);
-            if (storage != null)
-                storage.devicesSave(this);
-        }
-        return true;
-    }
-
     public void save() {
         if (storage != null)
             storage.devicesSave(this);
@@ -231,6 +210,10 @@ public class DeviceCollection {
         Icons.saveIcon(context, Icons.resizeBitmap(context, bitmap, 128, 128), port.uuid,
                 Icons.IconType.DevicePortIcon, port.getIconState());
         notifyDeviceObservers(port.device, false);
+    }
+
+    public void setStorage(IDevicesSave storage) {
+        this.storage = storage;
     }
 
     public interface IDevicesSave {

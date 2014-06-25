@@ -8,6 +8,7 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.scenes.SceneCollection;
@@ -50,39 +51,58 @@ class LoadStoreData {
         }
     };
 
-    public SceneCollection readScenes() {
+    private final TimerController.IAlarmsSave alarmsStorage = new TimerController.IAlarmsSave() {
+        @Override
+        public void alarmsSave(TimerController alarms) {
+            Context context = NetpowerctrlApplication.instance;
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            prefs.edit().putString("alarms", alarms.toJSON()).commit();
+        }
+    };
+
+    public void read(SceneCollection target) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         try {
-            return SceneCollection.fromJSON(JSONHelper.getReader(prefs.getString("scenes", null)), sceneCollectionStorage);
+            target.setStorage(sceneCollectionStorage);
+            target.fromJSON(JSONHelper.getReader(prefs.getString("scenes", null)), false);
         } catch (IOException ignored) {
             Toast.makeText(context, R.string.error_reading_scenes, Toast.LENGTH_SHORT).show();
         }
-
-        return new SceneCollection(sceneCollectionStorage);
     }
 
-    public DeviceCollection readDevices() {
+    public void read(DeviceCollection target) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         try {
-            return DeviceCollection.fromJSON(JSONHelper.getReader(prefs.getString("devices", null)), deviceCollectionStorage);
+            target.setStorage(deviceCollectionStorage);
+            target.fromJSON(JSONHelper.getReader(prefs.getString("devices", null)), false);
         } catch (Exception ignored) {
             Toast.makeText(context, R.string.error_reading_devices, Toast.LENGTH_SHORT).show();
-            return new DeviceCollection(deviceCollectionStorage);
         }
     }
 
-    public GroupCollection readGroups() {
+    public void read(GroupCollection target) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         try {
-            return GroupCollection.fromJSON(JSONHelper.getReader(prefs.getString("groups", null)), groupCollectionStorage);
+            target.setStorage(groupCollectionStorage);
+            target.fromJSON(JSONHelper.getReader(prefs.getString("groups", null)), false);
         } catch (IOException ignored) {
             Toast.makeText(context, R.string.error_reading_groups, Toast.LENGTH_SHORT).show();
-            return new GroupCollection(groupCollectionStorage);
+        }
+    }
+
+    public void read(TimerController target) {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        try {
+            target.setStorage(alarmsStorage);
+            target.fromJSON(JSONHelper.getReader(prefs.getString("alarms", null)));
+        } catch (IOException ignored) {
+            Toast.makeText(context, R.string.error_reading_groups, Toast.LENGTH_SHORT).show();
         }
     }
 }

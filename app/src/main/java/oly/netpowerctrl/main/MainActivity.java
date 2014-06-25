@@ -23,7 +23,6 @@ import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -111,7 +110,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         checkUseHomeButton();
 
         // Delayed loading of drawer and nfc
-        new Handler().postDelayed(new Runnable() {
+        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 mDrawer.createDrawer(MainActivity.this, true);
@@ -124,15 +123,19 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
                             MainActivity.this);
                 }
 
+                donate.start(MainActivity.this);
+            }
+        }, 100);
+        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
                 if (!SharedPrefs.isFirstRun()) {
                     ChangeLog cl = new ChangeLog(MainActivity.this);
                     if (cl.isFirstRun())
                         cl.getLogDialog().show();
                 }
-
-                donate.start(MainActivity.this);
             }
-        }, 100);
+        }, 150);
     }
 
     /* Called whenever we call invalidateOptionsMenu() */

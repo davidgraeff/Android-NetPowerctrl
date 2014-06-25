@@ -30,11 +30,15 @@ import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
+import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  */
-public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener {
+public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnRefreshListener {
     private DevicesAdapter adapter;
+    private PullToRefreshLayout mPullToRefreshLayout;
 
     public DevicesFragment() {
     }
@@ -96,30 +100,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_requery: {
-                NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
-                    @Override
-                    public void onDeviceError(DeviceInfo di) {
-                    }
-
-                    @Override
-                    public void onDeviceTimeout(DeviceInfo di) {
-                    }
-
-                    @Override
-                    public void onDeviceUpdated(DeviceInfo di) {
-                    }
-
-                    @Override
-                    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-                        //noinspection ConstantConditions
-                        Toast.makeText(getActivity(),
-                                getActivity().getString(R.string.devices_refreshed,
-                                        NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
-                                        NetpowerctrlApplication.getDataController().newDevices.size()),
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                });
+                refresh();
                 return true;
             }
 
@@ -163,6 +144,13 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 MainActivity.instance.changeToFragment(PreferencesFragment.class.getName());
             }
         });
+        mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
+
+        // Now setup the PullToRefreshLayout
+        ActionBarPullToRefresh.from(getActivity())
+                .allChildrenArePullable()
+                .listener(this)
+                .setup(mPullToRefreshLayout);
 
         return view;
     }
@@ -260,5 +248,39 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             // Set default values for anel devices
             show_configure_device_dialog(di);
         }
+    }
+
+    @Override
+    public void onRefreshStarted(View view) {
+        refresh();
+    }
+
+    private void refresh() {
+        mPullToRefreshLayout.setRefreshing(true);
+        NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
+            @Override
+            public void onDeviceError(DeviceInfo di) {
+            }
+
+            @Override
+            public void onDeviceTimeout(DeviceInfo di) {
+            }
+
+            @Override
+            public void onDeviceUpdated(DeviceInfo di) {
+            }
+
+            @Override
+            public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
+                mPullToRefreshLayout.setRefreshComplete();
+                //noinspection ConstantConditions
+                Toast.makeText(getActivity(),
+                        getActivity().getString(R.string.devices_refreshed,
+                                NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
+                                NetpowerctrlApplication.getDataController().newDevices.size()),
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
     }
 }

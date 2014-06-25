@@ -21,6 +21,7 @@ import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
+import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -184,7 +185,11 @@ public class NeighbourDataReceiveService extends Service {
                     h.post(new Runnable() {
                         @Override
                         public void run() {
-                            d.sceneCollection.importData(false, thisLine);
+                            try {
+                                d.sceneCollection.fromJSON(JSONHelper.getReader(thisLine), false);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                     break;
@@ -197,7 +202,11 @@ public class NeighbourDataReceiveService extends Service {
                     h.post(new Runnable() {
                         @Override
                         public void run() {
-                            d.groupCollection.importData(false, thisLine2);
+                            try {
+                                d.groupCollection.fromJSON(JSONHelper.getReader(thisLine2), false);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                     break;
@@ -210,7 +219,11 @@ public class NeighbourDataReceiveService extends Service {
                     h.post(new Runnable() {
                         @Override
                         public void run() {
-                            d.deviceCollection.importData(false, thisLine3);
+                            try {
+                                d.deviceCollection.fromJSON(JSONHelper.getReader(thisLine3), false);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
                     break;

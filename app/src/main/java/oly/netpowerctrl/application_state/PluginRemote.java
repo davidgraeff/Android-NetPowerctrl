@@ -227,12 +227,17 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public Alarm getNextFreeAlarm(DevicePort port) {
+    public Alarm getNextFreeAlarm(DevicePort port, int type) {
         return null;
     }
 
     @Override
     public void saveAlarm(Alarm alarm, final AsyncRunnerResult callback) {
+
+    }
+
+    @Override
+    public void removeAlarm(Alarm alarm, final AsyncRunnerResult callback) {
 
     }
 
