@@ -15,6 +15,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.text.DateFormatSymbols;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -53,13 +54,15 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
     public void onStart() {
         super.onStart();
         doneCancelFragmentHelper.setTitle(getActivity(), R.string.alarm_edit);
+        doneCancelFragmentHelper.addCancelDone(getActivity(), R.layout.device_done);
+
     }
 
     @Override
-    public void onDestroy() {
+    public void onStop() {
         doneCancelFragmentHelper.restoreTitle(getActivity());
         doneCancelFragmentHelper.restoreActionBar(getActivity());
-        super.onDestroy();
+        super.onStop();
     }
 
     @Override
@@ -67,8 +70,6 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
 
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.alarm_preferences);
-
-        doneCancelFragmentHelper.addCancelDone(getActivity(), R.layout.device_done);
 
         Activity a = getActivity();
         View btnDone = a.findViewById(R.id.action_mode_save_button);
@@ -140,7 +141,6 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                         alarm.port = a.getItem(i);
-                        alarm.unique_device_id = alarm.port.device.UniqueDeviceID;
 
                         findPreference("alarm_device_port").setSummary(alarm.getTargetName());
                         dialog.dismiss();
@@ -204,12 +204,14 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
 
     public void setParameter(Alarm alarm) {
         this.alarm = alarm;
-        if (this.alarm == null)
-            this.alarm = new Alarm(true);
+        if (this.alarm == null) {
+            this.alarm = new Alarm();
+        }
     }
 
     private void removeAlarm() {
-
+        PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlApplication.getService());
+        plugin.removeAlarm(alarm, this);
     }
 
     private void saveAlarm() {
@@ -220,28 +222,46 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
                 ? Alarm.TYPE_ONCE : Alarm.TYPE_RANGE_ON_WEEKDAYS;
         if (!((CheckBoxPreference) m.findPreference("alarm_start_time_enabled")).isChecked())
             alarm.hour_minute_start = -1;
+        else {
+            Calendar c = ((TimePreference) m.findPreference("alarm_start_time")).getTime();
+            alarm.hour_minute_start = c.get(Calendar.HOUR) * 60 + c.get(Calendar.MINUTE);
+        }
         if (!((CheckBoxPreference) m.findPreference("alarm_stop_time_enabled")).isChecked())
             alarm.hour_minute_stop = -1;
+        else {
+            Calendar c = ((TimePreference) m.findPreference("alarm_stop_time")).getTime();
+            alarm.hour_minute_stop = c.get(Calendar.HOUR) * 60 + c.get(Calendar.MINUTE);
+        }
         alarm.enabled = ((CheckBoxPreference) m.findPreference("alarm_enabled")).isChecked();
 
         // Check input data
-        if (alarm.unique_device_id == null || alarm.unique_device_id.isEmpty() ||
-                (alarm.hour_minute_start == -1 && alarm.hour_minute_stop == -1)) {
-            Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
+        if (alarm.port == null || alarm.port.uuid == null) {
+            Toast.makeText(getActivity(), R.string.alarm_no_target, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Find free device alarm
-        Alarm found_alarm;
+        alarm.port_id = alarm.port.uuid;
+
+        // Check input data
+        if (alarm.hour_minute_start == -1 && alarm.hour_minute_stop == -1) {
+            Toast.makeText(getActivity(), R.string.alarm_no_start_no_stop, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlApplication.getService());
-        found_alarm = plugin.getNextFreeAlarm(alarm.port);
+        // Find free device alarm, if not already assigned
+        if (alarm.id == -1) {
+            Alarm found_alarm;
+            found_alarm = plugin.getNextFreeAlarm(alarm.port, alarm.type);
 
-        if (found_alarm == null) {
-            Toast.makeText(getActivity(), R.string.alarm_no_device_alarm, Toast.LENGTH_LONG).show();
-            return;
+            if (found_alarm == null) {
+                Toast.makeText(getActivity(), R.string.alarm_no_device_alarm, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            alarm.id = found_alarm.id;
+            alarm.deviceAlarm = true;
         }
-
-        alarm.id = found_alarm.id;
         plugin.saveAlarm(alarm, this);
     }
 

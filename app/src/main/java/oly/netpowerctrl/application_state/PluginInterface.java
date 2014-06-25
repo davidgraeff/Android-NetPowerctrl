@@ -43,7 +43,9 @@ public interface PluginInterface {
 
     boolean isNetworkPlugin();
 
-    Alarm getNextFreeAlarm(DevicePort port);
+    Alarm getNextFreeAlarm(DevicePort port, int type);
 
     void saveAlarm(Alarm alarm, final AsyncRunnerResult callback);
+
+    void removeAlarm(Alarm alarm, final AsyncRunnerResult callback);
 }

@@ -2,15 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="Settings">
 
-    <EditTextPreference
-        android:key="max_favourites_groups"
-        android:title="@string/preference_max_favourites_groups"
-        android:inputType="number"
-        android:numeric="integer"
-        android:defaultValue="@integer/max_favourites_groups"
-        android:dialogMessage="@string/preference_max_favourites_groups_summary"
-        android:dialogTitle="@string/preference_standard_recv_port" />
-
     <CheckBoxPreference
         android:key="use_dark_theme"
         android:title="@string/preference_use_dark_theme"
@@ -22,6 +13,15 @@
         android:title="@string/preference_show_persistent_notification"
         android:defaultValue="@bool/show_persistent_notification"
         android:summary="@string/preference_show_persistent_notification_summary" />
+
+    <EditTextPreference
+        android:key="max_favourites_groups"
+        android:title="@string/preference_max_favourites_groups"
+        android:inputType="number"
+        android:numeric="integer"
+        android:defaultValue="@integer/max_favourites_groups"
+        android:dialogMessage="@string/preference_max_favourites_groups_summary"
+        android:dialogTitle="@string/preference_standard_recv_port" />
 
     <PreferenceCategory android:title="@string/preference_standard_ports">
         <EditTextPreference

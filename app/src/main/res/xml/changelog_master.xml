@@ -1,10 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <!--<release
-        version="5.0"
+    <release
+        version="4.8"
+        versioncode="58">
+        <change>Layout leicht verändert</change>
+        <change>Steckdosen können durch eine Wegwisch-Geste versteckt werden</change>
+        <change>Pull-to-Refresh Geste eingeführt. Einfach Steckdosen-, Geräte- oder Alarmliste nach
+            unten ziehen zum aktualisieren.
+        </change>
+        <change>Fehler mit nicht abschaltbarer permanenter Benachrichtigung behoben</change>
+        <change>Absturz bei HTTP Modus behoben</change>
+        <change>Nicht übernommene Werte in Geräte-Einrichten-Dialog behoben</change>
+        <change>Warnen, wenn ein UDP/Http Port kleiner als 1024 gewählt wurde (ist nur mit Root
+            Rechten möglich)
+        </change>
+    </release>
+    <release
+        version="4.7"
+        versioncode="57">
+        <change>Permanente Benachrichtigung für die Statusleiste einstellbar: Einfach in den
+            Einstellungen "In Statusbar anzeigen" aktivieren und Szenen als Favoriten markieren.
+            Diese
+            tauchen ab Android 4.1 auf und können von dort direkt ausgeführt werden.
+        </change>
+        <change>Alarm/Zeitschaltungen verbessert: Alarme werden zwischengespeichert und direkt
+            angezeigt,
+            da das abrufen von den Anel Geräten einige Sekunden dauert.
+        </change>
+        <change>Android 4.1 wird bald Vorraussetzung. Android 4.1 ist am 27. Juni 2012 erschienen.
+        </change>
+    </release>
+    <release
+        version="4.6"
         versioncode="56">
-        <change>Alarm/Zeitschaltungen einstellbar</change>
-    </release>-->
+        <change>Alarm/Zeitschaltungen verbessert</change>
+    </release>
     <release
         version="4.5"
         versioncode="55">
@@ -17,82 +47,41 @@
         <change>Fehler behoben</change>
     </release>
     <release
-        version="4.4"
+        version="4.1-4.4"
         versioncode="54">
         <change>Theme leicht verändert</change>
         <change>GoogleDrive Backup erkennt eine fehlende Datenverbindung schneller</change>
-        <change>(Seltener) Absturz bei Widgetausführung behoben</change>
-        <change>Absturz bei Nachbarerkennung behoben</change>
         <change>Startablauf der App verbessert (kann zu Abstürzen führen, Fehlerberichte
             willkommen)
         </change>
-        <change>Vorbereitung für Zeitschaltungen</change>
-    </release>
-    <release
-        version="4.3"
-        versioncode="53">
         <change>Das Setzen von Widget Icons funktioniert nun auch bei etwas kaputten Launchern
         </change>
-        <change>Steckdosen-Auswahlliste für das Anlegen eines Widgets wurde nicht immer gefüllt:
-            Behoben
-        </change>
-        <change>Absturz behoben, wenn mehrmals die Ansicht im Szene-Erstellen Dialog gedreht wurde
-        </change>
-    </release>
-    <release
-        version="4.2"
-        versioncode="52">
-        <change>Kopplung mit Nachbargeräten verbessert</change>
         <change>Die GoogleDrive Backup Funktion speichert nun im öffentlichen Ordner in
             PowerControlApp_Backup
         </change>
-    </release>
-    <release
-        version="4.1"
-        versioncode="51">
-        <change>Absturz beim Erstellen eines Widgets behoben</change>
-        <change>Absturz bei Nachbarerkennung behoben</change>
-        <change>Absturz beim Szenenerstellen behoben</change>
-        <change>GoogleDrive Backup jetzt auch für Bilder</change>
         <change>Automatische Optimierung jetzt aktiv</change>
-        <change>Master/Slave bei Szenenausführung über mehrere Geräte hinweg funktionierte nicht
-            richtig: Behoben
-        </change>
     </release>
     <release
         version="4.0"
         versioncode="50">
         <change>Szenenerstellung für Tablets verbessert</change>
-        <change>Neue Sortierkriterien für Steckdoseübersicht</change>
+        <change>Neue Sortierkriterien für Steckdosen-Übersicht</change>
         <change>GoogleDrive Backup</change>
         <change>Über das lokale Netzwerk können Einrichtungsdaten (Geräte, Szenen, Gruppen, Icons)
             schnell an andere Android Mobilgeräte verteilt werden
         </change>
-        <change>NFC wird nur noch als Play Store Link genutzt</change>
-        <change>Bugfix: Geräte können wieder manuell angelegt werden</change>
+        <change>NFC Geräte aneinanderhalten wird nur noch für das Öffnen des Play Stores genutzt
+        </change>
         <change>Http statt UDP möglich (für diejenigen, welche die Steckdose übers Internet steuern
             wollen)
         </change>
     </release>
     <release
-        version="3.3"
+        version="3.1-3.3"
         versioncode="49">
-        <change>Abstürze an diversen Stellen bedingt durch automatische Optimierung behoben</change>
-    </release>
-    <release
-        version="3.2"
-        versioncode="48">
         <change>Steckdose-Aus Icon (Rot): Sättigung verringert</change>
-        <change>Absturz bei Szenenerstellung behoben, wenn kein Master festgelegt wurde</change>
-    </release>
-    <release
-        version="3.1"
-        versioncode="47">
         <change>Master/Slave Steckdosen: Einer Steckdose können mehrere andere Zugeordnet werden,
             welche den selben Zustand beim Wechsel einnehmen.
-        </change>
-        <change>Vorbereiten für mögliches Synchronisieren der Geräte, Gruppen, Szenen, Icons mit
-            Google Drive und Nachbargeräten
         </change>
         <change>Möglichkeit, den Energiesparmodus automatisch zu beenden. Der Netzwerkwechsel wird
             dafür überwacht (kostet natürlich Energie). Für Widget-Nutzer praktisch.
@@ -100,36 +89,16 @@
         <change>Changelog wird bei aller erster Benutzung jetzt nicht mehr angezeigt</change>
     </release>
     <release
-        version="3.0"
+        version="2.8-3.0"
         versioncode="46">
         <change>Master/Slave Szenen: Alle Steckdosen richten sich nach dem Schaltzustand einer
             ausgewählten
         </change>
-    </release>
-    <release
-        version="2.12"
-        versioncode="45">
-        <change>Absturz in Logbuch behoben</change>
-        <change>Absturz bei Gerätebildschirm behoben</change>
-    </release>
-    <release
-        version="2.11"
-        versioncode="44">
-        <change>Fehlerbehebung</change>
-    </release>
-    <release
-        version="2.10"
-        versioncode="43">
         <change>Logbuch Funktionalität: Wenn die App bei dir nicht wie gewünscht funktioniert,
             kannst du mir das Logbuch per Mail senden damit ich den Fehler schneller finde. Das
             Logbuch findest du in den Einstellungen.
         </change>
-        <change>Absturz bei Gerätebildschirm behoben</change>
         <change>Energiesparmodus verbessert</change>
-    </release>
-    <release
-        version="2.9"
-        versioncode="42">
         <change>Optional animierte Steckdosen-, Szenen-, Geräteeinträge</change>
         <change>Zum Startbildschirm hinzufügen jetzt auch für Steckdosen</change>
         <change>Verbessertes Nutzungserlebnis bei unkonfigurierter App</change>
@@ -139,40 +108,11 @@
         <change>Kein Absturz mehr wenn Widgets angeklickt werden und der Hintergrunddienst noch
             nicht bereit ist
         </change>
-    </release>
-    <release
-        version="2.8e"
-        versioncode="41">
-        <change>Automatische Optimierung wieder abgeschaltet: App startete nicht mehr auf allen
-            Geräten
-        </change>
         <change>Icons für die Steckdosen Übersichtsseite und Szenenseite werden im Hintergrund
             geladen
         </change>
-    </release>
-    <release
-        version="2.8d"
-        versioncode="40">
-        <change>Absturz bei Konfigurationstests von neuen Geräten behoben</change>
-    </release>
-    <release
-        version="2.8c"
-        versioncode="39">
-        <change>Behebe Anzeigeprobleme von Steckdosenzuständen</change>
-    </release>
-    <release
-        version="2.8b"
-        versioncode="38">
-        <change>Absturz bei Szenenausführung behoben</change>
-        <change>Absturz bei Konfiguration von neuen Geräten behoben</change>
-    </release>
-    <release
-        version="2.8a"
-        versioncode="37">
-        <change>Absturz bei Szenenerstellung behoben</change>
         <change>Was ist neu - Dialog</change>
         <change>Namensänderungen finden jetzt direkt auf dem Gerät statt</change>
-        <change>Mehr Kontrolle über den Energiesparmodus</change>
         <change>Energiesparmodus überarbeitet</change>
         <change>Eigene Icons für Steckdosen/IOs. Widget Icons müssen leider neu gesetzt werden.
         </change>

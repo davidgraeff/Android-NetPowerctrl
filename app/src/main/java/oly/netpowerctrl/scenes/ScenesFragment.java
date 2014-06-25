@@ -98,7 +98,7 @@ public class ScenesFragment extends Fragment implements
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.delete_all_groups)
-                        .setMessage(R.string.confirmation_delete_all_groups)
+                        .setMessage(R.string.confirmation_delete_all_scenes)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {

@@ -3,7 +3,6 @@ package oly.netpowerctrl.groups;
 import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
-import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +16,11 @@ import oly.netpowerctrl.utils.JSONHelper;
 
 public class GroupCollection {
     private static long nextStableID = 0;
-    private final IGroupsSave storage;
+    private IGroupsSave storage;
+
+    public void setStorage(IGroupsSave storage) {
+        this.storage = storage;
+    }
 
     public static class GroupItem {
         public UUID uuid;
@@ -80,10 +83,6 @@ public class GroupCollection {
     }
 
     public List<GroupItem> groups = new ArrayList<>();
-
-    public GroupCollection(IGroupsSave storage) {
-        this.storage = storage;
-    }
 
     //bitmap = Icons.loadIcon(NetpowerctrlApplication.instance,uuid, Icons.IconType.GroupIcon);
     public void setBitmap(GroupItem item, Bitmap bitmap) {
@@ -184,7 +183,7 @@ public class GroupCollection {
         }
     }
 
-    private static void readGroupItem(JsonReader reader, GroupCollection scene) throws IOException {
+    private static void readGroupItem(JsonReader reader, GroupCollection groupCollection, boolean tryToMerge) throws IOException {
         String group_name = null;
         UUID group_uuid = null;
 
@@ -209,13 +208,27 @@ public class GroupCollection {
         if (group_name == null || group_uuid == null)
             return;
         GroupItem item = new GroupItem(group_uuid, group_name);
-        scene.groups.add(item);
+
+        if (tryToMerge) {
+            for (GroupItem di : groupCollection.groups)
+                groupCollection.edit(di.uuid, di.name);
+        } else
+            groupCollection.groups.add(item);
     }
 
-    public static GroupCollection fromJSON(JsonReader reader, IGroupsSave storage) throws IOException {
-        GroupCollection groupCollection = new GroupCollection(storage);
+    /**
+     * Read data from a json source and either replace existing data or merge data.
+     *
+     * @param reader     A json reader
+     * @param tryToMerge If you merge the data instead of replacing the process is slower.
+     * @throws IOException
+     */
+    public void fromJSON(JsonReader reader, boolean tryToMerge) throws IOException {
         if (reader == null)
-            return groupCollection;
+            return;
+
+        if (!tryToMerge)
+            groups.clear();
 
         reader.beginObject();
         while (reader.hasNext()) {
@@ -224,7 +237,7 @@ public class GroupCollection {
             if (name.equals("groupItems")) {
                 reader.beginArray();
                 while (reader.hasNext()) {
-                    readGroupItem(reader, groupCollection);
+                    readGroupItem(reader, this, tryToMerge);
                 }
                 reader.endArray();
             } else {
@@ -232,7 +245,12 @@ public class GroupCollection {
             }
         }
         reader.endObject();
-        return groupCollection;
+    }
+
+    public void save() {
+        notifyObservers(true);
+        if (storage != null)
+            storage.groupsSave(this);
     }
 
     void toJSON(JsonWriter writer) throws IOException {
@@ -253,36 +271,6 @@ public class GroupCollection {
         for (int i = 0; i < a.length; ++i)
             a[i] = groups.get(i).name;
         return a;
-    }
-
-    /**
-     * Import String data (JSON) and either replace all existing data or merge it with the
-     * existing data.
-     *
-     * @param tryToMerge If you merge the data instead of replacing the process is slower.
-     */
-    public boolean importData(boolean tryToMerge, String data) {
-        GroupCollection dc;
-        try {
-            dc = GroupCollection.fromJSON(JSONHelper.getReader(data), null);
-        } catch (IOException e) {
-            Log.e("importData", "failed: " + data);
-            e.printStackTrace();
-            return false;
-        }
-
-        if (tryToMerge) {
-            for (GroupItem di : dc.groups)
-                edit(di.uuid, di.name);
-        } else {
-            groups.clear();
-            groups = dc.groups;
-
-            notifyObservers(true);
-            if (storage != null)
-                storage.groupsSave(this);
-        }
-        return true;
     }
 
     /**

@@ -20,35 +20,41 @@ import oly.netpowerctrl.utils.Sorting;
  * List of scenes
  */
 public class SceneCollection implements SortCriteriaInterface {
-    public List<Scene> scenes;
-    private final IScenesSave storage;
+    public List<Scene> scenes = new ArrayList<>();
+    private IScenesSave storage;
     private final ArrayList<IScenesUpdated> observers = new ArrayList<>();
 
-    public SceneCollection(IScenesSave storage) {
-        this.storage = storage;
-        this.scenes = new ArrayList<>();
-    }
-
     public static SceneCollection fromScenes(List<Scene> scenes, IScenesSave storage) {
-        SceneCollection dc = new SceneCollection(storage);
+        SceneCollection dc = new SceneCollection();
+        dc.storage = storage;
         dc.scenes = scenes;
         if (dc.scenes == null)
             dc.scenes = new ArrayList<>();
         return dc;
     }
 
-    public static SceneCollection fromJSON(JsonReader reader, IScenesSave storage) throws IOException {
-        SceneCollection dc = new SceneCollection(storage);
-        dc.scenes = new ArrayList<>();
+    /**
+     * @param reader     A json reader
+     * @param tryToMerge If you merge the data instead of replacing the process is slower.
+     * @throws IOException
+     */
+    public void fromJSON(JsonReader reader, boolean tryToMerge)
+            throws IOException {
+
         if (reader == null)
-            return dc;
+            return;
+
+        if (!tryToMerge)
+            scenes = new ArrayList<>();
 
         reader.beginArray();
         while (reader.hasNext()) {
-            dc.scenes.add(Scene.fromJSON(reader));
+            if (!tryToMerge)
+                scenes.add(Scene.fromJSON(reader));
+            else
+                add(Scene.fromJSON(reader));
         }
         reader.endArray();
-        return dc;
     }
 
     @SuppressWarnings("unused")
@@ -170,6 +176,8 @@ public class SceneCollection implements SortCriteriaInterface {
     }
 
     public void save() {
+        notifyObservers(true);
+
         if (storage != null)
             storage.scenesSave(this);
     }
@@ -183,36 +191,6 @@ public class SceneCollection implements SortCriteriaInterface {
 
     public Scene getScene(int position) {
         return scenes.get(position);
-    }
-
-
-    /**
-     * Import String data (JSON) and either replace all existing data or merge it with the
-     * existing data.
-     *
-     * @param tryToMerge If you merge the data instead of replacing the process is slower.
-     */
-    public boolean importData(boolean tryToMerge, String data) {
-        SceneCollection dc;
-        try {
-            dc = SceneCollection.fromJSON(JSONHelper.getReader(data), null);
-        } catch (IOException e) {
-            Log.e("importData", "failed: " + data);
-            e.printStackTrace();
-            return false;
-        }
-
-        if (tryToMerge) {
-            for (Scene di : dc.scenes)
-                add(di);
-        } else {
-            scenes.clear();
-            scenes = dc.scenes;
-
-            notifyObservers(true);
-            save();
-        }
-        return true;
     }
 
     @Override
@@ -271,6 +249,10 @@ public class SceneCollection implements SortCriteriaInterface {
 
         notifyObservers(false);
         save();
+    }
+
+    public void setStorage(IScenesSave storage) {
+        this.storage = storage;
     }
 
     public interface IScenesUpdated {

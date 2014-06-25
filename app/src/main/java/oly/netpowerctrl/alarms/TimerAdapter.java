@@ -2,11 +2,13 @@ package oly.netpowerctrl.alarms;
 
 import android.content.Context;
 import android.graphics.Paint;
+import android.text.Html;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
@@ -68,10 +70,8 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
         Alarm alarm = controller.getItem(position);
 
         if (convertView == null) {
-            if (alarm.type == Alarm.TYPE_RANGE_ON_WEEKDAYS)
+            if (alarm.type == Alarm.TYPE_RANGE_ON_WEEKDAYS || alarm.type == Alarm.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
                 convertView = inflater.inflate(R.layout.alarm_range_weekdays, null);
-            else if (alarm.type == Alarm.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
-                convertView = inflater.inflate(R.layout.alarm_range_weekdays_random, null);
             else if (alarm.type == Alarm.TYPE_ONCE)
                 convertView = inflater.inflate(R.layout.alarm_once, null);
         }
@@ -83,30 +83,33 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
             // Port name, device name
             TextView txt = (TextView) convertView.findViewById(R.id.alarm_target);
             txt.setText(alarm.getTargetName());
-            if (alarm.enabled)
-                txt.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.presence_online, 0, 0, 0);
+
+            ImageView image = (ImageView) convertView.findViewById(R.id.alarm_image);
+            if (alarm.fromCache)
+                image.setImageResource(android.R.drawable.presence_offline);
+            else if (alarm.enabled)
+                image.setImageResource(android.R.drawable.presence_online);
             else
-                txt.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.presence_busy, 0, 0, 0);
+                image.setImageResource(android.R.drawable.presence_busy);
 
             // weekdays
             txt = (TextView) convertView.findViewById(R.id.alarm_weekdays);
             txt.setText(alarm.days());
 
-            // start time
-            txt = (TextView) convertView.findViewById(R.id.alarm_start);
-            txt.setText(alarm.time(alarm.hour_minute_start));
-            txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+            // start+stop time
+            txt = (TextView) convertView.findViewById(R.id.alarm_time);
+            txt.setText(Html.fromHtml(context.getString(R.string.alarm_switch_on_off,
+                    alarm.time(alarm.hour_minute_start),
+                    alarm.time(alarm.hour_minute_stop))));
 
-            // stop time
-            txt = (TextView) convertView.findViewById(R.id.alarm_stop);
-            txt.setText(alarm.time(alarm.hour_minute_stop));
-            txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-
+            txt = (TextView) convertView.findViewById(R.id.alarm_random);
             if (alarm.type == Alarm.TYPE_RANGE_ON_RANDOM_WEEKDAYS) {
                 // random time
-                txt = (TextView) convertView.findViewById(R.id.alarm_random);
-                txt.setText(alarm.time(alarm.hour_minute_random_interval));
-                txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+                txt.setText(Html.fromHtml(context.getString(R.string.alarm_toggle_random,
+                        alarm.time(alarm.hour_minute_random_interval))));
+                txt.setVisibility(View.VISIBLE);
+            } else {
+                txt.setVisibility(View.GONE);
             }
 
         } else if (alarm.type == Alarm.TYPE_ONCE) {

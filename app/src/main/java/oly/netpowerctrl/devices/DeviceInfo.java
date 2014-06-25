@@ -90,29 +90,6 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         Version = "";
     }
 
-//    public DeviceInfo(DeviceInfo other) {
-//        uuid = UUID.randomUUID();
-//        DeviceName = other.DeviceName;
-//        pluginID = other.pluginID;
-//        HostName = other.HostName;
-//        UniqueDeviceID = other.UniqueDeviceID;
-//        UserName = other.UserName;
-//        Password = other.Password;
-//        DefaultPorts = other.DefaultPorts;
-//        SendPort = other.SendPort;
-//        ReceivePort = other.ReceivePort;
-//        HttpPort = other.HttpPort;
-//        Temperature = other.Temperature;
-//        Version = other.Version;
-//        configured = other.configured;
-//        DevicePorts.clear();
-//        other.lockDevicePorts(); // lock others devicePort list while iterating over it
-//        for (Map.Entry<Integer, DevicePort> entry : other.DevicePorts.entrySet()) {
-//            add(new DevicePort(entry.getValue()));
-//        }
-//        other.releaseDevicePorts();
-//    }
-
     public static DeviceInfo createNewDevice(String pluginID) {
         DeviceInfo di = new DeviceInfo(pluginID);
         di.DeviceName = NetpowerctrlApplication.instance.getString(R.string.default_device_name);

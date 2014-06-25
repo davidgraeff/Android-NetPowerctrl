@@ -34,10 +34,10 @@ import oly.netpowerctrl.utils.ShowToast;
  */
 public class RuntimeDataController {
     public final List<DeviceInfo> newDevices = new ArrayList<>();
-    public DeviceCollection deviceCollection;
-    public GroupCollection groupCollection;
-    public SceneCollection sceneCollection;
-    public TimerController timerController;
+    final public DeviceCollection deviceCollection = new DeviceCollection();
+    final public GroupCollection groupCollection = new GroupCollection();
+    final public SceneCollection sceneCollection = new SceneCollection();
+    final public TimerController timerController = new TimerController();
     private final LoadStoreData loadStoreData = new LoadStoreData();
     private boolean initialDataQueryCompleted = false;
 
@@ -54,10 +54,10 @@ public class RuntimeDataController {
      *                        reloaded data. This should invalidate all caches (icons etc).
      */
     void loadData(boolean notifyObservers) {
-        groupCollection = loadStoreData.readGroups();
-        sceneCollection = loadStoreData.readScenes();
-        deviceCollection = loadStoreData.readDevices();
-        timerController = new TimerController();
+        loadStoreData.read(groupCollection);
+        loadStoreData.read(sceneCollection);
+        loadStoreData.read(deviceCollection);
+        loadStoreData.read(timerController);
         SharedPrefs.setCurrentPreferenceVersion();
         if (notifyObservers)
             notifyStateReloaded();

@@ -7,18 +7,28 @@
     android:minWidth="280dp"
     android:gravity="center_vertical"
     android:orientation="vertical"
-    android:padding="10dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="5dp"
     android:descendantFocusability="blocksDescendants"
-    android:background="?item_selector"
     android:clickable="false"
     android:focusable="false"
     android:focusableInTouchMode="false">
+
+    <View
+        android:id="@+id/line"
+        android:layout_marginBottom="5dp"
+        android:paddingBottom="5dp"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:background="?list_item_background" />
 
     <ImageView
         android:id="@+id/icon_bitmap"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:paddingRight="5dp"
+        android:layout_below="@id/line"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -40,6 +50,16 @@
         android:layout_centerVertical="true"
         android:paddingTop="2dp" />
 
+    <ImageView
+        android:id="@+id/icon_edit"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:alpha="0.5"
+        android:src="@android:drawable/ic_menu_manage"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        tools:ignore="ContentDescription" />
+
     <SeekBar
         android:id="@+id/item_seekbar"
         android:layout_width="match_parent"
@@ -52,5 +72,4 @@
         android:focusableInTouchMode="false"
         android:layout_below="@id/text1"
         android:layout_toRightOf="@id/icon_bitmap" />
-
 </RelativeLayout>

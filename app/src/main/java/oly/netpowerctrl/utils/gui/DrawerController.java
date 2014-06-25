@@ -3,7 +3,6 @@ package oly.netpowerctrl.utils.gui;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
 import android.os.Handler;
@@ -251,9 +250,8 @@ public class DrawerController {
             ((ChangeArgumentsFragment) currentFragment).changeArguments(item.mExtra);
         }
 
-        FragmentManager fragmentManager = context.getFragmentManager();
+        FragmentTransaction ft = context.getFragmentManager().beginTransaction();
         if (item.mDialog) {
-            FragmentTransaction ft = context.getFragmentManager().beginTransaction();
             Fragment prev = context.getFragmentManager().findFragmentByTag("dialog");
             if (prev != null) {
                 ft.remove(prev);
@@ -269,7 +267,8 @@ public class DrawerController {
         } else {
             // we commit with possible state loss here because selectItem is called from an
             // async callback and the InstanceState of the activity may have been saved already.
-            fragmentManager.beginTransaction().replace(R.id.content_frame, currentFragment).commitAllowingStateLoss();
+            ft.addToBackStack(null);
+            ft.replace(R.id.content_frame, currentFragment).commitAllowingStateLoss();
 
             // update selected item and title
             mDrawerList.setItemChecked(position, true);
