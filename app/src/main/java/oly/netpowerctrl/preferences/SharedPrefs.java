@@ -10,6 +10,8 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 public class SharedPrefs {
     public final static String PREF_widgets = "widgets";
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
+    public static final String PREF_use_dark_theme = "use_dark_theme";
+    public static final String PREF_show_persistent_notification = "show_persistent_notification";
     private final static int PREF_CURRENT_VERSION = 3;
 
     public static int getLastPreferenceVersion() {
@@ -142,8 +144,6 @@ public class SharedPrefs {
         return wakeUp_energy_saving_mode;
     }
 
-    public static final String PREF_use_dark_theme = "use_dark_theme";
-
     public static boolean isDarkTheme() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -183,16 +183,16 @@ public class SharedPrefs {
         return prefs.getBoolean("OutletsGrid", false);
     }
 
-    public static boolean getScenesList() {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("ScenesList", false);
-    }
-
     public static void setOutletsGrid(boolean grid) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("OutletsGrid", grid).commit();
+    }
+
+    public static boolean getScenesList() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("ScenesList", false);
     }
 
     public static void setScenesList(boolean grid) {
@@ -234,13 +234,7 @@ public class SharedPrefs {
     public static boolean gDriveEnabled() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("gDrive", false);
-    }
-
-    public static void setGDriveEnabled(boolean enabled) {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("gDrive", enabled).commit();
+        return prefs.getBoolean("backup_to_gDrive", false);
     }
 
     public static void saveNeighbours(String json) {
@@ -266,8 +260,6 @@ public class SharedPrefs {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("neighbour_sync", enabled).commit();
     }
-
-    public static final String PREF_show_persistent_notification = "show_persistent_notification";
 
     public static boolean isNotification() {
         Context context = NetpowerctrlApplication.instance;

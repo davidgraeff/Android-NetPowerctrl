@@ -77,7 +77,7 @@ class AnelDeviceDiscoveryThread extends UDPReceiving {
             try {
                 di.HttpPort = Integer.parseInt(msg[15]);
             } catch (NumberFormatException ignored) {
-                di.HttpPort = 80;
+                di.HttpPort = -1;
             }
             // IO ports
             if (msg.length > 23) {
@@ -107,7 +107,7 @@ class AnelDeviceDiscoveryThread extends UDPReceiving {
         // For old firmwares
         else if (msg.length < 14) {
             numOutlets = msg.length - 6;
-            di.HttpPort = 80;
+            di.HttpPort = -1;
         }
 
         for (int i = 0; i < numOutlets; i++) {

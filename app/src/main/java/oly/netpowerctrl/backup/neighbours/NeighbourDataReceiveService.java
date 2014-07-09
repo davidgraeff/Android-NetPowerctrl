@@ -17,7 +17,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
@@ -49,15 +51,59 @@ import oly.netpowerctrl.utils.ShowToast;
 public class NeighbourDataReceiveService extends Service {
     private static final String TAG = "NeighbourDataReceiveService";
     private static NeighbourDataReceiveService service;
-    private Thread thread;
     private static NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication;
-
+    private Thread thread;
 
     public static void startAutoSync() {
         if (!SharedPrefs.isNeighbourAutoSync()) {
             return;
         }
         start(null);
+    }
+
+    private static void progress(final NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication,
+                                 Handler h, final long uniqueID_Receiver, final String message) {
+        if (neighbourDataCommunication == null)
+            return;
+        h.post(new Runnable() {
+            @Override
+            public void run() {
+                neighbourDataCommunication.dataProgress(uniqueID_Receiver, message);
+            }
+        });
+    }
+
+    public static void start(NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication) {
+        if (neighbourDataCommunication != null)
+            NeighbourDataReceiveService.neighbourDataCommunication = neighbourDataCommunication;
+
+        if (service != null)
+            return;
+
+        Context context = NetpowerctrlApplication.instance;
+        Intent intent = new Intent(context, NeighbourDataReceiveService.class);
+        context.startService(intent);
+
+        NetpowerctrlService.useListener();
+    }
+
+    public static void stop() {
+        NeighbourDataReceiveService.neighbourDataCommunication = null;
+
+        if (SharedPrefs.isNeighbourAutoSync() || service == null) {
+            return;
+        }
+
+        NetpowerctrlService.stopUseListener();
+
+        if (service.thread != null) {
+            try {
+                service.thread.interrupt();
+            } catch (Exception ignored) {
+            }
+        }
+        service.stopSelf();
+        service = null;
     }
 
     @Override
@@ -276,51 +322,21 @@ public class NeighbourDataReceiveService extends Service {
             h.post(new Runnable() {
                 @Override
                 public void run() {
-                    NetpowerctrlApplication.instance.findDevices(null);
+                    NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
+                        @Override
+                        public boolean onServiceReady(NetpowerctrlService service) {
+                            service.findDevices(null);
+                            return false;
+                        }
+
+                        @Override
+                        public void onServiceFinished() {
+
+                        }
+                    });
                 }
             });
         }
-    }
-
-    private static void progress(final NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication,
-                                 Handler h, final long uniqueID_Receiver, final String message) {
-        if (neighbourDataCommunication == null)
-            return;
-        h.post(new Runnable() {
-            @Override
-            public void run() {
-                neighbourDataCommunication.dataProgress(uniqueID_Receiver, message);
-            }
-        });
-    }
-
-    public static void start(NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication) {
-        if (neighbourDataCommunication != null)
-            NeighbourDataReceiveService.neighbourDataCommunication = neighbourDataCommunication;
-
-        if (service != null)
-            return;
-
-        Context context = NetpowerctrlApplication.instance;
-        Intent intent = new Intent(context, NeighbourDataReceiveService.class);
-        context.startService(intent);
-    }
-
-    public static void stop() {
-        NeighbourDataReceiveService.neighbourDataCommunication = null;
-
-        if (SharedPrefs.isNeighbourAutoSync() || service == null) {
-            return;
-        }
-
-        if (service.thread != null) {
-            try {
-                service.thread.interrupt();
-            } catch (Exception ignored) {
-            }
-        }
-        service.stopSelf();
-        service = null;
     }
 
     @Override

@@ -18,6 +18,7 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
@@ -28,9 +29,6 @@ import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class AnelDevicePreferences extends PreferenceFragment implements DeviceObserverResult, DeviceUpdate {
     DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
-
-    private enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
-
     private TestStates test_state = TestStates.TEST_INIT;
     private DeviceInfo device;
     private DeviceQuery deviceQuery;
@@ -194,7 +192,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 int port = Integer.valueOf((String) o);
-                if (port != 80 || port < 1024 || port > 65555) {
+                if (port != 80 && (port < 1024 || port > 65555)) {
                     warn_port();
                     return false;
                 }
@@ -242,7 +240,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
 
         test_state = TestStates.TEST_REACHABLE;
 
-        PluginInterface pi = device.getPluginInterface(NetpowerctrlApplication.getService());
+        PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
         assert pi != null;
         pi.prepareForDevices(device);
 
@@ -274,7 +272,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
     }
 
     private void saveAndFinish() {
-        PluginInterface pi = device.getPluginInterface(NetpowerctrlApplication.getService());
+        PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
         assert pi != null;
         pi.prepareForDevices(device);
 
@@ -289,8 +287,10 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             test_state = TestStates.TEST_INIT;
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
-                    getActivity().getString(R.string.error_device_not_reachable) + ": " + device.HostName + ":" + Integer.valueOf(device.SendPort).toString(),
-                    Toast.LENGTH_SHORT).show();
+                    getActivity().getString(R.string.error_device_not_reachable) + ": " + device.HostName + ":"
+                            + Integer.valueOf((device.PreferHTTP ? device.HttpPort : device.SendPort)).toString(),
+                    Toast.LENGTH_SHORT
+            ).show();
         }
     }
 
@@ -313,7 +313,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            PluginInterface pi = device.getPluginInterface(NetpowerctrlApplication.getService());
+            PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
             assert pi != null;
             if (deviceQuery != null) {
                 deviceQuery.addDevice(device, false);
@@ -356,4 +356,6 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             }
         }
     }
+
+    private enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
 }

@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
-        version="4.8"
-        versioncode="58">
+        version="5.0"
+        versioncode="60">
+        <change>Zeige Button für WLAN-Einstellungen in Steckdosenübersicht, wenn keine Steckdosen
+            gefunden wurden
+        </change>
+        <change>Fehler behoben: Es sind nun auch andere HTTP Ports als 80 möglich.</change>
+    </release>
+    <release
+        version="4.8-4.9"
+        versioncode="59">
         <change>Layout leicht verändert</change>
         <change>Steckdosen können durch eine Wegwisch-Geste versteckt werden</change>
         <change>Pull-to-Refresh Geste eingeführt. Einfach Steckdosen-, Geräte- oder Alarmliste nach
             unten ziehen zum aktualisieren.
         </change>
+        <change>Master/Slave Dialog schließt nach Speichern wieder</change>
         <change>Fehler mit nicht abschaltbarer permanenter Benachrichtigung behoben</change>
         <change>Absturz bei HTTP Modus behoben</change>
         <change>Nicht übernommene Werte in Geräte-Einrichten-Dialog behoben</change>

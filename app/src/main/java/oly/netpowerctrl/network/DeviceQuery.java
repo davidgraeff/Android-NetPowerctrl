@@ -67,7 +67,7 @@ public class DeviceQuery extends DeviceObserverBase {
         mainLoopHandler.postDelayed(redoRunnable, 600);
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
 
-        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
             return;
         service.sendBroadcastQuery();
@@ -79,7 +79,7 @@ public class DeviceQuery extends DeviceObserverBase {
 
     @Override
     protected void doAction(DeviceInfo di, boolean repeated) {
-        NetpowerctrlService service = NetpowerctrlApplication.getService();
+        NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
             return;
 

@@ -38,14 +38,17 @@ public class RuntimeDataController {
     final public GroupCollection groupCollection = new GroupCollection();
     final public SceneCollection sceneCollection = new SceneCollection();
     final public TimerController timerController = new TimerController();
-    private final LoadStoreData loadStoreData = new LoadStoreData();
-    private boolean initialDataQueryCompleted = false;
-
     private final WeakHashMap<RuntimeStateChanged, Boolean> observersStateChanged = new WeakHashMap<>();
     private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<>();
-
     private final List<DeviceObserverBase> updateDeviceStateList =
             Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
+    private LoadStoreData loadStoreData;
+    private boolean initialDataQueryCompleted = false;
+    private boolean initialDataLoaded = false;
+
+    public void setLoadStoreProvider(LoadStoreData loadStoreData) {
+        this.loadStoreData = loadStoreData;
+    }
 
     /**
      * Call this to reload all data from disk. This is useful after NFC/Neighbour/GDrive sync.
@@ -53,14 +56,20 @@ public class RuntimeDataController {
      * @param notifyObservers Notify all observers of the RuntimeDataControllerState that we
      *                        reloaded data. This should invalidate all caches (icons etc).
      */
-    void loadData(boolean notifyObservers) {
-        loadStoreData.read(groupCollection);
-        loadStoreData.read(sceneCollection);
-        loadStoreData.read(deviceCollection);
-        loadStoreData.read(timerController);
-        SharedPrefs.setCurrentPreferenceVersion();
-        if (notifyObservers)
-            notifyStateReloaded();
+    void loadData(final boolean notifyObservers) {
+        Thread t = new Thread() {
+            public void run() {
+                loadStoreData.read(groupCollection);
+                loadStoreData.read(sceneCollection);
+                loadStoreData.read(deviceCollection);
+                loadStoreData.read(timerController);
+                loadStoreData.markVersion();
+                initialDataLoaded = true;
+                if (notifyObservers)
+                    notifyStateReloaded();
+            }
+        };
+        t.start();
     }
 
     //! get a list of all send ports of all configured devices plus the default send port
@@ -86,19 +95,25 @@ public class RuntimeDataController {
     }
 
     /**
-     * @param o                                 The callback object
-     * @param notifyIfInitialDataQueryCompleted If the initial data query already finished, you can be
-     *                                          notified immediately. Depending on the result of the
-     *                                          callback method your object will either be registered
-     *                                          or not.
+     * @param o The callback object
+     *          If the initial data query already finished, you will be
+     *          notified immediately. Depending on the result of the
+     *          callback method your object will either be registered
+     *          or not.
      */
-    public void registerStateChanged(RuntimeStateChanged o, boolean notifyIfInitialDataQueryCompleted) {
-        if (notifyIfInitialDataQueryCompleted && initialDataQueryCompleted) {
+    public void registerStateChanged(RuntimeStateChanged o) {
+        boolean register = true;
+        if (initialDataQueryCompleted) {
             // If the object return false we do not register it for further changes.
-            if (!o.onDataQueryFinished())
-                return;
+            register = o.onDataQueryFinished();
         }
-        observersStateChanged.put(o, true);
+        if (initialDataLoaded) {
+            // If the object return false we do not register it for further changes.
+            register &= o.onDataLoaded();
+        }
+
+        if (register)
+            observersStateChanged.put(o, true);
     }
 
     @SuppressWarnings("unused")
@@ -288,7 +303,7 @@ public class RuntimeDataController {
         if (callback != null)
             callback.asyncRunnerStart(port);
 
-        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlApplication.getService());
+        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlService.getService());
         if (remote != null) {
             remote.rename(port, new_name, callback);
         } else if (callback != null)
@@ -312,7 +327,7 @@ public class RuntimeDataController {
             if (p == null)
                 continue;
 
-            PluginInterface remote = p.device.getPluginInterface(NetpowerctrlApplication.getService());
+            PluginInterface remote = p.device.getPluginInterface(NetpowerctrlService.getService());
             if (remote == null)
                 continue;
 
@@ -339,7 +354,7 @@ public class RuntimeDataController {
      * @param callback The callback for the execution-done messages
      */
     public void execute(final DevicePort port, final int command, final ExecutionFinished callback) {
-        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlApplication.getService());
+        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlService.getService());
         if (remote != null) {
             remote.execute(port, command, callback);
 

@@ -22,14 +22,14 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
+import oly.netpowerctrl.device_ports.DevicePortsCreateSceneAdapter;
+import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.devices.DevicePortsAvailableAdapter;
-import oly.netpowerctrl.devices.DevicePortsCreateSceneAdapter;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -56,7 +56,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     private Switch show_mainWindow;
     private Switch enable_feedback;
     private View btnDone;
-    private DevicePortsAvailableAdapter adapter_available;
+    private DevicePortsListAdapter adapter_available;
     private DevicePortsCreateSceneAdapter adapter_included;
 
     // Scene and flag variables
@@ -137,12 +137,8 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         }
 
         // Assign data to the fragments
-        fragment_included.setData(this,
-                EditSceneFragment.TYPE_INCLUDED,
-                this);
-        fragment_available.setData(this,
-                EditSceneFragment.TYPE_AVAILABLE,
-                this);
+        fragment_included.setReadyObserver(this);
+        fragment_available.setReadyObserver(this);
     }
 
     @Override
@@ -159,13 +155,13 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     @Override
     protected void onResume() {
         super.onResume();
-        NetpowerctrlApplication.instance.useListener();
+        NetpowerctrlService.useListener();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        NetpowerctrlApplication.instance.stopUseListener();
+        NetpowerctrlService.stopUseListener();
     }
 
     private void loadContent() {
@@ -193,8 +189,6 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         }
 
         // Load current set of available outlets
-        List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
-        adapter_available.update(configuredDevices);
         adapter_available.removeAll(adapter_included);
 
         if (scene == null) {
@@ -292,7 +286,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
                 return true;
             case R.id.menu_switch_all_ignore:
                 adapter_included.clear();
-                adapter_available.update(NetpowerctrlApplication.getDataController().deviceCollection.devices);
+                adapter_available.getSource().updateNow();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -389,11 +383,13 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
 
     @Override
     public void sceneEditFragmentReady(final EditSceneFragment fragment) {
-        final int type = fragment.getType();
-        if (type == EditSceneFragment.TYPE_AVAILABLE) {
-            adapter_available = (DevicePortsAvailableAdapter) fragment.getAdapter();
-        } else if (type == EditSceneFragment.TYPE_INCLUDED) {
-            adapter_included = (DevicePortsCreateSceneAdapter) fragment.getAdapter();
+        if (fragment.equals(fragment_available)) {
+            DevicePortSourceConfigured s = new DevicePortSourceConfigured();
+            adapter_available = new DevicePortsListAdapter(this, false, s);
+            fragment.setAdapter(adapter_available);
+        } else {
+            adapter_included = new DevicePortsCreateSceneAdapter(this);
+            fragment.setAdapter(adapter_included);
         }
 
         // When both adapters and gridViews are available, we
@@ -408,19 +404,4 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
             }, 50);
         }
     }
-
-    /**
-     * Called by one of the fragments if animations are activated and on_swipe_to_dismiss has been
-     * used (an entry has been swiped away). Because swiping is only enabled on the included adapter
-     * for now, we do not check the fragment argument.
-     *
-     * @param fragment
-     * @param position
-     */
-    @Override
-    public void entryDismiss(EditSceneFragment fragment, int position) {
-        // It's the same as if the user clicked the remove button.
-        onMenuItemClicked(null, position);
-    }
-
 }

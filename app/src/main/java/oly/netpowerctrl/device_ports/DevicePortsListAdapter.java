@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.device_ports;
 
 import android.content.Context;
 import android.util.SparseBooleanArray;
@@ -12,22 +12,26 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 
-/**
- * Allows a set of device ports to be selected
- */
-public class DevicePortsSelectAdapter extends DevicePortsBaseAdapter {
-    public DevicePortsSelectAdapter(Context context) {
-        super(context, null);
-    }
-
+public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
     private final SparseBooleanArray checked = new SparseBooleanArray();
+    private boolean checkable;
+
+    public DevicePortsListAdapter(Context context, boolean checkable, DevicePortSource source) {
+        super(context, null, source);
+        this.checkable = checkable;
+        if (checkable)
+            setLayoutRes(R.layout.selectable_outlet_list_item);
+        else
+            setLayoutRes(R.layout.available_outlet_list_item);
+    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        outlet_res_id = R.layout.selectable_outlet_list_item;
         View v = super.getView(position, convertView, parent);
-        CheckedTextView t = (CheckedTextView) current_viewHolder.title;
-        t.setChecked(checked.get(position));
+        if (checkable) {
+            CheckedTextView t = (CheckedTextView) current_devicePortViewHolder.title;
+            t.setChecked(checked.get(position));
+        }
         return v;
     }
 
@@ -49,7 +53,7 @@ public class DevicePortsSelectAdapter extends DevicePortsBaseAdapter {
 
     public void setChecked(List<UUID> slaves) {
         for (UUID slave : slaves) {
-            int position = getItemPositionByUUid(slave);
+            int position = findIndexByUUid(slave);
             if (position == -1)
                 continue;
             checked.put(position, true);

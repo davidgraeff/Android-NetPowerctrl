@@ -32,19 +32,15 @@ import oly.netpowerctrl.scenes.ScenesFragment;
  * All navigation drawer related functionality used by the main activity
  */
 public class DrawerController {
+    public int drawerLastItemPosition = -1;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerAdapter mDrawerAdapter;
-
-
     //private CharSequence mTitle;
     private boolean drawerControllableByMenuKey = false;
-
     private Fragment currentFragment;
     private String currentFragmentClass;
-    public int drawerLastItemPosition;
-
     private WeakReference<Activity> mDrawerActivity;
 
     public boolean isLoading() {
@@ -196,15 +192,6 @@ public class DrawerController {
         return false;
     }
 
-
-    /* The click listener for ListView in the navigation drawer */
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position, false);
-        }
-    }
-
     public void changeToFragment(String fragmentClassName) {
         int pos = mDrawerAdapter.indexOf(fragmentClassName);
         if (pos == -1) {
@@ -226,6 +213,8 @@ public class DrawerController {
         // First look at a click handler for that specific item
         if (item.clickHandler != null) {
             item.clickHandler.onClick(null);
+            if (drawerLastItemPosition == -1)
+                return;
             // Reset focus to last item
             mDrawerList.post(new Runnable() {
                 @Override
@@ -265,10 +254,12 @@ public class DrawerController {
                 }
             });
         } else {
+            ft.replace(R.id.content_frame, currentFragment);
+            if (drawerLastItemPosition != -1)
+                ft.addToBackStack(null);
             // we commit with possible state loss here because selectItem is called from an
             // async callback and the InstanceState of the activity may have been saved already.
-            ft.addToBackStack(null);
-            ft.replace(R.id.content_frame, currentFragment).commitAllowingStateLoss();
+            ft.commitAllowingStateLoss();
 
             // update selected item and title
             mDrawerList.setItemChecked(position, true);
@@ -285,6 +276,14 @@ public class DrawerController {
                     mDrawerLayout.closeDrawer(mDrawerList);
                 }
             }, 150);
+        }
+    }
+
+    /* The click listener for ListView in the navigation drawer */
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position, false);
         }
     }
 

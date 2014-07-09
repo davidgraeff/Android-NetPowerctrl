@@ -11,20 +11,43 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.gui.RemoveAnimation;
 
 /**
  * List all alarms of the timer controller
  */
 public class TimerAdapter extends BaseAdapter implements TimerController.IAlarmsUpdated {
-    private LayoutInflater inflater;
     private final TimerController controller;
+    private LayoutInflater inflater;
     private Context context;
+    private WeakReference<RemoveAnimation> removeAnimationWeakReference = new WeakReference<>(null);
 
     public TimerAdapter(Context context, TimerController timerController) {
         this.context = context;
         inflater = LayoutInflater.from(context);
         this.controller = timerController;
+    }
+
+    public void setRemoveAnimation(RemoveAnimation removeAnimation) {
+        removeAnimationWeakReference = new WeakReference<>(removeAnimation);
+    }
+
+    public void remove(int position) {
+        RemoveAnimation a = removeAnimationWeakReference.get();
+        if (a != null)
+            a.beforeRemoval(position);
+        controller.removeFromCache(position);
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        super.notifyDataSetChanged();
+        RemoveAnimation a = removeAnimationWeakReference.get();
+        if (a != null)
+            a.animateRemoval();
     }
 
     public void start() {
@@ -148,4 +171,6 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
     public Alarm getAlarm(int position) {
         return controller.getItem(position);
     }
+
+
 }

@@ -8,13 +8,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,22 +23,22 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nhaarman.listviewanimations.swinginadapters.prepared.AlphaInAnimationAdapter;
-
 import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
+import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
+import oly.netpowerctrl.device_ports.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.devices.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.devices.NotReachableUpdate;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.network.AsyncRunnerResult;
-import oly.netpowerctrl.network.DeviceObserverResult;
+import oly.netpowerctrl.network.DeviceObserverFinishedResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneActivity;
@@ -48,6 +48,7 @@ import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
 import oly.netpowerctrl.utils.ShowToast;
 import oly.netpowerctrl.utils.gui.ChangeArgumentsFragment;
+import oly.netpowerctrl.utils.gui.RemoveAnimation;
 import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
@@ -58,12 +59,16 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult, Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks {
     private DevicePortsExecuteAdapter adapter;
-    private AlphaInAnimationAdapter animatedAdapter;
+    private DevicePortSourceConfigured adapterSource;
     private TextView hintText;
     private TextView emptyText;
     private Button btnChangeToDevices;
     private Button btnChangeToBackup;
     private UUID groupFilter = null;
+    private GridView mListView;
+    private PullToRefreshLayout mPullToRefreshLayout;
+    private ProgressDialog progressDialog;
+    private RemoveAnimation removeAnimation = new RemoveAnimation();
 
     public OutletsFragment() {
     }
@@ -78,21 +83,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onPause() {
         super.onPause();
-        if (adapter != null)
-            adapter.onPause();
+        if (adapterSource != null)
+            adapterSource.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (adapter != null)
-            adapter.onResume();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        loadAdapterData();
+        if (adapterSource != null)
+            adapterSource.onResume();
     }
 
     @Override
@@ -103,6 +102,11 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         else
             groupFilter = null;
 
+        if (adapter != null) {
+            adapter.setGroupFilter(groupFilter);
+            adapterSource.updateNow();
+        }
+
         if (isAdded()) {
             if (btnChangeToDevices != null)
                 btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
@@ -111,21 +115,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             if (emptyText != null)
                 emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
         }
-    }
-
-    private boolean isLoading = false;
-
-    private void loadAdapterData() {
-        if (isLoading)
-            return;
-        isLoading = true;
-        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                adapter.setGroupFilter(groupFilter);
-                isLoading = false;
-            }
-        }, 100);
     }
 
     private void setListOrGrid(boolean grid) {
@@ -143,7 +132,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         mListView.setColumnWidth((int) width);
         mListView.setNumColumns(GridView.AUTO_FIT);
 
-        mListView.setAdapter(animatedAdapter != null ? animatedAdapter : adapter);
+        adapter.setGroupFilter(groupFilter);
+        mListView.setAdapter(adapter);
     }
 
     @Override
@@ -170,13 +160,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_add_scene).setVisible(false);
             //noinspection ConstantConditions
-            menu.findItem(R.id.menu_requery).setVisible(false);
+            menu.findItem(R.id.refresh).setVisible(false);
             return;
         }
 
         boolean hiddenShown = false;
         if (adapter != null) {
-            hiddenShown = adapter.getIsShowingHidden();
+            hiddenShown = adapter.isShowingHidden();
         }
 
         //noinspection ConstantConditions
@@ -223,7 +213,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
 
-            case R.id.menu_requery: {
+            case R.id.refresh: {
                 refresh();
                 return true;
             }
@@ -270,9 +260,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         return false;
     }
 
-    private GridView mListView;
-    private PullToRefreshLayout mPullToRefreshLayout;
-
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
@@ -282,8 +269,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         mListView = (GridView) view.findViewById(android.R.id.list);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                adapter.handleClick(position);
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                adapter.handleClick(position, id);
             }
         });
 
@@ -348,15 +335,24 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
         });
 
-        // Create adapter first
-        adapter = new DevicePortsExecuteAdapter(getActivity(), this);
-        adapter.setNotReachableObserver(this);
+        Button btnWirelessLan = (Button) view.findViewById(R.id.btnWirelessSettings);
+        btnWirelessLan.setVisibility(NetpowerctrlService.isWirelessLanConnected() ? View.GONE : View.VISIBLE);
+        btnWirelessLan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                //intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
+        });
 
-        // Assign adapter, either pure or animated
-        if (SharedPrefs.getAnimationEnabled()) {
-            animatedAdapter = new AlphaInAnimationAdapter(adapter);
-            animatedAdapter.setAbsListView(mListView);
-        }
+        // Create adapter first
+        adapterSource = new DevicePortSourceConfigured();
+        adapterSource.setAutomaticUpdate(true);
+        adapter = new DevicePortsExecuteAdapter(getActivity(), this, adapterSource);
+        removeAnimation.setAdapter(adapter);
+        removeAnimation.setListView(mListView);
+        adapter.setRemoveAnimation(removeAnimation);
         setListOrGrid(SharedPrefs.getOutletsGrid());
 
         return view;
@@ -411,16 +407,17 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_outlet_hide: {
-                oi.Hidden = true;
-                // onDeviceUpdated will either call notifyDataSetChanged if the second parameter is
-                // false or it will reconstruct the entire adapter.
-                adapter.onDeviceUpdated(null, !adapter.getIsShowingHidden());
-                NetpowerctrlApplication.getDataController().deviceCollection.save();
+                hideItem(oi);
                 return true;
             }
             case R.id.menu_outlet_unhide: {
                 oi.Hidden = false;
                 adapter.notifyDataSetChanged();
+                // Only change the view, if we are actually showing an item and do not show hidden items.
+                if (!adapter.isShowingHidden()) {
+                    adapter.addItem(oi, oi.getCurrentValueToggled());
+                } else // just update the alpha value of the newly hidden item
+                    adapter.notifyDataSetChanged();
                 NetpowerctrlApplication.getDataController().deviceCollection.save();
                 return true;
             }
@@ -447,6 +444,17 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
         }
         return false;
+    }
+
+    private void hideItem(DevicePort oi) {
+        oi.Hidden = true;
+        // Only change the view, if we are actually hiding an item and do not show hidden items.
+        if (!adapter.isShowingHidden()) {
+            adapter.remove(oi);
+        }
+        adapter.notifyDataSetChanged();
+        NetpowerctrlApplication.getDataController().deviceCollection.save();
+        Toast.makeText(getActivity(), R.string.outlets_hidden, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -487,8 +495,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         popup.setOnMenuItemClickListener(this);
         popup.show();
     }
-
-    private ProgressDialog progressDialog;
 
     @Override
     public void asyncRunnerResult(DevicePort oi, boolean success, String error_message) {
@@ -538,20 +544,11 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     private void refresh() {
+        if (mPullToRefreshLayout.isRefreshing())
+            return;
+
         mPullToRefreshLayout.setRefreshing(true);
-        NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
-            @Override
-            public void onDeviceError(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceTimeout(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceUpdated(DeviceInfo di) {
-            }
-
+        NetpowerctrlService.getService().findDevices(new DeviceObserverFinishedResult() {
             @Override
             public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
                 mPullToRefreshLayout.setRefreshComplete();
@@ -573,17 +570,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public boolean canDismiss(int position) {
-        return !adapter.getIsShowingHidden();
+        return !adapter.isShowingHidden();
     }
 
     @Override
-    public void onDismiss(AbsListView listView, int[] reverseSortedPositions) {
-        for (int position : reverseSortedPositions) {
-            final DevicePort oi = adapter.getItem(position);
-            oi.Hidden = true;
-        }
-        adapter.onDeviceUpdated(null, !adapter.getIsShowingHidden());
-        NetpowerctrlApplication.getDataController().deviceCollection.save();
-        Toast.makeText(getActivity(), "Elemente versteckt", Toast.LENGTH_SHORT).show();
+    public void onDismiss(int dismissedPosition) {
+        final DevicePort oi = adapter.getItem(dismissedPosition);
+        hideItem(oi);
     }
 }

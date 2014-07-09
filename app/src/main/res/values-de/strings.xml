@@ -223,7 +223,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
 
 Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="neighbours_hint_activated">Suche nach Nachbargeräten aktiv. Netzwerk ID: %s</string>
-    <string name="help_neighbours">Wenn du mehrere Android Telefone oder Tablets mit dieser App zur Steuerung deiner Geräte verwendest, dann bietet dir die Nachbar-Synchronisierung den automatischen Abgleich aller Geräte, Gruppen, Szenen, Icons. Zuerst musst du Nachbargeräte koppeln. Danach kannst du deine Einstellungen per Knopfdruck auf das andere Gerät senden oder bei jeder Änderung automatisch einen Abgleich durchführen lassen. Für den automatischen Abgleich schalte den Schiebeschalter in der Titelzeile auf EIN.</string>
+    <string name="help_neighbours">Wenn du mehrere Android Telefone oder Tablets mit dieser App zur Steuerung deiner Geräte verwendest, dann bietet dir die Nachbar-Synchronisierung den automatischen Abgleich aller Geräte, Gruppen, Szenen, Icons. Zuerst musst du Nachbargeräte koppeln. Danach kannst du deine Einstellungen per Klick und Menüauswahl auf das andere Gerät senden.</string>
     <string name="help_gDrive">Du kannst deine Geräte, Gruppen, Szenen und Icons bei Google Drive sichern. Bei einer Neuinstallation oder Installation auf einem anderem Gerät können die Einstellungen so schnell wiederhergestellt werden.</string>
     <string name="neighbour_entry">Geräte %1$d, Szenen %2$d, Gruppen %3$d, Icons %4$d</string>
     <string name="neighbour_older_version">(Ältere version!)</string>
@@ -309,4 +309,13 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="port_warning_1024">Ein Port kleiner als 1024 benötigt Root-Rechte unter Android!</string>
     <string name="alarm_receiving">Empfange Alarm %1$d</string>
     <string name="alarm_saving_now">Bitte warten. Speichere Alarm…</string>
+    <string name="toWirelessSettings">WLAN einschalten</string>
+    <string name="outlets_hidden">Elemente versteckt</string>
+    <string name="press_back_to_exit">Please click BACK again to exit</string>
+    <string name="preference_backup_to_gDrive">Mit Google Drive sichern</string>
+    <string name="preference_backup_to_gDrive_summary">Sichert bei verbundenem Google Drive Account die eingerichteten Geräte und Szenen bei jeder Änderung im Hintergrund</string>
+    <string name="gDrive_login">Login</string>
+    <string name="error_neighbour_wrong_version_title">Version nicht gleich!</string>
+    <string name="error_neighbour_wrong_version">Das Nachbargerät hat eine andere APP Version installiert. Dennoch Kopplung starten?</string>
+    <string name="error_plugin_no_service_connection">Plugin connection failed: %1$s</string>
 </resources>

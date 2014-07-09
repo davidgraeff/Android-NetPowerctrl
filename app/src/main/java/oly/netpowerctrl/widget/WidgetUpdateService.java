@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
@@ -35,14 +36,33 @@ import oly.netpowerctrl.utils.Shortcuts;
  * Widget Update Service
  */
 public class WidgetUpdateService extends Service implements DeviceObserverResult, DeviceUpdate, ServiceReady {
-    private static final String TAG = "WidgetUpdateService";
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
+    private static final String TAG = "WidgetUpdateService";
+    private final List<Integer> widgetUpdateRequests = new ArrayList<>();
+    private final SparseArray<DevicePort> allWidgets = new SparseArray<>();
     private AppWidgetManager appWidgetManager;
     private Context context;
 
-    private final List<Integer> widgetUpdateRequests = new ArrayList<>();
-    private final SparseArray<DevicePort> allWidgets = new SparseArray<>();
+    static public void ForceUpdate(Context ctx, int widgetId) {
+        Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
+                ctx, DeviceWidgetProvider.class);
+        updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{widgetId});
+        ctx.sendBroadcast(updateWidget);
+    }
+
+    @SuppressWarnings("unused")
+    static public void ForceUpdateAll(Context ctx) {
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(ctx);
+        ComponentName thisAppWidget = new ComponentName(ctx.getPackageName(), DeviceWidgetProvider.class.getName());
+
+        @SuppressWarnings("ConstantConditions")
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget);
+        assert appWidgetIds != null;
+        for (int id : appWidgetIds) {
+            ForceUpdate(ctx, id);
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -52,8 +72,8 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
          * changed signal.
          */
         NetpowerctrlApplication.getDataController().deviceCollection.unregisterDeviceObserver(this);
-        NetpowerctrlApplication.instance.unregisterServiceReadyObserver(this);
-        NetpowerctrlApplication.instance.stopUseListener();
+        NetpowerctrlService.unregisterServiceReadyObserver(this);
+        NetpowerctrlService.stopUseListener();
     }
 
     @Override
@@ -62,8 +82,8 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         context = getApplicationContext();
         assert context != null;
         appWidgetManager = AppWidgetManager.getInstance(context);
-        NetpowerctrlApplication.instance.useListener();
-        NetpowerctrlApplication.instance.registerServiceReadyObserver(this);
+        NetpowerctrlService.useListener();
+        NetpowerctrlService.registerServiceReadyObserver(this);
         super.onCreate();
     }
 
@@ -75,7 +95,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     private void updateDevices() {
-        if (!NetpowerctrlApplication.instance.isServiceReady())
+        if (!NetpowerctrlService.isServiceReady())
             return;
 
         List<DeviceInfo> devicesToUpdate = new ArrayList<>();
@@ -110,7 +130,6 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
         finishServiceIfDone();
     }
-
 
     /**
      * This method will be called by every startService call.
@@ -229,26 +248,6 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         return null;
     }
 
-    static public void ForceUpdate(Context ctx, int widgetId) {
-        Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
-                ctx, DeviceWidgetProvider.class);
-        updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{widgetId});
-        ctx.sendBroadcast(updateWidget);
-    }
-
-    @SuppressWarnings("unused")
-    static public void ForceUpdateAll(Context ctx) {
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(ctx);
-        ComponentName thisAppWidget = new ComponentName(ctx.getPackageName(), DeviceWidgetProvider.class.getName());
-
-        @SuppressWarnings("ConstantConditions")
-        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget);
-        assert appWidgetIds != null;
-        for (int id : appWidgetIds) {
-            ForceUpdate(ctx, id);
-        }
-    }
-
     @Override
     public void onDeviceError(DeviceInfo di) {
 
@@ -316,7 +315,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     @Override
-    public boolean onServiceReady() {
+    public boolean onServiceReady(NetpowerctrlService service) {
         if (allWidgets.size() == 0)
             updateDevices();
         NetpowerctrlApplication.getDataController().deviceCollection.registerDeviceObserver(this);

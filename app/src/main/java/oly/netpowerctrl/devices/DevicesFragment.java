@@ -16,8 +16,6 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
-import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -26,10 +24,10 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelDevicePreferences;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.DeviceObserverResult;
+import oly.netpowerctrl.network.DeviceObserverFinishedResult;
 import oly.netpowerctrl.preferences.PreferencesFragment;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -39,6 +37,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnRefreshListener {
     private DevicesAdapter adapter;
     private PullToRefreshLayout mPullToRefreshLayout;
+    private ListView mListView;
 
     public DevicesFragment() {
     }
@@ -99,7 +98,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
 
-            case R.id.menu_requery: {
+            case R.id.refresh: {
                 refresh();
                 return true;
             }
@@ -115,17 +114,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         setHasOptionsMenu(true);
     }
 
-    private ListView mListView;
-
     private void assignAdapter() {
-        if (SharedPrefs.getAnimationEnabled()) {
-            // Add animation to the list
-            ScaleInAnimationAdapter animatedAdapter = new ScaleInAnimationAdapter(adapter);
-            animatedAdapter.setAbsListView(mListView);
-            mListView.setAdapter(animatedAdapter);
-        } else {
-            mListView.setAdapter(adapter);
-        }
+        mListView.setAdapter(adapter);
     }
 
     @Override
@@ -198,7 +188,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 NetpowerctrlApplication.getDataController().deviceCollection.remove(current_device);
-                                NetpowerctrlApplication.instance.findDevices(null);
+                                NetpowerctrlService.getService().findDevices(null);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -206,7 +196,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_device_configuration_page:
-                current_device.getPluginInterface(NetpowerctrlApplication.getService())
+                current_device.getPluginInterface(NetpowerctrlService.getService())
                         .openConfigurationPage(current_device, getActivity());
             default:
                 return false;
@@ -257,19 +247,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     private void refresh() {
         mPullToRefreshLayout.setRefreshing(true);
-        NetpowerctrlApplication.instance.findDevices(new DeviceObserverResult() {
-            @Override
-            public void onDeviceError(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceTimeout(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceUpdated(DeviceInfo di) {
-            }
-
+        NetpowerctrlService.getService().findDevices(new DeviceObserverFinishedResult() {
             @Override
             public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
                 mPullToRefreshLayout.setRefreshComplete();

@@ -22,38 +22,33 @@ import oly.netpowerctrl.utils.JSONHelper;
 
 // An object of this class contains all the info about a specific device
 public class DeviceInfo implements Comparable<DeviceInfo> {
+    // Device Ports
+    private final Map<Integer, DevicePort> DevicePorts = new TreeMap<>();
+    private final Semaphore lock = new Semaphore(1);
     // Identity of the device
     public String pluginID;
     public String UniqueDeviceID; // a device unique id e.g. the mac address associated with a device
-
     // User visible name of this device. Version of the device firmware
     public String DeviceName; // name of the device as reported by the device
     public String Version;
-
     // Access to the device
     public String HostName;   // the hostname / ip address / android service name used to reach the device
     public String UserName;
     public String Password;
-
     // Specific data, should be removed from here
     public boolean DefaultPorts;
     public int SendPort;
     public int ReceivePort;
     public int HttpPort;
     public String Temperature;
-
-    // Device Ports
-    private final Map<Integer, DevicePort> DevicePorts = new TreeMap<>();
-
     // Temporary state variables
     public boolean configured = false;
-    private boolean reachable = false;
     public String not_reachable_reason;
+    public boolean PreferHTTP;
+    private boolean reachable = false;
     private long updated = 0;
-    private boolean hasChanged = false;
-    private WeakReference<PluginInterface> pluginInterface = null;
 
-//    private class SemaphoreLoud extends Semaphore {
+    //    private class SemaphoreLoud extends Semaphore {
 //        public SemaphoreLoud(int permits) {
 //            super(permits);
 //        }
@@ -70,9 +65,8 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 //            super.release();
 //        }
 //    }
-
-    private final Semaphore lock = new Semaphore(1);
-    public boolean PreferHTTP;
+    private boolean hasChanged = false;
+    private WeakReference<PluginInterface> pluginInterface = null;
 
     private DeviceInfo(String pluginID) {
         this.pluginID = pluginID;
@@ -85,7 +79,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         PreferHTTP = false;
         SendPort = -1;
         ReceivePort = -1;
-        HttpPort = 80;
+        HttpPort = -1;
         Temperature = "";
         Version = "";
     }
@@ -230,8 +224,10 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
             hasChanged |= !HostName.equals(other.HostName);
             HostName = other.HostName;
-            hasChanged |= HttpPort != other.HttpPort;
-            HttpPort = other.HttpPort;
+            if (other.HttpPort != -1) {
+                hasChanged |= HttpPort != other.HttpPort;
+                HttpPort = other.HttpPort;
+            }
             hasChanged |= !Temperature.equals(other.Temperature);
             Temperature = other.Temperature;
             hasChanged |= !Version.equals(other.Version);

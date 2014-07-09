@@ -21,41 +21,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 
 /**
  * Choose setSortOrder criteria
  */
 public class SortCriteriaDialog extends DialogFragment {
+    private final List<AdapterItem> sortedList = new ArrayList<>();
+    private final List<AdapterItem> availableList = new ArrayList<>();
+    private SortCriteriaInterface sortCriteriaInterface;
+    private boolean criteriaChecked[];
+    private boolean criteriaOnly = true;
+    private ArrayAdapter<AdapterItem> sortedAdapter;
+    private ArrayAdapter<AdapterItem> availableAdapter;
+
     public static Fragment instantiate(Context context, SortCriteriaInterface sortCriteriaInterface) {
         SortCriteriaDialog fragment = (SortCriteriaDialog) Fragment.instantiate(context, SortCriteriaDialog.class.getName());
         fragment.setData(sortCriteriaInterface);
         return fragment;
     }
-
-    private SortCriteriaInterface sortCriteriaInterface;
-    private boolean criteriaChecked[];
-    private boolean criteriaOnly = true;
-
-    private static class AdapterItem {
-        final String text;
-        final int originalIndex;
-
-        private AdapterItem(String text, int originalIndex) {
-            this.text = text;
-            this.originalIndex = originalIndex;
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-    }
-
-    private final List<AdapterItem> sortedList = new ArrayList<>();
-    private ArrayAdapter<AdapterItem> sortedAdapter;
-    private final List<AdapterItem> availableList = new ArrayList<>();
-    private ArrayAdapter<AdapterItem> availableAdapter;
 
     private void setData(SortCriteriaInterface sortCriteriaInterface) {
         this.sortCriteriaInterface = sortCriteriaInterface;
@@ -79,6 +64,7 @@ public class SortCriteriaDialog extends DialogFragment {
                                 sortOrder[i] = sortedList.get(i).originalIndex;
                             sortCriteriaInterface.setSortOrder(sortOrder);
                         }
+                        NetpowerctrlApplication.getDataController().deviceCollection.save();
                     }
                 })
                 .setNeutralButton(R.string.menu_help, new DialogInterface.OnClickListener() {
@@ -188,5 +174,20 @@ public class SortCriteriaDialog extends DialogFragment {
         AlertDialog d = (AlertDialog) getDialog();
         //noinspection ConstantConditions
         d.getButton(Dialog.BUTTON_POSITIVE).setEnabled(availableAdapter.isEmpty());
+    }
+
+    private static class AdapterItem {
+        final String text;
+        final int originalIndex;
+
+        private AdapterItem(String text, int originalIndex) {
+            this.text = text;
+            this.originalIndex = originalIndex;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
     }
 }

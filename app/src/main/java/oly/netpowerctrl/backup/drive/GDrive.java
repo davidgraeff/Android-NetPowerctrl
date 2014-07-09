@@ -57,6 +57,51 @@ public class GDrive implements
     private boolean mIsInResolution;
     private Activity context;
 
+    public static DriveFolder getAppFolder(GoogleApiClient mClient) {
+        DriveFolder appDataDir = Drive.DriveApi.getRootFolder(mClient);
+        DriveId id = GDrive.findChild(mClient, "PowerControlApp_Backup", appDataDir);
+        if (id == null) {
+            DriveFolder.DriveFolderResult result = GDrive.createAppDir(mClient, appDataDir);
+            if (!result.getStatus().isSuccess()) {
+                // We failed, stop the task and return.
+                return null;
+            }
+            return result.getDriveFolder();
+        } else
+            return Drive.DriveApi.getFolder(mClient, id);
+    }
+
+    public static DriveFolder.DriveFolderResult createAppDir(GoogleApiClient mClient, DriveFolder baseFolder) {
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setTitle("PowerControlApp_Backup").build();
+        return baseFolder.createFolder(mClient, changeSet).await();
+    }
+
+    public static DriveId findChild(GoogleApiClient mClient, String title, DriveFolder baseFolder) {
+        ArrayList<Filter> fltrs = new ArrayList<>();
+        fltrs.add(Filters.eq(SearchableField.TRASHED, false));
+        if (title != null) fltrs.add(Filters.eq(SearchableField.TITLE, title));
+        Query qry = new Query.Builder().addFilter(Filters.and(fltrs)).build();
+        DriveApi.MetadataBufferResult rslt = (baseFolder == null) ?
+                Drive.DriveApi.query(mClient, qry).await() :
+                baseFolder.queryChildren(mClient, qry).await();
+        if (rslt.getStatus().isSuccess()) {
+            MetadataBuffer mdb = null;
+            try {
+                mdb = rslt.getMetadataBuffer();
+                if (mdb != null) {
+                    for (Metadata md : mdb) {
+                        if (md == null) continue;
+                        return md.getDriveId();      // here is the "Drive ID"
+                    }
+                }
+            } finally {
+                if (mdb != null) mdb.close();
+            }
+        }
+        return null;
+    }
+
     public boolean isError() {
         return error;
     }
@@ -72,7 +117,8 @@ public class GDrive implements
         new GDriveRefreshBackupListTask(mGoogleApiClient, observer, GDriveBackupsAdapter).execute();
     }
 
-    public void deleteBackup(Metadata item) {
+    public void deleteBackup(Metadata item, GDriveRemoveTask.DoneSuccess done) {
+        new GDriveRemoveTask(mGoogleApiClient, observer, done, item).execute();
         Toast.makeText(context, R.string.gDrive_remove_not_supported, Toast.LENGTH_SHORT).show();
     }
 
@@ -97,6 +143,13 @@ public class GDrive implements
         }
     }
 
+    public void startAutoBackup(Activity context) {
+        if (!SharedPrefs.gDriveEnabled())
+            return;
+        onStart(context);
+        //TODO
+    }
+
     /**
      * Called when the Activity is made visible.
      * A connection to Play Services need to be initiated as
@@ -106,8 +159,6 @@ public class GDrive implements
      */
     public void onStart(Activity context) {
         error = false;
-        if (!SharedPrefs.gDriveEnabled())
-            return;
 
         this.context = context;
         if (mGoogleApiClient == null) {
@@ -149,7 +200,8 @@ public class GDrive implements
     }
 
     public void resetAccount() {
-        Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected())
+            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
         onStop();
     }
 
@@ -263,56 +315,11 @@ public class GDrive implements
         return mGoogleApiClient != null && mGoogleApiClient.isConnected();
     }
 
-    public static DriveFolder getAppFolder(GoogleApiClient mClient) {
-        DriveFolder appDataDir = Drive.DriveApi.getRootFolder(mClient);
-        DriveId id = GDrive.findChild(mClient, "PowerControlApp_Backup", appDataDir);
-        if (id == null) {
-            DriveFolder.DriveFolderResult result = GDrive.createAppDir(mClient, appDataDir);
-            if (!result.getStatus().isSuccess()) {
-                // We failed, stop the task and return.
-                return null;
-            }
-            return result.getDriveFolder();
-        } else
-            return Drive.DriveApi.getFolder(mClient, id);
-    }
 
     public interface GDriveConnectionState {
         void gDriveConnected(boolean connected, boolean canceled);
 
         void showProgress(boolean inProgress, String text);
-    }
-
-    public static DriveFolder.DriveFolderResult createAppDir(GoogleApiClient mClient, DriveFolder baseFolder) {
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle("PowerControlApp_Backup").build();
-        return baseFolder.createFolder(mClient, changeSet).await();
-    }
-
-
-    public static DriveId findChild(GoogleApiClient mClient, String title, DriveFolder baseFolder) {
-        ArrayList<Filter> fltrs = new ArrayList<>();
-        fltrs.add(Filters.eq(SearchableField.TRASHED, false));
-        if (title != null) fltrs.add(Filters.eq(SearchableField.TITLE, title));
-        Query qry = new Query.Builder().addFilter(Filters.and(fltrs)).build();
-        DriveApi.MetadataBufferResult rslt = (baseFolder == null) ?
-                Drive.DriveApi.query(mClient, qry).await() :
-                baseFolder.queryChildren(mClient, qry).await();
-        if (rslt.getStatus().isSuccess()) {
-            MetadataBuffer mdb = null;
-            try {
-                mdb = rslt.getMetadataBuffer();
-                if (mdb != null) {
-                    for (Metadata md : mdb) {
-                        if (md == null) continue;
-                        return md.getDriveId();      // here is the "Drive ID"
-                    }
-                }
-            } finally {
-                if (mdb != null) mdb.close();
-            }
-        }
-        return null;
     }
 
 }

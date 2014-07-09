@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.RuntimeStateChanged;
 import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.devices.DeviceInfo;
@@ -33,14 +34,14 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
 
     @Override
     protected void onDestroy() {
-        NetpowerctrlApplication.instance.stopUseListener();
+        NetpowerctrlService.stopUseListener();
         super.onDestroy();
     }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        NetpowerctrlApplication.instance.useListener();
+        NetpowerctrlService.useListener();
         Intent it = getIntent();
         if (it == null) {
             finish();
@@ -60,9 +61,9 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         }
 
         // The application may have be started here, we have to wait for the service to be ready
-        NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
+        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
             @Override
-            public boolean onServiceReady() {
+            public boolean onServiceReady(NetpowerctrlService service) {
                 // Execute single action (in contrast to scene)
                 if (extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID)) {
                     executeSingleAction(extra.getString(EditSceneActivity.RESULT_ACTION_UUID),
@@ -98,7 +99,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         NetpowerctrlApplication.getDataController().registerStateChanged(new RuntimeStateChanged() {
             @Override
             public boolean onDataLoaded() {
-                return false;
+                return true;
             }
 
             @Override
@@ -106,7 +107,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
                 NetpowerctrlApplication.getDataController().execute(port, command, ExecutionActivity.this);
                 return false;
             }
-        }, true);
+        });
     }
 
     void executeScene(String scene_string) {

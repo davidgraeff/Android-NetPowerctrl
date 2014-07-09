@@ -17,6 +17,10 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Toast;
 
 import java.io.File;
@@ -36,6 +40,42 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
  * Util for scenes
  */
 public class Icons {
+
+    private static final int PICK_IMAGE_BEFORE_KITKAT = 1;
+    private static final int PICK_IMAGE_KITKAT = 2;
+    private static WeakReference<Object> icon_callback_context_object;
+
+    public static void animateView(final View view, final boolean in, final float max) {
+        float c = view.getAlpha();
+        if (c >= max && in || c == 0.0f && !in) {
+            return;
+        }
+
+        if (view.getAnimation() != null && !view.getAnimation().hasEnded())
+            return;
+
+        AlphaAnimation animation1 = new AlphaAnimation(c, in ? max : 0.0f);
+        animation1.setInterpolator(new AccelerateInterpolator());
+        animation1.setDuration(500);
+        animation1.setStartOffset(0);
+        animation1.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                view.setAlpha(in ? max : 0.0f);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        view.startAnimation(animation1);
+    }
+
     private static BitmapDrawable getDrawableFromUri(Context context, Uri uri) throws IOException {
         ParcelFileDescriptor parcelFileDescriptor =
                 context.getContentResolver().openFileDescriptor(uri, "r");
@@ -48,19 +88,6 @@ public class Icons {
 
     public static UUID uuidFromWidgetID(int widgetId) {
         return new UUID(0xABCD, (long) widgetId);
-    }
-
-    public static enum IconType {
-        SceneIcon,
-        WidgetIcon,
-        DevicePortIcon,
-        GroupIcon
-    }
-
-    public static enum IconState {
-        StateOn,
-        StateOff,
-        StateUnknown, StateToggle
     }
 
     public static int getResIdForState(IconState state) {
@@ -166,18 +193,6 @@ public class Icons {
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 
-    public static class IconFile {
-        public final File file;
-        public final IconState state;
-        public final IconType type;
-
-        public IconFile(File file, IconState state, IconType type) {
-            this.file = file;
-            this.state = state;
-            this.type = type;
-        }
-    }
-
     public static IconFile[] getAllIcons() {
         Context context = NetpowerctrlApplication.instance;
 
@@ -216,18 +231,6 @@ public class Icons {
             e.printStackTrace();
         }
     }
-
-    public static interface IconSelected {
-        void setIcon(Object context_object, Bitmap bitmap);
-
-        void startActivityForResult(Intent intent, int requestCode);
-    }
-
-    private static final int PICK_IMAGE_BEFORE_KITKAT = 1;
-    private static final int PICK_IMAGE_KITKAT = 2;
-
-
-    private static WeakReference<Object> icon_callback_context_object;
 
     public static void show_select_icon_dialog(final Context context, String assetSet,
                                                final IconSelected callback, final Object callback_context_object) {
@@ -317,6 +320,38 @@ public class Icons {
                 Toast.makeText(context, context.getString(R.string.error_icon),
                         Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    public static enum IconType {
+        SceneIcon,
+        WidgetIcon,
+        DevicePortIcon,
+        GroupIcon
+    }
+
+
+    public static enum IconState {
+        StateOn,
+        StateOff,
+        StateUnknown, StateToggle
+    }
+
+    public static interface IconSelected {
+        void setIcon(Object context_object, Bitmap bitmap);
+
+        void startActivityForResult(Intent intent, int requestCode);
+    }
+
+    public static class IconFile {
+        public final File file;
+        public final IconState state;
+        public final IconType type;
+
+        public IconFile(File file, IconState state, IconType type) {
+            this.file = file;
+            this.state = state;
+            this.type = type;
         }
     }
 }

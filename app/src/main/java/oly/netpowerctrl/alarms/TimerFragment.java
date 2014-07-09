@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -23,11 +22,13 @@ import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.AsyncRunnerResult;
+import oly.netpowerctrl.utils.gui.RemoveAnimation;
 import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
@@ -37,6 +38,8 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private PullToRefreshLayout mPullToRefreshLayout;
+    private RemoveAnimation removeAnimation = new RemoveAnimation();
+
 
     public TimerFragment() {
     }
@@ -45,7 +48,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         animateProgressText(true);
         alarmsUpdated(false, true);
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
-        c.requestData();
+        c.refresh();
     }
 
     @Override
@@ -66,6 +69,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
         timerAdapter = new TimerAdapter(getActivity(), c);
         timerAdapter.start();
+
         c.registerObserver(this);
 
         View empty = view.findViewById(android.R.id.empty);
@@ -73,6 +77,10 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         mListView.setOnItemClickListener(this);
         mListView.setEmptyView(empty);
         mListView.setAdapter(timerAdapter);
+
+        removeAnimation.setAdapter(timerAdapter);
+        removeAnimation.setListView(mListView);
+        timerAdapter.setRemoveAnimation(removeAnimation);
 
         ///// For swiping elements out (hiding)
         SwipeDismissListViewTouchListener touchListener =
@@ -119,7 +127,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_requery:
+            case R.id.refresh:
                 refresh();
                 return true;
             case R.id.menu_add_timer:
@@ -229,12 +237,12 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
     }
 
     @Override
-    public void onDismiss(AbsListView listView, int[] reverseSortedPositions) {
-        for (int position : reverseSortedPositions) {
-            Alarm alarm = timerAdapter.getAlarm(position);
-            PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlApplication.getService());
-            plugin.removeAlarm(alarm, this);
-        }
+    public void onDismiss(int dismissedPosition) {
+        Alarm alarm = timerAdapter.getAlarm(dismissedPosition);
+        timerAdapter.remove(dismissedPosition);
+        timerAdapter.notifyDataSetChanged();
+        PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlService.getService());
+        plugin.removeAlarm(alarm, this);
     }
 
     @Override

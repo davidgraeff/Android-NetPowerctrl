@@ -121,7 +121,12 @@ public class Utils {
     public static long getMacAsLong() {
         NetworkInterface ni;
         try {
-            ni = NetworkInterface.getByInetAddress(Utils.getIpv4Address());
+            InetAddress address = getIpv4Address();
+            if (address == null)
+                return 0;
+            ni = NetworkInterface.getByInetAddress(address);
+            if (ni == null)
+                return 0;
             ni.getHardwareAddress();
             return Utils.MacToLong(ni.getHardwareAddress());
         } catch (SocketException ignored) {

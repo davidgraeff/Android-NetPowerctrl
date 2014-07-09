@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item format="integer" name="menu_add_device" type="id">100042</item>
-    <item format="integer" name="menu_about" type="id">100043</item>
-    <item format="integer" name="settings_result" type="id">100044</item>
-    <item format="integer" name="menu_cancel" type="id">100048</item>
-    <item format="integer" name="menu_delete_all_devices" type="id">100049</item>
-    <item format="integer" name="menu_requery" type="id">100050</item>
-    <item format="integer" name="menu_preferences" type="id">100051</item>
-    <item format="integer" name="menu_refresh" type="id">100054</item>
+    <item name="menu_add_device" format="integer" type="id">100042</item>
+    <item name="menu_about" format="integer" type="id">100043</item>
+    <item name="settings_result" format="integer" type="id">100044</item>
+    <item name="menu_cancel" format="integer" type="id">100048</item>
+    <item name="menu_delete_all_devices" format="integer" type="id">100049</item>
+    <item name="refresh" format="integer" type="id">100050</item>
+    <item name="menu_preferences" format="integer" type="id">100051</item>
+    <item name="menu_refresh" format="integer" type="id">100054</item>
 
-    <item format="integer" name="default_send_port" type="integer">1075</item>
-    <item format="integer" name="default_receive_port" type="integer">1077</item>
+    <item name="default_send_port" format="integer" type="integer">1075</item>
+    <item name="default_receive_port" format="integer" type="integer">1077</item>
 
-    <item format="boolean" name="use_energy_saving_mode" type="bool">True</item>
-    <item format="boolean" name="wakeup_energy_saving_mode" type="bool">False</item>
-    <item format="boolean" name="use_dark_theme" type="bool">False</item>
-    <item format="boolean" name="notify_on_stop" type="bool">False</item>
-    <item format="boolean" name="load_extensions" type="bool">False</item>
-    <item format="boolean" name="widget_show_text" type="bool">True</item>
-    <item format="boolean" name="animations_enabled" type="bool">True</item>
-    <item format="boolean" name="use_log_energy_saving_mod" type="bool">False</item>
-    <item format="boolean" name="showHiddenOutlets" type="bool">False</item>
-    <item format="boolean" name="show_persistent_notification" type="bool">False</item>
+    <item name="use_energy_saving_mode" format="boolean" type="bool">True</item>
+    <item name="wakeup_energy_saving_mode" format="boolean" type="bool">False</item>
+    <item name="use_dark_theme" format="boolean" type="bool">False</item>
+    <item name="notify_on_stop" format="boolean" type="bool">False</item>
+    <item name="load_extensions" format="boolean" type="bool">False</item>
+    <item name="widget_show_text" format="boolean" type="bool">True</item>
+    <item name="animations_enabled" format="boolean" type="bool">True</item>
+    <item name="use_log_energy_saving_mod" format="boolean" type="bool">False</item>
+    <item name="showHiddenOutlets" format="boolean" type="bool">False</item>
+    <item name="show_persistent_notification" format="boolean" type="bool">False</item>
+    <item name="backup_to_gDrive" format="boolean" type="bool">False</item>
 
-    <item format="integer" name="max_favourites_groups" type="integer">6</item>
+    <item name="max_favourites_groups" format="integer" type="integer">6</item>
 </resources>

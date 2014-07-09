@@ -3,54 +3,60 @@
     android:title="Settings">
 
     <CheckBoxPreference
-        android:key="use_dark_theme"
-        android:title="@string/preference_use_dark_theme"
         android:defaultValue="@bool/use_dark_theme"
-        android:summary="@string/preference_use_dark_theme_summary" />
+        android:key="use_dark_theme"
+        android:summary="@string/preference_use_dark_theme_summary"
+        android:title="@string/preference_use_dark_theme" />
 
     <CheckBoxPreference
-        android:key="show_persistent_notification"
-        android:title="@string/preference_show_persistent_notification"
         android:defaultValue="@bool/show_persistent_notification"
-        android:summary="@string/preference_show_persistent_notification_summary" />
+        android:key="show_persistent_notification"
+        android:summary="@string/preference_show_persistent_notification_summary"
+        android:title="@string/preference_show_persistent_notification" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/backup_to_gDrive"
+        android:key="backup_to_gDrive"
+        android:summary="@string/preference_backup_to_gDrive_summary"
+        android:title="@string/preference_backup_to_gDrive" />
 
     <EditTextPreference
-        android:key="max_favourites_groups"
-        android:title="@string/preference_max_favourites_groups"
-        android:inputType="number"
-        android:numeric="integer"
         android:defaultValue="@integer/max_favourites_groups"
         android:dialogMessage="@string/preference_max_favourites_groups_summary"
-        android:dialogTitle="@string/preference_standard_recv_port" />
+        android:dialogTitle="@string/preference_standard_recv_port"
+        android:inputType="number"
+        android:key="max_favourites_groups"
+        android:numeric="integer"
+        android:title="@string/preference_max_favourites_groups" />
 
     <PreferenceCategory android:title="@string/preference_standard_ports">
         <EditTextPreference
-            android:key="standard_send_port"
-            android:title="@string/preference_standard_send_port"
-            android:inputType="number"
-            android:numeric="integer"
             android:defaultValue="@integer/default_send_port"
             android:dialogMessage="@string/preference_standard_send_port_summary"
+            android:dialogTitle="@string/preference_standard_send_port"
+            android:inputType="number"
+            android:key="standard_send_port"
+            android:numeric="integer"
             android:summary="@string/preference_standard_send_port_summary"
-            android:dialogTitle="@string/preference_standard_send_port" />
+            android:title="@string/preference_standard_send_port" />
 
         <EditTextPreference
-            android:key="standard_receive_port"
-            android:title="@string/preference_standard_recv_port"
-            android:inputType="number"
-            android:numeric="integer"
             android:defaultValue="@integer/default_receive_port"
             android:dialogMessage="@string/preference_standard_recv_port_summary"
+            android:dialogTitle="@string/preference_standard_recv_port"
+            android:inputType="number"
+            android:key="standard_receive_port"
+            android:numeric="integer"
             android:summary="@string/preference_standard_recv_port_summary"
-            android:dialogTitle="@string/preference_standard_recv_port" />
+            android:title="@string/preference_standard_recv_port" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/extensions">
         <CheckBoxPreference
-            android:key="load_extensions"
-            android:title="@string/preference_load_extensions"
             android:defaultValue="@bool/load_extensions"
-            android:summary="@string/preference_load_extensions_summary" />
+            android:key="load_extensions"
+            android:summary="@string/preference_load_extensions_summary"
+            android:title="@string/preference_load_extensions" />
 
         <PreferenceScreen
             android:key="show_extensions"
@@ -60,35 +66,35 @@
 
     <PreferenceCategory android:title="@string/preferences_category_save_energy">
         <CheckBoxPreference
-            android:key="animations_enabled"
-            android:title="@string/preference_animations_enabled"
             android:defaultValue="@bool/animations_enabled"
-            android:summary="@string/preference_animations_enabled_summary" />
+            android:key="animations_enabled"
+            android:summary="@string/preference_animations_enabled_summary"
+            android:title="@string/preference_animations_enabled" />
 
         <CheckBoxPreference
-            android:key="notify_on_stop"
-            android:title="@string/preference_notify_on_stop"
             android:defaultValue="@bool/notify_on_stop"
-            android:summary="@string/preference_notify_on_stop_summary" />
+            android:key="notify_on_stop"
+            android:summary="@string/preference_notify_on_stop_summary"
+            android:title="@string/preference_notify_on_stop" />
 
         <CheckBoxPreference
-            android:key="use_energy_saving_mode"
-            android:title="@string/preference_use_energy_saving_mode"
             android:defaultValue="@bool/use_energy_saving_mode"
-            android:summary="@string/preference_use_energy_saving_mode_summary" />
+            android:key="use_energy_saving_mode"
+            android:summary="@string/preference_use_energy_saving_mode_summary"
+            android:title="@string/preference_use_energy_saving_mode" />
 
         <CheckBoxPreference
-            android:key="wakeup_energy_saving_mode"
-            android:title="@string/preference_wakeup_energy_saving_mode"
             android:defaultValue="@bool/wakeup_energy_saving_mode"
-            android:summary="@string/preference_wakeup_energy_saving_mode_summary" />
+            android:key="wakeup_energy_saving_mode"
+            android:summary="@string/preference_wakeup_energy_saving_mode_summary"
+            android:title="@string/preference_wakeup_energy_saving_mode" />
 
         <CheckBoxPreference
-            android:key="use_log_energy_saving_mode"
-            android:title="@string/preference_use_log_energy_saving_mode"
             android:defaultValue="@bool/use_log_energy_saving_mod"
+            android:dependency="use_energy_saving_mode"
+            android:key="use_log_energy_saving_mode"
             android:summary="@string/preference_use_log_energy_saving_mod_summary"
-            android:dependency="use_energy_saving_mode" />
+            android:title="@string/preference_use_log_energy_saving_mode" />
 
         <PreferenceScreen
             android:key="open_log"
@@ -96,8 +102,8 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/pref_widgets"
-        android:key="widgets">
+        android:key="widgets"
+        android:title="@string/pref_widgets">
 
     </PreferenceCategory>
 
