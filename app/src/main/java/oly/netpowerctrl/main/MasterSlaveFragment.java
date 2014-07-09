@@ -3,7 +3,6 @@ package oly.netpowerctrl.main;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -16,15 +15,17 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.device_ports.DevicePortSource;
+import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
+import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.devices.DevicePortsSelectAdapter;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener {
     DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
     private DevicePort master;
-    private DevicePortsSelectAdapter adapter;
+    private DevicePortsListAdapter adapter;
 
     public MasterSlaveFragment() {
     }
@@ -32,13 +33,11 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
     @Override
     public void onStart() {
         super.onStart();
-        doneCancelFragmentHelper.setTitle(getActivity(), R.string.master_slave);
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+        if (master != null)
+            doneCancelFragmentHelper.setTitle(getActivity(),
+                    getString(R.string.outlet_master_slave_title, master.getDescription()));
+        else
+            doneCancelFragmentHelper.setTitle(getActivity(), R.string.master_slave);
         doneCancelFragmentHelper.addCancelDone(getActivity(), R.layout.device_done);
 
         Activity a = getActivity();
@@ -59,6 +58,11 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
                 getFragmentManager().popBackStack();
             }
         });
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         Bundle b = getArguments();
         if (b == null)
@@ -72,7 +76,8 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
             return;
 
         // Add all device ports that are not equal to master and type of toggle.
-        adapter = new DevicePortsSelectAdapter(getActivity());
+        DevicePortSource s = new DevicePortSourceConfigured();
+        adapter = new DevicePortsListAdapter(getActivity(), true, s);
         List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
         for (DeviceInfo device : configuredDevices) {
             device.lockDevicePorts();
@@ -95,14 +100,16 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
 
         master.setSlaves(adapter.getCheckedUUids());
         NetpowerctrlApplication.getDataController().deviceCollection.save();
+
+        //noinspection ConstantConditions
+        getFragmentManager().popBackStack();
     }
 
     @Override
-    public void onDestroy() {
+    public void onStop() {
         doneCancelFragmentHelper.restoreTitle(getActivity());
         doneCancelFragmentHelper.restoreActionBar(getActivity());
-
-        super.onDestroy();
+        super.onStop();
     }
 
     @Override
@@ -112,9 +119,6 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
         ListView l = getListView();
         assert l != null;
         l.setOnItemClickListener(this);
-        if (master != null)
-            //noinspection ConstantConditions
-            getActivity().setTitle(getString(R.string.outlet_master_slave_title, master.getDescription()));
     }
 
     @Override
@@ -125,6 +129,5 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         adapter.toggleItemChecked(i);
-        Log.w("click", String.valueOf(i));
     }
 }

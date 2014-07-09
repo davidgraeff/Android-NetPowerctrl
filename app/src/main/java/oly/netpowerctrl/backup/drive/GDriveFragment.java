@@ -1,6 +1,5 @@
 package oly.netpowerctrl.backup.drive;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.os.Bundle;
@@ -11,30 +10,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.PopupMenu;
-import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.gms.drive.Metadata;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
+import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  * Neighbour discovery is activated if this fragment is on screen.
  */
-public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionState, PopupMenu.OnMenuItemClickListener {
+public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionState, PopupMenu.OnMenuItemClickListener, OnRefreshListener {
     private oly.netpowerctrl.backup.drive.GDriveBackupsAdapter GDriveBackupsAdapter;
-    private Switch gDrive_switch;
-    private boolean suspendSwitch;
     private TextView statusText;
-    private ProgressBar progressBar;
-    private View controlsIfLoggedIn;
+    private PullToRefreshLayout mPullToRefreshLayout;
     private int clickedPosition;
 
     public GDriveFragment() {
@@ -49,90 +43,59 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
     @Override
     public void onStart() {
         super.onStart();
-        //set the actionbar to use the custom view (can also be done with a style)
-        //noinspection ConstantConditions
-        ActionBar bar = getActivity().getActionBar();
-        assert bar != null;
-        bar.setDisplayShowCustomEnabled(true);
-        bar.setDisplayShowHomeEnabled(true);
-        bar.setDisplayShowTitleEnabled(false);
-        bar.setCustomView(R.layout.gdrive_switch);
-
-        gDrive_switch = (Switch) getActivity().findViewById(R.id.gDrive_switch);
-        if (SharedPrefs.gDriveEnabled() && MainActivity.instance.gDrive.isConnected())
-            gDriveConnected(true, false);
-        else
-            gDriveConnected(false, false);
-        gDrive_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                enableGDrive(b);
-            }
-        });
+        MainActivity.instance.gDrive.onStart(getActivity());
+        MainActivity.instance.gDrive.setObserver(this);
+        enableGDrive(true);
     }
 
     @Override
     public void onStop() {
-        super.onStop();
         GDriveBackupsAdapter.clear();
+        MainActivity.instance.gDrive.onStop();
         MainActivity.instance.gDrive.setObserver(null);
-        //noinspection ConstantConditions
-        ActionBar bar = getActivity().getActionBar();
-        assert bar != null;
-        bar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP |
-                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        super.onStop();
     }
 
     @Override
     public void gDriveConnected(final boolean connected, final boolean canceled) {
-        if (canceled)
-            SharedPrefs.setGDriveEnabled(connected);
-
-        suspendSwitch = true;
-        if (gDrive_switch != null)
-            gDrive_switch.setChecked(connected);
-        suspendSwitch = false;
-        progressBar.setVisibility(View.GONE);
 
         GDrive gDrive = MainActivity.instance.gDrive;
         if (connected) {
-            controlsIfLoggedIn.setVisibility(View.VISIBLE);
             gDrive.getListOfBackups(GDriveBackupsAdapter);
         } else if (gDrive.isError()) {
             GDriveBackupsAdapter.clear();
             statusText.setText(gDrive.getErrorMessage());
-            controlsIfLoggedIn.setVisibility(View.GONE);
         } else {
             GDriveBackupsAdapter.clear();
             statusText.setText(R.string.gDriveDisconnected);
-            controlsIfLoggedIn.setVisibility(View.GONE);
         }
+        getActivity().invalidateOptionsMenu();
     }
 
     @Override
     public void showProgress(boolean inProgress, String text) {
         statusText.setText(text);
-        progressBar.setVisibility(inProgress ? View.VISIBLE : View.GONE);
+        mPullToRefreshLayout.setRefreshing(inProgress);
     }
 
     private void enableGDrive(boolean enable) {
-        if (suspendSwitch)
-            return;
-
-        SharedPrefs.setGDriveEnabled(enable);
         if (enable) {
-            progressBar.setVisibility(View.VISIBLE);
             MainActivity.instance.gDrive.onStart(MainActivity.instance);
         } else {
-            progressBar.setVisibility(View.GONE);
             GDriveBackupsAdapter.clear();
             MainActivity.instance.gDrive.onStop();
+            MainActivity.instance.gDrive.resetAccount();
         }
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.only_help, menu);
+        inflater.inflate(R.menu.g_drive_fragment, menu);
+
+        boolean connected = MainActivity.instance.gDrive.isConnected();
+        menu.findItem(R.id.menu_login).setVisible(!connected);
+        menu.findItem(R.id.menu_logout).setVisible(connected);
+        menu.findItem(R.id.refresh).setVisible(connected);
     }
 
     @Override
@@ -146,6 +109,23 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
                         .setIcon(android.R.drawable.ic_menu_help).show();
                 return true;
             }
+            case R.id.menu_backup:
+                MainActivity.instance.gDrive.createNewBackup(new GDriveCreateBackupTask.BackupDoneSuccess() {
+                    @Override
+                    public void done() {
+                        MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
+                    }
+                });
+                return true;
+            case R.id.menu_login:
+                enableGDrive(true);
+                return true;
+            case R.id.menu_logout:
+                enableGDrive(false);
+                return true;
+            case R.id.refresh:
+                MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
+                return true;
         }
         return false;
     }
@@ -155,8 +135,6 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
         final View view = inflater.inflate(R.layout.fragment_gdrive, container, false);
 
         statusText = (TextView) view.findViewById(R.id.hintText);
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.GONE);
 
         //noinspection ConstantConditions
         ListView list = (ListView) view.findViewById(R.id.list);
@@ -177,36 +155,13 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
             }
         });
 
-        Button btn = (Button) view.findViewById(R.id.btnSave);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MainActivity.instance.gDrive.createNewBackup(new GDriveCreateBackupTask.BackupDoneSuccess() {
-                    @Override
-                    public void done() {
-                        MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
-                    }
-                });
-            }
-        });
-        btn = (Button) view.findViewById(R.id.btnRefresh);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
-            }
-        });
-        btn = (Button) view.findViewById(R.id.btnLogout);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MainActivity.instance.gDrive.resetAccount();
-            }
-        });
-
-        controlsIfLoggedIn = view.findViewById(R.id.buttons);
-
-        MainActivity.instance.gDrive.setObserver(this);
+        ///// For pull to refresh
+        mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
+        ActionBarPullToRefresh.from(getActivity())
+                .allChildrenArePullable()
+                .listener(this)
+                .setup(mPullToRefreshLayout);
+        ///// END: For pull to refresh
 
         return view;
     }
@@ -217,7 +172,12 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
 
         switch (menuItem.getItemId()) {
             case R.id.menu_gDrive_remove: {
-                MainActivity.instance.gDrive.deleteBackup(item);
+                MainActivity.instance.gDrive.deleteBackup(item, new GDriveRemoveTask.DoneSuccess() {
+                    @Override
+                    public void done() {
+                        MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
+                    }
+                });
                 return true;
             }
             case R.id.menu_gDrive_restore: {
@@ -226,5 +186,10 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
             }
         }
         return false;
+    }
+
+    @Override
+    public void onRefreshStarted(View view) {
+        MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
     }
 }

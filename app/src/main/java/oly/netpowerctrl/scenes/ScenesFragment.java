@@ -19,8 +19,6 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nhaarman.listviewanimations.swinginadapters.prepared.ScaleInAnimationAdapter;
-
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
@@ -42,7 +40,6 @@ public class ScenesFragment extends Fragment implements
     private SceneCollection scenes;
     private GridView mListView;
     private ScenesAdapter adapter;
-    private ScaleInAnimationAdapter animatedAdapter;
 
     public ScenesFragment() {
     }
@@ -63,7 +60,7 @@ public class ScenesFragment extends Fragment implements
         mListView.setColumnWidth((int) width);
         mListView.setNumColumns(GridView.AUTO_FIT);
 
-        mListView.setAdapter(animatedAdapter != null ? animatedAdapter : adapter);
+        mListView.setAdapter(adapter);
     }
 
     @Override
@@ -173,11 +170,7 @@ public class ScenesFragment extends Fragment implements
         mListView.setOnItemClickListener(this);
         adapter = new ScenesAdapter(getActivity(), scenes);
         adapter.setListContextMenu(this);
-        if (SharedPrefs.getAnimationEnabled()) {
-            // Add animation to the list
-            animatedAdapter = new ScaleInAnimationAdapter(adapter);
-            animatedAdapter.setAbsListView(mListView);
-        }
+
         setListOrGrid(SharedPrefs.getScenesList());
         if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions

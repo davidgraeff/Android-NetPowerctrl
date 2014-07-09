@@ -17,14 +17,14 @@ import android.widget.Toast;
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
+import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.devices.DevicePortsAvailableAdapter;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.preferences.DatePreference;
 import oly.netpowerctrl.preferences.TimePreference;
@@ -56,21 +56,6 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
         doneCancelFragmentHelper.setTitle(getActivity(), R.string.alarm_edit);
         doneCancelFragmentHelper.addCancelDone(getActivity(), R.layout.device_done);
 
-    }
-
-    @Override
-    public void onStop() {
-        doneCancelFragmentHelper.restoreTitle(getActivity());
-        doneCancelFragmentHelper.restoreActionBar(getActivity());
-        super.onStop();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.alarm_preferences);
-
         Activity a = getActivity();
         View btnDone = a.findViewById(R.id.action_mode_save_button);
         btnDone.setOnClickListener(new View.OnClickListener() {
@@ -96,6 +81,21 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
                 getFragmentManager().popBackStack();
             }
         });
+
+    }
+
+    @Override
+    public void onStop() {
+        doneCancelFragmentHelper.restoreTitle(getActivity());
+        doneCancelFragmentHelper.restoreActionBar(getActivity());
+        super.onStop();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.alarm_preferences);
 
         /** Getting the ListPreference from the Preference Resource */
         final PreferenceManager m = getPreferenceManager();
@@ -135,7 +135,8 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
                 builder.setView(v);
                 final AlertDialog dialog = builder.create();
 
-                final DevicePortsAvailableAdapter a = new DevicePortsAvailableAdapter(getActivity());
+                DevicePortSourceConfigured s = new DevicePortSourceConfigured();
+                final DevicePortsListAdapter a = new DevicePortsListAdapter(getActivity(), false, s);
                 v.setAdapter(a);
                 v.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -146,8 +147,6 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
                         dialog.dismiss();
                     }
                 });
-                List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
-                a.update(configuredDevices);
 
                 dialog.show();
                 return false;
@@ -210,7 +209,7 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
     }
 
     private void removeAlarm() {
-        PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlApplication.getService());
+        PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlService.getService());
         plugin.removeAlarm(alarm, this);
     }
 
@@ -248,7 +247,7 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
             return;
         }
 
-        PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlApplication.getService());
+        PluginInterface plugin = alarm.port.device.getPluginInterface(NetpowerctrlService.getService());
         // Find free device alarm, if not already assigned
         if (alarm.id == -1) {
             Alarm found_alarm;

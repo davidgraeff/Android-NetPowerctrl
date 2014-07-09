@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.device_ports;
 
 import android.content.Context;
 import android.view.View;
@@ -8,22 +8,36 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 
-import java.util.Iterator;
-
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.gui.SegmentedRadioGroup;
 
 public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
-    private DevicePortListItem master = null;
-
-    private final View.OnClickListener closeClickListener = new View.OnClickListener() {
+    private final View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            mListItemMenu.onMenuItemClicked(view, (Integer) view.getTag());
+            mListContextMenu.onMenuItemClicked(view, (Integer) view.getTag());
         }
     };
+    private final SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            int position = (Integer) seekBar.getTag();
+            all_outlets.get(position).command_value = seekBar.getProgress();
+        }
+    };
+    private DevicePortListItem master = null;
     private final RadioGroup.OnCheckedChangeListener switchClickListener = new RadioGroup.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int i) {
@@ -60,28 +74,11 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         }
     };
 
-    private final SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-            int position = (Integer) seekBar.getTag();
-            all_outlets.get(position).command_value = seekBar.getProgress();
-        }
-    };
-
     public DevicePortsCreateSceneAdapter(Context context) {
-        super(context, null);
+        super(context, null, null);
     }
 
+    @Override
     public int getViewTypeCount() {
         return DevicePort.DevicePortType.values().length;
     }
@@ -150,10 +147,10 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
 
         assert convertView != null;
         ImageView btnClose = (ImageView) convertView.findViewById(R.id.outlet_list_close);
-        if (mListItemMenu != null) {
+        if (mListContextMenu != null) {
             btnClose.setVisibility(View.VISIBLE);
             btnClose.setTag(position);
-            btnClose.setOnClickListener(closeClickListener);
+            btnClose.setOnClickListener(clickListener);
         } else {
             btnClose.setVisibility(View.GONE);
         }
@@ -182,22 +179,6 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         notifyDataSetChanged();
     }
 
-    public void removeAll(DevicePortsCreateSceneAdapter adapter) {
-        for (DevicePortListItem outlet_info : adapter.all_outlets) {
-            Iterator<DevicePortListItem> i = all_outlets.iterator();
-            while (i.hasNext()) {
-                if (outlet_info.port.equals(i.next().port)) {
-                    i.remove();
-                }
-            }
-
-        }
-    }
-
-    public DevicePort getItem(int position) {
-        return all_outlets.get(position).port;
-    }
-
     public DevicePort getMaster() {
         if (master != null)
             return master.port;
@@ -206,7 +187,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
 
     public void setMasterOfScene(Scene scene) {
         if (scene.isMasterSlave()) {
-            int p = getItemPositionByUUid(scene.getMasterUUid());
+            int p = findIndexByUUid(scene.getMasterUUid());
             if (p != -1)
                 master = all_outlets.get(p);
             else

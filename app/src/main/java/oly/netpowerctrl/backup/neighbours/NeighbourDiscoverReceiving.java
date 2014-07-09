@@ -11,7 +11,6 @@ import java.nio.ByteOrder;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.network.UDPReceiving;
-import oly.netpowerctrl.network.Utils;
 
 /**
  * Neighbour discovery
@@ -30,6 +29,7 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
         if (length < 16) return;
         ByteBuffer bb = ByteBuffer.wrap(message);
         bb.order(ByteOrder.BIG_ENDIAN);
+
         // Compare signature
         if (bb.getInt() != 0xCAFEBABE) return;
 
@@ -39,24 +39,26 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
         final long uniqueID = bb.getLong();
 
         // Ignore own broadcast packet
-        if (Utils.getMacAsLong() == uniqueID)
-            return;
-
-//        Log.w(NeighbourFragment.TAG, "receive" + String.valueOf(packetType));
-
+//        if (Utils.getMacAsLong() == uniqueID)
+//            return;
         switch (packetType) {
             //noinspection ConstantConditions
             case 0xCCCCAAAA: // Discover packet
+                Log.w(NeighbourFragment.TAG, "parseDiscoverPacket");
                 parseDiscoverPacket(bb, uniqueID);
                 break;
             //noinspection ConstantConditions
             case 0xCCCCAAAB: // Pair init
+                Log.w(NeighbourFragment.TAG, "parsePairInitPacket");
                 parsePairInitPacket(uniqueID);
                 break;
             //noinspection ConstantConditions
             case 0xCCCCAAAC: // Pair (n)ack
+                Log.w(NeighbourFragment.TAG, "parsePairResultPacket");
                 parsePairResultPacket(bb, uniqueID);
                 break;
+            default:
+                Log.w(NeighbourFragment.TAG, "packet not recognized");
         }
     }
 
@@ -111,6 +113,7 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
     void parseDiscoverPacket(ByteBuffer bb, final long uniqueID) {
         final NeighbourFragment neighbourFragment = neighbourFragmentWeakReference.get();
         if (neighbourFragment == null) {
+            Log.e(NeighbourFragment.TAG, "Stop discovery, did not found fragment!");
             interrupt();
             return;
         }

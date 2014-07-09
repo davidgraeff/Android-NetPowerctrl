@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<Switch xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/gDrive_switch"
-    android:text="@string/gDrive_backup"
-    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title"
-    android:paddingRight="5dp" />

@@ -11,14 +11,15 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  * For loading and storing scenes, groups, devices to local storage, google drive, neighbours.
- * Storing data is done in a thread.
+ * Storing data is done in a thread. WIP
  */
-class LoadStoreData {
+public class LoadStoreData {
     private final static String GROUPS_DIR = "groups";
     private final static String DEVICES_DIR = "devices";
     private final static String SCENES_DIR = "scenes";
@@ -104,5 +105,9 @@ class LoadStoreData {
         } catch (IOException ignored) {
             Toast.makeText(context, R.string.error_reading_groups, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void markVersion() {
+        SharedPrefs.setCurrentPreferenceVersion();
     }
 }

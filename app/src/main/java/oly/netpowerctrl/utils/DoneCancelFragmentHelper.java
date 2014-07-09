@@ -17,6 +17,11 @@ public class DoneCancelFragmentHelper {
         activity.setTitle(res);
     }
 
+    public void setTitle(Activity activity, String title) {
+        title_before = activity.getTitle();
+        activity.setTitle(title);
+    }
+
     public void restoreTitle(Activity activity) {
         if (title_before != null)
             activity.setTitle(title_before);

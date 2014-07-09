@@ -75,7 +75,7 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
 //                        Toast.LENGTH_SHORT).show();
 
             // Query all existing anel devices directly
-            NetpowerctrlService service = NetpowerctrlApplication.getService();
+            NetpowerctrlService service = NetpowerctrlService.getService();
             if (service == null)
                 return;
             List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().deviceCollection.devices;

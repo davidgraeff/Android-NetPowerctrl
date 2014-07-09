@@ -5,6 +5,4 @@ package oly.netpowerctrl.scenes;
  */
 public interface EditSceneFragmentReady {
     public void sceneEditFragmentReady(EditSceneFragment fragment);
-
-    public void entryDismiss(EditSceneFragment fragment, int position);
 }

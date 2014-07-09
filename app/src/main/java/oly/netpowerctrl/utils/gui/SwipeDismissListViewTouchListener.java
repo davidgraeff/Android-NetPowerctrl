@@ -16,21 +16,15 @@ package oly.netpowerctrl.utils.gui;
  * limitations under the License.
  */
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.graphics.Rect;
-import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.widget.AbsListView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -153,8 +147,6 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
                     return false;
                 }
 
-                // TODO: ensure this is a finger, and set a flag
-
                 // Find the child view that was touched (perform a hit test)
                 Rect rect = new Rect();
                 int childCount = mListView.getChildCount();
@@ -235,17 +227,20 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
                     // dismiss
                     final View downView = mDownView; // mDownView gets null'd before animation ends
                     final int downPosition = mDownPosition;
+                    final boolean dismissRightFinal = dismissRight;
                     ++mDismissAnimationRefCount;
                     mDownView.animate()
                             .translationX(dismissRight ? mViewWidth : -mViewWidth)
                             .alpha(0)
-                            .setDuration(mAnimationTime)
-                            .setListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    performDismiss(downView, downPosition);
-                                }
-                            });
+                            .setDuration(mAnimationTime).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCallbacks.onDismiss(downPosition);
+                            mDownPosition = AbsListView.INVALID_POSITION;
+                            downView.setAlpha(1);
+                            downView.setTranslationX(0);
+                        }
+                    });
                 } else {
                     // cancel
                     mDownView.animate()
@@ -299,65 +294,67 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
     }
 
     private void performDismiss(final View dismissView, final int dismissPosition) {
-        // Animate the dismissed list item to zero-height and fire the dismiss callback when
-        // all dismissed list item animations have completed. This triggers layout on each animation
-        // frame; in the future we may want to do something smarter and more performant.
 
-        final ViewGroup.LayoutParams lp = dismissView.getLayoutParams();
-        final int originalHeight = dismissView.getHeight();
 
-        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(mAnimationTime);
-
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                --mDismissAnimationRefCount;
-                if (mDismissAnimationRefCount == 0) {
-                    // No active animations, process all pending dismisses.
-                    // Sort by descending position
-                    Collections.sort(mPendingDismisses);
-
-                    int[] dismissPositions = new int[mPendingDismisses.size()];
-                    for (int i = mPendingDismisses.size() - 1; i >= 0; i--) {
-                        dismissPositions[i] = mPendingDismisses.get(i).position;
-                    }
-                    mCallbacks.onDismiss(mListView, dismissPositions);
-
-                    // Reset mDownPosition to avoid MotionEvent.ACTION_UP trying to start a dismiss
-                    // animation with a stale position
-                    mDownPosition = AbsListView.INVALID_POSITION;
-
-                    ViewGroup.LayoutParams lp;
-                    for (PendingDismissData pendingDismiss : mPendingDismisses) {
-                        // Reset view presentation
-                        pendingDismiss.view.setAlpha(1f);
-                        pendingDismiss.view.setTranslationX(0);
-                        lp = pendingDismiss.view.getLayoutParams();
-                        lp.height = originalHeight;
-                        pendingDismiss.view.setLayoutParams(lp);
-                    }
-
-                    // Send a cancel event
-                    long time = SystemClock.uptimeMillis();
-                    MotionEvent cancelEvent = MotionEvent.obtain(time, time,
-                            MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                    mListView.dispatchTouchEvent(cancelEvent);
-
-                    mPendingDismisses.clear();
-                }
-            }
-        });
-
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                lp.height = (Integer) valueAnimator.getAnimatedValue();
-                dismissView.setLayoutParams(lp);
-            }
-        });
-
-        mPendingDismisses.add(new PendingDismissData(dismissPosition, dismissView));
-        animator.start();
+//        // Animate the dismissed list item to zero-height and fire the dismiss callback when
+//        // all dismissed list item animations have completed. This triggers layout on each animation
+//        // frame; in the future we may want to do something smarter and more performant.
+//
+//        final ViewGroup.LayoutParams lp = dismissView.getLayoutParams();
+//        final int originalHeight = dismissView.getHeight();
+//
+//        ValueAnimator animator = ValueAnimator.ofInt(originalHeight, 1).setDuration(mAnimationTime);
+//
+//        animator.addListener(new AnimatorListenerAdapter() {
+//            @Override
+//            public void onAnimationEnd(Animator animation) {
+//                --mDismissAnimationRefCount;
+//                if (mDismissAnimationRefCount == 0) {
+//                    // No active animations, process all pending dismisses.
+//                    // Sort by descending position
+//                    Collections.sort(mPendingDismisses);
+//
+//                    int[] dismissPositions = new int[mPendingDismisses.size()];
+//                    for (int i = mPendingDismisses.size() - 1; i >= 0; i--) {
+//                        dismissPositions[i] = mPendingDismisses.get(i).position;
+//                    }
+//                    mCallbacks.onDismiss(mListView, dismissPositions);
+//
+//                    // Reset mDownPosition to avoid MotionEvent.ACTION_UP trying to start a dismiss
+//                    // animation with a stale position
+//                    mDownPosition = AbsListView.INVALID_POSITION;
+//
+//                    ViewGroup.LayoutParams lp;
+//                    for (PendingDismissData pendingDismiss : mPendingDismisses) {
+//                        // Reset view presentation
+//                        pendingDismiss.view.setAlpha(1f);
+//                        pendingDismiss.view.setTranslationX(0);
+//                        lp = pendingDismiss.view.getLayoutParams();
+//                        lp.height = originalHeight;
+//                        pendingDismiss.view.setLayoutParams(lp);
+//                    }
+//
+//                    // Send a cancel event
+//                    long time = SystemClock.uptimeMillis();
+//                    MotionEvent cancelEvent = MotionEvent.obtain(time, time,
+//                            MotionEvent.ACTION_CANCEL, 0, 0, 0);
+//                    mListView.dispatchTouchEvent(cancelEvent);
+//
+//                    mPendingDismisses.clear();
+//                }
+//            }
+//        });
+//
+//        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+//                lp.height = (Integer) valueAnimator.getAnimatedValue();
+//                dismissView.setLayoutParams(lp);
+//            }
+//        });
+//
+//        mPendingDismisses.add(new PendingDismissData(dismissPosition, dismissView));
+//        animator.start();
     }
 
     /**
@@ -373,12 +370,8 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
         /**
          * Called when the user has indicated they she would like to dismiss one or more list item
          * positions.
-         *
-         * @param listView               The originating {@link AbsListView}.
-         * @param reverseSortedPositions An array of positions to dismiss, sorted in descending
-         *                               order for convenience.
          */
-        void onDismiss(AbsListView listView, int[] reverseSortedPositions);
+        void onDismiss(int dismissedPosition);
     }
 
     class PendingDismissData implements Comparable<PendingDismissData> {

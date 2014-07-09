@@ -14,10 +14,15 @@ import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.application_state.RuntimeStateChanged;
 import oly.netpowerctrl.network.DeviceUpdate;
 
+/**
+ * An adapter for showing all configured (and newly discovered) devices. Configured and new devices
+ * are separated by headers.
+ */
 public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, RuntimeStateChanged {
+    private static final int TYPE_HEADER = 0;
+    private static final int TYPE_ITEM = 1;
     private final LayoutInflater inflater;
     private final boolean showNewDevices;
-    private DeviceCollection deviceCollection;
 
     @SuppressWarnings("SameParameterValue")
     public DevicesAdapter(Context context, boolean showNewDevices) {
@@ -27,17 +32,18 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     }
 
     public void onPause() {
-        if (deviceCollection != null)
-            deviceCollection.unregisterDeviceObserver(this);
+        RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        d.deviceCollection.unregisterDeviceObserver(this);
         NetpowerctrlApplication.getDataController().unregisterStateChanged(this);
         NetpowerctrlApplication.getDataController().unregisterNewDeviceObserver(this);
     }
 
     public void onResume() {
-        NetpowerctrlApplication.getDataController().registerStateChanged(this, false);
+        RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        d.registerStateChanged(this);
         onDataLoaded();
         if (showNewDevices) {
-            NetpowerctrlApplication.getDataController().registerNewDeviceObserver(this);
+            d.registerNewDeviceObserver(this);
         }
     }
 
@@ -46,14 +52,12 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
         notifyDataSetChanged();
     }
 
-    private static final int TYPE_HEADER = 0;
-    private static final int TYPE_ITEM = 1;
-
     @Override
     public int getItemViewType(int position) {
         if (position == 0)
             return TYPE_HEADER;
-        int cs = deviceCollection.devices.size();
+        RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        int cs = d.deviceCollection.devices.size();
         if (cs > 0 && position - 1 == cs)
             return TYPE_HEADER;
         else
@@ -64,20 +68,22 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     public Object getItem(int position) {
         if (position == 0)
             return null;
-        int cs = deviceCollection.devices.size();
+        RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        int cs = d.deviceCollection.devices.size();
         if (cs > 0 && position - 1 == cs)
             return null;
         else if (position - 1 < cs) // minus one header
-            return deviceCollection.devices.get(position - 1);
+            return d.deviceCollection.devices.get(position - 1);
         else // minus deviceCollection size and two headers
-            return NetpowerctrlApplication.getDataController().newDevices.get(position - (cs > 0 ? 2 : 1) - cs);
+            return d.newDevices.get(position - (cs > 0 ? 2 : 1) - cs);
     }
 
     @Override
     public int getViewTypeCount() {
+        RuntimeDataController d = NetpowerctrlApplication.getDataController();
         int c = 1; // always one view type!
-        if ((showNewDevices && NetpowerctrlApplication.getDataController().newDevices.size() > 0) ||
-                deviceCollection.hasDevices())
+        if ((showNewDevices && d.newDevices.size() > 0) ||
+                d.deviceCollection.hasDevices())
             ++c; // header type + content type
 
         return c;
@@ -142,7 +148,8 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
                 convertView = inflater.inflate(R.layout.device_group_header, viewGroup, false);
             assert convertView != null;
 
-            boolean isNewDeviceHeader = (!deviceCollection.hasDevices()
+            RuntimeDataController d = NetpowerctrlApplication.getDataController();
+            boolean isNewDeviceHeader = (!d.deviceCollection.hasDevices()
                     || position != 0);
 
             TextView tvName = (TextView) convertView.findViewById(R.id.lblListItem);
@@ -154,10 +161,7 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
 
     @Override
     public boolean onDataLoaded() {
-        deviceCollection = NetpowerctrlApplication.getDataController().deviceCollection;
-        if (deviceCollection == null)
-            return true;
-        deviceCollection.registerDeviceObserver(this);
+        NetpowerctrlApplication.getDataController().deviceCollection.registerDeviceObserver(this);
         return true;
     }
 

@@ -17,6 +17,7 @@
 package oly.netpowerctrl.main;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.nfc.NdefMessage;
@@ -27,12 +28,15 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewConfiguration;
+import android.widget.Toast;
 
 import java.lang.reflect.Field;
 
 import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.backup.drive.GDrive;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Donate;
@@ -40,24 +44,13 @@ import oly.netpowerctrl.utils.NFC;
 import oly.netpowerctrl.utils.gui.DrawerController;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
+    private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
     public final Donate donate = new Donate();
-
+    public final GDrive gDrive = new GDrive();
     // Drawer
     private final DrawerController mDrawer = new DrawerController();
-    public final GDrive gDrive = new GDrive();
-
-    @Override
-    protected void onStop() {
-        gDrive.onStop();
-        super.onStop();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        gDrive.onStart(this);
-    }
+    private long mBackPressed;
 
     @Override
     protected void onDestroy() {
@@ -93,6 +86,9 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         }
 
         setContentView(R.layout.activity_main);
+
+        // Clear the backstack on entering this activity
+        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
         // Hack to always show the overflow of the actionbar instead of
         // relying on the menu button that is only present on some devices
@@ -163,7 +159,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         mDrawer.saveSelection();
 
         // Stop listener
-        NetpowerctrlApplication.instance.stopUseListener();
+        NetpowerctrlService.stopUseListener();
     }
 
     @Override
@@ -175,8 +171,19 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     public void onResume() {
         super.onResume();
         NFC.checkIntentForNFC(this, getIntent());
-        NetpowerctrlApplication.instance.useListener();
-        NetpowerctrlApplication.instance.findDevices(null);
+        NetpowerctrlService.useListener();
+        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
+            @Override
+            public boolean onServiceReady(NetpowerctrlService service) {
+                service.findDevices(null);
+                return false;
+            }
+
+            @Override
+            public void onServiceFinished() {
+
+            }
+        });
     }
 
     @Override
@@ -232,6 +239,16 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     public void onBackPressed() {
         if (mDrawer.onBackPressed())
             return;
+
+        if (mBackPressed + TIME_INTERVAL_MS > System.currentTimeMillis()) {
+            finish();
+            return;
+        } else if (getFragmentManager().getBackStackEntryCount() == 0) {
+            Toast.makeText(this, getString(R.string.press_back_to_exit), Toast.LENGTH_SHORT).show();
+            mBackPressed = System.currentTimeMillis();
+            return;
+        }
+
         super.onBackPressed();
     }
 }

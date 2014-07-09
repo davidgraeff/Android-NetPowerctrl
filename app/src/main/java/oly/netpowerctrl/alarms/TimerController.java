@@ -22,11 +22,11 @@ import oly.netpowerctrl.utils.JSONHelper;
  * Control all configured alarms
  */
 public class TimerController {
+    private final WeakHashMap<IAlarmsUpdated, Boolean> observers = new WeakHashMap<>();
     private List<Alarm> alarms = new ArrayList<>();
     private List<Alarm> available_alarms = new ArrayList<>();
     private IAlarmsSave storage;
     private boolean requestActive = false;
-    private final WeakHashMap<IAlarmsUpdated, Boolean> observers = new WeakHashMap<>();
     private Runnable notifyRunnable = new Runnable() {
         @Override
         public void run() {
@@ -103,7 +103,7 @@ public class TimerController {
     }
 
     public void removeAlarm(Alarm alarm, AsyncRunnerResult callback) {
-        PluginInterface p = alarm.port.device.getPluginInterface(NetpowerctrlApplication.getService());
+        PluginInterface p = alarm.port.device.getPluginInterface(NetpowerctrlService.getService());
         p.removeAlarm(alarm, callback);
     }
 
@@ -111,9 +111,9 @@ public class TimerController {
         this.storage = storage;
     }
 
-    public interface IAlarmsUpdated {
-        // Return false to get removed from the observer list
-        boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress);
+    public void removeFromCache(int position) {
+        if (position != -1)
+            alarms.remove(position);
     }
 
     public int getCount() {
@@ -131,45 +131,30 @@ public class TimerController {
         }
     }
 
-    public void requestData() {
-
-        NetpowerctrlService service = NetpowerctrlApplication.getService();
-        if (service == null) {
-            NetpowerctrlApplication.instance.registerServiceReadyObserver(new ServiceReady() {
-                @Override
-                public boolean onServiceReady() {
-                    requestData(NetpowerctrlApplication.getService());
+    public void refresh() {
+        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
+            @Override
+            public boolean onServiceReady(NetpowerctrlService service) {
+                if (requestActive)
                     return false;
-                }
 
-                @Override
-                public void onServiceFinished() {
+                requestActive = true;
+                available_alarms.clear();
 
-                }
-            });
-        } else {
-            requestData(service);
-        }
-    }
+                // Flag all alarms as from-cache
+                for (Alarm alarm : alarms)
+                    alarm.fromCache = true;
+                notifyObservers(false, true);
 
-    /**
-     * Call this method to update the list of alarms
-     *
-     * @param service The main service
-     */
-    public void requestData(NetpowerctrlService service) {
-        if (requestActive)
-            return;
+                service.requestAllAlarms();
+                return false;
+            }
 
-        requestActive = true;
-        available_alarms.clear();
+            @Override
+            public void onServiceFinished() {
 
-        // Flag all alarms as from-cache
-        for (Alarm alarm : alarms)
-            alarm.fromCache = true;
-        notifyObservers(false, true);
-
-        service.requestAllAlarms();
+            }
+        });
     }
 
     public void unregisterObserver(IAlarmsUpdated o) {
@@ -231,6 +216,11 @@ public class TimerController {
             alarm.toJSON(writer);
         }
         writer.endArray();
+    }
+
+    public interface IAlarmsUpdated {
+        // Return false to get removed from the observer list
+        boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress);
     }
 
     public interface IAlarmsSave {
