@@ -166,8 +166,10 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="scene_no_name">Kein Name!</string>
     <string name="widget_on">(An)</string>
     <string name="widget_off">(Aus)</string>
-    <string name="preference_widget_show_text">Zeige Titel</string>
-    <string name="preference_widget_show_text_summary">Zeige Namen und Status unter dem Icon</string>
+    <string name="preference_widget_show_title">Zeige Titel</string>
+    <string name="preference_widget_show_title_summary">Zeige Namen unter dem Icon</string>
+    <string name="preference_widget_show_status">Zeige Status</string>
+    <string name="preference_widget_show_status_summary">Zeige den Status (Aus/An) unter dem Icon</string>
     <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
     <string name="menu_outlet_createGroup">In Gruppen…</string>
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
@@ -199,8 +201,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombineren. Zuerst musst du aber Geräte einrichten.</string>
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Benutze den Plus-Button um ein Gerät zu erstellen, was nicht automatisch gefunden worden ist.\n\nDu musst auf deinen Geräten UDP eingeschaltet haben!</string>
     <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
-    <string name="preference_animations_enabled">Animationen</string>
-    <string name="preference_animations_enabled_summary">Schaltet Listen- und Rasteranimationen ein und aus.</string>
+    <string name="preference_ports_unlimited">Unlimitierte Ports</string>
+    <string name="preference_ports_unlimited_summary">Wähle diese Option auf einem gerootetem Android Gerät um Ports kleiner als 1024 wählen zu können.</string>
     <string name="energy_saving_mode_log">Logbuch</string>
     <string name="preference_use_log_energy_saving_mode">Log: Energiesparmodus</string>
     <string name="preference_use_log_energy_saving_mod_summary">Alle Energiespar-Aktivitäten mitloggen</string>

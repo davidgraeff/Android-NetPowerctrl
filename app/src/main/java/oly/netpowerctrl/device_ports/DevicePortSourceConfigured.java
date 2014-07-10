@@ -40,7 +40,7 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
         }
 
         isBatch = false;
-        adapter.removeAllMarked();
+        adapter.removeAllMarked(true);
 
         adapter.notifyDataSetChanged();
     }
@@ -87,9 +87,9 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
         }
 
         if (willBeRemoved || (hideNotReachable && !di.isReachable()))
-            adapter.removeAll(di);
+            adapter.removeAll(di, !isBatch);
         else {
-            adapter.addAll(di);
+            adapter.addAll(di, !isBatch);
         }
 
         if (!isBatch)

@@ -28,6 +28,7 @@ import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.preferences.DatePreference;
 import oly.netpowerctrl.preferences.TimePreference;
+import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class AlarmEditPreferences extends PreferenceFragment implements AsyncRunnerResult {
@@ -136,7 +137,8 @@ public class AlarmEditPreferences extends PreferenceFragment implements AsyncRun
                 final AlertDialog dialog = builder.create();
 
                 DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-                final DevicePortsListAdapter a = new DevicePortsListAdapter(getActivity(), false, s);
+                final DevicePortsListAdapter a = new DevicePortsListAdapter(getActivity(), false, s,
+                        ((ActivityWithIconCache) getActivity()).getIconCache());
                 v.setAdapter(a);
                 v.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override

@@ -166,8 +166,10 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="scene_no_name">No name!</string>
     <string name="widget_on">(On)</string>
     <string name="widget_off">(Off)</string>
-    <string name="preference_widget_show_text">Show title</string>
-    <string name="preference_widget_show_text_summary">Show the name and state below the widgets icon</string>
+    <string name="preference_widget_show_title">Show title</string>
+    <string name="preference_widget_show_title_summary">Show the name below the widgets icon</string>
+    <string name="preference_widget_show_status">Show status</string>
+    <string name="preference_widget_show_status_summary">Show the status (on/off) below the widgets icon</string>
     <string name="device_createGroup">Create group with device outlets</string>
     <string name="menu_outlet_createGroup">Groups</string>
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
@@ -196,8 +198,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="empty_no_scenes_no_devices">No scenes found. With a scene you may combine multiple outlet actions. First you have to configure some devices though.</string>
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen. Der Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Benutze den Plus-Button um ein Gerät zu erstellen, was nicht automatisch gefunden worden ist.</string>
     <string name="empty_no_outlets_no_devices">Welcome!\nWith this app you may control Anel devices. First you have to configure some devices though. Use the navigation to come back to the outlet overview. Open the navigation from anywhere in your app by swiping from the left edge of the screen.</string>
-    <string name="preference_animations_enabled">Animations</string>
-    <string name="preference_animations_enabled_summary">Switch list and grid animations on and off</string>
+    <string name="preference_ports_unlimited">Unlimited ports</string>
+    <string name="preference_ports_unlimited_summary">If you have a rooted Android device, you may enable this for ports smaller than 1024.</string>
     <string name="energy_saving_mode_log">Open log</string>
     <string name="preference_use_log_energy_saving_mode">Log: Energy saving mode</string>
     <string name="preference_use_log_energy_saving_mod_summary">Log all activities of the energy saving mode</string>

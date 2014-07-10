@@ -10,19 +10,32 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class WidgetPreferenceFragment extends PreferencesWithValuesFragment implements Icons.IconSelected {
-    private int widgetId = -1;
     private final Map<Preference, Icons.IconState> preference_to_state = new TreeMap<>();
-
     private final Preference.OnPreferenceClickListener selectImage = new Preference.OnPreferenceClickListener() {
         public boolean onPreferenceClick(final Preference preference) {
             Icons.show_select_icon_dialog(getActivity(), "widget_icons", WidgetPreferenceFragment.this, preference);
             return true;
         }
     };
+    private int widgetId = -1;
+    private Preference.OnPreferenceChangeListener forceChangePreferences =
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object o) {
+                    NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            WidgetUpdateService.ForceUpdate(getActivity(), widgetId);
+                        }
+                    }, 200);
+                    return true;
+                }
+            };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,15 +74,12 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
                 Icons.getResIdForState(Icons.IconState.StateUnknown)));
         preference.setOnPreferenceClickListener(selectImage);
 
-        preference = findPreference("widget_show_text");
+        preference = findPreference("widget_show_title");
         assert preference != null;
-        preference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                WidgetUpdateService.ForceUpdate(getActivity(), widgetId);
-                return false;
-            }
-        });
+        preference.setOnPreferenceChangeListener(forceChangePreferences);
+        preference = findPreference("widget_show_status");
+        assert preference != null;
+        preference.setOnPreferenceChangeListener(forceChangePreferences);
     }
 
     @Override

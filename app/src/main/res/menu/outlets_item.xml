@@ -13,11 +13,8 @@
         android:id="@+id/menu_add_homescreen"
         android:title="@string/menu_add_homescreen" />
     <item
-        android:id="@+id/menu_outlet_createGroup"
+        android:id="@+id/menu_outlet_changeGroups"
         android:title="@string/menu_outlet_createGroup" />
-    <item
-        android:id="@+id/menu_outlet_removeFromGroup"
-        android:title="@string/menu_outlet_removeFromGroup" />
     <item
         android:id="@+id/menu_icon"
         android:title="@string/outlet_set_icon" />

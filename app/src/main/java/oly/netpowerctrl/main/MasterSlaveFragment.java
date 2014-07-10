@@ -20,6 +20,7 @@ import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener {
@@ -77,7 +78,7 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
 
         // Add all device ports that are not equal to master and type of toggle.
         DevicePortSource s = new DevicePortSourceConfigured();
-        adapter = new DevicePortsListAdapter(getActivity(), true, s);
+        adapter = new DevicePortsListAdapter(getActivity(), true, s, ((ActivityWithIconCache) getActivity()).getIconCache());
         List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
         for (DeviceInfo device : configuredDevices) {
             device.lockDevicePorts();
@@ -85,10 +86,11 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
             while (it_port.hasNext()) {
                 DevicePort oi = it_port.next();
                 if (!oi.equals(master) && oi.getType() == DevicePort.DevicePortType.TypeToggle)
-                    adapter.addItem(oi, oi.current_value);
+                    adapter.addItem(oi, oi.current_value, false);
             }
             device.releaseDevicePorts();
         }
+        adapter.computeGroupSpans();
         adapter.setChecked(master.getSlaves());
 
         setHasOptionsMenu(true);

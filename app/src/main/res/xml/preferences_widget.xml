@@ -3,10 +3,17 @@
     android:title="Widget">
 
     <CheckBoxPreference
-        android:key="widget_show_text"
-        android:title="@string/preference_widget_show_text"
-        android:summary="@string/preference_widget_show_text_summary"
-        android:defaultValue="@bool/widget_show_text" />
+        android:defaultValue="@bool/widget_show_title"
+        android:key="widget_show_title"
+        android:summary="@string/preference_widget_show_title_summary"
+        android:title="@string/preference_widget_show_title" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/widget_show_title"
+        android:key="widget_show_status"
+        android:summary="@string/preference_widget_show_status_summary"
+        android:title="@string/preference_widget_show_status" />
+
 
     <Preference
         android:key="widget_image_on"

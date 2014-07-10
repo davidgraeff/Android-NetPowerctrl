@@ -9,6 +9,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 
@@ -18,72 +19,69 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     // We block updates while moving the range slider
     private static final String TAG = "PortAdapter";
 
-    /**
-     * The constructor will not load the adapter data! Call setGroupFilter to load data!
-     *
-     * @param context
-     * @param mListContextMenu
-     */
-    public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, DevicePortSource source) {
-        super(context, mListContextMenu, source);
-        showHidden = SharedPrefs.getShowHiddenOutlets();
+    public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, DevicePortSource source,
+                                     IconDeferredLoadingThread iconCache) {
+        super(context, mListContextMenu, source, iconCache, true);
+        mShowHidden = SharedPrefs.getShowHiddenOutlets();
         setLayoutRes(R.layout.list_icon_item);
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return DevicePort.DevicePortType.values().length;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return all_outlets.get(position).port.getType().ordinal();
+        if (source != null)
+            source.updateNow();
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        DevicePortListItem item = all_outlets.get(position);
+        DevicePortListItem item = mItems.get(position);
         DevicePort port = item.port;
 
         convertView = super.getView(position, convertView, parent);
 
+        // Not our business, if port is null
+        if (port == null) {
+            if (mCurrent_devicePortViewHolder.isNew && mCurrent_devicePortViewHolder.imageEdit != null) {
+                mCurrent_devicePortViewHolder.imageEdit.setVisibility(View.INVISIBLE);
+            }
+            return convertView;
+        }
+
         // We do this only once, if the viewHolder is new
-        if (current_devicePortViewHolder.isNew) {
+        if (mCurrent_devicePortViewHolder.isNew) {
             // We use the tools icon for the context menu.
-            if (current_devicePortViewHolder.imageEdit != null) {
-                current_devicePortViewHolder.imageEdit.setTag(position);
-                current_devicePortViewHolder.imageEdit.setOnClickListener(current_devicePortViewHolder);
+            if (mCurrent_devicePortViewHolder.imageEdit != null) {
+                mCurrent_devicePortViewHolder.imageEdit.setVisibility(View.VISIBLE);
+                mCurrent_devicePortViewHolder.imageEdit.setTag(position);
+                mCurrent_devicePortViewHolder.imageEdit.setOnClickListener(mCurrent_devicePortViewHolder);
             }
             //current_viewHolder.mainTextView.setTag(position);
             switch (port.getType()) {
                 case TypeToggle: {
-                    current_devicePortViewHolder.seekBar.setVisibility(View.GONE);
-                    current_devicePortViewHolder.loadIcon(port.uuid,
+                    mCurrent_devicePortViewHolder.seekBar.setVisibility(View.GONE);
+                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
                             Icons.getResIdForState(Icons.IconState.StateOff), 0);
-                    current_devicePortViewHolder.loadIcon(port.uuid,
+                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
                             Icons.getResIdForState(Icons.IconState.StateOn), 1);
                     break;
                 }
                 case TypeButton: {
-                    current_devicePortViewHolder.loadIcon(port.uuid,
+                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateToggle,
                             R.drawable.netpowerctrl, 0);
-                    current_devicePortViewHolder.seekBar.setVisibility(View.GONE);
+                    mCurrent_devicePortViewHolder.seekBar.setVisibility(View.GONE);
+                    mCurrent_devicePortViewHolder.setCurrentBitmapIndex(0);
                     break;
                 }
                 case TypeRangedValue:
-                    current_devicePortViewHolder.loadIcon(port.uuid,
+                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
                             Icons.getResIdForState(Icons.IconState.StateOff), 0);
-                    current_devicePortViewHolder.loadIcon(port.uuid,
+                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
                             Icons.getResIdForState(Icons.IconState.StateOn), 1);
-                    current_devicePortViewHolder.seekBar.setVisibility(View.VISIBLE);
-                    current_devicePortViewHolder.seekBar.setOnSeekBarChangeListener(this);
-                    current_devicePortViewHolder.seekBar.setTag(-1);
-                    current_devicePortViewHolder.seekBar.setMax(port.max_value - port.min_value);
+                    mCurrent_devicePortViewHolder.seekBar.setVisibility(View.VISIBLE);
+                    mCurrent_devicePortViewHolder.seekBar.setOnSeekBarChangeListener(this);
+                    mCurrent_devicePortViewHolder.seekBar.setTag(-1);
+                    mCurrent_devicePortViewHolder.seekBar.setMax(port.max_value - port.min_value);
                     break;
             }
 
@@ -95,14 +93,14 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 break;
             }
             case TypeToggle: {
-                current_devicePortViewHolder.setCurrentBitmapIndex(port.current_value >= port.max_value ? 1 : 0);
+                mCurrent_devicePortViewHolder.setCurrentBitmapIndex(port.current_value >= port.max_value ? 1 : 0);
                 break;
             }
             case TypeRangedValue:
-                current_devicePortViewHolder.seekBar.setTag(-1);
-                current_devicePortViewHolder.seekBar.setProgress(port.current_value - port.min_value);
-                current_devicePortViewHolder.seekBar.setTag(position);
-                current_devicePortViewHolder.setCurrentBitmapIndex(port.current_value <= port.min_value ? 0 : 1);
+                mCurrent_devicePortViewHolder.seekBar.setTag(-1);
+                mCurrent_devicePortViewHolder.seekBar.setProgress(port.current_value - port.min_value);
+                mCurrent_devicePortViewHolder.seekBar.setTag(position);
+                mCurrent_devicePortViewHolder.setCurrentBitmapIndex(port.current_value <= port.min_value ? 0 : 1);
                 break;
         }
 
@@ -111,9 +109,9 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     // Called from the listView that uses this adapter
     public void handleClick(int position, long id) {
-        DevicePortListItem info = all_outlets.get(position);
+        DevicePortListItem info = mItems.get(position);
         NetpowerctrlApplication.getDataController().execute(info.port, DevicePort.TOGGLE, null);
-        animate_click_id = id;
+        mUpdated_id_list.add(id);
         notifyDataSetChanged();
     }
 
@@ -122,7 +120,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         int position = (Integer) view.getTag();
         if (position == -1)
             return;
-        DevicePortListItem info = all_outlets.get(position);
+        DevicePortListItem info = mItems.get(position);
         info.port.current_value = value + info.port.min_value;
         info.command_value = info.port.current_value;
         NetpowerctrlApplication.getDataController().execute(info.port, info.command_value, null);

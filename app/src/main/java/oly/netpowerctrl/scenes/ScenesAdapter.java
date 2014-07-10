@@ -5,6 +5,8 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -19,58 +22,24 @@ import oly.netpowerctrl.utils.ListItemMenu;
 public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScenesUpdated {
     private final SceneCollection scenes;
     private final LayoutInflater inflater;
+    private final IconDeferredLoadingThread mIconCache;
     private ListItemMenu mListContextMenu = null;
     private int outlet_res_id = R.layout.grid_icon_item;
-    private final IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
 
-    //ViewHolder pattern
-    protected static class ViewHolder implements View.OnClickListener, IconDeferredLoadingThread.IconLoaded {
-        final ImageView imageIcon;
-        final ImageView imageEdit;
-        //LinearLayout mainTextView;
-        final View entry;
-        final TextView title;
-        final TextView subtitle;
-        boolean isNew = true;
+    public ScenesAdapter(Context context, SceneCollection data, IconDeferredLoadingThread iconCache) {
+        inflater = LayoutInflater.from(context);
+        scenes = data;
+        mIconCache = iconCache;
+        scenes.registerObserver(this);
+    }
+    //protected long animate_click_id = -1;
 
-        final int currentBitmapIndex = 0;
-        final Drawable[] drawables = new Drawable[1];
-        public int position;
-        private ListItemMenu mListContextMenu = null;
-        private final IconDeferredLoadingThread iconCache;
-
-        ViewHolder(View convertView, ListItemMenu listContextMenu, IconDeferredLoadingThread iconCache) {
-            mListContextMenu = listContextMenu;
-            this.iconCache = iconCache;
-            imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
-            imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
-            entry = convertView.findViewById(R.id.item_layout);
-            title = (TextView) convertView.findViewById(R.id.text1);
-            subtitle = (TextView) convertView.findViewById(R.id.subtitle);
-        }
-
-        public void loadIcon(UUID uuid, Icons.IconType iconType, Icons.IconState state, int default_resource, int bitmapPosition) {
-            iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
-                    uuid, iconType, state, default_resource, this, bitmapPosition));
-        }
-
-//        public void setCurrentBitmapIndex(int index) {
-//            currentBitmapIndex = index;
-//            if (drawables[index] != null)
-//                imageIcon.setImageDrawable(drawables[index]);
-//        }
-
-        @Override
-        public void onClick(View view) {
-            mListContextMenu.onMenuItemClicked(view, position);
-        }
-
-        @Override
-        public void setDrawable(Drawable bitmap, int position) {
-            drawables[position] = bitmap;
-            if (currentBitmapIndex == position)
-                imageIcon.setImageDrawable(drawables[position]);
-        }
+    public void handleClick(int position, View view) {
+        Animation a = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
+                R.anim.button_zoom);
+        a.reset();
+        view.clearAnimation();
+        view.startAnimation(a);
     }
 
     public int getLayoutRes() {
@@ -80,13 +49,6 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
     public void setLayoutRes(int layout_res) {
         this.outlet_res_id = layout_res;
         notifyDataSetChanged();
-    }
-
-    public ScenesAdapter(Context context, SceneCollection data) {
-        inflater = LayoutInflater.from(context);
-        scenes = data;
-        iconCache.start();
-        scenes.registerObserver(this);
     }
 
     public void setListContextMenu(ListItemMenu listItemMenu) {
@@ -119,7 +81,7 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
         ViewHolder current_viewHolder;
         if (convertView == null) {
             convertView = inflater.inflate(outlet_res_id, null);
-            current_viewHolder = new ViewHolder(convertView, mListContextMenu, iconCache);
+            current_viewHolder = new ViewHolder(convertView, mListContextMenu);
             assert convertView != null;
             convertView.setTag(current_viewHolder);
         } else {
@@ -139,7 +101,7 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
                 current_viewHolder.imageIcon.setOnClickListener(current_viewHolder);
             }
 
-            current_viewHolder.loadIcon(data.uuid, Icons.IconType.SceneIcon,
+            current_viewHolder.loadIcon(mIconCache, data.uuid, Icons.IconType.SceneIcon,
                     Icons.IconState.StateUnknown, R.drawable.netpowerctrl, 0);
         }
 
@@ -160,5 +122,53 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
     @Override
     public void scenesUpdated(boolean addedOrRemoved) {
         notifyDataSetChanged();
+    }
+
+    //ViewHolder pattern
+    protected static class ViewHolder implements View.OnClickListener, IconDeferredLoadingThread.IconLoaded {
+        final ImageView imageIcon;
+        final ImageView imageEdit;
+        //LinearLayout mainTextView;
+        final View entry;
+        final TextView title;
+        final TextView subtitle;
+        final int currentBitmapIndex = 0;
+        final Drawable[] drawables = new Drawable[1];
+        public int position;
+        boolean isNew = true;
+        private ListItemMenu mListContextMenu = null;
+
+        ViewHolder(View convertView, ListItemMenu listContextMenu) {
+            mListContextMenu = listContextMenu;
+            imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
+            imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
+            entry = convertView.findViewById(R.id.item_layout);
+            title = (TextView) convertView.findViewById(R.id.text1);
+            subtitle = (TextView) convertView.findViewById(R.id.subtitle);
+        }
+
+        public void loadIcon(IconDeferredLoadingThread iconCache, UUID uuid, Icons.IconType iconType,
+                             Icons.IconState state, int default_resource, int bitmapPosition) {
+            iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
+                    uuid, iconType, state, default_resource, this, bitmapPosition));
+        }
+
+//        public void setCurrentBitmapIndex(int index) {
+//            currentBitmapIndex = index;
+//            if (drawables[index] != null)
+//                imageIcon.setImageDrawable(drawables[index]);
+//        }
+
+        @Override
+        public void onClick(View view) {
+            mListContextMenu.onMenuItemClicked(view, position);
+        }
+
+        @Override
+        public void setDrawable(Drawable bitmap, int position) {
+            drawables[position] = bitmap;
+            if (currentBitmapIndex == position)
+                imageIcon.setImageDrawable(drawables[position]);
+        }
     }
 }

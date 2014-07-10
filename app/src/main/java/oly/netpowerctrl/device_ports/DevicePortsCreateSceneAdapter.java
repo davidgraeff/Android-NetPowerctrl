@@ -11,6 +11,7 @@ import android.widget.SeekBar;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.gui.SegmentedRadioGroup;
 
 public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
@@ -34,7 +35,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             int position = (Integer) seekBar.getTag();
-            all_outlets.get(position).command_value = seekBar.getProgress();
+            mItems.get(position).command_value = seekBar.getProgress();
         }
     };
     private DevicePortListItem master = null;
@@ -42,7 +43,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int i) {
             int position = (Integer) radioGroup.getTag();
-            DevicePortListItem info = all_outlets.get(position);
+            DevicePortListItem info = mItems.get(position);
             int command_value = info.command_value;
 
             boolean masterChanged = false;
@@ -74,27 +75,25 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         }
     };
 
-    public DevicePortsCreateSceneAdapter(Context context) {
-        super(context, null, null);
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return DevicePort.DevicePortType.values().length;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return all_outlets.get(position).port.getType().ordinal();
+    public DevicePortsCreateSceneAdapter(Context context, IconDeferredLoadingThread iconCache) {
+        super(context, null, null, iconCache, false);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        DevicePortListItem info = all_outlets.get(position);
-        DevicePort.DevicePortType type = info.port.getType();
-        if (type == DevicePort.DevicePortType.TypeToggle) {
-            outlet_res_id = R.layout.create_scene_outlet_list_switch;
+        DevicePortListItem item = mItems.get(position);
+        DevicePort port = item.port;
+
+        // Not our business, if port is null
+        if (port == null) {
+            mOutlet_res_id = R.layout.create_scene_outlet_list_item;
             convertView = super.getView(position, convertView, parent);
+            return convertView;
+        }
+
+        DevicePort.DevicePortType type = port.getType();
+        if (type == DevicePort.DevicePortType.TypeToggle) {
+            mOutlet_res_id = R.layout.create_scene_outlet_list_switch;
 
             assert convertView != null;
             SegmentedRadioGroup rGroup = (SegmentedRadioGroup) convertView.findViewById(R.id.radioGroup);
@@ -105,13 +104,13 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             RadioButton r2 = (RadioButton) convertView.findViewById(R.id.radioToggle);
             RadioButton r3 = (RadioButton) convertView.findViewById(R.id.radioToggleMaster);
 
-            if (master == null || info.equals(master)) {
+            if (master == null || item.equals(master)) {
                 r2.setText(R.string.toggle);
             } else {
                 r2.setText(R.string.toggleSlave);
             }
 
-            switch (info.command_value) {
+            switch (item.command_value) {
                 case DevicePort.OFF:
                     r0.setChecked(true);
                     break;
@@ -119,7 +118,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
                     r1.setChecked(true);
                     break;
                 case DevicePort.TOGGLE:
-                    if (info.equals(master))
+                    if (item.equals(master))
                         r3.setChecked(true);
                     else
                         r2.setChecked(true);
@@ -127,21 +126,21 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             }
 
         } else if (type == DevicePort.DevicePortType.TypeRangedValue) {
-            outlet_res_id = R.layout.create_scene_outlet_list_ranged;
+            mOutlet_res_id = R.layout.create_scene_outlet_list_ranged;
             convertView = super.getView(position, convertView, parent);
             assert convertView != null;
             SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
             //current_viewHolder.seekBar
             seekBar.setTag(position);
-            seekBar.setMax(info.port.max_value);
-            seekBar.setProgress(info.command_value);
+            seekBar.setMax(port.max_value);
+            seekBar.setProgress(item.command_value);
             seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
         } else if (type == DevicePort.DevicePortType.TypeButton) {
-            outlet_res_id = R.layout.create_scene_outlet_list_item;
+            mOutlet_res_id = R.layout.create_scene_outlet_list_item;
             convertView = super.getView(position, convertView, parent);
 
         } else {
-            outlet_res_id = R.layout.create_scene_outlet_list_item;
+            mOutlet_res_id = R.layout.create_scene_outlet_list_item;
             convertView = super.getView(position, convertView, parent);
         }
 
@@ -159,21 +158,21 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
     }
 
     public void switchAllOn() {
-        for (DevicePortListItem outlet_info : all_outlets) {
+        for (DevicePortListItem outlet_info : mItems) {
             outlet_info.command_value = outlet_info.port.max_value;
         }
         notifyDataSetChanged();
     }
 
     public void switchAllOff() {
-        for (DevicePortListItem outlet_info : all_outlets) {
+        for (DevicePortListItem outlet_info : mItems) {
             outlet_info.command_value = outlet_info.port.min_value;
         }
         notifyDataSetChanged();
     }
 
     public void toggleAll() {
-        for (DevicePortListItem outlet_info : all_outlets) {
+        for (DevicePortListItem outlet_info : mItems) {
             outlet_info.command_value = DevicePort.TOGGLE;
         }
         notifyDataSetChanged();
@@ -189,7 +188,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         if (scene.isMasterSlave()) {
             int p = findIndexByUUid(scene.getMasterUUid());
             if (p != -1)
-                master = all_outlets.get(p);
+                master = mItems.get(p);
             else
                 master = null;
         }

@@ -15,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,6 +44,7 @@ import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
@@ -69,6 +71,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private PullToRefreshLayout mPullToRefreshLayout;
     private ProgressDialog progressDialog;
     private RemoveAnimation removeAnimation = new RemoveAnimation();
+    private ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    int i = mListView.getNumColumns();
+                    if (i != GridView.AUTO_FIT)
+                        adapter.setItemsInRow(i);
+                }
+            };
 
     public OutletsFragment() {
     }
@@ -131,6 +142,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         mListView.setColumnWidth((int) width);
         mListView.setNumColumns(GridView.AUTO_FIT);
+        mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumsChangeListener);
 
         adapter.setGroupFilter(groupFilter);
         mListView.setAdapter(adapter);
@@ -214,7 +226,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.refresh: {
-                refresh();
+                refresh(false);
                 return true;
             }
             case R.id.menu_view_list: {
@@ -349,7 +361,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         // Create adapter first
         adapterSource = new DevicePortSourceConfigured();
         adapterSource.setAutomaticUpdate(true);
-        adapter = new DevicePortsExecuteAdapter(getActivity(), this, adapterSource);
+        adapter = new DevicePortsExecuteAdapter(getActivity(), this, adapterSource,
+                ((ActivityWithIconCache) getActivity()).getIconCache());
         removeAnimation.setAdapter(adapter);
         removeAnimation.setListView(mListView);
         adapter.setRemoveAnimation(removeAnimation);
@@ -390,20 +403,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 alert.show();
                 return true;
             }
-            case R.id.menu_outlet_removeFromGroup: {
-                // Remove from group. Do nothing if item is not in that group
-                if (!oi.groups.remove(groupFilter))
-                    return true;
 
-                // Save devices and devicePorts
-                NetpowerctrlApplication.getDataController().deviceCollection.save();
-
-                // update adapter
-                adapter.setGroupFilter(groupFilter);
-                return true;
-            }
-            case R.id.menu_outlet_createGroup: {
-                GroupUtilities.createGroup(getActivity(), oi);
+            case R.id.menu_outlet_changeGroups: {
+                GroupUtilities.createGroup(getActivity(), oi, new GroupUtilities.onGroupsChanged() {
+                    @Override
+                    public void onGroupsChanged(DevicePort port) {
+                        adapterSource.updateNow();
+                    }
+                });
                 return true;
             }
             case R.id.menu_outlet_hide: {
@@ -415,7 +422,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 adapter.notifyDataSetChanged();
                 // Only change the view, if we are actually showing an item and do not show hidden items.
                 if (!adapter.isShowingHidden()) {
-                    adapter.addItem(oi, oi.getCurrentValueToggled());
+                    adapter.addItem(oi, oi.getCurrentValueToggled(), true);
                 } else // just update the alpha value of the newly hidden item
                     adapter.notifyDataSetChanged();
                 NetpowerctrlApplication.getDataController().deviceCollection.save();
@@ -450,7 +457,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         oi.Hidden = true;
         // Only change the view, if we are actually hiding an item and do not show hidden items.
         if (!adapter.isShowingHidden()) {
-            adapter.remove(oi);
+            adapter.remove(oi, true);
         }
         adapter.notifyDataSetChanged();
         NetpowerctrlApplication.getDataController().deviceCollection.save();
@@ -487,10 +494,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         menu.findItem(R.id.menu_outlet_hide).setVisible(!oi.Hidden);
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_outlet_unhide).setVisible(oi.Hidden);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_outlet_createGroup).setVisible(groupFilter == null);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_outlet_removeFromGroup).setVisible(groupFilter != null);
 
         popup.setOnMenuItemClickListener(this);
         popup.show();
@@ -543,8 +546,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         Icons.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
     }
 
-    private void refresh() {
-        if (mPullToRefreshLayout.isRefreshing())
+    private void refresh(boolean ignoreFlag) {
+        if (!ignoreFlag && mPullToRefreshLayout.isRefreshing())
             return;
 
         mPullToRefreshLayout.setRefreshing(true);
@@ -565,7 +568,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onRefreshStarted(View view) {
-        refresh();
+        refresh(true);
     }
 
     @Override

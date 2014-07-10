@@ -25,6 +25,7 @@ import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class AnelDevicePreferences extends PreferenceFragment implements DeviceObserverResult, DeviceUpdate {
@@ -158,7 +159,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 int port = Integer.valueOf((String) o);
-                if (port < 1024 || port > 65555) {
+                if (checkPortInvalid(port)) {
                     warn_port();
                     return false;
                 }
@@ -175,7 +176,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 int port = Integer.valueOf((String) o);
-                if (port < 1024 || port > 65555) {
+                if (checkPortInvalid(port)) {
                     warn_port();
                     return false;
                 }
@@ -192,7 +193,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 int port = Integer.valueOf((String) o);
-                if (port != 80 && (port < 1024 || port > 65555)) {
+                if (port != 80 && checkPortInvalid(port)) {
                     warn_port();
                     return false;
                 }
@@ -205,6 +206,13 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         p.setTitle(getString(R.string.device_http_port) + ": " + String.valueOf(device.HttpPort));
 
         checkEnabled();
+    }
+
+    private boolean checkPortInvalid(int port) {
+        if (SharedPrefs.getPortsUnlimited())
+            return (port < 1) || port > 65555;
+        else
+            return (port < 1024) || port > 65555;
     }
 
     private void warn_port() {

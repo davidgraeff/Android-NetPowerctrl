@@ -31,6 +31,8 @@ import oly.netpowerctrl.device_ports.DevicePortsCreateSceneAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.ActivityWithIconCache;
+import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -40,7 +42,8 @@ import oly.netpowerctrl.utils.Shortcuts;
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditSceneActivity extends Activity implements ListItemMenu, EditSceneFragmentReady, Icons.IconSelected {
+public class EditSceneActivity extends Activity implements ListItemMenu, EditSceneFragmentReady,
+        Icons.IconSelected, ActivityWithIconCache {
 
     /**
      * We pass arguments to this activity via the intent extra bundle.
@@ -51,14 +54,13 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     public static final String RESULT_SCENE = "scene";
     public static final String RESULT_ACTION_UUID = "action_uuid";
     public static final String RESULT_ACTION_COMMAND = "action_command";
-
+    private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     // UI widgets
     private Switch show_mainWindow;
     private Switch enable_feedback;
     private View btnDone;
     private DevicePortsListAdapter adapter_available;
     private DevicePortsCreateSceneAdapter adapter_included;
-
     // Scene and flag variables
     private Scene scene;
     private boolean isLoaded = false;
@@ -83,6 +85,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         // Default result
         setResult(RESULT_CANCELED, null);
 
+        mIconCache.start();
         reInitUI();
 
         //set the actionbar to use the custom view (can also be done with a style)
@@ -189,7 +192,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         }
 
         // Load current set of available outlets
-        adapter_available.removeAll(adapter_included);
+        adapter_available.removeAll(adapter_included, true);
 
         if (scene == null) {
             scene = new Scene();
@@ -205,7 +208,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 DevicePort oi = adapter_available.getItem(position);
                 fragment_available.dismissItem(position);
-                adapter_included.addItem(oi, DevicePort.TOGGLE);
+                adapter_included.addItem(oi, DevicePort.TOGGLE, true);
                 fragment_included.notifyDataSetChanged();
                 invalidateOptionsMenu();
             }
@@ -355,7 +358,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
      */
     @Override
     public void onMenuItemClicked(View v, int position) {
-        adapter_available.addItem(adapter_included.getItem(position), DevicePort.TOGGLE);
+        adapter_available.addItem(adapter_included.getItem(position), DevicePort.TOGGLE, true);
         fragment_available.notifyDataSetChanged();
         fragment_included.dismissItem(position);
         invalidateOptionsMenu();
@@ -385,10 +388,10 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     public void sceneEditFragmentReady(final EditSceneFragment fragment) {
         if (fragment.equals(fragment_available)) {
             DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-            adapter_available = new DevicePortsListAdapter(this, false, s);
+            adapter_available = new DevicePortsListAdapter(this, false, s, mIconCache);
             fragment.setAdapter(adapter_available);
         } else {
-            adapter_included = new DevicePortsCreateSceneAdapter(this);
+            adapter_included = new DevicePortsCreateSceneAdapter(this, mIconCache);
             fragment.setAdapter(adapter_included);
         }
 
@@ -403,5 +406,10 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
                 }
             }, 50);
         }
+    }
+
+    @Override
+    public IconDeferredLoadingThread getIconCache() {
+        return mIconCache;
     }
 }
