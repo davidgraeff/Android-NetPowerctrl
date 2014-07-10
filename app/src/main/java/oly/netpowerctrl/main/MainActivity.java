@@ -39,18 +39,25 @@ import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.backup.drive.GDrive;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.Donate;
+import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.NFC;
 import oly.netpowerctrl.utils.gui.DrawerController;
 
-public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback {
+public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback, ActivityWithIconCache {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
     public final Donate donate = new Donate();
     public final GDrive gDrive = new GDrive();
+    private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     // Drawer
     private final DrawerController mDrawer = new DrawerController();
     private long mBackPressed;
+
+    public IconDeferredLoadingThread getIconCache() {
+        return mIconCache;
+    }
 
     @Override
     protected void onDestroy() {
@@ -104,6 +111,8 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         }
 
         checkUseHomeButton();
+
+        mIconCache.start();
 
         // Delayed loading of drawer and nfc
         NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {

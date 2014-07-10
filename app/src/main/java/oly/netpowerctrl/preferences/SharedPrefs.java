@@ -201,11 +201,11 @@ public class SharedPrefs {
         prefs.edit().putBoolean("ScenesList", grid).commit();
     }
 
-    public static boolean getAnimationEnabled() {
+    public static boolean getPortsUnlimited() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.animations_enabled);
-        return prefs.getBoolean("animations_enabled", value);
+        boolean value = context.getResources().getBoolean(R.bool.ports_unlimited);
+        return prefs.getBoolean("ports_unlimited", value);
     }
 
     public static boolean logEnergySaveMode() {
@@ -253,12 +253,6 @@ public class SharedPrefs {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean("neighbour_sync", false);
-    }
-
-    public static void setNeighbourAutoSync(boolean enabled) {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("neighbour_sync", enabled).commit();
     }
 
     public static boolean isNotification() {

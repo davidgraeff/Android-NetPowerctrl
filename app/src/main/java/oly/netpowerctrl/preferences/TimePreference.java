@@ -31,6 +31,69 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
     }
 
     /**
+     * Produces the date formatter used for times in the XML. The default is HH:mm.
+     * Override this to change that.
+     *
+     * @return the SimpleDateFormat used for XML times
+     */
+    public static DateFormat formatter() {
+        return new SimpleDateFormat("HH:mm");
+    }
+
+    /**
+     * Produces the date formatter used for showing the time in the summary.
+     * Override this to change it.
+     *
+     * @return the SimpleDateFormat used for summary dates
+     */
+    public static DateFormat summaryFormatter(Context context) {
+        return android.text.format.DateFormat.getTimeFormat(context);
+    }
+
+    /**
+     * The default time to use when the XML does not set it or the XML has an
+     * error.
+     *
+     * @return the Calendar set to the default date
+     */
+    public static Calendar defaultCalendar() {
+        return new GregorianCalendar(1970, 0, 1, 0, 0);
+    }
+
+    /**
+     * The defaultCalendar() as a string using the {@link #formatter()}.
+     *
+     * @return a String representation of the default time
+     */
+    public static String defaultCalendarString() {
+        return formatter().format(defaultCalendar().getTime());
+    }
+
+    /**
+     * Produces the date the user has selected for the given preference, as a
+     * calendar.
+     *
+     * @param preferences the SharedPreferences to get the date from
+     * @param field       the name of the preference to get the date from
+     * @return a Calendar that the user has selected
+     */
+    public static Calendar getTimeFor(SharedPreferences preferences, String field) {
+        Date date = stringToDate(preferences.getString(field,
+                defaultCalendarString()));
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
+    }
+
+    private static Date stringToDate(String timeString) {
+        try {
+            return formatter().parse(timeString);
+        } catch (ParseException e) {
+            return defaultCalendar().getTime();
+        }
+    }
+
+    /**
      * Produces a TimePicker set to the time produced by {@link #getTime()}. When
      * overriding be sure to call the super.
      *
@@ -75,26 +138,6 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
     public void setTime(String timeString) {
         this.timeString = timeString;
         updateSummary();
-    }
-
-    /**
-     * Produces the date formatter used for times in the XML. The default is HH:mm.
-     * Override this to change that.
-     *
-     * @return the SimpleDateFormat used for XML times
-     */
-    public static DateFormat formatter() {
-        return new SimpleDateFormat("HH:mm");
-    }
-
-    /**
-     * Produces the date formatter used for showing the time in the summary.
-     * Override this to change it.
-     *
-     * @return the SimpleDateFormat used for summary dates
-     */
-    public static DateFormat summaryFormatter(Context context) {
-        return android.text.format.DateFormat.getTimeFormat(context);
     }
 
     @Override
@@ -145,9 +188,6 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
         }
     }
 
-    /**
-     * TODO: Called when the user changes the time.
-     */
     public void onTimeChanged(TimePicker view, int hour, int minute) {
         Calendar selected = new GregorianCalendar(1970, 0, 1, hour, minute);
         this.changedValueCanBeNull = formatter().format(selected.getTime());
@@ -186,56 +226,23 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
         setSummary(summaryFormatter(getContext()).format(getTime().getTime()));
     }
 
-    /**
-     * The default time to use when the XML does not set it or the XML has an
-     * error.
-     *
-     * @return the Calendar set to the default date
-     */
-    public static Calendar defaultCalendar() {
-        return new GregorianCalendar(1970, 0, 1, 0, 0);
-    }
-
-    /**
-     * The defaultCalendar() as a string using the {@link #formatter()}.
-     *
-     * @return a String representation of the default time
-     */
-    public static String defaultCalendarString() {
-        return formatter().format(defaultCalendar().getTime());
-    }
-
     private String defaultValue() {
         if (this.timeString == null)
             setTime(defaultCalendarString());
         return this.timeString;
     }
 
-    /**
-     * Produces the date the user has selected for the given preference, as a
-     * calendar.
-     *
-     * @param preferences the SharedPreferences to get the date from
-     * @param field       the name of the preference to get the date from
-     * @return a Calendar that the user has selected
-     */
-    public static Calendar getTimeFor(SharedPreferences preferences, String field) {
-        Date date = stringToDate(preferences.getString(field,
-                defaultCalendarString()));
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return cal;
-    }
-
-    private static Date stringToDate(String timeString) {
-        try {
-            return formatter().parse(timeString);
-        } catch (ParseException e) {
-            return defaultCalendar().getTime();
-        }
-    }
-
     private static class SavedState extends BaseSavedState {
+        @SuppressWarnings("unused")
+        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
         String dateValue;
 
         public SavedState(Parcel p) {
@@ -252,16 +259,5 @@ public class TimePreference extends DialogPreference implements TimePicker.OnTim
             super.writeToParcel(out, flags);
             out.writeString(dateValue);
         }
-
-        @SuppressWarnings("unused")
-        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
-
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
     }
 }

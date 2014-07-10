@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="5.1"
+        versioncode="61">
+        <change>Android 4.1 ist nun Voraussetzung</change>
+        <change>Animationen überarbeitet</change>
+        <change>Steckdosen werden in der Übersicht nach Gruppen sortiert angezeigt</change>
+        <change>Mitgelieferte Icons für Szenen und Steckdosen entfernt</change>
+        <change>Ein Widget kann Titel und Status unabhängig voneinander ausgeblendet haben</change>
+        <change>Porteinschränkung kann mit Einstellung umgangen werden für Ports kleiner 1024 (auf
+            gerooteten Geräten)
+        </change>
+        <change>Bekannte Probleme: Szenen schalten nicht immer;
+            Nachbarsynchronisierung funktioniert nicht zuverlässig;
+            GoogleDrive Inhalt wird erst nach mehrmaligen Neuladen angezeigt;
+            Nicht erreichbare Geräte werden weiterhin angezeigt;
+            Ein Refreshvorgang wird u.U. nicht abgeschlossen
+        </change>
+    </release>
+    <release
         version="5.0"
         versioncode="60">
         <change>Zeige Button für WLAN-Einstellungen in Steckdosenübersicht, wenn keine Steckdosen

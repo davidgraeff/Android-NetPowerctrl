@@ -16,12 +16,12 @@ import oly.netpowerctrl.devices.DevicePort;
  * Utility methods for groups
  */
 public class GroupUtilities {
-    public static void createGroup(final Context context, final DevicePort port) {
+    public static void createGroup(final Context context, final DevicePort port, final onGroupsChanged callback) {
         final GroupCollection groupCollection = NetpowerctrlApplication.getDataController().groupCollection;
 
         // No groups? Ask the user to create one
         if (groupCollection.length() == 0) {
-            createGroupForDevicePort(context, port);
+            createGroupForDevicePort(context, port, callback);
             return;
         }
 
@@ -57,18 +57,20 @@ public class GroupUtilities {
                         }
                         NetpowerctrlApplication.getDataController().deviceCollection.save();
                         Toast.makeText(context, context.getString(R.string.outlet_added_to_groups, counter), Toast.LENGTH_SHORT).show();
+                        if (callback != null)
+                            callback.onGroupsChanged(port);
                     }
                 })
                 .setNeutralButton(R.string.createGroup, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        createGroupForDevicePort(context, port);
+                        createGroupForDevicePort(context, port, callback);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null).show();
     }
 
-    private static void createGroupForDevicePort(Context context, final DevicePort port) {
+    private static void createGroupForDevicePort(Context context, final DevicePort port, final onGroupsChanged callback) {
         //noinspection ConstantConditions
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
@@ -86,6 +88,9 @@ public class GroupUtilities {
                     return;
                 UUID group_uuid = NetpowerctrlApplication.getDataController().groupCollection.add(name);
                 port.addToGroup(group_uuid);
+                NetpowerctrlApplication.getDataController().deviceCollection.save();
+                if (callback != null)
+                    callback.onGroupsChanged(port);
             }
         });
 
@@ -118,6 +123,10 @@ public class GroupUtilities {
 
         alert.setNegativeButton(android.R.string.cancel, null);
         alert.show();
+    }
+
+    public interface onGroupsChanged {
+        void onGroupsChanged(DevicePort port);
     }
 
 }

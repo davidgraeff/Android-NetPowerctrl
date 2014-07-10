@@ -27,6 +27,7 @@ import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.SortCriteriaDialog;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
@@ -168,7 +169,7 @@ public class ScenesFragment extends Fragment implements
         assert view != null;
         mListView = (GridView) view.findViewById(android.R.id.list);
         mListView.setOnItemClickListener(this);
-        adapter = new ScenesAdapter(getActivity(), scenes);
+        adapter = new ScenesAdapter(getActivity(), scenes, ((ActivityWithIconCache) getActivity()).getIconCache());
         adapter.setListContextMenu(this);
 
         setListOrGrid(SharedPrefs.getScenesList());
@@ -243,6 +244,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
         scenes.executeScene(position);
+        adapter.handleClick(position, view);
         //noinspection ConstantConditions
         Toast.makeText(getActivity(),
                 getActivity().getString(R.string.scene_executed, scenes.getScene(position).sceneName),

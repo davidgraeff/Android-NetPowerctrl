@@ -21,6 +21,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
@@ -31,52 +32,68 @@ import oly.netpowerctrl.utils.gui.RemoveAnimation;
 
 public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface {
 
-    final List<DevicePortListItem> all_outlets;
-    private final IconDeferredLoadingThread iconCache = new IconDeferredLoadingThread();
-    private final LayoutInflater inflater;
+    protected final IconDeferredLoadingThread mIconCache;
+    final List<DevicePortListItem> mItems;
+    private final LayoutInflater mInflater;
     // Source of values for this adapter.
-    private final DevicePortSource source;
-    protected int outlet_res_id = 0;
-    protected boolean showHidden = true;
-    protected DevicePortViewHolder current_devicePortViewHolder;
-    // Animation ids
-    protected long animate_click_id = -1;
+    private final DevicePortSource mSource;
+    protected int mOutlet_res_id = 0;
+    protected boolean mShowHidden = true;
+    protected DevicePortViewHolder mCurrent_devicePortViewHolder;
     // Some observers
-    protected ListItemMenu mListContextMenu = null;
-    HashSet<Long> updated_id_list = new HashSet<>();
-    private int nextId = 0; // we need stable IDs
+    protected ListItemMenu mListContextMenu;
+    Animation highlightAnimation = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
+            R.anim.button_zoom);
+    HashSet<Long> mUpdated_id_list = new HashSet<>();
+    // Animation ids
+    private WeakReference<RemoveAnimation> mAnimationWeakReference = new WeakReference<>(null);
+    private int mNextId = 0; // we need stable IDs
     // If you change the layout or an image we increment this layout change id
     // to invalidate ViewHolders (for reloading images or layout items).
-    private int layoutChangeId = 0;
-    private WeakReference<RemoveAnimation> removeAnimationWeakReference = new WeakReference<>(null);
-    private UUID filterGroup = null;
+    private int mLayoutChangeId = 0;
+    private UUID mFilterGroup = null;
+    private boolean mShowGroups;
+    private int mItemsInRow = 1;
 
-    DevicePortsBaseAdapter(Context context, ListItemMenu mListContextMenu, DevicePortSource source) {
-        this.source = source;
-        this.mListContextMenu = mListContextMenu;
-        inflater = LayoutInflater.from(context);
-        iconCache.start();
-        all_outlets = new ArrayList<>();
+    DevicePortsBaseAdapter(Context context, ListItemMenu listContextMenu,
+                           DevicePortSource source, IconDeferredLoadingThread iconCache,
+                           boolean showGroups) {
+        mSource = source;
+        mListContextMenu = listContextMenu;
+        mShowGroups = showGroups;
+        mInflater = LayoutInflater.from(context);
+        mIconCache = iconCache;
+        mItems = new ArrayList<>();
         if (source != null) {
             source.setTargetAdapter(this);
-            source.updateNow();
         }
     }
 
     public DevicePortSource getSource() {
-        return source;
+        return mSource;
     }
 
     public void setGroupFilter(UUID groupFilter) {
-        this.filterGroup = groupFilter;
+        this.mFilterGroup = groupFilter;
+    }
+
+    /**
+     * Needs update of all items
+     *
+     * @param mShowGroups
+     */
+    public void setShowGroups(boolean mShowGroups) {
+        this.mShowGroups = mShowGroups;
+        if (mSource != null)
+            mSource.updateNow();
     }
 
     public int getLayoutRes() {
-        return outlet_res_id;
+        return mOutlet_res_id;
     }
 
     public void setLayoutRes(int layout_res) {
-        this.outlet_res_id = layout_res;
+        this.mOutlet_res_id = layout_res;
     }
 
     public void setListItemMenu(ListItemMenu listItemMenu) {
@@ -84,33 +101,74 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     }
 
     public boolean isShowingHidden() {
-        return showHidden;
+        return mShowHidden;
     }
 
     public void setRemoveAnimation(RemoveAnimation removeAnimation) {
-        removeAnimationWeakReference = new WeakReference<>(removeAnimation);
+        mAnimationWeakReference = new WeakReference<>(removeAnimation);
     }
 
     public void setShowHidden(boolean b) {
-        showHidden = b;
-        SharedPrefs.setShowHiddenOutlets(showHidden);
-        if (source != null)
-            source.updateNow();
+        mShowHidden = b;
+        SharedPrefs.setShowHiddenOutlets(mShowHidden);
+        if (mSource != null)
+            mSource.updateNow();
+    }
+
+    public void setItemsInRow(int itemsInRow) {
+        if (itemsInRow == this.mItemsInRow)
+            return;
+
+        this.mItemsInRow = itemsInRow;
+        if (itemsInRow == 1) {
+            // Remove all group span items
+            for (int i = mItems.size() - 1; i >= 0; --i) {
+                DevicePortListItem c = mItems.get(i);
+                switch (c.groupType()) {
+                    case GROUP_SPAN_TYPE:
+                    case PRE_GROUP_FILL_ELEMENT_TYPE:
+                        mItems.remove(i);
+                }
+            }
+        } else
+            computeGroupSpans();
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+        if (mItems.get(position).port == null)
+            return false;
+        return super.isEnabled(position);
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return DevicePort.DevicePortType.values().length + DevicePortListItem.groupTypeEnum.values().length - 1;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        DevicePortListItem item = mItems.get(position);
+        if (item.groupType() == DevicePortListItem.groupTypeEnum.NOGROUP_TYPE)
+            return item.port.getType().ordinal() + DevicePortListItem.groupTypeEnum.values().length - 1;
+        else
+            return item.groupType().ordinal() - 1;
     }
 
     @Override
     public int getCount() {
-        return all_outlets.size();
+        return mItems.size();
     }
 
     public DevicePort getItem(int position) {
-        return all_outlets.get(position).port;
+        return mItems.get(position).port;
     }
 
     @Override
     public long getItemId(int position) {
-        if (position >= all_outlets.size()) return -1;
-        return all_outlets.get(position).id;
+        if (position >= mItems.size()) return -1;
+        return mItems.get(position).id;
     }
 
     /**
@@ -125,8 +183,9 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             if (port == null) {
                 continue;
             }
-            addItem(port, sceneItem.command);
+            addItem(port, sceneItem.command, false);
         }
+        computeGroupSpans();
     }
 
     /**
@@ -136,7 +195,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      */
     public List<Scene.SceneItem> getScene() {
         List<Scene.SceneItem> list_of_scene_items = new ArrayList<>();
-        for (DevicePortListItem info : all_outlets) {
+        for (DevicePortListItem info : mItems) {
             list_of_scene_items.add(new Scene.SceneItem(info.port.uuid, info.command_value));
         }
         return list_of_scene_items;
@@ -147,7 +206,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             return -1;
 
         int i = 0;
-        for (DevicePortListItem info : all_outlets) {
+        for (DevicePortListItem info : mItems) {
             if (info.port.uuid.equals(uuid))
                 return i;
             ++i;
@@ -157,58 +216,152 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        final DevicePortListItem item = mItems.get(position);
+        final DevicePort port = item.port;
+        
         if (convertView != null) {
-            current_devicePortViewHolder = (DevicePortViewHolder) convertView.getTag();
-            if (!current_devicePortViewHolder.isStillValid(layoutChangeId))
-                current_devicePortViewHolder = null;
-            else
-                current_devicePortViewHolder.isNew = false;
-        } else
-            current_devicePortViewHolder = null;
+            mCurrent_devicePortViewHolder = (DevicePortViewHolder) convertView.getTag();
+            if (!mCurrent_devicePortViewHolder.isStillValid(mLayoutChangeId)) {
+                mCurrent_devicePortViewHolder = null;
+            } else
+                mCurrent_devicePortViewHolder.isNew = false;
+        } else {
+            mCurrent_devicePortViewHolder = null;
+        }
 
-        DevicePortListItem info = all_outlets.get(position);
-
-        if (current_devicePortViewHolder == null) {
-            convertView = inflater.inflate(outlet_res_id, null);
+        if (mCurrent_devicePortViewHolder == null) {
+            switch (item.groupType()) {
+                case PRE_GROUP_FILL_ELEMENT_TYPE:
+                case NOGROUP_TYPE:
+                    convertView = mInflater.inflate(mOutlet_res_id, null);
+                    break;
+                case GROUP_TYPE:
+                case GROUP_SPAN_TYPE:
+                    convertView = mInflater.inflate(R.layout.list_icon_header, null);
+                    break;
+            }
             assert convertView != null;
-            current_devicePortViewHolder = new DevicePortViewHolder(convertView, mListContextMenu, iconCache, layoutChangeId);
-            convertView.setTag(current_devicePortViewHolder);
+            mCurrent_devicePortViewHolder = new DevicePortViewHolder(convertView, mListContextMenu, mLayoutChangeId, port == null);
+            convertView.setTag(mCurrent_devicePortViewHolder);
         }
 
-        current_devicePortViewHolder.position = position;
+        mCurrent_devicePortViewHolder.position = position;
 
-        if (info.isEnabled() != current_devicePortViewHolder.entry.isEnabled())
-            current_devicePortViewHolder.entry.setEnabled(!current_devicePortViewHolder.entry.isEnabled());
+        if (port == null) { // header
+            switch (item.groupType()) {
+                case GROUP_SPAN_TYPE:
+                case GROUP_TYPE:
+                    mCurrent_devicePortViewHolder.title.setText(item.displayText);
+                    break;
+                case PRE_GROUP_FILL_ELEMENT_TYPE:
+                    mCurrent_devicePortViewHolder.title.setText("");
+            }
+        } else { // no header
+            mCurrent_devicePortViewHolder.title.setTypeface(null, port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+            mCurrent_devicePortViewHolder.title.setText(port.getDescription());
+            mCurrent_devicePortViewHolder.title.setEnabled(item.isEnabled());
 
-        current_devicePortViewHolder.title.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-        current_devicePortViewHolder.title.setText(info.port.getDescription());
-        current_devicePortViewHolder.title.setEnabled(info.isEnabled());
+            mCurrent_devicePortViewHolder.subtitle.setTypeface(null, port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+            mCurrent_devicePortViewHolder.subtitle.setText(port.device.DeviceName);
+            mCurrent_devicePortViewHolder.subtitle.setEnabled(item.isEnabled());
 
-        current_devicePortViewHolder.subtitle.setTypeface(null, info.port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-        current_devicePortViewHolder.subtitle.setText(info.port.device.DeviceName);
-        current_devicePortViewHolder.subtitle.setEnabled(info.isEnabled());
-
-        long id = getItemId(position);
-        if (animate_click_id != -1 && id == animate_click_id) {
-            Animation a = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
-                    R.anim.button_zoom);
-            a.reset();
-            convertView.clearAnimation();
-            convertView.startAnimation(a);
-            animate_click_id = -1;
+            mCurrent_devicePortViewHolder.entry.setEnabled(item.isEnabled());
         }
-        if (updated_id_list.contains(id)) {
-            Log.w("base", "animate2 " + info.port.getDescription());
-            Animation a = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
-                    R.anim.button_zoom);
-            a.reset();
+
+        final long id = getItemId(position);
+        if (mUpdated_id_list.contains(id)) {
+            mUpdated_id_list.remove(id);
+
+            highlightAnimation.reset();
+            final View target = convertView;
+            target.setHasTransientState(true);
+            highlightAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    Log.w("Base", "AnimationStart " + item.displayText + " " +
+                                    String.valueOf(id) + " " + String.valueOf(position)
+                    );
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    target.setHasTransientState(false);
+                    Log.w("Base", "AnimationEnd " + item.displayText + " " +
+                                    String.valueOf(id) + " " + String.valueOf(position)
+                    );
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            //TODO no animation on item position 0
             convertView.clearAnimation();
-            convertView.startAnimation(a);
-            updated_id_list.remove(id);
+            convertView.startAnimation(highlightAnimation);
         }
 
         return convertView;
+    }
+
+    //////////////// Group Spans //////////////
+
+    /**
+     * Always call this method after adding/removing items.
+     * This is implicitly done if you set the finalAction parameter
+     * of the add/remove methods to true.
+     * If you remove/add items in a batch, you only have to call this
+     * method once at the end and set the finalAction parameter
+     * of the add/remove methods to false.
+     * TODO optimize
+     */
+    public void computeGroupSpans() {
+        if (mItemsInRow == 1) // Do nothing it only one item per row
+            return;
+
+//        int positionOfLastGroup = -1;
+//        DevicePortListItem lastGroup = null;
+
+        // Remove all group span items
+        for (int i = mItems.size() - 1; i >= 0; --i) {
+            DevicePortListItem c = mItems.get(i);
+            switch (c.groupType()) {
+                case GROUP_SPAN_TYPE:
+                case PRE_GROUP_FILL_ELEMENT_TYPE:
+                    mItems.remove(i);
+            }
+        }
+
+        for (int i = 0; i < mItems.size(); ++i) {
+            DevicePortListItem c = mItems.get(i);
+            if (c.groupType() == DevicePortListItem.groupTypeEnum.GROUP_TYPE) {
+
+                int added = 0;
+
+                // Add group span items type2: add as many group span items, as itemPerRow-1
+                int missingFillElements = mItemsInRow - 1;
+                while (missingFillElements > 0) {
+//                    Log.w("base","groupSpan "+c.displayText+" "+String.valueOf(i));
+                    DevicePortListItem new_oi = DevicePortListItem.createGroupSpan(c, mNextId++);
+                    mItems.add(i, new_oi);
+                    ++added;
+                    --missingFillElements;
+                }
+
+                // Add group span items type1: fill until group is in own row with normal but empty items
+                missingFillElements = i % mItemsInRow;
+                while (missingFillElements > 0) {
+//                    Log.w("base","addPreFill "+c.displayText+" "+String.valueOf(i));
+                    DevicePortListItem new_oi = DevicePortListItem.createGroupPreFillElemenet(c, mNextId++);
+                    mItems.add(i, new_oi);
+                    ++added;
+                    --missingFillElements;
+                }
+
+                i += added;
+            }
+        }
     }
 
     //////////////// Adding ////////////////
@@ -222,21 +375,44 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      * @param oi            The device port to add.
      * @param command_value The command value to issue if clicked or interacted with.
      */
-    public void addItem(DevicePort oi, int command_value) {
+    public void addItem(DevicePort oi, int command_value, boolean finalAction) {
         assert oi.device != null;
-        if (oi.Disabled || (oi.Hidden && !showHidden))
+        if (oi.Disabled || (oi.Hidden && !mShowHidden))
             return;
 
         // FilterGroup
-        if (filterGroup != null) {
-            if (!oi.groups.contains(filterGroup))
+        if (mFilterGroup != null) {
+            if (!oi.groups.contains(mFilterGroup))
                 return;
         }
 
+        if (!mShowGroups || oi.groups.isEmpty())
+            addItemToGroup(oi, command_value, 0);
+        else {
+            for (UUID group : oi.groups) {
+                // Get group header item
+                int positionOfGroup = addHeaderIfNotExists(group, oi);
+                // Increase child count
+                mItems.get(positionOfGroup).groupItems++;
+                // add child
+                addItemToGroup(oi, command_value, positionOfGroup + 1);
+            }
+        }
+
+        if (finalAction)
+            computeGroupSpans();
+    }
+
+    private void addItemToGroup(DevicePort oi, int command_value, int start_position) {
         boolean found = false;
-        int destination_index = all_outlets.size();
-        for (int i = 0; i < all_outlets.size(); ++i) {
-            DevicePortListItem l = all_outlets.get(i);
+        int destination_index = mItems.size();
+        for (int i = start_position; i < mItems.size(); ++i) {
+            DevicePortListItem l = mItems.get(i);
+            if (l.port == null) { // stop on header
+                destination_index = i;
+                break;
+            }
+
             // Find the right position for the DevicePort.
             boolean behind_current = l.port.positionRequest > oi.positionRequest;
             if (!found && behind_current) {
@@ -248,9 +424,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             if (l.port.uuid.equals(oi.uuid)) {
                 // Animate if value has changed
                 if (l.command_value != command_value) {
-                    updated_id_list.add(l.id);
-                    Log.w("base", "animate1 " + oi.getDescription());
-
+                    mUpdated_id_list.add(l.id);
                 }
                 // Apply new values to existing item
                 l.command_value = command_value;
@@ -261,40 +435,68 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
 
         // Insert or append new item
-        DevicePortListItem new_oi = new DevicePortListItem(oi, command_value, nextId++);
-        all_outlets.add(destination_index, new_oi);
+        DevicePortListItem new_oi = new DevicePortListItem(oi, command_value, mNextId++);
+        mItems.add(destination_index, new_oi);
     }
 
-    public void addAll(DeviceInfo device) {
+    private int addHeaderIfNotExists(UUID group, DevicePort oi) {
+        GroupCollection.GroupItem groupItem = NetpowerctrlApplication.getDataController().groupCollection.get(group);
+        if (groupItem == null) {
+            // Group does not exist. Remove it from oi
+            oi.groups.remove(group);
+            return 0;
+        }
+
+        // Try to find group first
+        for (int i = 0; i < mItems.size(); ++i) {
+            if (mItems.get(i).isGroup(group)) {
+                // Return group
+                return i;
+            }
+        }
+
+        // Insert or append new group
+        DevicePortListItem new_oi = new DevicePortListItem(group, groupItem.name, mNextId++);
+        mItems.add(new_oi);
+        return mItems.size() - 1;
+    }
+
+    public void addAll(DeviceInfo device, boolean finalAction) {
         device.lockDevicePorts();
 
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
             DevicePort oi = it.next();
-            // Add item. On success add returned id to updated_id_list
-            addItem(oi, oi.current_value);
+            // Add item. On success add returned id to mUpdated_id_list
+            addItem(oi, oi.current_value, false);
         }
         device.releaseDevicePorts();
+
+        if (finalAction)
+            computeGroupSpans();
     }
 
     //////////////// Removing ////////////////
 
-    public void removeAll(DeviceInfo device) {
+    public void removeAll(DeviceInfo device, boolean finalAction) {
         device.lockDevicePorts();
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
-            removeAt(findIndexByUUid(it.next().uuid));
+            removeAt(findIndexByUUid(it.next().uuid), false);
         }
         device.releaseDevicePorts();
+
+        if (finalAction)
+            computeGroupSpans();
     }
 
-    public void removeAll(DevicePortsBaseAdapter adapter) {
+    public void removeAll(DevicePortsBaseAdapter adapter, boolean finalAction) {
         // ToBeRemoved will be an ordered list of indecies to be removed
-        int[] toBeRemoved = new int[all_outlets.size()];
+        int[] toBeRemoved = new int[mItems.size()];
         int lenToBeRemoved = 0;
-        for (int index = 0; index < all_outlets.size(); ++index) {
-            for (DevicePortListItem adapter_list_item : adapter.all_outlets) {
-                if (adapter_list_item.port.equals(all_outlets.get(index).port)) {
+        for (int index = 0; index < mItems.size(); ++index) {
+            for (DevicePortListItem adapter_list_item : adapter.mItems) {
+                if (adapter_list_item.equals(mItems.get(index).port)) {
                     toBeRemoved[lenToBeRemoved] = index;
                     lenToBeRemoved++;
                 }
@@ -302,57 +504,86 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
         // Remove now
         for (int i = lenToBeRemoved - 1; i >= 0; --i)
-            removeAt(toBeRemoved[i]);
+            removeAt(toBeRemoved[i], false);
+
+        if (finalAction)
+            computeGroupSpans();
     }
 
     public void clear() {
-        all_outlets.clear();
-        ++layoutChangeId;
-        if (source != null && source.isAutomaticUpdateEnabled())
-            source.updateNow();
+        mItems.clear();
+        ++mLayoutChangeId;
+        if (mSource != null && mSource.isAutomaticUpdateEnabled())
+            mSource.updateNow();
         else
             notifyDataSetChanged();
     }
 
-    public void removeAt(int position) {
+    public void removeAt(int position, boolean finalAction) {
         if (position == -1) return;
-        RemoveAnimation a = removeAnimationWeakReference.get();
+        RemoveAnimation a = mAnimationWeakReference.get();
         if (a != null)
             a.beforeRemoval(position);
-        all_outlets.remove(position);
+
+        mItems.remove(position);
+
+        /**
+         * Search for a header item before the given position.
+         * If found it decrements the item count. If that reaches
+         * 0 the group header item is removed.
+         */
+        for (int indexGroup = position - 1; indexGroup >= 0; --indexGroup) {
+            DevicePortListItem headerItem = mItems.get(indexGroup);
+            if (headerItem.port == null) { // is header
+                if (--headerItem.groupItems > 0)
+                    continue;
+
+                // remove group
+                if (a != null)
+                    a.beforeRemoval(indexGroup);
+                mItems.remove(indexGroup);
+                break;
+            }
+        }
+
+        if (finalAction)
+            computeGroupSpans();
     }
 
-    public void remove(DevicePort oi) {
-        removeAt(findIndexByUUid(oi.uuid));
+    public void remove(DevicePort oi, boolean finalAction) {
+        removeAt(findIndexByUUid(oi.uuid), finalAction);
     }
 
     public void invalidateViewHolders() {
-        ++layoutChangeId;
+        ++mLayoutChangeId;
         notifyDataSetChanged();
     }
 
     public void markAllRemoved() {
-        for (DevicePortListItem item : all_outlets)
+        for (DevicePortListItem item : mItems)
             item.markRemoved();
     }
 
-    public void removeAllMarked() {
-        int[] toBeRemoved = new int[all_outlets.size()];
+    public void removeAllMarked(boolean finalAction) {
+        int[] toBeRemoved = new int[mItems.size()];
         int lenToBeRemoved = 0;
-        for (int index = 0; index < all_outlets.size(); ++index) {
-            if (all_outlets.get(index).isMarkedRemoved()) {
+        for (int index = 0; index < mItems.size(); ++index) {
+            if (mItems.get(index).isMarkedRemoved()) {
                 toBeRemoved[lenToBeRemoved++] = index;
             }
         }
         // Remove now
         for (int i = lenToBeRemoved - 1; i >= 0; --i)
-            removeAt(toBeRemoved[i]);
+            removeAt(toBeRemoved[i], false);
+
+        if (finalAction)
+            computeGroupSpans();
     }
 
     @Override
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
-        RemoveAnimation a = removeAnimationWeakReference.get();
+        RemoveAnimation a = mAnimationWeakReference.get();
         if (a != null)
             a.animateRemoval();
     }
@@ -361,9 +592,9 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     @Override
     public String[] getContentList() {
-        String[] l = new String[all_outlets.size()];
-        for (int i = 0; i < all_outlets.size(); ++i) {
-            DevicePort port = all_outlets.get(i).port;
+        String[] l = new String[mItems.size()];
+        for (int i = 0; i < mItems.size(); ++i) {
+            DevicePort port = mItems.get(i).port;
             l[i] = port.device.DeviceName + ": " + port.getDescription();
         }
         return l;
@@ -379,7 +610,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     @Override
     public void applySortCriteria(final boolean[] criteria) {
-        Sorting.qSort(all_outlets, 0, all_outlets.size() - 1, new Sorting.qSortComparable<DevicePortListItem>() {
+        Sorting.qSort(mItems, 0, mItems.size() - 1, new Sorting.qSortComparable<DevicePortListItem>() {
             @Override
             public boolean isGreater(DevicePortListItem first, DevicePortListItem second) {
                 boolean isGreater = false;
@@ -396,8 +627,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         });
 
         // Assign positionRequest numbers
-        for (int i = 0; i < all_outlets.size(); ++i) {
-            all_outlets.get(i).port.positionRequest = i;
+        for (int i = 0; i < mItems.size(); ++i) {
+            mItems.get(i).port.positionRequest = i;
         }
 
         notifyDataSetChanged();
@@ -410,23 +641,22 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     @Override
     public void setSortOrder(int[] sortOrder) {
-        if (sortOrder.length != all_outlets.size()) {
+        if (sortOrder.length != mItems.size()) {
             Log.e("DevicePortsBaseAdapter", "setSortOrder length wrong");
             return;
         }
 
         // Assign positionRequest numbers
         DevicePortListItem temp;
-        for (int i = 0; i < all_outlets.size(); ++i) {
+        for (int i = 0; i < mItems.size(); ++i) {
             // change id
-            all_outlets.get(sortOrder[i]).port.positionRequest = i;
+            mItems.get(sortOrder[i]).port.positionRequest = i;
             // exchange in list
-            temp = all_outlets.get(i);
-            all_outlets.set(i, all_outlets.get(sortOrder[i]));
-            all_outlets.set(sortOrder[i], temp);
+            temp = mItems.get(i);
+            mItems.set(i, mItems.get(sortOrder[i]));
+            mItems.set(sortOrder[i], temp);
         }
 
         notifyDataSetChanged();
     }
-
 }

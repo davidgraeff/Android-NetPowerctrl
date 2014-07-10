@@ -15,7 +15,6 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.gui.RemoveAnimation;
 
 /**
@@ -42,7 +41,7 @@ public class EditSceneFragment extends Fragment {
      * @param position position
      */
     public void dismissItem(int position) {
-        mAdapter.removeAt(position);
+        mAdapter.removeAt(position, true);
         mAdapter.notifyDataSetChanged();
     }
 
@@ -68,17 +67,13 @@ public class EditSceneFragment extends Fragment {
 
     public void setAdapter(DevicePortsBaseAdapter adapter) {
         mAdapter = adapter;
-        if (SharedPrefs.getAnimationEnabled()) {
-            // Add animation to the list
-            // Remove animation
-            removeAnimation = new RemoveAnimation();
-            removeAnimation.setAdapter(mAdapter);
-            removeAnimation.setListView(mListView);
-            adapter.setRemoveAnimation(removeAnimation);
-            mListView.setAdapter(mAdapter);
-        } else {
-            mListView.setAdapter(mAdapter);
-        }
+        // Add animation to the list
+        // Remove animation
+        removeAnimation = new RemoveAnimation();
+        removeAnimation.setAdapter(mAdapter);
+        removeAnimation.setListView(mListView);
+        adapter.setRemoveAnimation(removeAnimation);
+        mListView.setAdapter(mAdapter);
     }
 
     public boolean isAvailableAdapter() {

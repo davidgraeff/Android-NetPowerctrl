@@ -193,15 +193,17 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
         // Load preferences
         String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-        boolean widget_show_text = getSharedPreferences(prefName, MODE_PRIVATE).getBoolean("widget_show_text", true);
+        boolean widget_show_title = getSharedPreferences(prefName, MODE_PRIVATE).getBoolean("widget_show_title", true);
+        boolean widget_show_status = getSharedPreferences(prefName, MODE_PRIVATE).getBoolean("widget_show_status", true);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 
         // Do not show a status text line ("on"/"off") for a simple trigger
         if (oi.getType() == DevicePort.DevicePortType.TypeButton)
-            widget_show_text = false;
+            widget_show_status = false;
 
-        views.setViewVisibility(R.id.widget_name, widget_show_text ? View.VISIBLE : View.GONE);
+        views.setViewVisibility(R.id.widget_name, widget_show_title ? View.VISIBLE : View.GONE);
+        views.setViewVisibility(R.id.widget_status, widget_show_status ? View.VISIBLE : View.GONE);
 
         if (!oi.device.isReachable()) {
             views.setImageViewBitmap(R.id.widget_image,

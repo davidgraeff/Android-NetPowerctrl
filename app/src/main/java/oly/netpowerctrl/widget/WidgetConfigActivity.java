@@ -16,8 +16,11 @@ import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneFragment;
 import oly.netpowerctrl.scenes.EditSceneFragmentReady;
+import oly.netpowerctrl.utils.ActivityWithIconCache;
+import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 
-public class WidgetConfigActivity extends Activity implements EditSceneFragmentReady {
+public class WidgetConfigActivity extends Activity implements EditSceneFragmentReady, ActivityWithIconCache {
+    private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
         @Override
@@ -73,6 +76,8 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
         findViewById(R.id.left_drawer_list).setVisibility(View.GONE);
         getActionBar().setHomeButtonEnabled(false);
 
+        mIconCache.start();
+
         EditSceneFragment f = new EditSceneFragment();
         f.setReadyObserver(this);
 
@@ -90,9 +95,13 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
     @Override
     public void sceneEditFragmentReady(EditSceneFragment fragment) {
         fragment.getListView().setOnItemClickListener(selectedOutletListener);
-        //TODO adapter
         DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-        this.adapter = new DevicePortsListAdapter(this, false, s);
+        this.adapter = new DevicePortsListAdapter(this, false, s, mIconCache);
         fragment.setAdapter(this.adapter);
+    }
+
+    @Override
+    public IconDeferredLoadingThread getIconCache() {
+        return mIconCache;
     }
 }

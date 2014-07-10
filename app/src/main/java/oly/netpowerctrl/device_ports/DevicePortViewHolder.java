@@ -25,25 +25,34 @@ class DevicePortViewHolder implements View.OnClickListener, IconDeferredLoadingT
     final TextView title;
     final TextView subtitle;
     final Drawable[] drawables = new Drawable[2];
-    private final IconDeferredLoadingThread iconCache;
     public int position;
     boolean isNew = true;
     int layoutChangeId;
     int currentBitmapIndex = -1;
     private ListItemMenu mListContextMenu = null;
 
-    DevicePortViewHolder(View convertView, ListItemMenu listContextMenu,
-                         IconDeferredLoadingThread iconCache, int layoutChangeId) {
+    DevicePortViewHolder(View convertView, ListItemMenu listContextMenu, int layoutChangeId, boolean isHeader) {
         this.layoutChangeId = layoutChangeId;
         mListContextMenu = listContextMenu;
-        this.iconCache = iconCache;
-        imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
-        imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
-        seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
-        //mainTextView = (LinearLayout) convertView.findViewById(R.id.outlet_list_text);
+
         entry = convertView.findViewById(R.id.item_layout);
         title = (TextView) convertView.findViewById(R.id.text1);
+        imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
+
+        View line = convertView.findViewById(R.id.line);
+        if (line != null)
+            line.setVisibility(isHeader ? View.INVISIBLE : View.VISIBLE);
+
+        if (isHeader) {
+            subtitle = null;
+            imageIcon = null;
+            seekBar = null;
+            return;
+        }
+
         subtitle = (TextView) convertView.findViewById(R.id.subtitle);
+        imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
+        seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
     }
 
     boolean isStillValid(int layoutChangeId) {
@@ -53,12 +62,16 @@ class DevicePortViewHolder implements View.OnClickListener, IconDeferredLoadingT
     }
 
     @SuppressWarnings("SameParameterValue")
-    public void loadIcon(UUID uuid, Icons.IconType iconType, Icons.IconState state, int default_resource, int bitmapPosition) {
+    public void loadIcon(IconDeferredLoadingThread iconCache, UUID uuid,
+                         Icons.IconType iconType, Icons.IconState state,
+                         int default_resource, int bitmapPosition) {
         iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
                 uuid, iconType, state, default_resource, this, bitmapPosition));
     }
 
     public void setCurrentBitmapIndex(int index) {
+        if (index == currentBitmapIndex)
+            return;
         currentBitmapIndex = index;
         if (drawables[index] != null) {
             imageIcon.setImageDrawable(drawables[index]);
