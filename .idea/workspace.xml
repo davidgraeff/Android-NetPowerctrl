@@ -58,73 +58,7 @@
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="app: oly.netpowerctrl" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="30621369-1261-4dd8-85ba-7e435b5a013d" name="Default" comment="Remove scene/outlet asset icons. Group view.">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/doc/device-2014-07-20-205647.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/doc/device-2014-07-20-205732.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/doc/device-2014-07-20-205849.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/doc/device-2014-07-20-205911.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/RefreshStartedStopped.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/doc/device-2014-02-27-111628.png" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/doc/device-2014-02-27-111909.png" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/gui/RemoveAnimation.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/gui/AnimationController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/doc/device-2014-02-27-111333.png" afterPath="$PROJECT_DIR$/doc/device-2014-02-27-111333.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/doc/device-2014-02-27-111655.png" afterPath="$PROJECT_DIR$/doc/device-2014-02-27-111655.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/doc/device-2014-02-27-111828.png" afterPath="$PROJECT_DIR$/doc/device-2014-02-27-111828.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/Alarm.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/Alarm.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anel/AnelDevicePreferences.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anel/AnelDevicePreferences.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anel/AnelPlugin.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/anel/AnelPlugin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DatePreference.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/DatePreference.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/devices/DeviceCollection.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/devices/DeviceCollection.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/devices/DeviceInfo.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/devices/DeviceInfo.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/DeviceObserverBase.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/DeviceObserverBase.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/DeviceObserverResult.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/DeviceObserverResult.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortListItem.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortListItem.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortSourceConfigured.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortSourceConfigured.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortsBaseAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortsBaseAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortsCreateSceneAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortsCreateSceneAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortsExecuteAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/device_ports/DevicePortsExecuteAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/DeviceQuery.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/DeviceQuery.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/devices/DevicesFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/devices/DevicesFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/scenes/EditSceneActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/scenes/EditSceneActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/scenes/EditSceneFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/scenes/EditSceneFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/EnergySaveLogFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/EnergySaveLogFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ExecutionActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/ExecutionActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/drive/GDriveCreateBackupTask.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/drive/GDriveCreateBackupTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/drive/GDriveRefreshBackupListTask.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/drive/GDriveRefreshBackupListTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/drive/GDriveRestoreBackupTask.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/drive/GDriveRestoreBackupTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/groups/GroupUtilities.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/groups/GroupUtilities.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/MainActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/MainActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourDataReceiveService.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourDataReceiveService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourDiscoverReceiving.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourDiscoverReceiving.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/NetpowerctrlApplication.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/NetpowerctrlApplication.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/NetpowerctrlService.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/NetpowerctrlService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/OutletsFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/PluginInterface.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/PluginInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/PluginRemote.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/PluginRemote.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/PreferencesFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/RuntimeDataController.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/application_state/RuntimeDataController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/scenes/SceneCollection.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/scenes/SceneCollection.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/tests/ServiceTests.java" afterPath="$PROJECT_DIR$/app/src/main/java/tests/ServiceTests.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/preferences/SharedPrefs.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/SortCriteriaDialog.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/main/SortCriteriaDialog.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/SortCriteriaInterface.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/SortCriteriaInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/gui/SwipeDismissListViewTouchListener.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/utils/gui/SwipeDismissListViewTouchListener.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/TimerAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/TimerAdapter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/TimerController.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/TimerController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/TimerFragment.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/alarms/TimerFragment.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/UDPSending.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/UDPSending.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/Utils.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/Utils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfigActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetConfigActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java" afterPath="$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/widget/WidgetUpdateService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/xml/anel_device_preferences.xml" afterPath="$PROJECT_DIR$/app/src/main/res/xml/anel_device_preferences.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/build.gradle" afterPath="$PROJECT_DIR$/app/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/xml/changelog_master.xml" afterPath="$PROJECT_DIR$/app/src/main/res/xml/changelog_master.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_timer.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_timer.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/xml/preferences.xml" afterPath="$PROJECT_DIR$/app/src/main/res/xml/preferences.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/resources.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/resources.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" afterPath="$PROJECT_DIR$/app/src/main/res/values-de/strings.xml" />
+    <list default="true" id="30621369-1261-4dd8-85ba-7e435b5a013d" name="Default" comment="new screenshots. improved alarm. fixed neighbour sync. more gdrive error messages. fixed null-exceptions because of new header items.">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Android-NetPowerctrl.iws" />
@@ -262,8 +196,8 @@
       <file leaf-file-name="UDPSending.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/UDPSending.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1435" max-vertical-offset="5754">
-              <caret line="165" column="0" selection-start-line="165" selection-start-column="0" selection-end-line="165" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1519" max-vertical-offset="5733">
+              <caret line="169" column="45" selection-start-line="169" selection-start-column="45" selection-end-line="169" selection-end-column="45" />
               <folding />
             </state>
           </provider>
@@ -272,8 +206,8 @@
       <file leaf-file-name="changelog_master.xml" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/changelog_master.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33920705" vertical-offset="0" max-vertical-offset="3318">
-              <caret line="11" column="26" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
+            <state vertical-scroll-proportion="0.33920705" vertical-offset="21" max-vertical-offset="3339">
+              <caret line="12" column="26" selection-start-line="12" selection-start-column="26" selection-end-line="12" selection-end-column="26" />
               <folding />
             </state>
           </provider>
@@ -283,8 +217,10 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourFragment.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="324" max-vertical-offset="6195">
-              <caret line="59" column="0" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
-              <folding />
+              <caret line="58" column="0" selection-start-line="58" selection-start-column="0" selection-end-line="58" selection-end-column="0" />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -2447,7 +2383,11 @@
       <created>1405001978317</created>
       <updated>1405001978317</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="new screenshots. improved alarm. fixed neighbour sync. more gdrive error messages. fixed null-exceptions because of new header items.">
+      <created>1405977673403</created>
+      <updated>1405977673403</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -2522,7 +2462,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Add screenshots, Change plugin interface, remove help text, improve feedback/nfc sections, add groups, refactored all anel stuff into anel package, improve dynamic gridview auto columns" />
     <MESSAGE value="Plugin actions can be assigned to scenes now. RangedValues work. Help added to scene screen.&#10;Changed plugin interface: Allow state messages.&#10;Allot of crash fixes." />
     <MESSAGE value="Fix bug: Context menu belong to item now in outlet screen. Renaming/Assigning to groups works now therefore." />
     <MESSAGE value="Version 2.8:&#10;* Absturz bei Szenenerstellung behoben&#10;* Was ist neu - Dialog&#10;* Namensänderungen finden jetzt direkt auf dem Gerät statt&#10;* Mehr Kontrolle über den Energiesparmodus&#10;* Energiesparmodus überarbeitet&#10;* Eigene Icons für Steckdosen/IOs. Widget Icons müssen leider neu gesetzt werden.&#10;* Listen/Rasteransicht für Szenen, Gruppen und Steckdosen" />
@@ -2547,7 +2486,8 @@
     <MESSAGE value="Pull-ro-refresh, Swipe-to-hide, layout changes, forbid illegal port numbers and port numbers &lt; 1024, fix device create dialog, remove alarm" />
     <MESSAGE value="Swipe-to-hide improved. Add remove animation. Remove ListviewAnimation package.&#10;Extract data gathering and updating from DevicePortBase+Inherited classes to DevicePortSource interface and classes.&#10;Move service related stuff (ready observer etc) from -Application to -Service.&#10;Extract Statusbar Notification from -Application to own class.&#10;Add first tests.&#10;Separate packages for device and device_ports.&#10;TODO: Refreshing with extensions does not work reliable." />
     <MESSAGE value="Remove scene/outlet asset icons. Group view." />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove scene/outlet asset icons. Group view." />
+    <MESSAGE value="new screenshots. improved alarm. fixed neighbour sync. more gdrive error messages. fixed null-exceptions because of new header items." />
+    <option name="LAST_COMMIT_MESSAGE" value="new screenshots. improved alarm. fixed neighbour sync. more gdrive error messages. fixed null-exceptions because of new header items." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -2591,6 +2531,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="412" max-vertical-offset="2016">
           <caret line="46" column="0" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2606,6 +2547,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="799" max-vertical-offset="2142">
           <caret line="75" column="5" selection-start-line="75" selection-start-column="5" selection-end-line="75" selection-end-column="5" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2613,6 +2555,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="617" max-vertical-offset="1869">
           <caret line="39" column="5" selection-start-line="39" selection-start-column="5" selection-end-line="39" selection-end-column="5" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2696,6 +2639,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="1904" max-vertical-offset="2436">
           <caret line="125" column="5" selection-start-line="125" selection-start-column="5" selection-end-line="125" selection-end-column="5" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2718,6 +2662,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="5703" max-vertical-offset="6678">
           <caret line="296" column="4" selection-start-line="296" selection-start-column="4" selection-end-line="296" selection-end-column="4" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2773,7 +2718,7 @@
         <state vertical-scroll-proportion="-14.807693" vertical-offset="455" max-vertical-offset="1428">
           <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
           <folding>
-            <element signature="e#1525#1551#0" expanded="true" />
+            <element signature="e#1485#1511#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2894,11 +2839,11 @@
         <state vertical-scroll-proportion="0.5810345" vertical-offset="5312" max-vertical-offset="7560">
           <caret line="296" column="0" selection-start-line="296" selection-start-column="0" selection-end-line="296" selection-end-column="0" />
           <folding>
-            <element signature="e#7692#7693#0" expanded="true" />
-            <element signature="e#7738#7739#0" expanded="true" />
-            <element signature="e#8928#9006#0" expanded="true" />
-            <element signature="e#9094#9157#0" expanded="true" />
-            <element signature="e#9262#9325#0" expanded="true" />
+            <element signature="e#7643#7644#0" expanded="true" />
+            <element signature="e#7689#7690#0" expanded="true" />
+            <element signature="e#8879#8957#0" expanded="true" />
+            <element signature="e#9045#9108#0" expanded="true" />
+            <element signature="e#9213#9276#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2908,19 +2853,19 @@
         <state vertical-scroll-proportion="0.63793105" vertical-offset="7379" max-vertical-offset="10059">
           <caret line="422" column="0" selection-start-line="422" selection-start-column="0" selection-end-line="422" selection-end-column="0" />
           <folding>
-            <element signature="e#3507#3531#0" expanded="true" />
-            <element signature="e#3747#3786#1" expanded="true" />
-            <element signature="e#4136#4173#0" expanded="true" />
-            <element signature="e#4660#4699#0" expanded="true" />
-            <element signature="e#5748#5785#0" expanded="true" />
-            <element signature="e#6184#6223#1" expanded="true" />
-            <element signature="e#6511#6538#0" expanded="true" />
-            <element signature="e#6816#6843#0" expanded="true" />
-            <element signature="e#7525#7552#0" expanded="true" />
-            <element signature="e#7754#7781#0" expanded="true" />
-            <element signature="e#17302#17339#0" expanded="true" />
-            <element signature="e#19011#19293#0" expanded="true" />
-            <element signature="e#19932#19970#0" expanded="true" />
+            <element signature="e#3509#3533#0" expanded="true" />
+            <element signature="e#3749#3788#1" expanded="true" />
+            <element signature="e#4138#4175#0" expanded="true" />
+            <element signature="e#4662#4701#0" expanded="true" />
+            <element signature="e#5750#5787#0" expanded="true" />
+            <element signature="e#6186#6225#1" expanded="true" />
+            <element signature="e#6513#6540#0" expanded="true" />
+            <element signature="e#6818#6845#0" expanded="true" />
+            <element signature="e#7527#7554#0" expanded="true" />
+            <element signature="e#7756#7783#0" expanded="true" />
+            <element signature="e#17328#17365#0" expanded="true" />
+            <element signature="e#19037#19319#0" expanded="true" />
+            <element signature="e#19958#19996#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2935,8 +2880,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/network/UDPSending.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1435" max-vertical-offset="5754">
-          <caret line="165" column="0" selection-start-line="165" selection-start-column="0" selection-end-line="165" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="1519" max-vertical-offset="5733">
+          <caret line="169" column="45" selection-start-line="169" selection-start-column="45" selection-end-line="169" selection-end-column="45" />
           <folding />
         </state>
       </provider>
@@ -2968,8 +2913,10 @@
     <entry file="file://$PROJECT_DIR$/app/src/main/java/oly/netpowerctrl/backup/neighbours/NeighbourFragment.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="324" max-vertical-offset="6195">
-          <caret line="59" column="0" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
-          <folding />
+          <caret line="58" column="0" selection-start-line="58" selection-start-column="0" selection-end-line="58" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2991,8 +2938,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/xml/changelog_master.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33920705" vertical-offset="0" max-vertical-offset="3318">
-          <caret line="11" column="26" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
+        <state vertical-scroll-proportion="0.33920705" vertical-offset="21" max-vertical-offset="3339">
+          <caret line="12" column="26" selection-start-line="12" selection-start-column="26" selection-end-line="12" selection-end-column="26" />
           <folding />
         </state>
       </provider>
