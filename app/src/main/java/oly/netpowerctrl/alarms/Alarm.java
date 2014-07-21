@@ -19,18 +19,21 @@ import oly.netpowerctrl.devices.DevicePort;
  * Created by david on 19.05.14.
  */
 public class Alarm {
+    // Alarm type
+    public static final int TYPE_RANGE_ON_WEEKDAYS = 1;
+    public int type = TYPE_RANGE_ON_WEEKDAYS;
+    public static final int TYPE_RANGE_ON_RANDOM_WEEKDAYS = 2;
+    public static final int TYPE_ONCE = 10; // fixed date+time
+    public static final int TYPES = 3;
     // Unique ID
     public long id = -1;
     public UUID port_id;
-
     // Temporary
     public DevicePort port;
-
     /**
      * True if the alarm is from a plugin/device and not a virtual alarm on the android system
      */
     public boolean deviceAlarm;
-
     /**
      * Not armed device alarm that is available to be programmed. It will not be shown on the
      * alarm list. To distinguish between a free alarm slot and a programmed but "disabled" alarm,
@@ -38,21 +41,10 @@ public class Alarm {
      * this is: All weekdays, on-time from 00:00 to 23:59.
      */
     public boolean freeDeviceAlarm;
-
     // True if the alarm is enabled.
     public boolean enabled = false;
-
     // If this alarm is not from device (yet) but only from the cache, this flag is set.
     public boolean fromCache = false;
-
-    // Alarm type
-    public static final int TYPE_RANGE_ON_WEEKDAYS = 1;
-    public static final int TYPE_RANGE_ON_RANDOM_WEEKDAYS = 2;
-    public static final int TYPE_ONCE = 10; // fixed date+time
-    public static final int TYPES = 3;
-
-    public int type = TYPE_ONCE;
-
     // Store days. Start with SUNDAY
     public boolean weekdays[] = new boolean[7];
     // Absolute date and time
@@ -64,6 +56,70 @@ public class Alarm {
     public int hour_minute_stop = -1;
     // For random alarms in minutes of the day: hour*60+minute
     public int hour_minute_random_interval = -1;
+
+    public static Alarm fromJSON(JsonReader reader) throws IOException, ClassNotFoundException, ParseException {
+        reader.beginObject();
+        Alarm di = new Alarm();
+        di.fromCache = true;
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            switch (name) {
+                case "id":
+                    di.id = reader.nextLong();
+                    break;
+                case "port_id":
+                    di.port_id = UUID.fromString(reader.nextString());
+                    break;
+                case "deviceAlarm":
+                    di.deviceAlarm = reader.nextBoolean();
+                    break;
+                case "freeDeviceAlarm":
+                    di.freeDeviceAlarm = reader.nextBoolean();
+                    break;
+                case "enabled":
+                    di.enabled = reader.nextBoolean();
+                    break;
+                case "type":
+                    di.type = reader.nextInt();
+                    break;
+                case "absolute_date":
+                    di.absolute_date = DateFormat.getDateInstance().parse(reader.nextString());
+                    break;
+                case "hour_minute_start":
+                    di.hour_minute_start = reader.nextInt();
+                    break;
+                case "hour_minute_stop":
+                    di.hour_minute_stop = reader.nextInt();
+                    break;
+                case "hour_minute_random_interval":
+                    di.hour_minute_random_interval = reader.nextInt();
+                    break;
+                case "weekdays":
+                    reader.beginArray();
+                    int i = 0;
+                    while (reader.hasNext()) {
+                        di.weekdays[i++] = reader.nextBoolean();
+                    }
+                    reader.endArray();
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+
+        reader.endObject();
+
+        if (di.port_id == null)
+            throw new ClassNotFoundException();
+
+        di.port = NetpowerctrlApplication.getDataController().findDevicePort(di.port_id);
+        if (di.port == null)
+            throw new ClassNotFoundException();
+
+        return di;
+    }
 
     /**
      * Return a localised string of all active weekdays.
@@ -150,70 +206,6 @@ public class Alarm {
         writer.endArray();
 
         writer.endObject();
-    }
-
-    public static Alarm fromJSON(JsonReader reader) throws IOException, ClassNotFoundException, ParseException {
-        reader.beginObject();
-        Alarm di = new Alarm();
-        di.fromCache = true;
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            assert name != null;
-            switch (name) {
-                case "id":
-                    di.id = reader.nextLong();
-                    break;
-                case "port_id":
-                    di.port_id = UUID.fromString(reader.nextString());
-                    break;
-                case "deviceAlarm":
-                    di.deviceAlarm = reader.nextBoolean();
-                    break;
-                case "freeDeviceAlarm":
-                    di.freeDeviceAlarm = reader.nextBoolean();
-                    break;
-                case "enabled":
-                    di.enabled = reader.nextBoolean();
-                    break;
-                case "type":
-                    di.type = reader.nextInt();
-                    break;
-                case "absolute_date":
-                    di.absolute_date = DateFormat.getDateInstance().parse(reader.nextString());
-                    break;
-                case "hour_minute_start":
-                    di.hour_minute_start = reader.nextInt();
-                    break;
-                case "hour_minute_stop":
-                    di.hour_minute_stop = reader.nextInt();
-                    break;
-                case "hour_minute_random_interval":
-                    di.hour_minute_random_interval = reader.nextInt();
-                    break;
-                case "weekdays":
-                    reader.beginArray();
-                    int i = 0;
-                    while (reader.hasNext()) {
-                        di.weekdays[i++] = reader.nextBoolean();
-                    }
-                    reader.endArray();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
-        }
-
-        reader.endObject();
-
-        if (di.port_id == null)
-            throw new ClassNotFoundException();
-
-        di.port = NetpowerctrlApplication.getDataController().findDevicePort(di.port_id);
-        if (di.port == null)
-            throw new ClassNotFoundException();
-
-        return di;
     }
 
 }

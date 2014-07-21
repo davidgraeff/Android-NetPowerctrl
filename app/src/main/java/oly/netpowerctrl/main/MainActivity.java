@@ -36,7 +36,6 @@ import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.backup.drive.GDrive;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ActivityWithIconCache;
@@ -168,7 +167,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         mDrawer.saveSelection();
 
         // Stop listener
-        NetpowerctrlService.stopUseListener();
+        NetpowerctrlService.stopUseService();
     }
 
     @Override
@@ -178,21 +177,9 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
 
     @Override
     public void onResume() {
-        super.onResume();
         NFC.checkIntentForNFC(this, getIntent());
-        NetpowerctrlService.useListener();
-        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
-            @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
-                service.findDevices(null);
-                return false;
-            }
-
-            @Override
-            public void onServiceFinished() {
-
-            }
-        });
+        NetpowerctrlService.useService(true, false);
+        super.onResume();
     }
 
     @Override

@@ -24,14 +24,9 @@ import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 
 class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
-    public interface BackupDoneSuccess {
-        void done();
-    }
-
     private final GoogleApiClient mClient;
     private final GDrive.GDriveConnectionState observer;
     private final DriveId driveId;
-
     private String scenes;
     private String groups;
     private String devices;
@@ -108,9 +103,6 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-
-        RuntimeDataController c = NetpowerctrlApplication.getDataController();
-
         // Create folder
         DriveFolder backupDir = Drive.DriveApi.getFolder(mClient, driveId);
         DriveApi.MetadataBufferResult result = backupDir.listChildren(mClient).await();
@@ -198,5 +190,9 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
             if (observer != null)
                 observer.showProgress(false, "Backup restoring failed");
         }
+    }
+
+    public interface BackupDoneSuccess {
+        void done();
     }
 }

@@ -24,39 +24,55 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.AsyncRunnerResult;
-import oly.netpowerctrl.utils.gui.RemoveAnimation;
+import oly.netpowerctrl.utils.gui.AnimationController;
 import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
-public class TimerFragment extends Fragment implements TimerController.IAlarmsUpdated, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, AsyncRunnerResult, OnRefreshListener {
+public class TimerFragment extends Fragment implements TimerController.IAlarmsUpdated, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, AsyncRunnerResult, OnRefreshListener, ServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private PullToRefreshLayout mPullToRefreshLayout;
-    private RemoveAnimation removeAnimation = new RemoveAnimation();
+    private AnimationController animationController = new AnimationController();
 
 
     public TimerFragment() {
     }
 
-    private void refresh() {
-        animateProgressText(true);
-        alarmsUpdated(false, true);
+    private void refresh(NetpowerctrlService service) {
+        if (service == null)
+            return;
+
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
-        c.refresh();
+        if (c.refresh(service))
+            animateProgressText(true);
     }
 
     @Override
-    public void onDestroy() {
+    public void onResume() {
+        super.onResume();
+
+        NetpowerctrlService service = NetpowerctrlService.getService();
+        if (service == null)
+            NetpowerctrlService.registerServiceReadyObserver(this);
+        else
+            refresh(service);
+    }
+
+    @Override
+    public void onPause() {
+        animateProgressText(false);
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
         c.unregisterObserver(this);
-        timerAdapter.finish();
-        super.onDestroy();
+        if (timerAdapter != null)
+            timerAdapter.finish();
+        super.onPause();
     }
 
     @Override
@@ -78,9 +94,9 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         mListView.setEmptyView(empty);
         mListView.setAdapter(timerAdapter);
 
-        removeAnimation.setAdapter(timerAdapter);
-        removeAnimation.setListView(mListView);
-        timerAdapter.setRemoveAnimation(removeAnimation);
+        animationController.setAdapter(timerAdapter);
+        animationController.setListView(mListView);
+        timerAdapter.setRemoveAnimation(animationController);
 
         ///// For swiping elements out (hiding)
         SwipeDismissListViewTouchListener touchListener =
@@ -113,12 +129,6 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        refresh();
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.timers, menu);
         menu.findItem(R.id.menu_remove_all_timer).setEnabled(timerAdapter.getCount() > 0);
@@ -128,7 +138,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh:
-                refresh();
+                refresh(NetpowerctrlService.getService());
                 return true;
             case R.id.menu_add_timer:
                 AlarmEditPreferences fragment = (AlarmEditPreferences)
@@ -257,6 +267,17 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
 
     @Override
     public void onRefreshStarted(View view) {
-        refresh();
+        refresh(NetpowerctrlService.getService());
+    }
+
+    @Override
+    public boolean onServiceReady(NetpowerctrlService service) {
+        refresh(service);
+        return false;
+    }
+
+    @Override
+    public void onServiceFinished() {
+
     }
 }

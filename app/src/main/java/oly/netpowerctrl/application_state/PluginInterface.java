@@ -3,6 +3,7 @@ package oly.netpowerctrl.application_state;
 import android.content.Context;
 
 import oly.netpowerctrl.alarms.Alarm;
+import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.AsyncRunnerResult;
@@ -20,13 +21,13 @@ public interface PluginInterface {
 
     void execute(DevicePort port, final int command, ExecutionFinished callback);
 
+    void requestAlarms(DevicePort port, TimerController timerController);
+
     void rename(DevicePort port, final String new_name, final AsyncRunnerResult callback);
 
     void addToTransaction(DevicePort port, final int command);
 
     void executeTransaction(ExecutionFinished callback);
-
-    void requestAlarms(DeviceInfo di);
 
     String getPluginID();
 

@@ -200,7 +200,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="empty_no_outlets_no_devices">Welcome!\nWith this app you may control Anel devices. First you have to configure some devices though. Use the navigation to come back to the outlet overview. Open the navigation from anywhere in your app by swiping from the left edge of the screen.</string>
     <string name="preference_ports_unlimited">Unlimited ports</string>
     <string name="preference_ports_unlimited_summary">If you have a rooted Android device, you may enable this for ports smaller than 1024.</string>
-    <string name="energy_saving_mode_log">Open log</string>
+    <string name="log_screen">Log</string>
     <string name="preference_use_log_energy_saving_mode">Log: Energy saving mode</string>
     <string name="preference_use_log_energy_saving_mod_summary">Log all activities of the energy saving mode</string>
     <string name="menu_log_send_mail">Send the log to the developer</string>
@@ -233,7 +233,7 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="neighbour_pairing_request">Pair request send</string>
     <string name="neighbour_pairing_title">Pairing request</string>
     <string name="neighbour_pairing_message">If you allow the pairing, the neighbour %s is allowed to send and overwrite settings on this device.</string>
-    <string name="neighbours_error_retrieve_files">Failed to retrieve the backup list</string>
+    <string name="gDrive_error_retrieve_files">Failed: %s</string>
     <string name="gDrive_remove_not_supported">Removing is not supported by Google Drive API at the moment</string>
     <string name="menu_gDrive_remove">Remove backup</string>
     <string name="menu_gDrive_restore">Restore backup</string>
@@ -317,4 +317,14 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="error_neighbour_wrong_version_title">Version nicht gleich!</string>
     <string name="error_neighbour_wrong_version">Das Nachbargerät hat eine andere APP Version installiert. Dennoch Kopplung starten?</string>
     <string name="error_plugin_no_service_connection">Plugin connection failed: %1$s</string>
+    <string name="preference_hide_not_reachable">Verstecke Unerreichbare Geräte</string>
+    <string name="preference_hide_not_reachable_summary">Unerreichbare Geräte werden in der Übersicht nicht angezeigt</string>
+    <string name="preference_log_widgets_summary">Alle Widget Aktivitäten mitloggen</string>
+    <string name="preference_log_widgets">Log: Widgets</string>
+    <string name="device_enabled">Gerät aktiv</string>
+    <string name="device_enabled_summary">Ein deaktiviertes Gerät gilt wie ein Nicht-Erreichbares Gerät und wird nicht länger aktualisiert</string>
+    <string name="error_device_disabled">Gerät abgeschaltet</string>
+    <string name="preference_notify_on_non_reachable">Nachricht bei Nicht-Erreichbarem Gerät</string>
+    <string name="preference_notify_on_non_reachable_summary">Zeigt eine Nachricht für jedes nicht erreichbare Gerät nach einem Aktualisierungsvorgang</string>
+    <string name="alarms_no_alarms">Es sind noch keine Zeitschaltungen eingerichtet.</string>
 </resources>

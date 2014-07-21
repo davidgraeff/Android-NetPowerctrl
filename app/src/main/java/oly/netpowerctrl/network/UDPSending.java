@@ -2,7 +2,6 @@ package oly.netpowerctrl.network;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -151,25 +150,10 @@ public class UDPSending {
     }
 
     static public class SendAndObserveJob extends DeviceObserverBase implements Job {
-        InetAddress ip = null;
         final DeviceInfo di;
         final List<byte[]> messages = new ArrayList<>();
         final int errorID;
-        int redoCounter = 0;
-        private boolean initialized = false;
-        private final long current_time = System.currentTimeMillis();
-        private UDPSending udpSending = null;
-
         private final DeviceObserverResult deviceObserverResult = new DeviceObserverResult() {
-
-            @Override
-            public void onDeviceError(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceTimeout(DeviceInfo di) {
-            }
-
             @Override
             public void onDeviceUpdated(DeviceInfo di) {
             }
@@ -178,17 +162,12 @@ public class UDPSending {
             public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
                 mainLoopHandler.removeCallbacks(redoRunnable);
                 mainLoopHandler.removeCallbacks(timeoutRunnable);
-                if (timeout_devices.isEmpty())
-                    return;
-
-                Context context = NetpowerctrlApplication.instance;
-                Toast.makeText(context,
-                        context.getString(R.string.error_setting_outlet, di.DeviceName,
-                                (int) ((current_time - di.getUpdatedTime()) / 1000)),
-                        Toast.LENGTH_LONG
-                ).show();
             }
         };
+        InetAddress ip = null;
+        int redoCounter = 0;
+        private boolean initialized = false;
+        private UDPSending udpSending = null;
 
         public SendAndObserveJob(DeviceInfo di, byte[] message, int errorID) {
             this.messages.add(message);
@@ -262,9 +241,9 @@ public class UDPSending {
 
 
     static public class SendRawJob implements Job {
-        public InetAddress ip = null;
         final byte[] message;
         final int sendPort;
+        public InetAddress ip = null;
 
         public SendRawJob(byte[] message, InetAddress ip, int sendPort) {
             this.message = message;

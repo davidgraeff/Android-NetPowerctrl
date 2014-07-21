@@ -12,6 +12,7 @@ public class SharedPrefs {
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
     public static final String PREF_use_dark_theme = "use_dark_theme";
     public static final String PREF_show_persistent_notification = "show_persistent_notification";
+    public final static String hide_not_reachable = "hide_not_reachable";
     private final static int PREF_CURRENT_VERSION = 3;
 
     public static int getLastPreferenceVersion() {
@@ -28,7 +29,7 @@ public class SharedPrefs {
     public static void setCurrentPreferenceVersion() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("prefVersion", PREF_CURRENT_VERSION).commit();
+        prefs.edit().putInt("prefVersion", PREF_CURRENT_VERSION).apply();
     }
 
     public static String getFirstTab() {
@@ -47,7 +48,7 @@ public class SharedPrefs {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefEditor = prefs.edit();
         prefEditor.putString("FIRST_TAB", fragmentClassName);
-        prefEditor.commit();
+        prefEditor.apply();
     }
 
     public static boolean getShowHiddenOutlets() {
@@ -64,7 +65,7 @@ public class SharedPrefs {
     public static void setShowHiddenOutlets(boolean showHiddenOutlets) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("showHiddenOutlets", showHiddenOutlets).commit();
+        prefs.edit().putBoolean("showHiddenOutlets", showHiddenOutlets).apply();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -83,14 +84,14 @@ public class SharedPrefs {
         Context context = NetpowerctrlApplication.instance;
         final String prefName = PREF_WIDGET_BASENAME + String.valueOf(widgetID);
         SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
-        device_prefs.edit().putString("UUID", devicePortUuid).commit();
+        device_prefs.edit().putString("UUID", devicePortUuid).apply();
     }
 
     public static void DeleteWidgets(int appWidgetId) {
         Context context = NetpowerctrlApplication.instance;
         final String prefName = PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
         SharedPreferences device_prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE);
-        device_prefs.edit().clear().commit();
+        device_prefs.edit().clear().apply();
     }
 
     public static String LoadWidget(int widgetID) {
@@ -122,7 +123,7 @@ public class SharedPrefs {
         return receive_port_udp;
     }
 
-    public static boolean getUse_energy_saving_mode() {
+    public static boolean isEnergySavingEnabled() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean use_energy_saving_mode = context.getResources().getBoolean(R.bool.use_energy_saving_mode);
@@ -133,7 +134,7 @@ public class SharedPrefs {
         return use_energy_saving_mode;
     }
 
-    public static boolean getWakeUp_energy_saving_mode() {
+    public static boolean isWakeUpFromEnergySaving() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean wakeUp_energy_saving_mode = context.getResources().getBoolean(R.bool.wakeup_energy_saving_mode);
@@ -186,7 +187,7 @@ public class SharedPrefs {
     public static void setOutletsGrid(boolean grid) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("OutletsGrid", grid).commit();
+        prefs.edit().putBoolean("OutletsGrid", grid).apply();
     }
 
     public static boolean getScenesList() {
@@ -198,10 +199,10 @@ public class SharedPrefs {
     public static void setScenesList(boolean grid) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("ScenesList", grid).commit();
+        prefs.edit().putBoolean("ScenesList", grid).apply();
     }
 
-    public static boolean getPortsUnlimited() {
+    public static boolean isPortsUnlimited() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.ports_unlimited);
@@ -211,7 +212,7 @@ public class SharedPrefs {
     public static boolean logEnergySaveMode() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.use_log_energy_saving_mod);
+        boolean value = context.getResources().getBoolean(R.bool.log_energy_saving_mode);
         return prefs.getBoolean("use_log_energy_saving_mode", value);
     }
 
@@ -227,7 +228,7 @@ public class SharedPrefs {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = prefs.getBoolean("firstRun", true);
-        prefs.edit().putBoolean("firstRun", false).commit();
+        prefs.edit().putBoolean("firstRun", false).apply();
         return value;
     }
 
@@ -240,7 +241,7 @@ public class SharedPrefs {
     public static void saveNeighbours(String json) {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putString("neighbours", json).commit();
+        prefs.edit().putString("neighbours", json).apply();
     }
 
     public static String loadNeighbours() {
@@ -249,15 +250,24 @@ public class SharedPrefs {
         return prefs.getString("neighbours", null);
     }
 
-    public static boolean isNeighbourAutoSync() {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("neighbour_sync", false);
-    }
-
     public static boolean isNotification() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean(PREF_show_persistent_notification, false);
+        boolean value = context.getResources().getBoolean(R.bool.show_persistent_notification);
+        return prefs.getBoolean(PREF_show_persistent_notification, value);
+    }
+
+    public static boolean isHideNotReachable() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.hide_not_reachable);
+        return prefs.getBoolean(hide_not_reachable, value);
+    }
+
+    public static boolean notifyDeviceNotReachable() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.notify_on_non_reachable);
+        return prefs.getBoolean("notify_on_non_reachable", value);
     }
 }

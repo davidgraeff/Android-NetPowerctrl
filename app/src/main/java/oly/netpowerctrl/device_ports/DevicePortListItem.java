@@ -39,8 +39,6 @@ class DevicePortListItem {
         this.groupType = groupTypeEnum.GROUP_TYPE;
     }
 
-    ;
-
     public static DevicePortListItem createGroupSpan(DevicePortListItem c, int id) {
         DevicePortListItem new_item = new DevicePortListItem(c.group, c.displayText, id);
         new_item.setGroupType(groupTypeEnum.GROUP_SPAN_TYPE);

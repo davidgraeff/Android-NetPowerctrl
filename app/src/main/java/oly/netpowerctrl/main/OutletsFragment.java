@@ -6,8 +6,10 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +32,7 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RefreshStartedStopped;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsExecuteAdapter;
@@ -39,7 +42,6 @@ import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.devices.NotReachableUpdate;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.network.AsyncRunnerResult;
-import oly.netpowerctrl.network.DeviceObserverFinishedResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneActivity;
@@ -49,8 +51,8 @@ import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
 import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.gui.AnimationController;
 import oly.netpowerctrl.utils.gui.ChangeArgumentsFragment;
-import oly.netpowerctrl.utils.gui.RemoveAnimation;
 import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
@@ -59,7 +61,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult, Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks {
+        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult, Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks, SharedPreferences.OnSharedPreferenceChangeListener, RefreshStartedStopped {
     private DevicePortsExecuteAdapter adapter;
     private DevicePortSourceConfigured adapterSource;
     private TextView hintText;
@@ -70,7 +72,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private GridView mListView;
     private PullToRefreshLayout mPullToRefreshLayout;
     private ProgressDialog progressDialog;
-    private RemoveAnimation removeAnimation = new RemoveAnimation();
+    private AnimationController animationController = new AnimationController();
     private ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -93,14 +95,18 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onPause() {
+        NetpowerctrlService.unregisterRefreshStartedStopped(this);
         super.onPause();
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).unregisterOnSharedPreferenceChangeListener(this);
         if (adapterSource != null)
             adapterSource.onPause();
     }
 
     @Override
     public void onResume() {
+        NetpowerctrlService.registerRefreshStartedStopped(this);
         super.onResume();
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
         if (adapterSource != null)
             adapterSource.onResume();
     }
@@ -226,7 +232,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.refresh: {
-                refresh(false);
+                NetpowerctrlService.getService().findDevices(true, null);
                 return true;
             }
             case R.id.menu_view_list: {
@@ -360,12 +366,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         // Create adapter first
         adapterSource = new DevicePortSourceConfigured();
+        adapterSource.setHideNotReachable(SharedPrefs.isHideNotReachable());
         adapterSource.setAutomaticUpdate(true);
         adapter = new DevicePortsExecuteAdapter(getActivity(), this, adapterSource,
                 ((ActivityWithIconCache) getActivity()).getIconCache());
-        removeAnimation.setAdapter(adapter);
-        removeAnimation.setListView(mListView);
-        adapter.setRemoveAnimation(removeAnimation);
+        animationController.setAdapter(adapter);
+        animationController.setListView(mListView);
+        adapter.setRemoveAnimation(animationController);
         setListOrGrid(SharedPrefs.getOutletsGrid());
 
         return view;
@@ -405,7 +412,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_outlet_changeGroups: {
-                GroupUtilities.createGroup(getActivity(), oi, new GroupUtilities.onGroupsChanged() {
+                GroupUtilities.createGroup(getActivity(), oi, new GroupUtilities.groupsChangedInterface() {
                     @Override
                     public void onGroupsChanged(DevicePort port) {
                         adapterSource.updateNow();
@@ -546,29 +553,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         Icons.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
     }
 
-    private void refresh(boolean ignoreFlag) {
-        if (!ignoreFlag && mPullToRefreshLayout.isRefreshing())
-            return;
-
-        mPullToRefreshLayout.setRefreshing(true);
-        NetpowerctrlService.getService().findDevices(new DeviceObserverFinishedResult() {
-            @Override
-            public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-                mPullToRefreshLayout.setRefreshComplete();
-                //noinspection ConstantConditions
-                Toast.makeText(getActivity(),
-                        getActivity().getString(R.string.devices_refreshed,
-                                NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
-                                NetpowerctrlApplication.getDataController().newDevices.size()),
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
-        });
+    @Override
+    public void onRefreshStateChanged(boolean isRefreshing) {
+        mPullToRefreshLayout.setRefreshing(isRefreshing);
     }
 
     @Override
     public void onRefreshStarted(View view) {
-        refresh(true);
+        NetpowerctrlService.getService().findDevices(true, null);
     }
 
     @Override
@@ -580,5 +572,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onDismiss(int dismissedPosition) {
         final DevicePort oi = adapter.getItem(dismissedPosition);
         hideItem(oi);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        switch (s) {
+            case SharedPrefs.hide_not_reachable:
+                adapterSource.setHideNotReachable(SharedPrefs.isHideNotReachable());
+                adapterSource.updateNow();
+                break;
+        }
     }
 }

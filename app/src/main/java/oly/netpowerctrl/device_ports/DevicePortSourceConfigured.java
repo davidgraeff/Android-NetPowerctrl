@@ -14,7 +14,6 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
     private WeakReference<DevicePortsBaseAdapter> adapterWeakReference;
     private boolean automaticUpdatesEnabled = false;
     private boolean hideNotReachable = false;
-    private boolean isBatch = false;
 
     public boolean isHideNotReachable() {
         return hideNotReachable;
@@ -30,16 +29,19 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
             return;
 
         DevicePortsBaseAdapter adapter = adapterWeakReference.get();
+        if (adapter == null) {
+            setAutomaticUpdate(false);
+            return;
+        }
+
         adapter.markAllRemoved();
-        isBatch = true;
 
         for (DeviceInfo deviceInfo : NetpowerctrlApplication.getDataController().deviceCollection.devices) {
             if (hideNotReachable && !deviceInfo.isReachable())
                 continue;
-            onDeviceUpdated(deviceInfo, false);
+            adapter.addAll(deviceInfo, false);
         }
 
-        isBatch = false;
         adapter.removeAllMarked(true);
 
         adapter.notifyDataSetChanged();
@@ -57,7 +59,7 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
 
     @Override
     public void setTargetAdapter(DevicePortsBaseAdapter adapter) {
-        adapterWeakReference = new WeakReference<DevicePortsBaseAdapter>(adapter);
+        adapterWeakReference = new WeakReference<>(adapter);
     }
 
     @Override
@@ -87,13 +89,12 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
         }
 
         if (willBeRemoved || (hideNotReachable && !di.isReachable()))
-            adapter.removeAll(di, !isBatch);
+            adapter.removeAll(di, true);
         else {
-            adapter.addAll(di, !isBatch);
+            adapter.addAll(di, true);
         }
 
-        if (!isBatch)
-            adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();
     }
 
 }

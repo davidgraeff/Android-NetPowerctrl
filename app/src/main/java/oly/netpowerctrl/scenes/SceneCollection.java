@@ -20,9 +20,9 @@ import oly.netpowerctrl.utils.Sorting;
  * List of scenes
  */
 public class SceneCollection implements SortCriteriaInterface {
+    private final ArrayList<IScenesUpdated> observers = new ArrayList<>();
     public List<Scene> scenes = new ArrayList<>();
     private IScenesSave storage;
-    private final ArrayList<IScenesUpdated> observers = new ArrayList<>();
 
     public static SceneCollection fromScenes(List<Scene> scenes, IScenesSave storage) {
         SceneCollection dc = new SceneCollection();
@@ -194,7 +194,7 @@ public class SceneCollection implements SortCriteriaInterface {
     }
 
     @Override
-    public String[] getContentList() {
+    public String[] getContentList(int startPosition) {
         String[] l = new String[scenes.size()];
         for (int i = 0; i < scenes.size(); ++i) {
             l[i] = scenes.get(i).sceneName;

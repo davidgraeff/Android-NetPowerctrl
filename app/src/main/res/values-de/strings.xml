@@ -203,7 +203,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
     <string name="preference_ports_unlimited">Unlimitierte Ports</string>
     <string name="preference_ports_unlimited_summary">Wähle diese Option auf einem gerootetem Android Gerät um Ports kleiner als 1024 wählen zu können.</string>
-    <string name="energy_saving_mode_log">Logbuch</string>
+    <string name="log_screen">Logbuch</string>
     <string name="preference_use_log_energy_saving_mode">Log: Energiesparmodus</string>
     <string name="preference_use_log_energy_saving_mod_summary">Alle Energiespar-Aktivitäten mitloggen</string>
     <string name="menu_log_send_mail">Dem Entwickler das Logbuch per Mail senden</string>
@@ -236,7 +236,7 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="neighbour_pairing_request">Kopplungsanfrage verschickt</string>
     <string name="neighbour_pairing_title">Kopplungsanfrage</string>
     <string name="neighbour_pairing_message">Mit der Kopplung erlaubst du, dass %s deine jetzigen Daten überschreiben darf.</string>
-    <string name="neighbours_error_retrieve_files">Verzeichnis konnte nicht abgerufen werden</string>
+    <string name="gDrive_error_retrieve_files">Fehler: %s</string>
     <string name="gDrive_remove_not_supported">Daten entfernen wird aktuell nicht unterstützt</string>
     <string name="menu_gDrive_remove">Entferne Backup</string>
     <string name="menu_gDrive_restore">Wiederherstellen</string>
@@ -320,4 +320,14 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="error_neighbour_wrong_version_title">Version nicht gleich!</string>
     <string name="error_neighbour_wrong_version">Das Nachbargerät hat eine andere APP Version installiert. Dennoch Kopplung starten?</string>
     <string name="error_plugin_no_service_connection">Plugin connection failed: %1$s</string>
+    <string name="preference_hide_not_reachable">Verstecke Unerreichbare Geräte</string>
+    <string name="preference_hide_not_reachable_summary">Unerreichbare Geräte werden in der Übersicht nicht angezeigt</string>
+    <string name="preference_log_widgets_summary">Alle Widget Aktivitäten mitloggen</string>
+    <string name="preference_log_widgets">Log: Widgets</string>
+    <string name="device_enabled">Gerät aktiv</string>
+    <string name="device_enabled_summary">Ein deaktiviertes Gerät gilt wie ein Nicht-Erreichbares Gerät und wird nicht länger aktualisiert</string>
+    <string name="error_device_disabled">Gerät abgeschaltet</string>
+    <string name="preference_notify_on_non_reachable">Nachricht bei Nicht-Erreichbarem Gerät</string>
+    <string name="preference_notify_on_non_reachable_summary">Zeigt eine Nachricht für jedes nicht erreichbare Gerät nach einem Aktualisierungsvorgang</string>
+    <string name="alarms_no_alarms">Es sind noch keine Zeitschaltungen eingerichtet.</string>
 </resources>

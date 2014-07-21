@@ -1,18 +1,17 @@
 package oly.netpowerctrl.device_ports;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +27,7 @@ import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
-import oly.netpowerctrl.utils.gui.RemoveAnimation;
+import oly.netpowerctrl.utils.gui.AnimationController;
 
 public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface {
 
@@ -42,11 +41,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     protected DevicePortViewHolder mCurrent_devicePortViewHolder;
     // Some observers
     protected ListItemMenu mListContextMenu;
-    Animation highlightAnimation = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
-            R.anim.button_zoom);
-    HashSet<Long> mUpdated_id_list = new HashSet<>();
     // Animation ids
-    private WeakReference<RemoveAnimation> mAnimationWeakReference = new WeakReference<>(null);
+    protected WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
     private int mNextId = 0; // we need stable IDs
     // If you change the layout or an image we increment this layout change id
     // to invalidate ViewHolders (for reloading images or layout items).
@@ -104,8 +100,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         return mShowHidden;
     }
 
-    public void setRemoveAnimation(RemoveAnimation removeAnimation) {
-        mAnimationWeakReference = new WeakReference<>(removeAnimation);
+    public void setRemoveAnimation(AnimationController animationController) {
+        mAnimationWeakReference = new WeakReference<>(animationController);
     }
 
     public void setShowHidden(boolean b) {
@@ -137,9 +133,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     @Override
     public boolean isEnabled(int position) {
-        if (mItems.get(position).port == null)
-            return false;
-        return super.isEnabled(position);
+        DevicePortListItem item = mItems.get(position);
+        return item.port != null && item.port.device.isReachable();
     }
 
     @Override
@@ -196,6 +191,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     public List<Scene.SceneItem> getScene() {
         List<Scene.SceneItem> list_of_scene_items = new ArrayList<>();
         for (DevicePortListItem info : mItems) {
+            if (info.port == null) // skip header items
+                continue;
             list_of_scene_items.add(new Scene.SceneItem(info.port.uuid, info.command_value));
         }
         return list_of_scene_items;
@@ -207,6 +204,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
         int i = 0;
         for (DevicePortListItem info : mItems) {
+            if (info.port == null) // skip header items
+                continue;
             if (info.port.uuid.equals(uuid))
                 return i;
             ++i;
@@ -215,11 +214,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         return -1;
     }
 
+    @SuppressLint("InflateParams")
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         final DevicePortListItem item = mItems.get(position);
         final DevicePort port = item.port;
-        
+
         if (convertView != null) {
             mCurrent_devicePortViewHolder = (DevicePortViewHolder) convertView.getTag();
             if (!mCurrent_devicePortViewHolder.isStillValid(mLayoutChangeId)) {
@@ -258,48 +258,22 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                     mCurrent_devicePortViewHolder.title.setText("");
             }
         } else { // no header
-            mCurrent_devicePortViewHolder.title.setTypeface(null, port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+            mCurrent_devicePortViewHolder.title.setTypeface(
+                    port.Hidden ? Typeface.MONOSPACE : Typeface.DEFAULT,
+                    port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
             mCurrent_devicePortViewHolder.title.setText(port.getDescription());
             mCurrent_devicePortViewHolder.title.setEnabled(item.isEnabled());
 
-            mCurrent_devicePortViewHolder.subtitle.setTypeface(null, port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
             mCurrent_devicePortViewHolder.subtitle.setText(port.device.DeviceName);
-            mCurrent_devicePortViewHolder.subtitle.setEnabled(item.isEnabled());
 
             mCurrent_devicePortViewHolder.entry.setEnabled(item.isEnabled());
-        }
 
-        final long id = getItemId(position);
-        if (mUpdated_id_list.contains(id)) {
-            mUpdated_id_list.remove(id);
-
-            highlightAnimation.reset();
-            final View target = convertView;
-            target.setHasTransientState(true);
-            highlightAnimation.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                    Log.w("Base", "AnimationStart " + item.displayText + " " +
-                                    String.valueOf(id) + " " + String.valueOf(position)
-                    );
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    target.setHasTransientState(false);
-                    Log.w("Base", "AnimationEnd " + item.displayText + " " +
-                                    String.valueOf(id) + " " + String.valueOf(position)
-                    );
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-
-                }
-            });
-            //TODO no animation on item position 0
-            convertView.clearAnimation();
-            convertView.startAnimation(highlightAnimation);
+            if (port.device.isReachable())
+                mCurrent_devicePortViewHolder.title.setPaintFlags(
+                        mCurrent_devicePortViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
+            else
+                mCurrent_devicePortViewHolder.title.setPaintFlags(
+                        mCurrent_devicePortViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
         return convertView;
@@ -405,6 +379,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     private void addItemToGroup(DevicePort oi, int command_value, int start_position) {
         boolean found = false;
+        AnimationController a = mAnimationWeakReference.get();
+
         int destination_index = mItems.size();
         for (int i = start_position; i < mItems.size(); ++i) {
             DevicePortListItem l = mItems.get(i);
@@ -423,8 +399,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             // If the same DevicePort already exists in this adapter, we will update that instead
             if (l.port.uuid.equals(oi.uuid)) {
                 // Animate if value has changed
-                if (l.command_value != command_value) {
-                    mUpdated_id_list.add(l.id);
+                if (l.command_value != command_value && a != null) {
+                    a.addHighlight(l.id);
                 }
                 // Apply new values to existing item
                 l.command_value = command_value;
@@ -496,7 +472,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         int lenToBeRemoved = 0;
         for (int index = 0; index < mItems.size(); ++index) {
             for (DevicePortListItem adapter_list_item : adapter.mItems) {
-                if (adapter_list_item.equals(mItems.get(index).port)) {
+                if (adapter_list_item.port != null && adapter_list_item.port.equals(mItems.get(index).port)) {
                     toBeRemoved[lenToBeRemoved] = index;
                     lenToBeRemoved++;
                 }
@@ -521,7 +497,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     public void removeAt(int position, boolean finalAction) {
         if (position == -1) return;
-        RemoveAnimation a = mAnimationWeakReference.get();
+        AnimationController a = mAnimationWeakReference.get();
         if (a != null)
             a.beforeRemoval(position);
 
@@ -583,19 +559,28 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     @Override
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
-        RemoveAnimation a = mAnimationWeakReference.get();
+        AnimationController a = mAnimationWeakReference.get();
         if (a != null)
-            a.animateRemoval();
+            a.animate();
     }
 
     //////////////// Sorting ////////////////
 
     @Override
-    public String[] getContentList() {
-        String[] l = new String[mItems.size()];
-        for (int i = 0; i < mItems.size(); ++i) {
-            DevicePort port = mItems.get(i).port;
-            l[i] = port.device.DeviceName + ": " + port.getDescription();
+    public String[] getContentList(int startPosition) {
+        int c = 0;
+        for (DevicePortListItem mItem : mItems) {
+            if (mItem.port != null)
+                ++c;
+        }
+
+        String[] l = new String[c];
+        c = 0;
+        for (DevicePortListItem mItem : mItems) {
+            DevicePort port = mItem.port;
+            if (port == null)
+                continue;
+            l[c++] = port.device.DeviceName + ": " + port.getDescription();
         }
         return l;
     }
@@ -608,8 +593,19 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         return s;
     }
 
+    private void removeHeaders() {
+        Iterator<DevicePortListItem> iterator = mItems.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().port == null)
+                iterator.remove();
+        }
+    }
+
     @Override
     public void applySortCriteria(final boolean[] criteria) {
+        removeHeaders();
+
+        // Sort
         Sorting.qSort(mItems, 0, mItems.size() - 1, new Sorting.qSortComparable<DevicePortListItem>() {
             @Override
             public boolean isGreater(DevicePortListItem first, DevicePortListItem second) {
@@ -631,7 +627,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             mItems.get(i).port.positionRequest = i;
         }
 
-        notifyDataSetChanged();
+        if (mSource != null)
+            mSource.updateNow();
     }
 
     @Override
@@ -641,8 +638,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     @Override
     public void setSortOrder(int[] sortOrder) {
+        removeHeaders();
+
         if (sortOrder.length != mItems.size()) {
             Log.e("DevicePortsBaseAdapter", "setSortOrder length wrong");
+            if (mSource != null)
+                mSource.updateNow();
             return;
         }
 
@@ -657,6 +658,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             mItems.set(sortOrder[i], temp);
         }
 
-        notifyDataSetChanged();
+        if (mSource != null)
+            mSource.updateNow();
     }
 }

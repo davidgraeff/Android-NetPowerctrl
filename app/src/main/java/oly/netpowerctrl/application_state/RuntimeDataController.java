@@ -223,20 +223,26 @@ public class RuntimeDataController {
     }
 
     /**
-     * Call this by your plugin if a device changed
+     * Call this by your plugin if a device changed. This method is also called
+     * by the DeviceQuery class if devices are not reachable anymore.
      *
      * @param device_info
      */
     public void onDeviceUpdated(DeviceInfo device_info) {
         // if it matches a configured device, update it's outlet states and exit the method.
         DeviceInfo existing_device = deviceCollection.update(device_info);
+
         if (existing_device != null) {
-            // notify observers who are using the DeviceQuery class
+            // Special handling for disabled devices
+            if (!existing_device.enabled && existing_device.isReachable())
+                existing_device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_device_disabled));
+
+            // notify observers who are using the DeviceQuery class (existing device)
             notifyDeviceQueries(existing_device);
             return;
         }
 
-        // notify observers who are using the DeviceQuery class
+        // notify observers who are using the DeviceQuery class (new device)
         notifyDeviceQueries(device_info);
 
         // Do we have this new device already in the list?

@@ -15,6 +15,18 @@
         android:title="@string/preference_show_persistent_notification" />
 
     <CheckBoxPreference
+        android:defaultValue="@bool/hide_not_reachable"
+        android:key="hide_not_reachable"
+        android:summary="@string/preference_hide_not_reachable_summary"
+        android:title="@string/preference_hide_not_reachable" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/notify_on_non_reachable"
+        android:key="notify_on_non_reachable"
+        android:summary="@string/preference_notify_on_non_reachable_summary"
+        android:title="@string/preference_notify_on_non_reachable" />
+
+    <CheckBoxPreference
         android:defaultValue="@bool/backup_to_gDrive"
         android:key="backup_to_gDrive"
         android:summary="@string/preference_backup_to_gDrive_summary"
@@ -90,15 +102,21 @@
             android:title="@string/preference_wakeup_energy_saving_mode" />
 
         <CheckBoxPreference
-            android:defaultValue="@bool/use_log_energy_saving_mod"
+            android:defaultValue="@bool/log_energy_saving_mode"
             android:dependency="use_energy_saving_mode"
             android:key="use_log_energy_saving_mode"
             android:summary="@string/preference_use_log_energy_saving_mod_summary"
             android:title="@string/preference_use_log_energy_saving_mode" />
 
+        <CheckBoxPreference
+            android:defaultValue="@bool/log_widgets"
+            android:key="log_widgets"
+            android:summary="@string/preference_log_widgets_summary"
+            android:title="@string/preference_log_widgets" />
+
         <PreferenceScreen
             android:key="open_log"
-            android:title="@string/energy_saving_mode_log" />
+            android:title="@string/log_screen" />
     </PreferenceCategory>
 
     <PreferenceCategory

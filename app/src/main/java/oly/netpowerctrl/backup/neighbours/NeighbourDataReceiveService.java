@@ -21,7 +21,6 @@ import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ShowToast;
@@ -54,13 +53,6 @@ public class NeighbourDataReceiveService extends Service {
     private static NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication;
     private Thread thread;
 
-    public static void startAutoSync() {
-        if (!SharedPrefs.isNeighbourAutoSync()) {
-            return;
-        }
-        start(null);
-    }
-
     private static void progress(final NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication,
                                  Handler h, final long uniqueID_Receiver, final String message) {
         if (neighbourDataCommunication == null)
@@ -84,17 +76,17 @@ public class NeighbourDataReceiveService extends Service {
         Intent intent = new Intent(context, NeighbourDataReceiveService.class);
         context.startService(intent);
 
-        NetpowerctrlService.useListener();
+        NetpowerctrlService.useService(false, false);
     }
 
     public static void stop() {
         NeighbourDataReceiveService.neighbourDataCommunication = null;
 
-        if (SharedPrefs.isNeighbourAutoSync() || service == null) {
+        if (service == null) {
             return;
         }
 
-        NetpowerctrlService.stopUseListener();
+        NetpowerctrlService.stopUseService();
 
         if (service.thread != null) {
             try {
@@ -325,7 +317,7 @@ public class NeighbourDataReceiveService extends Service {
                     NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
                         @Override
                         public boolean onServiceReady(NetpowerctrlService service) {
-                            service.findDevices(null);
+                            service.findDevices(false, null);
                             return false;
                         }
 

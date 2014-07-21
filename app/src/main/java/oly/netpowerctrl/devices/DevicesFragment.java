@@ -14,10 +14,8 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
@@ -25,8 +23,8 @@ import oly.netpowerctrl.anel.AnelDevicePreferences;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RefreshStartedStopped;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.DeviceObserverFinishedResult;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
@@ -34,7 +32,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  */
-public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnRefreshListener {
+public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnRefreshListener, RefreshStartedStopped {
     private DevicesAdapter adapter;
     private PullToRefreshLayout mPullToRefreshLayout;
     private ListView mListView;
@@ -52,6 +50,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onPause() {
+        NetpowerctrlService.unregisterRefreshStartedStopped(this);
         super.onPause();
         if (adapter != null)
             adapter.onPause();
@@ -59,6 +58,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onResume() {
+        NetpowerctrlService.registerRefreshStartedStopped(this);
         super.onResume();
         if (adapter != null)
             adapter.onResume();
@@ -188,7 +188,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 NetpowerctrlApplication.getDataController().deviceCollection.remove(current_device);
-                                NetpowerctrlService.getService().findDevices(null);
+                                NetpowerctrlService.getService().findDevices(false, null);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -246,19 +246,11 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     private void refresh() {
-        mPullToRefreshLayout.setRefreshing(true);
-        NetpowerctrlService.getService().findDevices(new DeviceObserverFinishedResult() {
-            @Override
-            public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-                mPullToRefreshLayout.setRefreshComplete();
-                //noinspection ConstantConditions
-                Toast.makeText(getActivity(),
-                        getActivity().getString(R.string.devices_refreshed,
-                                NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
-                                NetpowerctrlApplication.getDataController().newDevices.size()),
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
-        });
+        NetpowerctrlService.getService().findDevices(true, null);
+    }
+
+    @Override
+    public void onRefreshStateChanged(boolean isRefreshing) {
+        mPullToRefreshLayout.setRefreshing(isRefreshing);
     }
 }

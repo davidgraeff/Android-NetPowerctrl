@@ -88,7 +88,10 @@ public class DeviceQuery extends DeviceObserverBase {
         PluginInterface remote = di.getPluginInterface(service);
 
         if (remote != null) {
-            remote.requestData(di);
+            if (!di.enabled) {
+                di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_device_disabled));
+            } else
+                remote.requestData(di);
         } else {
             di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
         }

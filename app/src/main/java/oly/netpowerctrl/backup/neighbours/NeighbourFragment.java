@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,7 +56,6 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
 
             discoverIsRunning = true;
 
-            Log.w(TAG, "send");
             udpSending.addJob(broadcastSendJob);
 
             NetpowerctrlApplication.getMainThreadHandler().postDelayed(this, 1500);
@@ -162,12 +160,12 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
         NeighbourDataReceiveService.start(this);
     }
 
-    public void syncTimer() {
-        NetpowerctrlApplication.getMainThreadHandler().removeCallbacks(sendDiscoverMessageRunnable);
-        // The activity may be hidden at this point, so check if the relevant objects still exist.
-        if (!discoverIsRunning && udpSending != null && broadcastSendJob != null)
-            sendDiscoverMessageRunnable.run();
-    }
+//    public void syncTimer() {
+//        NetpowerctrlApplication.getMainThreadHandler().removeCallbacks(sendDiscoverMessageRunnable);
+//        // The activity may be hidden at this point, so check if the relevant objects still exist.
+//        if (!discoverIsRunning && udpSending != null && broadcastSendJob != null)
+//            sendDiscoverMessageRunnable.run();
+//    }
 
     public void pairResult(final NeighbourAdapter.AdapterItem item, boolean accepted) {
         if (accepted) {

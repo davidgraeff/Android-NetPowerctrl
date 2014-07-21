@@ -39,7 +39,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     private static final String TAG = "WidgetUpdateService";
-    private final List<Integer> widgetUpdateRequests = new ArrayList<>();
+    //    private final List<Integer> widgetUpdateRequests = new ArrayList<>();
     private final SparseArray<DevicePort> allWidgets = new SparseArray<>();
     private AppWidgetManager appWidgetManager;
     private Context context;
@@ -73,7 +73,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
          */
         NetpowerctrlApplication.getDataController().deviceCollection.unregisterDeviceObserver(this);
         NetpowerctrlService.unregisterServiceReadyObserver(this);
-        NetpowerctrlService.stopUseListener();
+        NetpowerctrlService.stopUseService();
     }
 
     @Override
@@ -82,7 +82,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         context = getApplicationContext();
         assert context != null;
         appWidgetManager = AppWidgetManager.getInstance(context);
-        NetpowerctrlService.useListener();
+        NetpowerctrlService.useService(false, false);
         NetpowerctrlService.registerServiceReadyObserver(this);
         super.onCreate();
     }
@@ -121,7 +121,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
                 onDeviceUpdated(port.device, false);
             else {
                 devicesToUpdate.add(port.device);
-                widgetUpdateRequests.add(appWidgetId);
+//                widgetUpdateRequests.add(appWidgetId);
             }
         }
 
@@ -251,30 +251,6 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     @Override
-    public void onDeviceError(DeviceInfo di) {
-
-    }
-
-    @Override
-    public void onDeviceTimeout(DeviceInfo di) {
-        if (di == null)
-            return;
-
-        for (int i = widgetUpdateRequests.size() - 1; i >= 0; --i) {
-            int appWidgetId = widgetUpdateRequests.get(i);
-            DevicePort devicePort = allWidgets.get(appWidgetId);
-            if (devicePort.device.equalsByUniqueID(di)) {
-                widgetUpdateRequests.remove(i);
-                setWidgetState(appWidgetId, devicePort);
-                finishServiceIfDone();
-                return;
-            }
-        }
-
-        finishServiceIfDone();
-    }
-
-    @Override
     public void onDeviceUpdated(DeviceInfo di) {
         onDeviceUpdated(di, false);
     }
@@ -312,8 +288,9 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
     @Override
     public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-        for (DeviceInfo di : timeout_devices)
+        for (DeviceInfo di : timeout_devices) {
             onDeviceUpdated(di, false);
+        }
     }
 
     @Override
