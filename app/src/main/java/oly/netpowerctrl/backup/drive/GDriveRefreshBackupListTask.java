@@ -19,6 +19,7 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
     private final GoogleApiClient mClient;
     private final GDrive.GDriveConnectionState observer;
     private final GDriveBackupsAdapter GDriveBackupsAdapter;
+    private String errorString;
 
     public GDriveRefreshBackupListTask(GoogleApiClient client,
                                        GDrive.GDriveConnectionState observer,
@@ -42,10 +43,14 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
 
     @Override
     protected MetadataBuffer doInBackground(Void... params) {
+        Context context = NetpowerctrlApplication.instance;
+
         // Request sync
         com.google.android.gms.common.api.Status resultRequestSync;
         resultRequestSync = Drive.DriveApi.requestSync(mClient).await(3, TimeUnit.SECONDS);
         if (!resultRequestSync.getStatus().isSuccess()) {
+            errorString = context.getString(R.string.gDrive_error_retrieve_files,
+                    resultRequestSync.getStatus().toString());
             // We failed, stop the task and return.
             return null;
         }
@@ -54,8 +59,9 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
         DriveFolder appDataDir = GDrive.getAppFolder(mClient);
 
         // Get childs
-        DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await();
+        DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await(3, TimeUnit.SECONDS);
         if (!result.getStatus().isSuccess()) {
+            errorString = context.getString(R.string.gDrive_error_retrieve_files, result.getStatus().toString());
             // We failed, stop the task and return.
             return null;
         }
@@ -68,7 +74,7 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
         Context context = NetpowerctrlApplication.instance;
         if (metadataBuffer == null) {
             if (observer != null)
-                observer.showProgress(false, context.getString(R.string.neighbours_error_retrieve_files));
+                observer.showProgress(false, errorString);
             return;
         }
 

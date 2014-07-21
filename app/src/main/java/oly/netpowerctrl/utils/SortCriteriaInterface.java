@@ -4,7 +4,7 @@ package oly.netpowerctrl.utils;
  * For all collections that support sorting
  */
 public interface SortCriteriaInterface {
-    public String[] getContentList();
+    String[] getContentList(int startPosition);
 
     public String[] getSortCriteria();
 

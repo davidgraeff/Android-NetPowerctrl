@@ -50,7 +50,7 @@ public class ServiceTests extends ApplicationTestCase<NetpowerctrlApplicationTes
         assertEquals(l instanceof LoadStoreDataTest, true);
 
         assertNull(NetpowerctrlService.getService());
-        NetpowerctrlService.useListener();
+        NetpowerctrlService.useService(false, false);
 
         final CountDownLatch signal = new CountDownLatch(1);
         NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {

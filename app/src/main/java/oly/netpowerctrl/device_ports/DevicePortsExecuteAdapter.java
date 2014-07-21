@@ -12,6 +12,7 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
+import oly.netpowerctrl.utils.gui.AnimationController;
 
 public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         SeekBar.OnSeekBarChangeListener {
@@ -111,7 +112,9 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     public void handleClick(int position, long id) {
         DevicePortListItem info = mItems.get(position);
         NetpowerctrlApplication.getDataController().execute(info.port, DevicePort.TOGGLE, null);
-        mUpdated_id_list.add(id);
+        AnimationController a = mAnimationWeakReference.get();
+        if (a != null)
+            a.addHighlight(id);
         notifyDataSetChanged();
     }
 

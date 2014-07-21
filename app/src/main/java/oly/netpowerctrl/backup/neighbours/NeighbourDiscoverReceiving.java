@@ -11,6 +11,7 @@ import java.nio.ByteOrder;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.network.UDPReceiving;
+import oly.netpowerctrl.network.Utils;
 
 /**
  * Neighbour discovery
@@ -39,8 +40,9 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
         final long uniqueID = bb.getLong();
 
         // Ignore own broadcast packet
-//        if (Utils.getMacAsLong() == uniqueID)
-//            return;
+        if (Utils.getMacAsLong() == uniqueID)
+            return;
+
         switch (packetType) {
             //noinspection ConstantConditions
             case 0xCCCCAAAA: // Discover packet
@@ -157,7 +159,7 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
                     return;
                 neighbourFragment.neighbourAdapter.add(name, uniqueID, version, versionCode,
                         devices, scenes, groups, icons, receivedDatagram.getAddress());
-                neighbourFragment.syncTimer();
+                //neighbourFragment.syncTimer();
             }
         });
     }

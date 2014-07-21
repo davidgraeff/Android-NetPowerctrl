@@ -14,7 +14,7 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.gui.RemoveAnimation;
+import oly.netpowerctrl.utils.gui.AnimationController;
 
 /**
  * List all alarms of the timer controller
@@ -23,7 +23,7 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
     private final TimerController controller;
     private LayoutInflater inflater;
     private Context context;
-    private WeakReference<RemoveAnimation> removeAnimationWeakReference = new WeakReference<>(null);
+    private WeakReference<AnimationController> removeAnimationWeakReference = new WeakReference<>(null);
 
     public TimerAdapter(Context context, TimerController timerController) {
         this.context = context;
@@ -31,12 +31,12 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
         this.controller = timerController;
     }
 
-    public void setRemoveAnimation(RemoveAnimation removeAnimation) {
-        removeAnimationWeakReference = new WeakReference<>(removeAnimation);
+    public void setRemoveAnimation(AnimationController animationController) {
+        removeAnimationWeakReference = new WeakReference<>(animationController);
     }
 
     public void remove(int position) {
-        RemoveAnimation a = removeAnimationWeakReference.get();
+        AnimationController a = removeAnimationWeakReference.get();
         if (a != null)
             a.beforeRemoval(position);
         controller.removeFromCache(position);
@@ -45,9 +45,9 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
     @Override
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
-        RemoveAnimation a = removeAnimationWeakReference.get();
+        AnimationController a = removeAnimationWeakReference.get();
         if (a != null)
-            a.animateRemoval();
+            a.animate();
     }
 
     public void start() {

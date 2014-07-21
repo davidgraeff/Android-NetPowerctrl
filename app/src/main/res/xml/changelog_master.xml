@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
-        version="5.1"
-        versioncode="61">
-        <change>Android 4.1 ist nun Voraussetzung</change>
+        version="5.2"
+        versioncode="66">
+        <change>Fehler mit Timern behoben</change>
+        <change>Zuletzt bekannte Timer werden jetzt bevorzugt aktualsiert</change>
+        <change>Google Drive Sync: Bei Fehlern werden detailiertere Informationen ausgegeben
+        </change>
+        <change>Nachbarsynchronisierung: Fehler behoben</change>
+    </release>
+    <release
+        version="5.1-5.1.4"
+        versioncode="65">
         <change>Animationen überarbeitet</change>
         <change>Steckdosen werden in der Übersicht nach Gruppen sortiert angezeigt</change>
         <change>Mitgelieferte Icons für Szenen und Steckdosen entfernt</change>
@@ -11,11 +19,9 @@
         <change>Porteinschränkung kann mit Einstellung umgangen werden für Ports kleiner 1024 (auf
             gerooteten Geräten)
         </change>
-        <change>Bekannte Probleme: Szenen schalten nicht immer;
+        <change>Bekannte Probleme:
             Nachbarsynchronisierung funktioniert nicht zuverlässig;
-            GoogleDrive Inhalt wird erst nach mehrmaligen Neuladen angezeigt;
-            Nicht erreichbare Geräte werden weiterhin angezeigt;
-            Ein Refreshvorgang wird u.U. nicht abgeschlossen
+            GoogleDrive Inhalt wird erst nach mehrmaligen Neuladen angezeigt
         </change>
     </release>
     <release

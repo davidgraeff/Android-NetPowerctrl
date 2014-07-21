@@ -91,9 +91,11 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             return convertView;
         }
 
+
         DevicePort.DevicePortType type = port.getType();
         if (type == DevicePort.DevicePortType.TypeToggle) {
             mOutlet_res_id = R.layout.create_scene_outlet_list_switch;
+            convertView = super.getView(position, convertView, parent);
 
             assert convertView != null;
             SegmentedRadioGroup rGroup = (SegmentedRadioGroup) convertView.findViewById(R.id.radioGroup);
@@ -128,6 +130,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
         } else if (type == DevicePort.DevicePortType.TypeRangedValue) {
             mOutlet_res_id = R.layout.create_scene_outlet_list_ranged;
             convertView = super.getView(position, convertView, parent);
+
             assert convertView != null;
             SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
             //current_viewHolder.seekBar

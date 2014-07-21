@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -15,7 +16,9 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Get network address, get broadcast address
@@ -149,5 +152,16 @@ public class Utils {
         Calendar t = Calendar.getInstance();
         return DateFormat.getMediumDateFormat(context).format(t.getTime()).replace(".", "_") +
                 " - " + DateFormat.getTimeFormat(context).format(t.getTime()).replace(":", "_");
+    }
+
+    public static boolean checkPortInvalid(int port) {
+        if (SharedPrefs.isPortsUnlimited())
+            return (port < 1) || port > 65555;
+        else
+            return (port < 1024) || port > 65555;
+    }
+
+    public static void warn_port(Context context) {
+        Toast.makeText(context, R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
     }
 }

@@ -28,9 +28,9 @@ import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 import oly.netpowerctrl.utils.Logging;
 
 public class EnergySaveLogFragment extends ListFragment {
-    private ArrayAdapter<String> arrayAdapter;
     private final ArrayList<String> listItems = new ArrayList<>();
     DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
+    private ArrayAdapter<String> arrayAdapter;
 
     public EnergySaveLogFragment() {
     }
@@ -48,7 +48,7 @@ public class EnergySaveLogFragment extends ListFragment {
         super.onStart();
 
         //noinspection ConstantConditions
-        doneCancelFragmentHelper.setTitle(getActivity(), R.string.energy_saving_mode_log);
+        doneCancelFragmentHelper.setTitle(getActivity(), R.string.log_screen);
         setListAdapter(arrayAdapter);
     }
 

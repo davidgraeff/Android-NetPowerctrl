@@ -33,15 +33,15 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
 //    private boolean updateWidget = false;
 
     @Override
-    protected void onDestroy() {
-        NetpowerctrlService.stopUseListener();
-        super.onDestroy();
+    protected void onPause() {
+        NetpowerctrlService.stopUseService();
+        super.onPause();
     }
 
     @Override
-    protected void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        NetpowerctrlService.useListener();
+    protected void onResume() {
+        super.onResume();
+        NetpowerctrlService.useService(false, false);
         Intent it = getIntent();
         if (it == null) {
             finish();
@@ -143,6 +143,10 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
 
     @Override
     public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
+        for (DeviceInfo di : timeout_devices) {
+            Toast.makeText(this, getString(R.string.error_timeout_device, di.DeviceName), Toast.LENGTH_SHORT).show();
+        }
+
         if (enable_feedback) {
             //noinspection ConstantConditions
             ShowToast.showToast(this,
@@ -150,14 +154,9 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         }
         NetpowerctrlApplication.getDataController().execute(scene, this);
     }
-
-    @Override
-    public void onDeviceError(DeviceInfo di) {
-        Toast.makeText(this, getString(R.string.error_nopass, di.DeviceName), Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDeviceTimeout(DeviceInfo di) {
-        Toast.makeText(this, getString(R.string.error_timeout_device, di.DeviceName), Toast.LENGTH_SHORT).show();
-    }
+//
+//    @Override
+//    public void onDeviceError(DeviceInfo di) {
+//        Toast.makeText(this, getString(R.string.error_nopass, di.DeviceName), Toast.LENGTH_SHORT).show();
+//    }
 }

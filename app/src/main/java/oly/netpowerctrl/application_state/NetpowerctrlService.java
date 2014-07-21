@@ -2,28 +2,32 @@ package oly.netpowerctrl.application_state;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverFinishedResult;
 import oly.netpowerctrl.network.DeviceObserverResult;
@@ -56,52 +60,20 @@ public class NetpowerctrlService extends Service {
         }
     };
     static private final ArrayList<ServiceReady> observersServiceReady = new ArrayList<>();
+    static private final ArrayList<RefreshStartedStopped> observersStartStopRefresh = new ArrayList<>();
     private static final Handler stopServiceHandler = new Handler();
     ///////////////// Service start/stop listener /////////////////
     static private int mDiscoverServiceRefCount = 0;
     static private NetpowerctrlService mDiscoverService;
     static private boolean mWaitForService;
-    /**
-     * Defines callbacks for service binding, passed to bindService()
-     */
-    private static final ServiceConnection mConnection = new ServiceConnection() {
 
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            NetpowerctrlService.LocalBinder binder = (NetpowerctrlService.LocalBinder) service;
-            mDiscoverService = binder.getService();
-            if (mDiscoverServiceRefCount == 0)
-                mDiscoverServiceRefCount = 1;
-            mWaitForService = false;
-            if (SharedPrefs.logEnergySaveMode())
-                Logging.appendLog("Hintergrunddienst gestartet");
-            mDiscoverService.start();
-
-            // Notify all observers that we are ready
-            notifyServiceReady(mDiscoverService);
-
-            // neighbour sync
-//        NeighbourDataReceiveService.startAutoSync();
-        }
-
-        // Service crashed
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            notifyServiceFinished();
-            mDiscoverServiceRefCount = 0;
-            mDiscoverService = null;
-            mWaitForService = false;
-        }
-    };
     private static final Runnable stopRunnable = new Runnable() {
         @Override
         public void run() {
             try {
-                mDiscoverService = null;
+                if (mDiscoverService != null)
+                    mDiscoverService.stopSelf();
                 mWaitForService = false;
-                NetpowerctrlApplication.instance.unbindService(mConnection);
             } catch (IllegalArgumentException ignored) {
             }
 
@@ -110,7 +82,7 @@ public class NetpowerctrlService extends Service {
             }
         }
     };
-    private final IBinder mBinder = new LocalBinder();
+
     private final BroadcastReceiver networkChangedListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -122,7 +94,7 @@ public class NetpowerctrlService extends Service {
                 }
                 if (SharedPrefs.logEnergySaveMode())
                     Logging.appendLog("Energiesparen aus: Netzwechsel erkannt");
-                start();
+                start(true, false);
             } else {
                 if (SharedPrefs.logEnergySaveMode())
                     Logging.appendLog("Energiesparen an: Kein Netzwerk");
@@ -147,7 +119,7 @@ public class NetpowerctrlService extends Service {
             if (SharedPrefs.isPreferenceNameLogEnergySaveMode(s) && isNetworkReducedMode) {
                 if (SharedPrefs.logEnergySaveMode())
                     Logging.appendLog("Energiesparen abgeschaltet");
-                start();
+                start(true, false);
                 if (SharedPrefs.notifyOnStop()) {
                     ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
                 }
@@ -203,22 +175,51 @@ public class NetpowerctrlService extends Service {
         }
     }
 
-    public static void useListener() {
+    @SuppressWarnings("unused")
+    static public void registerRefreshStartedStopped(RefreshStartedStopped o) {
+        if (!observersStartStopRefresh.contains(o)) {
+            observersStartStopRefresh.add(o);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    static public void unregisterRefreshStartedStopped(RefreshStartedStopped o) {
+        observersStartStopRefresh.remove(o);
+    }
+
+    static private void notifyRefreshState(boolean isRefreshing) {
+        for (RefreshStartedStopped anObserversStartStopRefresh : observersStartStopRefresh) {
+            anObserversStartStopRefresh.onRefreshStateChanged(isRefreshing);
+        }
+    }
+
+    /**
+     * Call this in onResume if you need any of the service functionality.
+     *
+     * @param refreshDevices   Refresh devices immediately or after the service
+     *                         is ready if it is not started yet.
+     * @param showNotification
+     */
+    public static void useService(boolean refreshDevices, boolean showNotification) {
         ++mDiscoverServiceRefCount;
         // Stop delayed stop-service
         stopServiceHandler.removeCallbacks(stopRunnable);
         // Service is not running anymore, restart it
-        if (mDiscoverService == null && !mWaitForService) {
+        if (mDiscoverService == null) {
+            if (mWaitForService)
+                return;
             mWaitForService = true;
             Context context = NetpowerctrlApplication.instance;
             // start service
             Intent intent = new Intent(context, NetpowerctrlService.class);
+            intent.putExtra("refreshDevices", refreshDevices);
+            intent.putExtra("showNotification", showNotification);
             context.startService(intent);
-            context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        }
+        } else if (refreshDevices) // service already running. refresh devices?
+            mDiscoverService.findDevices(showNotification, null);
     }
 
-    public static void stopUseListener() {
+    public static void stopUseService() {
         if (mDiscoverServiceRefCount > 0) {
             mDiscoverServiceRefCount--;
         }
@@ -233,7 +234,7 @@ public class NetpowerctrlService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+        return null;
     }
 
     @Override
@@ -245,7 +246,31 @@ public class NetpowerctrlService extends Service {
         if (SharedPrefs.logEnergySaveMode())
             Logging.appendLog("ENDE: Hintergrunddienste aus");
         finish();
+
+        notifyServiceFinished();
+        mDiscoverServiceRefCount = 0;
+        mDiscoverService = null;
+        mWaitForService = false;
+
         return super.onUnbind(intent);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mDiscoverService != null)
+            return super.onStartCommand(intent, flags, startId);
+
+        if (mDiscoverServiceRefCount == 0)
+            mDiscoverServiceRefCount = 1;
+        mWaitForService = false;
+        mDiscoverService = this;
+
+        Bundle b = intent.getExtras();
+
+        // Service start code
+        mDiscoverService.start(b.getBoolean("refreshDevices"), b.getBoolean("showNotification"));
+
+        return super.onStartCommand(intent, flags, startId);
     }
 
     ///////////////// Service start/stop /////////////////
@@ -274,7 +299,7 @@ public class NetpowerctrlService extends Service {
         }
 
         // Stop listening for network changes
-        if (isNetworkChangedListener && !SharedPrefs.getWakeUp_energy_saving_mode()) {
+        if (isNetworkChangedListener && !SharedPrefs.isWakeUpFromEnergySaving()) {
             if (SharedPrefs.logEnergySaveMode())
                 Logging.appendLog("Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
             isNetworkChangedListener = false;
@@ -282,14 +307,17 @@ public class NetpowerctrlService extends Service {
         }
     }
 
-    public void start() {
+    public void start(boolean refreshDevices, boolean showNotification) {
+        if (SharedPrefs.logEnergySaveMode())
+            Logging.appendLog("Hintergrunddienst gestartet");
+
         if (plugins.size() == 0) {
             plugins.add(new AnelPlugin());
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
             sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
         }
 
-        if (!isNetworkChangedListener && SharedPrefs.getUse_energy_saving_mode()) {
+        if (!isNetworkChangedListener && SharedPrefs.isEnergySavingEnabled()) {
             if (SharedPrefs.logEnergySaveMode())
                 Logging.appendLog("Netzwerkwechsel überwacht");
             isNetworkChangedListener = true;
@@ -311,7 +339,12 @@ public class NetpowerctrlService extends Service {
             udpSending.start();
         }
 
-        findDevices(null);
+        // refresh devices after service start
+        if (refreshDevices)
+            findDevices(showNotification, null);
+
+        // Notify all observers that we are ready
+        notifyServiceReady(mDiscoverService);
     }
 
     private void createRemotePlugin(String serviceName,
@@ -353,15 +386,49 @@ public class NetpowerctrlService extends Service {
         NetpowerctrlApplication.instance.sendBroadcast(i);
     }
 
-    public void requestAllAlarms() {
+    /**
+     * Request alarms from plugins again.
+     *
+     * @param alarms Prefer entries of this alarm list to be fetched first
+     */
+    public boolean requestAllAlarms(HashSet<UUID> alarms, TimerController timerController) {
+        if (isNetworkReducedMode)
+            return false;
+
+        List<DevicePort> alarm_ports = new ArrayList<>();
+
         DeviceCollection c = NetpowerctrlApplication.getDataController().deviceCollection;
-        // Request alarms for all devices
+        // Put all ports of all devices into the list alarm_ports.
+        // If a port is referenced by the alarms hashSet, it will be put in front of the list
+        // to refresh that port first.
         for (DeviceInfo di : c.devices) {
             // Request all alarms may be called before all plugins responded
             PluginInterface i = di.getPluginInterface(this);
-            if (i != null)
-                i.requestAlarms(di);
+            if (i == null || !di.enabled)
+                continue;
+
+            // Request alarms for every port
+            di.lockDevicePorts();
+            Iterator<DevicePort> it = di.getDevicePortIterator();
+            while (it.hasNext()) {
+                final DevicePort port = it.next();
+                if (port.Disabled)
+                    continue;
+
+                if (alarms.contains(port.uuid))
+                    alarm_ports.add(0, port); // add in front of all alarms
+                else
+                    alarm_ports.add(port);
+            }
+            di.releaseDevicePorts();
         }
+
+        for (DevicePort port : alarm_ports) {
+            PluginInterface i = port.device.getPluginInterface(this);
+            i.requestAlarms(port, timerController);
+        }
+
+        return true;
     }
 
     public void remove(PluginRemote plugin) {
@@ -388,12 +455,20 @@ public class NetpowerctrlService extends Service {
         return null;
     }
 
-    public void findDevices(final DeviceObserverFinishedResult callback) {
+    public void findDevices(final boolean showNotification, final DeviceObserverFinishedResult callback) {
         if (isNetworkReducedMode) {
-            ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
+            if (SharedPrefs.notifyOnStop())
+                ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
             if (SharedPrefs.logEnergySaveMode())
                 Logging.appendLog("Energiesparen aus: Suche Geräte");
-            start();
+            // Restart all listener services and try again
+            Handler h = new Handler();
+            h.post(new Runnable() {
+                @Override
+                public void run() {
+                    start(true, showNotification);
+                }
+            });
             return;
         }
         // The following mechanism allows only one update request within a
@@ -409,19 +484,13 @@ public class NetpowerctrlService extends Service {
             }
         }, 1000);
 
+        notifyRefreshState(true);
+
         // First try a broadcast
         NetpowerctrlApplication.getDataController().clearNewDevices();
         new DeviceQuery(new DeviceObserverResult() {
             @Override
-            public void onDeviceTimeout(DeviceInfo di) {
-            }
-
-            @Override
             public void onDeviceUpdated(DeviceInfo di) {
-            }
-
-            @Override
-            public void onDeviceError(DeviceInfo di) {
             }
 
             @Override
@@ -430,6 +499,18 @@ public class NetpowerctrlService extends Service {
                 c.notifyStateQueryFinished();
                 if (callback != null)
                     callback.onObserverJobFinished(timeout_devices);
+
+                notifyRefreshState(false);
+
+                if (showNotification) {
+                    //noinspection ConstantConditions
+                    Toast.makeText(NetpowerctrlApplication.instance,
+                            NetpowerctrlApplication.instance.getString(R.string.devices_refreshed,
+                                    NetpowerctrlApplication.getDataController().getReachableConfiguredDevices(),
+                                    NetpowerctrlApplication.getDataController().newDevices.size()),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
 
                 if (timeout_devices.size() == 0)
                     return;

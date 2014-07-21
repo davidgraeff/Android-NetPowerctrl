@@ -158,13 +158,13 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     @Override
     protected void onResume() {
         super.onResume();
-        NetpowerctrlService.useListener();
+        NetpowerctrlService.useService(false, false);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        NetpowerctrlService.stopUseListener();
+        NetpowerctrlService.stopUseService();
     }
 
     private void loadContent() {

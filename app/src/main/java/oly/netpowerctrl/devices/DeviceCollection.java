@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,7 +12,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
 
+import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 
@@ -19,6 +23,7 @@ import oly.netpowerctrl.utils.JSONHelper;
  * Contains DeviceInfos. Used for NFC and backup transfers
  */
 public class DeviceCollection {
+    private final WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<>();
     public List<DeviceInfo> devices = new ArrayList<>();
     private IDevicesSave storage;
 
@@ -94,9 +99,6 @@ public class DeviceCollection {
         }
         writer.endArray();
     }
-
-
-    private final WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<>();
 
     @SuppressWarnings("unused")
     public void registerDeviceObserver(DeviceUpdate o) {
@@ -183,6 +185,20 @@ public class DeviceCollection {
         notifyDeviceObservers(device, true);
         if (storage != null)
             storage.devicesSave(this);
+    }
+
+    public void updateNotReachable(DeviceInfo deviceInfo) {
+        notifyDeviceObservers(deviceInfo, false);
+
+        if (SharedPrefs.notifyDeviceNotReachable()) {
+            long current_time = System.currentTimeMillis();
+            Context context = NetpowerctrlApplication.instance;
+            Toast.makeText(context,
+                    context.getString(R.string.error_setting_outlet, deviceInfo.DeviceName,
+                            (int) ((current_time - deviceInfo.getUpdatedTime()) / 1000)),
+                    Toast.LENGTH_LONG
+            ).show();
+        }
     }
 
     public DeviceInfo update(DeviceInfo newValues_device) {

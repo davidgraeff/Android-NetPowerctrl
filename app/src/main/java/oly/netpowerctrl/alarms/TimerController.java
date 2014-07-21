@@ -7,14 +7,15 @@ import android.util.JsonWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.utils.JSONHelper;
 
@@ -87,7 +88,7 @@ public class TimerController {
                     available_alarms.add(new_alarm);
                 }
             } else {
-                if (!replaced(alarms, new_alarm)) {
+                if (!replaced(alarms, new_alarm) && new_alarm.port_id != null) {
                     alarms.add(new_alarm);
                 }
             }
@@ -131,30 +132,35 @@ public class TimerController {
         }
     }
 
-    public void refresh() {
-        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
-            @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
-                if (requestActive)
-                    return false;
+    public boolean refresh(NetpowerctrlService service) {
+        if (requestActive)
+            return true;
 
-                requestActive = true;
-                available_alarms.clear();
+        NetpowerctrlApplication.getMainThreadHandler().postDelayed(notifyRunnable, 1200);
 
-                // Flag all alarms as from-cache
-                for (Alarm alarm : alarms)
-                    alarm.fromCache = true;
-                notifyObservers(false, true);
+        available_alarms.clear();
 
-                service.requestAllAlarms();
-                return false;
-            }
+        // Flag all alarms as from-cache
+        HashSet<UUID> alarm_uuids = new HashSet<>();
+        for (Alarm alarm : alarms) {
+            alarm.fromCache = true;
+            alarm_uuids.add(alarm.port_id);
+        }
 
-            @Override
-            public void onServiceFinished() {
+        notifyObservers(false, true);
 
-            }
-        });
+        requestActive = service.requestAllAlarms(alarm_uuids, this);
+        if (!requestActive)
+            notifyObservers(false, false);
+
+        return requestActive;
+    }
+
+    public void abortRequest() {
+        Handler h = NetpowerctrlApplication.getMainThreadHandler();
+        h.removeCallbacks(notifyRunnable);
+        requestActive = false;
+        notifyObservers(false, false);
     }
 
     public void unregisterObserver(IAlarmsUpdated o) {

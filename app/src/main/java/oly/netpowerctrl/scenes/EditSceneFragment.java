@@ -15,7 +15,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.utils.gui.RemoveAnimation;
+import oly.netpowerctrl.utils.gui.AnimationController;
 
 /**
  */
@@ -23,7 +23,6 @@ public class EditSceneFragment extends Fragment {
     private DevicePortsBaseAdapter mAdapter;
     private WeakReference<EditSceneFragmentReady> manipulatorReference;
     private ListView mListView;
-    private RemoveAnimation removeAnimation;
 
     public EditSceneFragment() {
     }
@@ -69,10 +68,10 @@ public class EditSceneFragment extends Fragment {
         mAdapter = adapter;
         // Add animation to the list
         // Remove animation
-        removeAnimation = new RemoveAnimation();
-        removeAnimation.setAdapter(mAdapter);
-        removeAnimation.setListView(mListView);
-        adapter.setRemoveAnimation(removeAnimation);
+        AnimationController animationController = new AnimationController();
+        animationController.setAdapter(mAdapter);
+        animationController.setListView(mListView);
+        adapter.setRemoveAnimation(animationController);
         mListView.setAdapter(mAdapter);
     }
 

@@ -132,7 +132,7 @@ public class SortCriteriaDialog extends DialogFragment {
         customContainer.setVisibility(View.GONE);
 
         /// Custom sort Adapter ///
-        String[] data = sortCriteriaInterface.getContentList();
+        String[] data = sortCriteriaInterface.getContentList(0);
         int index = 0;
         for (String d : data)
             availableList.add(new AdapterItem(d, index++));

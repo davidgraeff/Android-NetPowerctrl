@@ -32,6 +32,69 @@ public class DatePreference extends DialogPreference implements
     }
 
     /**
+     * Produces the date formatter used for dates in the XML. The default is yyyy.MM.dd.
+     * Override this to change that.
+     *
+     * @return the SimpleDateFormat used for XML dates
+     */
+    public static SimpleDateFormat formatter() {
+        return new SimpleDateFormat("yyyy.MM.dd");
+    }
+
+    /**
+     * Produces the date formatter used for showing the date in the summary. The default is MMMM dd, yyyy.
+     * Override this to change it.
+     *
+     * @return the SimpleDateFormat used for summary dates
+     */
+    public static SimpleDateFormat summaryFormatter() {
+        return new SimpleDateFormat("MMMM dd, yyyy");
+    }
+
+    /**
+     * The default date to use when the XML does not set it or the XML has an
+     * error.
+     *
+     * @return the Calendar set to the default date
+     */
+    public static Calendar defaultCalendar() {
+        return new GregorianCalendar(1970, 0, 1);
+    }
+
+    /**
+     * The defaultCalendar() as a string using the {@link #formatter()}.
+     *
+     * @return a String representation of the default date
+     */
+    public static String defaultCalendarString() {
+        return formatter().format(defaultCalendar().getTime());
+    }
+
+    /**
+     * Produces the date the user has selected for the given preference, as a
+     * calendar.
+     *
+     * @param preferences the SharedPreferences to get the date from
+     * @param field       the name of the preference to get the date from
+     * @return a Calendar that the user has selected
+     */
+    public static Calendar getDateFor(SharedPreferences preferences, String field) {
+        Date date = stringToDate(preferences.getString(field,
+                defaultCalendarString()));
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
+    }
+
+    private static Date stringToDate(String dateString) {
+        try {
+            return formatter().parse(dateString);
+        } catch (ParseException e) {
+            return defaultCalendar().getTime();
+        }
+    }
+
+    /**
      * Produces a DatePicker set to the date produced by {@link #getDate()}. When
      * overriding be sure to call the super.
      *
@@ -65,6 +128,11 @@ public class DatePreference extends DialogPreference implements
         }
     }
 
+    public void setDate(Date date) {
+        this.dateString = formatter().format(date);
+        updateSummary();
+    }
+
     /**
      * Set the selected date to the specified string.
      *
@@ -74,31 +142,6 @@ public class DatePreference extends DialogPreference implements
     public void setDate(String dateString) {
         this.dateString = dateString;
         updateSummary();
-    }
-
-    public void setDate(Date date) {
-        this.dateString = formatter().format(date);
-        updateSummary();
-    }
-
-    /**
-     * Produces the date formatter used for dates in the XML. The default is yyyy.MM.dd.
-     * Override this to change that.
-     *
-     * @return the SimpleDateFormat used for XML dates
-     */
-    public static SimpleDateFormat formatter() {
-        return new SimpleDateFormat("yyyy.MM.dd");
-    }
-
-    /**
-     * Produces the date formatter used for showing the date in the summary. The default is MMMM dd, yyyy.
-     * Override this to change it.
-     *
-     * @return the SimpleDateFormat used for summary dates
-     */
-    public static SimpleDateFormat summaryFormatter() {
-        return new SimpleDateFormat("MMMM dd, yyyy");
     }
 
     @Override
@@ -183,25 +226,6 @@ public class DatePreference extends DialogPreference implements
         setSummary(summaryFormatter().format(getDate().getTime()));
     }
 
-    /**
-     * The default date to use when the XML does not set it or the XML has an
-     * error.
-     *
-     * @return the Calendar set to the default date
-     */
-    public static Calendar defaultCalendar() {
-        return new GregorianCalendar(1970, 0, 1);
-    }
-
-    /**
-     * The defaultCalendar() as a string using the {@link #formatter()}.
-     *
-     * @return a String representation of the default date
-     */
-    public static String defaultCalendarString() {
-        return formatter().format(defaultCalendar().getTime());
-    }
-
     private String defaultValue() {
         if (this.dateString == null)
             setDate(defaultCalendarString());
@@ -218,34 +242,20 @@ public class DatePreference extends DialogPreference implements
         datePicker.clearFocus();
         onDateChanged(datePicker, datePicker.getYear(), datePicker.getMonth(),
                 datePicker.getDayOfMonth());
-        onDialogClosed(which == DialogInterface.BUTTON1); // OK?
-    }
-
-    /**
-     * Produces the date the user has selected for the given preference, as a
-     * calendar.
-     *
-     * @param preferences the SharedPreferences to get the date from
-     * @param field       the name of the preference to get the date from
-     * @return a Calendar that the user has selected
-     */
-    public static Calendar getDateFor(SharedPreferences preferences, String field) {
-        Date date = stringToDate(preferences.getString(field,
-                defaultCalendarString()));
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return cal;
-    }
-
-    private static Date stringToDate(String dateString) {
-        try {
-            return formatter().parse(dateString);
-        } catch (ParseException e) {
-            return defaultCalendar().getTime();
-        }
+        onDialogClosed(which == DialogInterface.BUTTON_POSITIVE); // OK?
     }
 
     private static class SavedState extends BaseSavedState {
+        @SuppressWarnings("unused")
+        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
         String dateValue;
 
         public SavedState(Parcel p) {
@@ -262,16 +272,5 @@ public class DatePreference extends DialogPreference implements
             super.writeToParcel(out, flags);
             out.writeString(dateValue);
         }
-
-        @SuppressWarnings("unused")
-        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
-
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
     }
 }

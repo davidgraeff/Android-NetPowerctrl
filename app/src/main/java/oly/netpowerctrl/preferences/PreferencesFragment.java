@@ -1,6 +1,7 @@
 package oly.netpowerctrl.preferences;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -19,22 +20,11 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment {
-    private static class WidgetData {
-        CharSequence data;
-        String prefName;
-        int widgetID;
-
-        private WidgetData(CharSequence data, String prefName, int widgetID) {
-            this.data = data;
-            this.prefName = prefName;
-            this.widgetID = widgetID;
-        }
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +33,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
         //noinspection ConstantConditions
         findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
+                getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 //noinspection ConstantConditions
                 getActivity().recreate();
                 return true;
@@ -80,6 +71,30 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 if ((Boolean) newValue) {
                     //noinspection ConstantConditions
                     Toast.makeText(getActivity(), getString(R.string.log_activated), Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
+
+        findPreference("standard_send_port").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                int port = Integer.valueOf((String) o);
+                if (Utils.checkPortInvalid(port)) {
+                    Utils.warn_port(getActivity());
+                    return false;
+                }
+                return true;
+            }
+        });
+
+        findPreference("standard_receive_port").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                int port = Integer.valueOf((String) o);
+                if (Utils.checkPortInvalid(port)) {
+                    Utils.warn_port(getActivity());
+                    return false;
                 }
                 return true;
             }
@@ -144,6 +159,18 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                     }
                 });
             }
+        }
+    }
+
+    private static class WidgetData {
+        CharSequence data;
+        String prefName;
+        int widgetID;
+
+        private WidgetData(CharSequence data, String prefName, int widgetID) {
+            this.data = data;
+            this.prefName = prefName;
+            this.widgetID = widgetID;
         }
     }
 }

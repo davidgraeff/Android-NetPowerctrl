@@ -15,31 +15,8 @@ import oly.netpowerctrl.devices.DeviceInfo;
  * provide the result of a query/a sending action to the DeviceQueryResult object.
  */
 public abstract class DeviceObserverBase {
-    public void setDeviceQueryResult(DeviceObserverResult target) {
-        this.target = target;
-    }
-
-    List<DeviceInfo> devices_to_observe;
-    private DeviceObserverResult target;
     final Handler mainLoopHandler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
-    final Runnable timeoutRunnable = new Runnable() {
-        @Override
-        public void run() {
-            NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
-            if (target == null)
-                return;
-
-            for (DeviceInfo di : devices_to_observe) {
-                di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
-                target.onDeviceTimeout(di);
-            }
-            NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
-            target.onObserverJobFinished(devices_to_observe);
-        }
-    };
-
-    protected abstract void doAction(DeviceInfo di, boolean repeated);
-
+    List<DeviceInfo> devices_to_observe;
     final Runnable redoRunnable = new Runnable() {
         @Override
         public void run() {
@@ -48,6 +25,32 @@ public abstract class DeviceObserverBase {
             }
         }
     };
+    private DeviceObserverResult target;
+    final Runnable timeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            //Remove update listener
+            NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
+
+            for (DeviceInfo di : devices_to_observe) {
+                if (di.isReachable())
+                    di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
+                // Call onDeviceUpdated to update device info.
+                NetpowerctrlApplication.getDataController().deviceCollection.updateNotReachable(di);
+            }
+
+            // Update status observer
+            if (target != null) {
+                target.onObserverJobFinished(devices_to_observe);
+            }
+        }
+    };
+
+    public void setDeviceQueryResult(DeviceObserverResult target) {
+        this.target = target;
+    }
+
+    protected abstract void doAction(DeviceInfo di, boolean repeated);
 
     /**
      * Return true if all devices responded and this DeviceQuery object
@@ -114,9 +117,6 @@ public abstract class DeviceObserverBase {
         mainLoopHandler.removeCallbacks(timeoutRunnable);
         for (DeviceInfo di : devices_to_observe) {
             di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
-            //di.setUpdatedNow();
-            if (target != null)
-                target.onDeviceTimeout(di);
         }
         if (target != null)
             target.onObserverJobFinished(devices_to_observe);

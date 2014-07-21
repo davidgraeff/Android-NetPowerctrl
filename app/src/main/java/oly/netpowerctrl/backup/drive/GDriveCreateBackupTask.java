@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
@@ -27,11 +28,6 @@ import oly.netpowerctrl.utils.Icons;
 
 class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
     private static final String TAG = "GDriveCreateBackupTask";
-
-    public interface BackupDoneSuccess {
-        void done();
-    }
-
     private final GoogleApiClient mClient;
     private final GDrive.GDriveConnectionState observer;
     private final BackupDoneSuccess backupDoneSuccess;
@@ -66,7 +62,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
 
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                 .setTitle(Utils.getDeviceName() + " " + Utils.getDateTime()).build();
-        DriveFolder.DriveFolderResult result = appDataDir.createFolder(mClient, changeSet).await();
+        DriveFolder.DriveFolderResult result = appDataDir.createFolder(mClient, changeSet).await(3, TimeUnit.SECONDS);
         if (!result.getStatus().isSuccess()) {
             // We failed, stop the task and return.
             return false;
@@ -80,7 +76,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
 
         // Create icons folder
         changeSet = new MetadataChangeSet.Builder().setTitle("icons").build();
-        result = target.createFolder(mClient, changeSet).await();
+        result = target.createFolder(mClient, changeSet).await(3, TimeUnit.SECONDS);
 
         if (!result.getStatus().isSuccess()) {
             // We failed, stop the task and return.
@@ -98,7 +94,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
                 DriveFolder subFolder;
                 if (subFolderID == null) { // not existing, create it
                     changeSet = new MetadataChangeSet.Builder().setTitle(relativePath).build();
-                    result = iconsFolder.createFolder(mClient, changeSet).await();
+                    result = iconsFolder.createFolder(mClient, changeSet).await(3, TimeUnit.SECONDS);
 
                     if (!result.getStatus().isSuccess()) {
                         // We failed, continue with the next file
@@ -126,7 +122,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
     boolean createFile(InputStream input, String filename, DriveFolder target, String mimetype) {
         // New content
         DriveApi.ContentsResult contentsResult =
-                Drive.DriveApi.newContents(mClient).await();
+                Drive.DriveApi.newContents(mClient).await(3, TimeUnit.SECONDS);
         if (!contentsResult.getStatus().isSuccess()) {
             // We failed, stop the task and return.
             return false;
@@ -154,7 +150,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
 
         // Create the file
         DriveFolder.DriveFileResult fileResult = target.createFile(
-                mClient, originalMetadata, originalContents).await();
+                mClient, originalMetadata, originalContents).await(3, TimeUnit.SECONDS);
         return fileResult.getStatus().isSuccess();
     }
 
@@ -169,5 +165,9 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
             if (observer != null)
                 observer.showProgress(false, "Backup failed");
         }
+    }
+
+    public interface BackupDoneSuccess {
+        void done();
     }
 }

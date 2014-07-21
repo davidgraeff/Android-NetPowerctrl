@@ -9,7 +9,6 @@ import android.widget.AdapterView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
@@ -39,27 +38,14 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
 
     @Override
     protected void onPause() {
-        NetpowerctrlService.stopUseListener();
+        NetpowerctrlService.stopUseService();
         super.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        NetpowerctrlService.useListener();
-        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
-            @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
-                service.findDevices(null);
-                return false;
-            }
-
-            @Override
-            public void onServiceFinished() {
-
-            }
-        });
-
+        NetpowerctrlService.useService(true, false);
     }
 
     @Override

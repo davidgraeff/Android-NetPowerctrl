@@ -46,7 +46,7 @@ public class NetpowerctrlApplication extends Application {
             };
 
     static public RuntimeDataController getDataController() {
-        return instance.dataController;
+        return dataController;
     }
 
     public static Handler getMainThreadHandler() {
@@ -55,7 +55,7 @@ public class NetpowerctrlApplication extends Application {
 
     /**
      * We do not do any loading or starting when the application is loaded.
-     * This can be requested by using useListener()
+     * This can be requested by using useService()
      */
     @Override
     public void onCreate() {

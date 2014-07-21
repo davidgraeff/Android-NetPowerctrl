@@ -340,6 +340,9 @@ final public class AnelPlugin implements PluginInterface {
         if (service == null)
             return;
 
+        if (!di.enabled)
+            return;
+
         if (di.PreferHTTP) {
             HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(di, "strg.cfg", "", di, false, AnelPluginHttp.receiveCtrlHtml));
         } else {
@@ -352,41 +355,27 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void requestAlarms(final DeviceInfo di) {
-        // Get the timerController object. We will add all alarms to that instance.
-        final TimerController timerController = NetpowerctrlApplication.getDataController().timerController;
+    public void requestAlarms(final DevicePort port, final TimerController timerController) {
+        final String getData = "dd.htm?DD" + String.valueOf(port.id);
 
-        // Request alarms for every port
-        di.lockDevicePorts();
-        Iterator<DevicePort> it = di.getDevicePortIterator();
-        while (it.hasNext()) {
-            final DevicePort port = it.next();
-            if (port.Disabled)
-                continue;
-
-            final String getData = "dd.htm?DD" + String.valueOf(port.id);
-
-            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, null,
-                    port, false, new HttpThreadPool.HTTPCallback<DevicePort>() {
-                        @Override
-                        public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
-                            if (!callback_success) {
-                                return;
-                            }
-                            try {
-                                timerController.alarmsFromPlugin(extractAlarms(port, response_message));
-                            } catch (SAXException | IOException e) {
-                                e.printStackTrace();
-                            }
+        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, null,
+                port, false, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                    @Override
+                    public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
+                        if (!callback_success) {
+                            return;
+                        }
+                        try {
+                            timerController.alarmsFromPlugin(extractAlarms(port, response_message));
+                        } catch (SAXException | IOException e) {
+                            e.printStackTrace();
                         }
                     }
-            ));
-        }
-        di.releaseDevicePorts();
+                }
+        ));
     }
 
     private List<Alarm> extractAlarms(final DevicePort port, final String html) throws SAXException, IOException {
-        TimerController c = NetpowerctrlApplication.getDataController().timerController;
         final List<Alarm> l = new ArrayList<>();
         l.add(new Alarm());
         l.add(new Alarm());

@@ -16,7 +16,7 @@ import oly.netpowerctrl.devices.DevicePort;
  * Utility methods for groups
  */
 public class GroupUtilities {
-    public static void createGroup(final Context context, final DevicePort port, final onGroupsChanged callback) {
+    public static void createGroup(final Context context, final DevicePort port, final groupsChangedInterface callback) {
         final GroupCollection groupCollection = NetpowerctrlApplication.getDataController().groupCollection;
 
         // No groups? Ask the user to create one
@@ -70,7 +70,7 @@ public class GroupUtilities {
                 .setNegativeButton(android.R.string.cancel, null).show();
     }
 
-    private static void createGroupForDevicePort(Context context, final DevicePort port, final onGroupsChanged callback) {
+    private static void createGroupForDevicePort(Context context, final DevicePort port, final groupsChangedInterface callback) {
         //noinspection ConstantConditions
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
@@ -125,7 +125,7 @@ public class GroupUtilities {
         alert.show();
     }
 
-    public interface onGroupsChanged {
+    public interface groupsChangedInterface {
         void onGroupsChanged(DevicePort port);
     }
 

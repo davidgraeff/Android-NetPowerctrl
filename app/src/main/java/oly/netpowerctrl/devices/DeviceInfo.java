@@ -45,9 +45,9 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     public boolean configured = false;
     public String not_reachable_reason;
     public boolean PreferHTTP;
+    public Boolean enabled;
     private boolean reachable = false;
     private long updated = 0;
-
     //    private class SemaphoreLoud extends Semaphore {
 //        public SemaphoreLoud(int permits) {
 //            super(permits);
@@ -77,6 +77,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         Password = "";
         DefaultPorts = true;
         PreferHTTP = false;
+        enabled = true;
         SendPort = -1;
         ReceivePort = -1;
         HttpPort = -1;
@@ -124,6 +125,9 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
                     break;
                 case "DefaultPorts":
                     di.DefaultPorts = reader.nextBoolean();
+                    break;
+                case "Enabled":
+                    di.enabled = reader.nextBoolean();
                     break;
                 case "PreferTCP": // legacy
                 case "PreferHTTP":
@@ -334,6 +338,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.name("Password").value(Password);
         writer.name("Temperature").value(Temperature);
         writer.name("Version").value(Version);
+        writer.name("Enabled").value(enabled);
         writer.name("PreferHTTP").value(PreferHTTP);
         writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("SendPort").value(SendPort);

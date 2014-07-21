@@ -16,6 +16,7 @@ import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.alarms.Alarm;
+import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.devices.DeviceInfo;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.AsyncRunnerResult;
@@ -293,10 +294,6 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void requestAlarms(DeviceInfo di) {
-    }
-
-    @Override
     public String getPluginID() {
         return serviceName;
     }
@@ -370,6 +367,11 @@ public class PluginRemote implements PluginInterface {
 
         if (callback != null)
             callback.onExecutionFinished(1);
+    }
+
+    @Override
+    public void requestAlarms(DevicePort port, TimerController timerController) {
+
     }
 
     private void post() {

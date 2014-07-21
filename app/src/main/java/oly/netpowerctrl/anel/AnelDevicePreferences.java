@@ -25,7 +25,7 @@ import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class AnelDevicePreferences extends PreferenceFragment implements DeviceObserverResult, DeviceUpdate {
@@ -143,6 +143,17 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             }
         });
 
+        p = m.findPreference("anel_enabled");
+        ((CheckBoxPreference) p).setChecked(device.enabled);
+        p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                device.enabled = (Boolean) o;
+                checkEnabled();
+                return true;
+            }
+        });
+
         p = m.findPreference("anel_use_default_udp");
         ((CheckBoxPreference) p).setChecked(device.DefaultPorts);
         p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -159,8 +170,8 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 int port = Integer.valueOf((String) o);
-                if (checkPortInvalid(port)) {
-                    warn_port();
+                if (Utils.checkPortInvalid(port)) {
+                    Utils.warn_port(getActivity());
                     return false;
                 }
                 preference.setTitle(getString(R.string.device_send_udp_port) + ": " + String.valueOf(port));
@@ -176,8 +187,8 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 int port = Integer.valueOf((String) o);
-                if (checkPortInvalid(port)) {
-                    warn_port();
+                if (Utils.checkPortInvalid(port)) {
+                    Utils.warn_port(getActivity());
                     return false;
                 }
                 preference.setTitle(getString(R.string.device_receive_udp_port) + ": " + String.valueOf(port));
@@ -193,8 +204,8 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
                 int port = Integer.valueOf((String) o);
-                if (port != 80 && checkPortInvalid(port)) {
-                    warn_port();
+                if (port != 80 && Utils.checkPortInvalid(port)) {
+                    Utils.warn_port(getActivity());
                     return false;
                 }
                 preference.setTitle(getString(R.string.device_http_port) + ": " + String.valueOf(port));
@@ -206,17 +217,6 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         p.setTitle(getString(R.string.device_http_port) + ": " + String.valueOf(device.HttpPort));
 
         checkEnabled();
-    }
-
-    private boolean checkPortInvalid(int port) {
-        if (SharedPrefs.getPortsUnlimited())
-            return (port < 1) || port > 65555;
-        else
-            return (port < 1024) || port > 65555;
-    }
-
-    private void warn_port() {
-        Toast.makeText(getActivity(), R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
     }
 
     private void checkEnabled() {
@@ -290,19 +290,6 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
     }
 
     @Override
-    public void onDeviceTimeout(DeviceInfo di) {
-        if (test_state == TestStates.TEST_REACHABLE) {
-            test_state = TestStates.TEST_INIT;
-            //noinspection ConstantConditions
-            Toast.makeText(getActivity(),
-                    getActivity().getString(R.string.error_device_not_reachable) + ": " + device.HostName + ":"
-                            + Integer.valueOf((device.PreferHTTP ? device.HttpPort : device.SendPort)).toString(),
-                    Toast.LENGTH_SHORT
-            ).show();
-        }
-    }
-
-    @Override
     public void onDeviceUpdated(DeviceInfo di) {
         onDeviceUpdated(di, false);
     }
@@ -353,17 +340,27 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
 
     @Override
     public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-
-    }
-
-    @Override
-    public void onDeviceError(DeviceInfo di) {
-        if (test_state == TestStates.TEST_ACCESS) {
-            if (di.equalsByUniqueID(device)) {
+        for (DeviceInfo di : timeout_devices) {
+            if (test_state == TestStates.TEST_REACHABLE) {
                 test_state = TestStates.TEST_INIT;
+                //noinspection ConstantConditions
+                Toast.makeText(getActivity(),
+                        getActivity().getString(R.string.error_device_not_reachable) + ": " + device.HostName + ":"
+                                + Integer.valueOf((device.PreferHTTP ? device.HttpPort : device.SendPort)).toString(),
+                        Toast.LENGTH_SHORT
+                ).show();
             }
         }
     }
+
+//    @Override
+//    public void onDeviceError(DeviceInfo di) {
+//        if (test_state == TestStates.TEST_ACCESS) {
+//            if (di.equalsByUniqueID(device)) {
+//                test_state = TestStates.TEST_INIT;
+//            }
+//        }
+//    }
 
     private enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
 }
