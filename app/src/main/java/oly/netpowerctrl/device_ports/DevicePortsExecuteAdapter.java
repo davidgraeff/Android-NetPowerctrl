@@ -7,7 +7,6 @@ import android.widget.SeekBar;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
@@ -31,7 +30,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        DevicePortListItem item = mItems.get(position);
+        DevicePortAdapterItem item = mItems.get(position);
         DevicePort port = item.port;
 
         convertView = super.getView(position, convertView, parent);
@@ -110,7 +109,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     // Called from the listView that uses this adapter
     public void handleClick(int position, long id) {
-        DevicePortListItem info = mItems.get(position);
+        DevicePortAdapterItem info = mItems.get(position);
         NetpowerctrlApplication.getDataController().execute(info.port, DevicePort.TOGGLE, null);
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
@@ -123,7 +122,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         int position = (Integer) view.getTag();
         if (position == -1)
             return;
-        DevicePortListItem info = mItems.get(position);
+        DevicePortAdapterItem info = mItems.get(position);
         info.port.current_value = value + info.port.min_value;
         info.command_value = info.port.current_value;
         NetpowerctrlApplication.getDataController().execute(info.port, info.command_value, null);

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -119,7 +118,6 @@ public class GDrive implements
 
     public void deleteBackup(Metadata item, GDriveRemoveTask.DoneSuccess done) {
         new GDriveRemoveTask(mGoogleApiClient, observer, done, item).execute();
-        Toast.makeText(context, R.string.gDrive_remove_not_supported, Toast.LENGTH_SHORT).show();
     }
 
     public void createNewBackup(GDriveCreateBackupTask.BackupDoneSuccess done) {
@@ -178,11 +176,14 @@ public class GDrive implements
                 GooglePlayServicesUtil.getErrorDialog(status, context,
                         REQUEST_CODE_RESOLUTION).show();
             } else {
-                Toast.makeText(context, "This device is not supported.",
-                        Toast.LENGTH_LONG).show();
+                if (observer != null)
+                    observer.showProgress(false, "This device is not supported.");
             }
-        } else if (!mGoogleApiClient.isConnected())
+        } else if (!mGoogleApiClient.isConnected()) {
+            if (observer != null)
+                observer.showProgress(true, context.getString(R.string.gDrive_wait_login));
             mGoogleApiClient.connect();
+        }
     }
 
     /**
@@ -245,10 +246,10 @@ public class GDrive implements
      */
     @Override
     public void onConnected(Bundle connectionHint) {
-//        Log.w(TAG, "GoogleApiClient connected");
         error = false;
-        if (observer != null)
+        if (observer != null) {
             observer.gDriveConnected(true, false);
+        }
     }
 
     /**

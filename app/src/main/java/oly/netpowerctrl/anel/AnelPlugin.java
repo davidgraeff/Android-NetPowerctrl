@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -20,15 +21,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.devices.DeviceConnectionHTTP;
+import oly.netpowerctrl.devices.DeviceConnectionUDP;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.network.HttpThreadPool;
@@ -42,8 +48,9 @@ import oly.netpowerctrl.scenes.Scene;
 final public class AnelPlugin implements PluginInterface {
     public static final String PLUGIN_ID = "org.anel.outlets_and_io";
     private static final byte[] requestMessage = "wer da?\r\n".getBytes();
-    private final List<AnelDeviceDiscoveryThread> discoveryThreads = new ArrayList<>();
+    private final List<AnelUDPDeviceDiscoveryThread> discoveryThreads = new ArrayList<>();
     private final List<Scene.PortAndCommand> command_list = new ArrayList<>();
+    private UDPSending udpSending;
 
     private static byte switchOn(byte data, int outletNumber) {
         data |= ((byte) (1 << outletNumber - 1));
@@ -67,13 +74,18 @@ final public class AnelPlugin implements PluginInterface {
         }
     }
 
-    private static void executeDeviceBatch(DeviceInfo di, List<Scene.PortAndCommand> command_list, ExecutionFinished callback) {
+    private void executeDeviceBatch(Device device, List<Scene.PortAndCommand> command_list,
+                                    ExecutionFinished callback) {
         // Get necessary objects
         NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
             return;
 
-        if (di.PreferHTTP) {
+        DeviceConnection ci = device.getFirstReachable();
+        if (ci == null)
+            return;
+
+        if (ci instanceof DeviceConnectionHTTP) { // http
             // Use Http instead of UDP for sending. For each batch command we will send a single http request
             for (Scene.PortAndCommand c : command_list) {
                 DevicePort port = c.port;
@@ -81,14 +93,14 @@ final public class AnelPlugin implements PluginInterface {
                     continue;
                 c.port.last_command_timecode = System.currentTimeMillis();
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(di, "ctrl.htm",
-                        "F" + String.valueOf(port.id - 1) + "=s", di, false, AnelPluginHttp.receiveSwitchResponseHtml));
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "ctrl.htm",
+                        "F" + String.valueOf(port.id - 1) + "=s", ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
             }
+        } else if (!(ci instanceof DeviceConnectionUDP)) { // not udp: return: unknown protocol
             return;
         }
-        UDPSending udpSending = service.getUDPSending();
-        if (udpSending == null)
-            return;
+
+        assert (udpSending != null);
 
         // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
         // “Sw” + Steckdosen + User + Passwort
@@ -102,8 +114,8 @@ final public class AnelPlugin implements PluginInterface {
         int valid_commands = 0;
 
         // First step: Setup data byte (outlet, io) to reflect the current state of the device ports.
-        di.lockDevicePorts();
-        Iterator<DevicePort> it = di.getDevicePortIterator();
+        device.lockDevicePorts();
+        Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
             DevicePort oi = it.next();
             if (oi.Disabled || oi.current_value == 0)
@@ -117,7 +129,7 @@ final public class AnelPlugin implements PluginInterface {
                 ++valid_commands;
             }
         }
-        di.releaseDevicePorts();
+        device.releaseDevicePorts();
 
         if (valid_commands == 0) {
             if (callback != null)
@@ -160,8 +172,8 @@ final public class AnelPlugin implements PluginInterface {
             }
         }
 
-        // Thirst step: Send data
-        String access = di.UserName + di.Password;
+        // Third step: Send data
+        String access = device.UserName + device.Password;
         byte[] data = new byte[3 + access.length()];
         System.arraycopy(access.getBytes(), 0, data, 3, access.length());
 
@@ -169,32 +181,34 @@ final public class AnelPlugin implements PluginInterface {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(di, data, requestMessage, UDPSending.INQUERY_REQUEST));
+            udpSending.addJob(new UDPSending.SendAndObserveJob(ci, data,
+                    requestMessage, UDPSending.INQUERY_REQUEST));
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(di, data, requestMessage, UDPSending.INQUERY_REQUEST));
+            udpSending.addJob(new UDPSending.SendAndObserveJob(ci, data,
+                    requestMessage, UDPSending.INQUERY_REQUEST));
         }
 
         if (callback != null)
             callback.onExecutionFinished(command_list.size());
     }
 
-    public void startDiscoveryThreads(int additional_port) {
+    public void startUDPDiscoveryThreads(Set<Integer> additional_port) {
         // Get all ports of configured devices and add the additional_port if != 0
         Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllReceivePorts();
-        if (additional_port != 0)
-            ports.add(additional_port);
+        if (additional_port != null)
+            ports.addAll(additional_port);
 
         boolean new_threads_started = false;
-        List<AnelDeviceDiscoveryThread> unusedThreads = new ArrayList<>(discoveryThreads);
+        List<AnelUDPDeviceDiscoveryThread> unusedThreads = new ArrayList<>(discoveryThreads);
 
         // Go through all ports and start a thread for it if none is running for it so far
         for (int port : ports) {
             boolean already_running = false;
-            for (AnelDeviceDiscoveryThread running_thread : discoveryThreads) {
+            for (AnelUDPDeviceDiscoveryThread running_thread : discoveryThreads) {
                 if (running_thread.getPort() == port) {
                     already_running = true;
                     unusedThreads.remove(running_thread);
@@ -207,13 +221,13 @@ final public class AnelPlugin implements PluginInterface {
             }
 
             new_threads_started = true;
-            AnelDeviceDiscoveryThread thr = new AnelDeviceDiscoveryThread(this, port);
+            AnelUDPDeviceDiscoveryThread thr = new AnelUDPDeviceDiscoveryThread(this, port);
             thr.start();
             discoveryThreads.add(thr);
         }
 
         if (unusedThreads.size() > 0) {
-            for (AnelDeviceDiscoveryThread thr : unusedThreads) {
+            for (AnelUDPDeviceDiscoveryThread thr : unusedThreads) {
                 thr.interrupt();
                 discoveryThreads.remove(thr);
             }
@@ -230,11 +244,11 @@ final public class AnelPlugin implements PluginInterface {
         HttpThreadPool.startHTTP();
     }
 
-    public void stopDiscoveryThreads(NetpowerctrlService service) {
+    public void stopUDPDiscoveryThreads(NetpowerctrlService service) {
         RuntimeDataController d = NetpowerctrlApplication.getDataController();
-        for (DeviceInfo di : d.deviceCollection.devices) {
+        for (Device di : d.deviceCollection.devices) {
             if (this.equals(di.getPluginInterface(service))) {
-                di.setNotReachable("Energiesparmodus");
+                di.setNotReachable("UDP", service.getString(R.string.device_energysave_mode));
                 d.onDeviceUpdated(di);
             }
         }
@@ -242,7 +256,7 @@ final public class AnelPlugin implements PluginInterface {
         if (discoveryThreads.size() == 0)
             return;
 
-        for (AnelDeviceDiscoveryThread thr : discoveryThreads)
+        for (AnelUDPDeviceDiscoveryThread thr : discoveryThreads)
             thr.interrupt();
         discoveryThreads.clear();
         // socket needs minimal time to really go away
@@ -277,38 +291,45 @@ final public class AnelPlugin implements PluginInterface {
         else if (command == DevicePort.TOGGLE)
             bValue = port.current_value <= 0;
 
+        final Device device = port.device;
+        final DeviceConnection ci = device.getFirstReachable();
+
         // Use Http instead of UDP for sending. For each command we will send a single http request
-        if (port.device.PreferHTTP) {
+        if (ci instanceof DeviceConnectionHTTP) {
+            if (ci.getDestinationPort() < 0) {
+                Toast.makeText(service, R.string.error_device_no_network_connections, Toast.LENGTH_SHORT).show();
+                return;
+            }
             // The http interface can only toggle. If the current state is the same as the command state
             // then we request values instead of sending a command.
-            if (command != DevicePort.TOGGLE && port.current_value == command)
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, "strg.cfg",
-                        "", port.device, false, AnelPluginHttp.receiveCtrlHtml));
+            if (command == DevicePort.TOGGLE && port.current_value == command)
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg",
+                        "", ci, false, AnelPluginHttp.receiveCtrlHtml));
             else
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, "ctrl.htm",
-                        "F" + String.valueOf(port.id - 1) + "=s", port.device, false, AnelPluginHttp.receiveSwitchResponseHtml));
-        } else {
-            UDPSending udpSending = service.getUDPSending();
-            if (udpSending == null)
-                return;
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "ctrl.htm",
+                        "F" + String.valueOf(port.id - 1) + "=s", ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
+        } else if (ci instanceof DeviceConnectionUDP) {
+            assert (udpSending != null);
 
             byte[] data;
             UDPSending.Job j = null;
             if (port.id >= 10 && port.id < 20) {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
-                        port.id - 10, port.device.UserName, port.device.Password).getBytes();
-                j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                        port.id - 10, device.UserName, device.Password).getBytes();
+                j = new UDPSending.SendAndObserveJob(ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             } else if (port.id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
-                        port.id, port.device.UserName, port.device.Password).getBytes();
-                j = new UDPSending.SendAndObserveJob(port.device, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                        port.id, device.UserName, device.Password).getBytes();
+                j = new UDPSending.SendAndObserveJob(ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             }
 
             if (j != null)
                 udpSending.addJob(j);
+        } else {
+            Log.e("Anel", "execute. No reachable DeviceConnection found!");
         }
 
         if (callback != null)
@@ -316,7 +337,12 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void finish() {
+    public void onDestroy() {
+        stopUDPDiscoveryThreads(NetpowerctrlService.getService());
+    }
+
+    @Override
+    public void onStart(NetpowerctrlService service) {
 
     }
 
@@ -326,39 +352,36 @@ final public class AnelPlugin implements PluginInterface {
         NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
             return;
-        UDPSending udpSending = service.getUDPSending();
-        if (udpSending == null)
-            return;
+        assert (udpSending != null);
 
         udpSending.addJob(new AnelBroadcastSendJob());
     }
 
     @Override
-    public void requestData(DeviceInfo di) {
+    public void requestData(DeviceConnection ci) {
         // Get necessary objects
         NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
             return;
 
-        if (!di.enabled)
+        final Device device = ci.getDevice();
+        if (!device.isEnabled())
             return;
 
-        if (di.PreferHTTP) {
-            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(di, "strg.cfg", "", di, false, AnelPluginHttp.receiveCtrlHtml));
+        if (ci instanceof DeviceConnectionHTTP) {
+            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, AnelPluginHttp.receiveCtrlHtml));
         } else {
-            UDPSending udpSending = service.getUDPSending();
-            if (udpSending == null)
-                return;
-
-            udpSending.addJob(new UDPSending.SendAndObserveJob(di, requestMessage, UDPSending.INQUERY_REQUEST));
+            assert (udpSending != null);
+            udpSending.addJob(new UDPSending.SendAndObserveJob(ci, requestMessage, UDPSending.INQUERY_REQUEST));
         }
     }
 
     @Override
     public void requestAlarms(final DevicePort port, final TimerController timerController) {
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
+        final DeviceConnection ci = port.device.getFirstReachable();
 
-        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, null,
+        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
                 port, false, new HttpThreadPool.HTTPCallback<DevicePort>() {
                     @Override
                     public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
@@ -494,8 +517,9 @@ final public class AnelPlugin implements PluginInterface {
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
+        final DeviceConnection ci = port.device.getFirstReachable();
 
-        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, null,
+        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
                 port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                     @Override
                     public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
@@ -521,7 +545,7 @@ final public class AnelPlugin implements PluginInterface {
                             return;
                         }
 
-                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, postData,
+                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, postData,
                                 port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                                     @Override
                                     public void httpResponse(DevicePort port, boolean callback_success,
@@ -545,7 +569,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void executeTransaction(ExecutionFinished callback) {
-        TreeMap<DeviceInfo, List<Scene.PortAndCommand>> commands_grouped_by_devices =
+        TreeMap<Device, List<Scene.PortAndCommand>> commands_grouped_by_devices =
                 new TreeMap<>();
 
         // add to tree
@@ -557,7 +581,7 @@ final public class AnelPlugin implements PluginInterface {
         }
 
         // execute by device
-        for (TreeMap.Entry<DeviceInfo, List<Scene.PortAndCommand>> entry : commands_grouped_by_devices.entrySet()) {
+        for (TreeMap.Entry<Device, List<Scene.PortAndCommand>> entry : commands_grouped_by_devices.entrySet()) {
             executeDeviceBatch(entry.getKey(), entry.getValue(), callback);
         }
 
@@ -570,14 +594,50 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void prepareForDevices(DeviceInfo device) {
-        startDiscoveryThreads((device != null) ? device.ReceivePort : 0);
+    public void enterFullNetworkState(Device device) {
+        if (device == null) {
+            startUDPDiscoveryThreads(null);
+
+            // Start send thread
+            if (udpSending == null)
+                udpSending = new UDPSending(false);
+            boolean alreadyRunning = udpSending.isRunning();
+            if (!alreadyRunning) {
+                udpSending.start("AnelUDPSendThread");
+            }
+            return;
+        }
+
+        // start socket listener on all udp listener ports for the given device
+        Set<Integer> ports = new TreeSet<>();
+        for (DeviceConnection ci : device.DeviceConnections) {
+            if (ci instanceof DeviceConnectionUDP)
+                ports.add(ci.getListenPort());
+        }
+        startUDPDiscoveryThreads(ports);
     }
 
     @Override
-    public void openConfigurationPage(DeviceInfo device, Context context) {
+    public void enterNetworkReducedState() {
+        stopUDPDiscoveryThreads(NetpowerctrlService.getService());
+        boolean running = udpSending != null && udpSending.isRunning();
+        if (running) {
+            udpSending.interrupt();
+            udpSending = null;
+        }
+    }
+
+    @Override
+    public void openConfigurationPage(Device device, Context context) {
+        final DeviceConnection ci = device.getFirstReachable();
+        if (ci == null) {
+            Toast.makeText(NetpowerctrlApplication.instance, R.string.error_device_not_reachable, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // TODO http port in openConfigurationPage
         Intent browse = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://" + device.HostName + ":" + Integer.valueOf(device.HttpPort).toString()));
+                Uri.parse("http://" + ci.getDestinationHost() + ":" + Integer.valueOf(80).toString()));
         context.startActivity(browse);
     }
 
@@ -614,8 +674,9 @@ final public class AnelPlugin implements PluginInterface {
         final int timerNumber = (int) (alarm.id >> 8) & 255;
         // Get the timerController object. We will add received alarms to that instance.
         final TimerController timerController = NetpowerctrlApplication.getDataController().timerController;
+        final DeviceConnection ci = alarm.port.device.getFirstReachable();
 
-        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(alarm.port.device, getData, null,
+        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
                 alarm.port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                     @Override
                     public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
@@ -649,7 +710,7 @@ final public class AnelPlugin implements PluginInterface {
                             return;
                         }
 
-                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(port.device, getData, postData,
+                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, postData,
                                 port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                                     @Override
                                     public void httpResponse(DevicePort port, boolean callback_success,

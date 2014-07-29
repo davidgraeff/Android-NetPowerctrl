@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.device_ports;
 
 import android.util.JsonReader;
 import android.util.JsonWriter;
@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.utils.Icons;
 
 /**
@@ -16,32 +17,31 @@ import oly.netpowerctrl.utils.Icons;
 public final class DevicePort implements Comparable {
     // Some value constants
     public static final int OFF = 0;
+    public int min_value = OFF;
     public static final int ON = 1;
+    public int max_value = ON;
     public static final int TOGGLE = -1;
     public static final int INVALID = -2;
+    public final List<UUID> groups = new ArrayList<>();
+    // Device
+    public final Device device;
     // Action specific
     public int current_value = 0;
-    public int max_value = ON;
-    public int min_value = OFF;
     public boolean Hidden = false;
     public boolean Disabled = false;
     public UUID uuid = UUID.randomUUID(); // unique identity among all device ports
-    public final List<UUID> groups = new ArrayList<>();
     public int id = 0; // unique identity among device ports on this device
     // last_command_timecode: Updated after name has been send.
     // Used to disable control in list until ack from device has been received.
     public long last_command_timecode = 0;
     // UI specific
     public int positionRequest;
-
-    // Device
-    public final DeviceInfo device;
     private DevicePortType ui_type;
     private String Description = "";
     private List<UUID> slaves = new ArrayList<>();
 
 
-    public DevicePort(DeviceInfo di, DevicePortType ui_type) {
+    public DevicePort(Device di, DevicePortType ui_type) {
         device = di;
         this.ui_type = ui_type;
     }
@@ -61,7 +61,7 @@ public final class DevicePort implements Comparable {
         // do not copy last_command_timecode! This value is set by the execute(..) methods
     }
 
-    public static DevicePort fromJSON(JsonReader reader, DeviceInfo di)
+    public static DevicePort fromJSON(JsonReader reader, Device di)
             throws IOException, ClassNotFoundException {
         reader.beginObject();
         DevicePort oi = new DevicePort(di, DevicePortType.TypeUnknown);
@@ -223,20 +223,16 @@ public final class DevicePort implements Comparable {
             groups.add(uuid);
     }
 
-    public void setSlaves(List<UUID> slaves) {
-        this.slaves = slaves;
-    }
-
     public List<UUID> getSlaves() {
         return slaves;
     }
 
-    public int getCurrentValueToggled() {
-        return current_value > min_value ? min_value : max_value;
+    public void setSlaves(List<UUID> slaves) {
+        this.slaves = slaves;
     }
 
-    public enum DevicePortType {
-        TypeUnknown, TypeRangedValue, TypeToggle, TypeButton
+    public int getCurrentValueToggled() {
+        return current_value > min_value ? min_value : max_value;
     }
 
     public Icons.IconState getIconState() {
@@ -246,5 +242,9 @@ public final class DevicePort implements Comparable {
                         getType() == DevicePort.DevicePortType.TypeRangedValue))
             t = Icons.IconState.StateOn;
         return t;
+    }
+
+    public enum DevicePortType {
+        TypeUnknown, TypeRangedValue, TypeToggle, TypeButton
     }
 }

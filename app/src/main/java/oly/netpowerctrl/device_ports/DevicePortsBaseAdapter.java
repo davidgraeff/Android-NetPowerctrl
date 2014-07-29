@@ -18,8 +18,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
@@ -32,7 +31,7 @@ import oly.netpowerctrl.utils.gui.AnimationController;
 public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface {
 
     protected final IconDeferredLoadingThread mIconCache;
-    final List<DevicePortListItem> mItems;
+    final List<DevicePortAdapterItem> mItems;
     private final LayoutInflater mInflater;
     // Source of values for this adapter.
     private final DevicePortSource mSource;
@@ -119,7 +118,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         if (itemsInRow == 1) {
             // Remove all group span items
             for (int i = mItems.size() - 1; i >= 0; --i) {
-                DevicePortListItem c = mItems.get(i);
+                DevicePortAdapterItem c = mItems.get(i);
                 switch (c.groupType()) {
                     case GROUP_SPAN_TYPE:
                     case PRE_GROUP_FILL_ELEMENT_TYPE:
@@ -133,20 +132,20 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     @Override
     public boolean isEnabled(int position) {
-        DevicePortListItem item = mItems.get(position);
-        return item.port != null && item.port.device.isReachable();
+        DevicePortAdapterItem item = mItems.get(position);
+        return item.port != null && item.port.device.getFirstReachable() != null;
     }
 
     @Override
     public int getViewTypeCount() {
-        return DevicePort.DevicePortType.values().length + DevicePortListItem.groupTypeEnum.values().length - 1;
+        return DevicePort.DevicePortType.values().length + DevicePortAdapterItem.groupTypeEnum.values().length - 1;
     }
 
     @Override
     public int getItemViewType(int position) {
-        DevicePortListItem item = mItems.get(position);
-        if (item.groupType() == DevicePortListItem.groupTypeEnum.NOGROUP_TYPE)
-            return item.port.getType().ordinal() + DevicePortListItem.groupTypeEnum.values().length - 1;
+        DevicePortAdapterItem item = mItems.get(position);
+        if (item.groupType() == DevicePortAdapterItem.groupTypeEnum.NOGROUP_TYPE)
+            return item.port.getType().ordinal() + DevicePortAdapterItem.groupTypeEnum.values().length - 1;
         else
             return item.groupType().ordinal() - 1;
     }
@@ -190,7 +189,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      */
     public List<Scene.SceneItem> getScene() {
         List<Scene.SceneItem> list_of_scene_items = new ArrayList<>();
-        for (DevicePortListItem info : mItems) {
+        for (DevicePortAdapterItem info : mItems) {
             if (info.port == null) // skip header items
                 continue;
             list_of_scene_items.add(new Scene.SceneItem(info.port.uuid, info.command_value));
@@ -203,12 +202,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             return -1;
 
         int i = 0;
-        for (DevicePortListItem info : mItems) {
+        for (DevicePortAdapterItem info : mItems) {
+            ++i;
             if (info.port == null) // skip header items
                 continue;
             if (info.port.uuid.equals(uuid))
                 return i;
-            ++i;
         }
 
         return -1;
@@ -217,7 +216,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     @SuppressLint("InflateParams")
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        final DevicePortListItem item = mItems.get(position);
+        final DevicePortAdapterItem item = mItems.get(position);
         final DevicePort port = item.port;
 
         if (convertView != null) {
@@ -268,7 +267,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
             mCurrent_devicePortViewHolder.entry.setEnabled(item.isEnabled());
 
-            if (port.device.isReachable())
+            if (port.device.getFirstReachable() != null)
                 mCurrent_devicePortViewHolder.title.setPaintFlags(
                         mCurrent_devicePortViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
             else
@@ -299,7 +298,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
         // Remove all group span items
         for (int i = mItems.size() - 1; i >= 0; --i) {
-            DevicePortListItem c = mItems.get(i);
+            DevicePortAdapterItem c = mItems.get(i);
             switch (c.groupType()) {
                 case GROUP_SPAN_TYPE:
                 case PRE_GROUP_FILL_ELEMENT_TYPE:
@@ -308,8 +307,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
 
         for (int i = 0; i < mItems.size(); ++i) {
-            DevicePortListItem c = mItems.get(i);
-            if (c.groupType() == DevicePortListItem.groupTypeEnum.GROUP_TYPE) {
+            DevicePortAdapterItem c = mItems.get(i);
+            if (c.groupType() == DevicePortAdapterItem.groupTypeEnum.GROUP_TYPE) {
 
                 int added = 0;
 
@@ -317,7 +316,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 int missingFillElements = mItemsInRow - 1;
                 while (missingFillElements > 0) {
 //                    Log.w("base","groupSpan "+c.displayText+" "+String.valueOf(i));
-                    DevicePortListItem new_oi = DevicePortListItem.createGroupSpan(c, mNextId++);
+                    DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupSpan(c, mNextId++);
                     mItems.add(i, new_oi);
                     ++added;
                     --missingFillElements;
@@ -327,7 +326,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 missingFillElements = i % mItemsInRow;
                 while (missingFillElements > 0) {
 //                    Log.w("base","addPreFill "+c.displayText+" "+String.valueOf(i));
-                    DevicePortListItem new_oi = DevicePortListItem.createGroupPreFillElemenet(c, mNextId++);
+                    DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupPreFillElemenet(c, mNextId++);
                     mItems.add(i, new_oi);
                     ++added;
                     --missingFillElements;
@@ -367,7 +366,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 // Get group header item
                 int positionOfGroup = addHeaderIfNotExists(group, oi);
                 // Increase child count
-                mItems.get(positionOfGroup).groupItems++;
+                if (positionOfGroup != -1)
+                    mItems.get(positionOfGroup).groupItems++;
                 // add child
                 addItemToGroup(oi, command_value, positionOfGroup + 1);
             }
@@ -383,7 +383,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
         int destination_index = mItems.size();
         for (int i = start_position; i < mItems.size(); ++i) {
-            DevicePortListItem l = mItems.get(i);
+            DevicePortAdapterItem l = mItems.get(i);
             if (l.port == null) { // stop on header
                 destination_index = i;
                 break;
@@ -411,7 +411,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
 
         // Insert or append new item
-        DevicePortListItem new_oi = new DevicePortListItem(oi, command_value, mNextId++);
+        DevicePortAdapterItem new_oi = new DevicePortAdapterItem(oi, command_value, mNextId++);
         mItems.add(destination_index, new_oi);
     }
 
@@ -420,7 +420,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         if (groupItem == null) {
             // Group does not exist. Remove it from oi
             oi.groups.remove(group);
-            return 0;
+            return -1;
         }
 
         // Try to find group first
@@ -432,18 +432,24 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
 
         // Insert or append new group
-        DevicePortListItem new_oi = new DevicePortListItem(group, groupItem.name, mNextId++);
+        DevicePortAdapterItem new_oi = new DevicePortAdapterItem(group, groupItem.name, mNextId++);
         mItems.add(new_oi);
         return mItems.size() - 1;
     }
 
-    public void addAll(DeviceInfo device, boolean finalAction) {
+    /**
+     * Add all device ports of a device to this adapter.
+     *
+     * @param device
+     * @param finalAction If true, recalculate the group span items
+     *                    (empty items to make the title items be aligned)
+     */
+    public void addAll(Device device, boolean finalAction) {
         device.lockDevicePorts();
 
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
             DevicePort oi = it.next();
-            // Add item. On success add returned id to mUpdated_id_list
             addItem(oi, oi.current_value, false);
         }
         device.releaseDevicePorts();
@@ -454,7 +460,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     //////////////// Removing ////////////////
 
-    public void removeAll(DeviceInfo device, boolean finalAction) {
+    public void removeAll(Device device, boolean finalAction) {
         device.lockDevicePorts();
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
@@ -471,7 +477,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         int[] toBeRemoved = new int[mItems.size()];
         int lenToBeRemoved = 0;
         for (int index = 0; index < mItems.size(); ++index) {
-            for (DevicePortListItem adapter_list_item : adapter.mItems) {
+            for (DevicePortAdapterItem adapter_list_item : adapter.mItems) {
                 if (adapter_list_item.port != null && adapter_list_item.port.equals(mItems.get(index).port)) {
                     toBeRemoved[lenToBeRemoved] = index;
                     lenToBeRemoved++;
@@ -509,7 +515,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
          * 0 the group header item is removed.
          */
         for (int indexGroup = position - 1; indexGroup >= 0; --indexGroup) {
-            DevicePortListItem headerItem = mItems.get(indexGroup);
+            DevicePortAdapterItem headerItem = mItems.get(indexGroup);
             if (headerItem.port == null) { // is header
                 if (--headerItem.groupItems > 0)
                     continue;
@@ -536,7 +542,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     }
 
     public void markAllRemoved() {
-        for (DevicePortListItem item : mItems)
+        for (DevicePortAdapterItem item : mItems)
             item.markRemoved();
     }
 
@@ -569,14 +575,14 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     @Override
     public String[] getContentList(int startPosition) {
         int c = 0;
-        for (DevicePortListItem mItem : mItems) {
+        for (DevicePortAdapterItem mItem : mItems) {
             if (mItem.port != null)
                 ++c;
         }
 
         String[] l = new String[c];
         c = 0;
-        for (DevicePortListItem mItem : mItems) {
+        for (DevicePortAdapterItem mItem : mItems) {
             DevicePort port = mItem.port;
             if (port == null)
                 continue;
@@ -594,7 +600,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     }
 
     private void removeHeaders() {
-        Iterator<DevicePortListItem> iterator = mItems.iterator();
+        Iterator<DevicePortAdapterItem> iterator = mItems.iterator();
         while (iterator.hasNext()) {
             if (iterator.next().port == null)
                 iterator.remove();
@@ -606,9 +612,9 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         removeHeaders();
 
         // Sort
-        Sorting.qSort(mItems, 0, mItems.size() - 1, new Sorting.qSortComparable<DevicePortListItem>() {
+        Sorting.qSort(mItems, 0, mItems.size() - 1, new Sorting.qSortComparable<DevicePortAdapterItem>() {
             @Override
-            public boolean isGreater(DevicePortListItem first, DevicePortListItem second) {
+            public boolean isGreater(DevicePortAdapterItem first, DevicePortAdapterItem second) {
                 boolean isGreater = false;
                 if (criteria[0] &&
                         first.port.getDescription().compareTo(second.port.getDescription()) > 0) { // alphabetical
@@ -648,7 +654,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
 
         // Assign positionRequest numbers
-        DevicePortListItem temp;
+        DevicePortAdapterItem temp;
         for (int i = 0; i < mItems.size(); ++i) {
             // change id
             mItems.get(sortOrder[i]).port.positionRequest = i;

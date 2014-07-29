@@ -2,6 +2,7 @@ package oly.netpowerctrl.backup.drive;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +27,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
  * Neighbour discovery is activated if this fragment is on screen.
  */
 public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionState, PopupMenu.OnMenuItemClickListener, OnRefreshListener {
+    public final GDrive gDrive = new GDrive();
     private oly.netpowerctrl.backup.drive.GDriveBackupsAdapter GDriveBackupsAdapter;
     private TextView statusText;
     private PullToRefreshLayout mPullToRefreshLayout;
@@ -38,29 +40,52 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        gDrive.onCreate(savedInstanceState);
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        MainActivity.instance.gDrive.onStart(getActivity());
-        MainActivity.instance.gDrive.setObserver(this);
+    public void onResume() {
+        super.onResume();
         enableGDrive(true);
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
         GDriveBackupsAdapter.clear();
-        MainActivity.instance.gDrive.onStop();
-        MainActivity.instance.gDrive.setObserver(null);
-        super.onStop();
+        gDrive.onStop();
+        gDrive.setObserver(null);
+        super.onPause();
     }
 
     @Override
-    public void gDriveConnected(final boolean connected, final boolean canceled) {
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        gDrive.onSaveInstanceState(outState);
+    }
 
-        GDrive gDrive = MainActivity.instance.gDrive;
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        gDrive.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void enableGDrive(boolean enable) {
+        if (enable) {
+            gDrive.setObserver(this);
+            gDrive.onStart(MainActivity.instance);
+        } else {
+            GDriveBackupsAdapter.clear();
+            gDrive.onStop();
+            gDrive.resetAccount();
+        }
+    }
+
+
+    @Override
+    public void gDriveConnected(final boolean connected, final boolean canceled) {
+        mPullToRefreshLayout.setRefreshing(false);
         if (connected) {
+            statusText.setText(R.string.gDriveConnected);
             gDrive.getListOfBackups(GDriveBackupsAdapter);
         } else if (gDrive.isError()) {
             GDriveBackupsAdapter.clear();
@@ -78,21 +103,11 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
         mPullToRefreshLayout.setRefreshing(inProgress);
     }
 
-    private void enableGDrive(boolean enable) {
-        if (enable) {
-            MainActivity.instance.gDrive.onStart(MainActivity.instance);
-        } else {
-            GDriveBackupsAdapter.clear();
-            MainActivity.instance.gDrive.onStop();
-            MainActivity.instance.gDrive.resetAccount();
-        }
-    }
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.g_drive_fragment, menu);
 
-        boolean connected = MainActivity.instance.gDrive.isConnected();
+        boolean connected = gDrive.isConnected();
         menu.findItem(R.id.menu_login).setVisible(!connected);
         menu.findItem(R.id.menu_logout).setVisible(connected);
         menu.findItem(R.id.refresh).setVisible(connected);
@@ -110,10 +125,10 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
                 return true;
             }
             case R.id.menu_backup:
-                MainActivity.instance.gDrive.createNewBackup(new GDriveCreateBackupTask.BackupDoneSuccess() {
+                gDrive.createNewBackup(new GDriveCreateBackupTask.BackupDoneSuccess() {
                     @Override
                     public void done() {
-                        MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
+                        gDrive.getListOfBackups(GDriveBackupsAdapter);
                     }
                 });
                 return true;
@@ -124,7 +139,7 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
                 enableGDrive(false);
                 return true;
             case R.id.refresh:
-                MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
+                gDrive.getListOfBackups(GDriveBackupsAdapter);
                 return true;
         }
         return false;
@@ -172,16 +187,16 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
 
         switch (menuItem.getItemId()) {
             case R.id.menu_gDrive_remove: {
-                MainActivity.instance.gDrive.deleteBackup(item, new GDriveRemoveTask.DoneSuccess() {
+                gDrive.deleteBackup(item, new GDriveRemoveTask.DoneSuccess() {
                     @Override
                     public void done() {
-                        MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
+                        gDrive.getListOfBackups(GDriveBackupsAdapter);
                     }
                 });
                 return true;
             }
             case R.id.menu_gDrive_restore: {
-                MainActivity.instance.gDrive.restoreBackup(item.getDriveId());
+                gDrive.restoreBackup(item.getDriveId());
                 return true;
             }
         }
@@ -190,6 +205,6 @@ public class GDriveFragment extends Fragment implements GDrive.GDriveConnectionS
 
     @Override
     public void onRefreshStarted(View view) {
-        MainActivity.instance.gDrive.getListOfBackups(GDriveBackupsAdapter);
+        gDrive.getListOfBackups(GDriveBackupsAdapter);
     }
 }

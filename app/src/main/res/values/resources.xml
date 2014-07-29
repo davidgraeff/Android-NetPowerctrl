@@ -27,5 +27,5 @@
     <item name="notify_on_non_reachable" format="boolean" type="bool">False</item>
     <item name="backup_to_gDrive" format="boolean" type="bool">False</item>
 
-    <item name="max_favourites_groups" format="integer" type="integer">6</item>
+    <item name="max_favourites_groups" format="integer" type="integer">2</item>
 </resources>

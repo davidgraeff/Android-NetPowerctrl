@@ -28,16 +28,6 @@ public class NeighbourDataSync {
     private static final String TAG = "NeighbourDataSync";
     static AtomicBoolean isSendingData = new AtomicBoolean();
 
-    public interface NeighbourDataCommunication {
-        void pairingRemoved(long uniqueID);
-
-        void pairingRemoveDenied(long uniqueID);
-
-        void dataReceived(long uniqueID);
-
-        void dataProgress(long uniqueID, String progress);
-    }
-
     static boolean sendData(final InetAddress ip, final long uniqueID_Receiver,
                             final NeighbourDataCommunication neighbourDataCommunication,
                             final boolean removePairing) {
@@ -72,7 +62,7 @@ public class NeighbourDataSync {
 
                 isSendingData.set(false);
             }
-        }).start();
+        }, TAG).start();
 
         return true;
     }
@@ -192,5 +182,15 @@ public class NeighbourDataSync {
                 neighbourDataCommunication.dataProgress(uniqueID_Receiver, message);
             }
         });
+    }
+
+    public interface NeighbourDataCommunication {
+        void pairingRemoved(long uniqueID);
+
+        void pairingRemoveDenied(long uniqueID);
+
+        void dataReceived(long uniqueID);
+
+        void dataProgress(long uniqueID, String progress);
     }
 }

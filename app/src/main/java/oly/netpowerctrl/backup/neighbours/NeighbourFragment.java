@@ -24,14 +24,14 @@ import android.widget.Toast;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.network.UDPSending;
+import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 
 /**
  * Neighbour discovery is activated if this fragment is on screen.
  */
 public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, NeighbourDataSync.NeighbourDataCommunication {
     public static final String TAG = "NeighbourFragment";
-
-    public NeighbourAdapter neighbourAdapter;
+    public NeighbourAdapter neighbourAdapter = new NeighbourAdapter();
     private final Runnable advanceTimeRunnable = new Runnable() {
         @Override
         public void run() {
@@ -44,6 +44,7 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
         }
     };
     int clickedPosition = 0;
+    private PullToRefreshLayout mPullToRefreshLayout;
     private UDPSending udpSending;
     private NeighbourDiscoverReceiving udpReceiving;
     private UDPSending.SendRawJob broadcastSendJob;
@@ -81,18 +82,6 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        neighbourAdapter = new NeighbourAdapter(getActivity());
-    }
-
-    @Override
-    public void onStop() {
-        neighbourAdapter = null;
-        super.onStop();
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
         if (udpSending != null) {
@@ -122,7 +111,7 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
     public void onResume() {
         super.onResume();
         udpSending = new UDPSending(true);
-        udpSending.start();
+        udpSending.start("NeighbourUDPSendThread");
         udpReceiving = new NeighbourDiscoverReceiving(this);
         udpReceiving.start();
         advanceTimeRunnable.run();
@@ -220,6 +209,8 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_neighbours, container, false);
+
+        neighbourAdapter.setInflater(inflater);
 
         //noinspection ConstantConditions
         ListView list = (ListView) view.findViewById(R.id.list);

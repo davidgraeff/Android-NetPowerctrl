@@ -50,8 +50,6 @@ class GDriveRemoveTask extends AsyncTask<Void, String, Boolean> {
 //            return false;
 //        }
 
-        if (observer != null)
-            observer.showProgress(false, "No delete support!");
         return false;
 
 //        return true;
@@ -59,6 +57,8 @@ class GDriveRemoveTask extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean result) {
+        if (observer != null)
+            observer.showProgress(false, "No delete support!");
         if (result) {
             if (observer != null)
                 observer.showProgress(false, "Delete successful");

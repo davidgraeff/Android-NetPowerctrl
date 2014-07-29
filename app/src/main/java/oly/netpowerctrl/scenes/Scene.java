@@ -10,8 +10,8 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class Scene {
@@ -147,7 +147,7 @@ public class Scene {
         return sceneItems.size();
     }
 
-    public int getDevices(TreeSet<DeviceInfo> devices) {
+    public int getDevices(TreeSet<Device> devices) {
         int valid_commands = 0;
         for (SceneItem c : sceneItems) {
             DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(c.uuid);

@@ -3,7 +3,6 @@ package oly.netpowerctrl.application_state;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -14,6 +13,7 @@ import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.utils.JSONHelper;
+import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * For loading and storing scenes, groups, devices to local storage, google drive, neighbours.
@@ -69,7 +69,7 @@ public class LoadStoreData {
             target.setStorage(sceneCollectionStorage);
             target.fromJSON(JSONHelper.getReader(prefs.getString("scenes", null)), false);
         } catch (IOException ignored) {
-            Toast.makeText(context, R.string.error_reading_scenes, Toast.LENGTH_SHORT).show();
+            ShowToast.FromOtherThread(context, R.string.error_reading_scenes);
         }
     }
 
@@ -81,7 +81,7 @@ public class LoadStoreData {
             target.setStorage(deviceCollectionStorage);
             target.fromJSON(JSONHelper.getReader(prefs.getString("devices", null)), false);
         } catch (Exception ignored) {
-            Toast.makeText(context, R.string.error_reading_devices, Toast.LENGTH_SHORT).show();
+            ShowToast.FromOtherThread(context, R.string.error_reading_devices);
         }
     }
 
@@ -92,7 +92,7 @@ public class LoadStoreData {
             target.setStorage(groupCollectionStorage);
             target.fromJSON(JSONHelper.getReader(prefs.getString("groups", null)), false);
         } catch (IOException ignored) {
-            Toast.makeText(context, R.string.error_reading_groups, Toast.LENGTH_SHORT).show();
+            ShowToast.FromOtherThread(context, R.string.error_reading_groups);
         }
     }
 
@@ -103,7 +103,7 @@ public class LoadStoreData {
             target.setStorage(alarmsStorage);
             target.fromJSON(JSONHelper.getReader(prefs.getString("alarms", null)));
         } catch (IOException ignored) {
-            Toast.makeText(context, R.string.error_reading_groups, Toast.LENGTH_SHORT).show();
+            ShowToast.FromOtherThread(context, R.string.error_reading_alarms);
         }
     }
 

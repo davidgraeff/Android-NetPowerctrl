@@ -18,10 +18,18 @@ import oly.netpowerctrl.network.Utils;
  */
 public class NeighbourDiscoverReceiving extends UDPReceiving {
     private final WeakReference<NeighbourFragment> neighbourFragmentWeakReference;
+    int versionCode;
 
     public NeighbourDiscoverReceiving(NeighbourFragment neighbourFragment) {
-        super(3311);
+        super(3311, "NeighbourDiscoverReceiving");
         this.neighbourFragmentWeakReference = new WeakReference<>(neighbourFragment);
+        try {
+            //noinspection ConstantConditions
+            Context c = NetpowerctrlApplication.instance;
+            versionCode = c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
+        } catch (PackageManager.NameNotFoundException ignored) {
+            versionCode = 0;
+        }
     }
 
     // This is executed in another thread!
@@ -46,7 +54,6 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
         switch (packetType) {
             //noinspection ConstantConditions
             case 0xCCCCAAAA: // Discover packet
-                Log.w(NeighbourFragment.TAG, "parseDiscoverPacket");
                 parseDiscoverPacket(bb, uniqueID);
                 break;
             //noinspection ConstantConditions
@@ -124,14 +131,6 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
 
         // Get others and own version
         final int version = bb.getInt();
-        final int versionCode;
-        Context c = NetpowerctrlApplication.instance;
-        try {
-            //noinspection ConstantConditions
-            versionCode = c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            return;
-        }
         final short devices = bb.getShort();
         final short scenes = bb.getShort();
         final short groups = bb.getShort();
@@ -151,12 +150,12 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
             return;
         }
 
+        Log.w(NeighbourFragment.TAG, "parseDiscoverPacket from " + name);
+
         // Post to main thread
         NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
             @Override
             public void run() {
-                if (neighbourFragment.neighbourAdapter == null)
-                    return;
                 neighbourFragment.neighbourAdapter.add(name, uniqueID, version, versionCode,
                         devices, scenes, groups, icons, receivedDatagram.getAddress());
                 //neighbourFragment.syncTimer();

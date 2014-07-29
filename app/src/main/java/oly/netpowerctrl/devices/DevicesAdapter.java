@@ -10,15 +10,15 @@ import android.widget.TextView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.OnDataLoadedHandler;
 import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.RuntimeStateChanged;
 import oly.netpowerctrl.network.DeviceUpdate;
 
 /**
  * An adapter for showing all configured (and newly discovered) devices. Configured and new devices
  * are separated by headers.
  */
-public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, RuntimeStateChanged {
+public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, OnDataLoadedHandler {
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_ITEM = 1;
     private final LayoutInflater inflater;
@@ -34,13 +34,13 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     public void onPause() {
         RuntimeDataController d = NetpowerctrlApplication.getDataController();
         d.deviceCollection.unregisterDeviceObserver(this);
-        NetpowerctrlApplication.getDataController().unregisterStateChanged(this);
-        NetpowerctrlApplication.getDataController().unregisterNewDeviceObserver(this);
+        d.unregisterOnDataLoaded(this);
+        d.unregisterNewDeviceObserver(this);
     }
 
     public void onResume() {
         RuntimeDataController d = NetpowerctrlApplication.getDataController();
-        d.registerStateChanged(this);
+        d.registerOnDataLoaded(this);
         onDataLoaded();
         if (showNewDevices) {
             d.registerNewDeviceObserver(this);
@@ -48,7 +48,7 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     }
 
     @Override
-    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
+    public void onDeviceUpdated(Device di, boolean willBeRemoved) {
         notifyDataSetChanged();
     }
 
@@ -119,24 +119,28 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
                 convertView = inflater.inflate(R.layout.device_list_item, viewGroup, false);
             assert convertView != null;
 
-            DeviceInfo di = (DeviceInfo) getItem(position);
+            Device device = (Device) getItem(position);
+            boolean reachable = device.getFirstReachable() != null;
             TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
-            tvName.setText(di.DeviceName);
-            if (di.isReachable())
+            tvName.setText(device.DeviceName);
+            if (reachable)
                 tvName.setPaintFlags(tvName.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
             else
                 tvName.setPaintFlags(tvName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
 
             TextView tvIP = (TextView) convertView.findViewById(R.id.device_ip);
-            String subtext = di.HostName;
-            if (di.Temperature.length() > 0)
-                subtext += ", " + di.Temperature;
-            if (di.Version.length() > 0)
-                subtext += ", " + di.Version;
-            if (!di.isReachable())
-                subtext += ", " + di.not_reachable_reason;
-            if (di.PreferHTTP)
-                subtext += ", HTTP";
+            String subtext = "";
+            if (!reachable)
+                subtext += device.getNotReachableReasons();
+            else {
+                DeviceConnection deviceConnection = device.getFirstReachable();
+                subtext += deviceConnection.getProtocol() + "/" + deviceConnection.getDestinationHost();
+            }
+
+            if (device.Version.length() > 0)
+                subtext += ", " + device.Version;
+            if (device.hasFeatures())
+                subtext += ", " + device.getFeatureString();
             tvIP.setText(subtext);
 
             tvIP.setTag(position);
@@ -162,11 +166,6 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, Runtime
     @Override
     public boolean onDataLoaded() {
         NetpowerctrlApplication.getDataController().deviceCollection.registerDeviceObserver(this);
-        return true;
-    }
-
-    @Override
-    public boolean onDataQueryFinished() {
         return true;
     }
 }

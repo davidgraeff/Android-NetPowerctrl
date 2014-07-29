@@ -144,7 +144,7 @@ public class NeighbourDataReceiveService extends Service {
 
                     stopSelf();
                 }
-            });
+            }, TAG);
             thread.start();
         }
 

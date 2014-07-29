@@ -15,11 +15,11 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSource;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
@@ -79,8 +79,8 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
         // Add all device ports that are not equal to master and type of toggle.
         DevicePortSource s = new DevicePortSourceConfigured();
         adapter = new DevicePortsListAdapter(getActivity(), true, s, ((ActivityWithIconCache) getActivity()).getIconCache());
-        List<DeviceInfo> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
-        for (DeviceInfo device : configuredDevices) {
+        List<Device> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
+        for (Device device : configuredDevices) {
             device.lockDevicePorts();
             Iterator<DevicePort> it_port = device.getDevicePortIterator();
             while (it_port.hasNext()) {
@@ -92,6 +92,7 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
         }
         adapter.computeGroupSpans();
         adapter.setChecked(master.getSlaves());
+        adapter.notifyDataSetChanged();
 
         setHasOptionsMenu(true);
     }

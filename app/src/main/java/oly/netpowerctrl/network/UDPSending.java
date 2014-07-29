@@ -14,7 +14,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -82,10 +83,10 @@ public class UDPSending {
         return sendThread != null && sendThread.isAlive();
     }
 
-    public void start() {
+    public void start(String threadName) {
         if (sendThread != null && sendThread.isAlive())
             return;
-        sendThread = new SendThread(this);
+        sendThread = new SendThread(this, threadName);
     }
 
     public void addJob(Job job) {
@@ -109,7 +110,8 @@ public class UDPSending {
         private final LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<>();
         private final UDPSending UDPSending;
 
-        SendThread(UDPSending UDPSending) {
+        SendThread(UDPSending UDPSending, String threadName) {
+            super(threadName);
             this.UDPSending = UDPSending;
         }
 
@@ -150,16 +152,16 @@ public class UDPSending {
     }
 
     static public class SendAndObserveJob extends DeviceObserverBase implements Job {
-        final DeviceInfo di;
+        final DeviceConnection ci;
         final List<byte[]> messages = new ArrayList<>();
         final int errorID;
         private final DeviceObserverResult deviceObserverResult = new DeviceObserverResult() {
             @Override
-            public void onDeviceUpdated(DeviceInfo di) {
+            public void onDeviceUpdated(Device di) {
             }
 
             @Override
-            public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
+            public void onObserverJobFinished(List<Device> timeout_devices) {
                 mainLoopHandler.removeCallbacks(redoRunnable);
                 mainLoopHandler.removeCallbacks(timeoutRunnable);
             }
@@ -169,17 +171,22 @@ public class UDPSending {
         private boolean initialized = false;
         private UDPSending udpSending = null;
 
-        public SendAndObserveJob(DeviceInfo di, byte[] message, int errorID) {
+        public SendAndObserveJob(DeviceConnection ci, byte[] message, int errorID) {
             this.messages.add(message);
             this.errorID = errorID;
-            this.di = di;
+            this.ci = ci;
+            assert (ci != null);
         }
 
-        public SendAndObserveJob(DeviceInfo di, byte[] message, byte[] message2, int errorID) {
+        public SendAndObserveJob(DeviceConnection ci, byte[] message, byte[] message2, int errorID) {
             this.messages.add(message);
             this.messages.add(message2);
             this.errorID = errorID;
-            this.di = di;
+            this.ci = ci;
+            assert (ci != null);
+            if (ci == null) {
+                Log.e("ERR", "ERR");
+            }
         }
 
         @Override
@@ -188,20 +195,19 @@ public class UDPSending {
             // Get IP
             try {
                 if (ip == null) {
-                    ip = InetAddress.getByName(di.HostName);
+                    ip = InetAddress.getByName(ci.getDestinationHost());
                 }
             } catch (final UnknownHostException e) {
-                UDPSending.onError(NETWORK_UNKNOWN_HOSTNAME, di.HostName, di.SendPort, e);
+                UDPSending.onError(NETWORK_UNKNOWN_HOSTNAME, ci.getDestinationHost(), ci.getDestinationPort(), e);
                 return;
             }
 
             if (!initialized) {
                 initialized = true;
 
-                //DeviceObserverBase
                 setDeviceQueryResult(deviceObserverResult);
                 devices_to_observe = new ArrayList<>();
-                devices_to_observe.add(di);
+                devices_to_observe.add(ci.getDevice());
 
                 // Register on main application object to receive device updates
                 NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
@@ -210,7 +216,7 @@ public class UDPSending {
             try {
                 // Send all messages
                 for (byte[] message : messages) {
-                    udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, di.SendPort));
+                    udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, ci.getDestinationPort()));
                     Thread.sleep(30);
                 }
 
@@ -221,19 +227,19 @@ public class UDPSending {
 
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))
-                    UDPSending.onError(NETWORK_UNREACHABLE, ip.getHostAddress(), di.SendPort, e);
+                    UDPSending.onError(NETWORK_UNREACHABLE, ip.getHostAddress(), ci.getDestinationPort(), e);
                 else {
-                    UDPSending.onError(errorID, ip.getHostAddress(), di.SendPort, e);
+                    UDPSending.onError(errorID, ip.getHostAddress(), ci.getDestinationPort(), e);
                 }
 
             } catch (final Exception e) {
                 e.printStackTrace();
-                UDPSending.onError(errorID, di.HostName, di.SendPort, e);
+                UDPSending.onError(errorID, ci.getDestinationHost(), ci.getDestinationPort(), e);
             }
         }
 
         @Override
-        protected void doAction(DeviceInfo di, boolean repeated) {
+        protected void doAction(Device device, boolean repeated) {
             if (udpSending != null)
                 udpSending.addJob(this);
         }

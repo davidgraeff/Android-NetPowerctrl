@@ -36,7 +36,6 @@ import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.backup.drive.GDrive;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.Donate;
@@ -48,7 +47,6 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
     public final Donate donate = new Donate();
-    public final GDrive gDrive = new GDrive();
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     // Drawer
     private final DrawerController mDrawer = new DrawerController();
@@ -66,15 +64,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        gDrive.onSaveInstanceState(outState);
-    }
-
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
-        gDrive.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
         donate.onActivityResult(this, requestCode, resultCode, data);
     }
@@ -83,7 +73,6 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     protected void onCreate(Bundle savedInstanceState) {
         instance = this;
         super.onCreate(savedInstanceState);
-        gDrive.onCreate(savedInstanceState);
         // Set theme, call super onCreate and set content view
         if (SharedPrefs.isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);

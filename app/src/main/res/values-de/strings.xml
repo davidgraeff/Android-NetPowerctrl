@@ -29,7 +29,7 @@
     <string name="device_test">Test</string>
     <string name="device_name">Name</string>
     <string name="device_ip">IP/Hostname</string>
-    <string name="device_default_ports">Standard UDP-Ports?</string>
+    <string name="device_default_ports">Standard Ports?</string>
     <string name="device_send_udp_port">UDP-Port zum Senden</string>
     <string name="device_receive_udp_port">UDP-Port zum Empfangen</string>
     <string name="device_username">Benutzername</string>
@@ -142,7 +142,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="widget_image_on">Widget Aussehen: An</string>
     <string name="widget_image_off">Widget Aussehen: Aus</string>
     <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
-    <string name="crash_toast_text">Ich bin leider abgestürzt :( Bitte sende einen Absturzbericht an meinen Entwickler</string>
+    <string name="crash_toast_text">Ich bin leider abgestürzt :( Ein Absturzbericht wird automatisch gesendet</string>
     <string name="scene_rename">Szenenname</string>
     <string name="service_stopped">Power-Control Hintergrunddienst beendet</string>
     <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
@@ -271,14 +271,13 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="extensions">Erweiterungen</string>
     <string name="preferences_category_save_energy">Akku schonen</string>
     <string name="device_connection_preferences">Verbindungseinstellungen</string>
-    <string name="device_udp">UDP Verbindung</string>
-    <string name="device_http">HTTP</string>
+    <string name="device_udp">UDP Verbindungen</string>
+    <string name="device_http">HTTP Verbindungen</string>
     <string name="device_http_port">HTTP Port</string>
     <string name="device_name_summary">Der Name für die Geräteanzeige in der App. Der Name wird für die Verbindung nicht benötigt und kann frei gewählt werden.</string>
     <string name="device_username_summary">Der Benutzername für das Gerät. Auf der Webseite des Geräts können bis zu acht Benutzer mit unterschiedlichen Zugriffsrechten eingerichtet werden.</string>
     <string name="device_password_summary">Das Gerätepasswort. Das Passwort wird unverschlüsselt über das Netzwerk geschickt!</string>
     <string name="device_ip_summary">Die IP-Adresse oder der DNS-Hostname des Geräts.</string>
-    <string name="device_prefer_http_summary">UDP funktioniert nur zuverlässig bis zum nächsten Router (lokales Netzwerk). HTTP ist langsamer, eignet sich für die Steuerung aus dem Internet aber besser.</string>
     <string name="device_default_ports_summary">Die Standard-Ports aus den Einstellungen werden benutzt.</string>
     <string name="device_http_port_summary">Der HTTP Port des Geräts. Das ist der selbe, welcher auch für den Webzugriff genutzt wird.</string>
     <string name="alarm_weekdays_range">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s</string>
@@ -308,7 +307,7 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="alarm_no_target">Es wurde kein Zielgerät für diesen Alarm ausgewählt!</string>
     <string name="alarm_no_start_no_stop">Es wurden weder Einschalt- noch Ausschaltzeit angegeben!</string>
     <string name="confirmation_delete_all_alarms">Sollen wirklich alle Alarme zurückgesetzt werden?</string>
-    <string name="port_warning_1024">Ein Port kleiner als 1024 benötigt Root-Rechte unter Android!</string>
+    <string name="port_warning_1024">Ein Port kleiner als 1024 benötigt Root-Rechte unter Android! Deaktivie diese Überprüfung in den Einstellungen.</string>
     <string name="alarm_receiving">Empfange Alarm %1$d</string>
     <string name="alarm_saving_now">Bitte warten. Speichere Alarm…</string>
     <string name="toWirelessSettings">WLAN einschalten</string>
@@ -330,4 +329,18 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="preference_notify_on_non_reachable">Nachricht bei Nicht-Erreichbarem Gerät</string>
     <string name="preference_notify_on_non_reachable_summary">Zeigt eine Nachricht für jedes nicht erreichbare Gerät nach einem Aktualisierungsvorgang</string>
     <string name="alarms_no_alarms">Es sind noch keine Zeitschaltungen eingerichtet.</string>
+    <string name="gDrive_wait_login">Log in Vorgang läuft</string>
+    <string name="error_device_no_network_connections">Keine Netzwerk-Konfiguration! Bitte UDP oder HTTP einrichten!</string>
+    <string name="preference_error_report_tool">Fehler an Entwickler melden</string>
+    <string name="preference_enable_acra">App-Fehler an Entwickler übermitteln</string>
+    <string name="preference_acra_enabled">Anonyme Fehlerdaten werden übermittelt. Du hilfst, die App zu verbessern.</string>
+    <string name="preference_acra_disabled">Anonyme Fehlerdaten werden NICHT gesendet. Auftretende Fehler können nicht behoben werden.</string>
+    <string name="pref_acra_user_email">(Optional) Deine E-Mail Adresse</string>
+    <string name="pref_acra_user_email_summary">Die E-Mail Adresse wird einem Fehlerbericht angehängt und kann vom Entwickler für Rückfragen genutzt werden.</string>
+    <string name="device_energysave_mode">Energiesparmodus</string>
+    <string name="device_udp_new">Neue UDP Verbindung</string>
+    <string name="device_http_new">Neue HTTP Verbindung</string>
+    <string name="device_udp_new_summary">UDP funktioniert nur zuverlässig bis zum nächsten Router (lokales Netzwerk) ist aber schneller.</string>
+    <string name="device_http_new_summary">HTTP ist langsamer, eignet sich für die Steuerung aus dem Internet aber besser.</string>
+    <string name="error_reading_alarms">Einlesen der Zeitschaltungen fehlgeschlagen</string>
 </resources>

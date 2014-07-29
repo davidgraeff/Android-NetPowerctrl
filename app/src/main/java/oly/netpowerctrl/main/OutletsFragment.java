@@ -32,17 +32,18 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.OnDataQueryCompletedHandler;
 import oly.netpowerctrl.application_state.RefreshStartedStopped;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
+import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsExecuteAdapter;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DevicesFragment;
-import oly.netpowerctrl.devices.NotReachableUpdate;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.NotReachableUpdate;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
@@ -124,14 +125,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             adapterSource.updateNow();
         }
 
-        if (isAdded()) {
-            if (btnChangeToDevices != null)
-                btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
-            if (btnChangeToBackup != null)
-                btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
-            if (emptyText != null)
-                emptyText.setText(groupFilter == null ? getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
-        }
+        checkEmpty();
     }
 
     private void setListOrGrid(boolean grid) {
@@ -308,34 +302,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 .setup(mPullToRefreshLayout);
         ///// END: For pull to refresh
 
+        // Empty text and hint text
         hintText = (TextView) view.findViewById(R.id.hintText);
-        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
-            mListView.setEmptyView(view.findViewById(android.R.id.empty));
-            emptyText = (TextView) view.findViewById(R.id.empty_text);
-            emptyText.setText(getString(R.string.empty_no_outlets_no_devices));
-        } else {
-            mListView.setEmptyView(view.findViewById(R.id.loading));
-            // We assign the empty view after a short delay time,
-            // to reduce visual flicker on app start, where data
-            // is loaded with a high chance within the first 500ms.
-            NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (!isAdded())
-                        return;
+        emptyText = (TextView) view.findViewById(R.id.empty_text);
+        mListView.setEmptyView(view.findViewById(android.R.id.empty));
+        mListView.getEmptyView().setVisibility(View.GONE);
 
-                    View v = mListView.getEmptyView();
-                    if (v != null)
-                        v.setVisibility(View.GONE);
-                    mListView.setEmptyView(view.findViewById(android.R.id.empty));
-                    emptyText = (TextView) view.findViewById(R.id.empty_text);
-                    emptyText.setText(groupFilter == null ?
-                            getString(R.string.empty_no_outlets) : getString(R.string.empty_group));
 
-                }
-            }, 1000);
-        }
-
+        // Empty list: Buttons
         btnChangeToBackup = (Button) view.findViewById(R.id.btnChangeToBackup);
         btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
         btnChangeToBackup.setOnClickListener(new View.OnClickListener() {
@@ -376,6 +350,41 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         setListOrGrid(SharedPrefs.getOutletsGrid());
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        NetpowerctrlApplication.getDataController().registerDataQueryCompleted(new OnDataQueryCompletedHandler() {
+            @Override
+            public boolean onDataQueryFinished() {
+                checkEmpty();
+                return false;
+            }
+        });
+
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    private void checkEmpty() {
+        if (!isAdded())
+            return;
+
+        mListView.getEmptyView().setVisibility(View.VISIBLE);
+
+        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
+            emptyText.setText(R.string.empty_no_outlets_no_devices);
+        } else if (groupFilter != null) {
+            emptyText.setText(R.string.empty_group);
+        } else {
+            emptyText.setText(R.string.empty_no_outlets);
+        }
+
+        if (btnChangeToDevices != null)
+            btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+        if (btnChangeToBackup != null)
+            btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+
+        getActivity().invalidateOptionsMenu();
     }
 
     @Override
@@ -472,10 +481,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     @Override
-    public void onNotReachableUpdate(List<DeviceInfo> not_reachable) {
+    public void onNotReachableUpdate(List<Device> not_reachable) {
         if (not_reachable.size() > 0) {
             String devices = "";
-            for (DeviceInfo di : not_reachable) {
+            for (Device di : not_reachable) {
                 devices += di.DeviceName + " ";
             }
             hintText.setText(NetpowerctrlApplication.instance.getString(R.string.error_not_reachable) + ": " + devices);
@@ -565,13 +574,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public boolean canDismiss(int position) {
-        return !adapter.isShowingHidden();
+        return !adapter.isShowingHidden() && adapter.getItem(position) != null;
     }
 
     @Override
     public void onDismiss(int dismissedPosition) {
         final DevicePort oi = adapter.getItem(dismissedPosition);
-        hideItem(oi);
+        if (oi != null)
+            hideItem(oi);
     }
 
     @Override

@@ -5,7 +5,9 @@ import android.util.JsonWriter;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -17,96 +19,58 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.utils.JSONHelper;
 
 // An object of this class contains all the info about a specific device
-public class DeviceInfo implements Comparable<DeviceInfo> {
+public class Device implements Comparable<Device> {
     // Device Ports
     private final Map<Integer, DevicePort> DevicePorts = new TreeMap<>();
     private final Semaphore lock = new Semaphore(1);
     // Identity of the device
     public String pluginID;
-    public String UniqueDeviceID; // a device unique id e.g. the mac address associated with a device
-    // User visible name of this device. Version of the device firmware
-    public String DeviceName; // name of the device as reported by the device
-    public String Version;
+    //   a device unique id e.g. the mac address associated with a device
+    public String UniqueDeviceID = UUID.randomUUID().toString();
+    // User visible data of this device
+    public String DeviceName = ""; // Name of the device as reported by the device
+    public String Version = ""; // Version of the device firmware
     // Access to the device
-    public String HostName;   // the hostname / ip address / android service name used to reach the device
-    public String UserName;
-    public String Password;
-    // Specific data, should be removed from here
-    public boolean DefaultPorts;
-    public int SendPort;
-    public int ReceivePort;
-    public int HttpPort;
-    public String Temperature;
+    public String UserName = "";
+    public String Password = "";
+    // Additional features
+    public List<DeviceFeature> Features = new ArrayList<>();
+
+    // Connections to the destination device. This is prioritized, the first reachable connection
+    // is preferred before the second reachable etc.
+    public List<DeviceConnection> DeviceConnections = new ArrayList<>();
     // Temporary state variables
     public boolean configured = false;
-    public String not_reachable_reason;
-    public boolean PreferHTTP;
-    public Boolean enabled;
-    private boolean reachable = false;
+    DeviceConnection cached_deviceConnection;
+    private boolean enabled = true;
     private long updated = 0;
-    //    private class SemaphoreLoud extends Semaphore {
-//        public SemaphoreLoud(int permits) {
-//            super(permits);
-//        }
-//
-//        @Override
-//        public void acquireUninterruptibly() {
-//            Log.w("SemaphoreLoud","acquireUninterruptibly");
-//            super.acquireUninterruptibly();
-//        }
-//
-//        @Override
-//        public void release() {
-//            Log.w("SemaphoreLoud", "release");
-//            super.release();
-//        }
-//    }
     private boolean hasChanged = false;
     private WeakReference<PluginInterface> pluginInterface = null;
 
-    private DeviceInfo(String pluginID) {
+    private Device(String pluginID) {
         this.pluginID = pluginID;
-        DeviceName = "";
-        HostName = "";
-        UniqueDeviceID = UUID.randomUUID().toString();
-        UserName = "";
-        Password = "";
-        DefaultPorts = true;
-        PreferHTTP = false;
-        enabled = true;
-        SendPort = -1;
-        ReceivePort = -1;
-        HttpPort = -1;
-        Temperature = "";
-        Version = "";
     }
 
-    public static DeviceInfo createNewDevice(String pluginID) {
-        DeviceInfo di = new DeviceInfo(pluginID);
+    public static Device createNewDevice(String pluginID) {
+        Device di = new Device(pluginID);
         di.DeviceName = NetpowerctrlApplication.instance.getString(R.string.default_device_name);
-        di.SendPort = SharedPrefs.getDefaultSendPort();
-        di.ReceivePort = SharedPrefs.getDefaultReceivePort();
         return di;
     }
 
-    public static DeviceInfo fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {
+    public static Device fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
-        DeviceInfo di = new DeviceInfo("");
+        Device di = new Device("");
         di.configured = true;
-        di.reachable = false;
         while (reader.hasNext()) {
             String name = reader.nextName();
             assert name != null;
             switch (name) {
                 case "DeviceName":
                     di.DeviceName = reader.nextString();
-                    break;
-                case "HostName":
-                    di.HostName = reader.nextString();
                     break;
                 case "UniqueDeviceID":
                     di.UniqueDeviceID = reader.nextString();
@@ -117,33 +81,36 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
                 case "Password":
                     di.Password = reader.nextString();
                     break;
-                case "Temperature":
-                    di.Temperature = reader.nextString();
-                    break;
                 case "Version":
                     di.Version = reader.nextString();
-                    break;
-                case "DefaultPorts":
-                    di.DefaultPorts = reader.nextBoolean();
                     break;
                 case "Enabled":
                     di.enabled = reader.nextBoolean();
                     break;
-                case "PreferTCP": // legacy
-                case "PreferHTTP":
-                    di.PreferHTTP = reader.nextBoolean();
-                    break;
-                case "SendPort":
-                    di.SendPort = reader.nextInt();
-                    break;
                 case "Type":
                     di.pluginID = reader.nextString();
                     break;
-                case "ReceivePort":
-                    di.ReceivePort = reader.nextInt();
+                case "Features":
+                    di.Features.clear();
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        DeviceFeature feature = DeviceFeatureFabric.fromJSON(reader);
+                        if (feature != null)
+                            di.Features.add(feature);
+                    }
+                    reader.endArray();
                     break;
-                case "HttpPort":
-                    di.HttpPort = reader.nextInt();
+                case "Connections":
+                    di.DeviceConnections.clear();
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        DeviceConnection connection = DeviceConnectionFabric.fromJSON(reader, di);
+                        if (connection != null) {
+                            di.DeviceConnections.add(connection);
+                            di.setReachable(di.DeviceConnections.size() - 1);
+                        }
+                    }
+                    reader.endArray();
                     break;
                 case "DevicePorts":
                     di.DevicePorts.clear();
@@ -164,6 +131,7 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         }
 
         reader.endObject();
+        di.compute_first_reachable();
 
         if (di.pluginID.isEmpty())
             throw new ClassNotFoundException();
@@ -174,23 +142,68 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         hasChanged = true;
     }
 
-    public boolean isReachable() {
-        return reachable;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setReachable() {
-        this.reachable = true;
-        not_reachable_reason = "";
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        compute_first_reachable();
     }
 
-    public void setNotReachable(String not_reachable_reason) {
-        this.reachable = false;
-        this.not_reachable_reason = not_reachable_reason;
+    private void compute_first_reachable() {
+        if (!enabled) {
+            cached_deviceConnection = null;
+            return;
+        }
+
+        for (DeviceConnection deviceConnection : DeviceConnections)
+            if (deviceConnection.isReachable()) {
+                cached_deviceConnection = deviceConnection;
+                return;
+            }
+    }
+
+    public DeviceConnection getFirstReachable() {
+        return cached_deviceConnection;
+    }
+
+    public void setReachable(int index) {
+        DeviceConnections.get(index).setReachable();
+        compute_first_reachable();
+    }
+
+    /**
+     * Set all device connections to not reachable, which match the given protocol.
+     *
+     * @param protocol             A protocol like UDP or HTTP
+     * @param not_reachable_reason The not reachable reason. Set to null to make the connections
+     *                             reachable instead.
+     */
+    public void setNotReachable(String protocol, String not_reachable_reason) {
+        for (oly.netpowerctrl.devices.DeviceConnection di : DeviceConnections)
+            if (di.getProtocol().equals(protocol)) {
+                di.setNotReachable(not_reachable_reason);
+                break;
+            }
+
+        compute_first_reachable();
+    }
+
+    public void setNotReachable(int index, String not_reachable_reason) {
+        DeviceConnections.get(index).setNotReachable(not_reachable_reason);
+        compute_first_reachable();
+    }
+
+    public void setNotReachableAll(String not_reachable_reason) {
+        for (oly.netpowerctrl.devices.DeviceConnection di : DeviceConnections)
+            di.setNotReachable(not_reachable_reason);
+        cached_deviceConnection = null;
     }
 
     @Override
-    public int compareTo(DeviceInfo deviceInfo) {
-        if (deviceInfo.UniqueDeviceID.equals(UniqueDeviceID))
+    public int compareTo(Device device) {
+        if (device.UniqueDeviceID.equals(UniqueDeviceID))
             return 0;
         return 1;
     }
@@ -219,38 +232,57 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
      * @return Return true if this object copied newer values of "other" or if setHasChanged
      * has been called before.
      */
-    public boolean copyFreshValues(DeviceInfo other) {
-        updated = other.updated;
-
+    public boolean copyValuesFromUpdated(Device other) {
         if (other != this) {
+            updated = other.updated;
             // Use or for the first assignment, to allow setHasChanged to be called on the device
             hasChanged |= copyFreshDevicePorts(other.DevicePorts);
-
-            hasChanged |= !HostName.equals(other.HostName);
-            HostName = other.HostName;
-            if (other.HttpPort != -1) {
-                hasChanged |= HttpPort != other.HttpPort;
-                HttpPort = other.HttpPort;
-            }
-            hasChanged |= !Temperature.equals(other.Temperature);
-            Temperature = other.Temperature;
+            hasChanged |= copyFeatures(other);
             hasChanged |= !Version.equals(other.Version);
             Version = other.Version;
-            hasChanged |= reachable != other.reachable;
-            reachable = other.reachable;
-            if (not_reachable_reason != null)
-                hasChanged |= !not_reachable_reason.equals(other.not_reachable_reason);
-            else if (other.not_reachable_reason != null)
-                hasChanged |= true;
-
-            not_reachable_reason = other.not_reachable_reason;
+            hasChanged |= copyConnections(other);
         }
-        // Else: Same object, but the values may have changed since the last call to "copyFreshValues"
+        // Else: Same object, but the values may have changed since the last call to "copyValuesFromUpdated"
 
 
         boolean hasChangedL = hasChanged;
         hasChanged = false;
         return hasChangedL;
+    }
+
+    /**
+     * This will update reachable information of all device connections, which
+     * are also used in the updated device.
+     *
+     * @param updated Updated device
+     * @return
+     */
+    private boolean copyConnections(Device updated) {
+        boolean changed = false;
+        // update each of the existing connections
+        for (DeviceConnection di : DeviceConnections) {
+            for (DeviceConnection di_other : updated.DeviceConnections) {
+                // we identify connections by their listening port.
+                // Hostnames would a better matching metric but may differ,
+                // because the updated device is probably
+                if (di.getListenPort() == di_other.getListenPort()) {
+                    if (di.isReachable() == di_other.isReachable())
+                        break;
+                    di.setNotReachable(di_other.getNotReachableReason());
+                    changed = true;
+                }
+            }
+        }
+        compute_first_reachable();
+
+        return changed;
+    }
+
+    private boolean copyFeatures(Device other) {
+        //TODO copyFeatures
+        if (other.Features.size() > Features.size())
+            this.Features = other.Features;
+        return false;
     }
 
     public boolean copyFreshDevicePorts(Map<Integer, DevicePort> other_devicePorts) {
@@ -287,29 +319,13 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
     }
 
     /**
-     * Return true if both DeviceInfo objects refer to the same device, preferable if both
-     * have a mac address set.
-     *
-     * @param other Compare to other DeviceInfo
-     * @return
-     */
-    @SuppressWarnings("unused")
-    public boolean equalsByHostname(DeviceInfo other) {
-        if (UniqueDeviceID.isEmpty() || other.UniqueDeviceID.isEmpty())
-            return HostName.equals(other.HostName) && ReceivePort == other.ReceivePort &&
-                    DevicePorts.size() == other.DevicePorts.size();
-        else
-            return UniqueDeviceID.equals(other.UniqueDeviceID);
-    }
-
-    /**
      * Return true if this and the other DeviceInfo are the same configured DeviceInfo.
      *
      * @param other Compare to other DeviceInfo
      * @return
      */
     @SuppressWarnings("unused")
-    public boolean equalsByUniqueID(DeviceInfo other) {
+    public boolean equalsByUniqueID(Device other) {
         return UniqueDeviceID.equals(other.UniqueDeviceID);
     }
 
@@ -332,18 +348,23 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
         writer.beginObject();
         writer.name("DeviceName").value(DeviceName);
         writer.name("Type").value(pluginID);
-        writer.name("HostName").value(HostName);
         writer.name("UniqueDeviceID").value(UniqueDeviceID);
         writer.name("UserName").value(UserName);
         writer.name("Password").value(Password);
-        writer.name("Temperature").value(Temperature);
         writer.name("Version").value(Version);
         writer.name("Enabled").value(enabled);
-        writer.name("PreferHTTP").value(PreferHTTP);
-        writer.name("DefaultPorts").value(DefaultPorts);
-        writer.name("SendPort").value(SendPort);
-        writer.name("ReceivePort").value(ReceivePort);
-        writer.name("HttpPort").value(HttpPort);
+
+        writer.name("Features").beginArray();
+        for (DeviceFeature deviceFeature : Features) {
+            deviceFeature.toJSON(writer);
+        }
+        writer.endArray();
+
+        writer.name("Connections").beginArray();
+        for (DeviceConnection deviceConnection : DeviceConnections) {
+            deviceConnection.toJSON(writer);
+        }
+        writer.endArray();
 
         writer.name("DevicePorts").beginArray();
         for (Map.Entry<Integer, DevicePort> entry : DevicePorts.entrySet()) {
@@ -415,5 +436,33 @@ public class DeviceInfo implements Comparable<DeviceInfo> {
 
     public int count() {
         return DevicePorts.size();
+    }
+
+    public boolean hasFeatures() {
+        return Features.size() > 0;
+    }
+
+    public String getFeatureString() {
+        String f = "";
+        for (DeviceFeature feature : Features)
+            f += feature.getString() + " ";
+        return f;
+    }
+
+    public String getNotReachableReasons() {
+        if (!enabled)
+            return NetpowerctrlApplication.instance.getString(R.string.error_device_disabled);
+        String f = "";
+        for (DeviceConnection connection : DeviceConnections)
+            f += connection.getNotReachableReason() + " ";
+        return f;
+    }
+
+    public void addConnection(DeviceConnection deviceConnection) {
+        for (DeviceConnection connection : DeviceConnections)
+            if (connection.getDestinationHost().equals(deviceConnection.getDestinationHost()))
+                return;
+        DeviceConnections.add(deviceConnection);
+        setReachable(DeviceConnections.size() - 1);
     }
 }

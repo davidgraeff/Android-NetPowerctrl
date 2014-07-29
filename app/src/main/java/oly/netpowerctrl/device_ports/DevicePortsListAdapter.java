@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 
 public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
@@ -32,7 +31,7 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        DevicePortListItem item = mItems.get(position);
+        DevicePortAdapterItem item = mItems.get(position);
         DevicePort port = item.port;
 
         convertView = super.getView(position, convertView, parent);

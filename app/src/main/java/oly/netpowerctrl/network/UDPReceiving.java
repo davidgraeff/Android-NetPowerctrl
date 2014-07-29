@@ -10,11 +10,12 @@ import oly.netpowerctrl.utils.ShowToast;
 
 abstract public class UDPReceiving extends Thread {
     private final int receive_port;
+    protected DatagramPacket receivedDatagram;
     private boolean keep_running;
     private DatagramSocket socket;
-    protected DatagramPacket receivedDatagram;
 
-    protected UDPReceiving(int port) {
+    protected UDPReceiving(int port, String threadName) {
+        super(threadName);
         receive_port = port;
         socket = null;
     }

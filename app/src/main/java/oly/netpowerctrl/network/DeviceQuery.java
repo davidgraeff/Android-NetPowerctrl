@@ -9,7 +9,8 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -19,7 +20,7 @@ import oly.netpowerctrl.devices.DeviceInfo;
  */
 public class DeviceQuery extends DeviceObserverBase {
 
-    public DeviceQuery(DeviceObserverResult target, DeviceInfo device_to_observe) {
+    public DeviceQuery(DeviceObserverResult target, Device device_to_observe) {
         setDeviceQueryResult(target);
         devices_to_observe = new ArrayList<>();
         devices_to_observe.add(device_to_observe);
@@ -34,7 +35,7 @@ public class DeviceQuery extends DeviceObserverBase {
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
     }
 
-    public DeviceQuery(DeviceObserverResult target, Collection<DeviceInfo> devices_to_observe) {
+    public DeviceQuery(DeviceObserverResult target, Collection<Device> devices_to_observe) {
         setDeviceQueryResult(target);
         this.devices_to_observe = new ArrayList<>(devices_to_observe);
 
@@ -47,7 +48,7 @@ public class DeviceQuery extends DeviceObserverBase {
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
 
         // Send out broadcast
-        for (DeviceInfo di : devices_to_observe)
+        for (Device di : devices_to_observe)
             doAction(di, false);
     }
 
@@ -78,22 +79,24 @@ public class DeviceQuery extends DeviceObserverBase {
 //    }
 
     @Override
-    protected void doAction(DeviceInfo di, boolean repeated) {
+    protected void doAction(Device device, boolean repeated) {
         NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
             return;
 
         if (repeated)
-            Log.w("DeviceObserverBase", "redo: " + di.DeviceName);
-        PluginInterface remote = di.getPluginInterface(service);
+            Log.w("DeviceObserverBase", "redo: " + device.DeviceName);
 
-        if (remote != null) {
-            if (!di.enabled) {
-                di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_device_disabled));
-            } else
-                remote.requestData(di);
-        } else {
-            di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+        PluginInterface remote = device.getPluginInterface(service);
+        for (DeviceConnection ci : device.DeviceConnections) {
+            if (remote != null) {
+                if (!device.isEnabled()) {
+                    ci.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_device_disabled));
+                } else
+                    remote.requestData(ci);
+            } else {
+                ci.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+            }
         }
     }
 }

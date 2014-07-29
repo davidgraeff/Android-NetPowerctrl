@@ -1,7 +1,6 @@
 package oly.netpowerctrl.backup.neighbours;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.view.LayoutInflater;
@@ -25,101 +24,10 @@ import oly.netpowerctrl.utils.JSONHelper;
  * Adapter showing all detected neighbours. It also loads and saves paired neighbours.
  */
 public class NeighbourAdapter extends BaseAdapter {
-    private final LayoutInflater inflater;
+    private LayoutInflater inflater;
     private List<AdapterItem> items = new ArrayList<>();
 
-    public static class AdapterItem {
-        private String data;
-        public boolean isSameVersion;
-        private int times = 0;
-        long uniqueID;
-        public InetAddress address;
-        public boolean isPaired;
-        public boolean isOnline;
-        public boolean pairingRequest = false;
-        private String name;
-        public int version;
-        public int versionCode;
-        public short devices;
-        public short scenes;
-        public short groups;
-        public short icons;
-
-        /**
-         * Use this constructor for loaded, paired neighbours
-         */
-        AdapterItem() {
-            this.isPaired = true;
-            this.isOnline = false;
-        }
-
-        /**
-         * Use this constructor for discovered neighbours who are not paired.
-         */
-        private AdapterItem(String name, int version, int versionCode,
-                            long uniqueID, InetAddress address,
-                            short devices, short scenes, short groups, short icons) {
-            this.name = name;
-            this.version = version;
-            this.versionCode = versionCode;
-            this.uniqueID = uniqueID;
-            this.address = address;
-            this.devices = devices;
-            this.scenes = scenes;
-            this.groups = groups;
-            this.icons = icons;
-
-            this.isPaired = false;
-            this.isOnline = true;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void updateData() {
-            data = String.valueOf(uniqueID) + ": ";
-            if (version < versionCode)
-                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_older_version) + " ";
-            else if (version > versionCode)
-                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_newer_version) + " ";
-
-            data += NetpowerctrlApplication.instance.getString(R.string.neighbour_entry, devices, scenes, groups, icons);
-            if (isPaired)
-                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired);
-            if (!isOnline)
-                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired_not_found);
-
-            this.isSameVersion = versionCode == version;
-        }
-    }
-
-    public void setPaired(AdapterItem item, boolean paired) {
-        item.isPaired = paired;
-        item.updateData();
-        save();
-        notifyDataSetChanged();
-    }
-
-    public void removePairing(long uniqueID) {
-        for (AdapterItem item : items) {
-            if (item.uniqueID == uniqueID) {
-                item.isPaired = false;
-                item.updateData();
-                save();
-                notifyDataSetChanged();
-                return;
-            }
-        }
-    }
-
-    private void save() {
-        SharedPrefs.saveNeighbours(toJSON());
-    }
-
-    public NeighbourAdapter(Context context) {
-        inflater = LayoutInflater.from(context);
-
+    public NeighbourAdapter() {
         // Load
         String json = SharedPrefs.loadNeighbours();
         if (json == null)
@@ -150,6 +58,32 @@ public class NeighbourAdapter extends BaseAdapter {
         }
     }
 
+    public void setPaired(AdapterItem item, boolean paired) {
+        item.isPaired = paired;
+        item.updateData();
+        save();
+        notifyDataSetChanged();
+    }
+
+    public void removePairing(long uniqueID) {
+        for (AdapterItem item : items) {
+            if (item.uniqueID == uniqueID) {
+                item.isPaired = false;
+                item.updateData();
+                save();
+                notifyDataSetChanged();
+                return;
+            }
+        }
+    }
+
+    private void save() {
+        SharedPrefs.saveNeighbours(toJSON());
+    }
+
+    public void setInflater(LayoutInflater inflater) {
+        this.inflater = inflater;
+    }
 
     /**
      * Return the json representation of all groups
@@ -175,7 +109,6 @@ public class NeighbourAdapter extends BaseAdapter {
             return null;
         }
     }
-
 
     void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
@@ -310,7 +243,6 @@ public class NeighbourAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-
     public AdapterItem getItemByID(long uniqueID) {
         int position = -1;
         for (int i = 0; i < items.size(); ++i)
@@ -343,5 +275,71 @@ public class NeighbourAdapter extends BaseAdapter {
 
     public AdapterItem getNeighbour(int position) {
         return items.get(position);
+    }
+
+    public static class AdapterItem {
+        public boolean isSameVersion;
+        public InetAddress address;
+        public boolean isPaired;
+        public boolean isOnline;
+        public boolean pairingRequest = false;
+        public int version;
+        public int versionCode;
+        public short devices;
+        public short scenes;
+        public short groups;
+        public short icons;
+        long uniqueID;
+        private String data;
+        private int times = 0;
+        private String name;
+
+        /**
+         * Use this constructor for loaded, paired neighbours
+         */
+        AdapterItem() {
+            this.isPaired = true;
+            this.isOnline = false;
+        }
+
+        /**
+         * Use this constructor for discovered neighbours who are not paired.
+         */
+        private AdapterItem(String name, int version, int versionCode,
+                            long uniqueID, InetAddress address,
+                            short devices, short scenes, short groups, short icons) {
+            this.name = name;
+            this.version = version;
+            this.versionCode = versionCode;
+            this.uniqueID = uniqueID;
+            this.address = address;
+            this.devices = devices;
+            this.scenes = scenes;
+            this.groups = groups;
+            this.icons = icons;
+
+            this.isPaired = false;
+            this.isOnline = true;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void updateData() {
+            data = String.valueOf(uniqueID) + ": ";
+            if (version < versionCode)
+                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_older_version) + " ";
+            else if (version > versionCode)
+                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_newer_version) + " ";
+
+            data += NetpowerctrlApplication.instance.getString(R.string.neighbour_entry, devices, scenes, groups, icons);
+            if (isPaired)
+                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired);
+            if (!isOnline)
+                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired_not_found);
+
+            this.isSameVersion = versionCode == version;
+        }
     }
 }

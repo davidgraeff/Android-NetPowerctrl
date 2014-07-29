@@ -79,8 +79,12 @@ public class ScenesFragment extends Fragment implements
             menu.findItem(R.id.menu_view_list).setVisible(false);
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_view_grid).setVisible(false);
+            //noinspection ConstantConditions
+            menu.findItem(R.id.menu_sort).setVisible(false);
             return;
         }
+
+        menu.findItem(R.id.menu_sort).setVisible(true);
 
         boolean isList = adapter.getLayoutRes() == R.layout.list_icon_item;
         //noinspection ConstantConditions

@@ -28,6 +28,47 @@ import oly.netpowerctrl.main.MainActivity;
 public class Donate {
     private static final int INAPP_REQUEST = 12345;
     private WeakReference<Activity> activityWeakReference;
+    private IInAppBillingService mService;
+    private final ServiceConnection mServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mService = null;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            final Activity activity = activityWeakReference.get();
+            if (activity == null)
+                return;
+
+            mService = IInAppBillingService.Stub.asInterface(service);
+            activity.invalidateOptionsMenu();
+
+            new Thread("donateThread") {
+
+                @Override
+                public void run() {
+                    try {
+                        Bundle ownedItems = mService.getPurchases(3, activity.getPackageName(), "inapp", null);
+
+                        int response = ownedItems.getInt("RESPONSE_CODE");
+                        if (response == 0) {
+                            ArrayList<String> purchaseDataList = ownedItems.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
+
+                            if (purchaseDataList != null) {
+                                for (String purchaseData : purchaseDataList) {
+                                    JSONObject json = new JSONObject(purchaseData);
+                                    mService.consumePurchase(3, activity.getPackageName(), json.getString("purchaseToken"));
+                                }
+                            }
+                        }
+                    } catch (RemoteException | JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        }
+    };
 
     public void onActivityResult(final Activity activity, int requestCode, int resultCode, final Intent data) {
         if (resultCode == Activity.RESULT_OK && requestCode == INAPP_REQUEST) {
@@ -56,49 +97,6 @@ public class Donate {
     public boolean donatePossible() {
         return mService != null;
     }
-
-    private IInAppBillingService mService;
-
-    private final ServiceConnection mServiceConn = new ServiceConnection() {
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mService = null;
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            final Activity activity = activityWeakReference.get();
-            if (activity == null)
-                return;
-
-            mService = IInAppBillingService.Stub.asInterface(service);
-            activity.invalidateOptionsMenu();
-
-            new Thread() {
-
-                @Override
-                public void run() {
-                    try {
-                        Bundle ownedItems = mService.getPurchases(3, activity.getPackageName(), "inapp", null);
-
-                        int response = ownedItems.getInt("RESPONSE_CODE");
-                        if (response == 0) {
-                            ArrayList<String> purchaseDataList = ownedItems.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
-
-                            if (purchaseDataList != null) {
-                                for (String purchaseData : purchaseDataList) {
-                                    JSONObject json = new JSONObject(purchaseData);
-                                    mService.consumePurchase(3, activity.getPackageName(), json.getString("purchaseToken"));
-                                }
-                            }
-                        }
-                    } catch (RemoteException | JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }.start();
-        }
-    };
 
     public void buy(String sku) {
         Activity activity = activityWeakReference.get();

@@ -3,7 +3,7 @@ package oly.netpowerctrl.device_ports;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.network.DeviceUpdate;
 
 /**
@@ -36,10 +36,10 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
 
         adapter.markAllRemoved();
 
-        for (DeviceInfo deviceInfo : NetpowerctrlApplication.getDataController().deviceCollection.devices) {
-            if (hideNotReachable && !deviceInfo.isReachable())
+        for (Device device : NetpowerctrlApplication.getDataController().deviceCollection.devices) {
+            if (hideNotReachable && device.getFirstReachable() == null)
                 continue;
-            adapter.addAll(deviceInfo, false);
+            adapter.addAll(device, false);
         }
 
         adapter.removeAllMarked(true);
@@ -78,8 +78,8 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
     }
 
     @Override
-    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
-        if (adapterWeakReference == null || di == null)
+    public void onDeviceUpdated(Device device, boolean willBeRemoved) {
+        if (adapterWeakReference == null || device == null)
             return;
 
         DevicePortsBaseAdapter adapter = adapterWeakReference.get();
@@ -88,10 +88,10 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
             return;
         }
 
-        if (willBeRemoved || (hideNotReachable && !di.isReachable()))
-            adapter.removeAll(di, true);
+        if (willBeRemoved || (hideNotReachable && device.getFirstReachable() == null))
+            adapter.removeAll(device, true);
         else {
-            adapter.addAll(di, true);
+            adapter.addAll(device, true);
         }
 
         adapter.notifyDataSetChanged();

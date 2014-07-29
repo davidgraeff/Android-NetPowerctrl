@@ -9,7 +9,6 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.gui.SegmentedRadioGroup;
@@ -38,12 +37,12 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             mItems.get(position).command_value = seekBar.getProgress();
         }
     };
-    private DevicePortListItem master = null;
+    private DevicePortAdapterItem master = null;
     private final RadioGroup.OnCheckedChangeListener switchClickListener = new RadioGroup.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int i) {
             int position = (Integer) radioGroup.getTag();
-            DevicePortListItem info = mItems.get(position);
+            DevicePortAdapterItem info = mItems.get(position);
             int command_value = info.command_value;
 
             boolean masterChanged = false;
@@ -81,7 +80,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        DevicePortListItem item = mItems.get(position);
+        DevicePortAdapterItem item = mItems.get(position);
         DevicePort port = item.port;
 
         // Not our business, if port is null
@@ -161,21 +160,21 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
     }
 
     public void switchAllOn() {
-        for (DevicePortListItem outlet_info : mItems) {
+        for (DevicePortAdapterItem outlet_info : mItems) {
             outlet_info.command_value = outlet_info.port.max_value;
         }
         notifyDataSetChanged();
     }
 
     public void switchAllOff() {
-        for (DevicePortListItem outlet_info : mItems) {
+        for (DevicePortAdapterItem outlet_info : mItems) {
             outlet_info.command_value = outlet_info.port.min_value;
         }
         notifyDataSetChanged();
     }
 
     public void toggleAll() {
-        for (DevicePortListItem outlet_info : mItems) {
+        for (DevicePortAdapterItem outlet_info : mItems) {
             outlet_info.command_value = DevicePort.TOGGLE;
         }
         notifyDataSetChanged();

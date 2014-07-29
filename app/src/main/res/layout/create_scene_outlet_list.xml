@@ -13,34 +13,18 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:dividerHeight="0dp"
-            android:divider="#00000000" />
+            android:divider="#00000000"
+            android:dividerHeight="0dp" />
 
         <TextView
             android:id="@+id/hintText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?drawer_item_background"
-            android:textAppearance="@android:style/TextAppearance.Medium"
             android:gravity="center"
             android:padding="5dp"
+            android:textAppearance="@android:style/TextAppearance.Medium"
             android:visibility="gone" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/loading"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="10dp"
-        android:visibility="gone"
-        android:orientation="vertical">
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <LinearLayout
@@ -48,19 +32,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:orientation="horizontal"
         android:padding="10dp"
-        android:visibility="gone"
-        android:orientation="horizontal">
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/empty_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@android:style/TextAppearance.Medium"
             android:background="?item_selector"
-            android:padding="5dp"
             android:drawableLeft="@android:drawable/ic_media_rew"
-            android:text="@string/scene_create_helptext_available" />
+            android:padding="5dp"
+            android:text="@string/scene_create_helptext_available"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
     </LinearLayout>
 

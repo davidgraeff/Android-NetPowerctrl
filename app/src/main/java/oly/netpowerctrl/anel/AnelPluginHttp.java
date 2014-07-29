@@ -1,5 +1,7 @@
 package oly.netpowerctrl.anel;
 
+import android.util.Log;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -15,25 +17,27 @@ import java.util.TreeMap;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.network.HttpThreadPool;
 
 /**
  * Created by david on 04.07.14.
  */
 public class AnelPluginHttp {
-    static final HttpThreadPool.HTTPCallback<DeviceInfo> receiveCtrlHtml = new HttpThreadPool.HTTPCallback<DeviceInfo>() {
+    static final HttpThreadPool.HTTPCallback<DeviceConnection> receiveCtrlHtml = new HttpThreadPool.HTTPCallback<DeviceConnection>() {
         @Override
-        public void httpResponse(DeviceInfo device, boolean callback_success, String response_message) {
-//            Log.w(PLUGIN_ID,"http receive"+response_message);
+        public void httpResponse(DeviceConnection ci, boolean callback_success, String response_message) {
+            Log.w("AnelPluginHttp", "http receive" + response_message);
+            final Device device = ci.getDevice();
             if (!callback_success) {
-                device.setNotReachable(response_message);
+                ci.setNotReachable(response_message);
                 NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
-                    device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
+                    ci.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
                 } else {
                     // The name is the second ";" separated entry of the response_message.
                     device.DeviceName = data[1].trim();
@@ -64,14 +68,15 @@ public class AnelPluginHttp {
     /**
      * If we receive a response from a switch action (via http) we request updated data immediately.
      */
-    static final HttpThreadPool.HTTPCallback<DeviceInfo> receiveSwitchResponseHtml = new HttpThreadPool.HTTPCallback<DeviceInfo>() {
+    static final HttpThreadPool.HTTPCallback<DeviceConnection> receiveSwitchResponseHtml = new HttpThreadPool.HTTPCallback<DeviceConnection>() {
         @Override
-        public void httpResponse(DeviceInfo device, boolean callback_success, String response_message) {
+        public void httpResponse(DeviceConnection ci, boolean callback_success, String response_message) {
+            final Device device = ci.getDevice();
             if (!callback_success) {
-                device.setNotReachable(response_message);
+                ci.setNotReachable(response_message);
                 NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
             } else
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(device, "strg.cfg", "", device, false, receiveCtrlHtml));
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
         }
     };
 

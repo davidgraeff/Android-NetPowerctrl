@@ -13,10 +13,10 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeStateChanged;
+import oly.netpowerctrl.application_state.OnDataQueryCompletedHandler;
 import oly.netpowerctrl.application_state.ServiceReady;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.ExecutionFinished;
@@ -96,12 +96,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
             finish();
             return;
         }
-        NetpowerctrlApplication.getDataController().registerStateChanged(new RuntimeStateChanged() {
-            @Override
-            public boolean onDataLoaded() {
-                return true;
-            }
-
+        NetpowerctrlApplication.getDataController().registerDataQueryCompleted(new OnDataQueryCompletedHandler() {
             @Override
             public boolean onDataQueryFinished() {
                 NetpowerctrlApplication.getDataController().execute(port, command, ExecutionActivity.this);
@@ -124,7 +119,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         }
 
         // DeviceQuery for scene devices
-        TreeSet<DeviceInfo> devices = new TreeSet<>();
+        TreeSet<Device> devices = new TreeSet<>();
         scene_commands = scene.getDevices(devices);
         new DeviceQuery(ExecutionActivity.this, devices);
 
@@ -138,12 +133,12 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
     }
 
     @Override
-    public void onDeviceUpdated(DeviceInfo di) {
+    public void onDeviceUpdated(Device di) {
     }
 
     @Override
-    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-        for (DeviceInfo di : timeout_devices) {
+    public void onObserverJobFinished(List<Device> timeout_devices) {
+        for (Device di : timeout_devices) {
             Toast.makeText(this, getString(R.string.error_timeout_device, di.DeviceName), Toast.LENGTH_SHORT).show();
         }
 

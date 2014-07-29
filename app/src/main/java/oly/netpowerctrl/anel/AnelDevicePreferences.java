@@ -2,6 +2,8 @@ package oly.netpowerctrl.anel;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,8 +11,10 @@ import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.view.View;
 import android.widget.Toast;
 
@@ -20,18 +24,21 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.devices.DeviceConnectionHTTP;
+import oly.netpowerctrl.devices.DeviceConnectionPreferences;
+import oly.netpowerctrl.devices.DeviceConnectionUDP;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
-import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class AnelDevicePreferences extends PreferenceFragment implements DeviceObserverResult, DeviceUpdate {
     DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
     private TestStates test_state = TestStates.TEST_INIT;
-    private DeviceInfo device;
+    private Device device;
     private DeviceQuery deviceQuery;
 
     public AnelDevicePreferences() {
@@ -79,7 +86,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.anel_device_preferences);
+        addPreferencesFromResource(R.xml.device_preferences);
 
         /** Getting the ListPreference from the Preference Resource */
         final PreferenceManager m = getPreferenceManager();
@@ -120,117 +127,80 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         ((EditTextPreference) p).setText(device.Password);
         p.setTitle(getString(R.string.device_password) + ": " + device.Password);
 
-        p = m.findPreference("anel_ip");
-        p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                device.HostName = (String) o;
-                preference.setTitle(getString(R.string.device_ip) + ": " + device.HostName);
-                return true;
-            }
-        });
-        ((EditTextPreference) p).setText(device.HostName);
-        p.setTitle(getString(R.string.device_ip) + ": " + device.HostName);
-
-        p = m.findPreference("anel_use_http");
-        ((CheckBoxPreference) p).setChecked(device.PreferHTTP);
-        p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                device.PreferHTTP = (Boolean) o;
-                checkEnabled();
-                return true;
-            }
-        });
-
         p = m.findPreference("anel_enabled");
-        ((CheckBoxPreference) p).setChecked(device.enabled);
+        ((CheckBoxPreference) p).setChecked(device.isEnabled());
         p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
-                device.enabled = (Boolean) o;
-                checkEnabled();
+                device.setEnabled((Boolean) o);
                 return true;
             }
         });
 
-        p = m.findPreference("anel_use_default_udp");
-        ((CheckBoxPreference) p).setChecked(device.DefaultPorts);
-        p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                device.DefaultPorts = (Boolean) o;
-                checkEnabled();
-                return true;
-            }
-        });
-
-        p = m.findPreference("anel_udp_send");
-        p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                int port = Integer.valueOf((String) o);
-                if (Utils.checkPortInvalid(port)) {
-                    Utils.warn_port(getActivity());
-                    return false;
-                }
-                preference.setTitle(getString(R.string.device_send_udp_port) + ": " + String.valueOf(port));
-                device.SendPort = port;
-                return true;
-            }
-        });
-        ((EditTextPreference) p).setText(String.valueOf(device.SendPort));
-        p.setTitle(getString(R.string.device_send_udp_port) + ": " + String.valueOf(device.SendPort));
-
-        p = m.findPreference("anel_udp_receive");
-        p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                int port = Integer.valueOf((String) o);
-                if (Utils.checkPortInvalid(port)) {
-                    Utils.warn_port(getActivity());
-                    return false;
-                }
-                preference.setTitle(getString(R.string.device_receive_udp_port) + ": " + String.valueOf(port));
-                device.ReceivePort = port;
-                return true;
-            }
-        });
-        ((EditTextPreference) p).setText(String.valueOf(device.ReceivePort));
-        p.setTitle(getString(R.string.device_receive_udp_port) + ": " + String.valueOf(device.ReceivePort));
-
-        p = m.findPreference("anel_http");
-        p.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                int port = Integer.valueOf((String) o);
-                if (port != 80 && Utils.checkPortInvalid(port)) {
-                    Utils.warn_port(getActivity());
-                    return false;
-                }
-                preference.setTitle(getString(R.string.device_http_port) + ": " + String.valueOf(port));
-                device.HttpPort = port;
-                return true;
-            }
-        });
-        ((EditTextPreference) p).setText(String.valueOf(device.HttpPort));
-        p.setTitle(getString(R.string.device_http_port) + ": " + String.valueOf(device.HttpPort));
-
-        checkEnabled();
+//        update_connections();
     }
 
-    private void checkEnabled() {
-        PreferenceManager m = getPreferenceManager();
-        m.findPreference("anel_use_default_udp").setEnabled(!device.PreferHTTP);
-        m.findPreference("anel_udp_send").setEnabled(!device.PreferHTTP && !device.DefaultPorts);
-        m.findPreference("anel_udp_receive").setEnabled(!device.PreferHTTP && !device.DefaultPorts);
-        m.findPreference("anel_http").setEnabled(device.PreferHTTP);
+    @Override
+    public void onResume() {
+        update_connections();
+        super.onResume();
     }
 
-    public void setDevice(DeviceInfo di) {
+    private void update_connections() {
+        PreferenceCategory pc_http = (PreferenceCategory) findPreference("connections_http");
+        PreferenceCategory pc_udp = (PreferenceCategory) findPreference("connections_udp");
+        assert pc_http != null;
+        assert pc_udp != null;
+
+        for (int i = pc_http.getPreferenceCount() - 1; i >= 0; --i) {
+            Preference s = pc_http.getPreference(i);
+            if (s instanceof PreferenceScreen) {
+                pc_http.removePreference(s);
+            }
+        }
+        for (int i = pc_udp.getPreferenceCount() - 1; i >= 0; --i) {
+            Preference s = pc_udp.getPreference(i);
+            if (s instanceof PreferenceScreen) {
+                pc_udp.removePreference(s);
+            }
+        }
+
+
+        int id = 0;
+        for (final DeviceConnection deviceConnection : device.DeviceConnections) {
+            ++id;
+            //noinspection ConstantConditions
+            PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
+            assert s != null;
+            s.setKey(String.valueOf(id));
+            //s.setFragment(WidgetPreferenceFragment.class.getName());
+            s.setTitle(deviceConnection.getString());
+            if (deviceConnection instanceof DeviceConnectionUDP) {
+                pc_udp.addPreference(s);
+            } else if (deviceConnection instanceof DeviceConnectionHTTP) {
+                pc_http.addPreference(s);
+            }
+
+            s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Fragment fragment = Fragment.instantiate(getActivity(),
+                            DeviceConnectionPreferences.class.getName());
+                    ((DeviceConnectionPreferences) fragment).setDeviceConnection(deviceConnection);
+                    //noinspection ConstantConditions
+                    getFragmentManager().beginTransaction().addToBackStack(null).
+                            setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).
+                            replace(R.id.content_frame, fragment).commit();
+                    return true;
+                }
+            });
+        }
+    }
+
+    public void setDevice(Device di) {
         device = di;
         if (device == null) {
-            device = DeviceInfo.createNewDevice(AnelDeviceDiscoveryThread.anelPlugin.getPluginID());
+            device = Device.createNewDevice(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID());
             // Default values for user and password
             device.UserName = "admin";
             device.Password = "anel";
@@ -241,8 +211,13 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         if (test_state != TestStates.TEST_INIT && test_state != TestStates.TEST_OK)
             return;
 
-        if (device.HostName.isEmpty() || device.UserName.isEmpty() || device.Password.isEmpty()) {
+        if (device.UserName.isEmpty() || device.Password.isEmpty()) {
             Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (device.DeviceConnections.isEmpty()) {
+            Toast.makeText(getActivity(), R.string.error_device_no_network_connections, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -250,14 +225,19 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
 
         PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
         assert pi != null;
-        pi.prepareForDevices(device);
+        pi.enterFullNetworkState(device);
 
         deviceQuery = new DeviceQuery(this, device);
     }
 
     private void saveDevice() {
-        if (device.HostName.isEmpty() || device.UserName.isEmpty() || device.Password.isEmpty()) {
+        if (device.UserName.isEmpty() || device.Password.isEmpty()) {
             Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (device.DeviceConnections.isEmpty()) {
+            Toast.makeText(getActivity(), R.string.error_device_no_network_connections, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -282,7 +262,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
     private void saveAndFinish() {
         PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
         assert pi != null;
-        pi.prepareForDevices(device);
+        pi.enterFullNetworkState(device);
 
         NetpowerctrlApplication.getDataController().addToConfiguredDevices(device);
         //noinspection ConstantConditions
@@ -290,20 +270,20 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
     }
 
     @Override
-    public void onDeviceUpdated(DeviceInfo di) {
+    public void onDeviceUpdated(Device di) {
         onDeviceUpdated(di, false);
     }
 
     @Override
-    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
-        if (!di.HostName.equals(device.HostName))
+    public void onDeviceUpdated(Device updated_device, boolean willBeRemoved) {
+        if (!updated_device.equalsByUniqueID(device))
             return;
 
         if (test_state == TestStates.TEST_REACHABLE) {
             // Update stored device with received values
-            device.UniqueDeviceID = di.UniqueDeviceID;
+            device.UniqueDeviceID = updated_device.UniqueDeviceID;
             // do not copy the deviceName here, just the other values
-            device.copyFreshValues(di);
+            device.copyValuesFromUpdated(updated_device);
             // Test user+password by setting a device port.
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
@@ -333,23 +313,27 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
         } else if (test_state == TestStates.TEST_ACCESS) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(), getActivity().getString(R.string.device_test_ok), Toast.LENGTH_SHORT).show();
-            device.setReachable();
+            device.copyValuesFromUpdated(updated_device);
             test_state = TestStates.TEST_OK;
         }
     }
 
     @Override
-    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-        for (DeviceInfo di : timeout_devices) {
-            if (test_state == TestStates.TEST_REACHABLE) {
-                test_state = TestStates.TEST_INIT;
-                //noinspection ConstantConditions
-                Toast.makeText(getActivity(),
-                        getActivity().getString(R.string.error_device_not_reachable) + ": " + device.HostName + ":"
-                                + Integer.valueOf((device.PreferHTTP ? device.HttpPort : device.SendPort)).toString(),
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
+    public void onObserverJobFinished(List<Device> timeout_devices) {
+        if (test_state != TestStates.TEST_REACHABLE)
+            return;
+
+        for (Device di : timeout_devices) {
+            if (!di.equalsByUniqueID(device))
+                continue;
+            test_state = TestStates.TEST_INIT;
+            //noinspection ConstantConditions
+            Toast.makeText(getActivity(),
+                    getActivity().getString(R.string.error_device_not_reachable) + ": " + device.DeviceName + ":"
+                            + Integer.valueOf(0).toString(),
+                    Toast.LENGTH_SHORT
+            ).show();
+            break;
         }
     }
 
