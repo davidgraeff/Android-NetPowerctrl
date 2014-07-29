@@ -1,7 +1,7 @@
 package oly.netpowerctrl.network;
 
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.Device;
 
 public interface DeviceUpdate {
-    void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved);
+    void onDeviceUpdated(Device di, boolean willBeRemoved);
 }

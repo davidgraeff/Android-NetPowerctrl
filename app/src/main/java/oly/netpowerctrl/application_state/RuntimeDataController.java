@@ -11,9 +11,11 @@ import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.alarms.TimerController;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.devices.DeviceConnectionUDP;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceObserverBase;
@@ -33,12 +35,13 @@ import oly.netpowerctrl.utils.ShowToast;
  * go into this class. At the moment those are: execute, rename, countReachable, countNetworkDevices.
  */
 public class RuntimeDataController {
-    public final List<DeviceInfo> newDevices = new ArrayList<>();
+    public final List<Device> newDevices = new ArrayList<>();
     final public DeviceCollection deviceCollection = new DeviceCollection();
     final public GroupCollection groupCollection = new GroupCollection();
     final public SceneCollection sceneCollection = new SceneCollection();
     final public TimerController timerController = new TimerController();
-    private final WeakHashMap<RuntimeStateChanged, Boolean> observersStateChanged = new WeakHashMap<>();
+    private final WeakHashMap<OnDataQueryCompletedHandler, Boolean> observersDataQueryCompleted = new WeakHashMap<>();
+    private final WeakHashMap<OnDataLoadedHandler, Boolean> observersOnDataLoaded = new WeakHashMap<>();
     private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<>();
     private final List<DeviceObserverBase> updateDeviceStateList =
             Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
@@ -57,7 +60,7 @@ public class RuntimeDataController {
      *                        reloaded data. This should invalidate all caches (icons etc).
      */
     void loadData(final boolean notifyObservers) {
-        Thread t = new Thread() {
+        Thread t = new Thread("loadDataThread") {
             public void run() {
                 loadStoreData.read(groupCollection);
                 loadStoreData.read(sceneCollection);
@@ -77,8 +80,10 @@ public class RuntimeDataController {
         HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getDefaultSendPort());
 
-        for (DeviceInfo di : deviceCollection.devices)
-            ports.add(di.SendPort);
+        for (Device di : deviceCollection.devices)
+            for (DeviceConnection ci : di.DeviceConnections)
+                if (ci instanceof DeviceConnectionUDP)
+                    ports.add(ci.getDestinationPort());
 
         return ports;
     }
@@ -88,8 +93,10 @@ public class RuntimeDataController {
         HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getDefaultReceivePort());
 
-        for (DeviceInfo di : deviceCollection.devices)
-            ports.add(di.ReceivePort);
+        for (Device di : deviceCollection.devices)
+            for (DeviceConnection ci : di.DeviceConnections)
+                if (ci instanceof DeviceConnectionUDP)
+                    ports.add(ci.getListenPort());
 
         return ports;
     }
@@ -101,28 +108,36 @@ public class RuntimeDataController {
      *          callback method your object will either be registered
      *          or not.
      */
-    public void registerStateChanged(RuntimeStateChanged o) {
+    public void registerDataQueryCompleted(OnDataQueryCompletedHandler o) {
         boolean register = true;
         if (initialDataQueryCompleted) {
             // If the object return false we do not register it for further changes.
             register = o.onDataQueryFinished();
         }
-        if (initialDataLoaded) {
-            // If the object return false we do not register it for further changes.
-            register &= o.onDataLoaded();
-        }
 
         if (register)
-            observersStateChanged.put(o, true);
+            observersDataQueryCompleted.put(o, true);
+    }
+
+    public void registerOnDataLoaded(OnDataLoadedHandler o) {
+        // Only add to observer list, if the handler callback return true
+        // or the data hasn't been loaded so far.
+        if (o.onDataLoaded() || !initialDataLoaded)
+            observersOnDataLoaded.put(o, true);
     }
 
     @SuppressWarnings("unused")
-    public void unregisterStateChanged(RuntimeStateChanged o) {
-        observersStateChanged.remove(o);
+    public void unregisterDataQueryCompleted(OnDataQueryCompletedHandler o) {
+        observersDataQueryCompleted.remove(o);
+    }
+
+    @SuppressWarnings("unused")
+    public void unregisterOnDataLoaded(OnDataLoadedHandler o) {
+        observersOnDataLoaded.remove(o);
     }
 
     public void notifyStateReloaded() {
-        Iterator<RuntimeStateChanged> i = observersStateChanged.keySet().iterator();
+        Iterator<OnDataLoadedHandler> i = observersOnDataLoaded.keySet().iterator();
         while (i.hasNext())
             if (!i.next().onDataLoaded())
                 i.remove();
@@ -130,7 +145,7 @@ public class RuntimeDataController {
 
     void notifyStateQueryFinished() {
         initialDataQueryCompleted = true;
-        Iterator<RuntimeStateChanged> i = observersStateChanged.keySet().iterator();
+        Iterator<OnDataQueryCompletedHandler> i = observersDataQueryCompleted.keySet().iterator();
         while (i.hasNext())
             if (!i.next().onDataQueryFinished())
                 i.remove();
@@ -146,7 +161,7 @@ public class RuntimeDataController {
         observersNew.remove(o);
     }
 
-    private void notifyNewDeviceObservers(DeviceInfo di, boolean removedFromNew) {
+    private void notifyNewDeviceObservers(Device di, boolean removedFromNew) {
         for (DeviceUpdate o : observersNew.keySet())
             o.onDeviceUpdated(di, removedFromNew);
     }
@@ -164,7 +179,7 @@ public class RuntimeDataController {
         }
     }
 
-    private void notifyDeviceQueries(DeviceInfo target) {
+    private void notifyDeviceQueries(Device target) {
         // notify observers who are using the DeviceQuery class
         synchronized (updateDeviceStateList) {
             Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
@@ -190,23 +205,27 @@ public class RuntimeDataController {
         notifyNewDeviceObservers(null, true);
     }
 
-    public void addToConfiguredDevices(DeviceInfo current_device) {
-        if (deviceCollection.add(current_device)) {
+    public void addToConfiguredDevices(Device device) {
+        if (deviceCollection.add(device)) {
+            // An existing device has been replaced. Do nothing else here.
             return;
         }
 
+        // This device is now configured
+        device.configured = true;
+
         // Remove from new devices list
         for (int i = 0; i < newDevices.size(); ++i) {
-            if (newDevices.get(i).equalsByUniqueID(current_device)) {
+            if (newDevices.get(i).equalsByUniqueID(device)) {
                 newDevices.remove(i);
-                notifyNewDeviceObservers(current_device, true);
+                notifyNewDeviceObservers(device, true);
                 break;
             }
         }
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
-        if (!current_device.isReachable())
-            new DeviceQuery(null, current_device);
+        if (device.getFirstReachable() == null)
+            new DeviceQuery(null, device);
     }
 
     /**
@@ -214,7 +233,7 @@ public class RuntimeDataController {
      *
      * @param device_info
      */
-    public void onDeviceUpdatedOtherThread(final DeviceInfo device_info) {
+    public void onDeviceUpdatedOtherThread(final Device device_info) {
         NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
             public void run() {
                 onDeviceUpdated(device_info);
@@ -228,15 +247,11 @@ public class RuntimeDataController {
      *
      * @param device_info
      */
-    public void onDeviceUpdated(DeviceInfo device_info) {
+    public void onDeviceUpdated(Device device_info) {
         // if it matches a configured device, update it's outlet states and exit the method.
-        DeviceInfo existing_device = deviceCollection.update(device_info);
+        Device existing_device = deviceCollection.update(device_info);
 
         if (existing_device != null) {
-            // Special handling for disabled devices
-            if (!existing_device.enabled && existing_device.isReachable())
-                existing_device.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_device_disabled));
-
             // notify observers who are using the DeviceQuery class (existing device)
             notifyDeviceQueries(existing_device);
             return;
@@ -246,7 +261,7 @@ public class RuntimeDataController {
         notifyDeviceQueries(device_info);
 
         // Do we have this new device already in the list?
-        for (DeviceInfo target : newDevices) {
+        for (Device target : newDevices) {
             if (device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
                 return;
         }
@@ -271,8 +286,8 @@ public class RuntimeDataController {
 
     public int getReachableConfiguredDevices() {
         int r = 0;
-        for (DeviceInfo di : deviceCollection.devices)
-            if (di.isReachable())
+        for (Device device : deviceCollection.devices)
+            if (device.getFirstReachable() != null)
                 ++r;
         return r;
     }
@@ -281,7 +296,7 @@ public class RuntimeDataController {
         if (uuid == null)
             return null;
 
-        for (DeviceInfo di : deviceCollection.devices) {
+        for (Device di : deviceCollection.devices) {
             di.lockDevicePorts();
             Iterator<DevicePort> it = di.getDevicePortIterator();
             while (it.hasNext()) {
@@ -296,8 +311,8 @@ public class RuntimeDataController {
         return null;
     }
 
-    public DeviceInfo findDeviceByUniqueID(String uniqueID) {
-        for (DeviceInfo di : deviceCollection.devices) {
+    public Device findDeviceByUniqueID(String uniqueID) {
+        for (Device di : deviceCollection.devices) {
             if (di.UniqueDeviceID.equals(uniqueID)) {
                 return di;
             }
@@ -397,7 +412,7 @@ public class RuntimeDataController {
 
     public int countNetworkDevices(NetpowerctrlService service) {
         int i = 0;
-        for (DeviceInfo di : deviceCollection.devices)
+        for (Device di : deviceCollection.devices)
             if (di.isNetworkDevice(service)) ++i;
         return i;
     }

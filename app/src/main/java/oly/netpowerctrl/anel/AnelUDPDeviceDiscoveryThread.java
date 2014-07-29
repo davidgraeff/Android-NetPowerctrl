@@ -6,32 +6,29 @@ import java.io.UnsupportedEncodingException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnectionHTTP;
+import oly.netpowerctrl.devices.DeviceConnectionUDP;
+import oly.netpowerctrl.devices.DeviceFeatureTemperature;
 import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
-class AnelDeviceDiscoveryThread extends UDPReceiving {
+class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     public static AnelPlugin anelPlugin;
 
-    public AnelDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
-        super(port);
-        AnelDeviceDiscoveryThread.anelPlugin = anelPlugin;
+    public AnelUDPDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
+        super(port, "AnelDeviceDiscoveryThread");
+        AnelUDPDeviceDiscoveryThread.anelPlugin = anelPlugin;
     }
 
-    private static DeviceInfo createReceivedAnelDevice(String DeviceName, String HostName,
-                                                       String MacAddress, int receive_port) {
-        DeviceInfo di = DeviceInfo.createNewDevice(anelPlugin.getPluginID());
+    private static Device createReceivedAnelDevice(String DeviceName, String MacAddress) {
+        Device di = Device.createNewDevice(anelPlugin.getPluginID());
         di.DeviceName = DeviceName;
-        di.HostName = HostName;
         di.UniqueDeviceID = MacAddress;
-        di.ReceivePort = receive_port;
         // Default values for user and password
         di.UserName = "admin";
         di.Password = "anel";
-
-        di.SendPort = SharedPrefs.getDefaultSendPort();
-        di.setReachable();
         di.setUpdatedNow();
         return di;
     }
@@ -62,8 +59,9 @@ class AnelDeviceDiscoveryThread extends UDPReceiving {
             return;
         }
 
-        final DeviceInfo di = createReceivedAnelDevice(msg[1].trim(),
-                msg[2], msg[5], receive_port);
+        final String HostName = msg[2];
+        final Device di = createReceivedAnelDevice(msg[1].trim(), msg[5]);
+        di.addConnection(new DeviceConnectionUDP(di, HostName, receive_port, SharedPrefs.getDefaultSendPort()));
 
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
@@ -74,11 +72,14 @@ class AnelDeviceDiscoveryThread extends UDPReceiving {
                 disabledOutlets = Integer.parseInt(msg[14]);
             } catch (NumberFormatException ignored) {
             }
+            int httpPort;
             try {
-                di.HttpPort = Integer.parseInt(msg[15]);
+                httpPort = Integer.parseInt(msg[15]);
             } catch (NumberFormatException ignored) {
-                di.HttpPort = -1;
+                httpPort = -1;
             }
+            di.addConnection(new DeviceConnectionHTTP(di, HostName, httpPort));
+
             // IO ports
             if (msg.length > 23) {
                 // 1-based id. IO output range: 11..19, IO input range is 21..29
@@ -99,7 +100,7 @@ class AnelDeviceDiscoveryThread extends UDPReceiving {
                     oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
                     di.add(oi);
                 }
-                di.Temperature = msg[24];
+                di.Features.add(new DeviceFeatureTemperature(msg[24]));
                 di.Version = msg[25].trim();
             }
 
@@ -107,7 +108,7 @@ class AnelDeviceDiscoveryThread extends UDPReceiving {
         // For old firmwares
         else if (msg.length < 14) {
             numOutlets = msg.length - 6;
-            di.HttpPort = -1;
+            di.addConnection(new DeviceConnectionHTTP(di, HostName, -1));
         }
 
         for (int i = 0; i < numOutlets; i++) {

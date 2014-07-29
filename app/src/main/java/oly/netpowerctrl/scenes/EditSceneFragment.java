@@ -93,13 +93,6 @@ public class EditSceneFragment extends Fragment {
             h.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mListView.setEmptyView(view.findViewById(R.id.loading));
-
-                }
-            }, 10);
-            h.postDelayed(new Runnable() {
-                @Override
-                public void run() {
                     //noinspection ConstantConditions
                     mListView.getEmptyView().setVisibility(View.GONE);
                     mListView.setEmptyView(view.findViewById(R.id.empty));
@@ -107,7 +100,7 @@ public class EditSceneFragment extends Fragment {
                     textView.setText(R.string.scene_create_helptext_available);
                     textView.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_rew, 0, 0, 0);
                 }
-            }, 1000);
+            }, 200);
         } else {
             mListView.setEmptyView(view.findViewById(R.id.empty));
             TextView textView = (TextView) view.findViewById(R.id.empty_text);

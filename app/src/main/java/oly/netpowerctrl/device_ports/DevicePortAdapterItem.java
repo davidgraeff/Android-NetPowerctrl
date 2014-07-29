@@ -2,12 +2,10 @@ package oly.netpowerctrl.device_ports;
 
 import java.util.UUID;
 
-import oly.netpowerctrl.devices.DevicePort;
-
 /**
  * Created by david on 07.07.14.
  */
-class DevicePortListItem {
+class DevicePortAdapterItem {
     // unique id for the gridView
     public final long id;
     /// Group related
@@ -22,7 +20,7 @@ class DevicePortListItem {
     private UUID group;
     private groupTypeEnum groupType = groupTypeEnum.NOGROUP_TYPE;
 
-    DevicePortListItem(DevicePort oi, int command_value, long id) {
+    DevicePortAdapterItem(DevicePort oi, int command_value, long id) {
         this.id = id;
         this.port = oi;
         this.command_value = command_value;
@@ -30,7 +28,7 @@ class DevicePortListItem {
     }
 
     // A group item
-    public DevicePortListItem(UUID group, String name, int id) {
+    public DevicePortAdapterItem(UUID group, String name, int id) {
         this.id = id;
         this.port = null;
         this.command_value = 0;
@@ -39,14 +37,14 @@ class DevicePortListItem {
         this.groupType = groupTypeEnum.GROUP_TYPE;
     }
 
-    public static DevicePortListItem createGroupSpan(DevicePortListItem c, int id) {
-        DevicePortListItem new_item = new DevicePortListItem(c.group, c.displayText, id);
+    public static DevicePortAdapterItem createGroupSpan(DevicePortAdapterItem c, int id) {
+        DevicePortAdapterItem new_item = new DevicePortAdapterItem(c.group, c.displayText, id);
         new_item.setGroupType(groupTypeEnum.GROUP_SPAN_TYPE);
         return new_item;
     }
 
-    public static DevicePortListItem createGroupPreFillElemenet(DevicePortListItem c, int id) {
-        DevicePortListItem new_item = new DevicePortListItem(c.group, c.displayText, id);
+    public static DevicePortAdapterItem createGroupPreFillElemenet(DevicePortAdapterItem c, int id) {
+        DevicePortAdapterItem new_item = new DevicePortAdapterItem(c.group, c.displayText, id);
         new_item.setGroupType(groupTypeEnum.PRE_GROUP_FILL_ELEMENT_TYPE);
         return new_item;
     }

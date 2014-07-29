@@ -13,11 +13,11 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
  * Load icons for the ViewHolder of DevicePortsBaseAdapter in a separate thread
  */
 public class IconDeferredLoadingThread extends Thread {
-    public interface IconLoaded {
-        void setDrawable(Drawable bitmap, int position);
-    }
-
     private final LinkedBlockingQueue<IconItem> q = new LinkedBlockingQueue<>();
+
+    public IconDeferredLoadingThread() {
+        super("IconDeferredLoadingThread");
+    }
 
     public void loadIcon(IconItem job) {
         q.add(job);
@@ -35,6 +35,10 @@ public class IconDeferredLoadingThread extends Thread {
                 return;
             }
         }
+    }
+
+    public interface IconLoaded {
+        void setDrawable(Drawable bitmap, int position);
     }
 
     /**

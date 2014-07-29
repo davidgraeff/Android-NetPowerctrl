@@ -7,7 +7,7 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.Device;
 
 /**
  * This base class is used by the device query and device-resend-command class.
@@ -16,12 +16,12 @@ import oly.netpowerctrl.devices.DeviceInfo;
  */
 public abstract class DeviceObserverBase {
     final Handler mainLoopHandler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
-    List<DeviceInfo> devices_to_observe;
+    List<Device> devices_to_observe;
     final Runnable redoRunnable = new Runnable() {
         @Override
         public void run() {
-            for (DeviceInfo di : devices_to_observe) {
-                doAction(di, true);
+            for (Device device : devices_to_observe) {
+                doAction(device, true);
             }
         }
     };
@@ -32,11 +32,11 @@ public abstract class DeviceObserverBase {
             //Remove update listener
             NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
 
-            for (DeviceInfo di : devices_to_observe) {
-                if (di.isReachable())
-                    di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
+            for (Device device : devices_to_observe) {
+                if (device.getFirstReachable() != null)
+                    device.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
                 // Call onDeviceUpdated to update device info.
-                NetpowerctrlApplication.getDataController().deviceCollection.updateNotReachable(di);
+                NetpowerctrlApplication.getDataController().deviceCollection.updateNotReachable(device);
             }
 
             // Update status observer
@@ -50,7 +50,7 @@ public abstract class DeviceObserverBase {
         this.target = target;
     }
 
-    protected abstract void doAction(DeviceInfo di, boolean repeated);
+    protected abstract void doAction(Device device, boolean repeated);
 
     /**
      * Return true if all devices responded and this DeviceQuery object
@@ -58,10 +58,10 @@ public abstract class DeviceObserverBase {
      *
      * @param received_data The DeviceInfo object all observes should be notified of.
      */
-    public boolean notifyObservers(DeviceInfo received_data) {
-        Iterator<DeviceInfo> it = devices_to_observe.iterator();
+    public boolean notifyObservers(Device received_data) {
+        Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
-            DeviceInfo device_to_observe = it.next();
+            Device device_to_observe = it.next();
             if (device_to_observe.equalsByUniqueID(received_data)) {
                 it.remove();
                 if (target != null)
@@ -73,9 +73,9 @@ public abstract class DeviceObserverBase {
     }
 
     public boolean notifyObservers(String device_name) {
-        Iterator<DeviceInfo> it = devices_to_observe.iterator();
+        Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
-            DeviceInfo device_to_observe = it.next();
+            Device device_to_observe = it.next();
             boolean eq = device_name.equals(device_to_observe.DeviceName);
             if (eq) {
                 it.remove();
@@ -88,7 +88,7 @@ public abstract class DeviceObserverBase {
     }
 
     @SuppressWarnings("SameParameterValue")
-    public void addDevice(DeviceInfo device, boolean resetTimeout) {
+    public void addDevice(Device device, boolean resetTimeout) {
         devices_to_observe.add(device);
 
         if (!resetTimeout)
@@ -115,8 +115,8 @@ public abstract class DeviceObserverBase {
      */
     public void finishWithTimeouts() {
         mainLoopHandler.removeCallbacks(timeoutRunnable);
-        for (DeviceInfo di : devices_to_observe) {
-            di.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
+        for (Device di : devices_to_observe) {
+            di.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
         }
         if (target != null)
             target.onObserverJobFinished(devices_to_observe);

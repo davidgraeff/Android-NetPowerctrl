@@ -41,6 +41,20 @@
         android:numeric="integer"
         android:title="@string/preference_max_favourites_groups" />
 
+    <PreferenceCategory android:title="@string/preference_error_report_tool">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="acra.enable"
+            android:summaryOff="@string/preference_acra_disabled"
+            android:summaryOn="@string/preference_acra_enabled"
+            android:title="@string/preference_enable_acra" />
+
+        <EditTextPreference
+            android:key="acra.user.email"
+            android:summary="@string/pref_acra_user_email_summary"
+            android:title="@string/pref_acra_user_email" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/preference_standard_ports">
         <EditTextPreference
             android:defaultValue="@integer/default_send_port"

@@ -24,6 +24,7 @@ import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.RefreshStartedStopped;
+import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
@@ -90,7 +91,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
-                                NetpowerctrlApplication.getDataController().deviceCollection.clear();
+                                NetpowerctrlApplication.getDataController().deviceCollection.removeAll();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -147,7 +148,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-        final DeviceInfo current_device = (DeviceInfo) adapter.getItem((Integer) mListView.getTag());
+        final Device current_device = (Device) adapter.getItem((Integer) mListView.getTag());
 
         switch (menuItem.getItemId()) {
             case R.id.menu_device_configure: {
@@ -203,7 +204,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
-    private void show_configure_device_dialog(DeviceInfo di) {
+    private void show_configure_device_dialog(Device di) {
         // At the moment we always create an anel device
         if (di == null || di.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
             //noinspection ConstantConditions
@@ -221,11 +222,11 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Object item = adapter.getItem(i);
-        if (!(item instanceof DeviceInfo))
+        if (!(item instanceof Device))
             return;
 
         mListView.setTag(i);
-        DeviceInfo di = (DeviceInfo) item;
+        Device di = (Device) item;
         if (di.configured) {
             @SuppressWarnings("ConstantConditions")
             PopupMenu popup = new PopupMenu(getActivity(), view);

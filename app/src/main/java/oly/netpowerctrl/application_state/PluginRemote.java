@@ -17,8 +17,10 @@ import java.util.TreeSet;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.alarms.TimerController;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
@@ -37,7 +39,7 @@ public class PluginRemote implements PluginInterface {
     public String serviceName;
     private String TAG = "PluginRemote";
     //public PluginValuesAdapter valuesAdapter;
-    private DeviceInfo di = null;
+    private Device di = null;
     private Set<Integer> devicePortIDs;
     private boolean receiveFinished = false;
     private List<String> remote_states;
@@ -56,11 +58,11 @@ public class PluginRemote implements PluginInterface {
             service = null;
             NetpowerctrlService c = NetpowerctrlService.getService();
             if (c != null)
-                c.remove(PluginRemote.this);
+                c.removeExtension(PluginRemote.this);
 
             // Set non reachable and notify
             if (di != null) {
-                di.setNotReachable("service disconnected!");
+                di.setNotReachable(0, "service disconnected!");
                 NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
             }
         }
@@ -72,7 +74,6 @@ public class PluginRemote implements PluginInterface {
         public void initDone(List<String> states, int success_state) throws RemoteException {
             remote_states = states;
             remote_success_state = success_state;
-            di.HostName = serviceName;
             di.setHasChanged();
             // Copy of current device port IDs
             devicePortIDs = new TreeSet<>(di.getDevicePortIDs());
@@ -82,9 +83,9 @@ public class PluginRemote implements PluginInterface {
         public void pluginState(int state) {
             di.setUpdatedNow();
             if (state != remote_success_state || service == null) {
-                di.setNotReachable(remote_states.get(state));
+                di.setNotReachable(0, remote_states.get(state));
             } else
-                di.setReachable();
+                di.setReachable(0);
             di.setHasChanged();
 
             handler.post(new Runnable() {
@@ -188,11 +189,12 @@ public class PluginRemote implements PluginInterface {
         this.packageName = packageName;
         di = NetpowerctrlApplication.getDataController().findDeviceByUniqueID(UniqueDeviceID);
         if (di == null)
-            di = DeviceInfo.createNewDevice(getPluginID());
+            di = Device.createNewDevice(getPluginID());
+        if (di.DeviceConnections.isEmpty())
+            di.DeviceConnections.add(new DeviceConnectionHTTP(di, serviceName, 0));
         di.UniqueDeviceID = UniqueDeviceID;
-        di.setNotReachable("init...");
+        di.setNotReachable(0, "init...");
         di.DeviceName = localized_name;
-        di.HostName = serviceName;
     }
 
     public static PluginRemote create(String serviceName, String localized_name, String packageName) {
@@ -210,8 +212,13 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void finish() {
+    public void onDestroy() {
         context.unbindService(svcConn);
+    }
+
+    @Override
+    public void onStart(NetpowerctrlService service) {
+
     }
 
     /**
@@ -259,7 +266,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void requestData(DeviceInfo di) {
+    public void requestData(DeviceConnection ci) {
 
     }
 
@@ -299,12 +306,17 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void prepareForDevices(DeviceInfo device) {
+    public void enterFullNetworkState(Device device) {
 
     }
 
     @Override
-    public void openConfigurationPage(DeviceInfo device, Context context) {
+    public void enterNetworkReducedState() {
+
+    }
+
+    @Override
+    public void openConfigurationPage(Device device, Context context) {
         Intent i;
         PackageManager manager = context.getPackageManager();
         try {
@@ -377,7 +389,7 @@ public class PluginRemote implements PluginInterface {
     private void post() {
         if (!receiveFinished)
             return;
-        di.setReachable();
+        di.setReachable(0);
         di.setUpdatedNow();
         handler.post(new Runnable() {
             public void run() {

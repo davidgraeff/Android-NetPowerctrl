@@ -1,16 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release
+        version="5.3"
+        versioncode="67">
+        <change>Bitte Anwendung im Play Store bewerten, danke :)</change>
+        <change>Nachbarsynchronisierung funktioniert wieder</change>
+        <change>Hintergrundservice ist beim Start fehlertoleranter</change>
+        <change>Experimentelle Google Drive Backup-Entfernen Funktion vorerst deaktiviert</change>
+        <change>Das Wegwischen (Verstecken) von Gruppen-Titeln in der Steckdosenübersicht ist nicht
+            mehr möglich
+        </change>
+        <change>Porteinschränkungen gelten richtigerweise nur noch für Empfangsports.
+            Damit können HTTP und UDP-Sendeport wieder frei gewählt werden.
+        </change>
+    </release>
+    <release
         version="5.2"
         versioncode="66">
         <change>Fehler mit Timern behoben</change>
-        <change>Zuletzt bekannte Timer werden jetzt bevorzugt aktualsiert</change>
+        <change>Zuletzt bekannte Zeitschaltungen werden jetzt bevorzugt aktualisiert</change>
         <change>Google Drive Sync: Bei Fehlern werden detailiertere Informationen ausgegeben
         </change>
-        <change>Nachbarsynchronisierung: Fehler behoben</change>
+        <change>Bekannte Probleme:
+            Nachbarsynchronisierung funktioniert nicht zuverlässig;
+            GoogleDrive Inhalt wird erst nach mehrmaligen Neuladen angezeigt
+        </change>
     </release>
     <release
-        version="5.1-5.1.4"
+        version="5.0-5.1"
         versioncode="65">
         <change>Animationen überarbeitet</change>
         <change>Steckdosen werden in der Übersicht nach Gruppen sortiert angezeigt</change>
@@ -19,21 +36,13 @@
         <change>Porteinschränkung kann mit Einstellung umgangen werden für Ports kleiner 1024 (auf
             gerooteten Geräten)
         </change>
-        <change>Bekannte Probleme:
-            Nachbarsynchronisierung funktioniert nicht zuverlässig;
-            GoogleDrive Inhalt wird erst nach mehrmaligen Neuladen angezeigt
-        </change>
-    </release>
-    <release
-        version="5.0"
-        versioncode="60">
         <change>Zeige Button für WLAN-Einstellungen in Steckdosenübersicht, wenn keine Steckdosen
             gefunden wurden
         </change>
-        <change>Fehler behoben: Es sind nun auch andere HTTP Ports als 80 möglich.</change>
+        <change>Es sind nun auch andere HTTP Ports als 80 möglich.</change>
     </release>
     <release
-        version="4.8-4.9"
+        version="4.7-4.9"
         versioncode="59">
         <change>Layout leicht verändert</change>
         <change>Steckdosen können durch eine Wegwisch-Geste versteckt werden</change>
@@ -41,47 +50,30 @@
             unten ziehen zum aktualisieren.
         </change>
         <change>Master/Slave Dialog schließt nach Speichern wieder</change>
-        <change>Fehler mit nicht abschaltbarer permanenter Benachrichtigung behoben</change>
         <change>Absturz bei HTTP Modus behoben</change>
         <change>Nicht übernommene Werte in Geräte-Einrichten-Dialog behoben</change>
         <change>Warnen, wenn ein UDP/Http Port kleiner als 1024 gewählt wurde (ist nur mit Root
             Rechten möglich)
         </change>
-    </release>
-    <release
-        version="4.7"
-        versioncode="57">
         <change>Permanente Benachrichtigung für die Statusleiste einstellbar: Einfach in den
             Einstellungen "In Statusbar anzeigen" aktivieren und Szenen als Favoriten markieren.
             Diese
             tauchen ab Android 4.1 auf und können von dort direkt ausgeführt werden.
         </change>
-        <change>Alarm/Zeitschaltungen verbessert: Alarme werden zwischengespeichert und direkt
-            angezeigt,
-            da das abrufen von den Anel Geräten einige Sekunden dauert.
-        </change>
-        <change>Android 4.1 wird bald Vorraussetzung. Android 4.1 ist am 27. Juni 2012 erschienen.
+        <change>Alarm/Zeitschaltungen verbessert: Zeitschaltungen werden zwischengespeichert und
+            direkt
+            angezeigt, da das abrufen von den Anel Geräten einige Sekunden dauert.
         </change>
     </release>
     <release
-        version="4.6"
+        version="4.1-4.6"
         versioncode="56">
-        <change>Alarm/Zeitschaltungen verbessert</change>
-    </release>
-    <release
-        version="4.5"
-        versioncode="55">
         <change>Geräte Einrichtung mit Erklärungstexten und einstellbarem HTTP Port</change>
         <change>Bei Änderung der Steckdosennamen werden die dazugehörigen Zeitschaltungen nicht mehr
             gelöscht
         </change>
         <change>Master/Slave Auswahl verbessert</change>
-        <change>Alarm Abfrage und einfaches Erstellen+Bearbeiten</change>
-        <change>Fehler behoben</change>
-    </release>
-    <release
-        version="4.1-4.4"
-        versioncode="54">
+        <change>Alarm Abfrage. Alarm Erstellen+Bearbeiten</change>
         <change>Theme leicht verändert</change>
         <change>GoogleDrive Backup erkennt eine fehlende Datenverbindung schneller</change>
         <change>Startablauf der App verbessert (kann zu Abstürzen führen, Fehlerberichte

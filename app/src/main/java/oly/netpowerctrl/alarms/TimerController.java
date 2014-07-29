@@ -16,6 +16,9 @@ import java.util.WeakHashMap;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.utils.JSONHelper;
 
@@ -149,9 +152,45 @@ public class TimerController {
 
         notifyObservers(false, true);
 
-        requestActive = service.requestAllAlarms(alarm_uuids, this);
-        if (!requestActive)
+        if (service.isNetworkReducedMode() || requestActive) {
             notifyObservers(false, false);
+            return requestActive;
+        }
+
+        requestActive = true;
+
+        List<DevicePort> alarm_ports = new ArrayList<>();
+
+        DeviceCollection c = NetpowerctrlApplication.getDataController().deviceCollection;
+        // Put all ports of all devices into the list alarm_ports.
+        // If a port is referenced by the alarm_uuids hashSet, it will be put in front of the list
+        // to refresh that port first.
+        for (Device di : c.devices) {
+            // Request all alarm_uuids may be called before all plugins responded
+            PluginInterface i = di.getPluginInterface(service);
+            if (i == null || !di.isEnabled())
+                continue;
+
+            // Request alarm_uuids for every port
+            di.lockDevicePorts();
+            Iterator<DevicePort> it = di.getDevicePortIterator();
+            while (it.hasNext()) {
+                final DevicePort port = it.next();
+                if (port.Disabled)
+                    continue;
+
+                if (alarm_uuids.contains(port.uuid))
+                    alarm_ports.add(0, port); // add in front of all alarm_uuids
+                else
+                    alarm_ports.add(port);
+            }
+            di.releaseDevicePorts();
+        }
+
+        for (DevicePort port : alarm_ports) {
+            PluginInterface i = port.device.getPluginInterface(service);
+            i.requestAlarms(port, this);
+        }
 
         return requestActive;
     }

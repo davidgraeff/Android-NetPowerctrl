@@ -19,12 +19,26 @@ import oly.netpowerctrl.scenes.SceneCollection;
  * We keep track of Anel device states via the listener service.
  * Crash management
  */
-@ReportsCrashes(formKey = "dGVacG0ydVHnaNHjRjVTUTEtb3FPWGc6MQ",
+//@ReportsCrashes(formKey = "dGVacG0ydVHnaNHjRjVTUTEtb3FPWGc6MQ",
+//        mode = ReportingInteractionMode.TOAST,
+//        mailTo = "david.graeff@web.de",
+//        forceCloseDialogAfterToast = false, // optional, default false
+//        additionalSharedPreferences = {SharedPrefs.PREF_WIDGET_BASENAME},
+//        resToastText = R.string.crash_toast_text)
+
+@ReportsCrashes(formUri = "http://www.bugsense.com/api/acra?api_key=11178d09",
+        formKey = "",
         mode = ReportingInteractionMode.TOAST,
-        mailTo = "david.graeff@web.de",
-        forceCloseDialogAfterToast = false, // optional, default false
-        additionalSharedPreferences = {SharedPrefs.PREF_WIDGET_BASENAME},
         resToastText = R.string.crash_toast_text)
+//@ReportsCrashes(
+//        formKey = "",
+//        formUri = "https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_update/report",
+//        reportType = org.acra.sender.HttpSender.Type.JSON,
+//        httpMethod = org.acra.sender.HttpSender.Method.PUT,
+//        formUriBasicAuthLogin="waystruchatedurneintshin",
+//        formUriBasicAuthPassword="bwDrmPKlGxb8vsRBLc0IRFql",
+//        mode = ReportingInteractionMode.TOAST,
+//        resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application {
     public static NetpowerctrlApplication instance;
     private SceneCollection.IScenesUpdated scenesUpdated = new SceneCollection.IScenesUpdated() {
@@ -61,6 +75,7 @@ public class NetpowerctrlApplication extends Application {
     public void onCreate() {
         super.onCreate();
         ACRA.init(this);
+        //BugSenseHandler.initAndStartSession(MyActivity.this, "11178d09");
         instance = this;
         dataController = new RuntimeDataController();
         LoadStoreData loadStoreData = new LoadStoreData();

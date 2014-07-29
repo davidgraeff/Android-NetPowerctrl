@@ -25,7 +25,7 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.application_state.ServiceReady;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.AsyncRunnerResult;

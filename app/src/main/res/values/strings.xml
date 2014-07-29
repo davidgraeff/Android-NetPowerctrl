@@ -27,7 +27,7 @@
     <string name="device_test">Test</string>
     <string name="device_name">Name</string>
     <string name="device_ip">Hostname or IP</string>
-    <string name="device_default_ports">Default UDP ports?</string>
+    <string name="device_default_ports">Default ports?</string>
     <string name="device_send_udp_port">UDP port for sending</string>
     <string name="device_receive_udp_port">UDP port for receiving</string>
     <string name="device_username">Username</string>
@@ -268,14 +268,13 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="extensions">Extensions</string>
     <string name="preferences_category_save_energy">Save battery</string>
     <string name="device_connection_preferences">Connection settings</string>
-    <string name="device_udp">UDP Connection</string>
-    <string name="device_http">HTTP</string>
+    <string name="device_udp">UDP Connections</string>
+    <string name="device_http">HTTP Connections</string>
     <string name="device_http_port">HTTP Port</string>
     <string name="device_name_summary">The name of this device for the overview list. The name is not relevant for the connection to the device.</string>
     <string name="device_username_summary">Your user name. You may setup up to eight user names with different access rights on the website of the device.</string>
     <string name="device_password_summary">Your password. The password will be send in clear-text over the network!</string>
     <string name="device_ip_summary">The IP address or DNS name of the device</string>
-    <string name="device_prefer_http_summary">UDP funktioniert nur zuverlässig bis zum nächsten Router (lokales Netzwerk). HTTP ist langsamer, eignet sich für die Steuerung aus dem Internet aber besser.</string>
     <string name="device_default_ports_summary">Default ports from the settings screen are used</string>
     <string name="device_http_port_summary">Der HTTP Port des Geräts. Das ist der selbe, welcher auch für den Webzugriff genutzt wird.</string>
     <string name="alarm_weekdays_range">Weekdays: %1$s, On-time: %2$s, Off-time: %3$s</string>
@@ -305,7 +304,7 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="alarm_no_target">You have to setup the target device!</string>
     <string name="alarm_no_start_no_stop">There is neither a start nor a stop time set!</string>
     <string name="confirmation_delete_all_alarms">Remove all alarms?</string>
-    <string name="port_warning_1024">For using a port number smaller than 1024 you need to have root access!</string>
+    <string name="port_warning_1024">For using a port number smaller than 1024 you need to have root access! Deactivate this check in the preferences screen.</string>
     <string name="alarm_receiving">Receiving alarm $d</string>
     <string name="alarm_saving_now">Please wait. Saving alarm…</string>
     <string name="toWirelessSettings">Activate WiFi</string>
@@ -327,4 +326,18 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="preference_notify_on_non_reachable">Nachricht bei Nicht-Erreichbarem Gerät</string>
     <string name="preference_notify_on_non_reachable_summary">Zeigt eine Nachricht für jedes nicht erreichbare Gerät nach einem Aktualisierungsvorgang</string>
     <string name="alarms_no_alarms">Es sind noch keine Zeitschaltungen eingerichtet.</string>
+    <string name="gDrive_wait_login">Log in Vorgang läuft</string>
+    <string name="error_device_no_network_connections">Keine Netzwerk-Konfiguration! Bitte UDP oder HTTP einrichten!</string>
+    <string name="preference_error_report_tool">Fehler an Entwickler melden</string>
+    <string name="preference_enable_acra">App-Fehler an Entwickler übermitteln</string>
+    <string name="preference_acra_enabled">Anonyme Fehlerdaten werden übermittelt. Du hilfst, die App zu verbessern.</string>
+    <string name="preference_acra_disabled">Anonyme Fehlerdaten werden NICHT gesendet. Auftretende Fehler können nicht behoben werden.</string>
+    <string name="pref_acra_user_email">(Optional) Deine E-Mail Adresse</string>
+    <string name="pref_acra_user_email_summary">Die E-Mail Adresse wird einem Fehlerbericht angehängt und kann vom Entwickler für Rückfragen genutzt werden.</string>
+    <string name="device_energysave_mode">Energiesparmodus</string>
+    <string name="device_udp_new">Neue UDP Verbindung</string>
+    <string name="device_http_new">Neue HTTP Verbindung</string>
+    <string name="device_udp_new_summary">UDP funktioniert nur zuverlässig bis zum nächsten Router (lokales Netzwerk) ist aber schneller.</string>
+    <string name="device_http_new_summary">HTTP ist langsamer, eignet sich für die Steuerung aus dem Internet aber besser.</string>
+    <string name="error_reading_alarms">Einlesen der Zeitschaltungen fehlgeschlagen</string>
 </resources>

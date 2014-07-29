@@ -3,6 +3,7 @@ package oly.netpowerctrl.utils.gui;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
 import android.os.Handler;
@@ -254,9 +255,12 @@ public class DrawerController {
                 }
             });
         } else {
-            ft.replace(R.id.content_frame, currentFragment);
+            String tag = currentFragment.getClass().getSimpleName();
+            context.getFragmentManager().popBackStack(tag, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            context.getFragmentManager().executePendingTransactions();
+            ft.replace(R.id.content_frame, currentFragment, tag);
             if (drawerLastItemPosition != -1)
-                ft.addToBackStack(null);
+                ft.addToBackStack(tag);
             // we commit with possible state loss here because selectItem is called from an
             // async callback and the InstanceState of the activity may have been saved already.
             ft.commitAllowingStateLoss();

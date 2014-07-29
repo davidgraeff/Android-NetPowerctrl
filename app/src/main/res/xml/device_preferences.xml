@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:dialogMessage="@string/device_name_summary"
+        android:dialogTitle="@string/device_name"
+        android:key="anel_name"
+        android:persistent="false"
+        android:summary="@string/device_name_summary"
+        android:title="@string/device_name" />
+
+    <EditTextPreference
+        android:dialogMessage="@string/device_username_summary"
+        android:dialogTitle="@string/device_username"
+        android:key="anel_username"
+        android:persistent="false"
+        android:summary="@string/device_username_summary"
+        android:title="@string/device_username" />
+
+    <EditTextPreference
+        android:dialogMessage="@string/device_password_summary"
+        android:dialogTitle="@string/device_password"
+        android:key="anel_password"
+        android:persistent="false"
+        android:summary="@string/device_password_summary"
+        android:title="@string/device_password" />
+
+    <CheckBoxPreference
+        android:key="anel_enabled"
+        android:persistent="false"
+        android:summary="@string/device_enabled_summary"
+        android:title="@string/device_enabled" />
+
+
+    <PreferenceCategory
+        android:key="connections_http"
+        android:title="@string/device_http">
+        <PreferenceScreen
+            android:key="connections_http_new"
+            android:summary="@string/device_http_new_summary"
+            android:title="@string/device_http_new" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="connections_udp"
+        android:title="@string/device_udp">
+        <PreferenceScreen
+            android:key="connections_udp_new"
+            android:summary="@string/device_udp_new_summary"
+            android:title="@string/device_udp_new" />
+    </PreferenceCategory>
+</PreferenceScreen>

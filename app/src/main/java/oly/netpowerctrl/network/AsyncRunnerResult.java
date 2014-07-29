@@ -1,6 +1,6 @@
 package oly.netpowerctrl.network;
 
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
  * Implement this interface if you want to be notified of a failed/successful renaming of a deviceport.

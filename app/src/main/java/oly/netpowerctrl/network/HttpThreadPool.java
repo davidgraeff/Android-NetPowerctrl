@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,7 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
 
 /**
  * All http related stuff
@@ -58,11 +60,7 @@ public class HttpThreadPool {
         pool.execute(httpRunner);
     }
 
-    public static interface HTTPCallback<T> {
-        void httpResponse(T additional, boolean callback_success, String response_message);
-    }
-
-    public static <T> Runnable createHTTPRunner(final DeviceInfo device, final String getData,
+    public static <T> Runnable createHTTPRunner(final DeviceConnection deviceConnection, final String getData,
                                                 final String postData, final T additional,
                                                 final boolean responseInMainThread, final HTTPCallback<T> callback) {
         return new Runnable() {
@@ -71,11 +69,13 @@ public class HttpThreadPool {
                 URL url;
                 boolean success = false;
                 String result_message;
+                final Device device = deviceConnection.getDevice();
                 try {
                     String cred = device.UserName + ":" + device.Password;
-                    url = new URL("http://" + device.HostName + ":" + device.HttpPort + "/" + getData);
+                    url = new URL("http://" + deviceConnection.getDestinationHost()
+                            + ":" + deviceConnection.getDestinationPort() + "/" + getData);
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    con.setConnectTimeout(500);
+                    con.setConnectTimeout(1000);
                     con.setRequestMethod("POST");
                     con.setRequestProperty("Authorization", "Basic " +
                             Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));
@@ -94,18 +94,16 @@ public class HttpThreadPool {
                             result_message = sb.toString();
                             break;
                         case 401:
-                            success = false;
                             result_message = NetpowerctrlApplication.instance.getString(R.string.error_device_no_access);
                             break;
                         default:
                             result_message = "code " + String.valueOf(con.getResponseCode());
-                            success = false;
                     }
+                } catch (SocketTimeoutException e) {
+                    result_message = e.getMessage();
                 } catch (MalformedURLException e) {
-                    e.printStackTrace();
                     result_message = e.getMessage();
                 } catch (ProtocolException e) {
-                    e.printStackTrace();
                     result_message = e.getMessage();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -124,6 +122,10 @@ public class HttpThreadPool {
                     callback.httpResponse(additional, callback_success, callback_error_message);
             }
         };
+    }
+
+    public static interface HTTPCallback<T> {
+        void httpResponse(T additional, boolean callback_success, String response_message);
     }
 
 }

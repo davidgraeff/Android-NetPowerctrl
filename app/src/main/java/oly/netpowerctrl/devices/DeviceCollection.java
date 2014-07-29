@@ -14,6 +14,7 @@ import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
@@ -24,10 +25,10 @@ import oly.netpowerctrl.utils.JSONHelper;
  */
 public class DeviceCollection {
     private final WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<>();
-    public List<DeviceInfo> devices = new ArrayList<>();
+    public List<Device> devices = new ArrayList<>();
     private IDevicesSave storage;
 
-    public static DeviceCollection fromDevices(List<DeviceInfo> devices, IDevicesSave storage) {
+    public static DeviceCollection fromDevices(List<Device> devices, IDevicesSave storage) {
         DeviceCollection dc = new DeviceCollection();
         dc.storage = storage;
         dc.devices = devices;
@@ -52,7 +53,7 @@ public class DeviceCollection {
         reader.beginArray();
         while (reader.hasNext()) {
             try {
-                DeviceInfo di = DeviceInfo.fromJSON(reader);
+                Device di = Device.fromJSON(reader);
                 if (!tryToMerge)
                     devices.add(di);
                 else {
@@ -94,7 +95,7 @@ public class DeviceCollection {
 
     void toJSON(JsonWriter writer) throws IOException {
         writer.beginArray();
-        for (DeviceInfo di : devices) {
+        for (Device di : devices) {
             di.toJSON(writer);
         }
         writer.endArray();
@@ -110,7 +111,7 @@ public class DeviceCollection {
         observersConfiguredDevice.remove(o);
     }
 
-    void notifyDeviceObservers(DeviceInfo di, boolean willBeRemoved) {
+    void notifyDeviceObservers(Device di, boolean willBeRemoved) {
         for (DeviceUpdate o : observersConfiguredDevice.keySet())
             o.onDeviceUpdated(di, willBeRemoved);
     }
@@ -122,13 +123,13 @@ public class DeviceCollection {
      * @param device The new device to add (or replace an existing one).
      * @return Return true if an existing device has been replaced instead of adding a new entry.
      */
-    public boolean add(DeviceInfo device) {
+    public boolean add(Device device) {
         // Determine next free devicePort position.
         // This position is only for the listView to let all devicePorts of this new device
         // be at the end of the list.
         int highestPosition = 0;
         int nextPos = 0;
-        for (DeviceInfo local_device : devices) {
+        for (Device local_device : devices) {
             nextPos += local_device.count();
             Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
@@ -150,8 +151,7 @@ public class DeviceCollection {
         for (int i = devices.size() - 1; i >= 0; --i) {
             if (device.equalsByUniqueID(devices.get(i))) {
                 devices.set(i, device);
-                if (storage != null)
-                    storage.devicesSave(this);
+                save();
                 notifyDeviceObservers(device, false);
                 return true;
             }
@@ -159,16 +159,14 @@ public class DeviceCollection {
 
         devices.add(device);
         notifyDeviceObservers(device, false);
-        if (storage != null)
-            storage.devicesSave(this);
+        save();
         return false;
     }
 
-    public void clear() {
+    public void removeAll() {
         devices.clear();
         notifyDeviceObservers(null, true);
-        if (storage != null)
-            storage.devicesSave(this);
+        save();
     }
 
     public void save() {
@@ -176,37 +174,36 @@ public class DeviceCollection {
             storage.devicesSave(this);
     }
 
-    public void remove(DeviceInfo device) {
+    public void remove(Device device) {
         int position = devices.indexOf(device);
         if (position == -1)
             return;
         device.configured = false;
         devices.remove(position);
         notifyDeviceObservers(device, true);
-        if (storage != null)
-            storage.devicesSave(this);
+        save();
     }
 
-    public void updateNotReachable(DeviceInfo deviceInfo) {
-        notifyDeviceObservers(deviceInfo, false);
+    public void updateNotReachable(Device device) {
+        notifyDeviceObservers(device, false);
 
         if (SharedPrefs.notifyDeviceNotReachable()) {
             long current_time = System.currentTimeMillis();
             Context context = NetpowerctrlApplication.instance;
             Toast.makeText(context,
-                    context.getString(R.string.error_setting_outlet, deviceInfo.DeviceName,
-                            (int) ((current_time - deviceInfo.getUpdatedTime()) / 1000)),
+                    context.getString(R.string.error_setting_outlet, device.DeviceName,
+                            (int) ((current_time - device.getUpdatedTime()) / 1000)),
                     Toast.LENGTH_LONG
             ).show();
         }
     }
 
-    public DeviceInfo update(DeviceInfo newValues_device) {
-        for (DeviceInfo existing_device : devices) {
+    public Device update(Device newValues_device) {
+        for (Device existing_device : devices) {
             if (!newValues_device.equalsByUniqueID(existing_device))
                 continue;
 
-            if (existing_device.copyFreshValues(newValues_device)) {
+            if (existing_device.copyValuesFromUpdated(newValues_device)) {
                 notifyDeviceObservers(existing_device, false);
             }
 

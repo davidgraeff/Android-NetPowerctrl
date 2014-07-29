@@ -22,8 +22,8 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.ServiceReady;
-import oly.netpowerctrl.devices.DeviceInfo;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
@@ -98,7 +98,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         if (!NetpowerctrlService.isServiceReady())
             return;
 
-        List<DeviceInfo> devicesToUpdate = new ArrayList<>();
+        List<Device> devicesToUpdate = new ArrayList<>();
         int[] allWidgetIds = getAllWidgetIDs();
         for (int appWidgetId : allWidgetIds) {
             String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
@@ -205,7 +205,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         views.setViewVisibility(R.id.widget_name, widget_show_title ? View.VISIBLE : View.GONE);
         views.setViewVisibility(R.id.widget_status, widget_show_status ? View.VISIBLE : View.GONE);
 
-        if (!oi.device.isReachable()) {
+        if (oi.device.getFirstReachable() == null) {
             views.setImageViewBitmap(R.id.widget_image,
                     Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
                             Icons.IconType.WidgetIcon, Icons.IconState.StateUnknown,
@@ -251,12 +251,12 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     @Override
-    public void onDeviceUpdated(DeviceInfo di) {
+    public void onDeviceUpdated(Device di) {
         onDeviceUpdated(di, false);
     }
 
     @Override
-    public void onDeviceUpdated(DeviceInfo di, boolean willBeRemoved) {
+    public void onDeviceUpdated(Device di, boolean willBeRemoved) {
         //Log.w("widget", di != null ? di.DeviceName : "empty di");
         if (di == null)
             return;
@@ -287,8 +287,8 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     @Override
-    public void onObserverJobFinished(List<DeviceInfo> timeout_devices) {
-        for (DeviceInfo di : timeout_devices) {
+    public void onObserverJobFinished(List<Device> timeout_devices) {
+        for (Device di : timeout_devices) {
             onDeviceUpdated(di, false);
         }
     }

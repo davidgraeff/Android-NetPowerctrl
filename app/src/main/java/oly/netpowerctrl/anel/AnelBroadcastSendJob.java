@@ -13,7 +13,9 @@ import java.util.Set;
 
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.devices.DeviceInfo;
+import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.network.UDPSending;
 
 /**
@@ -78,10 +80,14 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
             NetpowerctrlService service = NetpowerctrlService.getService();
             if (service == null)
                 return;
-            List<DeviceInfo> devices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
-            for (DeviceInfo di : devices) {
-                if (di.pluginID.equals(AnelPlugin.PLUGIN_ID))
-                    di.getPluginInterface(service).requestData(di);
+            List<Device> devices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
+            for (Device device : devices) {
+                if (device.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
+                    PluginInterface i = device.getPluginInterface(service);
+                    for (DeviceConnection ci : device.DeviceConnections) {
+                        i.requestData(ci);
+                    }
+                }
             }
         }
     }
