@@ -2,7 +2,6 @@ package oly.netpowerctrl.anel;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -22,7 +21,6 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
@@ -33,6 +31,7 @@ import oly.netpowerctrl.devices.DeviceConnectionUDP;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 
 public class AnelDevicePreferences extends PreferenceFragment implements DeviceObserverResult, DeviceUpdate {
@@ -137,7 +136,44 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             }
         });
 
-//        update_connections();
+        p = m.findPreference("connections_http_new");
+        p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                String host = "";
+
+                if (device.DeviceConnections.size() > 0)
+                    host = device.DeviceConnections.get(0).getDestinationHost();
+                DeviceConnection deviceConnection = new DeviceConnectionHTTP(device, host, 80);
+                DeviceConnectionPreferences fragment = new DeviceConnectionPreferences();
+                fragment.setDeviceConnection(deviceConnection, device, true);
+
+                //noinspection ConstantConditions
+                getFragmentManager().beginTransaction().addToBackStack(null).
+                        setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).
+                        replace(R.id.content_frame, fragment).commit();
+                return true;
+            }
+        });
+        p = m.findPreference("connections_udp_new");
+        p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                String host = "";
+                if (device.DeviceConnections.size() > 0)
+                    host = device.DeviceConnections.get(0).getDestinationHost();
+                DeviceConnection deviceConnection = new DeviceConnectionUDP(device, host,
+                        SharedPrefs.getDefaultReceivePort(), SharedPrefs.getDefaultSendPort());
+                DeviceConnectionPreferences fragment = new DeviceConnectionPreferences();
+                fragment.setDeviceConnection(deviceConnection, device, true);
+
+                //noinspection ConstantConditions
+                getFragmentManager().beginTransaction().addToBackStack(null).
+                        setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).
+                        replace(R.id.content_frame, fragment).commit();
+                return true;
+            }
+        });
     }
 
     @Override
@@ -154,13 +190,13 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
 
         for (int i = pc_http.getPreferenceCount() - 1; i >= 0; --i) {
             Preference s = pc_http.getPreference(i);
-            if (s instanceof PreferenceScreen) {
+            if (!s.getKey().equals("connections_http_new")) {
                 pc_http.removePreference(s);
             }
         }
         for (int i = pc_udp.getPreferenceCount() - 1; i >= 0; --i) {
             Preference s = pc_udp.getPreference(i);
-            if (s instanceof PreferenceScreen) {
+            if (!s.getKey().equals("connections_udp_new")) {
                 pc_udp.removePreference(s);
             }
         }
@@ -184,9 +220,13 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Fragment fragment = Fragment.instantiate(getActivity(),
-                            DeviceConnectionPreferences.class.getName());
-                    ((DeviceConnectionPreferences) fragment).setDeviceConnection(deviceConnection);
+//                    Fragment fragment = Fragment.instantiate(getActivity(),
+//                            DeviceConnectionPreferences.class.getName());
+//                    ((DeviceConnectionPreferences) fragment).setDeviceConnection(deviceConnection);
+
+                    DeviceConnectionPreferences fragment = new DeviceConnectionPreferences();
+                    fragment.setDeviceConnection(deviceConnection, device, false);
+
                     //noinspection ConstantConditions
                     getFragmentManager().beginTransaction().addToBackStack(null).
                             setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).
@@ -223,9 +263,12 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
 
         test_state = TestStates.TEST_REACHABLE;
 
-        PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
-        assert pi != null;
-        pi.enterFullNetworkState(device);
+        PluginInterface pluginInterface = device.getPluginInterface();
+        if (pluginInterface == null) {
+            Toast.makeText(getActivity(), R.string.error_plugin_not_installed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        pluginInterface.enterFullNetworkState(device);
 
         deviceQuery = new DeviceQuery(this, device);
     }
@@ -260,9 +303,10 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
     }
 
     private void saveAndFinish() {
-        PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
-        assert pi != null;
-        pi.enterFullNetworkState(device);
+        PluginInterface pluginInterface = device.getPluginInterface();
+        if (pluginInterface != null) {
+            pluginInterface.enterFullNetworkState(device);
+        }
 
         NetpowerctrlApplication.getDataController().addToConfiguredDevices(device);
         //noinspection ConstantConditions
@@ -288,7 +332,7 @@ public class AnelDevicePreferences extends PreferenceFragment implements DeviceO
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            PluginInterface pi = device.getPluginInterface(NetpowerctrlService.getService());
+            PluginInterface pi = device.getPluginInterface();
             assert pi != null;
             if (deviceQuery != null) {
                 deviceQuery.addDevice(device, false);

@@ -120,7 +120,7 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, OnDataL
             assert convertView != null;
 
             Device device = (Device) getItem(position);
-            boolean reachable = device.getFirstReachable() != null;
+            boolean reachable = device.getFirstReachableConnection() != null;
             TextView tvName = (TextView) convertView.findViewById(R.id.device_name);
             tvName.setText(device.DeviceName);
             if (reachable)
@@ -133,7 +133,7 @@ public class DevicesAdapter extends BaseAdapter implements DeviceUpdate, OnDataL
             if (!reachable)
                 subtext += device.getNotReachableReasons();
             else {
-                DeviceConnection deviceConnection = device.getFirstReachable();
+                DeviceConnection deviceConnection = device.getFirstReachableConnection();
                 subtext += deviceConnection.getProtocol() + "/" + deviceConnection.getDestinationHost();
             }
 

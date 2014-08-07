@@ -35,8 +35,10 @@
 
         <Button
             android:id="@+id/btnChangeToDevices"
+            style="?colored_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="@string/devices"
             android:visibility="gone" />
     </LinearLayout>

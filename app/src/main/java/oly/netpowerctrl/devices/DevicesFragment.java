@@ -23,6 +23,7 @@ import oly.netpowerctrl.anel.AnelDevicePreferences;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.application_state.RefreshStartedStopped;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.main.MainActivity;
@@ -132,7 +133,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.instance.changeToFragment(PreferencesFragment.class.getName());
+                MainActivity.getNavigationController().changeToFragment(PreferencesFragment.class.getName());
             }
         });
         mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
@@ -197,8 +198,9 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.menu_device_configuration_page:
-                current_device.getPluginInterface(NetpowerctrlService.getService())
-                        .openConfigurationPage(current_device, getActivity());
+                PluginInterface pluginInterface = current_device.getPluginInterface();
+                if (pluginInterface != null)
+                    pluginInterface.openConfigurationPage(current_device, getActivity());
             default:
                 return false;
         }
@@ -232,7 +234,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             PopupMenu popup = new PopupMenu(getActivity(), view);
             MenuInflater inflater = popup.getMenuInflater();
             inflater.inflate(R.menu.configured_device_item, popup.getMenu());
-
+            popup.getMenu().findItem(R.id.menu_device_configuration_page).setVisible(di.getPluginInterface() != null);
             popup.setOnMenuItemClickListener(this);
             popup.show();
         } else {

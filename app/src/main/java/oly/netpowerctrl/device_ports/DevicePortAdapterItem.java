@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Created by david on 07.07.14.
  */
-class DevicePortAdapterItem {
+public class DevicePortAdapterItem {
     // unique id for the gridView
     public final long id;
     /// Group related
@@ -37,8 +37,9 @@ class DevicePortAdapterItem {
         this.groupType = groupTypeEnum.GROUP_TYPE;
     }
 
-    public static DevicePortAdapterItem createGroupSpan(DevicePortAdapterItem c, int id) {
-        DevicePortAdapterItem new_item = new DevicePortAdapterItem(c.group, c.displayText, id);
+    public static DevicePortAdapterItem createGroupSpan(DevicePortAdapterItem c, boolean withTitle, int id) {
+        DevicePortAdapterItem new_item = new DevicePortAdapterItem(c.group,
+                withTitle ? c.displayText : "", id);
         new_item.setGroupType(groupTypeEnum.GROUP_SPAN_TYPE);
         return new_item;
     }
@@ -66,8 +67,8 @@ class DevicePortAdapterItem {
      * Mark item to be removed. Group header items are not affected
      */
     public void markRemoved() {
-        if (group != null)
-            return;
+//        if (group != null)
+//            return;
         marked_removed = true;
     }
 
@@ -76,7 +77,8 @@ class DevicePortAdapterItem {
     }
 
     public boolean isGroup(UUID group) {
-        return groupType == groupTypeEnum.GROUP_TYPE && group.equals(this.group);
+        return (groupType == groupTypeEnum.GROUP_TYPE || groupType == groupTypeEnum.GROUP_SPAN_TYPE)
+                && group.equals(this.group);
     }
 
     public groupTypeEnum groupType() {

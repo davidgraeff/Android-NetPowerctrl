@@ -22,6 +22,7 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceObserverFinishedResult;
 import oly.netpowerctrl.network.DeviceObserverResult;
@@ -42,14 +43,13 @@ public class NetpowerctrlService extends Service {
     private static final String PAYLOAD_LOCALIZED_NAME = "LOCALIZED_NAME";
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
-    static private final ArrayList<ServiceReady> observersServiceReady = new ArrayList<>();
-    static private final ArrayList<RefreshStartedStopped> observersStartStopRefresh = new ArrayList<>();
-    private static final Handler stopServiceHandler = new Handler();
+    private static final ArrayList<ServiceReady> observersServiceReady = new ArrayList<>();
+    private static final ArrayList<RefreshStartedStopped> observersStartStopRefresh = new ArrayList<>();
     ///////////////// Service start/stop listener /////////////////
     static private int mDiscoverServiceRefCount = 0;
     static private NetpowerctrlService mDiscoverService;
     static private boolean mWaitForService;
-    private static final Runnable stopRunnable = new Runnable() {
+    private final Runnable stopRunnable = new Runnable() {
         @Override
         public void run() {
             try {
@@ -60,6 +60,7 @@ public class NetpowerctrlService extends Service {
             }
         }
     };
+    private final Handler stopServiceHandler = new Handler();
     private final BroadcastReceiver extensionsListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context ignored, Intent i) {
@@ -170,7 +171,6 @@ public class NetpowerctrlService extends Service {
     public static void useService(boolean refreshDevices, boolean showNotification) {
         ++mDiscoverServiceRefCount;
         // Stop delayed stop-service
-        stopServiceHandler.removeCallbacks(stopRunnable);
         // Service is not running anymore, restart it
         if (mDiscoverService == null) {
             if (mWaitForService)
@@ -182,16 +182,19 @@ public class NetpowerctrlService extends Service {
             intent.putExtra("refreshDevices", refreshDevices);
             intent.putExtra("showNotification", showNotification);
             context.startService(intent);
-        } else if (refreshDevices) // service already running. refresh devices?
-            mDiscoverService.findDevices(showNotification, null);
+        } else { // service already running. refresh devices?
+            mDiscoverService.stopServiceHandler.removeCallbacks(mDiscoverService.stopRunnable);
+            if (refreshDevices)
+                mDiscoverService.findDevices(showNotification, null);
+        }
     }
 
     public static void stopUseService() {
         if (mDiscoverServiceRefCount > 0) {
             mDiscoverServiceRefCount--;
         }
-        if (mDiscoverServiceRefCount == 0) {
-            stopServiceHandler.postDelayed(stopRunnable, 2000);
+        if (mDiscoverServiceRefCount == 0 && mDiscoverService != null) {
+            mDiscoverService.stopServiceHandler.postDelayed(mDiscoverService.stopRunnable, 2000);
         }
     }
 
@@ -215,7 +218,11 @@ public class NetpowerctrlService extends Service {
         mDiscoverService = this;
 
         // Add anel plugin
-        plugins.add(new AnelPlugin());
+        {
+            PluginInterface pluginInterface = new AnelPlugin();
+            plugins.add(pluginInterface);
+            updatePluginReferencesInDevices(pluginInterface);
+        }
 
         // Listen to preferences changes
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -225,9 +232,9 @@ public class NetpowerctrlService extends Service {
 
         // Service start code
         if (b != null)
-            mDiscoverService.enterFullNetworkMode(b.getBoolean("refreshDevices"), b.getBoolean("showNotification"));
+            enterFullNetworkMode(b.getBoolean("refreshDevices"), b.getBoolean("showNotification"));
         else
-            mDiscoverService.enterFullNetworkMode(true, false);
+            enterFullNetworkMode(true, false);
 
         // Notify all observers that we are ready
         Iterator<ServiceReady> it = observersServiceReady.iterator();
@@ -273,12 +280,14 @@ public class NetpowerctrlService extends Service {
         enterNetworkReducedMode();
 
         // Notify rest of the app
-        for (ServiceReady anObserversServiceReady : observersServiceReady) {
-            anObserversServiceReady.onServiceFinished();
+        for (ServiceReady onObserversServiceReady : observersServiceReady) {
+            onObserversServiceReady.onServiceFinished();
         }
 
         // Clean up
         plugins.clear();
+        removePluginReferencesInDevices(null);
+
         mDiscoverServiceRefCount = 0;
         mDiscoverService = null;
         mWaitForService = false;
@@ -355,15 +364,47 @@ public class NetpowerctrlService extends Service {
         }
 
         plugins.add(plugin);
+        updatePluginReferencesInDevices(plugin);
+    }
+
+    private void updatePluginReferencesInDevices(PluginInterface plugin) {
+        DeviceCollection deviceCollection = NetpowerctrlApplication.getDataController().deviceCollection;
+        for (Device device : deviceCollection.devices) {
+            if (device.pluginID.equals(plugin.getPluginID())) {
+                device.setPluginInterface(plugin);
+                device.setHasChanged();
+                deviceCollection.update(device);
+            }
+        }
+    }
+
+    public PluginInterface getPluginByID(String pluginID) {
+        for (PluginInterface pluginInterface : plugins)
+            if (pluginInterface.getPluginID().equals(pluginID))
+                return pluginInterface;
+        return null;
     }
 
     public void removeExtension(PluginRemote plugin) {
         plugins.remove(plugin);
+        removePluginReferencesInDevices(plugin);
+    }
+
+    private void removePluginReferencesInDevices(PluginInterface plugin) {
+        // Remove all references in Device objects.
+        DeviceCollection deviceCollection = NetpowerctrlApplication.getDataController().deviceCollection;
+        for (Device device : deviceCollection.devices) {
+            if (plugin == null || device.getPluginInterface() == plugin) {
+                device.setPluginInterface(null);
+                device.setHasChanged();
+                deviceCollection.update(device);
+            }
+        }
     }
 
     public void sendBroadcastQuery() {
-        for (PluginInterface pi : plugins) {
-            pi.requestData();
+        for (PluginInterface pluginInterface : plugins) {
+            pluginInterface.requestData();
         }
 
         if (SharedPrefs.getLoadExtensions()) {
@@ -377,15 +418,6 @@ public class NetpowerctrlService extends Service {
             i.putExtra(PAYLOAD_SERVICENAME, MainActivity.class.getCanonicalName());
             NetpowerctrlApplication.instance.sendBroadcast(i);
         }
-    }
-
-    public PluginInterface getPluginInterface(Device device) {
-        for (PluginInterface pi : plugins) {
-            if (pi.getPluginID().equals(device.pluginID)) {
-                return pi;
-            }
-        }
-        return null;
     }
 
     public void findDevices(final boolean showNotification, final DeviceObserverFinishedResult callback) {
@@ -455,7 +487,7 @@ public class NetpowerctrlService extends Service {
                     return;
 
                 // Do we need to go into network reduced mode?
-                if (timeout_devices.size() == c.countNetworkDevices(NetpowerctrlService.this)) {
+                if (timeout_devices.size() == c.countNetworkDevices()) {
                     if (SharedPrefs.logEnergySaveMode())
                         Logging.appendLog("Energiesparen an: Keine Geräte gefunden");
                     if (SharedPrefs.notifyOnStop()) {
@@ -470,4 +502,5 @@ public class NetpowerctrlService extends Service {
     public boolean isNetworkReducedMode() {
         return mNetworkReducedMode;
     }
+
 }

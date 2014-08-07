@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelog bulletedList="true">
+    <changelogversion changeDate="7. August 2014" versionName="5.6">
+        <changelogbug>Probleme mit der Listen- und Rasteransicht behoben</changelogbug>
+        <changelogbug>UDP Energiesparmodus repariert</changelogbug>
+        <changelogbug>Absturz bei Gerätedrehung behoben</changelogbug>
+        <changelogimprovement>Aktuell offene gemeldete Fehler können in den Einstellungen eingesehen
+            werden
+        </changelogimprovement>
+        <changelogimprovement>Design: Hintergrundbild einschaltbar</changelogimprovement>
+        <changelogimprovement>Design: Animationen verbessert</changelogimprovement>
+        <changelogimprovement>Design: Animationen verbessert</changelogimprovement>
+    </changelogversion>
+
+    <changelogversion changeDate="30. Juli 2014" versionName="5.5">
+        <changelogbug>Verstecken von Steckdosen funktioniert wieder über die Wischgeste
+        </changelogbug>
+        <changelogbug>Absturz in der Steckdosenübersicht behoben, wenn eine Gruppe ausgewählt
+            wurde
+        </changelogbug>
+        <changelogbug>Seltener Absturz in der Steckdosenübersicht behoben, wenn Aktion ausgewählt
+            wurde
+        </changelogbug>
+        <changelogtext>Android Bug umgangen, welcher zu einer Überlagerung von Steckdosen Elementen
+            und dem
+            Keine-Steckdosen-vorhanden Bildschirm führte
+        </changelogtext>
+    </changelogversion>
+
+    <changelogversion changeDate="28. Juli 2014" versionName="5.4">
+        <changelogtext>Bitte Anwendung im Play Store bewerten, danke :)</changelogtext>
+        <changelogbug>Der Hintergrundservice ist beim Start noch fehlertoleranter</changelogbug>
+        <changelogimprovement>Einem Gerät können jetzt mehrere Verbindungen (HTTP/UDP) zugewiesen
+            werden.
+            Damit kann z.B. zuhause UDP und für unterwegs eine HTTP Verbindung genutzt werden.
+            Leider müssen bereits eingerichtete Geräte dadurch neu eingerichtet werden.
+        </changelogimprovement>
+        <changelogimprovement>Die Fehlerübermittlung erfolgt jetzt automatisch bei einem
+            App-Absturz. Das kann in
+            den Einstellungen abgeschaltet werden.
+        </changelogimprovement>
+        <changelogbug>Weitere Fehler behoben</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="67" versionName="5.3">
+        <changelogtext>Bitte Anwendung im Play Store bewerten, danke :)</changelogtext>
+        <changelogtext>Nachbarsynchronisierung funktioniert wieder</changelogtext>
+        <changelogtext>Der Hintergrundservice ist beim Start fehlertoleranter</changelogtext>
+        <changelogtext>Experimentelle Google Drive Backup-Entfernen Funktion vorerst deaktiviert
+        </changelogtext>
+        <changelogtext>Das Wegwischen (Verstecken) von Gruppen-Titeln in der Steckdosenübersicht ist
+            nicht
+            mehr möglich
+        </changelogtext>
+        <changelogtext>Porteinschränkungen gelten richtigerweise nur noch für Empfangsports.
+            Damit können HTTP und UDP-Sendeport wieder frei gewählt werden.
+        </changelogtext>
+    </changelogversion>
+
+    <changelogversion changeDate="66" versionName="5.2">
+        <changelogtext>Fehler mit Timern behoben</changelogtext>
+        <changelogtext>Zuletzt bekannte Zeitschaltungen werden jetzt bevorzugt aktualisiert
+        </changelogtext>
+        <changelogtext>Google Drive Sync: Bei Fehlern werden detailiertere Informationen ausgegeben
+        </changelogtext>
+        <changelogtext>Bekannte Probleme:
+            Nachbarsynchronisierung funktioniert nicht zuverlässig;
+            GoogleDrive Inhalt wird erst nach mehrmaligen Neuladen angezeigt
+        </changelogtext>
+    </changelogversion>
+
+    <changelogversion changeDate="65" versionName="5.0-5.1">
+        <changelogtext>Animationen überarbeitet</changelogtext>
+        <changelogtext>Steckdosen werden in der Übersicht nach Gruppen sortiert angezeigt
+        </changelogtext>
+        <changelogtext>Mitgelieferte Icons für Szenen und Steckdosen entfernt</changelogtext>
+        <changelogtext>Ein Widget kann Titel und Status unabhängig voneinander ausgeblendet haben
+        </changelogtext>
+        <changelogtext>Porteinschränkung kann mit Einstellung umgangen werden für Ports kleiner 1024
+            (auf
+            gerooteten Geräten)
+        </changelogtext>
+        <changelogtext>Zeige Button für WLAN-Einstellungen in Steckdosenübersicht, wenn keine
+            Steckdosen
+            gefunden wurden
+        </changelogtext>
+        <changelogtext>Es sind nun auch andere HTTP Ports als 80 möglich.</changelogtext>
+    </changelogversion>
+
+    <changelogversion changeDate="59" versionName="4.7-4.9">
+        <changelogtext>Layout leicht verändert</changelogtext>
+        <changelogtext>Steckdosen können durch eine Wegwisch-Geste versteckt werden</changelogtext>
+        <changelogtext>Pull-to-Refresh Geste eingeführt. Einfach Steckdosen-, Geräte- oder
+            Alarmliste nach
+            unten ziehen zum aktualisieren.
+        </changelogtext>
+        <changelogtext>Master/Slave Dialog schließt nach Speichern wieder</changelogtext>
+        <changelogtext>Absturz bei HTTP Modus behoben</changelogtext>
+        <changelogtext>Nicht übernommene Werte in Geräte-Einrichten-Dialog behoben</changelogtext>
+        <changelogtext>Warnen, wenn ein UDP/Http Port kleiner als 1024 gewählt wurde (ist nur mit
+            Root
+            Rechten möglich)
+        </changelogtext>
+        <changelogtext>Permanente Benachrichtigung für die Statusleiste einstellbar: Einfach in den
+            Einstellungen "In Statusbar anzeigen" aktivieren und Szenen als Favoriten markieren.
+            Diese
+            tauchen ab Android 4.1 auf und können von dort direkt ausgeführt werden.
+        </changelogtext>
+        <changelogtext>Alarm/Zeitschaltungen verbessert: Zeitschaltungen werden zwischengespeichert
+            und
+            direkt
+            angezeigt, da das abrufen von den Anel Geräten einige Sekunden dauert.
+        </changelogtext>
+    </changelogversion>
+    <changelogversion changeDate="56" versionName="4.1-4.6">
+        <changelogtext>Geräte Einrichtung mit Erklärungstexten und einstellbarem HTTP Port
+        </changelogtext>
+        <changelogtext>Bei Änderung der Steckdosennamen werden die dazugehörigen Zeitschaltungen
+            nicht mehr
+            gelöscht
+        </changelogtext>
+        <changelogtext>Master/Slave Auswahl verbessert</changelogtext>
+        <changelogtext>Alarm Abfrage. Alarm Erstellen+Bearbeiten</changelogtext>
+        <changelogtext>Theme leicht verändert</changelogtext>
+        <changelogtext>GoogleDrive Backup erkennt eine fehlende Datenverbindung schneller
+        </changelogtext>
+        <changelogtext>Startablauf der App verbessert (kann zu Abstürzen führen, Fehlerberichte
+            willkommen)
+        </changelogtext>
+        <changelogtext>Das Setzen von Widget Icons funktioniert nun auch bei etwas kaputten
+            Launchern
+        </changelogtext>
+        <changelogtext>Die GoogleDrive Backup Funktion speichert nun im öffentlichen Ordner in
+            PowerControlApp_Backup
+        </changelogtext>
+        <changelogtext>Automatische Optimierung jetzt aktiv</changelogtext>
+    </changelogversion>
+    <changelogversion changeDate="50" versionName="4.0">
+        <changelogtext>Szenenerstellung für Tablets verbessert</changelogtext>
+        <changelogtext>Neue Sortierkriterien für Steckdosen-Übersicht</changelogtext>
+        <changelogtext>GoogleDrive Backup</changelogtext>
+        <changelogtext>Über das lokale Netzwerk können Einrichtungsdaten (Geräte, Szenen, Gruppen,
+            Icons)
+            schnell an andere Android Mobilgeräte verteilt werden
+        </changelogtext>
+        <changelogtext>NFC Geräte aneinanderhalten wird nur noch für das Öffnen des Play Stores
+            genutzt
+        </changelogtext>
+        <changelogtext>Http statt UDP möglich (für diejenigen, welche die Steckdose übers Internet
+            steuern
+            wollen)
+        </changelogtext>
+    </changelogversion>
+
+    <changelogversion changeDate="49" versionName="3.1-3.3">
+        <changelogtext>Steckdose-Aus Icon (Rot): Sättigung verringert</changelogtext>
+        <changelogtext>Master/Slave Steckdosen: Einer Steckdose können mehrere andere Zugeordnet
+            werden,
+            welche den selben Zustand beim Wechsel einnehmen.
+        </changelogtext>
+        <changelogtext>Möglichkeit, den Energiesparmodus automatisch zu beenden. Der Netzwerkwechsel
+            wird
+            dafür überwacht (kostet natürlich Energie). Für Widget-Nutzer praktisch.
+        </changelogtext>
+        <changelogtext>Changelog wird bei aller erster Benutzung jetzt nicht mehr angezeigt
+        </changelogtext>
+    </changelogversion>
+    <changelogversion changeDate="46" versionName="2.8-3.0">
+        <changelogtext>Master/Slave Szenen: Alle Steckdosen richten sich nach dem Schaltzustand
+            einer
+            ausgewählten
+        </changelogtext>
+        <changelogtext>Logbuch Funktionalität: Wenn die App bei dir nicht wie gewünscht
+            funktioniert,
+            kannst du mir das Logbuch per Mail senden damit ich den Fehler schneller finde. Das
+            Logbuch findest du in den Einstellungen.
+        </changelogtext>
+        <changelogtext>Energiesparmodus verbessert</changelogtext>
+        <changelogtext>Optional animierte Steckdosen-, Szenen-, Geräteeinträge</changelogtext>
+        <changelogtext>Zum Startbildschirm hinzufügen jetzt auch für Steckdosen</changelogtext>
+        <changelogtext>Verbessertes Nutzungserlebnis bei unkonfigurierter App</changelogtext>
+        <changelogtext>Es werden jetzt nicht mehr unendlich oft Nachrichten geschickt, wenn ein
+            Gerät nicht
+            sofort antwortet
+        </changelogtext>
+        <changelogtext>Kein Absturz mehr wenn Widgets angeklickt werden und der Hintergrunddienst
+            noch
+            nicht bereit ist
+        </changelogtext>
+        <changelogtext>Icons für die Steckdosen Übersichtsseite und Szenenseite werden im
+            Hintergrund
+            geladen
+        </changelogtext>
+        <changelogtext>Was ist neu - Dialog</changelogtext>
+        <changelogtext>Namensänderungen finden jetzt direkt auf dem Gerät statt</changelogtext>
+        <changelogtext>Energiesparmodus überarbeitet</changelogtext>
+        <changelogtext>Eigene Icons für Steckdosen/IOs. Widget Icons müssen leider neu gesetzt
+            werden.
+        </changelogtext>
+        <changelogtext>Listen/Rasteransicht für Szenen, Gruppen und Steckdosen</changelogtext>
+    </changelogversion>
+</changelog>

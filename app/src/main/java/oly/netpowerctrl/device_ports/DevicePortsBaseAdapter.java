@@ -2,12 +2,15 @@ package oly.netpowerctrl.device_ports;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.BaseAdapter;
 
 import java.lang.ref.WeakReference;
@@ -28,7 +31,8 @@ import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
 import oly.netpowerctrl.utils.gui.AnimationController;
 
-public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface {
+public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface,
+        SharedPrefs.IShowBackground {
 
     protected final IconDeferredLoadingThread mIconCache;
     final List<DevicePortAdapterItem> mItems;
@@ -37,11 +41,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     private final DevicePortSource mSource;
     protected int mOutlet_res_id = 0;
     protected boolean mShowHidden = true;
-    protected DevicePortViewHolder mCurrent_devicePortViewHolder;
+    protected DevicePortViewHolder cViewHolder;
     // Some observers
     protected ListItemMenu mListContextMenu;
     // Animation ids
     protected WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
+    private boolean drawShadows;
     private int mNextId = 0; // we need stable IDs
     // If you change the layout or an image we increment this layout change id
     // to invalidate ViewHolders (for reloading images or layout items).
@@ -62,14 +67,24 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         if (source != null) {
             source.setTargetAdapter(this);
         }
+        drawShadows = SharedPrefs.isBackground();
+        SharedPrefs.getInstance().registerShowBackground(this);
+    }
+
+    @Override
+    public void backgroundChanged(boolean showBackground) {
+        drawShadows = showBackground;
+        notifyDataSetChanged();
     }
 
     public DevicePortSource getSource() {
         return mSource;
     }
 
-    public void setGroupFilter(UUID groupFilter) {
+    public boolean setGroupFilter(UUID groupFilter) {
+        boolean changed = groupFilter == null ? mFilterGroup != null : !groupFilter.equals(mFilterGroup);
         this.mFilterGroup = groupFilter;
+        return changed;
     }
 
     /**
@@ -125,15 +140,16 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                         mItems.remove(i);
                 }
             }
-        } else
+        } else {
             computeGroupSpans();
+        }
         notifyDataSetChanged();
     }
 
     @Override
     public boolean isEnabled(int position) {
         DevicePortAdapterItem item = mItems.get(position);
-        return item.port != null && item.port.device.getFirstReachable() != null;
+        return item.port != null && item.port.device.getFirstReachableConnection() != null;
     }
 
     @Override
@@ -155,8 +171,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         return mItems.size();
     }
 
-    public DevicePort getItem(int position) {
+    public DevicePort getDevicePort(int position) {
         return mItems.get(position).port;
+    }
+
+    public DevicePortAdapterItem getItem(int position) {
+        return mItems.get(position);
     }
 
     @Override
@@ -197,11 +217,11 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         return list_of_scene_items;
     }
 
-    int findIndexByUUid(UUID uuid) {
+    int findPositionByUUid(UUID uuid) {
         if (uuid == null)
             return -1;
 
-        int i = 0;
+        int i = -1;
         for (DevicePortAdapterItem info : mItems) {
             ++i;
             if (info.port == null) // skip header items
@@ -220,16 +240,16 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         final DevicePort port = item.port;
 
         if (convertView != null) {
-            mCurrent_devicePortViewHolder = (DevicePortViewHolder) convertView.getTag();
-            if (!mCurrent_devicePortViewHolder.isStillValid(mLayoutChangeId)) {
-                mCurrent_devicePortViewHolder = null;
+            cViewHolder = (DevicePortViewHolder) convertView.getTag();
+            if (!cViewHolder.isStillValid(mLayoutChangeId)) {
+                cViewHolder = null;
             } else
-                mCurrent_devicePortViewHolder.isNew = false;
+                cViewHolder.isNew = false;
         } else {
-            mCurrent_devicePortViewHolder = null;
+            cViewHolder = null;
         }
 
-        if (mCurrent_devicePortViewHolder == null) {
+        if (cViewHolder == null) {
             switch (item.groupType()) {
                 case PRE_GROUP_FILL_ELEMENT_TYPE:
                 case NOGROUP_TYPE:
@@ -241,41 +261,74 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                     break;
             }
             assert convertView != null;
-            mCurrent_devicePortViewHolder = new DevicePortViewHolder(convertView, mListContextMenu, mLayoutChangeId, port == null);
-            convertView.setTag(mCurrent_devicePortViewHolder);
+            cViewHolder = new DevicePortViewHolder(convertView, mListContextMenu, mLayoutChangeId,
+                    item.groupType());
+
+            convertView.setTag(cViewHolder);
         }
 
-        mCurrent_devicePortViewHolder.position = position;
+        cViewHolder.position = position;
 
         if (port == null) { // header
             switch (item.groupType()) {
                 case GROUP_SPAN_TYPE:
                 case GROUP_TYPE:
-                    mCurrent_devicePortViewHolder.title.setText(item.displayText);
+                    cViewHolder.title.setText(item.displayText);
+                    if (cViewHolder.line != null)
+                        cViewHolder.line.setVisibility(item.displayText.isEmpty() ? View.INVISIBLE : View.VISIBLE);
                     break;
-                case PRE_GROUP_FILL_ELEMENT_TYPE:
-                    mCurrent_devicePortViewHolder.title.setText("");
             }
         } else { // no header
-            mCurrent_devicePortViewHolder.title.setTypeface(
+            cViewHolder.title.setTypeface(
                     port.Hidden ? Typeface.MONOSPACE : Typeface.DEFAULT,
                     port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-            mCurrent_devicePortViewHolder.title.setText(port.getDescription());
-            mCurrent_devicePortViewHolder.title.setEnabled(item.isEnabled());
+            cViewHolder.title.setText(port.getDescription());
+            cViewHolder.title.setEnabled(item.isEnabled());
+            if (drawShadows)
+                cViewHolder.title.setShadowLayer(4f, 0, 0, Color.WHITE);
 
-            mCurrent_devicePortViewHolder.subtitle.setText(port.device.DeviceName);
+            cViewHolder.subtitle.setText(port.device.DeviceName);
 
-            mCurrent_devicePortViewHolder.entry.setEnabled(item.isEnabled());
+            if (cViewHolder.progress.getVisibility() == View.VISIBLE && item.isEnabled() &&
+                    cViewHolder.animation == null) {
+                animateHideProgressbar(cViewHolder.position, cViewHolder);
+            } else
+                cViewHolder.progress.setVisibility(item.isEnabled() ? View.GONE : View.VISIBLE);
 
-            if (port.device.getFirstReachable() != null)
-                mCurrent_devicePortViewHolder.title.setPaintFlags(
-                        mCurrent_devicePortViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
+            if (port.device.getFirstReachableConnection() != null)
+                cViewHolder.title.setPaintFlags(
+                        cViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
             else
-                mCurrent_devicePortViewHolder.title.setPaintFlags(
-                        mCurrent_devicePortViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                cViewHolder.title.setPaintFlags(
+                        cViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
         return convertView;
+    }
+
+    private void animateHideProgressbar(final int current_position, final DevicePortViewHolder viewHolder) {
+        Animation a = new AlphaAnimation(1, 0);
+        cViewHolder.animation = a;
+        a.setDuration(1200);
+        a.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (current_position == viewHolder.position)
+                    viewHolder.progress.setVisibility(View.GONE);
+                viewHolder.animation = null;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        cViewHolder.progress.startAnimation(a);
     }
 
     //////////////// Group Spans //////////////
@@ -313,17 +366,20 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 int added = 0;
 
                 // Add group span items type2: add as many group span items, as itemPerRow-1
-                int missingFillElements = mItemsInRow - 1;
-                while (missingFillElements > 0) {
+                int missingFillElements;
+                // Not all group headers need a title. If we are at the end of the list,
+                // only some of the headers should have a title.
+                int elementsWithGroupTitle = mItems.size() - i - 1 < mItemsInRow ? mItems.size() - i - 1 : mItemsInRow;
+                for (int missingElements = 1; missingElements < mItemsInRow; ++missingElements) {
 //                    Log.w("base","groupSpan "+c.displayText+" "+String.valueOf(i));
-                    DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupSpan(c, mNextId++);
-                    mItems.add(i, new_oi);
+                    DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupSpan(c,
+                            missingElements < elementsWithGroupTitle, mNextId++);
+                    mItems.add(i + missingElements, new_oi);
                     ++added;
-                    --missingFillElements;
                 }
 
                 // Add group span items type1: fill until group is in own row with normal but empty items
-                missingFillElements = i % mItemsInRow;
+                missingFillElements = mItemsInRow - (i % mItemsInRow);
                 while (missingFillElements > 0) {
 //                    Log.w("base","addPreFill "+c.displayText+" "+String.valueOf(i));
                     DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupPreFillElemenet(c, mNextId++);
@@ -359,7 +415,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 return;
         }
 
-        if (!mShowGroups || oi.groups.isEmpty())
+        if (!mShowGroups || oi.groups.isEmpty() || mFilterGroup != null)
             addItemToGroup(oi, command_value, 0);
         else {
             for (UUID group : oi.groups) {
@@ -400,7 +456,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             if (l.port.uuid.equals(oi.uuid)) {
                 // Animate if value has changed
                 if (l.command_value != command_value && a != null) {
-                    a.addHighlight(l.id);
+                    a.addSmallHighlight(l.id);
                 }
                 // Apply new values to existing item
                 l.command_value = command_value;
@@ -424,12 +480,16 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
 
         // Try to find group first
+        int group_position = -1;
         for (int i = 0; i < mItems.size(); ++i) {
             if (mItems.get(i).isGroup(group)) {
-                // Return group
-                return i;
-            }
+                group_position = i;
+            } else if (group_position != -1)
+                return group_position;
         }
+
+        if (group_position != -1)
+            return group_position;
 
         // Insert or append new group
         DevicePortAdapterItem new_oi = new DevicePortAdapterItem(group, groupItem.name, mNextId++);
@@ -464,7 +524,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         device.lockDevicePorts();
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
-            removeAt(findIndexByUUid(it.next().uuid), false);
+            removeAt(findPositionByUUid(it.next().uuid), true, false);
         }
         device.releaseDevicePorts();
 
@@ -486,7 +546,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
         // Remove now
         for (int i = lenToBeRemoved - 1; i >= 0; --i)
-            removeAt(toBeRemoved[i], false);
+            removeAt(toBeRemoved[i], false, false);
 
         if (finalAction)
             computeGroupSpans();
@@ -501,7 +561,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             notifyDataSetChanged();
     }
 
-    public void removeAt(int position, boolean finalAction) {
+    public void removeAt(int position, boolean automaticallyRemoveGroups, boolean finalAction) {
         if (position == -1) return;
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
@@ -509,31 +569,33 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
         mItems.remove(position);
 
-        /**
-         * Search for a header item before the given position.
-         * If found it decrements the item count. If that reaches
-         * 0 the group header item is removed.
-         */
-        for (int indexGroup = position - 1; indexGroup >= 0; --indexGroup) {
-            DevicePortAdapterItem headerItem = mItems.get(indexGroup);
-            if (headerItem.port == null) { // is header
-                if (--headerItem.groupItems > 0)
-                    continue;
+        if (automaticallyRemoveGroups) {
+            /**
+             * Search for a header item before the given position.
+             * If found it decrements the item count. If that reaches
+             * 0 the group header item is removed.
+             */
+            for (int indexGroup = position - 1; indexGroup >= 0; --indexGroup) {
+                DevicePortAdapterItem headerItem = mItems.get(indexGroup);
+                if (headerItem.port == null) { // is header
+                    if (--headerItem.groupItems > 0)
+                        continue;
 
-                // remove group
-                if (a != null)
-                    a.beforeRemoval(indexGroup);
-                mItems.remove(indexGroup);
-                break;
+                    // remove group
+                    if (a != null)
+                        a.beforeRemoval(indexGroup);
+                    mItems.remove(indexGroup);
+                    break;
+                }
             }
-        }
+        } // automaticallyRemoveGroups
 
         if (finalAction)
             computeGroupSpans();
     }
 
     public void remove(DevicePort oi, boolean finalAction) {
-        removeAt(findIndexByUUid(oi.uuid), finalAction);
+        removeAt(findPositionByUUid(oi.uuid), true, finalAction);
     }
 
     public void invalidateViewHolders() {
@@ -556,7 +618,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
         // Remove now
         for (int i = lenToBeRemoved - 1; i >= 0; --i)
-            removeAt(toBeRemoved[i], false);
+            removeAt(toBeRemoved[i], false, false);
 
         if (finalAction)
             computeGroupSpans();
@@ -564,10 +626,10 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     @Override
     public void notifyDataSetChanged() {
-        super.notifyDataSetChanged();
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
             a.animate();
+        super.notifyDataSetChanged();
     }
 
     //////////////// Sorting ////////////////

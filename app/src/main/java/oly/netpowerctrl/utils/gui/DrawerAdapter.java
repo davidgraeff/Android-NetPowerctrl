@@ -16,70 +16,21 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.groups.GroupCollection;
-import oly.netpowerctrl.main.OutletsFragment;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 
 /**
  * Adapter with items and headers
  */
-public class DrawerAdapter extends BaseAdapter implements GroupCollection.IGroupsUpdated, SceneCollection.IScenesUpdated {
+public class DrawerAdapter extends BaseAdapter implements SceneCollection.IScenesUpdated {
 
     private final List<DrawerItem> mItems = new ArrayList<>();
     private final LayoutInflater inflater;
-    private UUID groups_position = null;
-    private int groups_size = 0;
     private UUID scenes_position = null;
     private int scenes_size = 0;
 
     public DrawerAdapter(Context context) {
         inflater = LayoutInflater.from(context);
-    }
-
-    @Override
-    public void groupsUpdated(boolean addedOrRemoved) {
-        if (groups_position == null)
-            return;
-        int startPosition = indexOf(groups_position);
-        if (startPosition == -1)
-            return;
-        ++startPosition; // Add 1, otherwise we point to the item before the first group item
-
-        GroupCollection g = NetpowerctrlApplication.getDataController().groupCollection;
-        int maxLength = SharedPrefs.getMaxFavGroups();
-        if (g.length() < maxLength) maxLength = g.length();
-
-        if (addedOrRemoved || groups_size != maxLength) {
-            // Remove all groups first
-            for (int i = 0; i < groups_size; ++i)
-                mItems.remove(startPosition);
-            groups_size = 0;
-
-            // Readd groups
-            for (int i = 0; i < maxLength; ++i) {
-                GroupCollection.GroupItem groupItem = g.groups.get(i);
-                DrawerItem item = new DrawerItem(groupItem.name, "");
-                item.uuid = groupItem.uuid;
-                item.bitmap = groupItem.getBitmap();
-                item.fragmentClassName = OutletsFragment.class.getName();
-                item.mExtra = new Bundle();
-                item.mExtra.putString("filter", groupItem.uuid.toString());
-                item.intendLevel = 1;
-                mItems.add(startPosition + i, item);
-            }
-            groups_size = maxLength;
-            notifyDataSetChanged();
-        } else { // just update names
-            for (int i = 0; i < groups_size; ++i) {
-                GroupCollection.GroupItem groupItem = g.groups.get(i);
-                DrawerItem item = mItems.get(i + startPosition);
-                item.bitmap = groupItem.getBitmap();
-                item.mTitle = groupItem.name;
-            }
-            notifyDataSetChanged();
-        }
     }
 
 
@@ -180,12 +131,6 @@ public class DrawerAdapter extends BaseAdapter implements GroupCollection.IGroup
 
         }
         return -1;
-    }
-
-    public void usePositionForGroups() {
-        groups_position = mItems.get(mItems.size() - 1).uuid;
-        NetpowerctrlApplication.getDataController().groupCollection.registerObserver(this);
-        groupsUpdated(true);
     }
 
     public void usePositionForScenes() {
@@ -293,8 +238,13 @@ public class DrawerAdapter extends BaseAdapter implements GroupCollection.IGroup
         }
     }
 
+    public DrawerItem get(int position) {
+        return mItems.get(position);
+    }
+
     public static class DrawerItem {
 
+        public final boolean isHeader;
         public String mTitle;
         public String mSummary;
         public String fragmentClassName;
@@ -303,7 +253,6 @@ public class DrawerAdapter extends BaseAdapter implements GroupCollection.IGroup
         public Bundle mExtra = null;
         public UUID uuid = UUID.randomUUID();
         public Bitmap bitmap = null;
-        public final boolean isHeader;
         public int intendLevel = 0;
         public View.OnClickListener clickHandler = null;
 

@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 
 /**
  * All http related stuff
@@ -60,7 +60,7 @@ public class HttpThreadPool {
         pool.execute(httpRunner);
     }
 
-    public static <T> Runnable createHTTPRunner(final DeviceConnection deviceConnection, final String getData,
+    public static <T> Runnable createHTTPRunner(final DeviceConnectionHTTP deviceConnection, final String getData,
                                                 final String postData, final T additional,
                                                 final boolean responseInMainThread, final HTTPCallback<T> callback) {
         return new Runnable() {

@@ -13,6 +13,7 @@ import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,24 +22,28 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.network.Utils;
+import oly.netpowerctrl.utils.Github;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
-public class PreferencesFragment extends PreferencesWithValuesFragment {
+public class PreferencesFragment extends PreferencesWithValuesFragment implements Github.IGithubOpenIssues {
+    Preference.OnPreferenceChangeListener reloadActivity = new Preference.OnPreferenceChangeListener() {
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            //noinspection ConstantConditions
+            getActivity().recreate();
+            return true;
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
 
         //noinspection ConstantConditions
-        findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                //noinspection ConstantConditions
-                getActivity().recreate();
-                return true;
-            }
-        });
+        findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
+        findPreference("show_background").setOnPreferenceChangeListener(reloadActivity);
 
         //noinspection ConstantConditions
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -160,6 +165,27 @@ public class PreferencesFragment extends PreferencesWithValuesFragment {
                 });
             }
         }
+
+        Github.getOpenIssues(this, false);
+        //noinspection ConstantConditions
+        findPreference("issues").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Github.getOpenIssues(PreferencesFragment.this, true);
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public void gitHubOpenIssuesUpdated(int count, long last_access) {
+        findPreference("issues").setTitle(getString(R.string.issues_open, count));
+        if (count < 0) {
+            findPreference("issues").setSummary(R.string.issues_error);
+            return;
+        }
+        final String date = DateFormat.getInstance().format(last_access);
+        findPreference("issues").setSummary(getString(R.string.issues_last_access, date));
     }
 
     private static class WidgetData {

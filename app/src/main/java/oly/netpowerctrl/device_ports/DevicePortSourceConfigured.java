@@ -37,7 +37,7 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
         adapter.markAllRemoved();
 
         for (Device device : NetpowerctrlApplication.getDataController().deviceCollection.devices) {
-            if (hideNotReachable && device.getFirstReachable() == null)
+            if (hideNotReachable && device.getFirstReachableConnection() == null)
                 continue;
             adapter.addAll(device, false);
         }
@@ -88,7 +88,7 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
             return;
         }
 
-        if (willBeRemoved || (hideNotReachable && device.getFirstReachable() == null))
+        if (willBeRemoved || (hideNotReachable && device.getFirstReachableConnection() == null))
             adapter.removeAll(device, true);
         else {
             adapter.addAll(device, true);

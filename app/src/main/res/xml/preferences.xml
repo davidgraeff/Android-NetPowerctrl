@@ -9,6 +9,12 @@
         android:title="@string/preference_use_dark_theme" />
 
     <CheckBoxPreference
+        android:defaultValue="@bool/show_background"
+        android:key="show_background"
+        android:summary="@string/preference_show_background_summary"
+        android:title="@string/preference_show_background" />
+
+    <CheckBoxPreference
         android:defaultValue="@bool/show_persistent_notification"
         android:key="show_persistent_notification"
         android:summary="@string/preference_show_persistent_notification_summary"
@@ -26,20 +32,13 @@
         android:summary="@string/preference_notify_on_non_reachable_summary"
         android:title="@string/preference_notify_on_non_reachable" />
 
+    <!--
     <CheckBoxPreference
         android:defaultValue="@bool/backup_to_gDrive"
         android:key="backup_to_gDrive"
         android:summary="@string/preference_backup_to_gDrive_summary"
         android:title="@string/preference_backup_to_gDrive" />
-
-    <EditTextPreference
-        android:defaultValue="@integer/max_favourites_groups"
-        android:dialogMessage="@string/preference_max_favourites_groups_summary"
-        android:dialogTitle="@string/preference_standard_recv_port"
-        android:inputType="number"
-        android:key="max_favourites_groups"
-        android:numeric="integer"
-        android:title="@string/preference_max_favourites_groups" />
+    -->
 
     <PreferenceCategory android:title="@string/preference_error_report_tool">
         <CheckBoxPreference
@@ -53,6 +52,11 @@
             android:key="acra.user.email"
             android:summary="@string/pref_acra_user_email_summary"
             android:title="@string/pref_acra_user_email" />
+
+        <PreferenceScreen
+            android:key="issues"
+            android:summary="@string/issues_wait"
+            android:title="@string/issues" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preference_standard_ports">

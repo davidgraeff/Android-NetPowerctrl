@@ -37,7 +37,7 @@ public class DeviceCollection {
 
     /**
      * @param reader     A json reader
-     * @param tryToMerge If you merge the data instead of replacing the process is slower.
+     * @param tryToMerge If you merge the data instead of replacing them the process will be slower.
      * @throws IOException
      * @throws IllegalStateException
      */

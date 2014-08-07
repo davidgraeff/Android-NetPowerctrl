@@ -198,7 +198,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="network_no_devices">Keine Geräte in diesem Netzwerk gefunden: Energiesparmodus.</string>
     <string name="network_restarted">Neue Geräteerkennung durch Netzwerkwechsel…</string>
     <string name="network_unreachable">Keine Netzwerkverbindung: Energiesparmodus.</string>
-    <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombineren. Zuerst musst du aber Geräte einrichten.</string>
+    <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen. Zuerst musst du aber Geräte einrichten.</string>
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Benutze den Plus-Button um ein Gerät zu erstellen, was nicht automatisch gefunden worden ist.\n\nDu musst auf deinen Geräten UDP eingeschaltet haben!</string>
     <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
     <string name="preference_ports_unlimited">Unlimitierte Ports</string>
@@ -343,4 +343,14 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="device_udp_new_summary">UDP funktioniert nur zuverlässig bis zum nächsten Router (lokales Netzwerk) ist aber schneller.</string>
     <string name="device_http_new_summary">HTTP ist langsamer, eignet sich für die Steuerung aus dem Internet aber besser.</string>
     <string name="error_reading_alarms">Einlesen der Zeitschaltungen fehlgeschlagen</string>
+    <string name="menu_back">Zurück</string>
+    <string name="gDrive_error_timeout">Fehler: Zeit abgelaufen. Bitte noch einmal probieren.</string>
+    <string name="gDrive_refreshing_backup_list">Aktualisiere Backup Liste…</string>
+    <string name="preference_show_background">Hintergrundbild anzeigen</string>
+    <string name="preference_show_background_summary">Im Hintergrund wird ein Bild statt einer einfarbigen Fläche angezeigt.</string>
+    <string name="issues_wait">Rufe ab…</string>
+    <string name="issues_open">Gemeldete offene Fehler: %1$s</string>
+    <string name="issues_error">Abrufen der gemeldeten Fehler gescheitert!</string>
+    <string name="issues_last_access">Abgerufen am: %1$s</string>
+    <string name="issues">Offene gemeldete Fehler</string>
 </resources>

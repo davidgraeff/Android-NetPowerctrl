@@ -2,13 +2,13 @@ package oly.netpowerctrl.application_state;
 
 import android.content.Context;
 
-import oly.netpowerctrl.alarms.Alarm;
-import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
+import oly.netpowerctrl.timer.Timer;
+import oly.netpowerctrl.timer.TimerController;
 
 /**
  * This interface defines a plugin
@@ -53,11 +53,11 @@ public interface PluginInterface {
     boolean isNetworkPlugin();
 
     ////////////// Alarms //////////////
-    Alarm getNextFreeAlarm(DevicePort port, int type);
+    Timer getNextFreeAlarm(DevicePort port, int type);
 
-    void saveAlarm(Alarm alarm, final AsyncRunnerResult callback);
+    void saveAlarm(Timer timer, final AsyncRunnerResult callback);
 
-    void removeAlarm(Alarm alarm, final AsyncRunnerResult callback);
+    void removeAlarm(Timer timer, final AsyncRunnerResult callback);
 
     void requestAlarms(DevicePort port, TimerController timerController);
 }

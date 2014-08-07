@@ -15,8 +15,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.alarms.Alarm;
-import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
@@ -25,6 +23,8 @@ import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
+import oly.netpowerctrl.timer.Timer;
+import oly.netpowerctrl.timer.TimerController;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -337,17 +337,17 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public Alarm getNextFreeAlarm(DevicePort port, int type) {
+    public Timer getNextFreeAlarm(DevicePort port, int type) {
         return null;
     }
 
     @Override
-    public void saveAlarm(Alarm alarm, final AsyncRunnerResult callback) {
+    public void saveAlarm(Timer timer, final AsyncRunnerResult callback) {
 
     }
 
     @Override
-    public void removeAlarm(Alarm alarm, final AsyncRunnerResult callback) {
+    public void removeAlarm(Timer timer, final AsyncRunnerResult callback) {
 
     }
 

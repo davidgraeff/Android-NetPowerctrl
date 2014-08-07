@@ -37,51 +37,51 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
         // Not our business, if port is null
         if (port == null) {
-            if (mCurrent_devicePortViewHolder.isNew && mCurrent_devicePortViewHolder.imageEdit != null) {
-                mCurrent_devicePortViewHolder.imageEdit.setVisibility(View.INVISIBLE);
+            if (cViewHolder.isNew && cViewHolder.imageEdit != null) {
+                cViewHolder.imageEdit.setVisibility(View.INVISIBLE);
             }
             return convertView;
         }
 
         // We do this only once, if the viewHolder is new
-        if (mCurrent_devicePortViewHolder.isNew) {
+        if (cViewHolder.isNew) {
             // We use the tools icon for the context menu.
-            if (mCurrent_devicePortViewHolder.imageEdit != null) {
-                mCurrent_devicePortViewHolder.imageEdit.setVisibility(View.VISIBLE);
-                mCurrent_devicePortViewHolder.imageEdit.setTag(position);
-                mCurrent_devicePortViewHolder.imageEdit.setOnClickListener(mCurrent_devicePortViewHolder);
+            if (cViewHolder.imageEdit != null) {
+                cViewHolder.imageEdit.setVisibility(View.VISIBLE);
+                cViewHolder.imageEdit.setTag(position);
+                cViewHolder.imageEdit.setOnClickListener(cViewHolder);
             }
             //current_viewHolder.mainTextView.setTag(position);
             switch (port.getType()) {
                 case TypeToggle: {
-                    mCurrent_devicePortViewHolder.seekBar.setVisibility(View.GONE);
-                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
+                    cViewHolder.seekBar.setVisibility(View.GONE);
+                    cViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
                             Icons.getResIdForState(Icons.IconState.StateOff), 0);
-                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
+                    cViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
                             Icons.getResIdForState(Icons.IconState.StateOn), 1);
                     break;
                 }
                 case TypeButton: {
-                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
+                    cViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateToggle,
                             R.drawable.netpowerctrl, 0);
-                    mCurrent_devicePortViewHolder.seekBar.setVisibility(View.GONE);
-                    mCurrent_devicePortViewHolder.setCurrentBitmapIndex(0);
+                    cViewHolder.seekBar.setVisibility(View.GONE);
+                    cViewHolder.setCurrentBitmapIndex(0);
                     break;
                 }
                 case TypeRangedValue:
-                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
+                    cViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
                             Icons.getResIdForState(Icons.IconState.StateOff), 0);
-                    mCurrent_devicePortViewHolder.loadIcon(mIconCache, port.uuid,
+                    cViewHolder.loadIcon(mIconCache, port.uuid,
                             Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
                             Icons.getResIdForState(Icons.IconState.StateOn), 1);
-                    mCurrent_devicePortViewHolder.seekBar.setVisibility(View.VISIBLE);
-                    mCurrent_devicePortViewHolder.seekBar.setOnSeekBarChangeListener(this);
-                    mCurrent_devicePortViewHolder.seekBar.setTag(-1);
-                    mCurrent_devicePortViewHolder.seekBar.setMax(port.max_value - port.min_value);
+                    cViewHolder.seekBar.setVisibility(View.VISIBLE);
+                    cViewHolder.seekBar.setOnSeekBarChangeListener(this);
+                    cViewHolder.seekBar.setTag(-1);
+                    cViewHolder.seekBar.setMax(port.max_value - port.min_value);
                     break;
             }
 
@@ -93,14 +93,14 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 break;
             }
             case TypeToggle: {
-                mCurrent_devicePortViewHolder.setCurrentBitmapIndex(port.current_value >= port.max_value ? 1 : 0);
+                cViewHolder.setCurrentBitmapIndex(port.current_value >= port.max_value ? 1 : 0);
                 break;
             }
             case TypeRangedValue:
-                mCurrent_devicePortViewHolder.seekBar.setTag(-1);
-                mCurrent_devicePortViewHolder.seekBar.setProgress(port.current_value - port.min_value);
-                mCurrent_devicePortViewHolder.seekBar.setTag(position);
-                mCurrent_devicePortViewHolder.setCurrentBitmapIndex(port.current_value <= port.min_value ? 0 : 1);
+                cViewHolder.seekBar.setTag(-1);
+                cViewHolder.seekBar.setProgress(port.current_value - port.min_value);
+                cViewHolder.seekBar.setTag(position);
+                cViewHolder.setCurrentBitmapIndex(port.current_value <= port.min_value ? 0 : 1);
                 break;
         }
 
@@ -113,7 +113,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         NetpowerctrlApplication.getDataController().execute(info.port, DevicePort.TOGGLE, null);
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
-            a.addHighlight(id);
+            a.addHighlight(id, R.id.text1);
         notifyDataSetChanged();
     }
 

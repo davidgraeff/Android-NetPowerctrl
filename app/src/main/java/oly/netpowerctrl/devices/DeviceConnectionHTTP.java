@@ -95,6 +95,8 @@ public class DeviceConnectionHTTP implements DeviceConnection {
 
     @Override
     public int getDestinationPort() {
+        if (DefaultPorts)
+            return 80;
         return PortHttp;
     }
 
@@ -115,6 +117,6 @@ public class DeviceConnectionHTTP implements DeviceConnection {
 
     @Override
     public String getString() {
-        return getProtocol() + "/" + HostName + ":" + String.valueOf(PortHttp);
+        return getProtocol() + "/" + HostName + ":" + String.valueOf(getDestinationPort());
     }
 }

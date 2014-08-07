@@ -6,11 +6,11 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -55,6 +57,7 @@ import oly.netpowerctrl.utils.ShowToast;
 import oly.netpowerctrl.utils.gui.AnimationController;
 import oly.netpowerctrl.utils.gui.ChangeArgumentsFragment;
 import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
+import oly.netpowerctrl.utils.gui.UpdateBarWithGroups;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -62,7 +65,10 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult, Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks, SharedPreferences.OnSharedPreferenceChangeListener, RefreshStartedStopped {
+        NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult,
+        Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks,
+        RefreshStartedStopped, SharedPrefs.IHideNotReachable {
+    int requestedColumnWidth;
     private DevicePortsExecuteAdapter adapter;
     private DevicePortSourceConfigured adapterSource;
     private TextView hintText;
@@ -71,34 +77,60 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private Button btnChangeToBackup;
     private UUID groupFilter = null;
     private GridView mListView;
+    private UpdateBarWithGroups updateBarWithGroups = new UpdateBarWithGroups();
     private PullToRefreshLayout mPullToRefreshLayout;
     private ProgressDialog progressDialog;
     private AnimationController animationController = new AnimationController();
+
+    public OutletsFragment() {
+    }
+
     private ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    int i = mListView.getNumColumns();
-                    if (i != GridView.AUTO_FIT)
-                        adapter.setItemsInRow(i);
+                    mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumsChangeListener);
+                    //getActivity().findViewById(R.id.content_frame).getWidth();
+                    Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
+                    int i = mListView.getWidth() / requestedColumnWidth;
+                    adapter.setItemsInRow(i);
+
                 }
             };
 
-    public OutletsFragment() {
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (mListView != null) {
+            mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumsChangeListener);
+        }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        SharedPrefs.getInstance().registerHideNotReachable(this);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateBarWithGroups.initNavigation(getActivity().getActionBar(), MainActivity.getNavigationController());
+        updateBarWithGroups.showNavigation();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        updateBarWithGroups.finishNavigation();
     }
 
     @Override
     public void onPause() {
         NetpowerctrlService.unregisterRefreshStartedStopped(this);
         super.onPause();
-        PreferenceManager.getDefaultSharedPreferences(getActivity()).unregisterOnSharedPreferenceChangeListener(this);
         if (adapterSource != null)
             adapterSource.onPause();
     }
@@ -106,10 +138,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onResume() {
         NetpowerctrlService.registerRefreshStartedStopped(this);
-        super.onResume();
-        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
         if (adapterSource != null)
             adapterSource.onResume();
+        super.onResume();
     }
 
     @Override
@@ -121,8 +152,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             groupFilter = null;
 
         if (adapter != null) {
-            adapter.setGroupFilter(groupFilter);
-            adapterSource.updateNow();
+            if (adapter.setGroupFilter(groupFilter))
+                adapterSource.updateNow();
         }
 
         checkEmpty();
@@ -131,20 +162,17 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private void setListOrGrid(boolean grid) {
         SharedPrefs.setOutletsGrid(grid);
 
-        float width;
         if (!grid) {
             adapter.setLayoutRes(R.layout.list_icon_item);
-            width = getResources().getDimension(R.dimen.min_list_item_width);
+            requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
         } else {
             adapter.setLayoutRes(R.layout.grid_icon_item);
-            width = getResources().getDimension(R.dimen.min_grid_item_width);
+            requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
         }
 
-        mListView.setColumnWidth((int) width);
+        mListView.setColumnWidth(requestedColumnWidth);
         mListView.setNumColumns(GridView.AUTO_FIT);
         mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumsChangeListener);
-
-        adapter.setGroupFilter(groupFilter);
         mListView.setAdapter(adapter);
     }
 
@@ -217,7 +245,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 if (!NetpowerctrlApplication.getDataController().groupCollection.remove(groupFilter)) {
                     return true;
                 }
-                MainActivity.instance.changeToFragment(OutletsFragment.class.getName());
+                MainActivity.getNavigationController().changeToFragment(OutletsFragment.class.getName());
                 return true;
             }
             case R.id.menu_renameGroup: {
@@ -305,9 +333,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         // Empty text and hint text
         hintText = (TextView) view.findViewById(R.id.hintText);
         emptyText = (TextView) view.findViewById(R.id.empty_text);
-        mListView.setEmptyView(view.findViewById(android.R.id.empty));
-        mListView.getEmptyView().setVisibility(View.GONE);
-
 
         // Empty list: Buttons
         btnChangeToBackup = (Button) view.findViewById(R.id.btnChangeToBackup);
@@ -315,7 +340,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         btnChangeToBackup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.instance.changeToFragment(GDriveFragment.class.getName());
+                MainActivity.getNavigationController().changeToFragment(GDriveFragment.class.getName());
             }
         });
         btnChangeToDevices = (Button) view.findViewById(R.id.btnChangeToDevices);
@@ -323,7 +348,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         btnChangeToDevices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.instance.changeToFragment(DevicesFragment.class.getName());
+                MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
             }
         });
 
@@ -347,13 +372,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         animationController.setAdapter(adapter);
         animationController.setListView(mListView);
         adapter.setRemoveAnimation(animationController);
-        setListOrGrid(SharedPrefs.getOutletsGrid());
 
         return view;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        setListOrGrid(SharedPrefs.getOutletsGrid());
+
         NetpowerctrlApplication.getDataController().registerDataQueryCompleted(new OnDataQueryCompletedHandler() {
             @Override
             public boolean onDataQueryFinished() {
@@ -369,8 +395,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (!isAdded())
             return;
 
-        mListView.getEmptyView().setVisibility(View.VISIBLE);
-
         if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
             emptyText.setText(R.string.empty_no_outlets_no_devices);
         } else if (groupFilter != null) {
@@ -384,13 +408,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (btnChangeToBackup != null)
             btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
 
+        mListView.setEmptyView(getActivity().findViewById(android.R.id.empty));
+
         getActivity().invalidateOptionsMenu();
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         final int position = (Integer) mListView.getTag();
-        final DevicePort oi = adapter.getItem(position);
+        final DevicePort oi = adapter.getDevicePort(position);
 
         switch (menuItem.getItemId()) {
             case R.id.menu_outlet_rename: {
@@ -496,8 +522,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onMenuItemClicked(View view, int position) {
+        // Animate press
+        Animation a = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f, view.getWidth() / 2, view.getHeight() / 2);
+        a.setRepeatMode(Animation.REVERSE);
+        a.setRepeatCount(1);
+        a.setDuration(300);
+        view.startAnimation(a);
+
         mListView.setTag(position);
-        DevicePort oi = adapter.getItem(position);
+        DevicePort oi = adapter.getDevicePort(position);
 
         //noinspection ConstantConditions
         PopupMenu popup = new PopupMenu(getActivity(), view);
@@ -574,23 +607,21 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public boolean canDismiss(int position) {
-        return !adapter.isShowingHidden() && adapter.getItem(position) != null;
+        return !adapter.isShowingHidden() && adapter.getDevicePort(position) != null;
     }
 
     @Override
     public void onDismiss(int dismissedPosition) {
-        final DevicePort oi = adapter.getItem(dismissedPosition);
+        final DevicePort oi = adapter.getDevicePort(dismissedPosition);
         if (oi != null)
             hideItem(oi);
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        switch (s) {
-            case SharedPrefs.hide_not_reachable:
-                adapterSource.setHideNotReachable(SharedPrefs.isHideNotReachable());
-                adapterSource.updateNow();
-                break;
-        }
+    public void hideNotReachable(boolean hideNotReachable) {
+        adapterSource.setHideNotReachable(hideNotReachable);
+        adapterSource.updateNow();
     }
+
+
 }

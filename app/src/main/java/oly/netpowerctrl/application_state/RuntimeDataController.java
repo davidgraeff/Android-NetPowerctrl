@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
@@ -25,6 +24,7 @@ import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
+import oly.netpowerctrl.timer.TimerController;
 import oly.netpowerctrl.utils.ShowToast;
 
 /**
@@ -224,7 +224,7 @@ public class RuntimeDataController {
         }
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
-        if (device.getFirstReachable() == null)
+        if (device.getFirstReachableConnection() == null)
             new DeviceQuery(null, device);
     }
 
@@ -287,7 +287,7 @@ public class RuntimeDataController {
     public int getReachableConfiguredDevices() {
         int r = 0;
         for (Device device : deviceCollection.devices)
-            if (device.getFirstReachable() != null)
+            if (device.getFirstReachableConnection() != null)
                 ++r;
         return r;
     }
@@ -324,7 +324,7 @@ public class RuntimeDataController {
         if (callback != null)
             callback.asyncRunnerStart(port);
 
-        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlService.getService());
+        PluginInterface remote = port.device.getPluginInterface();
         if (remote != null) {
             remote.rename(port, new_name, callback);
         } else if (callback != null)
@@ -348,7 +348,7 @@ public class RuntimeDataController {
             if (p == null)
                 continue;
 
-            PluginInterface remote = p.device.getPluginInterface(NetpowerctrlService.getService());
+            PluginInterface remote = p.device.getPluginInterface();
             if (remote == null)
                 continue;
 
@@ -375,7 +375,7 @@ public class RuntimeDataController {
      * @param callback The callback for the execution-done messages
      */
     public void execute(final DevicePort port, final int command, final ExecutionFinished callback) {
-        PluginInterface remote = port.device.getPluginInterface(NetpowerctrlService.getService());
+        PluginInterface remote = port.device.getPluginInterface();
         if (remote != null) {
             remote.execute(port, command, callback);
 
@@ -410,10 +410,10 @@ public class RuntimeDataController {
     }
 
 
-    public int countNetworkDevices(NetpowerctrlService service) {
+    public int countNetworkDevices() {
         int i = 0;
         for (Device di : deviceCollection.devices)
-            if (di.isNetworkDevice(service)) ++i;
+            if (di.isNetworkDevice()) ++i;
         return i;
     }
 }

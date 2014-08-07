@@ -2,7 +2,9 @@ package oly.netpowerctrl.device_ports;
 
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -22,16 +24,20 @@ class DevicePortViewHolder implements View.OnClickListener, IconDeferredLoadingT
     //LinearLayout mainTextView;
     final View entry;
     final SeekBar seekBar;
+    final ProgressBar progress;
     final TextView title;
     final TextView subtitle;
+    final View line;
     final Drawable[] drawables = new Drawable[2];
     public int position;
+    public Animation animation = null;
     boolean isNew = true;
     int layoutChangeId;
     int currentBitmapIndex = -1;
     private ListItemMenu mListContextMenu = null;
 
-    DevicePortViewHolder(View convertView, ListItemMenu listContextMenu, int layoutChangeId, boolean isHeader) {
+    DevicePortViewHolder(View convertView, ListItemMenu listContextMenu, int layoutChangeId,
+                         DevicePortAdapterItem.groupTypeEnum groupTypeEnum) {
         this.layoutChangeId = layoutChangeId;
         mListContextMenu = listContextMenu;
 
@@ -39,20 +45,26 @@ class DevicePortViewHolder implements View.OnClickListener, IconDeferredLoadingT
         title = (TextView) convertView.findViewById(R.id.text1);
         imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
 
-        View line = convertView.findViewById(R.id.line);
-        if (line != null)
-            line.setVisibility(isHeader ? View.INVISIBLE : View.VISIBLE);
-
-        if (isHeader) {
+        if (groupTypeEnum == DevicePortAdapterItem.groupTypeEnum.GROUP_TYPE ||
+                groupTypeEnum == DevicePortAdapterItem.groupTypeEnum.GROUP_SPAN_TYPE) {
             subtitle = null;
             imageIcon = null;
             seekBar = null;
+            progress = null;
+            line = convertView.findViewById(R.id.line);
             return;
+
         }
 
+        line = null;
         subtitle = (TextView) convertView.findViewById(R.id.subtitle);
         imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
         seekBar = (SeekBar) convertView.findViewById(R.id.item_seekbar);
+        progress = (ProgressBar) convertView.findViewById(R.id.progress);
+
+        if (groupTypeEnum == DevicePortAdapterItem.groupTypeEnum.PRE_GROUP_FILL_ELEMENT_TYPE) {
+            entry.setVisibility(View.INVISIBLE);
+        }
     }
 
     boolean isStillValid(int layoutChangeId) {

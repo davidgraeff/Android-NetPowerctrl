@@ -31,6 +31,14 @@
         android:summary="@string/device_enabled_summary"
         android:title="@string/device_enabled" />
 
+    <PreferenceCategory
+        android:key="connections_udp"
+        android:title="@string/device_udp">
+        <PreferenceScreen
+            android:key="connections_udp_new"
+            android:summary="@string/device_udp_new_summary"
+            android:title="@string/device_udp_new" />
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:key="connections_http"
@@ -39,14 +47,5 @@
             android:key="connections_http_new"
             android:summary="@string/device_http_new_summary"
             android:title="@string/device_http_new" />
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:key="connections_udp"
-        android:title="@string/device_udp">
-        <PreferenceScreen
-            android:key="connections_udp_new"
-            android:summary="@string/device_udp_new_summary"
-            android:title="@string/device_udp_new" />
     </PreferenceCategory>
 </PreferenceScreen>

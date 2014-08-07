@@ -15,21 +15,22 @@
     android:paddingLeft="10dp"
     android:paddingRight="10dp">
 
-    <View
-        android:id="@+id/line"
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="5dp"
-        android:background="?list_item_background"
-        android:paddingBottom="5dp" />
-
     <ImageView
         android:id="@+id/icon_bitmap"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_below="@id/line"
         android:paddingRight="5dp"
         tools:ignore="ContentDescription" />
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignLeft="@id/icon_bitmap"
+        android:layout_alignTop="@id/icon_bitmap"
+        android:indeterminate="true"
+        android:paddingRight="5dp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/text1"
