@@ -343,7 +343,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      * TODO optimize
      */
     public void computeGroupSpans() {
-        if (mItemsInRow == 1) // Do nothing it only one item per row
+        if (mItemsInRow <= 1) // Do nothing it only one item per row
             return;
 
 //        int positionOfLastGroup = -1;
@@ -382,7 +382,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 missingFillElements = mItemsInRow - (i % mItemsInRow);
                 while (missingFillElements > 0) {
 //                    Log.w("base","addPreFill "+c.displayText+" "+String.valueOf(i));
-                    DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupPreFillElemenet(c, mNextId++);
+                    DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupPreFillElement(c, mNextId++);
                     mItems.add(i, new_oi);
                     ++added;
                     --missingFillElements;
