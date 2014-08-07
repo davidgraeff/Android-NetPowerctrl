@@ -77,6 +77,7 @@ public class NetpowerctrlApplication extends Application {
         ACRA.init(this);
         //BugSenseHandler.initAndStartSession(MyActivity.this, "11178d09");
         instance = this;
+        new SharedPrefs(this); // init shared preferences singleton
         dataController = new RuntimeDataController();
         LoadStoreData loadStoreData = new LoadStoreData();
         dataController.setLoadStoreProvider(loadStoreData);

@@ -205,7 +205,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         views.setViewVisibility(R.id.widget_name, widget_show_title ? View.VISIBLE : View.GONE);
         views.setViewVisibility(R.id.widget_status, widget_show_status ? View.VISIBLE : View.GONE);
 
-        if (oi.device.getFirstReachable() == null) {
+        if (oi.device.getFirstReachableConnection() == null) {
             views.setImageViewBitmap(R.id.widget_image,
                     Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
                             Icons.IconType.WidgetIcon, Icons.IconState.StateUnknown,

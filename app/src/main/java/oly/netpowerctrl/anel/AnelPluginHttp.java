@@ -15,12 +15,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.alarms.Alarm;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.network.HttpThreadPool;
+import oly.netpowerctrl.timer.Timer;
 
 /**
  * Created by david on 04.07.14.
@@ -68,17 +69,18 @@ public class AnelPluginHttp {
     /**
      * If we receive a response from a switch action (via http) we request updated data immediately.
      */
-    static final HttpThreadPool.HTTPCallback<DeviceConnection> receiveSwitchResponseHtml = new HttpThreadPool.HTTPCallback<DeviceConnection>() {
-        @Override
-        public void httpResponse(DeviceConnection ci, boolean callback_success, String response_message) {
-            final Device device = ci.getDevice();
-            if (!callback_success) {
-                ci.setNotReachable(response_message);
-                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
-            } else
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
-        }
-    };
+    static final HttpThreadPool.HTTPCallback<DeviceConnectionHTTP> receiveSwitchResponseHtml =
+            new HttpThreadPool.HTTPCallback<DeviceConnectionHTTP>() {
+                @Override
+                public void httpResponse(DeviceConnectionHTTP ci, boolean callback_success, String response_message) {
+                    final Device device = ci.getDevice();
+                    if (!callback_success) {
+                        ci.setNotReachable(response_message);
+                        NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+                    } else
+                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
+                }
+            };
 
     /**
      * Parses a http response of dd.htm and construct the HTTP POST data to send to dd.htm, depending on the
@@ -86,13 +88,13 @@ public class AnelPluginHttp {
      *
      * @param response_message The http response message to parse the old values from
      * @param newName          New name or null for the old value
-     * @param newAlarm         List of new alarms (like: T10=1234567&T20=00:00&T30=23:59) or nulls for the old values
+     * @param newTimer         List of new alarms (like: T10=1234567&T20=00:00&T30=23:59) or nulls for the old values
      * @return Return the new data for a HTTP POST.
      * @throws org.xml.sax.SAXException
      * @throws java.io.IOException
      */
     static String createHTTP_Post_byHTTP_response(String response_message,
-                                                  final String newName, final Alarm[] newAlarm)
+                                                  final String newName, final Timer[] newTimer)
             throws SAXException, IOException {
 
         final String[] complete_post_data = {""};
@@ -115,11 +117,11 @@ public class AnelPluginHttp {
                     return;
 
                 if (checked != null && (
-                        (name.equals("T00") && newAlarm[0] == null) ||
-                                (name.equals("T01") && newAlarm[1] == null) ||
-                                (name.equals("T02") && newAlarm[2] == null) ||
-                                (name.equals("T03") && newAlarm[3] == null) ||
-                                (name.equals("T04") && newAlarm[4] == null))) {
+                        (name.equals("T00") && newTimer[0] == null) ||
+                                (name.equals("T01") && newTimer[1] == null) ||
+                                (name.equals("T02") && newTimer[2] == null) ||
+                                (name.equals("T03") && newTimer[3] == null) ||
+                                (name.equals("T04") && newTimer[4] == null))) {
                     complete_post_data[0] += name + "on" + "&";
                     return;
                 }
@@ -134,11 +136,11 @@ public class AnelPluginHttp {
 
                 if (name.equals("T4") ||
                         (name.equals("TN") && newName == null) ||
-                        (name.equals("T10") || name.equals("T20") || name.equals("T30") && newAlarm[0] == null) ||
-                        (name.equals("T11") || name.equals("T21") || name.equals("T31") && newAlarm[1] == null) ||
-                        (name.equals("T12") || name.equals("T22") || name.equals("T32") && newAlarm[2] == null) ||
-                        (name.equals("T13") || name.equals("T23") || name.equals("T33") && newAlarm[3] == null) ||
-                        (name.equals("T14") || name.equals("T24") || name.equals("T34") && newAlarm[4] == null)
+                        (name.equals("T10") || name.equals("T20") || name.equals("T30") && newTimer[0] == null) ||
+                        (name.equals("T11") || name.equals("T21") || name.equals("T31") && newTimer[1] == null) ||
+                        (name.equals("T12") || name.equals("T22") || name.equals("T32") && newTimer[2] == null) ||
+                        (name.equals("T13") || name.equals("T23") || name.equals("T33") && newTimer[3] == null) ||
+                        (name.equals("T14") || name.equals("T24") || name.equals("T34") && newTimer[4] == null)
                         )
                     complete_post_data[0] += name + "=" + URLEncoder.encode(value) + "&";
             }
@@ -149,8 +151,8 @@ public class AnelPluginHttp {
         if (newName != null)
             complete_post_data[0] += "TN=" + URLEncoder.encode(newName, "utf-8") + "&";
 
-        for (int i = 0; i < newAlarm.length; ++i) {
-            Alarm current = newAlarm[i];
+        for (int i = 0; i < newTimer.length; ++i) {
+            Timer current = newTimer[i];
             if (current == null)
                 continue;
 

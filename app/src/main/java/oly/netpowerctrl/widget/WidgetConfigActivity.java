@@ -24,7 +24,7 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
     private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            SharedPrefs.SaveWidget(widgetId, adapter.getItem(position).uuid.toString());
+            SharedPrefs.SaveWidget(widgetId, adapter.getDevicePort(position).uuid.toString());
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);

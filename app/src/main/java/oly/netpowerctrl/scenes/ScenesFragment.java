@@ -185,7 +185,7 @@ public class ScenesFragment extends Fragment implements
             btnEmpty.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MainActivity.instance.changeToFragment(DevicesFragment.class.getName());
+                    MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
                 }
             });
         } else {

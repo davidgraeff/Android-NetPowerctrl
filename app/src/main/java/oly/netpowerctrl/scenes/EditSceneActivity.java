@@ -206,7 +206,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         fragment_available.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                DevicePort oi = adapter_available.getItem(position);
+                DevicePort oi = adapter_available.getDevicePort(position);
                 fragment_available.dismissItem(position);
                 adapter_included.addItem(oi, DevicePort.TOGGLE, true);
                 fragment_included.notifyDataSetChanged();
@@ -358,7 +358,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
      */
     @Override
     public void onMenuItemClicked(View v, int position) {
-        adapter_available.addItem(adapter_included.getItem(position), DevicePort.TOGGLE, true);
+        adapter_available.addItem(adapter_included.getDevicePort(position), DevicePort.TOGGLE, true);
         fragment_available.notifyDataSetChanged();
         fragment_included.dismissItem(position);
         invalidateOptionsMenu();

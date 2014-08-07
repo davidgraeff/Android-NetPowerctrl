@@ -24,8 +24,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.alarms.Alarm;
-import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
@@ -39,7 +37,12 @@ import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSending;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.timer.Timer;
+import oly.netpowerctrl.timer.TimerController;
+import oly.netpowerctrl.utils.Logging;
+import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
@@ -81,7 +84,7 @@ final public class AnelPlugin implements PluginInterface {
         if (service == null)
             return;
 
-        DeviceConnection ci = device.getFirstReachable();
+        DeviceConnection ci = device.getFirstReachableConnection();
         if (ci == null)
             return;
 
@@ -93,14 +96,16 @@ final public class AnelPlugin implements PluginInterface {
                     continue;
                 c.port.last_command_timecode = System.currentTimeMillis();
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "ctrl.htm",
-                        "F" + String.valueOf(port.id - 1) + "=s", ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci, "ctrl.htm",
+                        "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
             }
         } else if (!(ci instanceof DeviceConnectionUDP)) { // not udp: return: unknown protocol
             return;
         }
 
-        assert (udpSending != null);
+        if (warnUDPSending()) {
+            return;
+        }
 
         // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
         // “Sw” + Steckdosen + User + Passwort
@@ -244,11 +249,12 @@ final public class AnelPlugin implements PluginInterface {
         HttpThreadPool.startHTTP();
     }
 
-    public void stopUDPDiscoveryThreads(NetpowerctrlService service) {
+    public void stopUDPDiscoveryThreads() {
+        Context context = NetpowerctrlApplication.instance;
         RuntimeDataController d = NetpowerctrlApplication.getDataController();
         for (Device di : d.deviceCollection.devices) {
-            if (this.equals(di.getPluginInterface(service))) {
-                di.setNotReachable("UDP", service.getString(R.string.device_energysave_mode));
+            if (this.equals(di.getPluginInterface())) {
+                di.setNotReachable("UDP", context.getString(R.string.device_energysave_mode));
                 d.onDeviceUpdated(di);
             }
         }
@@ -292,7 +298,7 @@ final public class AnelPlugin implements PluginInterface {
             bValue = port.current_value <= 0;
 
         final Device device = port.device;
-        final DeviceConnection ci = device.getFirstReachable();
+        final DeviceConnection ci = device.getFirstReachableConnection();
 
         // Use Http instead of UDP for sending. For each command we will send a single http request
         if (ci instanceof DeviceConnectionHTTP) {
@@ -303,14 +309,16 @@ final public class AnelPlugin implements PluginInterface {
             // The http interface can only toggle. If the current state is the same as the command state
             // then we request values instead of sending a command.
             if (command == DevicePort.TOGGLE && port.current_value == command)
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg",
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci, "strg.cfg",
                         "", ci, false, AnelPluginHttp.receiveCtrlHtml));
             else
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "ctrl.htm",
-                        "F" + String.valueOf(port.id - 1) + "=s", ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
+                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci, "ctrl.htm",
+                        "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
         } else if (ci instanceof DeviceConnectionUDP) {
-            assert (udpSending != null);
+            if (warnUDPSending()) {
+                return;
+            }
 
             byte[] data;
             UDPSending.Job j = null;
@@ -336,9 +344,20 @@ final public class AnelPlugin implements PluginInterface {
             callback.onExecutionFinished(1);
     }
 
+    /**
+     * @return Return true if no udp sending thread is running
+     */
+    private boolean warnUDPSending() {
+        if (udpSending == null) {
+            ShowToast.FromOtherThread(NetpowerctrlApplication.instance, "udpSending null");
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void onDestroy() {
-        stopUDPDiscoveryThreads(NetpowerctrlService.getService());
+        stopUDPDiscoveryThreads();
     }
 
     @Override
@@ -352,7 +371,9 @@ final public class AnelPlugin implements PluginInterface {
         NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
             return;
-        assert (udpSending != null);
+        if (warnUDPSending()) {
+            return;
+        }
 
         udpSending.addJob(new AnelBroadcastSendJob());
     }
@@ -369,9 +390,12 @@ final public class AnelPlugin implements PluginInterface {
             return;
 
         if (ci instanceof DeviceConnectionHTTP) {
-            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, AnelPluginHttp.receiveCtrlHtml));
+            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci,
+                    "strg.cfg", "", ci, false, AnelPluginHttp.receiveCtrlHtml));
         } else {
-            assert (udpSending != null);
+            if (warnUDPSending()) {
+                return;
+            }
             udpSending.addJob(new UDPSending.SendAndObserveJob(ci, requestMessage, UDPSending.INQUERY_REQUEST));
         }
     }
@@ -379,7 +403,9 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public void requestAlarms(final DevicePort port, final TimerController timerController) {
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
-        final DeviceConnection ci = port.device.getFirstReachable();
+        final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) port.device.getFirstReachableConnection("HTTP");
+        if (ci == null)
+            return;
 
         HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
                 port, false, new HttpThreadPool.HTTPCallback<DevicePort>() {
@@ -398,13 +424,13 @@ final public class AnelPlugin implements PluginInterface {
         ));
     }
 
-    private List<Alarm> extractAlarms(final DevicePort port, final String html) throws SAXException, IOException {
-        final List<Alarm> l = new ArrayList<>();
-        l.add(new Alarm());
-        l.add(new Alarm());
-        l.add(new Alarm());
-        l.add(new Alarm());
-        l.add(new Alarm());
+    private List<Timer> extractAlarms(final DevicePort port, final String html) throws SAXException, IOException {
+        final List<Timer> l = new ArrayList<>();
+        l.add(new Timer());
+        l.add(new Timer());
+        l.add(new Timer());
+        l.add(new Timer());
+        l.add(new Timer());
 
         XMLReader parser = XMLReaderFactory.createXMLReader("org.ccil.cowan.tagsoup.Parser");
         org.xml.sax.ContentHandler handler = new DefaultHandler() {
@@ -439,23 +465,23 @@ final public class AnelPlugin implements PluginInterface {
                 if (dataIndex < 0 || dataIndex > 4 || timerNumber < 0 || timerNumber >= l.size())
                     return;
 
-                Alarm alarm = l.get(timerNumber);
+                Timer timer = l.get(timerNumber);
 
 
                 switch (dataIndex) {
                     case 0: { // enabled / disabled
-                        alarm.deviceAlarm = true;
-                        alarm.port = port;
-                        alarm.port_id = port.uuid;
-                        alarm.enabled = checked != null;
-                        alarm.id = (port.id & 255) | timerNumber << 8;
-                        alarm.type = timerNumber < 4 ? Alarm.TYPE_RANGE_ON_WEEKDAYS : Alarm.TYPE_RANGE_ON_RANDOM_WEEKDAYS;
+                        timer.deviceAlarm = true;
+                        timer.port = port;
+                        timer.port_id = port.uuid;
+                        timer.enabled = checked != null;
+                        timer.id = (port.id & 255) | timerNumber << 8;
+                        timer.type = timerNumber < 4 ? Timer.TYPE_RANGE_ON_WEEKDAYS : Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS;
                         break;
                     }
                     case 1: { // weekdays
                         for (int i = 0; i < value.length(); ++i) {
                             int weekday_index = (value.charAt(i) - '1');
-                            alarm.weekdays[weekday_index % 7] = true;
+                            timer.weekdays[weekday_index % 7] = true;
                         }
                         break;
                     }
@@ -465,9 +491,9 @@ final public class AnelPlugin implements PluginInterface {
                             Log.e(PLUGIN_ID, "alarm:parse:start_time failed " + value);
                             return;
                         }
-                        alarm.hour_minute_start = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
-                        if (alarm.hour_minute_start == 99 * 60 + 99) // disabled if time is 99:99
-                            alarm.hour_minute_start = -1;
+                        timer.hour_minute_start = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        if (timer.hour_minute_start == 99 * 60 + 99) // disabled if time is 99:99
+                            timer.hour_minute_start = -1;
                         break;
                     }
                     case 3: { // end time like 00:01
@@ -476,9 +502,9 @@ final public class AnelPlugin implements PluginInterface {
                             Log.e(PLUGIN_ID, "alarm:parse:start_time failed " + value);
                             return;
                         }
-                        alarm.hour_minute_stop = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
-                        if (alarm.hour_minute_stop == 99 * 60 + 99) // disabled if time is 99:99
-                            alarm.hour_minute_stop = -1;
+                        timer.hour_minute_stop = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        if (timer.hour_minute_stop == 99 * 60 + 99) // disabled if time is 99:99
+                            timer.hour_minute_stop = -1;
                         break;
                     }
                     case 4: { // random interval time like 00:01
@@ -487,9 +513,9 @@ final public class AnelPlugin implements PluginInterface {
                             Log.e(PLUGIN_ID, "alarm:parse:start_time failed " + value);
                             return;
                         }
-                        alarm.hour_minute_random_interval = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
-                        if (alarm.hour_minute_random_interval == 99 * 60 + 99) // disabled if time is 99:99
-                            alarm.hour_minute_random_interval = -1;
+                        timer.hour_minute_random_interval = Integer.valueOf(e[0]) * 60 + Integer.valueOf(e[1]);
+                        if (timer.hour_minute_random_interval == 99 * 60 + 99) // disabled if time is 99:99
+                            timer.hour_minute_random_interval = -1;
                         break;
                     }
                 }
@@ -498,9 +524,9 @@ final public class AnelPlugin implements PluginInterface {
         parser.setContentHandler(handler);
         parser.parse(new InputSource(new StringReader(html)));
 
-        for (Alarm alarm : l) {
-            if (!alarm.enabled && alarm.hour_minute_start == 0 && alarm.hour_minute_stop == 23 * 60 + 59)
-                alarm.freeDeviceAlarm = true;
+        for (Timer timer : l) {
+            if (!timer.enabled && timer.hour_minute_start == 0 && timer.hour_minute_stop == 23 * 60 + 59)
+                timer.freeDeviceAlarm = true;
         }
         return l;
     }
@@ -517,7 +543,9 @@ final public class AnelPlugin implements PluginInterface {
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
-        final DeviceConnection ci = port.device.getFirstReachable();
+        final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) port.device.getFirstReachableConnection("HTTP");
+        if (ci == null)
+            return;
 
         HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
                 port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
@@ -531,7 +559,7 @@ final public class AnelPlugin implements PluginInterface {
                         String postData;
                         // Parse received web page
                         try {
-                            postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message, new_name, new Alarm[5]);
+                            postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message, new_name, new Timer[5]);
                         } catch (UnsupportedEncodingException e) {
                             callback.asyncRunnerResult(port, false, "url_encode failed");
                             return;
@@ -595,31 +623,36 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void enterFullNetworkState(Device device) {
+        if (SharedPrefs.logEnergySaveMode())
+            Logging.appendLog("Anel: enterFullNetworkState");
+
+        // Start send thread
+        if (udpSending == null)
+            udpSending = new UDPSending(false);
+        boolean alreadyRunning = udpSending.isRunning();
+        if (!alreadyRunning) {
+            udpSending.start("AnelUDPSendThread");
+        }
+
         if (device == null) {
             startUDPDiscoveryThreads(null);
-
-            // Start send thread
-            if (udpSending == null)
-                udpSending = new UDPSending(false);
-            boolean alreadyRunning = udpSending.isRunning();
-            if (!alreadyRunning) {
-                udpSending.start("AnelUDPSendThread");
+        } else {
+            // start socket listener on all udp listener ports for the given device
+            Set<Integer> ports = new TreeSet<>();
+            for (DeviceConnection ci : device.DeviceConnections) {
+                if (ci instanceof DeviceConnectionUDP)
+                    ports.add(ci.getListenPort());
             }
-            return;
+            startUDPDiscoveryThreads(ports);
         }
-
-        // start socket listener on all udp listener ports for the given device
-        Set<Integer> ports = new TreeSet<>();
-        for (DeviceConnection ci : device.DeviceConnections) {
-            if (ci instanceof DeviceConnectionUDP)
-                ports.add(ci.getListenPort());
-        }
-        startUDPDiscoveryThreads(ports);
     }
 
     @Override
     public void enterNetworkReducedState() {
-        stopUDPDiscoveryThreads(NetpowerctrlService.getService());
+        if (SharedPrefs.logEnergySaveMode())
+            Logging.appendLog("Anel: enterNetworkReducedState");
+
+        stopUDPDiscoveryThreads();
         boolean running = udpSending != null && udpSending.isRunning();
         if (running) {
             udpSending.interrupt();
@@ -629,7 +662,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void openConfigurationPage(Device device, Context context) {
-        final DeviceConnection ci = device.getFirstReachable();
+        final DeviceConnection ci = device.getFirstReachableConnection();
         if (ci == null) {
             Toast.makeText(NetpowerctrlApplication.instance, R.string.error_device_not_reachable, Toast.LENGTH_SHORT).show();
             return;
@@ -647,14 +680,14 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public Alarm getNextFreeAlarm(DevicePort port, int type) {
+    public Timer getNextFreeAlarm(DevicePort port, int type) {
         // We only support those two alarm types
-        if (type != Alarm.TYPE_RANGE_ON_WEEKDAYS && type != Alarm.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
+        if (type != Timer.TYPE_RANGE_ON_WEEKDAYS && type != Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
             return null;
 
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
-        List<Alarm> available_alarms = c.getAvailableDeviceAlarms();
-        for (Alarm available : available_alarms) {
+        List<Timer> available_timers = c.getAvailableDeviceAlarms();
+        for (Timer available : available_timers) {
             // Find alarm for the selected port
             if ((available.id & 255) == port.id) {
                 return available;
@@ -664,20 +697,22 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void saveAlarm(final Alarm alarm, final AsyncRunnerResult callback) {
+    public void saveAlarm(final Timer timer, final AsyncRunnerResult callback) {
         if (callback != null)
-            callback.asyncRunnerStart(alarm.port);
+            callback.asyncRunnerStart(timer.port);
 
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
-        final String getData = "dd.htm?DD" + String.valueOf(alarm.port.id);
-        final int timerNumber = (int) (alarm.id >> 8) & 255;
+        final String getData = "dd.htm?DD" + String.valueOf(timer.port.id);
+        final int timerNumber = (int) (timer.id >> 8) & 255;
         // Get the timerController object. We will add received alarms to that instance.
         final TimerController timerController = NetpowerctrlApplication.getDataController().timerController;
-        final DeviceConnection ci = alarm.port.device.getFirstReachable();
+        final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) timer.port.device.getFirstReachableConnection("HTTP");
+        if (ci == null)
+            return;
 
         HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
-                alarm.port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                timer.port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                     @Override
                     public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
                         if (!callback_success) {
@@ -686,14 +721,14 @@ final public class AnelPlugin implements PluginInterface {
                             return;
                         }
 
-                        Alarm[] alarms = new Alarm[5];
-                        alarms[timerNumber] = alarm;
+                        Timer[] timers = new Timer[5];
+                        timers[timerNumber] = timer;
 
                         String postData;
                         // Parse received web page
                         try {
                             postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message,
-                                    null, alarms);
+                                    null, timers);
                         } catch (UnsupportedEncodingException e) {
                             if (callback != null)
                                 callback.asyncRunnerResult(port, false, "url_encode failed");
@@ -732,17 +767,17 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void removeAlarm(Alarm alarm, final AsyncRunnerResult callback) {
+    public void removeAlarm(Timer timer, final AsyncRunnerResult callback) {
         if (callback != null)
-            callback.asyncRunnerStart(alarm.port);
+            callback.asyncRunnerStart(timer.port);
 
         // Reset all data to default values
-        alarm.hour_minute_start = 0;
-        alarm.hour_minute_stop = 23 * 60 + 59;
-        alarm.hour_minute_random_interval = 0;
-        for (int i = 0; i < 7; ++i) alarm.weekdays[i] = true;
-        alarm.enabled = false;
-        saveAlarm(alarm, callback);
+        timer.hour_minute_start = 0;
+        timer.hour_minute_stop = 23 * 60 + 59;
+        timer.hour_minute_random_interval = 0;
+        for (int i = 0; i < 7; ++i) timer.weekdays[i] = true;
+        timer.enabled = false;
+        saveAlarm(timer, callback);
     }
 
 //

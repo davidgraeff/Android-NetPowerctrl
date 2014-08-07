@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
@@ -24,6 +25,9 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
 
     private static Device createReceivedAnelDevice(String DeviceName, String MacAddress) {
         Device di = Device.createNewDevice(anelPlugin.getPluginID());
+        NetpowerctrlService service = NetpowerctrlService.getService();
+        if (service != null)
+            di.setPluginInterface(service.getPluginByID(anelPlugin.getPluginID()));
         di.DeviceName = DeviceName;
         di.UniqueDeviceID = MacAddress;
         // Default values for user and password

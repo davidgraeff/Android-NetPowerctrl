@@ -33,7 +33,7 @@ public abstract class DeviceObserverBase {
             NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
 
             for (Device device : devices_to_observe) {
-                if (device.getFirstReachable() != null)
+                if (device.getFirstReachableConnection() != null)
                     device.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
                 // Call onDeviceUpdated to update device info.
                 NetpowerctrlApplication.getDataController().deviceCollection.updateNotReachable(device);
@@ -56,31 +56,32 @@ public abstract class DeviceObserverBase {
      * Return true if all devices responded and this DeviceQuery object
      * have to be removed.
      *
-     * @param received_data The DeviceInfo object all observes should be notified of.
+     * @param device The DeviceInfo object all observes should be notified of.
      */
-    public boolean notifyObservers(Device received_data) {
+    public boolean notifyObservers(Device device) {
         Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
             Device device_to_observe = it.next();
-            if (device_to_observe.equalsByUniqueID(received_data)) {
+            if (device_to_observe.equalsByUniqueID(device)) {
                 it.remove();
                 if (target != null)
-                    target.onDeviceUpdated(received_data);
+                    target.onDeviceUpdated(device);
                 break;
             }
         }
         return checkIfDone();
     }
 
+
     public boolean notifyObservers(String device_name) {
         Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
-            Device device_to_observe = it.next();
-            boolean eq = device_name.equals(device_to_observe.DeviceName);
+            Device device = it.next();
+            boolean eq = device_name.equals(device.DeviceName);
             if (eq) {
                 it.remove();
                 if (target != null)
-                    target.onDeviceUpdated(device_to_observe);
+                    target.onDeviceUpdated(device);
                 break;
             }
         }

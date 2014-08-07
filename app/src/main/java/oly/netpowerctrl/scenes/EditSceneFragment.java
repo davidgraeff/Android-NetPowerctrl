@@ -40,7 +40,7 @@ public class EditSceneFragment extends Fragment {
      * @param position position
      */
     public void dismissItem(int position) {
-        mAdapter.removeAt(position, true);
+        mAdapter.removeAt(position, true, true);
         mAdapter.notifyDataSetChanged();
     }
 
@@ -93,8 +93,9 @@ public class EditSceneFragment extends Fragment {
             h.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    //noinspection ConstantConditions
-                    mListView.getEmptyView().setVisibility(View.GONE);
+                    View v = mListView.getEmptyView();
+                    if (v != null)
+                        v.setVisibility(View.GONE);
                     mListView.setEmptyView(view.findViewById(R.id.empty));
                     TextView textView = (TextView) view.findViewById(R.id.empty_text);
                     textView.setText(R.string.scene_create_helptext_available);

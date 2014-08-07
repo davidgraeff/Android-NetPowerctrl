@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
@@ -25,6 +26,11 @@ public class DeviceQuery extends DeviceObserverBase {
         devices_to_observe = new ArrayList<>();
         devices_to_observe.add(device_to_observe);
 
+        // Filter out disabled devices
+        filterDisabled();
+        if (devices_to_observe.isEmpty())
+            return;
+
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
 
@@ -38,6 +44,11 @@ public class DeviceQuery extends DeviceObserverBase {
     public DeviceQuery(DeviceObserverResult target, Collection<Device> devices_to_observe) {
         setDeviceQueryResult(target);
         this.devices_to_observe = new ArrayList<>(devices_to_observe);
+
+        // Filter out disabled devices
+        filterDisabled();
+        if (devices_to_observe.isEmpty())
+            return;
 
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
@@ -62,6 +73,11 @@ public class DeviceQuery extends DeviceObserverBase {
         setDeviceQueryResult(target);
         this.devices_to_observe = new ArrayList<>(NetpowerctrlApplication.getDataController().deviceCollection.devices);
 
+        // Filter out disabled devices
+        filterDisabled();
+        if (devices_to_observe.isEmpty())
+            return;
+
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
 
@@ -74,29 +90,32 @@ public class DeviceQuery extends DeviceObserverBase {
         service.sendBroadcastQuery();
     }
 
-    //    if (deviceName.equalsByUniqueID(device.DeviceName)) {
-//        test_state = TestStates.TEST_INIT;
-//    }
+    private void filterDisabled() {
+        Iterator<Device> deviceIterator = devices_to_observe.iterator();
+        while (deviceIterator.hasNext()) {
+            Device device = deviceIterator.next();
+            if (!device.isEnabled()) {
+                device.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_device_disabled));
+                deviceIterator.remove();
+                NetpowerctrlApplication.getDataController().deviceCollection.updateNotReachable(device);
+            }
+        }
+    }
 
     @Override
     protected void doAction(Device device, boolean repeated) {
-        NetpowerctrlService service = NetpowerctrlService.getService();
-        if (service == null)
-            return;
-
         if (repeated)
             Log.w("DeviceObserverBase", "redo: " + device.DeviceName);
 
-        PluginInterface remote = device.getPluginInterface(service);
+        PluginInterface pluginInterface = device.getPluginInterface();
+        if (pluginInterface == null) {
+            device.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+            notifyObservers(device);
+            return;
+        }
+
         for (DeviceConnection ci : device.DeviceConnections) {
-            if (remote != null) {
-                if (!device.isEnabled()) {
-                    ci.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_device_disabled));
-                } else
-                    remote.requestData(ci);
-            } else {
-                ci.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
-            }
+            pluginInterface.requestData(ci);
         }
     }
 }

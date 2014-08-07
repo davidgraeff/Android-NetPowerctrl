@@ -188,7 +188,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
 
     public void setMasterOfScene(Scene scene) {
         if (scene.isMasterSlave()) {
-            int p = findIndexByUUid(scene.getMasterUUid());
+            int p = findPositionByUUid(scene.getMasterUUid());
             if (p != -1)
                 master = mItems.get(p);
             else

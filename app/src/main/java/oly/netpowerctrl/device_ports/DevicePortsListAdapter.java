@@ -41,7 +41,7 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
             return convertView;
 
         if (checkable) {
-            CheckedTextView t = (CheckedTextView) mCurrent_devicePortViewHolder.title;
+            CheckedTextView t = (CheckedTextView) cViewHolder.title;
             t.setChecked(checked.get(position));
         }
         return convertView;
@@ -57,7 +57,7 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
         List<UUID> slaves = new ArrayList<>();
         for (int i = 0; i < getCount(); i++) {
             if (checked.get(i)) {
-                slaves.add(getItem(i).uuid);
+                slaves.add(getDevicePort(i).uuid);
             }
         }
         return slaves;
@@ -65,7 +65,7 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
 
     public void setChecked(List<UUID> slaves) {
         for (UUID slave : slaves) {
-            int position = findIndexByUUid(slave);
+            int position = findPositionByUUid(slave);
             if (position == -1)
                 continue;
             checked.put(position, true);

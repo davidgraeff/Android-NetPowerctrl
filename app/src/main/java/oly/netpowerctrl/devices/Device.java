@@ -4,7 +4,6 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +48,7 @@ public class Device implements Comparable<Device> {
     private boolean enabled = true;
     private long updated = 0;
     private boolean hasChanged = false;
-    private WeakReference<PluginInterface> pluginInterface = null;
+    private PluginInterface pluginInterface = null;
 
     private Device(String pluginID) {
         this.pluginID = pluginID;
@@ -135,6 +134,10 @@ public class Device implements Comparable<Device> {
 
         if (di.pluginID.isEmpty())
             throw new ClassNotFoundException();
+
+        NetpowerctrlService service = NetpowerctrlService.getService();
+        if (service != null)
+            di.pluginInterface = service.getPluginByID(di.pluginID);
         return di;
     }
 
@@ -164,8 +167,16 @@ public class Device implements Comparable<Device> {
             }
     }
 
-    public DeviceConnection getFirstReachable() {
+    public DeviceConnection getFirstReachableConnection() {
         return cached_deviceConnection;
+    }
+
+    public DeviceConnection getFirstReachableConnection(String protocol) {
+        for (DeviceConnection deviceConnection : DeviceConnections)
+            if (deviceConnection.isReachable() && deviceConnection.getProtocol().equals(protocol)) {
+                return deviceConnection;
+            }
+        return null;
     }
 
     public void setReachable(int index) {
@@ -199,6 +210,7 @@ public class Device implements Comparable<Device> {
         for (oly.netpowerctrl.devices.DeviceConnection di : DeviceConnections)
             di.setNotReachable(not_reachable_reason);
         cached_deviceConnection = null;
+        hasChanged = true;
     }
 
     @Override
@@ -209,20 +221,16 @@ public class Device implements Comparable<Device> {
     }
 
     /**
-     * Get "execution engine" for this device info, either by an existing reference to it or
-     * by requesting it by the plugin controller.
+     * Every device belongs to a plugin. This method returns the corresponding plugin.
      *
-     * @return
+     * @return The plugin this device belongs to.
      */
-    public PluginInterface getPluginInterface(NetpowerctrlService service) {
-        PluginInterface pi = pluginInterface != null ? pluginInterface.get() : null;
+    public PluginInterface getPluginInterface() {
+        return pluginInterface;
+    }
 
-        if (pi == null) {
-            pi = service.getPluginInterface(this);
-            pluginInterface = new WeakReference<>(pi);
-        }
-
-        return pi;
+    public void setPluginInterface(PluginInterface pluginInterface) {
+        this.pluginInterface = pluginInterface;
     }
 
     /**
@@ -243,10 +251,10 @@ public class Device implements Comparable<Device> {
             hasChanged |= copyConnections(other);
         }
         // Else: Same object, but the values may have changed since the last call to "copyValuesFromUpdated"
-
+        // This is indicated by the boolean value hasChanged which may be set now.
 
         boolean hasChangedL = hasChanged;
-        hasChanged = false;
+        hasChanged = false; // Reset flag
         return hasChangedL;
     }
 
@@ -258,6 +266,17 @@ public class Device implements Comparable<Device> {
      * @return
      */
     private boolean copyConnections(Device updated) {
+        // If no plugin object reference is known, we abort here. DeviceConnections
+        // are not of any use if we have no known plugin to execute actions on.
+        if (pluginInterface == null) {
+            if (updated.pluginInterface == null) {
+                setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+                return true;
+            }
+            // Update plugin object reference
+            pluginInterface = updated.pluginInterface;
+        }
+
         boolean changed = false;
         // update each of the existing connections
         for (DeviceConnection di : DeviceConnections) {
@@ -429,8 +448,8 @@ public class Device implements Comparable<Device> {
         DevicePorts.remove(id);
     }
 
-    public boolean isNetworkDevice(NetpowerctrlService service) {
-        PluginInterface pi = getPluginInterface(service);
+    public boolean isNetworkDevice() {
+        PluginInterface pi = getPluginInterface();
         return pi != null && pi.isNetworkPlugin();
     }
 
@@ -458,11 +477,32 @@ public class Device implements Comparable<Device> {
         return f;
     }
 
-    public void addConnection(DeviceConnection deviceConnection) {
-        for (DeviceConnection connection : DeviceConnections)
-            if (connection.getDestinationHost().equals(deviceConnection.getDestinationHost()))
+    public void removeConnection(DeviceConnection removeConnection) {
+        for (int i = 0; i < DeviceConnections.size(); ++i) {
+            final DeviceConnection connection = DeviceConnections.get(i);
+            if (connection.getDestinationHost().equals(removeConnection.getDestinationHost()) &&
+                    connection.getListenPort() == removeConnection.getListenPort() &&
+                    connection.getProtocol().equals(removeConnection.getProtocol())) {
+                DeviceConnections.remove(i);
                 return;
-        DeviceConnections.add(deviceConnection);
-        setReachable(DeviceConnections.size() - 1);
+            }
+        }
+        compute_first_reachable();
+    }
+
+    public void addConnection(DeviceConnection newConnection) {
+        for (DeviceConnection connection : DeviceConnections)
+            if (connection.getDestinationHost().equals(newConnection.getDestinationHost()) &&
+                    connection.getListenPort() == newConnection.getListenPort() &&
+                    connection.getProtocol().equals(newConnection.getProtocol()))
+                return;
+
+        if (newConnection instanceof DeviceConnectionUDP) {
+            DeviceConnections.add(0, newConnection);
+            setReachable(0);
+        } else {
+            DeviceConnections.add(newConnection);
+            setReachable(DeviceConnections.size() - 1);
+        }
     }
 }

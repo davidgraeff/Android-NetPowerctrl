@@ -1,19 +1,33 @@
 package oly.netpowerctrl.preferences;
 
+import android.app.Application;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.preference.PreferenceManager;
+
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
-public class SharedPrefs {
+public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeListener {
     public final static String PREF_widgets = "widgets";
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
     public static final String PREF_use_dark_theme = "use_dark_theme";
     public static final String PREF_show_persistent_notification = "show_persistent_notification";
     public final static String hide_not_reachable = "hide_not_reachable";
     private final static int PREF_CURRENT_VERSION = 3;
+    private static SharedPrefs instance;
+    private WeakHashMap<IShowBackground, Boolean> observers_showBackground = new WeakHashMap<>();
+    private WeakHashMap<IHideNotReachable, Boolean> observers_HideNotReachable = new WeakHashMap<>();
+
+    public SharedPrefs(Application app) {
+        instance = this;
+        PreferenceManager.getDefaultSharedPreferences(app).unregisterOnSharedPreferenceChangeListener(this);
+    }
 
     public static int getLastPreferenceVersion() {
         Context context = NetpowerctrlApplication.instance;
@@ -220,16 +234,38 @@ public class SharedPrefs {
         return name.equals("use_log_energy_saving_mode");
     }
 
+    public static String getVersionName(Context context) {
+        try {
+            Class cls = NetpowerctrlApplication.class;
+            ComponentName comp = new ComponentName(context, cls);
+            PackageInfo pinfo = context.getPackageManager().getPackageInfo(
+                    comp.getPackageName(), 0);
+            return pinfo.versionName;
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            return "";
+        }
+    }
+
     /**
      * @return Return true if first run. All later calls will always return false.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean isFirstRun() {
+    public static boolean showChangeLog() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = prefs.getBoolean("firstRun", true);
-        prefs.edit().putBoolean("firstRun", false).apply();
-        return value;
+        String lastStoredVersion = prefs.getString("lastVersion", null);
+        String currentVersion = getVersionName(context);
+        // Do not show changelog on first app opening (but on the next opening)
+        if (lastStoredVersion == null && getFirstTab().equals("")) {
+            prefs.edit().putString("lastVersion", "").apply();
+            return false;
+        }
+        // last version == current version: do not show changelog
+        if (currentVersion.equals(lastStoredVersion))
+            return false;
+        // update last version and show change log
+        prefs.edit().putString("lastVersion", currentVersion).apply();
+        return true;
     }
 
     public static boolean gDriveEnabled() {
@@ -269,5 +305,76 @@ public class SharedPrefs {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.notify_on_non_reachable);
         return prefs.getBoolean("notify_on_non_reachable", value);
+    }
+
+    public static boolean isBackground() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.show_background);
+        return prefs.getBoolean("show_background", value);
+    }
+
+    public static int getOpenIssues() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt("open_issues", -1);
+    }
+
+    public static long getLastTimeOpenIssuesRequested() {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getLong("open_issues_last_access", -1);
+    }
+
+    public static void setOpenIssues(int value, long last_access) {
+        Context context = NetpowerctrlApplication.instance;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putInt("open_issues", value).putLong("open_issues_last_access", last_access).apply();
+    }
+
+    public static SharedPrefs getInstance() {
+        return instance;
+    }
+
+    public void registerShowBackground(IShowBackground observer) {
+        observers_showBackground.put(observer, true);
+    }
+
+    public void registerHideNotReachable(IHideNotReachable observer) {
+        observers_HideNotReachable.put(observer, true);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        if (s.equals("show_background")) {
+
+        }
+        boolean value;
+        switch (s) {
+            case "show_background": {
+                value = isBackground();
+                Set<IShowBackground> observers = observers_showBackground.keySet();
+                for (IShowBackground observer : observers) {
+                    observer.backgroundChanged(value);
+                }
+                break;
+            }
+            case SharedPrefs.hide_not_reachable: {
+                value = isHideNotReachable();
+                Set<IHideNotReachable> observers = observers_HideNotReachable.keySet();
+                for (IHideNotReachable observer : observers) {
+                    observer.hideNotReachable(value);
+                }
+                break;
+            }
+        }
+    }
+
+    public interface IShowBackground {
+        void backgroundChanged(boolean showBackground);
+    }
+
+    public interface IHideNotReachable {
+        void hideNotReachable(boolean hideNotReachable);
     }
 }

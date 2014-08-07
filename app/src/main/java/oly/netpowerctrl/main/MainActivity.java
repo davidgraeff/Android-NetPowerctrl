@@ -27,30 +27,34 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
 
 import java.lang.reflect.Field;
 
-import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ActivityWithIconCache;
+import oly.netpowerctrl.utils.ChangeLogUtil;
 import oly.netpowerctrl.utils.Donate;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.NFC;
-import oly.netpowerctrl.utils.gui.DrawerController;
+import oly.netpowerctrl.utils.gui.NavigationController;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback, ActivityWithIconCache {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
     public final Donate donate = new Donate();
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
-    // Drawer
-    private final DrawerController mDrawer = new DrawerController();
+    private final NavigationController navigationController = new NavigationController();
     private long mBackPressed;
+
+    public static NavigationController getNavigationController() {
+        return instance.navigationController;
+    }
 
     public IconDeferredLoadingThread getIconCache() {
         return mIconCache;
@@ -69,6 +73,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         donate.onActivityResult(this, requestCode, resultCode, data);
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         instance = this;
@@ -80,7 +85,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
             setTheme(R.style.Theme_CustomLightTheme);
         }
 
-        setContentView(R.layout.activity_main);
+        assignContentView();
 
         // Clear the backstack on entering this activity
         getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -106,7 +111,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                mDrawer.createDrawer(MainActivity.this, true);
+                navigationController.createDrawer(MainActivity.this, NavigationController.RestorePositionEnum.RestoreLastSaved);
 
                 // NFC
                 NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(MainActivity.this);
@@ -122,29 +127,35 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (!SharedPrefs.isFirstRun()) {
-                    ChangeLog cl = new ChangeLog(MainActivity.this);
-                    if (cl.isFirstRun())
-                        cl.getLogDialog().show();
+                if (SharedPrefs.showChangeLog()) {
+                    ChangeLogUtil.showChangeLog(MainActivity.this);
                 }
             }
         }, 150);
     }
 
+    private void assignContentView() {
+        setContentView(R.layout.activity_main);
+        if (SharedPrefs.isBackground()) {
+            View v = findViewById(R.id.content_frame);
+            v.setBackgroundResource(R.drawable.bg);
+        }
+    }
+
     /* Called whenever we call invalidateOptionsMenu() */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (mDrawer.isLoading())
+        if (navigationController.isLoading())
             return super.onPrepareOptionsMenu(menu);
 
-        mDrawer.onPrepareOptionsMenu(menu);
+        navigationController.onPrepareOptionsMenu(menu);
         return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, @SuppressWarnings("NullableProblems") KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU) {
-            mDrawer.menuKeyPressed();
+            navigationController.menuKeyPressed();
         }
         return super.onKeyUp(keyCode, event);
     }
@@ -153,7 +164,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     protected void onPause() {
         super.onPause();
 
-        mDrawer.saveSelection();
+        navigationController.saveSelection();
 
         // Stop listener
         NetpowerctrlService.stopUseService();
@@ -179,26 +190,23 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return mDrawer.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+        return navigationController.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT ||
+                newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            setContentView(R.layout.activity_main);
-            int lastPos = mDrawer.drawerLastItemPosition;
-            mDrawer.createDrawer(MainActivity.this, false);
-            mDrawer.selectItem(lastPos, true);
+            navigationController.detachCurrentFragment();
+            assignContentView();
             checkUseHomeButton();
-        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setContentView(R.layout.activity_main);
-            int lastPos = mDrawer.drawerLastItemPosition;
-            mDrawer.createDrawer(MainActivity.this, false);
-            mDrawer.selectItem(lastPos, true);
-            checkUseHomeButton();
+            navigationController.createDrawer(MainActivity.this,
+                    NavigationController.RestorePositionEnum.RestoreAfterConfigurationChanged);
+
         }
+        // now the fragments
+        super.onConfigurationChanged(newConfig);
     }
 
     private void checkUseHomeButton() {
@@ -211,18 +219,14 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
 
     @Override
     public void setTitle(CharSequence title) {
-        mDrawer.setTitle(title);
+        navigationController.setTitle(title);
         //noinspection ConstantConditions
         getActionBar().setTitle(title);
     }
 
-    public void changeToFragment(String fragmentClassName) {
-        mDrawer.changeToFragment(fragmentClassName);
-    }
-
     @Override
     public void onBackPressed() {
-        if (mDrawer.onBackPressed())
+        if (navigationController.onBackPressed())
             return;
 
         if (mBackPressed + TIME_INTERVAL_MS > System.currentTimeMillis()) {

@@ -7,11 +7,11 @@ import android.preference.PreferenceManager;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.alarms.TimerController;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.SceneCollection;
+import oly.netpowerctrl.timer.TimerController;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ShowToast;
 

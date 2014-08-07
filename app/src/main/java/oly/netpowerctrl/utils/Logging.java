@@ -60,7 +60,7 @@ public class Logging {
 
         File parent = logFile.getParentFile();
         if (parent != null)
-            if (!parent.mkdirs()) {
+            if (!parent.mkdirs() && !parent.isDirectory()) {
                 Log.w("log", "failed to create log dir");
                 return;
             }

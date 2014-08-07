@@ -10,6 +10,7 @@
         android:title="@string/device_ip" />
 
     <CheckBoxPreference
+        android:disableDependentsState="true"
         android:key="use_default_ports"
         android:persistent="false"
         android:summary="@string/device_default_ports_summary"
@@ -19,7 +20,6 @@
         android:dependency="use_default_ports"
         android:dialogMessage="@string/preference_standard_send_port_summary"
         android:dialogTitle="@string/device_send_udp_port"
-        android:disableDependentsState="true"
         android:inputType="number"
         android:key="udp_send_port"
         android:numeric="integer"
@@ -31,7 +31,6 @@
         android:dependency="use_default_ports"
         android:dialogMessage="@string/preference_standard_recv_port_summary"
         android:dialogTitle="@string/device_receive_udp_port"
-        android:disableDependentsState="true"
         android:inputType="number"
         android:key="udp_receive_port"
         android:numeric="integer"

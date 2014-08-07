@@ -4,6 +4,7 @@ package oly.netpowerctrl.backup.drive;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.google.android.gms.cast.CastStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
@@ -32,7 +33,7 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
     @Override
     protected void onPreExecute() {
         if (observer != null)
-            observer.showProgress(true, "Refreshing backup list...");
+            observer.showProgress(true, NetpowerctrlApplication.instance.getString(R.string.gDrive_refreshing_backup_list));
     }
 
     @Override
@@ -47,10 +48,13 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
 
         // Request sync
         com.google.android.gms.common.api.Status resultRequestSync;
-        resultRequestSync = Drive.DriveApi.requestSync(mClient).await(3, TimeUnit.SECONDS);
+        resultRequestSync = Drive.DriveApi.requestSync(mClient).await(5, TimeUnit.SECONDS);
         if (!resultRequestSync.getStatus().isSuccess()) {
-            errorString = context.getString(R.string.gDrive_error_retrieve_files,
-                    resultRequestSync.getStatus().toString());
+            if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
+                errorString = context.getString(R.string.gDrive_error_timeout);
+            } else
+                errorString = context.getString(R.string.gDrive_error_retrieve_files,
+                        resultRequestSync.getStatus().toString());
             // We failed, stop the task and return.
             return null;
         }
@@ -59,9 +63,12 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
         DriveFolder appDataDir = GDrive.getAppFolder(mClient);
 
         // Get childs
-        DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await(3, TimeUnit.SECONDS);
+        DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await(5, TimeUnit.SECONDS);
         if (!result.getStatus().isSuccess()) {
-            errorString = context.getString(R.string.gDrive_error_retrieve_files, result.getStatus().toString());
+            if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
+                errorString = context.getString(R.string.gDrive_error_timeout);
+            } else
+                errorString = context.getString(R.string.gDrive_error_retrieve_files, result.getStatus().toString());
             // We failed, stop the task and return.
             return null;
         }

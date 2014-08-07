@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
  * Util for scenes
@@ -264,6 +265,12 @@ public class Icons {
 
         AlertDialog.Builder select_icon_dialog = new AlertDialog.Builder(context);
         select_icon_dialog.setTitle(context.getString(R.string.dialog_icon_title));
+        if (callback_context_object instanceof DevicePort) {
+            DevicePort oi = (DevicePort) callback_context_object;
+            Drawable icon = Icons.loadDrawable(context, oi.uuid,
+                    Icons.IconType.DevicePortIcon, oi.getIconState(), 0);
+            select_icon_dialog.setIcon(icon);
+        }
         select_icon_dialog.setAdapter(adapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {

@@ -39,21 +39,27 @@
 
         <Button
             android:id="@+id/btnChangeToDevices"
+            style="?colored_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="@string/devices" />
 
 
         <Button
             android:id="@+id/btnChangeToBackup"
+            style="?colored_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="@string/toBackup" />
 
         <Button
             android:id="@+id/btnWirelessSettings"
+            style="?colored_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="@string/toWirelessSettings"
             android:visibility="gone" />
     </LinearLayout>

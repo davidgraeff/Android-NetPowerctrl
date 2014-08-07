@@ -10,7 +10,10 @@ import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
@@ -26,11 +29,20 @@ public class AnimationController {
 
     private Animation highlightAnimation = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
             R.anim.button_zoom);
-    private HashSet<Long> mHighlightItemIdTopMap = new HashSet<>();
+    private Animation updateAnimation = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
+            R.anim.button_zoom);
+    private Map<Long, Integer> mHighlightItemIdTopMap = new TreeMap<>();
+    private Set<Long> mSmallHighlightItemIdTopMap = new TreeSet<>();
     private boolean firstAnimation = true;
 
-    public void addHighlight(long id) {
-        mHighlightItemIdTopMap.add(id);
+    //TODO
+    public void addSmallHighlight(long id) {
+//        mSmallHighlightItemIdTopMap.add(id);
+//        updateAnimation.reset();
+    }
+
+    public void addHighlight(long id, int view_id) {
+        mHighlightItemIdTopMap.put(id, view_id);
         highlightAnimation.reset();
     }
 
@@ -83,13 +95,19 @@ public class AnimationController {
                             reEnableList(listView, child);
                         }
                     }
-                    if (mHighlightItemIdTopMap.contains(itemId)) { // highlight animation
-                        child.clearAnimation();
-                        child.startAnimation(highlightAnimation);
+                    Integer view_id = mHighlightItemIdTopMap.get(itemId);
+                    if (view_id != null) {
+                        View v = child.findViewById(view_id);
+                        if (v != null)
+                            v.startAnimation(highlightAnimation);
+                    }
+                    if (mSmallHighlightItemIdTopMap.contains(itemId)) {
+                        child.startAnimation(updateAnimation);
                     }
                 }
                 mRemoveItemIdTopMap.clear();
                 mHighlightItemIdTopMap.clear();
+                mSmallHighlightItemIdTopMap.clear();
                 return true;
             }
         });

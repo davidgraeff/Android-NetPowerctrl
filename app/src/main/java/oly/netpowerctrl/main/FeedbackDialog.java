@@ -17,8 +17,8 @@ import android.util.Base64;
 
 import java.io.UnsupportedEncodingException;
 
-import de.cketti.library.changelog.ChangeLog;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.ChangeLogUtil;
 import oly.netpowerctrl.utils.Icons;
 
 public class FeedbackDialog extends DialogFragment {
@@ -35,7 +35,7 @@ public class FeedbackDialog extends DialogFragment {
         builder.setIcon(new BitmapDrawable(getResources(), Icons.resizeBitmap(getActivity(), b)));
         builder.setTitle(R.string.app_name);
 
-        // Support this app by a donations.
+        // Support this app by a donation.
         String[] items = getResources().getStringArray(R.array.feedbackOptions);
         try {
             items[items.length - 1] = items[items.length - 1].replace("%s",
@@ -84,8 +84,7 @@ public class FeedbackDialog extends DialogFragment {
                     }
                     break;
                     case 4: {
-                        ChangeLog cl = new ChangeLog(getActivity());
-                        cl.getFullLogDialog().show();
+                        ChangeLogUtil.showChangeLog(getActivity());
                     }
                     break;
                     case 5: {
