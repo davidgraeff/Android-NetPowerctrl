@@ -44,7 +44,7 @@ public class DevicePortAdapterItem {
         return new_item;
     }
 
-    public static DevicePortAdapterItem createGroupPreFillElemenet(DevicePortAdapterItem c, int id) {
+    public static DevicePortAdapterItem createGroupPreFillElement(DevicePortAdapterItem c, int id) {
         DevicePortAdapterItem new_item = new DevicePortAdapterItem(c.group, c.displayText, id);
         new_item.setGroupType(groupTypeEnum.PRE_GROUP_FILL_ELEMENT_TYPE);
         return new_item;
