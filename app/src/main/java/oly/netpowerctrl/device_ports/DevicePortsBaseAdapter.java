@@ -29,7 +29,7 @@ import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
-import oly.netpowerctrl.utils.gui.AnimationController;
+import oly.netpowerctrl.utils_gui.AnimationController;
 
 public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface,
         SharedPrefs.IShowBackground {
@@ -123,27 +123,6 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         SharedPrefs.setShowHiddenOutlets(mShowHidden);
         if (mSource != null)
             mSource.updateNow();
-    }
-
-    public void setItemsInRow(int itemsInRow) {
-        if (itemsInRow == this.mItemsInRow)
-            return;
-
-        this.mItemsInRow = itemsInRow;
-        if (itemsInRow == 1) {
-            // Remove all group span items
-            for (int i = mItems.size() - 1; i >= 0; --i) {
-                DevicePortAdapterItem c = mItems.get(i);
-                switch (c.groupType()) {
-                    case GROUP_SPAN_TYPE:
-                    case PRE_GROUP_FILL_ELEMENT_TYPE:
-                        mItems.remove(i);
-                }
-            }
-        } else {
-            computeGroupSpans();
-        }
-        notifyDataSetChanged();
     }
 
     @Override
@@ -289,11 +268,13 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
             cViewHolder.subtitle.setText(port.device.DeviceName);
 
-            if (cViewHolder.progress.getVisibility() == View.VISIBLE && item.isEnabled() &&
-                    cViewHolder.animation == null) {
-                animateHideProgressbar(cViewHolder.position, cViewHolder);
-            } else
-                cViewHolder.progress.setVisibility(item.isEnabled() ? View.GONE : View.VISIBLE);
+            if (cViewHolder.progress != null) {
+                if (cViewHolder.progress.getVisibility() == View.VISIBLE && item.isEnabled() &&
+                        cViewHolder.animation == null) {
+                    animateHideProgressbar(cViewHolder.position, cViewHolder);
+                } else
+                    cViewHolder.progress.setVisibility(item.isEnabled() ? View.GONE : View.VISIBLE);
+            }
 
             if (port.device.getFirstReachableConnection() != null)
                 cViewHolder.title.setPaintFlags(
@@ -333,6 +314,41 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     //////////////// Group Spans //////////////
 
+    public void setItemsInRow(int itemsInRow) {
+        if (itemsInRow == this.mItemsInRow)
+            return;
+
+        this.mItemsInRow = itemsInRow;
+        if (itemsInRow <= 1) {
+            removeGroupSpanAndFillElements();
+        } else {
+            computeGroupSpans();
+        }
+        notifyDataSetChanged();
+    }
+
+    private void removeGroupSpanAndFillElements() {
+        AnimationController a = mAnimationWeakReference.get();
+        // Remove all group span items
+        for (int i = mItems.size() - 1; i >= 0; --i) {
+            DevicePortAdapterItem c = mItems.get(i);
+            switch (c.groupType()) {
+                case GROUP_SPAN_TYPE:
+                case PRE_GROUP_FILL_ELEMENT_TYPE:
+                    if (a != null)
+                        a.beforeRemoval(i);
+                    mItems.remove(i);
+                    break;
+                case GROUP_TYPE:
+                    if (c.groupItems == 0) { // remove empty groups
+                        if (a != null)
+                            a.beforeRemoval(i);
+                        mItems.remove(i);
+                    }
+            }
+        }
+    }
+
     /**
      * Always call this method after adding/removing items.
      * This is implicitly done if you set the finalAction parameter
@@ -346,18 +362,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         if (mItemsInRow <= 1) // Do nothing it only one item per row
             return;
 
-//        int positionOfLastGroup = -1;
-//        DevicePortListItem lastGroup = null;
-
-        // Remove all group span items
-        for (int i = mItems.size() - 1; i >= 0; --i) {
-            DevicePortAdapterItem c = mItems.get(i);
-            switch (c.groupType()) {
-                case GROUP_SPAN_TYPE:
-                case PRE_GROUP_FILL_ELEMENT_TYPE:
-                    mItems.remove(i);
-            }
-        }
+        removeGroupSpanAndFillElements();
 
         for (int i = 0; i < mItems.size(); ++i) {
             DevicePortAdapterItem c = mItems.get(i);
@@ -379,7 +384,9 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 }
 
                 // Add group span items type1: fill until group is in own row with normal but empty items
-                missingFillElements = mItemsInRow - (i % mItemsInRow);
+                missingFillElements = (i % mItemsInRow);
+                if (missingFillElements != 0)
+                    missingFillElements = mItemsInRow - missingFillElements;
                 while (missingFillElements > 0) {
 //                    Log.w("base","addPreFill "+c.displayText+" "+String.valueOf(i));
                     DevicePortAdapterItem new_oi = DevicePortAdapterItem.createGroupPreFillElement(c, mNextId++);
@@ -401,31 +408,33 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      * if a group filter is active and the device port is not part of that group. See
      * {@link #setGroupFilter(java.util.UUID)} for setting a group filter.
      *
-     * @param oi            The device port to add.
+     * @param devicePort    The device port to add.
      * @param command_value The command value to issue if clicked or interacted with.
      */
-    public void addItem(DevicePort oi, int command_value, boolean finalAction) {
-        assert oi.device != null;
-        if (oi.Disabled || (oi.Hidden && !mShowHidden))
+    public void addItem(DevicePort devicePort, int command_value, boolean finalAction) {
+        assert devicePort.device != null;
+        if (devicePort.Disabled || (devicePort.Hidden && !mShowHidden))
             return;
 
         // FilterGroup
         if (mFilterGroup != null) {
-            if (!oi.groups.contains(mFilterGroup))
+            if (!devicePort.groups.contains(mFilterGroup))
                 return;
         }
 
-        if (!mShowGroups || oi.groups.isEmpty() || mFilterGroup != null)
-            addItemToGroup(oi, command_value, 0);
+        if (!mShowGroups || devicePort.groups.isEmpty() || mFilterGroup != null)
+            addItemToGroup(devicePort, command_value, 0);
         else {
-            for (UUID group : oi.groups) {
+            for (UUID group : devicePort.groups) {
                 // Get group header item
-                int positionOfGroup = addHeaderIfNotExists(group, oi);
-                // Increase child count
-                if (positionOfGroup != -1)
-                    mItems.get(positionOfGroup).groupItems++;
+                int positionOfGroup = addHeaderIfNotExists(group, devicePort);
                 // add child
-                addItemToGroup(oi, command_value, positionOfGroup + 1);
+                if (addItemToGroup(devicePort, command_value, positionOfGroup + 1) &&
+                        positionOfGroup != -1) {
+                    // Increase child count
+                    mItems.get(positionOfGroup).groupItems++;
+
+                }
             }
         }
 
@@ -433,7 +442,14 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             computeGroupSpans();
     }
 
-    private void addItemToGroup(DevicePort oi, int command_value, int start_position) {
+    /**
+     * @param devicePort     The device port to add.
+     * @param command_value  The command value to issue if clicked or interacted with.
+     * @param start_position Start to look from this index for a fitting position.
+     * @return Return true if a new item has been added.
+     * If it is only an update of an item false is returned.
+     */
+    private boolean addItemToGroup(DevicePort devicePort, int command_value, int start_position) {
         boolean found = false;
         AnimationController a = mAnimationWeakReference.get();
 
@@ -446,29 +462,30 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             }
 
             // Find the right position for the DevicePort.
-            boolean behind_current = l.port.positionRequest > oi.positionRequest;
+            boolean behind_current = l.port.positionRequest > devicePort.positionRequest;
             if (!found && behind_current) {
                 destination_index = i;
                 found = true;
             }
 
             // If the same DevicePort already exists in this adapter, we will update that instead
-            if (l.port.uuid.equals(oi.uuid)) {
+            if (l.port.uuid.equals(devicePort.uuid)) {
                 // Animate if value has changed
                 if (l.command_value != command_value && a != null) {
                     a.addSmallHighlight(l.id);
                 }
                 // Apply new values to existing item
                 l.command_value = command_value;
-                l.setPort(oi);
+                l.setPort(devicePort);
                 l.clearState();
-                return;
+                return false;
             }
         }
 
         // Insert or append new item
-        DevicePortAdapterItem new_oi = new DevicePortAdapterItem(oi, command_value, mNextId++);
+        DevicePortAdapterItem new_oi = new DevicePortAdapterItem(devicePort, command_value, mNextId++);
         mItems.add(destination_index, new_oi);
+        return true;
     }
 
     private int addHeaderIfNotExists(UUID group, DevicePort oi) {
@@ -524,7 +541,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         device.lockDevicePorts();
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
-            removeAt(findPositionByUUid(it.next().uuid), true, false);
+            removeAt(findPositionByUUid(it.next().uuid), false);
         }
         device.releaseDevicePorts();
 
@@ -546,7 +563,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
         // Remove now
         for (int i = lenToBeRemoved - 1; i >= 0; --i)
-            removeAt(toBeRemoved[i], false, false);
+            removeAt(toBeRemoved[i], false);
 
         if (finalAction)
             computeGroupSpans();
@@ -561,7 +578,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             notifyDataSetChanged();
     }
 
-    public void removeAt(int position, boolean automaticallyRemoveGroups, boolean finalAction) {
+    public void removeAt(int position, boolean finalAction) {
         if (position == -1) return;
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
@@ -569,33 +586,25 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
         mItems.remove(position);
 
-        if (automaticallyRemoveGroups) {
-            /**
-             * Search for a header item before the given position.
-             * If found it decrements the item count. If that reaches
-             * 0 the group header item is removed.
-             */
-            for (int indexGroup = position - 1; indexGroup >= 0; --indexGroup) {
-                DevicePortAdapterItem headerItem = mItems.get(indexGroup);
-                if (headerItem.port == null) { // is header
-                    if (--headerItem.groupItems > 0)
-                        continue;
-
-                    // remove group
-                    if (a != null)
-                        a.beforeRemoval(indexGroup);
-                    mItems.remove(indexGroup);
-                    break;
-                }
+        /**
+         * Search for a header item before the given position.
+         * If found it decrements the item count. If that reaches
+         * 0 the group header item is removed.
+         */
+        for (int indexGroup = position - 1; indexGroup >= 0; --indexGroup) {
+            DevicePortAdapterItem headerItem = mItems.get(indexGroup);
+            if (headerItem.port == null) { // is header
+                --headerItem.groupItems;
+                break;
             }
-        } // automaticallyRemoveGroups
+        }
 
         if (finalAction)
             computeGroupSpans();
     }
 
     public void remove(DevicePort oi, boolean finalAction) {
-        removeAt(findPositionByUUid(oi.uuid), true, finalAction);
+        removeAt(findPositionByUUid(oi.uuid), finalAction);
     }
 
     public void invalidateViewHolders() {
@@ -618,7 +627,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         }
         // Remove now
         for (int i = lenToBeRemoved - 1; i >= 0; --i)
-            removeAt(toBeRemoved[i], false, false);
+            removeAt(toBeRemoved[i], false);
 
         if (finalAction)
             computeGroupSpans();

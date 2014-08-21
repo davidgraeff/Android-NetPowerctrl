@@ -19,7 +19,7 @@ import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  * TCP based data sync

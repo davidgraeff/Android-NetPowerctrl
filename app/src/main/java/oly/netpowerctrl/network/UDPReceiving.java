@@ -3,10 +3,11 @@ package oly.netpowerctrl.network;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.NetworkInterface;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 abstract public class UDPReceiving extends Thread {
     private final int receive_port;
@@ -30,7 +31,8 @@ abstract public class UDPReceiving extends Thread {
                 socket.setReuseAddress(true);
                 while (keep_running) {
                     socket.receive(receivedDatagram);
-                    parsePacket(message, receivedDatagram.getLength(), receive_port);
+                    parsePacket(message, receivedDatagram.getLength(), receive_port,
+                            NetworkInterface.getByInetAddress(socket.getLocalAddress()));
                 }
                 socket.close();
             } catch (final IOException e) {
@@ -55,7 +57,8 @@ abstract public class UDPReceiving extends Thread {
         super.interrupt();
     }
 
-    protected abstract void parsePacket(final byte[] message, int length, int receive_port);
+    protected abstract void parsePacket(final byte[] message, int length,
+                                        int receive_port, NetworkInterface localInterface);
 
     /**
      * @return Return the receive port of this thread

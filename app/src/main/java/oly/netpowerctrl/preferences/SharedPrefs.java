@@ -137,17 +137,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return receive_port_udp;
     }
 
-    public static boolean isEnergySavingEnabled() {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean use_energy_saving_mode = context.getResources().getBoolean(R.bool.use_energy_saving_mode);
-        try {
-            use_energy_saving_mode = prefs.getBoolean("use_energy_saving_mode", use_energy_saving_mode);
-        } catch (Exception ignored) {
-        }
-        return use_energy_saving_mode;
-    }
-
     public static boolean isWakeUpFromEnergySaving() {
         Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -165,28 +154,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         boolean value = context.getResources().getBoolean(R.bool.use_dark_theme);
         try {
             value = prefs.getBoolean(PREF_use_dark_theme, value);
-        } catch (Exception ignored) {
-        }
-        return value;
-    }
-
-    public static boolean notifyOnStop() {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.notify_on_stop);
-        try {
-            value = prefs.getBoolean("notify_on_stop", value);
-        } catch (Exception ignored) {
-        }
-        return value;
-    }
-
-    public static int getMaxFavGroups() {
-        Context context = NetpowerctrlApplication.instance;
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int value = context.getResources().getInteger(R.integer.max_favourites_groups);
-        try {
-            value = Integer.parseInt(prefs.getString("max_favourite_groups", Integer.valueOf(value).toString()));
         } catch (Exception ignored) {
         }
         return value;

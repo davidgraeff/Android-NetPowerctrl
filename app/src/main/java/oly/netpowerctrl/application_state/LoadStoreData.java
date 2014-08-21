@@ -13,7 +13,7 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.timer.TimerController;
 import oly.netpowerctrl.utils.JSONHelper;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  * For loading and storing scenes, groups, devices to local storage, google drive, neighbours.

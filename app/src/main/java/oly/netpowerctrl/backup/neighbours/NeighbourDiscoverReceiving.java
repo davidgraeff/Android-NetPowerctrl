@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.NetworkInterface;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -34,7 +35,7 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
 
     // This is executed in another thread!
     @Override
-    public void parsePacket(final byte[] message, int length, int receive_port) {
+    public void parsePacket(final byte[] message, int length, int receive_port, NetworkInterface localInterface) {
         if (length < 16) return;
         ByteBuffer bb = ByteBuffer.wrap(message);
         bb.order(ByteOrder.BIG_ENDIAN);

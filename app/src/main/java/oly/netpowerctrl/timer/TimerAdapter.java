@@ -14,7 +14,7 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.gui.AnimationController;
+import oly.netpowerctrl.utils_gui.AnimationController;
 
 /**
  * List all alarms of the timer controller

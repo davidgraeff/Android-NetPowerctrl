@@ -23,7 +23,7 @@ import oly.netpowerctrl.application_state.ServiceReady;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  * Automatic data synchronisation. Receive part. This server will send a welcome message like this:
@@ -314,7 +314,7 @@ public class NeighbourDataReceiveService extends Service {
             h.post(new Runnable() {
                 @Override
                 public void run() {
-                    NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
+                    NetpowerctrlService.observersServiceReady.register(new ServiceReady() {
                         @Override
                         public boolean onServiceReady(NetpowerctrlService service) {
                             service.findDevices(false, null);

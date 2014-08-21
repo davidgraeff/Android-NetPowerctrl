@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dip">
+
+    <!--  Name -->
+    <TextView
+        android:id="@+id/device_name_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/device_name" />
+
+    <ImageButton
+        android:id="@+id/device_name_help_icon"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/device_name_label"
+        android:contentDescription="@+id/device_name"
+        android:src="@android:drawable/ic_menu_help" />
+
+    <EditText
+        android:id="@+id/device_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_name_label"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@id/device_name_help_icon"
+        android:layout_toStartOf="@id/device_name_help_icon"
+        android:inputType="textUri"
+        android:singleLine="true" />
+
+    <!--  User Name -->
+    <TextView
+        android:id="@+id/device_username_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_name"
+        android:text="@string/device_username" />
+
+    <ImageButton
+        android:id="@+id/device_username_help_icon"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/device_username_label"
+        android:contentDescription="@+id/device_username"
+        android:src="@android:drawable/ic_menu_help" />
+
+    <EditText
+        android:id="@+id/device_username"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_username_label"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@id/device_username_help_icon"
+        android:layout_toStartOf="@id/device_username_help_icon"
+        android:inputType="textUri"
+        android:singleLine="true" />
+
+    <!--  User Password -->
+    <TextView
+        android:id="@+id/device_password_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_username"
+        android:text="@string/device_password" />
+
+    <ImageButton
+        android:id="@+id/device_password_help_icon"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/device_password_label"
+        android:contentDescription="@+id/device_password"
+        android:src="@android:drawable/ic_menu_help" />
+
+    <EditText
+        android:id="@+id/device_password"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_password_label"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@id/device_password_help_icon"
+        android:layout_toStartOf="@id/device_password_help_icon"
+        android:inputType="text"
+        android:singleLine="true"
+        tools:ignore="TextFields" />
+
+    <TextView
+        android:id="@+id/device_unique_id_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_password"
+        android:text="@string/device_unqiue_id" />
+
+    <EditText
+        android:id="@+id/device_unique_id"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_unique_id_label"
+        android:layout_marginBottom="20dip"
+        android:enabled="false"
+        android:inputType="text"
+        android:singleLine="true"
+        tools:ignore="TextFields" />
+
+    <ImageButton
+        android:id="@+id/device_additional_help_icon"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/device_unique_id"
+        android:contentDescription="@+id/show_additional_connections"
+        android:src="@android:drawable/ic_menu_help" />
+
+    <CheckBox
+        android:id="@+id/show_additional_connections"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_unique_id"
+        android:layout_toLeftOf="@id/device_additional_help_icon"
+        android:layout_toStartOf="@id/device_additional_help_icon"
+        android:text="@string/show_additional_connections" />
+
+</RelativeLayout>

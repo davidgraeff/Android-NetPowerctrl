@@ -4,32 +4,91 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Created by david on 28.07.14.
  */
-public interface DeviceConnection {
-    public void toJSON(JsonWriter writer) throws IOException;
+public abstract class DeviceConnection {
+    public final Device device;
+    public String HostName;
+    public String not_reachable_reason;
+    public boolean mIsCustom = false;
+    public boolean updatedFlag;
+    // Cache
+    private InetAddress[] cached_addresses;
 
-    public boolean fromJSON(JsonReader reader) throws IOException, ClassNotFoundException;
+    public DeviceConnection(Device device) {
+        this.device = device;
+    }
 
-    public boolean isReachable();
+    public String getDestinationHost() {
+        return HostName;
+    }
 
-    public String getNotReachableReason();
+    public Device getDevice() {
+        return device;
+    }
 
-    void setNotReachable(String not_reachable_reason);
+    public boolean isReachable() {
+        return not_reachable_reason == null;
+    }
 
-    public void setReachable();
+    public String getNotReachableReason() {
+        return not_reachable_reason;
+    }
 
-    public int getListenPort();
+    public void setNotReachable(String not_reachable_reason) {
+        this.not_reachable_reason = not_reachable_reason;
+    }
 
-    public int getDestinationPort();
+    public void setReachable() {
+        not_reachable_reason = null;
+    }
 
-    public String getDestinationHost();
+    public String getString() {
+        return getProtocol() + "/" + HostName + ":" + String.valueOf(getDestinationPort());
+    }
 
-    String getProtocol();
+    public void updateDestinationHost(String destinationHost) {
+        HostName = destinationHost;
+    }
 
-    Device getDevice();
+    public InetAddress[] getHostnameIPs() {
+        if (cached_addresses == null || cached_addresses.length == 0) {
+            try {
+                cached_addresses = InetAddress.getAllByName(HostName);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+        return cached_addresses;
+    }
 
-    String getString();
+    public boolean hasAddress(InetAddress[] addresses) {
+        getHostnameIPs();
+        if (cached_addresses != null) {
+            for (InetAddress local_address : cached_addresses)
+                for (InetAddress other_address : addresses)
+                    if (local_address.equals(other_address))
+                        return true;
+        }
+        return false;
+    }
+
+    public boolean isCustom() {
+        return mIsCustom;
+    }
+
+    public abstract void toJSON(JsonWriter writer) throws IOException;
+
+    public abstract boolean fromJSON(JsonReader reader) throws IOException, ClassNotFoundException;
+
+    public abstract int getListenPort();
+
+    public abstract int getDestinationPort();
+
+    public abstract String getProtocol();
+
 }

@@ -25,7 +25,7 @@ import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  * Establish connection to plugin service, contains adapter with
@@ -384,6 +384,11 @@ public class PluginRemote implements PluginInterface {
     @Override
     public void requestAlarms(DevicePort port, TimerController timerController) {
 
+    }
+
+    @Override
+    public void showConfigureDeviceScreen(Device device) {
+        //TODO
     }
 
     private void post() {

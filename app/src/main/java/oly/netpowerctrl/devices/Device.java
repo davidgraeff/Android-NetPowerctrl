@@ -154,7 +154,7 @@ public class Device implements Comparable<Device> {
         compute_first_reachable();
     }
 
-    private void compute_first_reachable() {
+    void compute_first_reachable() {
         if (!enabled) {
             cached_deviceConnection = null;
             return;
@@ -242,13 +242,23 @@ public class Device implements Comparable<Device> {
      */
     public boolean copyValuesFromUpdated(Device other) {
         if (other != this) {
+            // If no plugin object reference is known, we abort here. DeviceConnections
+            // are not of any use if we have no known plugin to execute actions on.
+            if (pluginInterface == null) {
+                if (other.pluginInterface == null) {
+                    setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+                    return true;
+                }
+                // Update plugin object reference
+                pluginInterface = other.pluginInterface;
+            }
+
             updated = other.updated;
             // Use or for the first assignment, to allow setHasChanged to be called on the device
             hasChanged |= copyFreshDevicePorts(other.DevicePorts);
             hasChanged |= copyFeatures(other);
             hasChanged |= !Version.equals(other.Version);
             Version = other.Version;
-            hasChanged |= copyConnections(other);
         }
         // Else: Same object, but the values may have changed since the last call to "copyValuesFromUpdated"
         // This is indicated by the boolean value hasChanged which may be set now.
@@ -262,39 +272,48 @@ public class Device implements Comparable<Device> {
      * This will update reachable information of all device connections, which
      * are also used in the updated device.
      *
-     * @param updated Updated device
-     * @return
+     * @param other_deviceConnections Updated device connections
+     * @return Return true if one or more of the connections are new to this device
      */
-    private boolean copyConnections(Device updated) {
-        // If no plugin object reference is known, we abort here. DeviceConnections
-        // are not of any use if we have no known plugin to execute actions on.
-        if (pluginInterface == null) {
-            if (updated.pluginInterface == null) {
-                setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
-                return true;
-            }
-            // Update plugin object reference
-            pluginInterface = updated.pluginInterface;
+    public boolean updateConnection(List<DeviceConnection> other_deviceConnections) {
+        if (other_deviceConnections == DeviceConnections)
+            return false;
+
+        for (DeviceConnection di : DeviceConnections) {
+            di.updatedFlag = false;
         }
 
-        boolean changed = false;
         // update each of the existing connections
         for (DeviceConnection di : DeviceConnections) {
-            for (DeviceConnection di_other : updated.DeviceConnections) {
-                // we identify connections by their listening port.
-                // Hostnames would a better matching metric but may differ,
-                // because the updated device is probably
-                if (di.getListenPort() == di_other.getListenPort()) {
-                    if (di.isReachable() == di_other.isReachable())
-                        break;
-                    di.setNotReachable(di_other.getNotReachableReason());
-                    changed = true;
+            Iterator<DeviceConnection> it = other_deviceConnections.iterator();
+            while (it.hasNext()) {
+                DeviceConnection otherConnection = it.next();
+                if (di.hasAddress(otherConnection.getHostnameIPs())) {
+                    di.updatedFlag = true;
+                    hasChanged = true;
+                    di.setNotReachable(otherConnection.getNotReachableReason());
+                    it.remove();
                 }
             }
         }
+
+        // Remove non used custom connections
+        Iterator<DeviceConnection> it = other_deviceConnections.iterator();
+        while (it.hasNext()) {
+            DeviceConnection deviceConnection = it.next();
+            if (!deviceConnection.updatedFlag && deviceConnection.isCustom())
+                it.remove();
+        }
+
+        // add connections
+        for (DeviceConnection deviceConnection : other_deviceConnections) {
+            DeviceConnections.add(deviceConnection);
+            hasChanged = true;
+        }
+
         compute_first_reachable();
 
-        return changed;
+        return other_deviceConnections.size() > 0;
     }
 
     private boolean copyFeatures(Device other) {

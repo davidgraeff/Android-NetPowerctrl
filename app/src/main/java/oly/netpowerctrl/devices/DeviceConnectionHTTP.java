@@ -8,21 +8,18 @@ import java.io.IOException;
 /**
  * Created by david on 28.07.14.
  */
-public class DeviceConnectionHTTP implements DeviceConnection {
+public class DeviceConnectionHTTP extends DeviceConnection {
     public static final String ID = "HTTP";
     // Device
-    public final Device device;
     public boolean DefaultPorts = true;
     public int PortHttp = -1;
-    public String HostName;
-    public String not_reachable_reason;
 
     public DeviceConnectionHTTP(Device device) {
-        this.device = device;
+        super(device);
     }
 
     public DeviceConnectionHTTP(Device device, String hostName, int httpPort) {
-        this.device = device;
+        super(device);
         this.HostName = hostName;
         this.PortHttp = httpPort;
     }
@@ -33,6 +30,7 @@ public class DeviceConnectionHTTP implements DeviceConnection {
         writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("HttpPort").value(PortHttp);
         writer.name("HostName").value(HostName);
+        writer.name("AllowHostnameUpdates").value(mIsCustom);
         writer.endObject();
     }
 
@@ -53,6 +51,10 @@ public class DeviceConnectionHTTP implements DeviceConnection {
                     DefaultPorts = reader.nextBoolean();
                     ++members;
                     break;
+                case "AllowHostnameUpdates":
+                    mIsCustom = reader.nextBoolean();
+                    ++members;
+                    break;
                 case "HttpPort":
                     PortHttp = reader.nextInt();
                     ++members;
@@ -65,27 +67,11 @@ public class DeviceConnectionHTTP implements DeviceConnection {
 
         reader.endObject();
 
-        return members >= 3;
-    }
+        if (members == 3) {
+            mIsCustom = HostName.startsWith("192.") || HostName.startsWith("10.");
+        }
 
-    @Override
-    public boolean isReachable() {
-        return not_reachable_reason == null;
-    }
-
-    @Override
-    public String getNotReachableReason() {
-        return not_reachable_reason;
-    }
-
-    @Override
-    public void setNotReachable(String not_reachable_reason) {
-        this.not_reachable_reason = not_reachable_reason;
-    }
-
-    @Override
-    public void setReachable() {
-        not_reachable_reason = null;
+        return members >= 4;
     }
 
     @Override
@@ -101,22 +87,7 @@ public class DeviceConnectionHTTP implements DeviceConnection {
     }
 
     @Override
-    public String getDestinationHost() {
-        return HostName;
-    }
-
-    @Override
     public String getProtocol() {
         return "HTTP";
-    }
-
-    @Override
-    public Device getDevice() {
-        return device;
-    }
-
-    @Override
-    public String getString() {
-        return getProtocol() + "/" + HostName + ":" + String.valueOf(getDestinationPort());
     }
 }

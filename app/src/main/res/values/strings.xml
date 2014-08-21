@@ -350,4 +350,14 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="issues_error">Abrufen der gemeldeten Fehler gescheitert!</string>
     <string name="issues_last_access">Abgerufen am: %1$s</string>
     <string name="issues">Open bugs reports</string>
+    <string name="gDrive_error_lost_connection">Verbindung zu Googe Drive unerwartet verloren</string>
+    <string name="doc_provider_summary">Power Control Icons</string>
+    <string name="preferences_log_screen">Logbuch</string>
+    <string name="menu_debug_toggle_network_reduced">Debug: Toggle network reduced</string>
+    <string name="device_ip_updated">IP von %1$s aktualisiert zu %2$s</string>
+    <string name="show_additional_connections">Zeige zusätzliche Verbindungen</string>
+    <string name="device_additional_connections_summary">Soll das Gerät außerhalb des lokalen Netzwerks verwendet werden, können eine oder mehrere zusätzliche Hostnamen/IP-Adressen angegeben werden.</string>
+    <string name="automaticConfiguration">Automatische Einrichtung</string>
+    <string name="device_tab_access">Zugangsdaten</string>
+    <string name="device_unqiue_id">Geräte ID (Mac)</string>
 </resources>

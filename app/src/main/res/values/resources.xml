@@ -1,21 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="menu_add_device" format="integer" type="id">100042</item>
-    <item name="menu_about" format="integer" type="id">100043</item>
-    <item name="settings_result" format="integer" type="id">100044</item>
-    <item name="menu_cancel" format="integer" type="id">100048</item>
-    <item name="menu_delete_all_devices" format="integer" type="id">100049</item>
-    <item name="refresh" format="integer" type="id">100050</item>
-    <item name="menu_preferences" format="integer" type="id">100051</item>
-    <item name="menu_refresh" format="integer" type="id">100054</item>
-
     <item name="default_send_port" format="integer" type="integer">1075</item>
     <item name="default_receive_port" format="integer" type="integer">1077</item>
 
-    <item name="use_energy_saving_mode" format="boolean" type="bool">True</item>
     <item name="wakeup_energy_saving_mode" format="boolean" type="bool">False</item>
     <item name="use_dark_theme" format="boolean" type="bool">False</item>
-    <item name="notify_on_stop" format="boolean" type="bool">False</item>
     <item name="load_extensions" format="boolean" type="bool">False</item>
     <item name="widget_show_title" format="boolean" type="bool">True</item>
     <item name="ports_unlimited" format="boolean" type="bool">False</item>
@@ -28,5 +17,5 @@
     <item name="show_background" format="boolean" type="bool">False</item>
     <item name="backup_to_gDrive" format="boolean" type="bool">False</item>
 
-    <item name="max_favourites_groups" format="integer" type="integer">2</item>
+    <item name="atLeastKitKat" format="boolean" type="bool">False</item>
 </resources>

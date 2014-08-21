@@ -72,7 +72,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
          * changed signal.
          */
         NetpowerctrlApplication.getDataController().deviceCollection.unregisterDeviceObserver(this);
-        NetpowerctrlService.unregisterServiceReadyObserver(this);
+        NetpowerctrlService.observersServiceReady.unregister(this);
         NetpowerctrlService.stopUseService();
     }
 
@@ -83,7 +83,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         assert context != null;
         appWidgetManager = AppWidgetManager.getInstance(context);
         NetpowerctrlService.useService(false, false);
-        NetpowerctrlService.registerServiceReadyObserver(this);
+        NetpowerctrlService.observersServiceReady.register(this);
         super.onCreate();
     }
 

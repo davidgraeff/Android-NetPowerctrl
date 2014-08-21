@@ -19,8 +19,6 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anel.AnelDevicePreferences;
-import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
@@ -28,6 +26,7 @@ import oly.netpowerctrl.application_state.RefreshStartedStopped;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
+import oly.netpowerctrl.utils_gui.ShowToast;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -52,7 +51,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onPause() {
-        NetpowerctrlService.unregisterRefreshStartedStopped(this);
+        NetpowerctrlService.observersStartStopRefresh.unregister(this);
         super.onPause();
         if (adapter != null)
             adapter.onPause();
@@ -60,7 +59,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onResume() {
-        NetpowerctrlService.registerRefreshStartedStopped(this);
+        NetpowerctrlService.observersStartStopRefresh.register(this);
         super.onResume();
         if (adapter != null)
             adapter.onResume();
@@ -206,18 +205,16 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
-    private void show_configure_device_dialog(Device di) {
-        // At the moment we always create an anel device
-        if (di == null || di.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
-            //noinspection ConstantConditions
-            AnelDevicePreferences fragment = (AnelDevicePreferences)
-                    Fragment.instantiate(getActivity(), AnelDevicePreferences.class.getName());
-            fragment.setDevice(di);
-            //noinspection ConstantConditions
-            getFragmentManager().beginTransaction().addToBackStack(null).
-                    replace(R.id.content_frame, fragment).commit();
-        } else { // for now: We just add the device to the configured devices
-            NetpowerctrlApplication.getDataController().addToConfiguredDevices(di);
+    private void show_configure_device_dialog(Device device) {
+        if (device == null) { // new device
+            MainActivity.getNavigationController().changeToDialog(getActivity(), DevicesWizardNew.class.getName());
+        } else {
+            PluginInterface pluginInterface = device.getPluginInterface();
+            if (pluginInterface == null) {
+                ShowToast.showException(getActivity(), "Unexpected state: Plugin not known");
+                return;
+            }
+            pluginInterface.showConfigureDeviceScreen(device);
         }
     }
 

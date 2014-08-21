@@ -31,16 +31,19 @@ import android.widget.Toast;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.OnDataQueryCompletedHandler;
 import oly.netpowerctrl.application_state.RefreshStartedStopped;
+import oly.netpowerctrl.application_state.ServiceModeChanged;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DevicesAutomaticFragment;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.network.AsyncRunnerResult;
@@ -53,11 +56,11 @@ import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
-import oly.netpowerctrl.utils.ShowToast;
-import oly.netpowerctrl.utils.gui.AnimationController;
-import oly.netpowerctrl.utils.gui.ChangeArgumentsFragment;
-import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
-import oly.netpowerctrl.utils.gui.UpdateBarWithGroups;
+import oly.netpowerctrl.utils_gui.AnimationController;
+import oly.netpowerctrl.utils_gui.ChangeArgumentsFragment;
+import oly.netpowerctrl.utils_gui.ShowToast;
+import oly.netpowerctrl.utils_gui.SwipeDismissListViewTouchListener;
+import oly.netpowerctrl.utils_gui.UpdateBarWithGroups;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -67,7 +70,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult,
         Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks,
-        RefreshStartedStopped, SharedPrefs.IHideNotReachable {
+        RefreshStartedStopped, SharedPrefs.IHideNotReachable, ServiceModeChanged {
     int requestedColumnWidth;
     private DevicePortsExecuteAdapter adapter;
     private DevicePortSourceConfigured adapterSource;
@@ -75,6 +78,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private TextView emptyText;
     private Button btnChangeToDevices;
     private Button btnChangeToBackup;
+    private Button btnAutomaticConfiguration;
     private UUID groupFilter = null;
     private GridView mListView;
     private UpdateBarWithGroups updateBarWithGroups = new UpdateBarWithGroups();
@@ -83,6 +87,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private AnimationController animationController = new AnimationController();
 
     public OutletsFragment() {
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (mListView != null) {
+            mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumsChangeListener);
+        }
     }
 
     private ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
@@ -97,15 +110,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                 }
             };
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        if (mListView != null) {
-            mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumsChangeListener);
-        }
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -129,7 +133,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onPause() {
-        NetpowerctrlService.unregisterRefreshStartedStopped(this);
+        NetpowerctrlService.observersStartStopRefresh.unregister(this);
+        NetpowerctrlService.observersServiceModeChanged.unregister(this);
         super.onPause();
         if (adapterSource != null)
             adapterSource.onPause();
@@ -137,7 +142,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onResume() {
-        NetpowerctrlService.registerRefreshStartedStopped(this);
+        NetpowerctrlService.observersStartStopRefresh.register(this);
+        NetpowerctrlService.observersServiceModeChanged.register(this);
+        if (NetpowerctrlService.getService() == null ||
+                NetpowerctrlService.getService().isNetworkReducedMode())
+            checkEmpty();
+
         if (adapterSource != null)
             adapterSource.onResume();
         super.onResume();
@@ -223,6 +233,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         menu.findItem(R.id.menu_view_list).setVisible(!isList);
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_view_grid).setVisible(isList);
+
+        menu.findItem(R.id.menu_debug_toggle_network_reduced).setVisible(BuildConfig.DEBUG);
     }
 
     @Override
@@ -254,7 +266,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
 
             case R.id.refresh: {
-                NetpowerctrlService.getService().findDevices(true, null);
+                NetpowerctrlService service = NetpowerctrlService.getService();
+                if (service != null)
+                    service.findDevices(true, null);
+                else {
+                    ShowToast.showException(getActivity(), "Unexpected state: Service is down. Restart the app");
+                }
                 return true;
             }
             case R.id.menu_view_list: {
@@ -296,6 +313,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 Fragment fragment = SortCriteriaDialog.instantiate(getActivity(), adapter);
                 ShowToast.showDialogFragment(getActivity(), fragment);
             }
+
+            case R.id.menu_debug_toggle_network_reduced: {
+                NetpowerctrlService.debug_toggle_network_reduced();
+            }
         }
         return false;
     }
@@ -335,8 +356,19 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         emptyText = (TextView) view.findViewById(R.id.empty_text);
 
         // Empty list: Buttons
+        boolean hasDevices = NetpowerctrlApplication.getDataController().deviceCollection.hasDevices();
+        boolean hasNewDevices = NetpowerctrlApplication.getDataController().newDevices.size() > 0;
+        btnAutomaticConfiguration = (Button) view.findViewById(R.id.btnAutomaticConfiguration);
+        btnAutomaticConfiguration.setVisibility(groupFilter == null && !hasDevices && hasNewDevices ? View.VISIBLE : View.GONE);
+        btnAutomaticConfiguration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.getNavigationController().changeToDialog(getActivity(), DevicesAutomaticFragment.class.getName());
+            }
+        });
+
         btnChangeToBackup = (Button) view.findViewById(R.id.btnChangeToBackup);
-        btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+        btnChangeToBackup.setVisibility(groupFilter == null && !hasDevices ? View.VISIBLE : View.GONE);
         btnChangeToBackup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -395,7 +427,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (!isAdded())
             return;
 
-        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
+        boolean hasDevices = NetpowerctrlApplication.getDataController().deviceCollection.hasDevices();
+        boolean hasNewDevices = NetpowerctrlApplication.getDataController().newDevices.size() > 0;
+        if (!hasDevices) {
             emptyText.setText(R.string.empty_no_outlets_no_devices);
         } else if (groupFilter != null) {
             emptyText.setText(R.string.empty_group);
@@ -407,8 +441,16 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
         if (btnChangeToBackup != null)
             btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+        if (btnAutomaticConfiguration != null)
+            btnAutomaticConfiguration.setVisibility(groupFilter == null && !hasDevices && hasNewDevices ? View.VISIBLE : View.GONE);
 
         mListView.setEmptyView(getActivity().findViewById(android.R.id.empty));
+
+        boolean en = (!NetpowerctrlService.isServiceReady() || NetpowerctrlService.getService().isNetworkReducedMode());
+        TextView text = (TextView) getActivity().findViewById(R.id.hintText);
+        if (en)
+            text.setText(getString(R.string.device_energysave_mode));
+        text.setVisibility(en ? View.VISIBLE : View.GONE);
 
         getActivity().invalidateOptionsMenu();
     }
@@ -482,11 +524,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 //noinspection ConstantConditions
                 Bundle b = new Bundle();
                 b.putString("master_uuid", oi.uuid.toString());
-                @SuppressWarnings("ConstantConditions")
-                Fragment fragment = Fragment.instantiate(getActivity(), MasterSlaveFragment.class.getName(), b);
-                //noinspection ConstantConditions
-                getFragmentManager().beginTransaction().addToBackStack(null).
-                        replace(R.id.content_frame, fragment).commit();
+                MainActivity.getNavigationController().changeToFragment(MasterSlaveFragment.class.getName(), b, true);
                 return true;
             case R.id.menu_icon:
                 Icons.show_select_icon_dialog(getActivity(), "scene_icons", this, oi);
@@ -621,6 +659,11 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void hideNotReachable(boolean hideNotReachable) {
         adapterSource.setHideNotReachable(hideNotReachable);
         adapterSource.updateNow();
+    }
+
+    @Override
+    public void onServiceModeChanged(boolean isNetworkDown) {
+        checkEmpty();
     }
 
 

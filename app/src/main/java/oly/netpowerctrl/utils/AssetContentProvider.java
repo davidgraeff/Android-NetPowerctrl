@@ -6,30 +6,34 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
+import android.util.Log;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Content provider for showing the applications images for picking
  */
-public class AssetContentProvider extends ContentProvider {
+public class AssetContentProvider extends ContentProvider implements ContentProvider.PipeDataWriter<InputStream> {
     @Override
     public AssetFileDescriptor openAssetFile(Uri uri, String mode) throws FileNotFoundException {
-        AssetManager am = getContext().getAssets();
-        String file_name = uri.getLastPathSegment();
-        if (file_name == null)
-            throw new FileNotFoundException();
-        AssetFileDescriptor afd = null;
+        // Try to open an asset with the given name.
         try {
-            afd = am.openFd(file_name);
+            InputStream is = getContext().getAssets().open(uri.getPath());
+            // Start a new thread that pipes the stream data back to the caller.
+            return new AssetFileDescriptor(
+                    openPipeHelper(uri, null, null, is, this), 0,
+                    AssetFileDescriptor.UNKNOWN_LENGTH);
         } catch (IOException e) {
-            e.printStackTrace();
+            FileNotFoundException fnf = new FileNotFoundException("Unable to open " + uri);
+            throw fnf;
         }
-        return afd;//super.openAssetFile(uri, mode);
     }
 
     @Override
@@ -39,7 +43,7 @@ public class AssetContentProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        return "image/jpeg";
+        return "image/*";
     }
 
     @Override
@@ -61,9 +65,8 @@ public class AssetContentProvider extends ContentProvider {
         MatrixCursor c = new MatrixCursor(new String[]{"_id", "_data"});
 
         AssetManager am = getContext().getAssets();
-        Bitmap[] list_of_icons = null;
-        String[] list_of_icon_paths = null;
-        final String assetSet = "scene_icons";
+        String[] list_of_icon_paths;
+        final String assetSet = "widget_icons";
         try {
             list_of_icon_paths = am.list(assetSet);
             for (String filename : list_of_icon_paths) {
@@ -79,5 +82,30 @@ public class AssetContentProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         return 0;
+    }
+
+    @Override
+    public void writeDataToPipe(ParcelFileDescriptor output, Uri uri, String mimeType,
+                                Bundle opts, InputStream args) {
+        // Transfer data from the asset to the pipe the client is reading.
+        byte[] buffer = new byte[8192];
+        int n;
+        FileOutputStream fout = new FileOutputStream(output.getFileDescriptor());
+        try {
+            while ((n = args.read(buffer)) >= 0) {
+                fout.write(buffer, 0, n);
+            }
+        } catch (IOException e) {
+            Log.i("AssetContentProvider", "Failed transferring", e);
+        } finally {
+            try {
+                args.close();
+            } catch (IOException ignored) {
+            }
+            try {
+                fout.close();
+            } catch (IOException ignored) {
+            }
+        }
     }
 }

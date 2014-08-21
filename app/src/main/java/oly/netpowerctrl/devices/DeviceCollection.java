@@ -198,10 +198,22 @@ public class DeviceCollection {
         }
     }
 
+    /**
+     * Do not call this directly! This is called by {@link oly.netpowerctrl.application_state.RuntimeDataController}
+     *
+     * @param newValues_device Incoming device with new updated values. You may use a reference to a configured device
+     *                         here
+     * @return If a matching device has been found and updated
+     * return that {@link oly.netpowerctrl.devices.Device}, null otherwise.
+     */
     public Device update(Device newValues_device) {
         for (Device existing_device : devices) {
             if (!newValues_device.equalsByUniqueID(existing_device))
                 continue;
+
+            if (existing_device.updateConnection(newValues_device.DeviceConnections)) {
+                save();
+            }
 
             if (existing_device.copyValuesFromUpdated(newValues_device)) {
                 notifyDeviceObservers(existing_device, false);
@@ -210,6 +222,12 @@ public class DeviceCollection {
             return existing_device;
         }
         return null;
+    }
+
+    public void updateExisting(Device existing_device) {
+        if (existing_device.copyValuesFromUpdated(existing_device)) {
+            notifyDeviceObservers(existing_device, false);
+        }
     }
 
     public boolean hasDevices() {

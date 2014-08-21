@@ -11,9 +11,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -29,8 +26,8 @@ import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.AsyncRunnerResult;
-import oly.netpowerctrl.utils.gui.AnimationController;
-import oly.netpowerctrl.utils.gui.SwipeDismissListViewTouchListener;
+import oly.netpowerctrl.utils_gui.AnimationController;
+import oly.netpowerctrl.utils_gui.SwipeDismissListViewTouchListener;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
@@ -51,7 +48,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
 
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
         if (c.refresh(service))
-            animateProgressText(true);
+            AnimationController.animateViewInOut(progressText, true, false);
     }
 
     @Override
@@ -60,14 +57,15 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
 
         NetpowerctrlService service = NetpowerctrlService.getService();
         if (service == null)
-            NetpowerctrlService.registerServiceReadyObserver(this);
+            NetpowerctrlService.observersServiceReady.register(this);
         else
             refresh(service);
     }
 
     @Override
     public void onPause() {
-        animateProgressText(false);
+        NetpowerctrlService.observersServiceReady.unregister(this);
+        AnimationController.animateViewInOut(progressText, false, false);
         TimerController c = NetpowerctrlApplication.getDataController().timerController;
         c.unregisterObserver(this);
         if (timerAdapter != null)
@@ -183,48 +181,17 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         setHasOptionsMenu(true);
     }
 
-    private void animateProgressText(final boolean in) {
-        float c = progressText.getAlpha();
-        if (c >= 1.0f && in || c == 0.0f && !in) {
-            return;
-        }
-
-        progressText.clearAnimation();
-
-        AlphaAnimation animation1 = new AlphaAnimation(c, in ? 1.0f : 0.0f);
-        animation1.setInterpolator(new AccelerateInterpolator());
-        animation1.setDuration(1000);
-        animation1.setStartOffset(0);
-        animation1.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                progressText.setAlpha(in ? 1.0f : 0.0f);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        progressText.startAnimation(animation1);
-    }
-
     @Override
     public boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress) {
         if (inProgress) {
             TimerController c = NetpowerctrlApplication.getDataController().timerController;
             progressText.setText(getString(R.string.alarm_receiving, c.countAllDeviceAlarms()));
-            animateProgressText(true);
+            AnimationController.animateViewInOut(progressText, true, false);
         } else {
             Activity a = getActivity();
             if (a != null) {
                 a.invalidateOptionsMenu();
-                animateProgressText(false);
+                AnimationController.animateViewInOut(progressText, false, false);
             }
         }
         mPullToRefreshLayout.setRefreshing(inProgress);

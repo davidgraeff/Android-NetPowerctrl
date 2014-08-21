@@ -4,8 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
-import android.content.Intent;
-import android.net.Uri;
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -21,7 +20,6 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Github;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
@@ -57,18 +55,18 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 return false;
             }
         });
-
-        //noinspection ConstantConditions
-        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                @SuppressWarnings("ConstantConditions")
-                Intent browse = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("market://search?q=pub:David Gräff&c=apps"));
-                getActivity().startActivity(browse);
-                return false;
-            }
-        });
+//
+//        //noinspection ConstantConditions
+//        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//            @Override
+//            public boolean onPreferenceClick(Preference preference) {
+//                @SuppressWarnings("ConstantConditions")
+//                Intent browse = new Intent(Intent.ACTION_VIEW,
+//                        Uri.parse("market://search?q=pub:David Gräff&c=apps"));
+//                getActivity().startActivity(browse);
+//                return false;
+//            }
+//        });
 
         //noinspection ConstantConditions
         findPreference("use_log_energy_saving_mode").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -76,30 +74,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 if ((Boolean) newValue) {
                     //noinspection ConstantConditions
                     Toast.makeText(getActivity(), getString(R.string.log_activated), Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-
-        findPreference("standard_send_port").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                int port = Integer.valueOf((String) o);
-                if (Utils.checkPortInvalid(port)) {
-                    Utils.warn_port(getActivity());
-                    return false;
-                }
-                return true;
-            }
-        });
-
-        findPreference("standard_receive_port").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                int port = Integer.valueOf((String) o);
-                if (Utils.checkPortInvalid(port)) {
-                    Utils.warn_port(getActivity());
-                    return false;
                 }
                 return true;
             }
@@ -179,13 +153,15 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
 
     @Override
     public void gitHubOpenIssuesUpdated(int count, long last_access) {
-        findPreference("issues").setTitle(getString(R.string.issues_open, count));
+        // We do not use the fragments getString() because the fragment may be detached at the moment.
+        Context context = NetpowerctrlApplication.instance;
+        findPreference("issues").setTitle(context.getString(R.string.issues_open, count));
         if (count < 0) {
-            findPreference("issues").setSummary(R.string.issues_error);
+            findPreference("issues").setSummary(context.getString(R.string.issues_error));
             return;
         }
         final String date = DateFormat.getInstance().format(last_access);
-        findPreference("issues").setSummary(getString(R.string.issues_last_access, date));
+        findPreference("issues").setSummary(context.getString(R.string.issues_last_access, date));
     }
 
     private static class WidgetData {

@@ -23,7 +23,7 @@ import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.JSONHelper;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 public class ExecutionActivity extends Activity implements DeviceObserverResult, ExecutionFinished {
     private Scene scene = null;
@@ -61,7 +61,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         }
 
         // The application may have be started here, we have to wait for the service to be ready
-        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
+        NetpowerctrlService.observersServiceReady.register(new ServiceReady() {
             @Override
             public boolean onServiceReady(NetpowerctrlService service) {
                 // Execute single action (in contrast to scene)

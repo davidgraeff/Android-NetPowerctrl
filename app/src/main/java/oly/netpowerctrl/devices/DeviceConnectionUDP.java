@@ -10,22 +10,19 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 /**
  * Created by david on 28.07.14.
  */
-public class DeviceConnectionUDP implements DeviceConnection {
+public class DeviceConnectionUDP extends DeviceConnection {
     public static final String ID = "UDP";
     // Device
-    public final Device device;
-    public String HostName;
     public boolean DefaultPorts = true;
     public int PortUDPSend = -1;
     public int PortUDPReceive = -1;
-    public String not_reachable_reason;
 
     public DeviceConnectionUDP(Device device) {
-        this.device = device;
+        super(device);
     }
 
     public DeviceConnectionUDP(Device device, String hostName, int PortUDPReceive, int PortUDPSend) {
-        this.device = device;
+        super(device);
         this.HostName = hostName;
         this.PortUDPReceive = PortUDPReceive;
         this.PortUDPSend = PortUDPSend;
@@ -39,6 +36,7 @@ public class DeviceConnectionUDP implements DeviceConnection {
         writer.name("PortUDPSend").value(PortUDPSend);
         writer.name("PortUDPReceive").value(PortUDPReceive);
         writer.name("HostName").value(HostName);
+        writer.name("AllowHostnameUpdates").value(mIsCustom);
         writer.endObject();
     }
 
@@ -59,6 +57,10 @@ public class DeviceConnectionUDP implements DeviceConnection {
                     DefaultPorts = reader.nextBoolean();
                     ++members;
                     break;
+                case "AllowHostnameUpdates":
+                    mIsCustom = reader.nextBoolean();
+                    ++members;
+                    break;
                 case "PortUDPSend":
                     PortUDPSend = reader.nextInt();
                     ++members;
@@ -75,7 +77,12 @@ public class DeviceConnectionUDP implements DeviceConnection {
 
         reader.endObject();
 
-        return members >= 4;
+        //DEPRECATED
+        if (members == 4) {
+            mIsCustom = HostName.startsWith("192.") || HostName.startsWith("10.");
+        }
+
+        return members >= 5;
     }
 
     @Override
@@ -93,42 +100,7 @@ public class DeviceConnectionUDP implements DeviceConnection {
     }
 
     @Override
-    public String getDestinationHost() {
-        return HostName;
-    }
-
-    @Override
     public String getProtocol() {
         return "UDP";
-    }
-
-    @Override
-    public Device getDevice() {
-        return device;
-    }
-
-    @Override
-    public String getString() {
-        return getProtocol() + "/" + HostName;
-    }
-
-    @Override
-    public boolean isReachable() {
-        return not_reachable_reason == null;
-    }
-
-    @Override
-    public String getNotReachableReason() {
-        return not_reachable_reason;
-    }
-
-    @Override
-    public void setNotReachable(String not_reachable_reason) {
-        this.not_reachable_reason = not_reachable_reason;
-    }
-
-    @Override
-    public void setReachable() {
-        not_reachable_reason = null;
     }
 }

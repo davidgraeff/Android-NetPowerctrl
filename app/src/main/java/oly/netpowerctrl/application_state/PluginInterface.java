@@ -60,4 +60,6 @@ public interface PluginInterface {
     void removeAlarm(Timer timer, final AsyncRunnerResult callback);
 
     void requestAlarms(DevicePort port, TimerController timerController);
+
+    void showConfigureDeviceScreen(Device device);
 }
