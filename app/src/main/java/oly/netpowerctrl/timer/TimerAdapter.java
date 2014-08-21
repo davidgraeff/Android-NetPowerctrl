@@ -1,5 +1,6 @@
 package oly.netpowerctrl.timer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Paint;
 import android.text.Html;
@@ -89,6 +90,7 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
         return data.type;
     }
 
+    @SuppressLint("InflateParams")
     public View getView(int position, View convertView, ViewGroup parent) {
         Timer timer = controller.getItem(position);
 

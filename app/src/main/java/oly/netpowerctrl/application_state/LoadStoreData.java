@@ -30,7 +30,7 @@ public class LoadStoreData {
         public void scenesSave(SceneCollection scenes) {
             Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            prefs.edit().putString("scenes", scenes.toJSON()).commit();
+            prefs.edit().putString("scenes", scenes.toJSON()).apply();
         }
     };
 
@@ -39,7 +39,7 @@ public class LoadStoreData {
         public void groupsSave(GroupCollection groups) {
             Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            prefs.edit().putString("groups", groups.toJSON()).commit();
+            prefs.edit().putString("groups", groups.toJSON()).apply();
         }
     };
 
@@ -48,7 +48,7 @@ public class LoadStoreData {
         public void devicesSave(DeviceCollection devices) {
             Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            prefs.edit().putString("devices", devices.toJSON()).commit();
+            prefs.edit().putString("devices", devices.toJSON()).apply();
         }
     };
 
@@ -57,7 +57,7 @@ public class LoadStoreData {
         public void alarmsSave(TimerController alarms) {
             Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            prefs.edit().putString("alarms", alarms.toJSON()).commit();
+            prefs.edit().putString("alarms", alarms.toJSON()).apply();
         }
     };
 

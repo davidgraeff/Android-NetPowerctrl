@@ -5,10 +5,7 @@
     <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
     <string name="app_name_widget">Power-Control Steckdosenzustand</string>
 
-    <string name="changelog_full_title">Change Log</string>
     <string name="changelog_title">Was ist neu…</string>
-    <string name="changelog_ok_button">OK</string>
-    <string name="changelog_show_full">Mehr…</string>
 
     <string name="configure_device">Gerät bearbeiten</string>
     <string name="delete_device">Gerät löschen</string>
@@ -110,8 +107,6 @@
     <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
-    <string name="preference_use_energy_saving_mode">Energiesparmodus</string>
-    <string name="preference_use_energy_saving_mode_summary">Sobald deine Geräte nach einem Netwerkwechsel (WLan/2G/3G/4G) nicht mehr erreichbar sind, werden alle Netzwerkkomponenten abgeschaltet um Energie zu sparen.</string>
     <string name="menu_switch_all_on">Alle auf Einschalten</string>
     <string name="menu_switch_all_off">Alle auf Ausschalten</string>
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
@@ -144,9 +139,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
     <string name="crash_toast_text">Ich bin leider abgestürzt :( Ein Absturzbericht wird automatisch gesendet</string>
     <string name="scene_rename">Szenenname</string>
-    <string name="service_stopped">Power-Control Hintergrunddienst beendet</string>
-    <string name="preference_notify_on_stop">Nachricht bei Beendigung</string>
-    <string name="preference_notify_on_stop_summary">Diese Option hilft zu überprüfen ob wirklich alles beendet wurde.</string>
     <string name="new_devices">Unbekannte Geräte</string>
     <string name="configured_devices">Konfigurierte Geräte</string>
     <string name="devices">Zum Gerätebildschirm</string>
@@ -173,8 +165,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
     <string name="menu_outlet_createGroup">In Gruppen…</string>
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
-    <string name="preference_max_favourites_groups">Gruppen im Hauptmenü</string>
-    <string name="preference_max_favourites_groups_summary">Die Anzahl der maximal angezeigten Gruppen im seitlichen Hauptmenü.</string>
     <string name="createGroup">Gruppe erstellen</string>
     <string name="outlet_added_to_groups">Gehört zu %1$d Gruppen</string>
     <string name="outlet_to_group_title">%1$s in Gruppen…</string>
@@ -219,7 +209,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_wakeup_energy_saving_mode">Aufwachen aus Energiesparmodus</string>
     <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
     <string name="scene_remove_item">Entferne von Szene</string>
-    <string name="device_prefer_http">HTTP statt UDP</string>
     <string name="gDrive_backup">Sicherung bei Google Drive</string>
     <string name="neighbours_not_found">Keine Nachbargeräte gefunden. Bei Nachbargeräten ebenfalls in diesen Bildschirm wechseln.
 
@@ -270,7 +259,6 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="show_extensions_in_market">Zeige Erweiterungen im Play Store</string>
     <string name="extensions">Erweiterungen</string>
     <string name="preferences_category_save_energy">Akku schonen</string>
-    <string name="device_connection_preferences">Verbindungseinstellungen</string>
     <string name="device_udp">UDP Verbindungen</string>
     <string name="device_http">HTTP Verbindungen</string>
     <string name="device_http_port">HTTP Port</string>
@@ -283,7 +271,6 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="alarm_weekdays_range">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s</string>
     <string name="alarm_weekdays_range_alarm">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s, Zufälliges Umschaltinterval: %4$s</string>
     <string name="alarm_once">Einmalig ausführen: $s</string>
-    <string name="preference_standard_ports">Standard UDP Ports</string>
     <string name="preference_show_persistent_notification">In Statusbar anzeigen</string>
     <string name="preference_show_persistent_notification_summary">Aktivieren um bis zu 3 favorisierte Szenen in der Statusleiste zum schnellen auswählen einzublenden (Android 4.1+). Die App läuft dann jedoch im Hintergrund.</string>
     <string name="alarm_edit">Alarm editieren</string>
@@ -313,8 +300,6 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="toWirelessSettings">WLAN einschalten</string>
     <string name="outlets_hidden">Elemente versteckt</string>
     <string name="press_back_to_exit">Please click BACK again to exit</string>
-    <string name="preference_backup_to_gDrive">Mit Google Drive sichern</string>
-    <string name="preference_backup_to_gDrive_summary">Sichert bei verbundenem Google Drive Account die eingerichteten Geräte und Szenen bei jeder Änderung im Hintergrund</string>
     <string name="gDrive_login">Login</string>
     <string name="error_neighbour_wrong_version_title">Version nicht gleich!</string>
     <string name="error_neighbour_wrong_version">Das Nachbargerät hat eine andere APP Version installiert. Dennoch Kopplung starten?</string>
@@ -363,4 +348,5 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="automaticConfiguration">Automatische Einrichtung</string>
     <string name="device_tab_access">Zugangsdaten</string>
     <string name="device_unqiue_id">Geräte ID (Mac)</string>
+    <string name="device_already_exist">Device with this IP/Hostname already exist!</string>
 </resources>

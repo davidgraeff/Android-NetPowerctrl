@@ -5,10 +5,7 @@
     <string name="app_name_shortcut_desc">Start a scene from your home screen</string>
     <string name="app_name_widget">Power-Control Outlet State</string>
 
-    <string name="changelog_full_title">Change Log</string>
     <string name="changelog_title">What\'s New</string>
-    <string name="changelog_ok_button">OK</string>
-    <string name="changelog_show_full">more…</string>
 
     <string name="configure_device">Edit Device</string>
     <string name="delete_device">Delete Device</string>
@@ -110,8 +107,6 @@
     <string name="error_device_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
     <string name="device_test_ok">Test OK</string>
-    <string name="preference_use_energy_saving_mode">Use energy saving mode</string>
-    <string name="preference_use_energy_saving_mode_summary">If your devices can not be reached after a network (WiFi/2G/3G/4G) change, all network parts of the app go into a standby mode.</string>
     <string name="menu_switch_all_on">All on</string>
     <string name="menu_switch_all_off">All off</string>
     <string name="menu_switch_all_toogle">All toggle</string>
@@ -144,9 +139,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="widget_image_not_reachable">Widget image: Not available</string>
     <string name="crash_toast_text">Ooooops ! I crashed, but a report can be sent to my developer to help fix the issue!</string>
     <string name="scene_rename">Scene name</string>
-    <string name="service_stopped">Power-Control Background Service stopped</string>
-    <string name="preference_notify_on_stop">Notify on app shutdown</string>
-    <string name="preference_notify_on_stop_summary">Activate this to see if really all parts of the app are shutdown on close.</string>
     <string name="new_devices">New devices</string>
     <string name="configured_devices">Configured devices</string>
     <string name="devices">Change to Devices screen</string>
@@ -173,8 +165,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_createGroup">Create group with device outlets</string>
     <string name="menu_outlet_createGroup">Groups</string>
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
-    <string name="preference_max_favourites_groups">Groups in navigation list</string>
-    <string name="preference_max_favourites_groups_summary">Maximum groups in navigation list</string>
     <string name="createGroup">Create group</string>
     <string name="outlet_added_to_groups">Belong to %1$d groups</string>
     <string name="outlet_to_group_title">Groups of %1$s</string>
@@ -216,7 +206,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_wakeup_energy_saving_mode">Wake up from energy saving mode</string>
     <string name="preference_wakeup_energy_saving_mode_summary">Usually the energy saving mode will not be left automatically (except if you reopen the app). If you activate this option, part of the app will remain active and search for devices after a network change.</string>
     <string name="scene_remove_item">Remove item from scene</string>
-    <string name="device_prefer_http">HTTP instead of UDP</string>
     <string name="gDrive_backup">Backups on Google Drive</string>
     <string name="neighbours_not_found">No neighbour devices found! Change to this screen on neighbour devices.
 
@@ -267,7 +256,6 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="show_extensions_in_market">Show extensions in the Google Play Store</string>
     <string name="extensions">Extensions</string>
     <string name="preferences_category_save_energy">Save battery</string>
-    <string name="device_connection_preferences">Connection settings</string>
     <string name="device_udp">UDP Connections</string>
     <string name="device_http">HTTP Connections</string>
     <string name="device_http_port">HTTP Port</string>
@@ -280,7 +268,6 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="alarm_weekdays_range">Weekdays: %1$s, On-time: %2$s, Off-time: %3$s</string>
     <string name="alarm_weekdays_range_alarm">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s, Zufälliges Umschaltinterval: %4$s</string>
     <string name="alarm_once">Execute once: $s</string>
-    <string name="preference_standard_ports">Standard network ports</string>
     <string name="preference_show_persistent_notification">Show in statusbar</string>
     <string name="preference_show_persistent_notification_summary">Aktivieren um favorisierte Szenen in der Statusleiste zum schnellen auswählen einzublenden.</string>
     <string name="alarm_edit">Edit alarm</string>
@@ -310,8 +297,6 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="toWirelessSettings">Activate WiFi</string>
     <string name="outlets_hidden">Elements hidden</string>
     <string name="press_back_to_exit">Please click BACK again to exit</string>
-    <string name="preference_backup_to_gDrive">Save to Google Drive</string>
-    <string name="preference_backup_to_gDrive_summary">Sichert bei verbundenem Google Drive Account die eingerichteten Geräte und Szenen bei jeder Änderung im Hintergrund</string>
     <string name="gDrive_login">Login</string>
     <string name="error_neighbour_wrong_version_title">Version nicht gleich!</string>
     <string name="error_neighbour_wrong_version">Das Nachbargerät hat eine andere APP Version installiert. Dennoch Kopplung starten?</string>
@@ -360,4 +345,5 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="automaticConfiguration">Automatische Einrichtung</string>
     <string name="device_tab_access">Zugangsdaten</string>
     <string name="device_unqiue_id">Geräte ID (Mac)</string>
+    <string name="device_already_exist">Device with this IP/Hostname already exist!</string>
 </resources>

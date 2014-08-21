@@ -432,7 +432,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void showConfigureDeviceScreen(Device device) {
-        anelCreateDevice = new AnelCreateDevice(device, NetpowerctrlApplication.instance);
+        anelCreateDevice = new AnelCreateDevice(device);
         MainActivity.getNavigationController().changeToDialog(MainActivity.instance, AnelDevicePreferences.class.getName());
     }
 

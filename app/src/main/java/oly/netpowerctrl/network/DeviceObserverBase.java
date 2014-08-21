@@ -62,7 +62,18 @@ public abstract class DeviceObserverBase {
         Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
             Device device_to_observe = it.next();
-            if (device_to_observe.equalsByUniqueID(device)) {
+            // Special case: No unique id. IPs are compared instead
+            // and the unique id is copied from the network device.
+            if (device_to_observe.UniqueDeviceID == null) {
+                if (device_to_observe.hasAddress(device.getHostnameIPs())) {
+                    device_to_observe.UniqueDeviceID = device.UniqueDeviceID;
+                    device_to_observe.setNotReachableAll(null);
+                    it.remove();
+                    if (target != null)
+                        target.onDeviceUpdated(device);
+                    break;
+                }
+            } else if (device_to_observe.equalsByUniqueID(device)) {
                 it.remove();
                 if (target != null)
                     target.onDeviceUpdated(device);

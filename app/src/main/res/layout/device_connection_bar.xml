@@ -5,9 +5,11 @@
     android:layout_height="match_parent"
     android:layout_gravity="right"
     android:layout_marginEnd="5dip"
+    android:layout_marginRight="5dip"
     android:layout_weight="1"
     android:gravity="right"
     android:orientation="horizontal"
+    android:paddingLeft="8dip"
     android:paddingStart="8dip">
 
     <Button

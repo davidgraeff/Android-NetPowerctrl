@@ -26,7 +26,7 @@ public class DeviceFeatureFabric {
 
         name = reader.nextString();
 
-        DeviceFeature deviceFeature = null;
+        DeviceFeature deviceFeature;
 
         switch (name) {
             case DeviceFeatureTemperature.ID: {

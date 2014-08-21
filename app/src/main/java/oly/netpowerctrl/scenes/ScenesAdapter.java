@@ -5,24 +5,24 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
+import oly.netpowerctrl.utils_gui.AnimationController;
 
 public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScenesUpdated {
     private final SceneCollection scenes;
     private final LayoutInflater inflater;
     private final IconDeferredLoadingThread mIconCache;
+    protected WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
     private ListItemMenu mListContextMenu = null;
     private int outlet_res_id = R.layout.grid_icon_item;
 
@@ -32,14 +32,16 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
         mIconCache = iconCache;
         scenes.registerObserver(this);
     }
-    //protected long animate_click_id = -1;
+
+    public void setAnimationController(AnimationController animationController) {
+        mAnimationWeakReference = new WeakReference<>(animationController);
+    }
 
     public void handleClick(int position, View view) {
-        Animation a = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
-                R.anim.button_zoom);
-        a.reset();
-        view.clearAnimation();
-        view.startAnimation(a);
+        AnimationController a = mAnimationWeakReference.get();
+        if (a != null)
+            a.addHighlight(getItemId(position), R.id.text1);
+        notifyDataSetChanged();
     }
 
     public int getLayoutRes() {
@@ -122,6 +124,14 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
     @Override
     public void scenesUpdated(boolean addedOrRemoved) {
         notifyDataSetChanged();
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        AnimationController a = mAnimationWeakReference.get();
+        if (a != null)
+            a.animate();
+        super.notifyDataSetChanged();
     }
 
     //ViewHolder pattern

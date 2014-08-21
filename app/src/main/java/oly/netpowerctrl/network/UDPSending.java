@@ -184,9 +184,6 @@ public class UDPSending {
             this.errorID = errorID;
             this.ci = ci;
             assert (ci != null);
-            if (ci == null) {
-                Log.e("ERR", "ERR");
-            }
         }
 
         @Override

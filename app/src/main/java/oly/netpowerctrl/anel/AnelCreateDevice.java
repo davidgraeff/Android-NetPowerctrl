@@ -1,6 +1,5 @@
 package oly.netpowerctrl.anel;
 
-import android.content.Context;
 import android.os.Handler;
 
 import java.util.List;
@@ -17,13 +16,11 @@ import oly.netpowerctrl.network.DeviceUpdate;
  */
 public class AnelCreateDevice implements DeviceObserverResult, DeviceUpdate {
     public final Device device;
-    private final Context context;
     public AnelCreateDeviceResult listener = null;
     TestStates test_state = TestStates.TEST_INIT;
     private DeviceQuery deviceQuery;
 
-    public AnelCreateDevice(Device di, Context context) {
-        this.context = context;
+    public AnelCreateDevice(Device di) {
         if (di == null) {
             device = Device.createNewDevice(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID());
             device.setPluginInterface(AnelUDPDeviceDiscoveryThread.anelPlugin);
@@ -53,6 +50,12 @@ public class AnelCreateDevice implements DeviceObserverResult, DeviceUpdate {
     public void onDeviceUpdated(Device updated_device, boolean willBeRemoved) {
         if (!updated_device.equalsByUniqueID(device))
             return;
+
+        if (!updated_device.isReachable()) {
+            test_state = TestStates.TEST_INIT;
+            if (listener != null)
+                listener.testFinished(false);
+        }
 
         if (test_state == TestStates.TEST_REACHABLE) {
             // Update stored device with received values
@@ -106,6 +109,7 @@ public class AnelCreateDevice implements DeviceObserverResult, DeviceUpdate {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean startTest() {
         test_state = TestStates.TEST_REACHABLE;
 
