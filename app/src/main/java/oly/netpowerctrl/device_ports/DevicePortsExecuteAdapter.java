@@ -11,7 +11,7 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.ListItemMenu;
-import oly.netpowerctrl.utils.gui.AnimationController;
+import oly.netpowerctrl.utils_gui.AnimationController;
 
 public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         SeekBar.OnSeekBarChangeListener {

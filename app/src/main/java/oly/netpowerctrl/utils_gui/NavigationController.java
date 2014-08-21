@@ -1,8 +1,7 @@
-package oly.netpowerctrl.utils.gui;
+package oly.netpowerctrl.utils_gui;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -16,8 +15,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import org.acra.ACRA;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
@@ -29,7 +31,6 @@ import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.ScenesFragment;
 import oly.netpowerctrl.timer.TimerFragment;
-import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * All navigation related functionality used by the main activity
@@ -46,6 +47,8 @@ public class NavigationController {
     private Fragment currentFragment;
     private String currentFragmentClass;
     private WeakReference<Activity> mDrawerActivity;
+    private Bundle currentExtra;
+    private List<BackStackEntry> backstack = new ArrayList<>();
 
     public Fragment getCurrentFragment() {
         return currentFragment;
@@ -153,7 +156,8 @@ public class NavigationController {
                 public void onDrawerOpened(View drawerView) {
                     //getActionBar().setTitle(mDrawerTitle);
                     context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                    onBackPressed();
+                    if (currentFragment != null && currentFragment instanceof OnBackButton)
+                        ((OnBackButton) currentFragment).onBackButton();
                 }
             };
             mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -165,6 +169,7 @@ public class NavigationController {
             if (className == null || className.isEmpty()) {
                 className = OutletsFragment.class.getName();
             }
+            backstack.add(new BackStackEntry(className, null));
             changeToFragment(className);
         } else if (restore == RestorePositionEnum.RestoreAfterConfigurationChanged && currentFragmentClass != null) {
             context.getFragmentManager().beginTransaction().attach(currentFragment).commitAllowingStateLoss();
@@ -226,23 +231,39 @@ public class NavigationController {
         if (currentFragment != null && currentFragment instanceof OnBackButton)
             if (((OnBackButton) currentFragment).onBackButton())
                 return true;
+
+        if (backstack.size() > 0) {
+            BackStackEntry entry = backstack.get(backstack.size() - 1);
+            backstack.remove(backstack.size() - 1);
+            changeToFragment(entry.fragmentClass, entry.extra, false);
+            return true;
+        }
         return false;
     }
 
     public void changeToFragment(String fragmentClassName) {
-        changeToFragment(fragmentClassName, null);
+        changeToFragment(fragmentClassName, null, true);
     }
 
-    public void changeToFragment(String fragmentClassName, Bundle extra) {
+    public void changeToFragment(String fragmentClassName, Bundle extra, boolean addToBackstack) {
         Activity context = mDrawerActivity.get();
         if (context == null || fragmentClassName == null) // should never happen
             return;
 
+        if (addToBackstack && currentFragmentClass != null) {
+            int index = backstack.indexOf(fragmentClassName);
+            if (index != -1)
+                backstack.remove(index);
+            backstack.add(new BackStackEntry(currentFragmentClass, currentExtra));
+            if (backstack.size() > 3)
+                backstack.remove(0);
+        }
+
         boolean fragmentClassNameEquals = fragmentClassName.equals(currentFragmentClass);
 
         int pos = mDrawerAdapter.indexOf(fragmentClassName);
-        DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(pos);
         if (pos != -1) {
+            DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(pos);
             // update selected item and title
             mDrawerList.setItemChecked(pos, true);
             setTitle(item.mTitle);
@@ -254,34 +275,37 @@ public class NavigationController {
             currentFragmentClass = fragmentClassName;
         }
         if (!fragmentClassNameEquals) {
-            applyFragmentTransaction(context);
+            try {
+                FragmentTransaction ft = context.getFragmentManager().beginTransaction();
+                ft.replace(R.id.content_frame, currentFragment);
+                // we commit with possible state loss here because applyFragmentTransaction is called from an
+                // async callback and the InstanceState of the activity may have been saved already.
+                ft.commit();
+            } catch (Exception exception) {
+                ACRA.getErrorReporter().handleException(exception);
+            }
         }
 
         changeArgumentsOfCurrentFragment(extra);
     }
 
-    /**
-     * Usually you do not call this directly but changeToFragment instead.
-     *
-     * @param context
-     */
-    public void applyFragmentTransaction(Activity context) {
-        FragmentTransaction ft = context.getFragmentManager().beginTransaction();
-        String tag = currentFragment.getClass().getSimpleName();
-        context.getFragmentManager().popBackStack(tag, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        ft.replace(R.id.content_frame, currentFragment, tag);
-        if (drawerLastItemPosition != -1)
-            ft.addToBackStack(tag);
-        // we commit with possible state loss here because selectItem is called from an
-        // async callback and the InstanceState of the activity may have been saved already.
-        ft.commitAllowingStateLoss();
-    }
-
     public void changeArgumentsOfCurrentFragment(Bundle extra) {
         // Deliver arguments to fragment via ChangeArgumentsFragment interface
         if (currentFragment instanceof ChangeArgumentsFragment) {
+            currentExtra = extra;
             ((ChangeArgumentsFragment) currentFragment).changeArguments(extra);
         }
+    }
+
+    public void changeToDialog(Activity context, String fragmentClassName) {
+        ShowToast.showDialogFragment(context, Fragment.instantiate(context, fragmentClassName));
+        // Reset focus to last item
+        mDrawerList.post(new Runnable() {
+            @Override
+            public void run() {
+                mDrawerList.setItemChecked(drawerLastItemPosition, true);
+            }
+        });
     }
 
     public enum RestorePositionEnum {
@@ -293,6 +317,28 @@ public class NavigationController {
 
     public interface DrawerStateChanged {
         void drawerState(boolean open);
+    }
+
+    private static class BackStackEntry {
+        String fragmentClass;
+        Bundle extra;
+
+        public BackStackEntry(String fragmentClassName, Bundle extra) {
+            this.fragmentClass = fragmentClassName;
+            this.extra = extra;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (object != null && object instanceof BackStackEntry) {
+                BackStackEntry thing = (BackStackEntry) object;
+                return fragmentClass.equals(thing.fragmentClass);
+            } else if (object instanceof String) {
+                return fragmentClass.equals(object);
+            }
+
+            return false;
+        }
     }
 
     /* The click listener for ListView in the navigation drawer */
@@ -339,18 +385,11 @@ public class NavigationController {
                 return;
 
             if (item.mDialog) {
-                ShowToast.showDialogFragment(context, Fragment.instantiate(context, item.fragmentClassName));
-                // Reset focus to last item
-                mDrawerList.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDrawerList.setItemChecked(drawerLastItemPosition, true);
-                    }
-                });
+                changeToDialog(context, item.fragmentClassName);
                 return;
             }
 
-            changeToFragment(item.fragmentClassName, item.mExtra);
+            changeToFragment(item.fragmentClassName, item.mExtra, true);
         }
     }
 

@@ -3,10 +3,10 @@ package oly.netpowerctrl.anel;
 import android.os.Handler;
 
 import java.io.UnsupportedEncodingException;
+import java.net.NetworkInterface;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
@@ -25,9 +25,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
 
     private static Device createReceivedAnelDevice(String DeviceName, String MacAddress) {
         Device di = Device.createNewDevice(anelPlugin.getPluginID());
-        NetpowerctrlService service = NetpowerctrlService.getService();
-        if (service != null)
-            di.setPluginInterface(service.getPluginByID(anelPlugin.getPluginID()));
+        di.setPluginInterface(anelPlugin);
         di.DeviceName = DeviceName;
         di.UniqueDeviceID = MacAddress;
         // Default values for user and password
@@ -38,7 +36,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     }
 
     @Override
-    public void parsePacket(final byte[] message, int length, int receive_port) {
+    public void parsePacket(final byte[] message, int length, int receive_port, NetworkInterface localInterface) {
         final String msg[];
         try {
             msg = new String(message, 0, length, "iso8859-1").split(":");

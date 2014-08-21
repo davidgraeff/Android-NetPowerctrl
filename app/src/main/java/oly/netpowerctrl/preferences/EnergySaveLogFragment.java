@@ -24,8 +24,8 @@ import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
 import oly.netpowerctrl.utils.Logging;
+import oly.netpowerctrl.utils_gui.DoneCancelFragmentHelper;
 
 public class EnergySaveLogFragment extends ListFragment {
     private final ArrayList<String> listItems = new ArrayList<>();

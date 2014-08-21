@@ -36,6 +36,24 @@
         android:icon="@drawable/netpowerctrl"
         android:label="@string/app_name">
 
+        <!--android:permission="android.permission.MANAGE_DOCUMENTS"-->
+        <provider
+            android:name=".utils.AssetDocumentProvider"
+            android:authorities="oly.netpowerctrl.utils.AssetDocumentProvider"
+            android:enabled="@bool/atLeastKitKat"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:icon="@drawable/netpowerctrl"
+            android:initOrder="1"
+            android:label="@string/app_name"
+            android:multiprocess="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS"
+            android:syncable="false">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -124,12 +142,6 @@
         <service android:name="oly.netpowerctrl.widget.WidgetUpdateService" />
 
         <service android:name=".backup.neighbours.NeighbourDataReceiveService" />
-
-        <provider
-            android:name="oly.netpowerctrl.utils.AssetContentProvider"
-            android:authorities="oly.netpowerctrl"
-            android:exported="false"
-            android:grantUriPermissions="true" />
     </application>
 
 

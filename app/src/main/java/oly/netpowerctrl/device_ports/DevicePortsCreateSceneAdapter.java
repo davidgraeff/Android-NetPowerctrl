@@ -11,7 +11,7 @@ import android.widget.SeekBar;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
-import oly.netpowerctrl.utils.gui.SegmentedRadioGroup;
+import oly.netpowerctrl.utils_gui.SegmentedRadioGroup;
 
 public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
     private final View.OnClickListener clickListener = new View.OnClickListener() {

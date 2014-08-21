@@ -1,4 +1,4 @@
-package oly.netpowerctrl.utils.gui;
+package oly.netpowerctrl.utils_gui;
 
 /*
  * Copyright (C) 2011 Make Ramen, LLC

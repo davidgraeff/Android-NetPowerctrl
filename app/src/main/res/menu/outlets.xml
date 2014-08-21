@@ -7,6 +7,12 @@
         android:title="@string/menu_refresh" />
 
     <item
+        android:id="@+id/menu_debug_toggle_network_reduced"
+        android:icon="@android:drawable/ic_dialog_alert"
+        android:showAsAction="always"
+        android:title="@string/menu_debug_toggle_network_reduced" />
+
+    <item
         android:id="@+id/menu_view_list"
         android:icon="?attr/ic_action_view_as_list"
         android:showAsAction="ifRoom"

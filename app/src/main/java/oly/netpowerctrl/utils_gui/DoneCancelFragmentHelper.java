@@ -1,4 +1,4 @@
-package oly.netpowerctrl.utils;
+package oly.netpowerctrl.utils_gui;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;

@@ -15,7 +15,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.utils.gui.AnimationController;
+import oly.netpowerctrl.utils_gui.AnimationController;
 
 /**
  */
@@ -40,7 +40,7 @@ public class EditSceneFragment extends Fragment {
      * @param position position
      */
     public void dismissItem(int position) {
-        mAdapter.removeAt(position, true, true);
+        mAdapter.removeAt(position, true);
         mAdapter.notifyDataSetChanged();
     }
 

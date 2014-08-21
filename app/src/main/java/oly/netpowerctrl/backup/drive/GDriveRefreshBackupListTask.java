@@ -45,35 +45,46 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
     @Override
     protected MetadataBuffer doInBackground(Void... params) {
         Context context = NetpowerctrlApplication.instance;
-
-        // Request sync
-        com.google.android.gms.common.api.Status resultRequestSync;
-        resultRequestSync = Drive.DriveApi.requestSync(mClient).await(5, TimeUnit.SECONDS);
-        if (!resultRequestSync.getStatus().isSuccess()) {
-            if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
-                errorString = context.getString(R.string.gDrive_error_timeout);
-            } else
-                errorString = context.getString(R.string.gDrive_error_retrieve_files,
-                        resultRequestSync.getStatus().toString());
-            // We failed, stop the task and return.
+        // Check connection
+        if (!mClient.isConnected()) {
+            errorString = context.getString(R.string.gDrive_error_lost_connection);
             return null;
         }
 
-        // Enter dir
-        DriveFolder appDataDir = GDrive.getAppFolder(mClient);
+        try {
+            // Request sync
+            com.google.android.gms.common.api.Status resultRequestSync;
+            resultRequestSync = Drive.DriveApi.requestSync(mClient).await(5, TimeUnit.SECONDS);
+            if (!resultRequestSync.getStatus().isSuccess()) {
+                if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
+                    errorString = context.getString(R.string.gDrive_error_timeout);
+                } else
+                    errorString = context.getString(R.string.gDrive_error_retrieve_files,
+                            resultRequestSync.getStatus().toString());
+                // We failed, stop the task and return.
+                return null;
+            }
 
-        // Get childs
-        DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await(5, TimeUnit.SECONDS);
-        if (!result.getStatus().isSuccess()) {
-            if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
-                errorString = context.getString(R.string.gDrive_error_timeout);
-            } else
-                errorString = context.getString(R.string.gDrive_error_retrieve_files, result.getStatus().toString());
-            // We failed, stop the task and return.
-            return null;
+            // Enter dir
+            DriveFolder appDataDir = GDrive.getAppFolder(mClient);
+
+            // Get childs
+            DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await(5, TimeUnit.SECONDS);
+            if (!result.getStatus().isSuccess()) {
+                if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
+                    errorString = context.getString(R.string.gDrive_error_timeout);
+                } else
+                    errorString = context.getString(R.string.gDrive_error_retrieve_files, result.getStatus().toString());
+                // We failed, stop the task and return.
+                return null;
+            }
+
+            return result.getMetadataBuffer();
+        } catch (Exception e) {
+            errorString = e.getMessage();
         }
 
-        return result.getMetadataBuffer();
+        return null;
     }
 
     @Override

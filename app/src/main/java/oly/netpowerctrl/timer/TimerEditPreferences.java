@@ -28,7 +28,7 @@ import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.preferences.DatePreference;
 import oly.netpowerctrl.preferences.TimePreference;
 import oly.netpowerctrl.utils.ActivityWithIconCache;
-import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
+import oly.netpowerctrl.utils_gui.DoneCancelFragmentHelper;
 
 public class TimerEditPreferences extends PreferenceFragment implements AsyncRunnerResult {
     DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();

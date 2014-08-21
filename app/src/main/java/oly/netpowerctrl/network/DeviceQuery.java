@@ -28,8 +28,11 @@ public class DeviceQuery extends DeviceObserverBase {
 
         // Filter out disabled devices
         filterDisabled();
-        if (devices_to_observe.isEmpty())
+        if (devices_to_observe.isEmpty()) {
+            if (target != null)
+                target.onObserverJobFinished(this.devices_to_observe);
             return;
+        }
 
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
@@ -47,8 +50,11 @@ public class DeviceQuery extends DeviceObserverBase {
 
         // Filter out disabled devices
         filterDisabled();
-        if (devices_to_observe.isEmpty())
+        if (devices_to_observe.isEmpty()) {
+            if (target != null)
+                target.onObserverJobFinished(this.devices_to_observe);
             return;
+        }
 
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
@@ -75,8 +81,6 @@ public class DeviceQuery extends DeviceObserverBase {
 
         // Filter out disabled devices
         filterDisabled();
-        if (devices_to_observe.isEmpty())
-            return;
 
         // Register on main application object to receive device updates
         NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
@@ -85,8 +89,11 @@ public class DeviceQuery extends DeviceObserverBase {
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
 
         NetpowerctrlService service = NetpowerctrlService.getService();
-        if (service == null)
+        if (service == null) {
+            if (target != null)
+                target.onObserverJobFinished(devices_to_observe);
             return;
+        }
         service.sendBroadcastQuery();
     }
 

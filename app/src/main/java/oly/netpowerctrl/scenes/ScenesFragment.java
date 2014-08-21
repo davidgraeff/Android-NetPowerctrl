@@ -32,7 +32,7 @@ import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  */

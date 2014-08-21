@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dip">
+
+    <!--  Name -->
+    <TextView
+        android:id="@+id/device_ip_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/device_ip" />
+
+    <ImageButton
+        android:id="@+id/device_ip_help_icon"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/device_ip_label"
+        android:contentDescription="@+id/device_ip"
+        android:src="@android:drawable/ic_menu_help" />
+
+    <EditText
+        android:id="@+id/device_ip"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_ip_label"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@id/device_ip_help_icon"
+        android:layout_toStartOf="@id/device_ip_help_icon"
+        android:inputType="textUri"
+        android:singleLine="true" />
+
+
+    <TextView
+        android:id="@+id/device_http_port_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_ip"
+        android:text="@string/device_http_port" />
+
+    <EditText
+        android:id="@+id/device_http_port"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_ip"
+        android:layout_marginBottom="20dip"
+        android:layout_toEndOf="@id/device_http_port_label"
+        android:layout_toRightOf="@id/device_http_port_label"
+        android:inputType="numberDecimal"
+        android:singleLine="true" />
+
+    <TextView
+        android:id="@+id/device_udp_send_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_http_port"
+        android:text="@string/device_send_udp_port" />
+
+    <EditText
+        android:id="@+id/device_udp_send"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_http_port"
+        android:layout_marginBottom="20dip"
+        android:layout_toEndOf="@id/device_udp_send_label"
+        android:layout_toRightOf="@id/device_udp_send_label"
+        android:inputType="numberDecimal"
+        android:singleLine="true" />
+
+    <TextView
+        android:id="@+id/device_udp_receive_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_udp_send"
+        android:text="@string/device_receive_udp_port" />
+
+    <EditText
+        android:id="@+id/device_udp_receive"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_udp_send"
+        android:layout_marginBottom="20dip"
+        android:layout_toEndOf="@id/device_udp_receive_label"
+        android:layout_toRightOf="@id/device_udp_receive_label"
+        android:inputType="numberDecimal"
+        android:singleLine="true" />
+
+    <!--  User Name -->
+    <TextView
+        android:id="@+id/device_username_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_udp_receive"
+        android:text="@string/device_username" />
+
+    <ImageButton
+        android:id="@+id/device_username_help_icon"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/device_username_label"
+        android:contentDescription="@+id/device_username"
+        android:src="@android:drawable/ic_menu_help" />
+
+    <EditText
+        android:id="@+id/device_username"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_username_label"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@id/device_username_help_icon"
+        android:layout_toStartOf="@id/device_username_help_icon"
+        android:inputType="textUri"
+        android:singleLine="true" />
+
+    <!--  User Password -->
+    <TextView
+        android:id="@+id/device_password_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_username"
+        android:text="@string/device_password" />
+
+    <ImageButton
+        android:id="@+id/device_password_help_icon"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/device_password_label"
+        android:contentDescription="@+id/device_password"
+        android:src="@android:drawable/ic_menu_help" />
+
+    <EditText
+        android:id="@+id/device_password"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_password_label"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@id/device_password_help_icon"
+        android:layout_toStartOf="@id/device_password_help_icon"
+        android:inputType="text"
+        android:singleLine="true"
+        tools:ignore="TextFields" />
+</RelativeLayout>

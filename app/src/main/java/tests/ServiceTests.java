@@ -53,7 +53,7 @@ public class ServiceTests extends ApplicationTestCase<NetpowerctrlApplicationTes
         NetpowerctrlService.useService(false, false);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        NetpowerctrlService.registerServiceReadyObserver(new ServiceReady() {
+        NetpowerctrlService.observersServiceReady.register(new ServiceReady() {
             @Override
             public boolean onServiceReady(NetpowerctrlService service) {
                 signal.countDown();

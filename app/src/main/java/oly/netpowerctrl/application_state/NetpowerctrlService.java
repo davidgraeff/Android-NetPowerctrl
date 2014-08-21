@@ -16,7 +16,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -29,12 +28,14 @@ import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * Look for and load plugins. After network change: Rescan for reachable devices.
  */
 public class NetpowerctrlService extends Service {
+    public static final ServiceReadyObserver observersServiceReady = new ServiceReadyObserver();
+    public static final RefreshStartedStoppedObserver observersStartStopRefresh = new RefreshStartedStoppedObserver();
+    public static final ServiceModeChangedObserver observersServiceModeChanged = new ServiceModeChangedObserver();
     private static final String TAG = "NetpowerctrlService";
     private static final String PLUGIN_RESPONSE_ACTION = "oly.netpowerctrl.plugins.PLUGIN_RESPONSE_ACTION";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.action.QUERY_CONDITION";
@@ -43,8 +44,6 @@ public class NetpowerctrlService extends Service {
     private static final String PAYLOAD_LOCALIZED_NAME = "LOCALIZED_NAME";
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
-    private static final ArrayList<ServiceReady> observersServiceReady = new ArrayList<>();
-    private static final ArrayList<RefreshStartedStopped> observersStartStopRefresh = new ArrayList<>();
     ///////////////// Service start/stop listener /////////////////
     static private int mDiscoverServiceRefCount = 0;
     static private NetpowerctrlService mDiscoverService;
@@ -73,18 +72,13 @@ public class NetpowerctrlService extends Service {
             @SuppressWarnings("ConstantConditions")
             ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
-                if (SharedPrefs.notifyOnStop()) {
-                    ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
-                }
                 if (SharedPrefs.logEnergySaveMode())
                     Logging.appendLog("Energiesparen aus: Netzwechsel erkannt");
                 enterFullNetworkMode(true, false);
             } else {
                 if (SharedPrefs.logEnergySaveMode())
                     Logging.appendLog("Energiesparen an: Kein Netzwerk");
-                if (SharedPrefs.notifyOnStop()) {
-                    ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_unreachable));
-                }
+
                 enterNetworkReducedMode();
             }
         }
@@ -102,18 +96,13 @@ public class NetpowerctrlService extends Service {
             if (SharedPrefs.isPreferenceNameLogEnergySaveMode(s) && mNetworkReducedMode) {
                 if (SharedPrefs.logEnergySaveMode())
                     Logging.appendLog("Energiesparen abgeschaltet");
-                if (SharedPrefs.notifyOnStop()) {
-                    ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
-                }
                 enterFullNetworkMode(true, false);
             }
         }
     };
-    /**
-     * Will be set if no one of the network DeviceInfos is reachable at the moment.
-     */
 
     private boolean isNetworkChangedListener = false;
+
     /**
      * Detect new devices and check reach-ability of configured devices.
      */
@@ -127,38 +116,6 @@ public class NetpowerctrlService extends Service {
 
     static public boolean isServiceReady() {
         return (mDiscoverService != null);
-    }
-
-    @SuppressWarnings("unused")
-    static public void registerServiceReadyObserver(ServiceReady o) {
-        if (!observersServiceReady.contains(o)) {
-            observersServiceReady.add(o);
-            if (mDiscoverService != null)
-                o.onServiceReady(mDiscoverService);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    static public void unregisterServiceReadyObserver(ServiceReady o) {
-        observersServiceReady.remove(o);
-    }
-
-    @SuppressWarnings("unused")
-    static public void registerRefreshStartedStopped(RefreshStartedStopped o) {
-        if (!observersStartStopRefresh.contains(o)) {
-            observersStartStopRefresh.add(o);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    static public void unregisterRefreshStartedStopped(RefreshStartedStopped o) {
-        observersStartStopRefresh.remove(o);
-    }
-
-    static private void notifyRefreshState(boolean isRefreshing) {
-        for (RefreshStartedStopped anObserversStartStopRefresh : observersStartStopRefresh) {
-            anObserversStartStopRefresh.onRefreshStateChanged(isRefreshing);
-        }
     }
 
     /**
@@ -202,6 +159,19 @@ public class NetpowerctrlService extends Service {
         return mDiscoverService;
     }
 
+    public static void debug_toggle_network_reduced() {
+        if (mDiscoverService.isNetworkReducedMode())
+            mDiscoverService.enterFullNetworkMode(true, true);
+        else {
+            RuntimeDataController c = NetpowerctrlApplication.getDataController();
+            for (Device d : c.deviceCollection.devices) {
+                d.setNotReachableAll("Debug force off");
+                c.onDeviceUpdated(d);
+            }
+            mDiscoverService.enterNetworkReducedMode();
+        }
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -236,13 +206,7 @@ public class NetpowerctrlService extends Service {
         else
             enterFullNetworkMode(true, false);
 
-        // Notify all observers that we are ready
-        Iterator<ServiceReady> it = observersServiceReady.iterator();
-        while (it.hasNext()) {
-            // If onServiceReady return false: remove listener (one-time listener)
-            if (!it.next().onServiceReady(mDiscoverService))
-                it.remove();
-        }
+        observersServiceReady.onServiceReady(this);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -273,16 +237,10 @@ public class NetpowerctrlService extends Service {
         // Logging
         if (SharedPrefs.logEnergySaveMode())
             Logging.appendLog("ENDE: Hintergrunddienste aus");
-        if (SharedPrefs.notifyOnStop()) {
-            ShowToast.FromOtherThread(NetpowerctrlApplication.instance, R.string.service_stopped);
-        }
 
         enterNetworkReducedMode();
 
-        // Notify rest of the app
-        for (ServiceReady onObserversServiceReady : observersServiceReady) {
-            onObserversServiceReady.onServiceFinished();
-        }
+        observersServiceReady.onServiceFinished();
 
         // Clean up
         plugins.clear();
@@ -297,6 +255,8 @@ public class NetpowerctrlService extends Service {
     ///////////////// Service start/stop /////////////////
     private void enterNetworkReducedMode() {
         mNetworkReducedMode = true;
+
+        observersServiceModeChanged.onServiceModeChanged(true);
 
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterNetworkReducedState();
@@ -313,13 +273,15 @@ public class NetpowerctrlService extends Service {
     public void enterFullNetworkMode(boolean refreshDevices, boolean showNotification) {
         mNetworkReducedMode = false;
 
+        observersServiceModeChanged.onServiceModeChanged(false);
+
         if (SharedPrefs.logEnergySaveMode())
             Logging.appendLog("Hintergrunddienst gestartet");
 
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterFullNetworkState(null);
 
-        if (!isNetworkChangedListener && SharedPrefs.isEnergySavingEnabled()) {
+        if (!isNetworkChangedListener) {
             if (SharedPrefs.logEnergySaveMode())
                 Logging.appendLog("Netzwerkwechsel überwacht");
             isNetworkChangedListener = true;
@@ -373,7 +335,7 @@ public class NetpowerctrlService extends Service {
             if (device.pluginID.equals(plugin.getPluginID())) {
                 device.setPluginInterface(plugin);
                 device.setHasChanged();
-                deviceCollection.update(device);
+                deviceCollection.updateExisting(device);
             }
         }
     }
@@ -422,8 +384,6 @@ public class NetpowerctrlService extends Service {
 
     public void findDevices(final boolean showNotification, final DeviceObserverFinishedResult callback) {
         if (mNetworkReducedMode) {
-            if (SharedPrefs.notifyOnStop())
-                ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_restarted));
             if (SharedPrefs.logEnergySaveMode())
                 Logging.appendLog("Energiesparen aus: Suche Geräte");
             // Restart all listener services and try again
@@ -449,7 +409,7 @@ public class NetpowerctrlService extends Service {
             }
         }, 1000);
 
-        notifyRefreshState(true);
+        observersStartStopRefresh.onRefreshStateChanged(true);
 
         // First try a broadcast
         NetpowerctrlApplication.getDataController().clearNewDevices();
@@ -465,7 +425,7 @@ public class NetpowerctrlService extends Service {
                 if (callback != null)
                     callback.onObserverJobFinished(timeout_devices);
 
-                notifyRefreshState(false);
+                observersStartStopRefresh.onRefreshStateChanged(false);
 
                 if (showNotification) {
                     // Show notification 500ms later, to also aggregate new devices for the message
@@ -490,9 +450,6 @@ public class NetpowerctrlService extends Service {
                 if (timeout_devices.size() == c.countNetworkDevices()) {
                     if (SharedPrefs.logEnergySaveMode())
                         Logging.appendLog("Energiesparen an: Keine Geräte gefunden");
-                    if (SharedPrefs.notifyOnStop()) {
-                        ShowToast.FromOtherThread(NetpowerctrlService.this, getString(R.string.network_no_devices));
-                    }
                     enterNetworkReducedMode();
                 }
             }
@@ -502,5 +459,4 @@ public class NetpowerctrlService extends Service {
     public boolean isNetworkReducedMode() {
         return mNetworkReducedMode;
     }
-
 }

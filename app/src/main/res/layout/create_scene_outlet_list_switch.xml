@@ -4,27 +4,27 @@
     android:id="@+id/item_layout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="?item_selector"
     android:baselineAligned="true"
+    android:clickable="false"
+    android:descendantFocusability="blocksDescendants"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingLeft="16dip"
-    android:paddingRight="12dip"
-    android:clickable="false"
-    android:descendantFocusability="blocksDescendants"
-    android:background="?item_selector"
-    android:focusable="false"
-    android:focusableInTouchMode="false">
+    android:paddingRight="12dip">
 
     <ImageView
         android:id="@+id/outlet_list_close"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:gravity="center_vertical"
-        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:contentDescription="@string/scene_remove_item"
         android:focusableInTouchMode="false"
+        android:gravity="center_vertical"
         android:paddingRight="16dip"
         android:src="@android:drawable/btn_dialog"
-        android:contentDescription="@string/scene_remove_item" />
+        android:textAppearance="@android:style/TextAppearance.Medium" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
@@ -34,10 +34,10 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:focusable="false"
+            android:focusableInTouchMode="false"
             android:gravity="bottom"
-            android:focusableInTouchMode="false">
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/text1"
@@ -54,13 +54,13 @@
                 android:textAppearance="@android:style/TextAppearance.Small" />
         </LinearLayout>
 
-        <oly.netpowerctrl.utils.gui.SegmentedRadioGroup
+        <oly.netpowerctrl.utils_gui.SegmentedRadioGroup
             android:id="@+id/radioGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="5dp"
+            android:orientation="horizontal"
             android:paddingBottom="5dp"
-            android:orientation="horizontal">
+            android:paddingTop="5dp">
 
             <RadioButton
                 android:id="@+id/radioSwitchOff"
@@ -68,8 +68,8 @@
                 android:layout_height="fill_parent"
                 android:button="@android:color/transparent"
                 android:padding="20dp"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:text="@string/off" />
+                android:text="@string/off"
+                android:textAppearance="@android:style/TextAppearance.Small" />
 
             <RadioButton
                 android:id="@+id/radioSwitchOn"
@@ -77,8 +77,8 @@
                 android:layout_height="fill_parent"
                 android:button="@android:color/transparent"
                 android:padding="20dp"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:text="@string/on" />
+                android:text="@string/on"
+                android:textAppearance="@android:style/TextAppearance.Small" />
 
             <RadioButton
                 android:id="@+id/radioToggle"
@@ -86,8 +86,8 @@
                 android:layout_height="fill_parent"
                 android:button="@android:color/transparent"
                 android:padding="20dp"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:text="@string/toggle" />
+                android:text="@string/toggle"
+                android:textAppearance="@android:style/TextAppearance.Small" />
 
             <RadioButton
                 android:id="@+id/radioToggleMaster"
@@ -95,9 +95,9 @@
                 android:layout_height="fill_parent"
                 android:button="@android:color/transparent"
                 android:padding="20dp"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:text="@string/toggleMaster" />
-        </oly.netpowerctrl.utils.gui.SegmentedRadioGroup>
+                android:text="@string/toggleMaster"
+                android:textAppearance="@android:style/TextAppearance.Small" />
+        </oly.netpowerctrl.utils_gui.SegmentedRadioGroup>
 
     </LinearLayout>
 

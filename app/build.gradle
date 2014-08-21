@@ -4,11 +4,21 @@ android {
     compileSdkVersion 20
     buildToolsVersion '20'
 
+    productFlavors {
+        vanilla {
+
+        }
+
+        old23 {
+            minSdkVersion 8
+        }
+    }
+
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 20
-        versionCode 73
-        versionName "5.6"
+        versionCode 80
+        versionName "5.6.5"
     }
 
     lintOptions {
@@ -36,10 +46,10 @@ android {
 }
 
 dependencies {
-    //compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.google.android.gms:play-services:4.+'
+    //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08
+    compile 'com.google.android.gms:play-services:5.0.89'
     compile 'com.github.gabrielemariotti.changeloglib:library:1.5.1'
-    compile 'ch.acra:acra:4+'
-    compile 'com.android.support:support-v13:+'
-    compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.9+'
+    compile 'ch.acra:acra:4.5.0'
+    compile 'com.android.support:support-v13:20.0.0'
+    compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.9'
 }

@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.PluginInterface;
 import oly.netpowerctrl.devices.Device;
@@ -81,6 +82,10 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
             for (Device device : devices) {
                 if (device.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
                     PluginInterface i = device.getPluginInterface();
+                    if (i == null) {
+                        device.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+                        continue;
+                    }
                     for (DeviceConnection ci : device.DeviceConnections) {
                         i.requestData(ci);
                     }

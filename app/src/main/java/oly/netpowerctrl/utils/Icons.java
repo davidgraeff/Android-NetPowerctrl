@@ -237,19 +237,6 @@ public class Icons {
                                                final IconSelected callback, final Object callback_context_object) {
         AssetManager assetMgr = context.getAssets();
         Bitmap[] list_of_icons = null;
-        String[] list_of_icon_paths = null;
-        try {
-            list_of_icon_paths = assetMgr.list(assetSet);
-            list_of_icons = new Bitmap[list_of_icon_paths.length];
-            int c = 0;
-            for (String filename : list_of_icon_paths) {
-                list_of_icons[c] = BitmapFactory.decodeStream(assetMgr.open(assetSet + "/" + filename));
-                ++c;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        final Bitmap[] list_of_icons_dialog = list_of_icons;
 
         ArrayAdapterWithIcons adapter = new ArrayAdapterWithIcons(context,
                 android.R.layout.select_dialog_item,
@@ -257,12 +244,27 @@ public class Icons {
         adapter.items.add(new ArrayAdapterWithIcons.Item(context.getString(R.string.dialog_icon_default), null));
         adapter.items.add(new ArrayAdapterWithIcons.Item(context.getString(R.string.dialog_icon_select), null));
 
-        if (list_of_icons != null)
-            for (int i = 0; i < list_of_icons.length; ++i) {
-                adapter.items.add(new ArrayAdapterWithIcons.Item(list_of_icon_paths[i],
-                        new BitmapDrawable(context.getResources(), list_of_icons[i])));
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            String[] list_of_icon_paths = null;
+            try {
+                list_of_icon_paths = assetMgr.list(assetSet);
+                list_of_icons = new Bitmap[list_of_icon_paths.length];
+                int c = 0;
+                for (String filename : list_of_icon_paths) {
+                    list_of_icons[c] = BitmapFactory.decodeStream(assetMgr.open(assetSet + "/" + filename));
+                    ++c;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            if (list_of_icons != null)
+                for (int i = 0; i < list_of_icons.length; ++i) {
+                    adapter.items.add(new ArrayAdapterWithIcons.Item(list_of_icon_paths[i],
+                            new BitmapDrawable(context.getResources(), list_of_icons[i])));
+                }
+        }
 
+        final Bitmap[] list_of_icons_dialog = list_of_icons;
         AlertDialog.Builder select_icon_dialog = new AlertDialog.Builder(context);
         select_icon_dialog.setTitle(context.getString(R.string.dialog_icon_title));
         if (callback_context_object instanceof DevicePort) {
@@ -280,9 +282,8 @@ public class Icons {
                     if (callback_context_object != null)
                         icon_callback_context_object = new WeakReference<>(callback_context_object);
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-                        Intent intent = new Intent();
+                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
-                        intent.setAction(Intent.ACTION_GET_CONTENT);
                         callback.startActivityForResult(Intent.createChooser(intent,
                                         context.getResources().getString(R.string.dialog_icon_select)),
                                 PICK_IMAGE_BEFORE_KITKAT
@@ -312,11 +313,11 @@ public class Icons {
         if (resultCode == Activity.RESULT_OK) {
             Uri selectedImage = imageReturnedIntent.getData();
             if (requestCode == PICK_IMAGE_KITKAT) {
-                final int takeFlags = imageReturnedIntent.getFlags()
-                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                // Check for the freshest data.
-                context.getContentResolver().takePersistableUriPermission(selectedImage, takeFlags);
+//                final int takeFlags = imageReturnedIntent.getFlags()
+//                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//                // Check for the freshest data.
+//                context.getContentResolver().takePersistableUriPermission(selectedImage, takeFlags);
             }
             try {
                 Bitmap b = Icons.getDrawableFromUri(context, selectedImage).getBitmap();

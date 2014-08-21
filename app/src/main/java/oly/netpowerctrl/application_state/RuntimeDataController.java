@@ -25,7 +25,7 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.timer.TimerController;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  * Device Updates go into this singleton object and are propagated to all observers and the device collection.

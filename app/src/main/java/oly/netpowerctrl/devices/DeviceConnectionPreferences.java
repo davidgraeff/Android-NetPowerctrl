@@ -1,19 +1,23 @@
 package oly.netpowerctrl.devices;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.view.View;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
+import oly.netpowerctrl.utils_gui.DoneCancelFragmentHelper;
 
+//TODO rework
 public class DeviceConnectionPreferences extends PreferenceFragment {
     DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
     private DeviceConnectionUDP deviceConnection_udp;
@@ -22,6 +26,67 @@ public class DeviceConnectionPreferences extends PreferenceFragment {
     private Device device;
 
     public DeviceConnectionPreferences() {
+    }
+
+
+    private void update_connections() {
+        PreferenceCategory pc_http = (PreferenceCategory) findPreference("connections_http");
+        PreferenceCategory pc_udp = (PreferenceCategory) findPreference("connections_udp");
+        assert pc_http != null;
+        assert pc_udp != null;
+
+        for (int i = pc_http.getPreferenceCount() - 1; i >= 0; --i) {
+            Preference s = pc_http.getPreference(i);
+            if (!s.getKey().equals("connections_http_new")) {
+                pc_http.removePreference(s);
+            }
+        }
+        for (int i = pc_udp.getPreferenceCount() - 1; i >= 0; --i) {
+            Preference s = pc_udp.getPreference(i);
+            if (!s.getKey().equals("connections_udp_new")) {
+                pc_udp.removePreference(s);
+            }
+        }
+
+
+        int id = 0;
+        for (final DeviceConnection deviceConnection : device.DeviceConnections) {
+
+            ++id;
+            //noinspection ConstantConditions
+            PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
+            assert s != null;
+            s.setKey(String.valueOf(id));
+            //s.setFragment(WidgetPreferenceFragment.class.getName());
+            s.setTitle(deviceConnection.getString());
+            if (deviceConnection instanceof DeviceConnectionUDP) {
+                pc_udp.addPreference(s);
+            } else if (deviceConnection instanceof DeviceConnectionHTTP) {
+                pc_http.addPreference(s);
+            }
+            if (!deviceConnection.isCustom()) {
+                s.setEnabled(false);
+                continue;
+            }
+
+            s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+//                    Fragment fragment = Fragment.instantiate(getActivity(),
+//                            DeviceConnectionPreferences.class.getName());
+//                    ((DeviceConnectionPreferences) fragment).setDeviceConnection(deviceConnection);
+
+                    DeviceConnectionPreferences fragment = new DeviceConnectionPreferences();
+                    fragment.setDeviceConnection(deviceConnection, device, false);
+
+                    //noinspection ConstantConditions
+                    getFragmentManager().beginTransaction().addToBackStack(null).
+                            setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN).
+                            replace(R.id.content_frame, fragment).commit();
+                    return true;
+                }
+            });
+        }
     }
 
     public void setDeviceConnection(DeviceConnection c, Device device, boolean newConnection) {
@@ -50,7 +115,7 @@ public class DeviceConnectionPreferences extends PreferenceFragment {
 //            btnTest.setVisibility(View.GONE);
         btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view) { // Delete connection
                 if (device != null && !newConnection) {
                     if (deviceConnection_http != null) {
                         device.removeConnection(deviceConnection_http);
@@ -58,7 +123,6 @@ public class DeviceConnectionPreferences extends PreferenceFragment {
                         device.removeConnection(deviceConnection_udp);
                     }
                 }
-                device = null;
                 //noinspection ConstantConditions
                 getFragmentManager().popBackStack();
             }
@@ -75,6 +139,8 @@ public class DeviceConnectionPreferences extends PreferenceFragment {
 
     @Override
     public void onStop() {
+        device = null;
+
         doneCancelFragmentHelper.restoreTitle(getActivity());
         doneCancelFragmentHelper.restoreActionBar(getActivity());
         super.onStop();
@@ -83,9 +149,13 @@ public class DeviceConnectionPreferences extends PreferenceFragment {
     @Override
     public void onPause() {
         if (device != null && newConnection) {
-            if (deviceConnection_http != null) {
+            if (deviceConnection_http != null &&
+                    deviceConnection_http.getDestinationHost().length() > 0 &&
+                    deviceConnection_http.getListenPort() > 0) {
                 device.addConnection(deviceConnection_http);
-            } else if (deviceConnection_udp != null) {
+            } else if (deviceConnection_udp != null &&
+                    deviceConnection_udp.getDestinationHost().length() > 0 &&
+                    deviceConnection_udp.getListenPort() > 0) {
                 device.addConnection(deviceConnection_udp);
             }
         }

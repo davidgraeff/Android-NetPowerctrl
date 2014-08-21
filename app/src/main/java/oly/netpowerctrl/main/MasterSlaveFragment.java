@@ -3,8 +3,6 @@ package oly.netpowerctrl.main;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -21,9 +19,10 @@ import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.utils.ActivityWithIconCache;
-import oly.netpowerctrl.utils.DoneCancelFragmentHelper;
+import oly.netpowerctrl.utils_gui.ChangeArgumentsFragment;
+import oly.netpowerctrl.utils_gui.DoneCancelFragmentHelper;
 
-public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener {
+public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener, ChangeArgumentsFragment {
     DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
     private DevicePort master;
     private DevicePortsListAdapter adapter;
@@ -55,17 +54,13 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //noinspection ConstantConditions
-                getFragmentManager().popBackStack();
+                MainActivity.getNavigationController().onBackPressed();
             }
         });
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        Bundle b = getArguments();
+    public void changeArguments(Bundle b) {
         if (b == null)
             return;
         String master_uuid = b.getString("master_uuid");
@@ -73,28 +68,6 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
             return;
 
         master = NetpowerctrlApplication.getDataController().findDevicePort(UUID.fromString(master_uuid));
-        if (master == null)
-            return;
-
-        // Add all device ports that are not equal to master and type of toggle.
-        DevicePortSource s = new DevicePortSourceConfigured();
-        adapter = new DevicePortsListAdapter(getActivity(), true, s, ((ActivityWithIconCache) getActivity()).getIconCache());
-        List<Device> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
-        for (Device device : configuredDevices) {
-            device.lockDevicePorts();
-            Iterator<DevicePort> it_port = device.getDevicePortIterator();
-            while (it_port.hasNext()) {
-                DevicePort oi = it_port.next();
-                if (!oi.equals(master) && oi.getType() == DevicePort.DevicePortType.TypeToggle)
-                    adapter.addItem(oi, oi.current_value, false);
-            }
-            device.releaseDevicePorts();
-        }
-        adapter.computeGroupSpans();
-        adapter.setChecked(master.getSlaves());
-        adapter.notifyDataSetChanged();
-
-        setHasOptionsMenu(true);
     }
 
     private void save() {
@@ -118,15 +91,31 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (master == null)
+            return;
+
+        // Add all device ports that are not equal to master and type of toggle.
+        DevicePortSource s = new DevicePortSourceConfigured();
+        adapter = new DevicePortsListAdapter(getActivity(), true, s, ((ActivityWithIconCache) getActivity()).getIconCache());
+        List<Device> configuredDevices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
+        for (Device device : configuredDevices) {
+            device.lockDevicePorts();
+            Iterator<DevicePort> it_port = device.getDevicePortIterator();
+            while (it_port.hasNext()) {
+                DevicePort oi = it_port.next();
+                if (!oi.equals(master) && oi.getType() == DevicePort.DevicePortType.TypeToggle)
+                    adapter.addItem(oi, oi.current_value, false);
+            }
+            device.releaseDevicePorts();
+        }
+        adapter.computeGroupSpans();
+        adapter.setChecked(master.getSlaves());
+        adapter.notifyDataSetChanged();
         setListAdapter(adapter);
         ListView l = getListView();
         assert l != null;
         l.setOnItemClickListener(this);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(
-            Menu menu, MenuInflater inflater) {
     }
 
     @Override

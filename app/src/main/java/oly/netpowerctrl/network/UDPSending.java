@@ -16,7 +16,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  * udpSending spawns a separate thread for UDP sending and enqueues all send jobs.

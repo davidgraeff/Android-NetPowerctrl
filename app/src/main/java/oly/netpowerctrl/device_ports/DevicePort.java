@@ -146,7 +146,7 @@ public final class DevicePort implements Comparable {
     }
 
     public boolean equals(DevicePort other) {
-        return (id == other.id) && device.equalsByUniqueID(device);
+        return (other != null) && (id == other.id) && device.equalsByUniqueID(other.device);
     }
 
     /**

@@ -1,4 +1,4 @@
-package oly.netpowerctrl.utils;
+package oly.netpowerctrl.utils_gui;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -8,6 +8,8 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Handler;
 import android.widget.Toast;
+
+import org.acra.ACRA;
 
 /**
  * Show a toast message, especially if not within the main thread
@@ -56,5 +58,11 @@ public class ShowToast {
         }
         ft.addToBackStack(null);
         ((DialogFragment) fragment).show(ft, "dialog");
+    }
+
+    public static void showException(Context context, String message) {
+        FromOtherThread(context, message);
+        ACRA.getErrorReporter().putCustomData("misc", message);
+        ACRA.getErrorReporter().handleException(new Exception(message), false);
     }
 }

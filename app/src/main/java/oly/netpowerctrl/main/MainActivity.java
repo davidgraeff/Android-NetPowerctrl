@@ -42,7 +42,7 @@ import oly.netpowerctrl.utils.ChangeLogUtil;
 import oly.netpowerctrl.utils.Donate;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.NFC;
-import oly.netpowerctrl.utils.gui.NavigationController;
+import oly.netpowerctrl.utils_gui.NavigationController;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback, ActivityWithIconCache {
     private static final long TIME_INTERVAL_MS = 2000;

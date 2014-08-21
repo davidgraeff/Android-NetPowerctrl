@@ -33,6 +33,7 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.network.HttpThreadPool;
@@ -42,7 +43,7 @@ import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
@@ -53,6 +54,7 @@ final public class AnelPlugin implements PluginInterface {
     private static final byte[] requestMessage = "wer da?\r\n".getBytes();
     private final List<AnelUDPDeviceDiscoveryThread> discoveryThreads = new ArrayList<>();
     private final List<Scene.PortAndCommand> command_list = new ArrayList<>();
+    AnelCreateDevice anelCreateDevice;
     private UDPSending udpSending;
 
     private static byte switchOn(byte data, int outletNumber) {
@@ -422,6 +424,16 @@ final public class AnelPlugin implements PluginInterface {
                     }
                 }
         ));
+    }
+
+    public void configureDeviceScreenClose() {
+        anelCreateDevice = null;
+    }
+
+    @Override
+    public void showConfigureDeviceScreen(Device device) {
+        anelCreateDevice = new AnelCreateDevice(device, NetpowerctrlApplication.instance);
+        MainActivity.getNavigationController().changeToDialog(MainActivity.instance, AnelDevicePreferences.class.getName());
     }
 
     private List<Timer> extractAlarms(final DevicePort port, final String html) throws SAXException, IOException {

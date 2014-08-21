@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="atLeastKitKat" format="boolean" type="bool">True</item>
+</resources>
