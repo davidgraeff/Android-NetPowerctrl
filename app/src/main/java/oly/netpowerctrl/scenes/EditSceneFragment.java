@@ -71,7 +71,7 @@ public class EditSceneFragment extends Fragment {
         AnimationController animationController = new AnimationController();
         animationController.setAdapter(mAdapter);
         animationController.setListView(mListView);
-        adapter.setRemoveAnimation(animationController);
+        adapter.setAnimationController(animationController);
         mListView.setAdapter(mAdapter);
     }
 

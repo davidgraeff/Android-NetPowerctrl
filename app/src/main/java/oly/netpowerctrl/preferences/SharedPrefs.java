@@ -313,9 +313,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        if (s.equals("show_background")) {
-
-        }
         boolean value;
         switch (s) {
             case "show_background": {

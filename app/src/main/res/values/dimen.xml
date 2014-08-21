@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="pref_name_width">110sp</dimen>
     <dimen name="list_outer_padding">0dp</dimen>
     <dimen name="list_inner_padding">5dp</dimen>
     <dimen name="min_list_item_width">230dp</dimen>

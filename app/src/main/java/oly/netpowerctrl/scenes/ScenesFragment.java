@@ -12,6 +12,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
@@ -32,6 +34,7 @@ import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.ListItemMenu;
 import oly.netpowerctrl.utils.Shortcuts;
+import oly.netpowerctrl.utils_gui.AnimationController;
 import oly.netpowerctrl.utils_gui.ShowToast;
 
 /**
@@ -175,6 +178,10 @@ public class ScenesFragment extends Fragment implements
         mListView.setOnItemClickListener(this);
         adapter = new ScenesAdapter(getActivity(), scenes, ((ActivityWithIconCache) getActivity()).getIconCache());
         adapter.setListContextMenu(this);
+        AnimationController animationController = new AnimationController();
+        animationController.setAdapter(adapter);
+        animationController.setListView(mListView);
+        adapter.setAnimationController(animationController);
 
         setListOrGrid(SharedPrefs.getScenesList());
         if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
@@ -270,12 +277,19 @@ public class ScenesFragment extends Fragment implements
     }
 
     @Override
-    public void onMenuItemClicked(View v, int position) {
+    public void onMenuItemClicked(View view, int position) {
+        // Animate press
+        Animation a = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f, view.getWidth() / 2, view.getHeight() / 2);
+        a.setRepeatMode(Animation.REVERSE);
+        a.setRepeatCount(1);
+        a.setDuration(300);
+        view.startAnimation(a);
+
         mListView.setTag(position);
         Scene scene = scenes.getScene(position);
 
         @SuppressWarnings("ConstantConditions")
-        PopupMenu popup = new PopupMenu(getActivity(), v);
+        PopupMenu popup = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popup.getMenuInflater();
         Menu menu = popup.getMenu();
         inflater.inflate(R.menu.scenes_item, menu);

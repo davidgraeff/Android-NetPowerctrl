@@ -31,8 +31,7 @@ public class AssetContentProvider extends ContentProvider implements ContentProv
                     openPipeHelper(uri, null, null, is, this), 0,
                     AssetFileDescriptor.UNKNOWN_LENGTH);
         } catch (IOException e) {
-            FileNotFoundException fnf = new FileNotFoundException("Unable to open " + uri);
-            throw fnf;
+            throw new FileNotFoundException("Unable to open " + uri);
         }
     }
 

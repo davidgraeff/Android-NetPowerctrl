@@ -71,12 +71,6 @@ public class AnimationController {
         view.startAnimation(animation1);
     }
 
-    //TODO
-    public void addSmallHighlight(long id) {
-//        mSmallHighlightItemIdTopMap.add(id);
-//        updateAnimation.reset();
-    }
-
     public void addHighlight(long id, int view_id) {
         mHighlightItemIdTopMap.put(id, view_id);
         highlightAnimation.reset();

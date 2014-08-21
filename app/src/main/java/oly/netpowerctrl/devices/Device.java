@@ -4,7 +4,9 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -177,11 +179,6 @@ public class Device implements Comparable<Device> {
                 return deviceConnection;
             }
         return null;
-    }
-
-    public void setReachable(int index) {
-        DeviceConnections.get(index).setReachable();
-        compute_first_reachable();
     }
 
     /**
@@ -487,12 +484,31 @@ public class Device implements Comparable<Device> {
         return f;
     }
 
+    public boolean isReachable() {
+        if (!enabled)
+            return false;
+        for (DeviceConnection connection : DeviceConnections) {
+            if (connection.isReachable())
+                return true;
+        }
+        return false;
+    }
+
+    public void setReachable(int index) {
+        DeviceConnections.get(index).setReachable();
+        compute_first_reachable();
+    }
+
     public String getNotReachableReasons() {
         if (!enabled)
             return NetpowerctrlApplication.instance.getString(R.string.error_device_disabled);
         String f = "";
-        for (DeviceConnection connection : DeviceConnections)
-            f += connection.getNotReachableReason() + " ";
+        for (DeviceConnection connection : DeviceConnections) {
+            String a = connection.getNotReachableReason();
+            if (a != null) {
+                f += a + " ";
+            }
+        }
         return f;
     }
 
@@ -523,5 +539,28 @@ public class Device implements Comparable<Device> {
             DeviceConnections.add(newConnection);
             setReachable(DeviceConnections.size() - 1);
         }
+    }
+
+    public InetAddress[] getHostnameIPs() {
+        List<InetAddress> addresses = new ArrayList<>();
+        for (DeviceConnection connection : DeviceConnections) {
+            Collections.addAll(addresses, connection.getHostnameIPs());
+        }
+
+        InetAddress[] a = new InetAddress[addresses.size()];
+        addresses.toArray(a);
+        return a;
+    }
+
+    public boolean hasAddress(InetAddress[] hostnameIPs) {
+        if (hostnameIPs == null || hostnameIPs.length == 0)
+            return false;
+
+        for (DeviceConnection connection : DeviceConnections) {
+            if (connection.hasAddress(hostnameIPs))
+                return true;
+        }
+
+        return false;
     }
 }

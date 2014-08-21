@@ -114,7 +114,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         return mShowHidden;
     }
 
-    public void setRemoveAnimation(AnimationController animationController) {
+    public void setAnimationController(AnimationController animationController) {
         mAnimationWeakReference = new WeakReference<>(animationController);
     }
 
@@ -471,9 +471,9 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             // If the same DevicePort already exists in this adapter, we will update that instead
             if (l.port.uuid.equals(devicePort.uuid)) {
                 // Animate if value has changed
-                if (l.command_value != command_value && a != null) {
-                    a.addSmallHighlight(l.id);
-                }
+//                if (l.command_value != command_value && a != null) {
+//                    a.addSmallHighlight(l.id);
+//                }
                 // Apply new values to existing item
                 l.command_value = command_value;
                 l.setPort(devicePort);

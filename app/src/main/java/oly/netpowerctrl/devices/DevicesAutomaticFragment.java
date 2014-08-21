@@ -53,7 +53,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
         ++current;
         textView.append("Check " + device.DeviceName + "...\n");
 
-        anelCreateDevice = new AnelCreateDevice(device, getActivity());
+        anelCreateDevice = new AnelCreateDevice(device);
         anelCreateDevice.listener = this;
         if (!anelCreateDevice.startTest()) {
             textView.append("\tPlugin failed\n");

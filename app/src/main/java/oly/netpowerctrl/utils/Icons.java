@@ -312,13 +312,6 @@ public class Icons {
                                                    Intent imageReturnedIntent) {
         if (resultCode == Activity.RESULT_OK) {
             Uri selectedImage = imageReturnedIntent.getData();
-            if (requestCode == PICK_IMAGE_KITKAT) {
-//                final int takeFlags = imageReturnedIntent.getFlags()
-//                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-//                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-//                // Check for the freshest data.
-//                context.getContentResolver().takePersistableUriPermission(selectedImage, takeFlags);
-            }
             try {
                 Bitmap b = Icons.getDrawableFromUri(context, selectedImage).getBitmap();
                 callback.setIcon(icon_callback_context_object != null ? icon_callback_context_object.get() : null,

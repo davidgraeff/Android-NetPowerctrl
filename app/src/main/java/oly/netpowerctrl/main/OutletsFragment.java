@@ -98,10 +98,18 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        SharedPrefs.getInstance().registerHideNotReachable(this);
+        setHasOptionsMenu(true);
+    }
+
     private ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
+                    //noinspection deprecation
                     mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumsChangeListener);
                     //getActivity().findViewById(R.id.content_frame).getWidth();
                     Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
@@ -110,13 +118,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                 }
             };
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        SharedPrefs.getInstance().registerHideNotReachable(this);
-        setHasOptionsMenu(true);
-    }
 
     @Override
     public void onStart() {
@@ -403,7 +404,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 ((ActivityWithIconCache) getActivity()).getIconCache());
         animationController.setAdapter(adapter);
         animationController.setListView(mListView);
-        adapter.setRemoveAnimation(animationController);
+        adapter.setAnimationController(animationController);
 
         return view;
     }

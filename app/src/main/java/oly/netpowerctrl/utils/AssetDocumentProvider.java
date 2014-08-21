@@ -258,7 +258,6 @@ public class AssetDocumentProvider extends DocumentsProvider implements ContentP
         if (documentId.equals(ROOT))
             return null;
 
-        AssetManager am = getContext().getAssets();
         try {
             //return am.openFd(assetSet + "/" + documentId).getParcelFileDescriptor();
             InputStream is = getContext().getAssets().open(assetSet + "/" + documentId);

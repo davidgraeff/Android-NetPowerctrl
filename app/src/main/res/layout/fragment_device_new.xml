@@ -25,7 +25,7 @@
         android:contentDescription="@+id/device_ip"
         android:src="@android:drawable/ic_menu_help" />
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/device_ip"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -33,13 +33,12 @@
         android:layout_marginBottom="20dip"
         android:layout_toLeftOf="@id/device_ip_help_icon"
         android:layout_toStartOf="@id/device_ip_help_icon"
-        android:inputType="textUri"
+        android:inputType="textUri|textAutoComplete"
         android:singleLine="true" />
-
 
     <TextView
         android:id="@+id/device_http_port_label"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/device_ip"
         android:text="@string/device_http_port" />
@@ -57,7 +56,7 @@
 
     <TextView
         android:id="@+id/device_udp_send_label"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/device_http_port"
         android:text="@string/device_send_udp_port" />
@@ -75,7 +74,7 @@
 
     <TextView
         android:id="@+id/device_udp_receive_label"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/device_udp_send"
         android:text="@string/device_receive_udp_port" />
