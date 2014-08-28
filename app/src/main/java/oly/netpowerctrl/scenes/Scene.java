@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -116,7 +116,7 @@ public class Scene {
                 if (item.command != DevicePort.TOGGLE)
                     return item.command;
                 // If the command is toggle, we have to find out the final command.
-                DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(item.uuid);
+                DevicePort port = RuntimeDataController.getDataController().findDevicePort(item.uuid);
                 if (port == null)
                     return DevicePort.INVALID;
 
@@ -150,7 +150,7 @@ public class Scene {
     public int getDevices(TreeSet<Device> devices) {
         int valid_commands = 0;
         for (SceneItem c : sceneItems) {
-            DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(c.uuid);
+            DevicePort port = RuntimeDataController.getDataController().findDevicePort(c.uuid);
             if (port != null) {
                 devices.add(port.device);
                 ++valid_commands;

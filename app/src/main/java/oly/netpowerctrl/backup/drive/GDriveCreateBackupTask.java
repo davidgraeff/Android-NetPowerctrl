@@ -1,6 +1,7 @@
 package oly.netpowerctrl.backup.drive;
 
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -21,7 +22,6 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Icons;
@@ -31,10 +31,12 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
     private final GoogleApiClient mClient;
     private final GDrive.GDriveConnectionState observer;
     private final BackupDoneSuccess backupDoneSuccess;
+    private final Context context;
 
-    public GDriveCreateBackupTask(GoogleApiClient client,
+    public GDriveCreateBackupTask(Context context, GoogleApiClient client,
                                   GDrive.GDriveConnectionState observer,
                                   BackupDoneSuccess backupDoneSuccess) {
+        this.context = context;
         mClient = client;
         this.observer = observer;
         this.backupDoneSuccess = backupDoneSuccess;
@@ -54,14 +56,13 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-
-        RuntimeDataController c = NetpowerctrlApplication.getDataController();
+        RuntimeDataController c = RuntimeDataController.getDataController();
 
         // Enter dir
         DriveFolder appDataDir = GDrive.getAppFolder(mClient);
 
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle(Utils.getDeviceName() + " " + Utils.getDateTime()).build();
+                .setTitle(Utils.getDeviceName() + " " + Utils.getDateTime(context)).build();
         DriveFolder.DriveFolderResult result = appDataDir.createFolder(mClient, changeSet).await(3, TimeUnit.SECONDS);
         if (!result.getStatus().isSuccess()) {
             // We failed, stop the task and return.
@@ -85,7 +86,7 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
 
         DriveFolder iconsFolder = result.getDriveFolder();
 
-        Icons.IconFile[] icons = Icons.getAllIcons();
+        Icons.IconFile[] icons = Icons.getAllIcons(context);
         for (Icons.IconFile f : icons) {
             try {
                 // Open sub folder

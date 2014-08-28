@@ -10,6 +10,7 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import java.text.DateFormat;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.utils.Github;
 import oly.netpowerctrl.utils.Icons;
@@ -40,7 +41,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         addPreferencesFromResource(R.xml.preferences);
 
         //noinspection ConstantConditions
-        findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
+        findPreference(SharedPrefs.getInstance().PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
         findPreference("show_background").setOnPreferenceChangeListener(reloadActivity);
 
         //noinspection ConstantConditions
@@ -88,13 +89,13 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         List<WidgetData> widgetDataList = new ArrayList<>();
 
         for (int appWidgetId : allWidgetIds) {
-            String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-            String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
+            String prefName = SharedPrefs.getInstance().PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
+            String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
             if (port_uuid == null) {
                 Log.e("PREFERENCES", "Loading widget failed: " + String.valueOf(appWidgetId));
                 continue;
             }
-            DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(
+            DevicePort port = RuntimeDataController.getDataController().findDevicePort(
                     UUID.fromString(port_uuid));
             if (port == null) {
                 Log.e("PREFERENCES", "Port for widget not found: " + String.valueOf(appWidgetId));
@@ -105,7 +106,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                     prefName, appWidgetId));
         }
 
-        PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.PREF_widgets);
+        PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.getInstance().PREF_widgets);
         assert lp != null;
         if (widgetDataList.isEmpty()) {
             getPreferenceScreen().removePreference(lp);
@@ -140,7 +141,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             }
         }
 
-        Github.getOpenIssues(this, false);
         //noinspection ConstantConditions
         findPreference("issues").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -152,9 +152,17 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     }
 
     @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Github.getOpenIssues(this, false);
+    }
+
+    @Override
     public void gitHubOpenIssuesUpdated(int count, long last_access) {
-        // We do not use the fragments getString() because the fragment may be detached at the moment.
-        Context context = NetpowerctrlApplication.instance;
+        Context context = getActivity();
+        if (context == null)
+            return;
+
         findPreference("issues").setTitle(context.getString(R.string.issues_open, count));
         if (count < 0) {
             findPreference("issues").setSummary(context.getString(R.string.issues_error));

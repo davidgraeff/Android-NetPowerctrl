@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
@@ -114,7 +114,7 @@ public class Timer {
         if (di.port_id == null)
             throw new ClassNotFoundException();
 
-        di.port = NetpowerctrlApplication.getDataController().findDevicePort(di.port_id);
+        di.port = RuntimeDataController.getDataController().findDevicePort(di.port_id);
         if (di.port == null)
             throw new ClassNotFoundException();
 

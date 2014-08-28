@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.ServiceReady;
+import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.application_state.onServiceReady;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.Icons;
@@ -35,7 +35,7 @@ import oly.netpowerctrl.utils.Shortcuts;
 /**
  * Widget Update Service
  */
-public class WidgetUpdateService extends Service implements DeviceObserverResult, DeviceUpdate, ServiceReady {
+public class WidgetUpdateService extends Service implements DeviceObserverResult, onConfiguredDeviceUpdate, onServiceReady {
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     private static final String TAG = "WidgetUpdateService";
@@ -71,7 +71,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
          * system ends service) unregister from the listener service and from the shared preferences
          * changed signal.
          */
-        NetpowerctrlApplication.getDataController().deviceCollection.unregisterDeviceObserver(this);
+        RuntimeDataController.getDataController().deviceCollection.unregisterDeviceObserver(this);
         NetpowerctrlService.observersServiceReady.unregister(this);
         NetpowerctrlService.stopUseService();
     }
@@ -82,7 +82,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         context = getApplicationContext();
         assert context != null;
         appWidgetManager = AppWidgetManager.getInstance(context);
-        NetpowerctrlService.useService(false, false);
+        NetpowerctrlService.useService(this, false, false);
         NetpowerctrlService.observersServiceReady.register(this);
         super.onCreate();
     }
@@ -101,13 +101,13 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         List<Device> devicesToUpdate = new ArrayList<>();
         int[] allWidgetIds = getAllWidgetIDs();
         for (int appWidgetId : allWidgetIds) {
-            String port_uuid = SharedPrefs.LoadWidget(appWidgetId);
+            String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
             if (port_uuid == null) {
                 Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId));
                 setWidgetStateBroken(appWidgetId);
                 continue;
             }
-            DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(
+            DevicePort port = RuntimeDataController.getDataController().findDevicePort(
                     UUID.fromString(port_uuid));
             if (port == null) {
                 setWidgetStateBroken(appWidgetId);
@@ -118,7 +118,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
             allWidgets.append(appWidgetId, port);
             if (port.device.getUpdatedTime() > 0)
-                onDeviceUpdated(port.device, false);
+                onConfiguredDeviceUpdated(port.device, false);
             else {
                 devicesToUpdate.add(port.device);
 //                widgetUpdateRequests.add(appWidgetId);
@@ -126,7 +126,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         }
 
         if (devicesToUpdate.size() > 0)
-            new DeviceQuery(this, devicesToUpdate);
+            new DeviceQuery(this, this, devicesToUpdate.iterator());
 
         finishServiceIfDone();
     }
@@ -252,11 +252,11 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
     @Override
     public void onDeviceUpdated(Device di) {
-        onDeviceUpdated(di, false);
+        onConfiguredDeviceUpdated(di, false);
     }
 
     @Override
-    public void onDeviceUpdated(Device di, boolean willBeRemoved) {
+    public void onConfiguredDeviceUpdated(Device di, boolean willBeRemoved) {
         //Log.w("widget", di != null ? di.DeviceName : "empty di");
         if (di == null)
             return;
@@ -289,7 +289,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     @Override
     public void onObserverJobFinished(List<Device> timeout_devices) {
         for (Device di : timeout_devices) {
-            onDeviceUpdated(di, false);
+            onConfiguredDeviceUpdated(di, false);
         }
     }
 
@@ -297,7 +297,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     public boolean onServiceReady(NetpowerctrlService service) {
         if (allWidgets.size() == 0)
             updateDevices();
-        NetpowerctrlApplication.getDataController().deviceCollection.registerDeviceObserver(this);
+        RuntimeDataController.getDataController().deviceCollection.registerDeviceObserver(this);
 
         return true;
     }

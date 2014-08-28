@@ -1,12 +1,12 @@
 package oly.netpowerctrl.anel;
 
-import android.os.Handler;
-
 import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
@@ -24,7 +24,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     }
 
     private static Device createReceivedAnelDevice(String DeviceName, String MacAddress) {
-        Device di = Device.createNewDevice(anelPlugin.getPluginID());
+        Device di = new Device(anelPlugin.getPluginID());
         di.setPluginInterface(anelPlugin);
         di.DeviceName = DeviceName;
         di.UniqueDeviceID = MacAddress;
@@ -49,12 +49,18 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         }
 
         if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
-            new Handler(NetpowerctrlApplication.instance.getMainLooper()).post(new Runnable() {
+            NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
                 public void run() {
+                    NetpowerctrlService service = NetpowerctrlService.getService();
+                    if (service == null)
+                        return;
                     String errMessage = msg[2].trim();
                     if (errMessage.trim().equals("NoPass"))
-                        errMessage = NetpowerctrlApplication.instance.getString(R.string.error_nopass);
-                    NetpowerctrlApplication.getDataController().onDeviceErrorByName(msg[1].trim(), errMessage);
+                        errMessage = NetpowerctrlService.getService().getString(R.string.error_nopass);
+                    RuntimeDataController.getDataController().onDeviceErrorByName(
+                            service,
+                            msg[1].trim(),
+                            errMessage);
                 }
             });
 
@@ -63,7 +69,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
 
         final String HostName = msg[2];
         final Device di = createReceivedAnelDevice(msg[1].trim(), msg[5]);
-        di.addConnection(new DeviceConnectionUDP(di, HostName, receive_port, SharedPrefs.getDefaultSendPort()));
+        di.addConnection(new DeviceConnectionUDP(di, HostName, receive_port, SharedPrefs.getInstance().getDefaultSendPort()));
 
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
@@ -127,6 +133,6 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             di.add(oi);
         }
 
-        NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(di);
+        RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(di);
     }
 }

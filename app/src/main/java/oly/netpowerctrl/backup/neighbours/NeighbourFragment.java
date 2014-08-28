@@ -127,10 +127,10 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
 
 //    private void enableSync(boolean enable) {
 //        if (enable) {
-//            SharedPrefs.setNeighbourAutoSync(true);
+//            SharedPrefs.getInstance().setNeighbourAutoSync(true);
 //            NeighbourDataReceiveService.startAutoSync();
 //        } else {
-//            SharedPrefs.setNeighbourAutoSync(false);
+//            SharedPrefs.getInstance().setNeighbourAutoSync(false);
 //        }
 //    }
 
@@ -141,12 +141,12 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
             return;
         }
         lastGateway = g;
-        broadcastSendJob = NeighbourDiscoverSending.createDiscoverMessage();
+        broadcastSendJob = NeighbourDiscoverSending.createDiscoverMessage(getActivity());
         if (!discoverIsRunning)
             sendDiscoverMessageRunnable.run();
 
         // Start tcp receiver
-        NeighbourDataReceiveService.start(this);
+        NeighbourDataReceiveService.start(getActivity(), this);
     }
 
 //    public void syncTimer() {
@@ -279,11 +279,11 @@ public class NeighbourFragment extends Fragment implements PopupMenu.OnMenuItemC
 
         switch (menuItem.getItemId()) {
             case R.id.menu_neighbour_remove: {
-                NeighbourDataSync.sendData(item.address, item.uniqueID, this, true);
+                NeighbourDataSync.sendData(getActivity(), item.address, item.uniqueID, this, true);
                 return true;
             }
             case R.id.menu_neighbour_push: {
-                NeighbourDataSync.sendData(item.address, item.uniqueID, this, false);
+                NeighbourDataSync.sendData(getActivity(), item.address, item.uniqueID, this, false);
                 return true;
             }
         }

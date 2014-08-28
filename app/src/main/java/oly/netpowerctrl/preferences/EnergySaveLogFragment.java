@@ -74,7 +74,7 @@ public class EnergySaveLogFragment extends ListFragment {
 
     private void loadData() {
         listItems.clear();
-        File f = Logging.getLogFile();
+        File f = Logging.getLogFile(getActivity());
         if (f.exists()) {
             try {
                 InputStream inStream = new FileInputStream(f);
@@ -107,7 +107,7 @@ public class EnergySaveLogFragment extends ListFragment {
         switch (item.getItemId()) {
             case R.id.menu_remove_log: {
                 if (Logging.logFile == null)
-                    Logging.logFile = Logging.getLogFile();
+                    Logging.logFile = Logging.getLogFile(getActivity());
                 if (Logging.logFile.exists()) {
                     if (Logging.logFile.delete())
                         Logging.logFile = null;
@@ -125,7 +125,7 @@ public class EnergySaveLogFragment extends ListFragment {
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"david.graeff@web.de"});
-                intent.putExtra(Intent.EXTRA_TEXT, Logging.getStringFromFile());
+                intent.putExtra(Intent.EXTRA_TEXT, Logging.getStringFromFile(getActivity()));
                 try {
                     assert info != null;
                     //noinspection ConstantConditions

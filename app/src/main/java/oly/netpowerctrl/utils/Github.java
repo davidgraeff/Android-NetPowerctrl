@@ -23,9 +23,9 @@ public class Github {
         if (isAlreadyRunning)
             return;
 
-        long lastAccess = SharedPrefs.getLastTimeOpenIssuesRequested();
+        long lastAccess = SharedPrefs.getInstance().getLastTimeOpenIssuesRequested();
         if (!force && lastAccess != -1 && System.currentTimeMillis() - lastAccess < 1000 * 1800) {
-            callback.gitHubOpenIssuesUpdated(SharedPrefs.getOpenIssues(), lastAccess);
+            callback.gitHubOpenIssuesUpdated(SharedPrefs.getInstance().getOpenIssues(), lastAccess);
             return;
         }
 
@@ -59,7 +59,7 @@ public class Github {
                                 reader.endObject();
                             }
                             reader.endArray();
-                            SharedPrefs.setOpenIssues(open_issues, System.currentTimeMillis());
+                            SharedPrefs.getInstance().setOpenIssues(open_issues, System.currentTimeMillis());
                             break;
                     }
                 } catch (SocketTimeoutException e) {

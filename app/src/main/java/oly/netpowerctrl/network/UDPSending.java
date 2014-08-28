@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.utils_gui.ShowToast;
@@ -40,10 +41,7 @@ public class UDPSending {
         }
     }
 
-    public static void onError(int errorID, String ip, int port, Exception e) {
-        Context context = NetpowerctrlApplication.instance;
-        if (context == null)
-            return;
+    public static void onError(Context context, int errorID, String ip, int port, Exception e) {
         String exceptionString = (e == null || e.getMessage() == null) ? "" : e.getMessage();
         switch (errorID) {
             case INQUERY_REQUEST:
@@ -171,14 +169,16 @@ public class UDPSending {
         private boolean initialized = false;
         private UDPSending udpSending = null;
 
-        public SendAndObserveJob(DeviceConnection ci, byte[] message, int errorID) {
+        public SendAndObserveJob(Context context, DeviceConnection ci, byte[] message, int errorID) {
+            super(context, null);
             this.messages.add(message);
             this.errorID = errorID;
             this.ci = ci;
             assert (ci != null);
         }
 
-        public SendAndObserveJob(DeviceConnection ci, byte[] message, byte[] message2, int errorID) {
+        public SendAndObserveJob(Context context, DeviceConnection ci, byte[] message, byte[] message2, int errorID) {
+            super(context, null);
             this.messages.add(message);
             this.messages.add(message2);
             this.errorID = errorID;
@@ -188,6 +188,10 @@ public class UDPSending {
 
         @Override
         public void process(UDPSending udpSending) {
+            Context context = NetpowerctrlService.getService();
+            if (context == null)
+                return;
+
             this.udpSending = udpSending;
             // Get IP
             try {
@@ -195,7 +199,7 @@ public class UDPSending {
                     ip = InetAddress.getByName(ci.getDestinationHost());
                 }
             } catch (final UnknownHostException e) {
-                UDPSending.onError(NETWORK_UNKNOWN_HOSTNAME, ci.getDestinationHost(), ci.getDestinationPort(), e);
+                UDPSending.onError(context, NETWORK_UNKNOWN_HOSTNAME, ci.getDestinationHost(), ci.getDestinationPort(), e);
                 return;
             }
 
@@ -203,11 +207,11 @@ public class UDPSending {
                 initialized = true;
 
                 setDeviceQueryResult(deviceObserverResult);
-                devices_to_observe = new ArrayList<>();
-                devices_to_observe.add(ci.getDevice());
+                clearDevicesToObserve();
+                addDevice(ci.getDevice(), false);
 
                 // Register on main application object to receive device updates
-                NetpowerctrlApplication.getDataController().addUpdateDeviceState(this);
+                RuntimeDataController.getDataController().addUpdateDeviceState(this);
             }
 
             try {
@@ -224,14 +228,14 @@ public class UDPSending {
 
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))
-                    UDPSending.onError(NETWORK_UNREACHABLE, ip.getHostAddress(), ci.getDestinationPort(), e);
+                    UDPSending.onError(context, NETWORK_UNREACHABLE, ip.getHostAddress(), ci.getDestinationPort(), e);
                 else {
-                    UDPSending.onError(errorID, ip.getHostAddress(), ci.getDestinationPort(), e);
+                    UDPSending.onError(context, errorID, ip.getHostAddress(), ci.getDestinationPort(), e);
                 }
 
             } catch (final Exception e) {
                 e.printStackTrace();
-                UDPSending.onError(errorID, ci.getDestinationHost(), ci.getDestinationPort(), e);
+                UDPSending.onError(context, errorID, ci.getDestinationHost(), ci.getDestinationPort(), e);
             }
         }
 
@@ -274,19 +278,23 @@ public class UDPSending {
             if (ip == null)
                 return;
 
+            Context context = NetpowerctrlService.getService();
+            if (context == null)
+                return;
+
             try {
                 udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, sendPort));
 
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))
-                    UDPSending.onError(NETWORK_UNREACHABLE, ip.getHostAddress(), sendPort, e);
+                    UDPSending.onError(context, NETWORK_UNREACHABLE, ip.getHostAddress(), sendPort, e);
                 else {
-                    UDPSending.onError(INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), sendPort, e);
+                    UDPSending.onError(context, INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), sendPort, e);
                 }
 
             } catch (final Exception e) {
                 e.printStackTrace();
-                UDPSending.onError(INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), sendPort, e);
+                UDPSending.onError(context, INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), sendPort, e);
             }
         }
     }

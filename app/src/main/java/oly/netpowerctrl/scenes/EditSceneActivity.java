@@ -24,8 +24,8 @@ import android.widget.TextView;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsCreateSceneAdapter;
@@ -76,7 +76,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // set theme based on user preference
-        if (SharedPrefs.isDarkTheme()) {
+        if (SharedPrefs.getInstance().isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
         } else {
             setTheme(R.style.Theme_CustomLightTheme);
@@ -129,7 +129,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
         if (pager != null) {
             twoPane = false;
-            EditScenePagerAdapter pagerAdapter = new EditScenePagerAdapter(m);
+            EditScenePagerAdapter pagerAdapter = new EditScenePagerAdapter(this, m);
             fragment_included = pagerAdapter.getFragmentIncluded();
             fragment_available = pagerAdapter.getFragmentAvailable();
             pager.setAdapter(pagerAdapter);
@@ -158,7 +158,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     @Override
     protected void onResume() {
         super.onResume();
-        NetpowerctrlService.useService(false, false);
+        NetpowerctrlService.useService(this, false, false);
     }
 
     @Override
@@ -248,8 +248,8 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
             return;
 
         if (isSceneNotShortcut) {
-            NetpowerctrlApplication.getDataController().sceneCollection.setBitmap(this, scene, scene_icon);
-            NetpowerctrlApplication.getDataController().sceneCollection.add(scene);
+            RuntimeDataController.getDataController().sceneCollection.setBitmap(this, scene, scene_icon);
+            RuntimeDataController.getDataController().sceneCollection.add(scene);
         } else {
             Intent extra = Shortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
                     scene, show_mainWindow.isChecked(), enable_feedback.isChecked());

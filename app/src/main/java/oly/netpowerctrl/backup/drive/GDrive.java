@@ -121,11 +121,11 @@ public class GDrive implements
     }
 
     public void createNewBackup(GDriveCreateBackupTask.BackupDoneSuccess done) {
-        new GDriveCreateBackupTask(mGoogleApiClient, observer, done).execute();
+        new GDriveCreateBackupTask(context, mGoogleApiClient, observer, done).execute();
     }
 
     public void restoreBackup(DriveId drive_id) {
-        new GDriveRestoreBackupTask(mGoogleApiClient, observer, drive_id).execute();
+        new GDriveRestoreBackupTask(context, mGoogleApiClient, observer, drive_id).execute();
     }
 
     public void setObserver(GDriveConnectionState observer) {
@@ -142,7 +142,7 @@ public class GDrive implements
     }
 
     public void startAutoBackup(Activity context) {
-        if (!SharedPrefs.gDriveEnabled())
+        if (!SharedPrefs.getInstance().gDriveEnabled())
             return;
         onStart(context);
         //TODO

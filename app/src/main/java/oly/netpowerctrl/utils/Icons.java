@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
@@ -194,8 +193,7 @@ public class Icons {
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
 
-    public static IconFile[] getAllIcons() {
-        Context context = NetpowerctrlApplication.instance;
+    public static IconFile[] getAllIcons(Context context) {
 
         List<IconFile> list = new ArrayList<>();
         for (Icons.IconType iconType : Icons.IconType.values()) {
@@ -212,8 +210,7 @@ public class Icons {
         return list.toArray(new IconFile[list.size()]);
     }
 
-    public static void saveIcon(String fileName, IconType iconType, IconState state, InputStream input) {
-        Context context = NetpowerctrlApplication.instance;
+    public static void saveIcon(Context context, String fileName, IconType iconType, IconState state, InputStream input) {
         @SuppressWarnings("ConstantConditions")
         String root = context.getExternalFilesDir(iconType.name() + state.name()).toString();
         File myDir = new File(root);

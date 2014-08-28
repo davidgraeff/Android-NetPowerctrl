@@ -43,12 +43,12 @@ public interface PluginInterface {
      * Restart receiving units of the plugin. Necessary for creating/configuring new devices (with
      * for example changed receive ports)
      *
-     * @param device Maybe null if you want to restart all receiving units of the plugin or name a
-     *               device to start only the receiving unit responsible for that device.
+     * @param context
+     * @param device  Maybe null if you want to restart all receiving units of the plugin or name a
      */
-    void enterFullNetworkState(Device device);
+    void enterFullNetworkState(Context context, Device device);
 
-    void enterNetworkReducedState();
+    void enterNetworkReducedState(Context context);
 
     boolean isNetworkPlugin();
 

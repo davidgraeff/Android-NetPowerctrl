@@ -1,12 +1,14 @@
 package oly.netpowerctrl.network;
 
+import android.content.Context;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.NetworkInterface;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.utils_gui.ShowToast;
 
 abstract public class UDPReceiving extends Thread {
@@ -22,6 +24,10 @@ abstract public class UDPReceiving extends Thread {
     }
 
     public void run() {
+        Context context = NetpowerctrlService.getService();
+        if (context == null)
+            return;
+
         keep_running = true;
         while (keep_running) {
             try {
@@ -37,11 +43,11 @@ abstract public class UDPReceiving extends Thread {
                 socket.close();
             } catch (final IOException e) {
                 if (keep_running) { // no message if we were interrupt()ed
-                    String msg = String.format(NetpowerctrlApplication.instance.getResources().getString(R.string.error_listen_thread_exception), receive_port);
+                    String msg = context.getString(R.string.error_listen_thread_exception, receive_port);
                     msg += e.getLocalizedMessage();
                     if (receive_port < 1024)
-                        msg += NetpowerctrlApplication.instance.getResources().getString(R.string.error_port_lt_1024);
-                    ShowToast.FromOtherThread(NetpowerctrlApplication.instance, msg);
+                        msg += context.getString(R.string.error_port_lt_1024);
+                    ShowToast.FromOtherThread(context, msg);
                 }
                 break;
             }

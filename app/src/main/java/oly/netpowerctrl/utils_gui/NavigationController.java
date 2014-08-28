@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
 import oly.netpowerctrl.backup.neighbours.NeighbourFragment;
 import oly.netpowerctrl.devices.DevicesFragment;
@@ -165,8 +166,10 @@ public class NavigationController {
 
         if (restore == RestorePositionEnum.RestoreLastSaved) {
             // Restore the last visited screen
-            String className = SharedPrefs.getFirstTab();
-            if (className == null || className.isEmpty()) {
+            String className = SharedPrefs.getInstance().getFirstTab();
+            int pos = mDrawerAdapter.indexOf(className);
+
+            if (className == null || className.isEmpty() || pos == -1) {
                 className = OutletsFragment.class.getName();
             }
             backstack.add(new BackStackEntry(className, null));
@@ -218,7 +221,7 @@ public class NavigationController {
                 mDrawerAdapter.getItemViewType(currentPosition) != 0) {
             DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(currentPosition);
             if (!item.fragmentClassName.isEmpty() && !item.fragmentClassName.contains("Dialog"))
-                SharedPrefs.setFirstTab(item.fragmentClassName);
+                SharedPrefs.getInstance().setFirstTab(item.fragmentClassName);
         }
     }
 
@@ -245,8 +248,8 @@ public class NavigationController {
         changeToFragment(fragmentClassName, null, true);
     }
 
-    public void changeToFragment(String fragmentClassName, Bundle extra, boolean addToBackstack) {
-        Activity context = mDrawerActivity.get();
+    public void changeToFragment(String fragmentClassName, final Bundle extra, boolean addToBackstack) {
+        final Activity context = mDrawerActivity.get();
         if (context == null || fragmentClassName == null) // should never happen
             return;
 
@@ -270,23 +273,39 @@ public class NavigationController {
             drawerLastItemPosition = pos;
         }
 
-        if (currentFragment == null || !fragmentClassNameEquals) {
-            currentFragment = Fragment.instantiate(context, fragmentClassName);
-            currentFragmentClass = fragmentClassName;
-        }
         if (!fragmentClassNameEquals) {
             try {
+                currentFragment = Fragment.instantiate(context, fragmentClassName);
+                currentFragmentClass = fragmentClassName;
                 FragmentTransaction ft = context.getFragmentManager().beginTransaction();
                 ft.replace(R.id.content_frame, currentFragment);
-                // we commit with possible state loss here because applyFragmentTransaction is called from an
-                // async callback and the InstanceState of the activity may have been saved already.
-                ft.commit();
+                try {
+                    ft.commit();
+                } catch (IllegalStateException exception) {
+                    ft.commitAllowingStateLoss();
+                }
+                changeArgumentsOfCurrentFragment(extra);
             } catch (Exception exception) {
-                ACRA.getErrorReporter().handleException(exception);
-            }
-        }
+                ACRA.getErrorReporter().putCustomData("fragmentName", currentFragmentClass);
+                ACRA.getErrorReporter().handleSilentException(exception);
 
-        changeArgumentsOfCurrentFragment(extra);
+                NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FragmentTransaction ft = context.getFragmentManager().beginTransaction();
+                        ft.replace(R.id.content_frame, currentFragment);
+                        try {
+                            ft.commit();
+                        } catch (IllegalStateException illegalException) {
+                            ft.commitAllowingStateLoss();
+                        }
+                        changeArgumentsOfCurrentFragment(extra);
+                    }
+                });
+            }
+        } else {
+            changeArgumentsOfCurrentFragment(extra);
+        }
     }
 
     public void changeArgumentsOfCurrentFragment(Bundle extra) {

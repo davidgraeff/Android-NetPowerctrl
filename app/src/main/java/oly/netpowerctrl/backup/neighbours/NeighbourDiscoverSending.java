@@ -1,11 +1,12 @@
 package oly.netpowerctrl.backup.neighbours;
 
+import android.content.Context;
+
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.network.UDPSending;
 import oly.netpowerctrl.network.Utils;
@@ -17,9 +18,9 @@ import oly.netpowerctrl.utils.Icons;
 class NeighbourDiscoverSending {
     public static int icon_size_cache = -1;
 
-    public static UDPSending.SendRawJob createDiscoverMessage() {
+    public static UDPSending.SendRawJob createDiscoverMessage(Context context) {
         if (icon_size_cache == -1)
-            icon_size_cache = Icons.getAllIcons().length;
+            icon_size_cache = Icons.getAllIcons(context).length;
 
         ByteBuffer bb = ByteBuffer.allocate(200);
         bb.order(ByteOrder.BIG_ENDIAN);
@@ -28,9 +29,9 @@ class NeighbourDiscoverSending {
         // unique id 8 Bytes
         bb.putLong(Utils.getMacAsLong());
         // Version Code 4 Bytes
-        bb.putInt(Utils.getVersionCode());
+        bb.putInt(Utils.getVersionCode(context));
         // Devices, Scenes, Groups, Icons = 8 Bytes
-        RuntimeDataController r = NetpowerctrlApplication.getDataController();
+        RuntimeDataController r = RuntimeDataController.getDataController();
         bb.putShort((short) r.deviceCollection.devices.size());
         bb.putShort((short) r.sceneCollection.scenes.size());
         bb.putShort((short) r.groupCollection.groups.size());

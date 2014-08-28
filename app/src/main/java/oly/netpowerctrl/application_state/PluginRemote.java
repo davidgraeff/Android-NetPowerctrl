@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -35,7 +34,6 @@ public class PluginRemote implements PluginInterface {
     private final Context context;
     private final String localized_name;
     private final String packageName;
-    private final Handler handler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
     public String serviceName;
     private String TAG = "PluginRemote";
     //public PluginValuesAdapter valuesAdapter;
@@ -63,7 +61,7 @@ public class PluginRemote implements PluginInterface {
             // Set non reachable and notify
             if (di != null) {
                 di.setNotReachable(0, "service disconnected!");
-                NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
+                RuntimeDataController.getDataController().onDeviceUpdated(di);
             }
         }
     };
@@ -88,9 +86,9 @@ public class PluginRemote implements PluginInterface {
                 di.setReachable(0);
             di.setHasChanged();
 
-            handler.post(new Runnable() {
+            NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
                 public void run() {
-                    NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
+                    RuntimeDataController.getDataController().onDeviceUpdated(di);
                 }
             });
         }
@@ -162,7 +160,7 @@ public class PluginRemote implements PluginInterface {
                     di.remove(id);
                 }
                 // Save ports
-                NetpowerctrlApplication.getDataController().deviceCollection.save();
+                RuntimeDataController.getDataController().deviceCollection.save();
             }
 
             receiveFinished = true;
@@ -187,9 +185,9 @@ public class PluginRemote implements PluginInterface {
         this.localized_name = localized_name;
         this.serviceName = serviceName;
         this.packageName = packageName;
-        di = NetpowerctrlApplication.getDataController().findDeviceByUniqueID(UniqueDeviceID);
+        di = RuntimeDataController.getDataController().findDeviceByUniqueID(UniqueDeviceID);
         if (di == null)
-            di = Device.createNewDevice(getPluginID());
+            di = new Device(getPluginID());
         if (di.DeviceConnections.isEmpty())
             di.DeviceConnections.add(new DeviceConnectionHTTP(di, serviceName, 0));
         di.UniqueDeviceID = UniqueDeviceID;
@@ -198,7 +196,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     public static PluginRemote create(String serviceName, String localized_name, String packageName) {
-        Context context = NetpowerctrlApplication.instance;
+        Context context = NetpowerctrlService.getService();
         PluginRemote r = new PluginRemote(context, serviceName, localized_name, packageName);
         Intent in = new Intent();
         in.setClassName(packageName, serviceName);
@@ -306,12 +304,12 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void enterFullNetworkState(Device device) {
+    public void enterFullNetworkState(Context context, Device device) {
 
     }
 
     @Override
-    public void enterNetworkReducedState() {
+    public void enterNetworkReducedState(Context context) {
 
     }
 
@@ -396,9 +394,9 @@ public class PluginRemote implements PluginInterface {
             return;
         di.setReachable(0);
         di.setUpdatedNow();
-        handler.post(new Runnable() {
+        NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
             public void run() {
-                NetpowerctrlApplication.getDataController().onDeviceUpdated(di);
+                RuntimeDataController.getDataController().onDeviceUpdated(di);
             }
         });
     }

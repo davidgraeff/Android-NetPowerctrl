@@ -346,4 +346,5 @@ All devices have to be in the same network. Check the network IDs.</string>
     <string name="device_tab_access">Zugangsdaten</string>
     <string name="device_unqiue_id">Geräte ID (Mac)</string>
     <string name="device_already_exist">Device with this IP/Hostname already exist!</string>
+    <string name="error_device_incomplete">Geräteangaben unvollständig!</string>
 </resources>

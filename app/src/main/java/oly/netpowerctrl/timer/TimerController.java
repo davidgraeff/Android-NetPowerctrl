@@ -16,6 +16,7 @@ import java.util.WeakHashMap;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
@@ -161,7 +162,7 @@ public class TimerController {
 
         List<DevicePort> alarm_ports = new ArrayList<>();
 
-        DeviceCollection c = NetpowerctrlApplication.getDataController().deviceCollection;
+        DeviceCollection c = RuntimeDataController.getDataController().deviceCollection;
         // Put all ports of all devices into the list alarm_ports.
         // If a port is referenced by the alarm_uuids hashSet, it will be put in front of the list
         // to refresh that port first.

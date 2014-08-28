@@ -26,7 +26,7 @@ public class NeighbourDiscoverReceiving extends UDPReceiving {
         this.neighbourFragmentWeakReference = new WeakReference<>(neighbourFragment);
         try {
             //noinspection ConstantConditions
-            Context c = NetpowerctrlApplication.instance;
+            Context c = neighbourFragment.getActivity();
             versionCode = c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
         } catch (PackageManager.NameNotFoundException ignored) {
             versionCode = 0;

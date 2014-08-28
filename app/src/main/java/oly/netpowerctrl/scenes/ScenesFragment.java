@@ -24,7 +24,7 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.SortCriteriaDialog;
@@ -49,7 +49,7 @@ public class ScenesFragment extends Fragment implements
     }
 
     private void setListOrGrid(boolean grid) {
-        SharedPrefs.setScenesList(grid);
+        SharedPrefs.getInstance().setScenesList(grid);
 
         float width;
 
@@ -73,7 +73,7 @@ public class ScenesFragment extends Fragment implements
         inflater.inflate(R.menu.scenes, menu);
 
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_add_scene).setVisible(NetpowerctrlApplication.getDataController().deviceCollection.hasDevices());
+        menu.findItem(R.id.menu_add_scene).setVisible(RuntimeDataController.getDataController().deviceCollection.hasDevices());
 
         if (adapter == null || adapter.getCount() == 0) {
             //noinspection ConstantConditions
@@ -165,7 +165,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        scenes = NetpowerctrlApplication.getDataController().sceneCollection;
+        scenes = RuntimeDataController.getDataController().sceneCollection;
         setHasOptionsMenu(true);
     }
 
@@ -178,13 +178,13 @@ public class ScenesFragment extends Fragment implements
         mListView.setOnItemClickListener(this);
         adapter = new ScenesAdapter(getActivity(), scenes, ((ActivityWithIconCache) getActivity()).getIconCache());
         adapter.setListContextMenu(this);
-        AnimationController animationController = new AnimationController();
+        AnimationController animationController = new AnimationController(getActivity());
         animationController.setAdapter(adapter);
         animationController.setListView(mListView);
         adapter.setAnimationController(animationController);
 
-        setListOrGrid(SharedPrefs.getScenesList());
-        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
+        setListOrGrid(SharedPrefs.getInstance().getScenesList());
+        if (!RuntimeDataController.getDataController().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes_no_devices));
             Button btnEmpty = ((Button) view.findViewById(R.id.btnChangeToDevices));
@@ -266,7 +266,7 @@ public class ScenesFragment extends Fragment implements
     public void setIcon(Object context_object, Bitmap bitmap) {
         if (context_object == null)
             return;
-        NetpowerctrlApplication.getDataController().sceneCollection.setBitmap(getActivity(),
+        RuntimeDataController.getDataController().sceneCollection.setBitmap(getActivity(),
                 (Scene) context_object, bitmap);
     }
 

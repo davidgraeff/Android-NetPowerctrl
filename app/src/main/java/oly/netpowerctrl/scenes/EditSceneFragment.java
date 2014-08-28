@@ -68,7 +68,7 @@ public class EditSceneFragment extends Fragment {
         mAdapter = adapter;
         // Add animation to the list
         // Remove animation
-        AnimationController animationController = new AnimationController();
+        AnimationController animationController = new AnimationController(getActivity());
         animationController.setAdapter(mAdapter);
         animationController.setListView(mListView);
         adapter.setAnimationController(animationController);

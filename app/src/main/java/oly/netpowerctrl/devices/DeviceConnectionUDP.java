@@ -88,14 +88,14 @@ public class DeviceConnectionUDP extends DeviceConnection {
     @Override
     public int getListenPort() {
         if (DefaultPorts)
-            return SharedPrefs.getDefaultReceivePort();
+            return SharedPrefs.getInstance().getDefaultReceivePort();
         return PortUDPReceive;
     }
 
     @Override
     public int getDestinationPort() {
         if (DefaultPorts)
-            return SharedPrefs.getDefaultSendPort();
+            return SharedPrefs.getInstance().getDefaultSendPort();
         return PortUDPSend;
     }
 

@@ -7,11 +7,15 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelCreateDevice;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
  * Created by david on 20.08.14.
@@ -40,7 +44,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
     @Override
     public void onStart() {
         super.onStart();
-        deviceList = new ArrayList<>(NetpowerctrlApplication.getDataController().newDevices);
+        deviceList = new ArrayList<>(RuntimeDataController.getDataController().newDevices);
         takeNext();
     }
 
@@ -55,7 +59,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
 
         anelCreateDevice = new AnelCreateDevice(device);
         anelCreateDevice.listener = this;
-        if (!anelCreateDevice.startTest()) {
+        if (!anelCreateDevice.startTest(getActivity())) {
             textView.append("\tPlugin failed\n");
             anelCreateDevice.listener = null;
             anelCreateDevice = null;
@@ -76,7 +80,14 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
             NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    NetpowerctrlApplication.getDataController().addToConfiguredDevices(deviceToAdd);
+                    RuntimeDataController d = RuntimeDataController.getDataController();
+                    // Add to group with name DeviceName
+                    UUID group = d.groupCollection.add(deviceToAdd.DeviceName);
+                    Iterator<DevicePort> devicePortIterator = deviceToAdd.getDevicePortIterator();
+                    while (devicePortIterator.hasNext())
+                        devicePortIterator.next().groups.add(group);
+                    // Add device to configured devices
+                    d.addToConfiguredDevices(getActivity(), deviceToAdd);
                 }
             });
         } else {

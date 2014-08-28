@@ -1,5 +1,6 @@
 package oly.netpowerctrl.groups;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.JsonReader;
 import android.util.JsonWriter;
@@ -10,59 +11,52 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 
 public class GroupCollection {
     private static long nextStableID = 0;
+    private final GroupItem groupItemIndexOfHelper = new GroupItem(null, null);
+    private final ArrayList<IGroupsUpdated> observers = new ArrayList<>();
+    public List<GroupItem> groups = new ArrayList<>();
     private IGroupsSave storage;
+
+    private static void readGroupItem(JsonReader reader, GroupCollection groupCollection, boolean tryToMerge) throws IOException {
+        String group_name = null;
+        UUID group_uuid = null;
+
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            switch (name) {
+                case "name":
+                    group_name = reader.nextString();
+                    break;
+                case "uuid":
+                    group_uuid = UUID.fromString(reader.nextString());
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+        reader.endObject();
+
+        if (group_name == null || group_uuid == null)
+            return;
+        GroupItem item = new GroupItem(group_uuid, group_name);
+
+        if (tryToMerge) {
+            for (GroupItem di : groupCollection.groups)
+                groupCollection.edit(di.uuid, di.name);
+        } else
+            groupCollection.groups.add(item);
+    }
 
     public void setStorage(IGroupsSave storage) {
         this.storage = storage;
     }
-
-    public static class GroupItem {
-        public UUID uuid;
-        public String name;
-        public Bitmap bitmap = null;
-        public final long id = nextStableID++;
-
-        public GroupItem(UUID uuid, String name) {
-            this.uuid = uuid;
-            this.name = name;
-        }
-
-        public GroupItem setUUID(UUID uuid) {
-            this.uuid = uuid;
-            return this;
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (other instanceof GroupItem)
-                return uuid.equals(((GroupItem) other).uuid);
-            else if (other instanceof UUID)
-                return uuid.equals(other);
-            return false;
-        }
-
-        public Bitmap getBitmap() {
-            if (bitmap == null) {
-                bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, uuid,
-                        Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, R.drawable.netpowerctrl);
-            }
-            return bitmap;
-        }
-    }
-
-    private final GroupItem groupItemIndexOfHelper = new GroupItem(null, null);
-
-    public interface IGroupsUpdated {
-        void groupsUpdated(boolean addedOrRemoved);
-    }
-
-    private final ArrayList<IGroupsUpdated> observers = new ArrayList<>();
 
     @SuppressWarnings("unused")
     public void registerObserver(IGroupsUpdated o) {
@@ -82,19 +76,28 @@ public class GroupCollection {
             o.groupsUpdated(addedOrRemoved);
     }
 
-    public List<GroupItem> groups = new ArrayList<>();
-
     //bitmap = Icons.loadIcon(NetpowerctrlApplication.instance,uuid, Icons.IconType.GroupIcon);
-    public void setBitmap(GroupItem item, Bitmap bitmap) {
+    public void setBitmap(Context context, GroupItem item, Bitmap bitmap) {
         if (item == null)
             return;
         item.bitmap = bitmap;
-        Icons.saveIcon(NetpowerctrlApplication.instance, bitmap, item.uuid,
+        Icons.saveIcon(context, bitmap, item.uuid,
                 Icons.IconType.GroupIcon, Icons.IconState.StateUnknown);
         notifyObservers(false);
     }
 
+    /**
+     * Add a group with the given name. If a group with this name already exist,
+     * that group id will be returned and no new group will be added.
+     *
+     * @param name
+     * @return
+     */
     public UUID add(String name) {
+        for (GroupItem groupItem : groups)
+            if (groupItem.name.equals(name))
+                return groupItem.uuid;
+
         UUID group_uuid = UUID.randomUUID();
         groups.add(new GroupItem(group_uuid, name));
         if (storage != null)
@@ -183,39 +186,6 @@ public class GroupCollection {
         }
     }
 
-    private static void readGroupItem(JsonReader reader, GroupCollection groupCollection, boolean tryToMerge) throws IOException {
-        String group_name = null;
-        UUID group_uuid = null;
-
-        reader.beginObject();
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            assert name != null;
-            switch (name) {
-                case "name":
-                    group_name = reader.nextString();
-                    break;
-                case "uuid":
-                    group_uuid = UUID.fromString(reader.nextString());
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
-        }
-        reader.endObject();
-
-        if (group_name == null || group_uuid == null)
-            return;
-        GroupItem item = new GroupItem(group_uuid, group_name);
-
-        if (tryToMerge) {
-            for (GroupItem di : groupCollection.groups)
-                groupCollection.edit(di.uuid, di.name);
-        } else
-            groupCollection.groups.add(item);
-    }
-
     /**
      * Read data from a json source and either replace existing data or merge data.
      *
@@ -285,7 +255,48 @@ public class GroupCollection {
         return groupUUids.contains(g.uuid);
     }
 
+    public interface IGroupsUpdated {
+        void groupsUpdated(boolean addedOrRemoved);
+    }
+
     public interface IGroupsSave {
         void groupsSave(GroupCollection groups);
+    }
+
+    public static class GroupItem {
+        public UUID uuid;
+        public String name;
+        public Bitmap bitmap = null;
+
+        public GroupItem(UUID uuid, String name) {
+            this.uuid = uuid;
+            this.name = name;
+        }
+
+        public final long id = nextStableID++;
+
+        public GroupItem setUUID(UUID uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof GroupItem)
+                return uuid.equals(((GroupItem) other).uuid);
+            else if (other instanceof UUID)
+                return uuid.equals(other);
+            return false;
+        }
+
+        public Bitmap getBitmap(Context context) {
+            if (bitmap == null) {
+                bitmap = Icons.loadIcon(context, uuid,
+                        Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, R.drawable.netpowerctrl);
+            }
+            return bitmap;
+        }
+
+
     }
 }

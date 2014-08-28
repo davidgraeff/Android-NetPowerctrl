@@ -1,5 +1,6 @@
 package oly.netpowerctrl.anel;
 
+import android.content.Context;
 import android.os.Handler;
 
 import java.util.List;
@@ -9,20 +10,26 @@ import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
 
 /**
  * Created by david on 20.08.14.
  */
-public class AnelCreateDevice implements DeviceObserverResult, DeviceUpdate {
+public class AnelCreateDevice implements DeviceObserverResult, onConfiguredDeviceUpdate {
     public final Device device;
     public AnelCreateDeviceResult listener = null;
     TestStates test_state = TestStates.TEST_INIT;
     private DeviceQuery deviceQuery;
 
     public AnelCreateDevice(Device di) {
+        assert di != null;
+        device = di;
+    }
+
+    public AnelCreateDevice(String defaultDeviceName, Device di) {
         if (di == null) {
-            device = Device.createNewDevice(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID());
+            device = new Device(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID());
+            device.DeviceName = defaultDeviceName;
             device.setPluginInterface(AnelUDPDeviceDiscoveryThread.anelPlugin);
             // Default values for user and password
             device.UserName = "admin";
@@ -31,10 +38,10 @@ public class AnelCreateDevice implements DeviceObserverResult, DeviceUpdate {
             device = di;
     }
 
-    public boolean wakeupPlugin() {
+    public boolean wakeupPlugin(Context context) {
         PluginInterface pluginInterface = device.getPluginInterface();
         if (pluginInterface != null) {
-            pluginInterface.enterFullNetworkState(device);
+            pluginInterface.enterFullNetworkState(context, device);
             return true;
         } else {
             return false;
@@ -43,11 +50,11 @@ public class AnelCreateDevice implements DeviceObserverResult, DeviceUpdate {
 
     @Override
     public void onDeviceUpdated(Device di) {
-        onDeviceUpdated(di, false);
+        onConfiguredDeviceUpdated(di, false);
     }
 
     @Override
-    public void onDeviceUpdated(Device updated_device, boolean willBeRemoved) {
+    public void onConfiguredDeviceUpdated(Device updated_device, boolean willBeRemoved) {
         if (!updated_device.equalsByUniqueID(device))
             return;
 
@@ -110,11 +117,11 @@ public class AnelCreateDevice implements DeviceObserverResult, DeviceUpdate {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean startTest() {
+    public boolean startTest(Context context) {
         test_state = TestStates.TEST_REACHABLE;
 
-        if (wakeupPlugin())
-            deviceQuery = new DeviceQuery(this, device);
+        if (wakeupPlugin(context))
+            deviceQuery = new DeviceQuery(context, this, device);
         else
             return false;
         return true;

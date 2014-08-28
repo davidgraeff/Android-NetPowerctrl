@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 
 /**
@@ -64,7 +64,7 @@ public class SortCriteriaDialog extends DialogFragment {
                                 sortOrder[i] = sortedList.get(i).originalIndex;
                             sortCriteriaInterface.setSortOrder(sortOrder);
                         }
-                        NetpowerctrlApplication.getDataController().deviceCollection.save();
+                        RuntimeDataController.getDataController().deviceCollection.save();
                     }
                 })
                 .setNeutralButton(R.string.menu_help, new DialogInterface.OnClickListener() {

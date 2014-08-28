@@ -1,5 +1,6 @@
 package oly.netpowerctrl.utils;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -13,16 +14,14 @@ import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.util.Date;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-
 /**
  * Created by david on 11.05.14.
  */
 public class Logging {
     public static File logFile = null;
 
-    public static File getLogFile() {
-        return new File(NetpowerctrlApplication.instance.getExternalFilesDir("logs"), "main_log.txt");
+    public static File getLogFile(Context context) {
+        return new File(context.getExternalFilesDir("logs"), "main_log.txt");
     }
 
     private static String convertStreamToString(InputStream is) throws Exception {
@@ -36,11 +35,11 @@ public class Logging {
         return sb.toString();
     }
 
-    public static String getStringFromFile() {
+    public static String getStringFromFile(Context context) {
         FileInputStream fin;
         String ret = "";
         try {
-            fin = new FileInputStream(getLogFile());
+            fin = new FileInputStream(getLogFile(context));
             ret = convertStreamToString(fin);
             //Make sure you close all streams.
             fin.close();
@@ -49,12 +48,12 @@ public class Logging {
         return ret;
     }
 
-    synchronized static public void appendLog(String text) {
+    synchronized static public void appendLog(Context context, String text) {
         text = DateFormat.getDateTimeInstance().format(new Date()) + "\n  " + text;
         //Log.w("log", text);
         //noinspection ConstantConditions
         if (logFile == null) {
-            logFile = getLogFile();
+            logFile = getLogFile(context);
             text = "APP START\n" + text;
         }
 

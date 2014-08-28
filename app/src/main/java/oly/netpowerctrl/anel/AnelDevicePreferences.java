@@ -14,8 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 
 public class AnelDevicePreferences extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
     final AnelCreateDevice anelCreateDevice;
@@ -161,7 +161,7 @@ public class AnelDevicePreferences extends DialogFragment implements AnelCreateD
             return;
         }
 
-        if (!anelCreateDevice.startTest()) {
+        if (!anelCreateDevice.startTest(getActivity())) {
             Toast.makeText(getActivity(), R.string.error_plugin_not_installed, Toast.LENGTH_SHORT).show();
         }
     }
@@ -197,9 +197,9 @@ public class AnelDevicePreferences extends DialogFragment implements AnelCreateD
     }
 
     private void saveAndFinish() {
-        anelCreateDevice.wakeupPlugin();
+        anelCreateDevice.wakeupPlugin(getActivity());
 
-        NetpowerctrlApplication.getDataController().addToConfiguredDevices(anelCreateDevice.device);
+        RuntimeDataController.getDataController().addToConfiguredDevices(getActivity(), anelCreateDevice.device);
         //noinspection ConstantConditions
         getFragmentManager().popBackStack();
     }

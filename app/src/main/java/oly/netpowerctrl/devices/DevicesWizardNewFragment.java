@@ -18,16 +18,17 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelCreateDevice;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Created by david on 20.08.14.
  */
-public class DevicesWizardNew extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
+public class DevicesWizardNewFragment extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
     AnelCreateDevice anelCreateDevice = new AnelCreateDevice(null);
     ArrayAdapter<String> ip_autocomple;
 
-    public DevicesWizardNew() {
+    public DevicesWizardNewFragment() {
     }
 
     @Override
@@ -38,7 +39,7 @@ public class DevicesWizardNew extends DialogFragment implements AnelCreateDevice
         ip_autocomple = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
         EditText textView;
 
-        List<Device> devices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
+        List<Device> devices = RuntimeDataController.getDataController().deviceCollection.devices;
         for (Device device : devices)
             for (DeviceConnection deviceConnection : device.DeviceConnections) {
                 ip_autocomple.remove(deviceConnection.HostName);
@@ -51,10 +52,10 @@ public class DevicesWizardNew extends DialogFragment implements AnelCreateDevice
         textView.setText("80");
 
         textView = (EditText) view.findViewById(R.id.device_udp_send);
-        textView.setText(String.valueOf(SharedPrefs.getDefaultSendPort()));
+        textView.setText(String.valueOf(SharedPrefs.getInstance().getDefaultSendPort()));
 
         textView = (EditText) view.findViewById(R.id.device_udp_receive);
-        textView.setText(String.valueOf(SharedPrefs.getDefaultReceivePort()));
+        textView.setText(String.valueOf(SharedPrefs.getInstance().getDefaultReceivePort()));
 
         textView = (EditText) view.findViewById(R.id.device_username);
         textView.setText(anelCreateDevice.device.UserName);
@@ -123,7 +124,7 @@ public class DevicesWizardNew extends DialogFragment implements AnelCreateDevice
         textView = (TextView) getDialog().findViewById(R.id.device_udp_send);
         int udpSend = Integer.valueOf(textView.getText().toString());
 
-        if (udpSend < 1024 && !SharedPrefs.isPortsUnlimited()) {
+        if (udpSend < 1024 && !SharedPrefs.getInstance().isPortsUnlimited()) {
             Toast.makeText(getActivity(), R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -144,7 +145,7 @@ public class DevicesWizardNew extends DialogFragment implements AnelCreateDevice
             return;
         }
 
-        if (!anelCreateDevice.startTest()) {
+        if (!anelCreateDevice.startTest(getActivity())) {
             anelCreateDevice.listener = null;
             Toast.makeText(getActivity(), R.string.error_plugin_not_installed, Toast.LENGTH_SHORT).show();
         }
@@ -157,7 +158,8 @@ public class DevicesWizardNew extends DialogFragment implements AnelCreateDevice
             NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    NetpowerctrlApplication.getDataController().addToConfiguredDevices(deviceToAdd);
+                    RuntimeDataController.getDataController().addToConfiguredDevices(getActivity(),
+                            deviceToAdd);
                 }
             });
             dismiss();

@@ -23,46 +23,41 @@ public class LoadStoreData {
     private final static String GROUPS_DIR = "groups";
     private final static String DEVICES_DIR = "devices";
     private final static String SCENES_DIR = "scenes";
-
-
+    private final Context context;
     private final SceneCollection.IScenesSave sceneCollectionStorage = new SceneCollection.IScenesSave() {
         @Override
         public void scenesSave(SceneCollection scenes) {
-            Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.edit().putString("scenes", scenes.toJSON()).apply();
         }
     };
-
     private final GroupCollection.IGroupsSave groupCollectionStorage = new GroupCollection.IGroupsSave() {
         @Override
         public void groupsSave(GroupCollection groups) {
-            Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.edit().putString("groups", groups.toJSON()).apply();
         }
     };
-
     private final DeviceCollection.IDevicesSave deviceCollectionStorage = new DeviceCollection.IDevicesSave() {
         @Override
         public void devicesSave(DeviceCollection devices) {
-            Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.edit().putString("devices", devices.toJSON()).apply();
         }
     };
-
     private final TimerController.IAlarmsSave alarmsStorage = new TimerController.IAlarmsSave() {
         @Override
         public void alarmsSave(TimerController alarms) {
-            Context context = NetpowerctrlApplication.instance;
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             prefs.edit().putString("alarms", alarms.toJSON()).apply();
         }
     };
 
+    public LoadStoreData(Context context) {
+        this.context = context;
+    }
+
     public void read(SceneCollection target) {
-        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         try {
@@ -74,7 +69,6 @@ public class LoadStoreData {
     }
 
     public void read(DeviceCollection target) {
-        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         try {
@@ -86,7 +80,6 @@ public class LoadStoreData {
     }
 
     public void read(GroupCollection target) {
-        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         try {
             target.setStorage(groupCollectionStorage);
@@ -97,7 +90,6 @@ public class LoadStoreData {
     }
 
     public void read(TimerController target) {
-        Context context = NetpowerctrlApplication.instance;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         try {
             target.setStorage(alarmsStorage);
@@ -108,6 +100,6 @@ public class LoadStoreData {
     }
 
     public void markVersion() {
-        SharedPrefs.setCurrentPreferenceVersion();
+        SharedPrefs.getInstance().setCurrentPreferenceVersion();
     }
 }

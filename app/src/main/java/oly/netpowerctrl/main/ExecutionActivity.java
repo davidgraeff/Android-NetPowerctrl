@@ -11,10 +11,10 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.OnDataQueryCompletedHandler;
-import oly.netpowerctrl.application_state.ServiceReady;
+import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.application_state.onDataQueryCompleted;
+import oly.netpowerctrl.application_state.onServiceReady;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.network.DeviceObserverResult;
@@ -41,7 +41,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
     @Override
     protected void onResume() {
         super.onResume();
-        NetpowerctrlService.useService(false, false);
+        NetpowerctrlService.useService(getApplicationContext(), false, false);
         Intent it = getIntent();
         if (it == null) {
             finish();
@@ -61,7 +61,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         }
 
         // The application may have be started here, we have to wait for the service to be ready
-        NetpowerctrlService.observersServiceReady.register(new ServiceReady() {
+        NetpowerctrlService.observersServiceReady.register(new onServiceReady() {
             @Override
             public boolean onServiceReady(NetpowerctrlService service) {
                 // Execute single action (in contrast to scene)
@@ -90,16 +90,16 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
 
     void executeSingleAction(String port_uuid_string, final int command) {
         final UUID port_uuid = UUID.fromString(port_uuid_string);
-        final DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(port_uuid);
+        final DevicePort port = RuntimeDataController.getDataController().findDevicePort(port_uuid);
         if (port == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        NetpowerctrlApplication.getDataController().registerDataQueryCompleted(new OnDataQueryCompletedHandler() {
+        RuntimeDataController.observersDataQueryCompleted.register(new onDataQueryCompleted() {
             @Override
             public boolean onDataQueryFinished() {
-                NetpowerctrlApplication.getDataController().execute(port, command, ExecutionActivity.this);
+                RuntimeDataController.getDataController().execute(port, command, ExecutionActivity.this);
                 return false;
             }
         });
@@ -121,7 +121,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         // DeviceQuery for scene devices
         TreeSet<Device> devices = new TreeSet<>();
         scene_commands = scene.getDevices(devices);
-        new DeviceQuery(ExecutionActivity.this, devices);
+        new DeviceQuery(this, ExecutionActivity.this, devices.iterator());
 
     }
 
@@ -147,7 +147,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
             ShowToast.showToast(this,
                     this.getString(R.string.scene_executed, scene.sceneName), 800);
         }
-        NetpowerctrlApplication.getDataController().execute(scene, this);
+        RuntimeDataController.getDataController().execute(scene, this);
     }
 //
 //    @Override

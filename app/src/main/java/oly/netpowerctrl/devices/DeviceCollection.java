@@ -13,9 +13,8 @@ import java.util.List;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -24,7 +23,7 @@ import oly.netpowerctrl.utils.JSONHelper;
  * Contains DeviceInfos. Used for NFC and backup transfers
  */
 public class DeviceCollection {
-    private final WeakHashMap<DeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<>();
+    private final WeakHashMap<onConfiguredDeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<>();
     public List<Device> devices = new ArrayList<>();
     private IDevicesSave storage;
 
@@ -102,18 +101,18 @@ public class DeviceCollection {
     }
 
     @SuppressWarnings("unused")
-    public void registerDeviceObserver(DeviceUpdate o) {
+    public void registerDeviceObserver(onConfiguredDeviceUpdate o) {
         observersConfiguredDevice.put(o, true);
     }
 
     @SuppressWarnings("unused")
-    public void unregisterDeviceObserver(DeviceUpdate o) {
+    public void unregisterDeviceObserver(onConfiguredDeviceUpdate o) {
         observersConfiguredDevice.remove(o);
     }
 
     void notifyDeviceObservers(Device di, boolean willBeRemoved) {
-        for (DeviceUpdate o : observersConfiguredDevice.keySet())
-            o.onDeviceUpdated(di, willBeRemoved);
+        for (onConfiguredDeviceUpdate o : observersConfiguredDevice.keySet())
+            o.onConfiguredDeviceUpdated(di, willBeRemoved);
     }
 
     /**
@@ -184,12 +183,11 @@ public class DeviceCollection {
         save();
     }
 
-    public void updateNotReachable(Device device) {
+    public void updateNotReachable(Context context, Device device) {
         notifyDeviceObservers(device, false);
 
-        if (SharedPrefs.notifyDeviceNotReachable()) {
+        if (SharedPrefs.getInstance().notifyDeviceNotReachable()) {
             long current_time = System.currentTimeMillis();
-            Context context = NetpowerctrlApplication.instance;
             Toast.makeText(context,
                     context.getString(R.string.error_setting_outlet, device.DeviceName,
                             (int) ((current_time - device.getUpdatedTime()) / 1000)),
@@ -207,6 +205,10 @@ public class DeviceCollection {
      * return that {@link oly.netpowerctrl.devices.Device}, null otherwise.
      */
     public Device update(Device newValues_device) {
+        // If a device has now unique id, we do not have to care
+        if (newValues_device.UniqueDeviceID == null)
+            return null;
+
         for (Device existing_device : devices) {
             if (!newValues_device.equalsByUniqueID(existing_device))
                 continue;

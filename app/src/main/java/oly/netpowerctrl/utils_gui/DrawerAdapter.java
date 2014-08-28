@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 
@@ -43,7 +43,7 @@ public class DrawerAdapter extends BaseAdapter implements SceneCollection.IScene
             return;
         ++startPosition; // Add 1, otherwise we point to the item before the first scene item
 
-        SceneCollection g = NetpowerctrlApplication.getDataController().sceneCollection;
+        SceneCollection g = RuntimeDataController.getDataController().sceneCollection;
         int maxLength = 0;
         for (Scene scene : g.scenes) {
             if (scene.isFavourite())
@@ -68,7 +68,7 @@ public class DrawerAdapter extends BaseAdapter implements SceneCollection.IScene
                 item.clickHandler = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        NetpowerctrlApplication.getDataController().execute(scene, null);
+                        RuntimeDataController.getDataController().execute(scene, null);
                     }
                 };
                 mItems.add(startPosition + counter++, item);
@@ -87,7 +87,7 @@ public class DrawerAdapter extends BaseAdapter implements SceneCollection.IScene
                 item.clickHandler = new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        NetpowerctrlApplication.getDataController().execute(scene, null);
+                        RuntimeDataController.getDataController().execute(scene, null);
                     }
                 };
             }
@@ -135,7 +135,7 @@ public class DrawerAdapter extends BaseAdapter implements SceneCollection.IScene
 
     public void usePositionForScenes() {
         scenes_position = mItems.get(mItems.size() - 1).uuid;
-        NetpowerctrlApplication.getDataController().sceneCollection.registerObserver(this);
+        RuntimeDataController.getDataController().sceneCollection.registerObserver(this);
         scenesUpdated(true);
     }
 

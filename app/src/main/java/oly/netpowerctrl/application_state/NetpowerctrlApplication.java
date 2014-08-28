@@ -1,10 +1,8 @@
 package oly.netpowerctrl.application_state;
 
 import android.app.Application;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
@@ -12,7 +10,6 @@ import org.acra.annotation.ReportsCrashes;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.scenes.SceneCollection;
 
 /**
  * Application:
@@ -23,7 +20,7 @@ import oly.netpowerctrl.scenes.SceneCollection;
 //        mode = ReportingInteractionMode.TOAST,
 //        mailTo = "david.graeff@web.de",
 //        forceCloseDialogAfterToast = false, // optional, default false
-//        additionalSharedPreferences = {SharedPrefs.PREF_WIDGET_BASENAME},
+//        additionalSharedPreferences = {SharedPrefs.getInstance().PREF_WIDGET_BASENAME},
 //        resToastText = R.string.crash_toast_text)
 
 @ReportsCrashes(formUri = "http://www.bugsense.com/api/acra?api_key=11178d09",
@@ -40,31 +37,23 @@ import oly.netpowerctrl.scenes.SceneCollection;
 //        mode = ReportingInteractionMode.TOAST,
 //        resToastText = R.string.crash_toast_text)
 public class NetpowerctrlApplication extends Application {
-    public static NetpowerctrlApplication instance;
-    private SceneCollection.IScenesUpdated scenesUpdated = new SceneCollection.IScenesUpdated() {
-        @Override
-        public void scenesUpdated(boolean addedOrRemoved) {
-            StatusNotification.update(NetpowerctrlApplication.instance);
-        }
-    };
-    protected static RuntimeDataController dataController = null;
+    static NetpowerctrlApplication instance;
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
-    SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener =
-            new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-//                    Log.w("changed", s);
-                    if (s.equals(SharedPrefs.PREF_show_persistent_notification))
-                        StatusNotification.update(NetpowerctrlApplication.this);
-                }
-            };
 
-    static public RuntimeDataController getDataController() {
-        return dataController;
+    public NetpowerctrlApplication() {
+        NetpowerctrlApplication.instance = this;
     }
 
     public static Handler getMainThreadHandler() {
         return instance.mainThreadHandler;
+    }
+
+    public static java.lang.String getAppString(int resId) {
+        return instance.getString(resId);
+    }
+
+    public static java.lang.String getAppString(int resId, java.lang.Object... formatArgs) {
+        return instance.getString(resId, formatArgs);
     }
 
     /**
@@ -76,16 +65,7 @@ public class NetpowerctrlApplication extends Application {
         super.onCreate();
         ACRA.init(this);
         //BugSenseHandler.initAndStartSession(MyActivity.this, "11178d09");
-        instance = this;
         new SharedPrefs(this); // init shared preferences singleton
-        dataController = new RuntimeDataController();
-        LoadStoreData loadStoreData = new LoadStoreData();
-        dataController.setLoadStoreProvider(loadStoreData);
-        dataController.loadData(false);
-        // show statusBar notification and update each time after changing scenes
-        StatusNotification.update(this);
-        dataController.sceneCollection.registerObserver(scenesUpdated);
-
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(preferenceChangeListener);
     }
+
 }

@@ -2,18 +2,23 @@ package oly.netpowerctrl.device_ports;
 
 import java.lang.ref.WeakReference;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.network.DeviceUpdate;
+import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
 
 /**
  * Created by david on 07.07.14.
  */
-public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdate {
+public class DevicePortSourceConfigured implements DevicePortSource, onConfiguredDeviceUpdate {
     final static String TAG = "DevicePortSourceConfigured";
     private WeakReference<DevicePortsBaseAdapter> adapterWeakReference;
     private boolean automaticUpdatesEnabled = false;
     private boolean hideNotReachable = false;
+    private onChange onChangeListener = null;
+
+    public void setOnChangeListener(onChange onChangeListener) {
+        this.onChangeListener = onChangeListener;
+    }
 
     public boolean isHideNotReachable() {
         return hideNotReachable;
@@ -36,7 +41,7 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
 
         adapter.markAllRemoved();
 
-        for (Device device : NetpowerctrlApplication.getDataController().deviceCollection.devices) {
+        for (Device device : RuntimeDataController.getDataController().deviceCollection.devices) {
             if (hideNotReachable && device.getFirstReachableConnection() == null)
                 continue;
             adapter.addAll(device, false);
@@ -45,15 +50,17 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
         adapter.removeAllMarked(true);
 
         adapter.notifyDataSetChanged();
+        if (onChangeListener != null)
+            onChangeListener.devicePortSourceChanged();
     }
 
     @Override
     public void setAutomaticUpdate(boolean enabled) {
         automaticUpdatesEnabled = enabled;
         if (!enabled) {
-            NetpowerctrlApplication.getDataController().deviceCollection.unregisterDeviceObserver(this);
+            RuntimeDataController.getDataController().deviceCollection.unregisterDeviceObserver(this);
         } else {
-            NetpowerctrlApplication.getDataController().deviceCollection.registerDeviceObserver(this);
+            RuntimeDataController.getDataController().deviceCollection.registerDeviceObserver(this);
         }
     }
 
@@ -78,7 +85,7 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
     }
 
     @Override
-    public void onDeviceUpdated(Device device, boolean willBeRemoved) {
+    public void onConfiguredDeviceUpdated(Device device, boolean willBeRemoved) {
         if (adapterWeakReference == null || device == null)
             return;
 
@@ -95,6 +102,12 @@ public class DevicePortSourceConfigured implements DevicePortSource, DeviceUpdat
         }
 
         adapter.notifyDataSetChanged();
+        if (onChangeListener != null)
+            onChangeListener.devicePortSourceChanged();
+    }
+
+    public interface onChange {
+        void devicePortSourceChanged();
     }
 
 }

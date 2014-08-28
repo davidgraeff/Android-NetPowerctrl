@@ -1,7 +1,6 @@
 package oly.netpowerctrl.backup.drive;
 
 
-import android.content.Context;
 import android.os.AsyncTask;
 
 import com.google.android.gms.cast.CastStatusCodes;
@@ -33,7 +32,7 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
     @Override
     protected void onPreExecute() {
         if (observer != null)
-            observer.showProgress(true, NetpowerctrlApplication.instance.getString(R.string.gDrive_refreshing_backup_list));
+            observer.showProgress(true, NetpowerctrlApplication.getAppString(R.string.gDrive_refreshing_backup_list));
     }
 
     @Override
@@ -44,10 +43,9 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
 
     @Override
     protected MetadataBuffer doInBackground(Void... params) {
-        Context context = NetpowerctrlApplication.instance;
         // Check connection
         if (!mClient.isConnected()) {
-            errorString = context.getString(R.string.gDrive_error_lost_connection);
+            errorString = NetpowerctrlApplication.getAppString(R.string.gDrive_error_lost_connection);
             return null;
         }
 
@@ -57,9 +55,9 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
             resultRequestSync = Drive.DriveApi.requestSync(mClient).await(5, TimeUnit.SECONDS);
             if (!resultRequestSync.getStatus().isSuccess()) {
                 if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
-                    errorString = context.getString(R.string.gDrive_error_timeout);
+                    errorString = NetpowerctrlApplication.getAppString(R.string.gDrive_error_timeout);
                 } else
-                    errorString = context.getString(R.string.gDrive_error_retrieve_files,
+                    errorString = NetpowerctrlApplication.getAppString(R.string.gDrive_error_retrieve_files,
                             resultRequestSync.getStatus().toString());
                 // We failed, stop the task and return.
                 return null;
@@ -72,9 +70,9 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
             DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await(5, TimeUnit.SECONDS);
             if (!result.getStatus().isSuccess()) {
                 if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
-                    errorString = context.getString(R.string.gDrive_error_timeout);
+                    errorString = NetpowerctrlApplication.getAppString(R.string.gDrive_error_timeout);
                 } else
-                    errorString = context.getString(R.string.gDrive_error_retrieve_files, result.getStatus().toString());
+                    errorString = NetpowerctrlApplication.getAppString(R.string.gDrive_error_retrieve_files, result.getStatus().toString());
                 // We failed, stop the task and return.
                 return null;
             }
@@ -89,7 +87,6 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
 
     @Override
     protected void onPostExecute(MetadataBuffer metadataBuffer) {
-        Context context = NetpowerctrlApplication.instance;
         if (metadataBuffer == null) {
             if (observer != null)
                 observer.showProgress(false, errorString);
@@ -100,6 +97,6 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
         GDriveBackupsAdapter.append(metadataBuffer);
 
         if (observer != null)
-            observer.showProgress(false, context.getString(R.string.gDriveConnected));
+            observer.showProgress(false, NetpowerctrlApplication.getAppString(R.string.gDriveConnected));
     }
 }
