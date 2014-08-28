@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
@@ -136,7 +136,7 @@ public class SceneCollection implements SortCriteriaInterface {
     }
 
     public void executeScene(int position) {
-        NetpowerctrlApplication.getDataController().execute(getScene(position), null);
+        RuntimeDataController.getDataController().execute(getScene(position), null);
     }
 
     public void add(Scene data) {

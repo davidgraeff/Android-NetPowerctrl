@@ -1,5 +1,7 @@
 package oly.netpowerctrl.application_state;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -7,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_ports.DevicePort;
@@ -19,7 +20,6 @@ import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceObserverBase;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.DeviceUpdate;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
@@ -35,22 +35,37 @@ import oly.netpowerctrl.utils_gui.ShowToast;
  * go into this class. At the moment those are: execute, rename, countReachable, countNetworkDevices.
  */
 public class RuntimeDataController {
+    public static final DataQueryCompletedObserver observersDataQueryCompleted = new DataQueryCompletedObserver();
+    public static final DataLoadedObserver observersOnDataLoaded = new DataLoadedObserver();
+    public static final NewDeviceObserver observersNew = new NewDeviceObserver();
+    private static RuntimeDataController dataController = null;
     public final List<Device> newDevices = new ArrayList<>();
     final public DeviceCollection deviceCollection = new DeviceCollection();
     final public GroupCollection groupCollection = new GroupCollection();
     final public SceneCollection sceneCollection = new SceneCollection();
     final public TimerController timerController = new TimerController();
-    private final WeakHashMap<OnDataQueryCompletedHandler, Boolean> observersDataQueryCompleted = new WeakHashMap<>();
-    private final WeakHashMap<OnDataLoadedHandler, Boolean> observersOnDataLoaded = new WeakHashMap<>();
-    private final WeakHashMap<DeviceUpdate, Boolean> observersNew = new WeakHashMap<>();
     private final List<DeviceObserverBase> updateDeviceStateList =
             Collections.synchronizedList(new ArrayList<DeviceObserverBase>());
     private LoadStoreData loadStoreData;
-    private boolean initialDataQueryCompleted = false;
-    private boolean initialDataLoaded = false;
 
-    public void setLoadStoreProvider(LoadStoreData loadStoreData) {
-        this.loadStoreData = loadStoreData;
+    public static RuntimeDataController createRuntimeDataController(LoadStoreData loadStoreData) {
+        dataController = new RuntimeDataController();
+        dataController.loadStoreData = loadStoreData;
+        if (dataController.loadStoreData != null)
+            dataController.loadData(false);
+        return dataController;
+    }
+
+    static public RuntimeDataController getDataController() {
+        if (dataController == null) {
+            createRuntimeDataController(new LoadStoreData(NetpowerctrlApplication.instance));
+        }
+        return dataController;
+    }
+
+    public void finish() {
+        loadStoreData = null;
+        dataController = null;
     }
 
     /**
@@ -67,9 +82,9 @@ public class RuntimeDataController {
                 loadStoreData.read(deviceCollection);
                 loadStoreData.read(timerController);
                 loadStoreData.markVersion();
-                initialDataLoaded = true;
+                observersOnDataLoaded.dataLoaded = true;
                 if (notifyObservers)
-                    notifyStateReloaded();
+                    observersOnDataLoaded.onDataLoaded();
             }
         };
         t.start();
@@ -78,7 +93,7 @@ public class RuntimeDataController {
     //! get a list of all send ports of all configured devices plus the default send port
     public Set<Integer> getAllSendPorts() {
         HashSet<Integer> ports = new HashSet<>();
-        ports.add(SharedPrefs.getDefaultSendPort());
+        ports.add(SharedPrefs.getInstance().getDefaultSendPort());
 
         for (Device di : deviceCollection.devices)
             for (DeviceConnection ci : di.DeviceConnections)
@@ -91,7 +106,7 @@ public class RuntimeDataController {
     //! get a list of all receive ports of all configured devices plus the default receive port
     public Set<Integer> getAllReceivePorts() {
         HashSet<Integer> ports = new HashSet<>();
-        ports.add(SharedPrefs.getDefaultReceivePort());
+        ports.add(SharedPrefs.getInstance().getDefaultReceivePort());
 
         for (Device di : deviceCollection.devices)
             for (DeviceConnection ci : di.DeviceConnections)
@@ -100,72 +115,6 @@ public class RuntimeDataController {
 
         return ports;
     }
-
-    /**
-     * @param o The callback object
-     *          If the initial data query already finished, you will be
-     *          notified immediately. Depending on the result of the
-     *          callback method your object will either be registered
-     *          or not.
-     */
-    public void registerDataQueryCompleted(OnDataQueryCompletedHandler o) {
-        boolean register = true;
-        if (initialDataQueryCompleted) {
-            // If the object return false we do not register it for further changes.
-            register = o.onDataQueryFinished();
-        }
-
-        if (register)
-            observersDataQueryCompleted.put(o, true);
-    }
-
-    public void registerOnDataLoaded(OnDataLoadedHandler o) {
-        // Only add to observer list, if the handler callback return true
-        // or the data hasn't been loaded so far.
-        if (o.onDataLoaded() || !initialDataLoaded)
-            observersOnDataLoaded.put(o, true);
-    }
-
-    @SuppressWarnings("unused")
-    public void unregisterDataQueryCompleted(OnDataQueryCompletedHandler o) {
-        observersDataQueryCompleted.remove(o);
-    }
-
-    @SuppressWarnings("unused")
-    public void unregisterOnDataLoaded(OnDataLoadedHandler o) {
-        observersOnDataLoaded.remove(o);
-    }
-
-    public void notifyStateReloaded() {
-        Iterator<OnDataLoadedHandler> i = observersOnDataLoaded.keySet().iterator();
-        while (i.hasNext())
-            if (!i.next().onDataLoaded())
-                i.remove();
-    }
-
-    void notifyStateQueryFinished() {
-        initialDataQueryCompleted = true;
-        Iterator<OnDataQueryCompletedHandler> i = observersDataQueryCompleted.keySet().iterator();
-        while (i.hasNext())
-            if (!i.next().onDataQueryFinished())
-                i.remove();
-    }
-
-    @SuppressWarnings("unused")
-    public void registerNewDeviceObserver(DeviceUpdate o) {
-        observersNew.put(o, true);
-    }
-
-    @SuppressWarnings("unused")
-    public void unregisterNewDeviceObserver(DeviceUpdate o) {
-        observersNew.remove(o);
-    }
-
-    private void notifyNewDeviceObservers(Device di, boolean removedFromNew) {
-        for (DeviceUpdate o : observersNew.keySet())
-            o.onDeviceUpdated(di, removedFromNew);
-    }
-
 
     public void removeUpdateDeviceState(DeviceObserverBase o) {
         synchronized (updateDeviceStateList) {
@@ -202,10 +151,10 @@ public class RuntimeDataController {
 
     public void clearNewDevices() {
         newDevices.clear();
-        notifyNewDeviceObservers(null, true);
+        observersNew.onNewDevice(null);
     }
 
-    public void addToConfiguredDevices(Device device) {
+    public void addToConfiguredDevices(Context context, Device device) {
         if (deviceCollection.add(device)) {
             // An existing device has been replaced. Do nothing else here.
             return;
@@ -218,14 +167,14 @@ public class RuntimeDataController {
         for (int i = 0; i < newDevices.size(); ++i) {
             if (newDevices.get(i).equalsByUniqueID(device)) {
                 newDevices.remove(i);
-                notifyNewDeviceObservers(device, true);
+                observersNew.onNewDevice(device);
                 break;
             }
         }
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
         if (device.getFirstReachableConnection() == null)
-            new DeviceQuery(null, device);
+            new DeviceQuery(context, null, device);
     }
 
     /**
@@ -267,10 +216,10 @@ public class RuntimeDataController {
         }
         // No: Add device to new_device list
         newDevices.add(device_info);
-        notifyNewDeviceObservers(device_info, false);
+        observersNew.onNewDevice(device_info);
     }
 
-    public void onDeviceErrorByName(String name, String errMessage) {
+    public void onDeviceErrorByName(Context context, String name, String errMessage) {
         // notify observers who are using the DeviceQuery class
         Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
         while (it.hasNext()) {
@@ -280,8 +229,8 @@ public class RuntimeDataController {
         }
 
         // error packet received
-        String error = NetpowerctrlApplication.instance.getString(R.string.error_packet_received) + ": " + errMessage;
-        ShowToast.FromOtherThread(NetpowerctrlApplication.instance, error);
+        String error = context.getString(R.string.error_packet_received) + ": " + errMessage;
+        ShowToast.FromOtherThread(context, error);
     }
 
     public int getReachableConfiguredDevices() {
@@ -328,7 +277,7 @@ public class RuntimeDataController {
         if (remote != null) {
             remote.rename(port, new_name, callback);
         } else if (callback != null)
-            callback.asyncRunnerResult(port, false, NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+            callback.asyncRunnerResult(port, false, NetpowerctrlApplication.getAppString(R.string.error_plugin_not_installed));
     }
 
     /**
@@ -344,7 +293,7 @@ public class RuntimeDataController {
         int master_command = scene.getMasterCommand();
 
         for (Scene.SceneItem item : scene.sceneItems) {
-            DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(item.uuid);
+            DevicePort p = getDataController().findDevicePort(item.uuid);
             if (p == null)
                 continue;
 
@@ -391,7 +340,7 @@ public class RuntimeDataController {
                     bValue = port.current_value <= 0;
 
                 for (UUID slave_uuid : slaves) {
-                    DevicePort p = NetpowerctrlApplication.getDataController().findDevicePort(slave_uuid);
+                    DevicePort p = getDataController().findDevicePort(slave_uuid);
                     if (p != null)
                         execute(p, bValue ? DevicePort.ON : DevicePort.OFF, null);
                 }
@@ -404,11 +353,6 @@ public class RuntimeDataController {
 
         callback.onExecutionFinished(1);
     }
-
-    public boolean isInitialDataQueryCompleted() {
-        return initialDataQueryCompleted;
-    }
-
 
     public int countNetworkDevices() {
         int i = 0;

@@ -5,10 +5,10 @@ import oly.netpowerctrl.utils.Observer;
 /**
  * Created by david on 19.08.14.
  */
-public class RefreshStartedStoppedObserver extends Observer<RefreshStartedStopped> implements RefreshStartedStopped {
+public class RefreshStartedStoppedObserver extends Observer<onRefreshStartedStopped> implements onRefreshStartedStopped {
     @Override
     public void onRefreshStateChanged(boolean isRefreshing) {
-        for (RefreshStartedStopped listener : listeners) {
+        for (onRefreshStartedStopped listener : listeners) {
             listener.onRefreshStateChanged(isRefreshing);
         }
     }

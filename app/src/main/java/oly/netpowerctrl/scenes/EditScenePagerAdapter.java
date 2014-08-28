@@ -2,24 +2,26 @@ package oly.netpowerctrl.scenes;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.support.v13.app.FragmentPagerAdapter;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
 /**
  * This adapter is for the FragmentPager to show two OutletsFragments
  * (Available actions, scene included actions)
  */
 class EditScenePagerAdapter extends FragmentPagerAdapter {
-    private final EditSceneFragment[] frag;
+    private EditSceneFragment[] frag;
+    private String[] texts;
 
-    public EditScenePagerAdapter(FragmentManager fm) {
+    public EditScenePagerAdapter(Context context, FragmentManager fm) {
         super(fm);
 
         EditSceneFragment f1 = new EditSceneFragment();
         EditSceneFragment f2 = new EditSceneFragment();
         frag = new EditSceneFragment[]{f1, f2};
+        texts = new String[]{context.getString(R.string.scene_create_added), context.getString(R.string.scene_create_available)};
     }
 
     @Override
@@ -34,13 +36,7 @@ class EditScenePagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        switch (position) {
-            case 0:
-                return NetpowerctrlApplication.instance.getString(R.string.scene_create_added);
-            case 1:
-                return NetpowerctrlApplication.instance.getString(R.string.scene_create_available);
-        }
-        return "";
+        return texts[position];
     }
 
     public EditSceneFragment getFragmentIncluded() {

@@ -52,14 +52,8 @@ public class Device implements Comparable<Device> {
     private boolean hasChanged = false;
     private PluginInterface pluginInterface = null;
 
-    private Device(String pluginID) {
+    public Device(String pluginID) {
         this.pluginID = pluginID;
-    }
-
-    public static Device createNewDevice(String pluginID) {
-        Device di = new Device(pluginID);
-        di.DeviceName = NetpowerctrlApplication.instance.getString(R.string.default_device_name);
-        return di;
     }
 
     public static Device fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {
@@ -243,7 +237,7 @@ public class Device implements Comparable<Device> {
             // are not of any use if we have no known plugin to execute actions on.
             if (pluginInterface == null) {
                 if (other.pluginInterface == null) {
-                    setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+                    setNotReachableAll(NetpowerctrlApplication.getAppString(R.string.error_plugin_not_installed));
                     return true;
                 }
                 // Update plugin object reference
@@ -501,7 +495,7 @@ public class Device implements Comparable<Device> {
 
     public String getNotReachableReasons() {
         if (!enabled)
-            return NetpowerctrlApplication.instance.getString(R.string.error_device_disabled);
+            return NetpowerctrlApplication.getAppString(R.string.error_device_disabled);
         String f = "";
         for (DeviceConnection connection : DeviceConnections) {
             String a = connection.getNotReachableReason();

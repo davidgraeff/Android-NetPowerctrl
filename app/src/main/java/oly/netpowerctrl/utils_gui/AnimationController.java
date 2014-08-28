@@ -2,6 +2,7 @@ package oly.netpowerctrl.utils_gui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
@@ -18,24 +19,25 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 
 /**
  * Created by david on 08.07.14.
  */
 public class AnimationController {
     private static final int MOVE_DURATION = 150;
+    final private Animation highlightAnimation;
+    final private Animation updateAnimation;
     private HashMap<Long, Integer> mRemoveItemIdTopMap = new HashMap<>();
     private BaseAdapter adapter;
     private AbsListView listView;
-
-    private Animation highlightAnimation = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
-            R.anim.button_zoom);
-    private Animation updateAnimation = AnimationUtils.loadAnimation(NetpowerctrlApplication.instance,
-            R.anim.button_zoom);
     private Map<Long, Integer> mHighlightItemIdTopMap = new TreeMap<>();
     private Set<Long> mSmallHighlightItemIdTopMap = new TreeSet<>();
     private boolean firstAnimation = true;
+
+    public AnimationController(Context context) {
+        highlightAnimation = AnimationUtils.loadAnimation(context, R.anim.button_zoom);
+        updateAnimation = AnimationUtils.loadAnimation(context, R.anim.button_zoom);
+    }
 
     public static void animateViewInOut(final View view, final boolean in, final boolean makeGone) {
         float c = view.getAlpha();

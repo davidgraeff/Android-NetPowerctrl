@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.widget.ArrayAdapter;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.groups.GroupCollection;
 
 /**
@@ -25,7 +25,7 @@ public class UpdateBarWithGroups implements GroupCollection.IGroupsUpdated, Acti
         adapter = new ArrayAdapter<>(actionBar.getThemedContext(), android.R.layout.simple_spinner_dropdown_item);
         actionBar.setListNavigationCallbacks(adapter, this);
         navigationController.registerOpenStateChanged(this);
-        NetpowerctrlApplication.getDataController().groupCollection.registerObserver(this);
+        RuntimeDataController.getDataController().groupCollection.registerObserver(this);
     }
 
     public void showNavigation() {
@@ -45,7 +45,7 @@ public class UpdateBarWithGroups implements GroupCollection.IGroupsUpdated, Acti
 
     public void finishNavigation() {
         hideNavigation();
-        NetpowerctrlApplication.getDataController().groupCollection.unregisterObserver(this);
+        RuntimeDataController.getDataController().groupCollection.unregisterObserver(this);
         if (navigationController != null)
             navigationController.unregisterOpenStateChanged(this);
         actionBar = null;
@@ -57,11 +57,11 @@ public class UpdateBarWithGroups implements GroupCollection.IGroupsUpdated, Acti
     @Override
     public void groupsUpdated(boolean addedOrRemoved) {
         if (actionBar == null) {
-            NetpowerctrlApplication.getDataController().groupCollection.unregisterObserver(this);
+            RuntimeDataController.getDataController().groupCollection.unregisterObserver(this);
             return;
         }
 
-        GroupCollection g = NetpowerctrlApplication.getDataController().groupCollection;
+        GroupCollection g = RuntimeDataController.getDataController().groupCollection;
         if (g.length() == 0) {
             hideNavigation();
             return;
@@ -92,7 +92,7 @@ public class UpdateBarWithGroups implements GroupCollection.IGroupsUpdated, Acti
         }
         --i; // the first item is added manually and not part of groupCollection
 
-        GroupCollection g = NetpowerctrlApplication.getDataController().groupCollection;
+        GroupCollection g = RuntimeDataController.getDataController().groupCollection;
         GroupCollection.GroupItem groupItem = g.groups.get(i);
 
         Bundle extra = new Bundle();

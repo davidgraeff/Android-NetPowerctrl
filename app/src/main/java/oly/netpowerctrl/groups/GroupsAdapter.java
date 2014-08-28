@@ -9,15 +9,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.utils.Icons;
 
 public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroupsUpdated {
     private final LayoutInflater inflater;
     private final GroupCollection groupCollection;
+    private final Context context;
 
     public GroupsAdapter(Context context, GroupCollection data) {
         inflater = LayoutInflater.from(context);
+        this.context = context;
         groupCollection = data;
         groupCollection.registerObserver(this);
     }
@@ -46,6 +47,7 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
         return groupCollection.groups.get(position).id;
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
@@ -60,7 +62,7 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
 
         ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
         if (data.bitmap == null) {
-            data.bitmap = Icons.loadIcon(NetpowerctrlApplication.instance, data.uuid,
+            data.bitmap = Icons.loadIcon(context, data.uuid,
                     Icons.IconType.GroupIcon, Icons.IconState.StateUnknown, R.drawable.stateon);
         }
 

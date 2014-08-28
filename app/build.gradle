@@ -4,22 +4,20 @@ android {
     compileSdkVersion 20
     buildToolsVersion '20'
 
-    productFlavors {
-        //noinspection GroovyMissingReturnStatement
-        vanilla {
-
-        }
-
-        old23 {
-            minSdkVersion 8
-        }
-    }
+//    productFlavors {
+//        //noinspection GroovyMissingReturnStatement
+//        vanilla {
+//
+//        }
+//    }
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 20
-        versionCode 81
-        versionName "5.7"
+        versionCode 83
+        versionName "5.7.2"
+        applicationId "oly.netpowerctrl"
+        testApplicationId "oly.netpowerctrl.tests"
     }
 
     lintOptions {
@@ -44,6 +42,7 @@ android {
             runProguard false
         }
     }
+    sourceSets { main { java.srcDirs = ['src/main/java', 'src/tests/java'] } }
 }
 
 dependencies {
@@ -53,4 +52,5 @@ dependencies {
     compile 'ch.acra:acra:4.5.0'
     compile 'com.android.support:support-v13:20.0.0'
     compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.9'
+    androidTestCompile 'junit:junit:4.+'
 }

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -67,8 +67,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         if (source != null) {
             source.setTargetAdapter(this);
         }
-        drawShadows = SharedPrefs.isBackground();
-        SharedPrefs.getInstance().registerShowBackground(this);
+        drawShadows = SharedPrefs.getInstance().isBackground();
+        SharedPrefs.getInstance().getInstance().registerShowBackground(this);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     public void setShowHidden(boolean b) {
         mShowHidden = b;
-        SharedPrefs.setShowHiddenOutlets(mShowHidden);
+        SharedPrefs.getInstance().setShowHiddenOutlets(mShowHidden);
         if (mSource != null)
             mSource.updateNow();
     }
@@ -172,7 +172,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      */
     public void loadItemsOfScene(Scene scene) {
         for (Scene.SceneItem sceneItem : scene.sceneItems) {
-            DevicePort port = NetpowerctrlApplication.getDataController().findDevicePort(sceneItem.uuid);
+            DevicePort port = RuntimeDataController.getDataController().findDevicePort(sceneItem.uuid);
             if (port == null) {
                 continue;
             }
@@ -489,7 +489,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     }
 
     private int addHeaderIfNotExists(UUID group, DevicePort oi) {
-        GroupCollection.GroupItem groupItem = NetpowerctrlApplication.getDataController().groupCollection.get(group);
+        GroupCollection.GroupItem groupItem = RuntimeDataController.getDataController().groupCollection.get(group);
         if (groupItem == null) {
             // Group does not exist. Remove it from oi
             oi.groups.remove(group);

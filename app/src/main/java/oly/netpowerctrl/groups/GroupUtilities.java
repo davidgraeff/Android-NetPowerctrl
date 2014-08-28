@@ -9,7 +9,7 @@ import android.widget.Toast;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
@@ -17,7 +17,7 @@ import oly.netpowerctrl.device_ports.DevicePort;
  */
 public class GroupUtilities {
     public static void createGroup(final Context context, final DevicePort port, final groupsChangedInterface callback) {
-        final GroupCollection groupCollection = NetpowerctrlApplication.getDataController().groupCollection;
+        final GroupCollection groupCollection = RuntimeDataController.getDataController().groupCollection;
 
         // No groups? Ask the user to create one
         if (groupCollection.length() == 0) {
@@ -55,7 +55,7 @@ public class GroupUtilities {
                             port.groups.add(groupCollection.groups.get(i).uuid);
                             ++counter;
                         }
-                        NetpowerctrlApplication.getDataController().deviceCollection.save();
+                        RuntimeDataController.getDataController().deviceCollection.save();
                         Toast.makeText(context, context.getString(R.string.outlet_added_to_groups, counter), Toast.LENGTH_SHORT).show();
                         if (callback != null)
                             callback.onGroupsChanged(port);
@@ -86,9 +86,9 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                UUID group_uuid = NetpowerctrlApplication.getDataController().groupCollection.add(name);
+                UUID group_uuid = RuntimeDataController.getDataController().groupCollection.add(name);
                 port.addToGroup(group_uuid);
-                NetpowerctrlApplication.getDataController().deviceCollection.save();
+                RuntimeDataController.getDataController().deviceCollection.save();
                 if (callback != null)
                     callback.onGroupsChanged(port);
             }
@@ -99,7 +99,7 @@ public class GroupUtilities {
     }
 
     public static void renameGroup(Context context, UUID groupFilter) {
-        final GroupCollection.GroupItem groupItem = NetpowerctrlApplication.getDataController().groupCollection.get(groupFilter);
+        final GroupCollection.GroupItem groupItem = RuntimeDataController.getDataController().groupCollection.get(groupFilter);
         if (groupItem == null)
             return;
 
@@ -117,7 +117,7 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                NetpowerctrlApplication.getDataController().groupCollection.edit(groupItem.uuid, name);
+                RuntimeDataController.getDataController().groupCollection.edit(groupItem.uuid, name);
             }
         });
 

@@ -5,7 +5,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.MainActivity;
@@ -25,7 +27,7 @@ public class StatusNotification {
         if (mNotificationManager == null)
             return;
 
-        if (!SharedPrefs.isNotification()) {
+        if (!SharedPrefs.getInstance().isNotification()) {
 //            Log.w("r","remove");
             mNotificationManager.cancel(1);
             return;
@@ -44,7 +46,7 @@ public class StatusNotification {
                 .setOngoing(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            SceneCollection g = NetpowerctrlApplication.getDataController().sceneCollection;
+            SceneCollection g = RuntimeDataController.getDataController().sceneCollection;
             int maxLength = 0;
             for (Scene scene : g.scenes) {
                 if (!scene.isFavourite())
@@ -64,4 +66,21 @@ public class StatusNotification {
         mNotificationManager.notify(1, b.getNotification());
     }
 
+    public static void init(final Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context).registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+//                    Log.w("changed", s);
+                if (s.equals(SharedPrefs.getInstance().PREF_show_persistent_notification))
+                    StatusNotification.update(context);
+            }
+        });
+        RuntimeDataController.getDataController().sceneCollection.registerObserver(new SceneCollection.IScenesUpdated() {
+            @Override
+            public void scenesUpdated(boolean addedOrRemoved) {
+                StatusNotification.update(context);
+            }
+        });
+        StatusNotification.update(context);
+    }
 }

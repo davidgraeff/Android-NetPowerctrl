@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.IconDeferredLoadingThread;
 import oly.netpowerctrl.utils.Icons;
@@ -22,7 +22,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, DevicePortSource source,
                                      IconDeferredLoadingThread iconCache) {
         super(context, mListContextMenu, source, iconCache, true);
-        mShowHidden = SharedPrefs.getShowHiddenOutlets();
+        mShowHidden = SharedPrefs.getInstance().getShowHiddenOutlets();
         setLayoutRes(R.layout.list_icon_item);
         if (source != null)
             source.updateNow();
@@ -110,7 +110,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     // Called from the listView that uses this adapter
     public void handleClick(int position, long id) {
         DevicePortAdapterItem info = mItems.get(position);
-        NetpowerctrlApplication.getDataController().execute(info.port, DevicePort.TOGGLE, null);
+        RuntimeDataController.getDataController().execute(info.port, DevicePort.TOGGLE, null);
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
             a.addHighlight(id, R.id.text1);
@@ -125,7 +125,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         DevicePortAdapterItem info = mItems.get(position);
         info.port.current_value = value + info.port.min_value;
         info.command_value = info.port.current_value;
-        NetpowerctrlApplication.getDataController().execute(info.port, info.command_value, null);
+        RuntimeDataController.getDataController().execute(info.port, info.command_value, null);
     }
 
     @Override

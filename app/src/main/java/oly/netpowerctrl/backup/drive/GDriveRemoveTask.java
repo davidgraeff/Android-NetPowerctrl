@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Metadata;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 
 class GDriveRemoveTask extends AsyncTask<Void, String, Boolean> {
@@ -41,7 +40,7 @@ class GDriveRemoveTask extends AsyncTask<Void, String, Boolean> {
     @Override
     protected Boolean doInBackground(Void... params) {
 
-        RuntimeDataController c = NetpowerctrlApplication.getDataController();
+        RuntimeDataController c = RuntimeDataController.getDataController();
 
 //        DriveFile file = Drive.DriveApi.getFile(mClient, item.getDriveId());
 //        DriveFolder.DriveFolderResult result = file.trash(mClient).await();

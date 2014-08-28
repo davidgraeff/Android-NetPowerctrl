@@ -36,6 +36,7 @@ import java.lang.reflect.Field;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.StatusNotification;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.ActivityWithIconCache;
 import oly.netpowerctrl.utils.ChangeLogUtil;
@@ -79,7 +80,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         instance = this;
         super.onCreate(savedInstanceState);
         // Set theme, call super onCreate and set content view
-        if (SharedPrefs.isDarkTheme()) {
+        if (SharedPrefs.getInstance().isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
         } else {
             setTheme(R.style.Theme_CustomLightTheme);
@@ -111,8 +112,6 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                navigationController.createDrawer(MainActivity.this, NavigationController.RestorePositionEnum.RestoreLastSaved);
-
                 // NFC
                 NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(MainActivity.this);
                 if (mNfcAdapter != null) {
@@ -127,16 +126,24 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (SharedPrefs.showChangeLog()) {
+                if (SharedPrefs.getInstance().showChangeLog()) {
                     ChangeLogUtil.showChangeLog(MainActivity.this);
                 }
+
+                StatusNotification.init(getApplicationContext());
             }
         }, 150);
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        navigationController.createDrawer(MainActivity.this, NavigationController.RestorePositionEnum.RestoreLastSaved);
+    }
+
     private void assignContentView() {
         setContentView(R.layout.activity_main);
-        if (SharedPrefs.isBackground()) {
+        if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
             v.setBackgroundResource(R.drawable.bg);
         }
@@ -178,7 +185,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     @Override
     public void onResume() {
         NFC.checkIntentForNFC(this, getIntent());
-        NetpowerctrlService.useService(true, false);
+        NetpowerctrlService.useService(getApplicationContext(), true, false);
         super.onResume();
     }
 

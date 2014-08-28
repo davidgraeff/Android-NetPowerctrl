@@ -1,5 +1,6 @@
 package oly.netpowerctrl.anel;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.net.DatagramPacket;
@@ -13,7 +14,9 @@ import java.util.Set;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.network.UDPSending;
@@ -22,26 +25,30 @@ import oly.netpowerctrl.network.UDPSending;
  * A DeviceSend.Job that provide broadcast sending to anel devices.
  */
 public class AnelBroadcastSendJob implements UDPSending.Job {
-    private void sendPacket(UDPSending udpSending, InetAddress ip, int SendPort, byte[] message) {
+    private void sendPacket(Context context, UDPSending udpSending, InetAddress ip, int SendPort, byte[] message) {
         try {
             udpSending.datagramSocket.setBroadcast(true);
             udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
             //Log.w("AnelBroadcastSendJob",ip.getHostAddress());
         } catch (final SocketException e) {
             if (e.getMessage().contains("ENETUNREACH"))
-                UDPSending.onError(UDPSending.NETWORK_UNREACHABLE, ip.getHostAddress(), SendPort, e);
+                UDPSending.onError(context, UDPSending.NETWORK_UNREACHABLE, ip.getHostAddress(), SendPort, e);
             else {
-                UDPSending.onError(UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
+                UDPSending.onError(context, UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            UDPSending.onError(UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
+            UDPSending.onError(context, UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
         }
     }
 
     @Override
     public void process(UDPSending UDPSending) {
-        Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllSendPorts();
+        Context context = NetpowerctrlService.getService();
+        if (context == null)
+            return;
+
+        Set<Integer> ports = RuntimeDataController.getDataController().getAllSendPorts();
         boolean foundBroadcastAddresses = false;
 
         Enumeration list;
@@ -60,7 +67,7 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
                         InetAddress broadcast = address.getBroadcast();
                         if (broadcast == null) continue;
                         for (int port : ports)
-                            sendPacket(UDPSending, broadcast, port, "wer da?\r\n".getBytes());
+                            sendPacket(context, UDPSending, broadcast, port, "wer da?\r\n".getBytes());
                         foundBroadcastAddresses = true;
                     }
                 }
@@ -73,17 +80,17 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
         if (!foundBroadcastAddresses) {
             // Broadcast not allowed on this network. Show hint to user
 //                Toast.makeText(NetpowerctrlApplication.instance,
-//                        NetpowerctrlApplication.instance.getString(R.string.devices_no_new_on_network),
+//                        NetpowerctrlApplication.getAppString(R.string.devices_no_new_on_network),
 //                        Toast.LENGTH_SHORT).show();
 
             // Query all existing anel devices directly
 
-            List<Device> devices = NetpowerctrlApplication.getDataController().deviceCollection.devices;
+            List<Device> devices = RuntimeDataController.getDataController().deviceCollection.devices;
             for (Device device : devices) {
                 if (device.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
                     PluginInterface i = device.getPluginInterface();
                     if (i == null) {
-                        device.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_plugin_not_installed));
+                        device.setNotReachableAll(NetpowerctrlApplication.getAppString(R.string.error_plugin_not_installed));
                         continue;
                     }
                     for (DeviceConnection ci : device.DeviceConnections) {

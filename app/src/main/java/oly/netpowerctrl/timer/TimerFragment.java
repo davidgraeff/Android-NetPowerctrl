@@ -18,10 +18,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.application_state.ServiceReady;
+import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.application_state.onServiceReady;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
@@ -32,11 +32,11 @@ import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
 import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
-public class TimerFragment extends Fragment implements TimerController.IAlarmsUpdated, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, AsyncRunnerResult, OnRefreshListener, ServiceReady {
+public class TimerFragment extends Fragment implements TimerController.IAlarmsUpdated, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, AsyncRunnerResult, OnRefreshListener, onServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private PullToRefreshLayout mPullToRefreshLayout;
-    private AnimationController animationController = new AnimationController();
+    private AnimationController animationController;
 
 
     public TimerFragment() {
@@ -46,7 +46,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         if (service == null)
             return;
 
-        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        TimerController c = RuntimeDataController.getDataController().timerController;
         if (c.refresh(service))
             AnimationController.animateViewInOut(progressText, true, false);
     }
@@ -66,7 +66,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
     public void onPause() {
         NetpowerctrlService.observersServiceReady.unregister(this);
         AnimationController.animateViewInOut(progressText, false, false);
-        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        TimerController c = RuntimeDataController.getDataController().timerController;
         c.unregisterObserver(this);
         if (timerAdapter != null)
             timerAdapter.finish();
@@ -80,7 +80,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         final View view = inflater.inflate(R.layout.fragment_timer, container, false);
         progressText = (TextView) view.findViewById(R.id.progressText);
 
-        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        TimerController c = RuntimeDataController.getDataController().timerController;
         timerAdapter = new TimerAdapter(getActivity(), c);
         timerAdapter.start();
 
@@ -113,7 +113,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
         ///// END: For pull to refresh
 
         Button btnChangeToDevices = (Button) view.findViewById(R.id.btnChangeToDevices);
-        boolean hasDevices = NetpowerctrlApplication.getDataController().deviceCollection.hasDevices();
+        boolean hasDevices = RuntimeDataController.getDataController().deviceCollection.hasDevices();
 
         btnChangeToDevices.setVisibility(hasDevices ? View.GONE : View.VISIBLE);
         btnChangeToDevices.setOnClickListener(new View.OnClickListener() {
@@ -154,7 +154,7 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                TimerController c = NetpowerctrlApplication.getDataController().timerController;
+                                TimerController c = RuntimeDataController.getDataController().timerController;
                                 // Delete all alarms
                                 for (int i = 0; i < timerAdapter.getCount(); ++i)
                                     c.removeAlarm(timerAdapter.getAlarm(i), null);
@@ -177,14 +177,14 @@ public class TimerFragment extends Fragment implements TimerController.IAlarmsUp
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        animationController = new AnimationController(getActivity());
         setHasOptionsMenu(true);
     }
 
     @Override
     public boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress) {
         if (inProgress) {
-            TimerController c = NetpowerctrlApplication.getDataController().timerController;
+            TimerController c = RuntimeDataController.getDataController().timerController;
             progressText.setText(getString(R.string.alarm_receiving, c.countAllDeviceAlarms()));
             AnimationController.animateViewInOut(progressText, true, false);
         } else {

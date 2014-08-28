@@ -19,7 +19,7 @@ import java.net.Socket;
 import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.ServiceReady;
+import oly.netpowerctrl.application_state.onServiceReady;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -65,18 +65,17 @@ public class NeighbourDataReceiveService extends Service {
         });
     }
 
-    public static void start(NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication) {
+    public static void start(Context context, NeighbourDataSync.NeighbourDataCommunication neighbourDataCommunication) {
         if (neighbourDataCommunication != null)
             NeighbourDataReceiveService.neighbourDataCommunication = neighbourDataCommunication;
 
         if (service != null)
             return;
 
-        Context context = NetpowerctrlApplication.instance;
         Intent intent = new Intent(context, NeighbourDataReceiveService.class);
         context.startService(intent);
 
-        NetpowerctrlService.useService(false, false);
+        NetpowerctrlService.useService(context, false, false);
     }
 
     public static void stop() {
@@ -188,7 +187,7 @@ public class NeighbourDataReceiveService extends Service {
         boolean dataTransferred = false;
 
         // Data exchange
-        final RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        final RuntimeDataController d = RuntimeDataController.getDataController();
         Handler h = NetpowerctrlApplication.getMainThreadHandler();
         while (!client.isClosed()) {
             line = in.readLine();
@@ -292,7 +291,7 @@ public class NeighbourDataReceiveService extends Service {
                     line = in.readLine();
                     byte[] icon = Base64.decode(line.getBytes(), Base64.NO_WRAP | Base64.NO_PADDING);
                     ByteArrayInputStream b = new ByteArrayInputStream(icon);
-                    Icons.saveIcon(filename, iconType, state, b);
+                    Icons.saveIcon(this, filename, iconType, state, b);
                     dataTransferred = true;
                     break;
                 default:
@@ -314,7 +313,7 @@ public class NeighbourDataReceiveService extends Service {
             h.post(new Runnable() {
                 @Override
                 public void run() {
-                    NetpowerctrlService.observersServiceReady.register(new ServiceReady() {
+                    NetpowerctrlService.observersServiceReady.register(new onServiceReady() {
                         @Override
                         public boolean onServiceReady(NetpowerctrlService service) {
                             service.findDevices(false, null);

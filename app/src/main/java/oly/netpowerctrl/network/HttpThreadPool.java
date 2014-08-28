@@ -1,5 +1,6 @@
 package oly.netpowerctrl.network;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
@@ -17,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 
@@ -66,6 +67,10 @@ public class HttpThreadPool {
         return new Runnable() {
             @Override
             public void run() {
+                Context context = NetpowerctrlService.getService();
+                if (context == null)
+                    return;
+
                 URL url;
                 boolean success = false;
                 String result_message;
@@ -94,7 +99,7 @@ public class HttpThreadPool {
                             result_message = sb.toString();
                             break;
                         case 401:
-                            result_message = NetpowerctrlApplication.instance.getString(R.string.error_device_no_access);
+                            result_message = context.getString(R.string.error_device_no_access);
                             break;
                         default:
                             result_message = "code " + String.valueOf(con.getResponseCode());

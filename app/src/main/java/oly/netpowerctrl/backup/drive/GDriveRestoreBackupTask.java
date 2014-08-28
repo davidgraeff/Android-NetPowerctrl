@@ -1,6 +1,7 @@
 package oly.netpowerctrl.backup.drive;
 
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -18,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.utils.JSONHelper;
@@ -27,6 +27,7 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
     private final GoogleApiClient mClient;
     private final GDrive.GDriveConnectionState observer;
     private final DriveId driveId;
+    private final Context context;
     private String scenes;
     private String groups;
     private String devices;
@@ -36,9 +37,10 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
      * @param observer The message observer
      * @param driveId  The driveID of the folder with the backup
      */
-    public GDriveRestoreBackupTask(GoogleApiClient client,
+    public GDriveRestoreBackupTask(Context context, GoogleApiClient client,
                                    GDrive.GDriveConnectionState observer,
                                    DriveId driveId) {
+        this.context = context;
         mClient = client;
         this.observer = observer;
         this.driveId = driveId;
@@ -56,7 +58,7 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
             observer.showProgress(true, values[0]);
     }
 
-    void readRelativeDir(Icons.IconType iconType, Icons.IconState state, MetadataBuffer children) {
+    void readRelativeDir(Context context, Icons.IconType iconType, Icons.IconState state, MetadataBuffer children) {
         for (int i = 0; i < children.getCount(); ++i) {
             Metadata d = children.get(i);
             if (!d.isFolder()) {
@@ -67,13 +69,13 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
                     continue;
                 }
                 Contents r = contentsResult.getContents();
-                Icons.saveIcon(d.getTitle(), iconType, state, r.getInputStream());
+                Icons.saveIcon(context, d.getTitle(), iconType, state, r.getInputStream());
             }
         }
         children.close();
     }
 
-    void readIconsDir(MetadataBuffer children) {
+    void readIconsDir(Context context, MetadataBuffer children) {
         for (int i = 0; i < children.getCount(); ++i) {
             Metadata d = children.get(i);
             if (!d.isFolder())
@@ -89,7 +91,7 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
                         if (!resultIconsDir.getStatus().isSuccess()) {
                             continue;
                         }
-                        readRelativeDir(iconType, state, resultIconsDir.getMetadataBuffer());
+                        readRelativeDir(context, iconType, state, resultIconsDir.getMetadataBuffer());
                         found = true;
                         break;
                     }
@@ -103,6 +105,7 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
+
         // Create folder
         DriveFolder backupDir = Drive.DriveApi.getFolder(mClient, driveId);
         DriveApi.MetadataBufferResult result = backupDir.listChildren(mClient).await();
@@ -129,7 +132,7 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
                         // We failed, stop the task and return.
                         continue;
                     }
-                    readIconsDir(resultIconsDir.getMetadataBuffer());
+                    readIconsDir(context, resultIconsDir.getMetadataBuffer());
                 }
             }
         } finally {
@@ -169,7 +172,7 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
         if (result && scenes != null && groups != null && devices != null) {
             if (observer != null)
                 observer.showProgress(false, "Backup restored");
-            RuntimeDataController d = NetpowerctrlApplication.getDataController();
+            RuntimeDataController d = RuntimeDataController.getDataController();
             try {
                 d.deviceCollection.fromJSON(JSONHelper.getReader(devices), false);
             } catch (IOException e) {
@@ -185,7 +188,7 @@ class GDriveRestoreBackupTask extends AsyncTask<Void, String, Boolean> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            d.notifyStateReloaded();
+            RuntimeDataController.observersOnDataLoaded.onDataLoaded();
         } else {
             if (observer != null)
                 observer.showProgress(false, "Backup restoring failed");

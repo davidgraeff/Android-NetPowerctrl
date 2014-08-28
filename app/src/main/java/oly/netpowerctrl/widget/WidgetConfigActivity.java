@@ -24,7 +24,7 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
     private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            SharedPrefs.SaveWidget(widgetId, adapter.getDevicePort(position).uuid.toString());
+            SharedPrefs.getInstance().SaveWidget(widgetId, adapter.getDevicePort(position).uuid.toString());
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
@@ -45,7 +45,7 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
     @Override
     public void onResume() {
         super.onResume();
-        NetpowerctrlService.useService(true, false);
+        NetpowerctrlService.useService(this, true, false);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
         super.onCreate(savedInstanceState);
         setResult(RESULT_CANCELED);
         // Set theme, call super onCreate and set content view
-        if (SharedPrefs.isDarkTheme()) {
+        if (SharedPrefs.getInstance().isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
         } else {
             setTheme(R.style.Theme_CustomLightTheme);

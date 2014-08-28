@@ -7,28 +7,28 @@ import oly.netpowerctrl.utils.Observer;
 /**
  * Created by david on 19.08.14.
  */
-public class ServiceReadyObserver extends Observer<ServiceReady> implements ServiceReady {
+public class ServiceReadyObserver extends Observer<onServiceReady> implements onServiceReady {
     @Override
-    public void register(ServiceReady o) {
+    public void register(onServiceReady o) {
         super.register(o);
         if (NetpowerctrlService.isServiceReady()) {
-            onServiceReady(NetpowerctrlService.getService());
+            o.onServiceReady(NetpowerctrlService.getService());
         }
     }
 
     @Override
     public boolean onServiceReady(NetpowerctrlService service) {
-        Iterator<ServiceReady> it = listeners.iterator();
-        while (it.hasNext()) {
-            if (!it.next().onServiceReady(service))
-                it.remove();
+        Iterator<onServiceReady> iterator = listeners.iterator();
+        while (iterator.hasNext()) {
+            if (!iterator.next().onServiceReady(service))
+                iterator.remove();
         }
         return false;
     }
 
     @Override
     public void onServiceFinished() {
-        for (ServiceReady listener : listeners) {
+        for (onServiceReady listener : listeners) {
             listener.onServiceFinished();
         }
     }

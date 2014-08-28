@@ -1,13 +1,19 @@
 package oly.netpowerctrl.network;
 
+import android.content.Context;
 import android.os.Handler;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
 
 /**
  * This base class is used by the device query and device-resend-command class.
@@ -15,28 +21,33 @@ import oly.netpowerctrl.devices.Device;
  * provide the result of a query/a sending action to the DeviceQueryResult object.
  */
 public abstract class DeviceObserverBase {
-    final Handler mainLoopHandler = new Handler(NetpowerctrlApplication.instance.getMainLooper());
-    List<Device> devices_to_observe;
+    protected final Handler mainLoopHandler;
+    protected final Context context;
+    protected boolean broadcast = false;
+    protected AtomicInteger countWait = new AtomicInteger();
+    private List<Device> devices_to_observe = new ArrayList<>();
     final Runnable redoRunnable = new Runnable() {
         @Override
         public void run() {
-            for (Device device : devices_to_observe) {
+            List<Device> deviceList = new ArrayList<>(devices_to_observe);
+            for (Device device : deviceList) {
                 doAction(device, true);
             }
         }
     };
+    private List<Device> devices_to_observe_not_filtered = new ArrayList<>();
     private DeviceObserverResult target;
     final Runnable timeoutRunnable = new Runnable() {
         @Override
         public void run() {
             //Remove update listener
-            NetpowerctrlApplication.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
+            RuntimeDataController.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
 
             for (Device device : devices_to_observe) {
                 if (device.getFirstReachableConnection() != null)
-                    device.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
-                // Call onDeviceUpdated to update device info.
-                NetpowerctrlApplication.getDataController().deviceCollection.updateNotReachable(device);
+                    device.setNotReachableAll(context.getString(R.string.error_timeout_device, ""));
+                // Call onConfiguredDeviceUpdated to update device info.
+                RuntimeDataController.getDataController().deviceCollection.updateNotReachable(context, device);
             }
 
             // Update status observer
@@ -45,6 +56,12 @@ public abstract class DeviceObserverBase {
             }
         }
     };
+
+    DeviceObserverBase(Context context, DeviceObserverResult target) {
+        this.context = context;
+        mainLoopHandler = new Handler(context.getMainLooper());
+        setDeviceQueryResult(target);
+    }
 
     public void setDeviceQueryResult(DeviceObserverResult target) {
         this.target = target;
@@ -83,7 +100,6 @@ public abstract class DeviceObserverBase {
         return checkIfDone();
     }
 
-
     public boolean notifyObservers(String device_name) {
         Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
@@ -99,14 +115,91 @@ public abstract class DeviceObserverBase {
         return checkIfDone();
     }
 
-    @SuppressWarnings("SameParameterValue")
-    public void addDevice(Device device, boolean resetTimeout) {
-        devices_to_observe.add(device);
+    public void clearDevicesToObserve() {
+        devices_to_observe.clear();
+        devices_to_observe_not_filtered.clear();
+    }
 
-        if (!resetTimeout)
+    protected boolean isEmpty() {
+        return devices_to_observe.isEmpty();
+    }
+
+    public void startQuery() {
+        NetpowerctrlService service = NetpowerctrlService.getService();
+        if ((isEmpty() && !broadcast) || service == null) {
+            if (target != null)
+                target.onObserverJobFinished(devices_to_observe_not_filtered);
             return;
-        mainLoopHandler.removeCallbacks(timeoutRunnable);
+        }
+
+        // Register on main application object to receive device updates
+        RuntimeDataController.getDataController().addUpdateDeviceState(this);
+
+        // We do not repeat the broadcast as much as individual requests
+        if (!broadcast) {
+            mainLoopHandler.postDelayed(redoRunnable, 300);
+            mainLoopHandler.postDelayed(redoRunnable, 1200);
+        }
+        mainLoopHandler.postDelayed(redoRunnable, 600);
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
+
+        if (broadcast) {
+            service.sendBroadcastQuery();
+        } else {
+            // Send out broadcast
+            List<Device> deviceList = new ArrayList<>(devices_to_observe);
+            for (Device device : deviceList) {
+                doAction(device, true);
+            }
+        }
+
+        // one time only, flag reset
+        broadcast = false;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    public int addDevice(final Device device, boolean resetTimeout) {
+        devices_to_observe_not_filtered.add(device);
+
+        if (!device.isEnabled()) {
+            device.setNotReachableAll(context.getString(R.string.error_device_disabled));
+            RuntimeDataController.getDataController().deviceCollection.updateNotReachable(context, device);
+            return countWait.get();
+        }
+
+        // We explicitly allow devices without connections (udp/http). Those connections
+        // may be added later by a broadcast response. Out of the same reason we allow
+        // devices without a unique id (MAC address) if only the hostname is known.
+        // But we do not allow a device without a unique id and without a hostname.
+        if (device.UniqueDeviceID == null && device.DeviceConnections.isEmpty()) {
+            device.setNotReachableAll(context.getString(R.string.error_device_incomplete));
+            RuntimeDataController.getDataController().deviceCollection.updateNotReachable(context, device);
+            return countWait.get();
+        }
+
+        // If the device has connections we have to check now for hostname->ip resolving.
+        // This can only be done in another thread.
+        boolean needResolve = false;
+        for (final DeviceConnection connection : device.DeviceConnections) {
+            if (connection.needResolveName()) {
+                resetTimeout = true; // we need more time
+                needResolve = true;
+                break;
+            }
+        }
+
+        if (resetTimeout) {
+            mainLoopHandler.removeCallbacks(timeoutRunnable);
+            mainLoopHandler.postDelayed(timeoutRunnable, 1500);
+        }
+
+        if (!needResolve) {
+            devices_to_observe.add(device);
+            return countWait.get();
+        } else {
+            new Thread(new ResolveHostnameRunnable(device, this)).start();
+            return countWait.incrementAndGet();
+        }
     }
 
     private boolean checkIfDone() {
@@ -128,9 +221,36 @@ public abstract class DeviceObserverBase {
     public void finishWithTimeouts() {
         mainLoopHandler.removeCallbacks(timeoutRunnable);
         for (Device di : devices_to_observe) {
-            di.setNotReachableAll(NetpowerctrlApplication.instance.getString(R.string.error_timeout_device, ""));
+            di.setNotReachableAll(context.getString(R.string.error_timeout_device, ""));
         }
         if (target != null)
             target.onObserverJobFinished(devices_to_observe);
+    }
+
+    private static class ResolveHostnameRunnable implements Runnable {
+        private Device device;
+        private WeakReference<DeviceObserverBase> deviceObserverBaseWeakReference;
+
+        public ResolveHostnameRunnable(Device device, DeviceObserverBase deviceObserverBase) {
+            this.device = device;
+            this.deviceObserverBaseWeakReference = new WeakReference<>(deviceObserverBase);
+        }
+
+        @Override
+        public void run() {
+            for (final DeviceConnection connection : device.DeviceConnections) {
+                if (connection.needResolveName()) {
+                    connection.getHostnameIPs();
+                }
+            }
+
+            DeviceObserverBase deviceObserverBase = deviceObserverBaseWeakReference.get();
+            if (deviceObserverBase == null)
+                return;
+
+            deviceObserverBase.devices_to_observe.add(device);
+            if (deviceObserverBase.countWait.decrementAndGet() == 0)
+                deviceObserverBase.startQuery();
+        }
     }
 }

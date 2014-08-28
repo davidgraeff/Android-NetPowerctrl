@@ -51,16 +51,18 @@ public abstract class DeviceConnection {
         return getProtocol() + "/" + HostName + ":" + String.valueOf(getDestinationPort());
     }
 
-    public void updateDestinationHost(String destinationHost) {
-        HostName = destinationHost;
+    public boolean needResolveName() {
+        return cached_addresses == null;
     }
 
+    // This has to be executed in another thread not the gui thread!
     public InetAddress[] getHostnameIPs() {
         if (cached_addresses == null || cached_addresses.length == 0) {
             try {
                 cached_addresses = InetAddress.getAllByName(HostName);
             } catch (UnknownHostException e) {
                 e.printStackTrace();
+                cached_addresses = new InetAddress[0];
             }
         }
         return cached_addresses;

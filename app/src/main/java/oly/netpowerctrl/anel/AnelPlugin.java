@@ -188,14 +188,14 @@ final public class AnelPlugin implements PluginInterface {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(ci, data,
+            udpSending.addJob(new UDPSending.SendAndObserveJob(service, ci, data,
                     requestMessage, UDPSending.INQUERY_REQUEST));
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(ci, data,
+            udpSending.addJob(new UDPSending.SendAndObserveJob(service, ci, data,
                     requestMessage, UDPSending.INQUERY_REQUEST));
         }
 
@@ -205,7 +205,7 @@ final public class AnelPlugin implements PluginInterface {
 
     public void startUDPDiscoveryThreads(Set<Integer> additional_port) {
         // Get all ports of configured devices and add the additional_port if != 0
-        Set<Integer> ports = NetpowerctrlApplication.getDataController().getAllReceivePorts();
+        Set<Integer> ports = RuntimeDataController.getDataController().getAllReceivePorts();
         if (additional_port != null)
             ports.addAll(additional_port);
 
@@ -251,12 +251,11 @@ final public class AnelPlugin implements PluginInterface {
         HttpThreadPool.startHTTP();
     }
 
-    public void stopUDPDiscoveryThreads() {
-        Context context = NetpowerctrlApplication.instance;
-        RuntimeDataController d = NetpowerctrlApplication.getDataController();
+    public void stopUDPDiscoveryThreads(Context context) {
+        RuntimeDataController d = RuntimeDataController.getDataController();
         for (Device di : d.deviceCollection.devices) {
             if (this.equals(di.getPluginInterface())) {
-                di.setNotReachable("UDP", context.getString(R.string.device_energysave_mode));
+                di.setNotReachable("UDP", NetpowerctrlApplication.getAppString(R.string.device_energysave_mode));
                 d.onDeviceUpdated(di);
             }
         }
@@ -328,12 +327,12 @@ final public class AnelPlugin implements PluginInterface {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         port.id - 10, device.UserName, device.Password).getBytes();
-                j = new UDPSending.SendAndObserveJob(ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                j = new UDPSending.SendAndObserveJob(service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             } else if (port.id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         port.id, device.UserName, device.Password).getBytes();
-                j = new UDPSending.SendAndObserveJob(ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                j = new UDPSending.SendAndObserveJob(service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             }
 
             if (j != null)
@@ -351,7 +350,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     private boolean warnUDPSending() {
         if (udpSending == null) {
-            ShowToast.FromOtherThread(NetpowerctrlApplication.instance, "udpSending null");
+            ShowToast.FromOtherThread(NetpowerctrlService.getService(), "udpSending null");
             return true;
         }
         return false;
@@ -359,7 +358,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void onDestroy() {
-        stopUDPDiscoveryThreads();
+        stopUDPDiscoveryThreads(NetpowerctrlService.getService());
     }
 
     @Override
@@ -398,7 +397,7 @@ final public class AnelPlugin implements PluginInterface {
             if (warnUDPSending()) {
                 return;
             }
-            udpSending.addJob(new UDPSending.SendAndObserveJob(ci, requestMessage, UDPSending.INQUERY_REQUEST));
+            udpSending.addJob(new UDPSending.SendAndObserveJob(service, ci, requestMessage, UDPSending.INQUERY_REQUEST));
         }
     }
 
@@ -430,9 +429,10 @@ final public class AnelPlugin implements PluginInterface {
         anelCreateDevice = null;
     }
 
+    // We assume the MainActivity exist!
     @Override
     public void showConfigureDeviceScreen(Device device) {
-        anelCreateDevice = new AnelCreateDevice(device);
+        anelCreateDevice = new AnelCreateDevice(MainActivity.instance.getString(R.string.default_device_name), device);
         MainActivity.getNavigationController().changeToDialog(MainActivity.instance, AnelDevicePreferences.class.getName());
     }
 
@@ -634,9 +634,9 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void enterFullNetworkState(Device device) {
-        if (SharedPrefs.logEnergySaveMode())
-            Logging.appendLog("Anel: enterFullNetworkState");
+    public void enterFullNetworkState(Context context, Device device) {
+        if (SharedPrefs.getInstance().logEnergySaveMode())
+            Logging.appendLog(context, "Anel: enterFullNetworkState");
 
         // Start send thread
         if (udpSending == null)
@@ -660,11 +660,11 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void enterNetworkReducedState() {
-        if (SharedPrefs.logEnergySaveMode())
-            Logging.appendLog("Anel: enterNetworkReducedState");
+    public void enterNetworkReducedState(Context context) {
+        if (SharedPrefs.getInstance().logEnergySaveMode())
+            Logging.appendLog(context, "Anel: enterNetworkReducedState");
 
-        stopUDPDiscoveryThreads();
+        stopUDPDiscoveryThreads(context);
         boolean running = udpSending != null && udpSending.isRunning();
         if (running) {
             udpSending.interrupt();
@@ -676,7 +676,7 @@ final public class AnelPlugin implements PluginInterface {
     public void openConfigurationPage(Device device, Context context) {
         final DeviceConnection ci = device.getFirstReachableConnection();
         if (ci == null) {
-            Toast.makeText(NetpowerctrlApplication.instance, R.string.error_device_not_reachable, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.error_device_not_reachable, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -697,7 +697,7 @@ final public class AnelPlugin implements PluginInterface {
         if (type != Timer.TYPE_RANGE_ON_WEEKDAYS && type != Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
             return null;
 
-        TimerController c = NetpowerctrlApplication.getDataController().timerController;
+        TimerController c = RuntimeDataController.getDataController().timerController;
         List<Timer> available_timers = c.getAvailableDeviceAlarms();
         for (Timer available : available_timers) {
             // Find alarm for the selected port
@@ -718,7 +718,7 @@ final public class AnelPlugin implements PluginInterface {
         final String getData = "dd.htm?DD" + String.valueOf(timer.port.id);
         final int timerNumber = (int) (timer.id >> 8) & 255;
         // Get the timerController object. We will add received alarms to that instance.
-        final TimerController timerController = NetpowerctrlApplication.getDataController().timerController;
+        final TimerController timerController = RuntimeDataController.getDataController().timerController;
         final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) timer.port.device.getFirstReachableConnection("HTTP");
         if (ci == null)
             return;

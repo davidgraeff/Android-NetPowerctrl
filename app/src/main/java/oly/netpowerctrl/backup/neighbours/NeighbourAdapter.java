@@ -29,7 +29,7 @@ public class NeighbourAdapter extends BaseAdapter {
 
     public NeighbourAdapter() {
         // Load
-        String json = SharedPrefs.loadNeighbours();
+        String json = SharedPrefs.getInstance().loadNeighbours();
         if (json == null)
             return;
 
@@ -78,7 +78,7 @@ public class NeighbourAdapter extends BaseAdapter {
     }
 
     private void save() {
-        SharedPrefs.saveNeighbours(toJSON());
+        SharedPrefs.getInstance().saveNeighbours(toJSON());
     }
 
     public void setInflater(LayoutInflater inflater) {
@@ -329,15 +329,15 @@ public class NeighbourAdapter extends BaseAdapter {
         public void updateData() {
             data = String.valueOf(uniqueID) + ": ";
             if (version < versionCode)
-                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_older_version) + " ";
+                data += NetpowerctrlApplication.getAppString(R.string.neighbour_older_version) + " ";
             else if (version > versionCode)
-                data += NetpowerctrlApplication.instance.getString(R.string.neighbour_newer_version) + " ";
+                data += NetpowerctrlApplication.getAppString(R.string.neighbour_newer_version) + " ";
 
-            data += NetpowerctrlApplication.instance.getString(R.string.neighbour_entry, devices, scenes, groups, icons);
+            data += NetpowerctrlApplication.getAppString(R.string.neighbour_entry, devices, scenes, groups, icons);
             if (isPaired)
-                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired);
+                data += ", " + NetpowerctrlApplication.getAppString(R.string.neighbour_paired);
             if (!isOnline)
-                data += ", " + NetpowerctrlApplication.instance.getString(R.string.neighbour_paired_not_found);
+                data += ", " + NetpowerctrlApplication.getAppString(R.string.neighbour_paired_not_found);
 
             this.isSameVersion = versionCode == version;
         }

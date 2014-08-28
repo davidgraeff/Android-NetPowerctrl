@@ -10,7 +10,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,11 +32,11 @@ import java.util.UUID;
 
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.OnDataQueryCompletedHandler;
-import oly.netpowerctrl.application_state.RefreshStartedStopped;
-import oly.netpowerctrl.application_state.ServiceModeChanged;
+import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.application_state.onDataQueryCompleted;
+import oly.netpowerctrl.application_state.onRefreshStartedStopped;
+import oly.netpowerctrl.application_state.onServiceModeChanged;
 import oly.netpowerctrl.backup.drive.GDriveFragment;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
@@ -49,6 +48,7 @@ import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.NotReachableUpdate;
+import oly.netpowerctrl.network.onNewDevice;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
@@ -70,7 +70,8 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         NotReachableUpdate, ListItemMenu, ChangeArgumentsFragment, AsyncRunnerResult,
         Icons.IconSelected, OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks,
-        RefreshStartedStopped, SharedPrefs.IHideNotReachable, ServiceModeChanged {
+        onRefreshStartedStopped, SharedPrefs.IHideNotReachable, onServiceModeChanged,
+        DevicePortSourceConfigured.onChange, onDataQueryCompleted, onNewDevice {
     int requestedColumnWidth;
     private DevicePortsExecuteAdapter adapter;
     private DevicePortSourceConfigured adapterSource;
@@ -84,7 +85,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private UpdateBarWithGroups updateBarWithGroups = new UpdateBarWithGroups();
     private PullToRefreshLayout mPullToRefreshLayout;
     private ProgressDialog progressDialog;
-    private AnimationController animationController = new AnimationController();
+    private AnimationController animationController;
+    private checkEmptyState lastState = checkEmptyState.UNKNOWN;
 
     public OutletsFragment() {
     }
@@ -101,7 +103,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPrefs.getInstance().registerHideNotReachable(this);
+        animationController = new AnimationController(getActivity());
+        SharedPrefs.getInstance().getInstance().registerHideNotReachable(this);
         setHasOptionsMenu(true);
     }
 
@@ -112,7 +115,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     //noinspection deprecation
                     mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumsChangeListener);
                     //getActivity().findViewById(R.id.content_frame).getWidth();
-                    Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
+                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
                     int i = mListView.getWidth() / requestedColumnWidth;
                     adapter.setItemsInRow(i);
 
@@ -136,6 +139,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onPause() {
         NetpowerctrlService.observersStartStopRefresh.unregister(this);
         NetpowerctrlService.observersServiceModeChanged.unregister(this);
+        RuntimeDataController.observersNew.unregister(this);
         super.onPause();
         if (adapterSource != null)
             adapterSource.onPause();
@@ -145,6 +149,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onResume() {
         NetpowerctrlService.observersStartStopRefresh.register(this);
         NetpowerctrlService.observersServiceModeChanged.register(this);
+        RuntimeDataController.observersNew.register(this);
         if (NetpowerctrlService.getService() == null ||
                 NetpowerctrlService.getService().isNetworkReducedMode())
             checkEmpty();
@@ -167,11 +172,11 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 adapterSource.updateNow();
         }
 
-        checkEmpty();
+        checkEmptyChanged();
     }
 
     private void setListOrGrid(boolean grid) {
-        SharedPrefs.setOutletsGrid(grid);
+        SharedPrefs.getInstance().setOutletsGrid(grid);
 
         if (!grid) {
             adapter.setLayoutRes(R.layout.list_icon_item);
@@ -193,7 +198,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         menu.findItem(R.id.menu_main_donate).setVisible(MainActivity.instance.donate.donatePossible());
 
-        if (!NetpowerctrlApplication.getDataController().deviceCollection.hasDevices()) {
+        if (!RuntimeDataController.getDataController().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_showhidden).setVisible(false);
             //noinspection ConstantConditions
@@ -235,7 +240,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_view_grid).setVisible(isList);
 
-        menu.findItem(R.id.menu_debug_toggle_network_reduced).setVisible(BuildConfig.DEBUG);
+        menu.findItem(R.id.menu_debug_toggle_network_reduced).setVisible(BuildConfig.BUILD_TYPE.equals("debug"));
     }
 
     @Override
@@ -255,7 +260,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
 
             case R.id.menu_removeGroup: {
-                if (!NetpowerctrlApplication.getDataController().groupCollection.remove(groupFilter)) {
+                if (!RuntimeDataController.getDataController().groupCollection.remove(groupFilter)) {
                     return true;
                 }
                 MainActivity.getNavigationController().changeToFragment(OutletsFragment.class.getName());
@@ -313,10 +318,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             case R.id.menu_sort: {
                 Fragment fragment = SortCriteriaDialog.instantiate(getActivity(), adapter);
                 ShowToast.showDialogFragment(getActivity(), fragment);
+                return true;
             }
 
             case R.id.menu_debug_toggle_network_reduced: {
                 NetpowerctrlService.debug_toggle_network_reduced();
+                return true;
             }
         }
         return false;
@@ -357,8 +364,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         emptyText = (TextView) view.findViewById(R.id.empty_text);
 
         // Empty list: Buttons
-        boolean hasDevices = NetpowerctrlApplication.getDataController().deviceCollection.hasDevices();
-        boolean hasNewDevices = NetpowerctrlApplication.getDataController().newDevices.size() > 0;
+        boolean hasDevices = RuntimeDataController.getDataController().deviceCollection.hasDevices();
+        boolean hasNewDevices = RuntimeDataController.getDataController().newDevices.size() > 0;
         btnAutomaticConfiguration = (Button) view.findViewById(R.id.btnAutomaticConfiguration);
         btnAutomaticConfiguration.setVisibility(groupFilter == null && !hasDevices && hasNewDevices ? View.VISIBLE : View.GONE);
         btnAutomaticConfiguration.setOnClickListener(new View.OnClickListener() {
@@ -386,7 +393,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         });
 
         Button btnWirelessLan = (Button) view.findViewById(R.id.btnWirelessSettings);
-        btnWirelessLan.setVisibility(NetpowerctrlService.isWirelessLanConnected() ? View.GONE : View.VISIBLE);
+        btnWirelessLan.setVisibility(NetpowerctrlService.isWirelessLanConnected(getActivity()) ? View.GONE : View.VISIBLE);
         btnWirelessLan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -398,8 +405,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         // Create adapter first
         adapterSource = new DevicePortSourceConfigured();
-        adapterSource.setHideNotReachable(SharedPrefs.isHideNotReachable());
+        adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
         adapterSource.setAutomaticUpdate(true);
+        adapterSource.setOnChangeListener(this);
         adapter = new DevicePortsExecuteAdapter(getActivity(), this, adapterSource,
                 ((ActivityWithIconCache) getActivity()).getIconCache());
         animationController.setAdapter(adapter);
@@ -411,47 +419,70 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        setListOrGrid(SharedPrefs.getOutletsGrid());
+        setListOrGrid(SharedPrefs.getInstance().getOutletsGrid());
 
-        NetpowerctrlApplication.getDataController().registerDataQueryCompleted(new OnDataQueryCompletedHandler() {
-            @Override
-            public boolean onDataQueryFinished() {
-                checkEmpty();
-                return false;
-            }
-        });
+        RuntimeDataController.observersDataQueryCompleted.register(this);
 
         super.onViewCreated(view, savedInstanceState);
     }
+
+    @Override
+    public boolean onDataQueryFinished() {
+        checkEmptyChanged();
+        return false;
+    }
+
+    @Override
+    public void onNewDevice(Device device) {
+        checkEmptyChanged();
+    }
+
+    private void checkEmptyChanged() {
+        if (mListView == null)
+            return;
+
+        if (mListView.getCount() == 0 && lastState != checkEmptyState.EMPTY) {
+            checkEmpty();
+            lastState = checkEmptyState.EMPTY;
+        } else if (mListView.getCount() != 0 && lastState != checkEmptyState.FILLED) {
+            checkEmpty();
+            lastState = checkEmptyState.FILLED;
+        }
+    }
+
+    ;
 
     private void checkEmpty() {
         if (!isAdded())
             return;
 
-        boolean hasDevices = NetpowerctrlApplication.getDataController().deviceCollection.hasDevices();
-        boolean hasNewDevices = NetpowerctrlApplication.getDataController().newDevices.size() > 0;
-        if (!hasDevices) {
-            emptyText.setText(R.string.empty_no_outlets_no_devices);
-        } else if (groupFilter != null) {
-            emptyText.setText(R.string.empty_group);
-        } else {
-            emptyText.setText(R.string.empty_no_outlets);
+        lastState = checkEmptyState.UNKNOWN;
+
+        if (mListView.getCount() == 0) {
+            boolean hasDevices = RuntimeDataController.getDataController().deviceCollection.hasDevices();
+            boolean hasNewDevices = RuntimeDataController.getDataController().newDevices.size() > 0;
+            if (!hasDevices) {
+                emptyText.setText(R.string.empty_no_outlets_no_devices);
+            } else if (groupFilter != null) {
+                emptyText.setText(R.string.empty_group);
+            } else {
+                emptyText.setText(R.string.empty_no_outlets);
+            }
+
+            if (btnChangeToDevices != null)
+                btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+            if (btnChangeToBackup != null)
+                btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
+            if (btnAutomaticConfiguration != null)
+                btnAutomaticConfiguration.setVisibility(groupFilter == null && !hasDevices && hasNewDevices ? View.VISIBLE : View.GONE);
+
+            mListView.setEmptyView(getActivity().findViewById(android.R.id.empty));
         }
 
-        if (btnChangeToDevices != null)
-            btnChangeToDevices.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
-        if (btnChangeToBackup != null)
-            btnChangeToBackup.setVisibility(groupFilter == null ? View.VISIBLE : View.GONE);
-        if (btnAutomaticConfiguration != null)
-            btnAutomaticConfiguration.setVisibility(groupFilter == null && !hasDevices && hasNewDevices ? View.VISIBLE : View.GONE);
-
-        mListView.setEmptyView(getActivity().findViewById(android.R.id.empty));
-
         boolean en = (!NetpowerctrlService.isServiceReady() || NetpowerctrlService.getService().isNetworkReducedMode());
-        TextView text = (TextView) getActivity().findViewById(R.id.hintText);
         if (en)
-            text.setText(getString(R.string.device_energysave_mode));
-        text.setVisibility(en ? View.VISIBLE : View.GONE);
+            hintText.setText(getString(R.string.device_energysave_mode));
+        hintText.setVisibility(en ? View.VISIBLE : View.GONE);
 
         getActivity().invalidateOptionsMenu();
     }
@@ -476,7 +507,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 alert.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         //noinspection ConstantConditions
-                        NetpowerctrlApplication.getDataController().rename(oi, input.getText().toString().trim(), OutletsFragment.this);
+                        RuntimeDataController.getDataController().rename(oi, input.getText().toString().trim(), OutletsFragment.this);
                     }
                 });
 
@@ -510,7 +541,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     adapter.addItem(oi, oi.getCurrentValueToggled(), true);
                 } else // just update the alpha value of the newly hidden item
                     adapter.notifyDataSetChanged();
-                NetpowerctrlApplication.getDataController().deviceCollection.save();
+                RuntimeDataController.getDataController().deviceCollection.save();
                 return true;
             }
             case R.id.menu_add_homescreen: {
@@ -541,18 +572,22 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             adapter.remove(oi, true);
         }
         adapter.notifyDataSetChanged();
-        NetpowerctrlApplication.getDataController().deviceCollection.save();
+        RuntimeDataController.getDataController().deviceCollection.save();
         Toast.makeText(getActivity(), R.string.outlets_hidden, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onNotReachableUpdate(List<Device> not_reachable) {
+        Context context = getActivity();
+        if (context == null)
+            return;
+
         if (not_reachable.size() > 0) {
             String devices = "";
             for (Device di : not_reachable) {
                 devices += di.DeviceName + " ";
             }
-            hintText.setText(NetpowerctrlApplication.instance.getString(R.string.error_not_reachable) + ": " + devices);
+            hintText.setText(context.getString(R.string.error_not_reachable) + ": " + devices);
             hintText.setVisibility(View.VISIBLE);
         } else {
             hintText.setVisibility(View.GONE);
@@ -599,7 +634,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             Toast.makeText(getActivity(), getString(R.string.renameFailed, error_message), Toast.LENGTH_SHORT).show();
         } else {
             oi.device.setHasChanged();
-            new DeviceQuery(null, oi.device);
+            new DeviceQuery(getActivity(), null, oi.device);
         }
     }
 
@@ -622,7 +657,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void setIcon(Object context_object, Bitmap bitmap) {
         if (context_object == null)
             return;
-        NetpowerctrlApplication.getDataController().deviceCollection.setDevicePortBitmap(getActivity(),
+        RuntimeDataController.getDataController().deviceCollection.setDevicePortBitmap(getActivity(),
                 (DevicePort) context_object, bitmap);
 
         adapter.invalidateViewHolders();
@@ -666,6 +701,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onServiceModeChanged(boolean isNetworkDown) {
         checkEmpty();
     }
+
+    @Override
+    public void devicePortSourceChanged() {
+        checkEmptyChanged();
+    }
+
+    private enum checkEmptyState {UNKNOWN, EMPTY, FILLED}
 
 
 }

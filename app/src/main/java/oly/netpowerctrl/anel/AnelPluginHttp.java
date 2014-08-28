@@ -15,7 +15,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
@@ -34,11 +35,11 @@ public class AnelPluginHttp {
             final Device device = ci.getDevice();
             if (!callback_success) {
                 ci.setNotReachable(response_message);
-                NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+                RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(device);
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
-                    ci.setNotReachable(NetpowerctrlApplication.instance.getString(R.string.error_packet_received));
+                    ci.setNotReachable(NetpowerctrlService.getService().getString(R.string.error_packet_received));
                 } else {
                     // The name is the second ";" separated entry of the response_message.
                     device.DeviceName = data[1].trim();
@@ -60,7 +61,7 @@ public class AnelPluginHttp {
                         // we have to set the changed flag.
                         device.setHasChanged();
                     }
-                    NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+                    RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(device);
                 }
 
             }
@@ -76,7 +77,7 @@ public class AnelPluginHttp {
                     final Device device = ci.getDevice();
                     if (!callback_success) {
                         ci.setNotReachable(response_message);
-                        NetpowerctrlApplication.getDataController().onDeviceUpdatedOtherThread(device);
+                        RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(device);
                     } else
                         HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
                 }

@@ -17,7 +17,6 @@ import java.util.Enumeration;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
@@ -137,25 +136,23 @@ public class Utils {
         }
     }
 
-    public static int getVersionCode() {
-        Context c = NetpowerctrlApplication.instance;
+    public static int getVersionCode(Context context) {
         try {
             //noinspection ConstantConditions
-            return c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
+            return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
         } catch (PackageManager.NameNotFoundException e) {
             return 0;
         }
     }
 
-    public static String getDateTime() {
-        Context context = NetpowerctrlApplication.instance;
+    public static String getDateTime(Context context) {
         Calendar t = Calendar.getInstance();
         return DateFormat.getMediumDateFormat(context).format(t.getTime()).replace(".", "_") +
                 " - " + DateFormat.getTimeFormat(context).format(t.getTime()).replace(":", "_");
     }
 
     public static boolean checkPortInvalid(int port) {
-        if (SharedPrefs.isPortsUnlimited())
+        if (SharedPrefs.getInstance().isPortsUnlimited())
             return (port < 1) || port > 65555;
         else
             return (port < 1024) || port > 65555;

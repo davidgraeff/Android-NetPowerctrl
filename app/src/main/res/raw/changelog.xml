@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion changeDate="22. August 2014" versionName="5.7.1">
+        <changelogbug>Absturz bei Start behoben (IllegalStateException)</changelogbug>
+        <changelogbug>Auflösen von nicht numerischen Hostnamen zu IP-Adressen wird jetzt an der
+            richtigen Stelle durchgeführt (NetworkOnMainThreadException)
+        </changelogbug>
+        <changelogtext>Es fehlt das neue grafische Interface um zusätzliche Hostnamen hinzufügen.
+            Bitte auf Version 5.8 warten.
+        </changelogtext>
+    </changelogversion>
+
     <changelogversion changeDate="21. August 2014" versionName="5.7">
         <changelogimprovement>Automatische Ersteinrichtung</changelogimprovement>
         <changelogimprovement>Geräte hinzufügen/editieren verbessert</changelogimprovement>
@@ -25,7 +35,7 @@
     </changelogversion>
 
     <changelogversion changeDate="7. August 2014" versionName="5.6">
-    <changelogbug>Probleme mit der Listen- und Rasteransicht behoben</changelogbug>
+        <changelogbug>Probleme mit der Listen- und Rasteransicht behoben</changelogbug>
         <changelogbug>UDP Energiesparmodus repariert</changelogbug>
         <changelogbug>Absturz bei Gerätedrehung behoben</changelogbug>
         <changelogimprovement>Aktuell offene gemeldete Fehler können in den Einstellungen eingesehen

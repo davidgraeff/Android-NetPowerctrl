@@ -1,5 +1,6 @@
 package oly.netpowerctrl.backup.neighbours;
 
+import android.content.Context;
 import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
@@ -28,7 +29,8 @@ public class NeighbourDataSync {
     private static final String TAG = "NeighbourDataSync";
     static AtomicBoolean isSendingData = new AtomicBoolean();
 
-    static boolean sendData(final InetAddress ip, final long uniqueID_Receiver,
+    static boolean sendData(final Context context,
+                            final InetAddress ip, final long uniqueID_Receiver,
                             final NeighbourDataCommunication neighbourDataCommunication,
                             final boolean removePairing) {
         if (isSendingData.get())
@@ -44,10 +46,10 @@ public class NeighbourDataSync {
                     client = new Socket(ip, 4321);
 
                     Log.w(TAG, "start neighbour transfer");
-                    clientCommunication(client, uniqueID_Receiver, neighbourDataCommunication, removePairing);
+                    clientCommunication(context, client, uniqueID_Receiver, neighbourDataCommunication, removePairing);
                 } catch (UnknownHostException | ConnectException e) {
                     Log.e(TAG, "Neighbour not in range " + ip.getHostAddress());
-                    ShowToast.FromOtherThread(NetpowerctrlApplication.instance,
+                    ShowToast.FromOtherThread(context,
                             "Neighbour connection failed: " + ip.getHostAddress());
                     client = null;
                 } catch (IOException e) {
@@ -67,7 +69,8 @@ public class NeighbourDataSync {
         return true;
     }
 
-    private static void clientCommunication(Socket client, final long uniqueID_Receiver,
+    private static void clientCommunication(final Context context,
+                                            Socket client, final long uniqueID_Receiver,
                                             final NeighbourDataCommunication neighbourDataCommunication,
                                             final boolean removePairing) throws IOException {
         // Get server identification
@@ -79,7 +82,7 @@ public class NeighbourDataSync {
         if (line == null || !line.equals("POWER_CONTROL_NEIGHBOUR_RECIPIENT")) return;
         line = in.readLine();
         if (line == null || !line.equals("VERSION1")) {
-            ShowToast.FromOtherThread(NetpowerctrlApplication.instance, "Neighbour versions not matching");
+            ShowToast.FromOtherThread(context, "Neighbour versions not matching");
             return;
         }
 
@@ -136,7 +139,7 @@ public class NeighbourDataSync {
 
         progress(neighbourDataCommunication, h, uniqueID_Receiver, "Send data");
 
-        final RuntimeDataController d = NetpowerctrlApplication.getDataController();
+        final RuntimeDataController d = RuntimeDataController.getDataController();
 
         // Send data
         out.println("SCENES");
@@ -149,7 +152,7 @@ public class NeighbourDataSync {
 
         progress(neighbourDataCommunication, h, uniqueID_Receiver, "Send icons");
         // Send icons
-        Icons.IconFile[] icons = Icons.getAllIcons();
+        Icons.IconFile[] icons = Icons.getAllIcons(context);
         for (Icons.IconFile f : icons) {
             try {
                 RandomAccessFile fR = new RandomAccessFile(f.file, "r");

@@ -19,10 +19,10 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.application_state.RefreshStartedStopped;
+import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.application_state.onRefreshStartedStopped;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
@@ -33,7 +33,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  */
-public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnRefreshListener, RefreshStartedStopped {
+public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnRefreshListener, onRefreshStartedStopped {
     private DevicesAdapter adapter;
     private PullToRefreshLayout mPullToRefreshLayout;
     private ListView mListView;
@@ -46,7 +46,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.devices, menu);
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_delete_all_devices).setVisible(NetpowerctrlApplication.getDataController().deviceCollection.hasDevices());
+        menu.findItem(R.id.menu_delete_all_devices).setVisible(RuntimeDataController.getDataController().deviceCollection.hasDevices());
     }
 
     @Override
@@ -91,7 +91,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
-                                NetpowerctrlApplication.getDataController().deviceCollection.removeAll();
+                                RuntimeDataController.getDataController().deviceCollection.removeAll();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -172,8 +172,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                                     it.next().addToGroup(uuidOfDevice);
                                 }
                                 current_device.releaseDevicePorts();
-                                NetpowerctrlApplication.getDataController().deviceCollection.save();
-                                NetpowerctrlApplication.getDataController().groupCollection.edit(uuidOfDevice, current_device.DeviceName);
+                                RuntimeDataController.getDataController().deviceCollection.save();
+                                RuntimeDataController.getDataController().groupCollection.edit(uuidOfDevice, current_device.DeviceName);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -188,7 +188,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                NetpowerctrlApplication.getDataController().deviceCollection.remove(current_device);
+                                RuntimeDataController.getDataController().deviceCollection.remove(current_device);
                                 NetpowerctrlService.getService().findDevices(false, null);
                             }
                         })
@@ -207,7 +207,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     private void show_configure_device_dialog(Device device) {
         if (device == null) { // new device
-            MainActivity.getNavigationController().changeToDialog(getActivity(), DevicesWizardNew.class.getName());
+            MainActivity.getNavigationController().changeToDialog(getActivity(), DevicesWizardNewFragment.class.getName());
         } else {
             PluginInterface pluginInterface = device.getPluginInterface();
             if (pluginInterface == null) {
