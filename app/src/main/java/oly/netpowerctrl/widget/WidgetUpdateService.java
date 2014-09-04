@@ -6,6 +6,8 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.IBinder;
 import android.util.Log;
 import android.util.SparseArray;
@@ -24,6 +26,7 @@ import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
@@ -37,7 +40,7 @@ import oly.netpowerctrl.utils.AndroidShortcuts;
 /**
  * Widget Update Service
  */
-public class WidgetUpdateService extends Service implements DeviceObserverResult, onCollectionUpdated<DeviceCollection, Device>, onServiceReady {
+public class WidgetUpdateService extends Service implements DeviceObserverResult, onCollectionUpdated<DeviceCollection, Device>, onServiceReady, onDataLoaded {
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     private static final String TAG = "WidgetUpdateService";
@@ -97,10 +100,11 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         return appWidgetManager.getAppWidgetIds(thisWidget);
     }
 
+    /**
+     * Update all widgets now. This is necessary only once as soon as
+     * the listener service is ready and all app data has loaded.
+     */
     private void updateDevices() {
-        if (!ListenService.isServiceReady())
-            return;
-
         List<Device> devicesToUpdate = new ArrayList<>();
         int[] allWidgetIds = getAllWidgetIDs();
         for (int appWidgetId : allWidgetIds) {
@@ -171,9 +175,22 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
             return finishServiceIfDone();
         }
 
-        updateDevices();
+        preCheckUpdate();
 
         return START_STICKY;
+    }
+
+    private void preCheckUpdate() {
+        Log.w(TAG, "preCheckUpdate");
+        if (ListenService.isServiceReady()) {
+            Log.w(TAG, "service ready");
+            if (AppData.observersOnDataLoaded.dataLoaded) {
+                Log.w(TAG, "data ready");
+                updateDevices();
+            } else { // data not loaded
+                AppData.observersOnDataLoaded.register(this);
+            }
+        }
     }
 
     private void setWidgetStateBroken(int appWidgetId) {
@@ -195,55 +212,64 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
         // Load preferences
-        String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-        boolean widget_show_title = getSharedPreferences(prefName, MODE_PRIVATE).getBoolean("widget_show_title", true);
-        boolean widget_show_status = getSharedPreferences(prefName, MODE_PRIVATE).getBoolean("widget_show_status", true);
+        boolean widget_show_title;
+        boolean widget_show_status;
+        boolean widget_use_default;
 
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
+        {
+            String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
+            SharedPreferences widgetPreferences;
+            widgetPreferences = getSharedPreferences(prefName, MODE_PRIVATE);
+            widget_use_default = widgetPreferences.getBoolean("widget_use_default", true);
+            if (widget_use_default) {
+                prefName = SharedPrefs.PREF_WIDGET_BASENAME;
+                widgetPreferences = getSharedPreferences(prefName, MODE_PRIVATE);
+            }
+            widget_show_title = widgetPreferences.getBoolean("widget_show_title", true);
+            widget_show_status = widgetPreferences.getBoolean("widget_show_status", true);
+        }
 
         // Do not show a status text line ("on"/"off") for a simple trigger
         if (oi.getType() == DevicePort.DevicePortType.TypeButton)
             widget_show_status = false;
 
+        // Manipulate view
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
+
         views.setViewVisibility(R.id.widget_name, widget_show_title ? View.VISIBLE : View.GONE);
         views.setViewVisibility(R.id.widget_status, widget_show_status ? View.VISIBLE : View.GONE);
 
-        if (oi.device.getFirstReachableConnection() == null) {
-            views.setImageViewBitmap(R.id.widget_image,
-                    LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
-                            LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown,
-                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateUnknown))
-            );
-            views.setTextViewText(R.id.widget_name, oi.getDescription());
-            views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_outlet_not_reachable));
+        LoadStoreIconData.IconState iconState;
+        int string_res;
+        if (oi.device.getFirstReachableConnection() == null) { // unreachable
             // Status Text is always visible even for simple triggers
             views.setViewVisibility(R.id.widget_status, View.VISIBLE);
-            // If the device is not reachable there is no sense in assigning a click event pointing to
-            // the ExecutionActivity. We do that nevertheless here to let the ExecutionActivity
-            // figure out if the device is still not reachable
-            views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
-
+            string_res = R.string.widget_outlet_not_reachable;
+            iconState = LoadStoreIconData.IconState.StateUnknown;
         } else if (oi.current_value > 0) { // On
-            views.setImageViewBitmap(R.id.widget_image,
-                    LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
-                            LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn,
-                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn))
-            );
-            views.setTextViewText(R.id.widget_name, oi.getDescription());
-            views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_on));
-            views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
-
-        } else { // Off
-            views.setImageViewBitmap(R.id.widget_image,
-                    LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
-                            LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOff,
-                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff))
-            );
-
-            views.setTextViewText(R.id.widget_name, oi.getDescription());
-            views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_off));
-            views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
+            string_res = R.string.widget_on;
+            iconState = LoadStoreIconData.IconState.StateOn;
+        } else {
+            string_res = R.string.widget_off;
+            iconState = LoadStoreIconData.IconState.StateOff;
         }
+
+        views.setTextViewText(R.id.widget_name, oi.getDescription());
+        views.setTextViewText(R.id.widget_status, context.getString(string_res));
+        // If the device is not reachable there is no sense in assigning a click event pointing to
+        // the ExecutionActivity. We do that nevertheless here to let the ExecutionActivity
+        // figure out if the device is still not reachable
+        views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
+        Bitmap bitmap;
+        if (widget_use_default)
+            bitmap = LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromDefaultWidget(),
+                    LoadStoreIconData.IconType.WidgetIcon, iconState,
+                    LoadStoreIconData.getResIdForState(iconState));
+        else
+            bitmap = LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
+                    LoadStoreIconData.IconType.WidgetIcon, iconState,
+                    LoadStoreIconData.getResIdForState(iconState));
+        views.setImageViewBitmap(R.id.widget_image, bitmap);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
@@ -267,10 +293,8 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
     @Override
     public boolean onServiceReady(ListenService service) {
-        if (allWidgets.size() == 0)
-            updateDevices();
         AppData.getInstance().deviceCollection.registerObserver(this);
-
+        preCheckUpdate();
         return true;
     }
 
@@ -320,5 +344,12 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
         finishServiceIfDone();
         return true;
+    }
+
+    @Override
+    public boolean onDataLoaded() {
+        preCheckUpdate();
+        // unregister now
+        return false;
     }
 }

@@ -26,7 +26,7 @@ public class Scene implements Storable {
     public UUID uuid = UUID.randomUUID();
     public List<SceneItem> sceneItems = new ArrayList<>();
     boolean favourite;
-    UUID uuid_master = null;
+    private UUID uuid_master = null;
 
     public Scene() {
     }

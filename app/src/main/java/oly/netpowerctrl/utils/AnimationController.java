@@ -27,11 +27,11 @@ public class AnimationController {
     private static final int MOVE_DURATION = 150;
     final private Animation highlightAnimation;
     final private Animation updateAnimation;
-    private HashMap<Long, Integer> mRemoveItemIdTopMap = new HashMap<>();
+    private final HashMap<Long, Integer> mRemoveItemIdTopMap = new HashMap<>();
+    private final Map<Long, Integer> mHighlightItemIdTopMap = new TreeMap<>();
+    private final Set<Long> mSmallHighlightItemIdTopMap = new TreeSet<>();
     private BaseAdapter adapter;
     private AbsListView listView;
-    private Map<Long, Integer> mHighlightItemIdTopMap = new TreeMap<>();
-    private Set<Long> mSmallHighlightItemIdTopMap = new TreeSet<>();
     private boolean firstAnimation = true;
 
     public AnimationController(Context context) {

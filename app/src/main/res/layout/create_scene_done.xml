@@ -1,36 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:paddingStart="8dip"
     android:layout_width="wrap_content"
-    android:layout_weight="1"
-    android:gravity="right"
-    android:orientation="horizontal"
-    android:layout_gravity="right"
     android:layout_height="match_parent"
-    android:layout_marginEnd="5dip">
+    android:layout_gravity="end"
+    android:layout_marginEnd="5dip"
+    android:layout_marginRight="5dip"
+    android:layout_weight="1"
+    android:gravity="end"
+    android:orientation="horizontal"
+    android:paddingLeft="8dip"
+    android:paddingStart="8dip">
 
     <ImageView
         android:id="@+id/action_mode_close_button"
-        android:focusable="true"
-        android:clickable="true"
         style="?android:attr/actionModeCloseButtonStyle"
-        android:contentDescription="@string/menu_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:clickable="true"
+        android:contentDescription="@string/menu_cancel"
+        android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_menu_close_clear_cancel" />
 
     <ImageView
         android:id="@+id/action_mode_save_button"
-        android:focusable="true"
-        android:clickable="true"
         style="?android:attr/actionModeCloseButtonStyle"
-        android:contentDescription="@string/save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:clickable="true"
+        android:contentDescription="@string/save"
+        android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@android:drawable/ic_menu_save"
         android:visibility="gone" />

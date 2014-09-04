@@ -21,10 +21,10 @@ import oly.netpowerctrl.main.App;
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
 public class DevicesAutomaticFragment extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
-    TextView textView;
-    List<Device> deviceList;
-    AnelCreateDevice anelCreateDevice;
-    int current = 0;
+    private TextView textView;
+    private List<Device> deviceList;
+    private AnelCreateDevice anelCreateDevice;
+    private int current = 0;
 
     public DevicesAutomaticFragment() {
     }

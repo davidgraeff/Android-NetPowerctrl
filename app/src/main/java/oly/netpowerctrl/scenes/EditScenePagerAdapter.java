@@ -12,8 +12,8 @@ import oly.netpowerctrl.R;
  * (Available actions, scene included actions)
  */
 class EditScenePagerAdapter extends FragmentPagerAdapter {
-    private EditSceneFragment[] frag;
-    private String[] texts;
+    private final EditSceneFragment[] frag;
+    private final String[] texts;
 
     public EditScenePagerAdapter(Context context, FragmentManager fm) {
         super(fm);

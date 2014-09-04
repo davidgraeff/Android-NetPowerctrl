@@ -179,7 +179,7 @@ public class AnelPluginHttp {
             if (current.hour_minute_start == -1)
                 complete_post_data[0] += "99:99";
             else
-                complete_post_data[0] += URLEncoder.encode(current.time(current.hour_minute_start), "utf-8");
+                complete_post_data[0] += URLEncoder.encode(Timer.time(current.hour_minute_start), "utf-8");
             complete_post_data[0] += "&";
 
             // off-time
@@ -187,7 +187,7 @@ public class AnelPluginHttp {
             if (current.hour_minute_stop == -1)
                 complete_post_data[0] += "99:99";
             else
-                complete_post_data[0] += URLEncoder.encode(current.time(current.hour_minute_stop), "utf-8");
+                complete_post_data[0] += URLEncoder.encode(Timer.time(current.hour_minute_stop), "utf-8");
             complete_post_data[0] += "&";
 
             if (i == 4) {
@@ -196,7 +196,7 @@ public class AnelPluginHttp {
                 if (current.hour_minute_random_interval == -1)
                     complete_post_data[0] += "99:99";
                 else
-                    complete_post_data[0] += URLEncoder.encode(current.time(current.hour_minute_random_interval), "utf-8");
+                    complete_post_data[0] += URLEncoder.encode(Timer.time(current.hour_minute_random_interval), "utf-8");
                 complete_post_data[0] += "&";
             }
         }

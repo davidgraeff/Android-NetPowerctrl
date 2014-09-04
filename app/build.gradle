@@ -20,6 +20,8 @@ android {
         versionName "5.7.2"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
+        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+        resConfig "de"
     }
 
     lintOptions {
@@ -29,6 +31,15 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    def getRevision = { ->
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--short', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
     }
 
     buildTypes {
@@ -41,6 +52,7 @@ android {
             debuggable false
         }
         debug {
+            versionNameSuffix "-" + getRevision()
             applicationIdSuffix ".debug"
             resValue "string", "authority", appID + ".utils.AssetDocumentProvider.Debug"
             //buildConfigField "String", "AUTHORITY", appID + ".utils.AssetDocumentProvider.Debug"
@@ -50,6 +62,11 @@ android {
         }
     }
     sourceSets { main { java.srcDirs = ['src/main/java', 'src/tests/java'] } }
+
+    aaptOptions {
+        //noCompress 'txt'
+        ignoreAssetsPattern "!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
 }
 
 dependencies {

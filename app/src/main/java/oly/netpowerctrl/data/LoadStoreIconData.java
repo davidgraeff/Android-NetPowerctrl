@@ -3,6 +3,7 @@ package oly.netpowerctrl.data;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -65,6 +66,10 @@ public class LoadStoreIconData {
 
     public static UUID uuidFromWidgetID(int widgetId) {
         return new UUID(0xABCD, (long) widgetId);
+    }
+
+    public static UUID uuidFromDefaultWidget() {
+        return new UUID(0xABCE, 0);
     }
 
     public static int getResIdForState(IconState state) {
@@ -262,10 +267,14 @@ public class LoadStoreIconData {
                                 PICK_IMAGE_BEFORE_KITKAT
                         );
                     } else {
-                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                        intent.setType("image/*");
-                        intent.addCategory(Intent.CATEGORY_OPENABLE);
-                        callback.startActivityForResult(intent, PICK_IMAGE_KITKAT);
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                            intent.setType("image/*");
+                            intent.addCategory(Intent.CATEGORY_OPENABLE);
+                            callback.startActivityForResult(intent, PICK_IMAGE_KITKAT);
+                        } catch (ActivityNotFoundException ignored) {
+                            Toast.makeText(context, "Cannot open file chooser", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                 } else {
@@ -296,6 +305,7 @@ public class LoadStoreIconData {
             }
         }
     }
+
 
     public static enum IconType {
         SceneIcon,

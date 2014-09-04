@@ -16,7 +16,7 @@ public class DevicePortAdapterItem {
     // command_value instead overwriting DevicePort's value. The implementation
     // depends on the child class.
     int command_value;
-    boolean marked_removed = false;
+    private boolean marked_removed = false;
     private UUID group;
     private groupTypeEnum groupType = groupTypeEnum.NOGROUP_TYPE;
 
@@ -85,7 +85,7 @@ public class DevicePortAdapterItem {
         return groupType;
     }
 
-    public void setGroupType(groupTypeEnum groupType) {
+    void setGroupType(groupTypeEnum groupType) {
         this.groupType = groupType;
     }
 

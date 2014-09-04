@@ -35,18 +35,18 @@ import oly.netpowerctrl.utils.controls.ListItemMenu;
 public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface,
         SharedPrefs.IShowBackground {
 
-    protected final IconDeferredLoadingThread mIconCache;
+    final IconDeferredLoadingThread mIconCache;
     final List<DevicePortAdapterItem> mItems;
     private final LayoutInflater mInflater;
     // Source of values for this adapter.
     private final DevicePortSource mSource;
-    protected int mOutlet_res_id = 0;
-    protected boolean mShowHidden = true;
-    protected DevicePortViewHolder cViewHolder;
+    int mOutlet_res_id = 0;
+    boolean mShowHidden = true;
+    DevicePortViewHolder cViewHolder;
     // Some observers
-    protected ListItemMenu mListContextMenu;
+    ListItemMenu mListContextMenu;
     // Animation ids
-    protected WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
+    WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
     private boolean drawShadows;
     private int mNextId = 0; // we need stable IDs
     // If you change the layout or an image we increment this layout change id
@@ -69,7 +69,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             source.setTargetAdapter(this);
         }
         drawShadows = SharedPrefs.getInstance().isBackground();
-        SharedPrefs.getInstance().getInstance().registerShowBackground(this);
+        SharedPrefs.getInstance().registerShowBackground(this);
     }
 
     @Override
@@ -264,6 +264,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                     port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
             cViewHolder.title.setText(port.getDescription());
             cViewHolder.title.setEnabled(item.isEnabled());
+
             if (drawShadows)
                 cViewHolder.title.setShadowLayer(4f, 0, 0, Color.WHITE);
 
@@ -453,7 +454,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      */
     private boolean addItemToGroup(DevicePort devicePort, int command_value, int start_position) {
         boolean found = false;
-        AnimationController a = mAnimationWeakReference.get();
+//        AnimationController a = mAnimationWeakReference.get();
 
         int destination_index = mItems.size();
         for (int i = start_position; i < mItems.size(); ++i) {

@@ -18,6 +18,14 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
     // We block updates while moving the range slider
     private static final String TAG = "PortAdapter";
+    public TitleClick titleClick = null;
+    private final View.OnClickListener titleOnlyClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            if (titleClick != null)
+                titleClick.onTitleClick((Integer) view.getTag());
+        }
+    };
 
     public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, DevicePortSource source,
                                      IconDeferredLoadingThread iconCache) {
@@ -43,6 +51,9 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
             return convertView;
         }
 
+        // Assign position to title view. Used in the custom OnClickListener
+        cViewHolder.title.setTag(position);
+
         // We do this only once, if the viewHolder is new
         if (cViewHolder.isNew) {
             // We use the tools icon for the context menu.
@@ -51,6 +62,12 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 cViewHolder.imageEdit.setTag(position);
                 cViewHolder.imageEdit.setOnClickListener(cViewHolder);
             }
+
+            // If we have a listener for title clicks, we set the click listener now
+            if (titleClick != null) {
+                cViewHolder.title.setOnClickListener(titleOnlyClick);
+            }
+
             //current_viewHolder.mainTextView.setTag(position);
             switch (port.getType()) {
                 case TypeToggle: {
@@ -136,5 +153,9 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         getSource().setAutomaticUpdate(true);
+    }
+
+    public interface TitleClick {
+        void onTitleClick(int position);
     }
 }

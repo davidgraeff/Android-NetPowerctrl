@@ -24,7 +24,7 @@ public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<Sc
     private final SceneCollection scenes;
     private final LayoutInflater inflater;
     private final IconDeferredLoadingThread mIconCache;
-    protected WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
+    private WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
     private ListItemMenu mListContextMenu = null;
     private int outlet_res_id = R.layout.grid_icon_item;
 

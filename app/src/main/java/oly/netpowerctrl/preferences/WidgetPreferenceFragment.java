@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
@@ -23,14 +25,17 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
         }
     };
     private int widgetId = -1;
-    private Preference.OnPreferenceChangeListener forceChangePreferences =
+    private final Preference.OnPreferenceChangeListener forceChangePreferences =
             new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object o) {
                     App.getMainThreadHandler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            WidgetUpdateService.ForceUpdate(getActivity(), widgetId);
+                            if (widgetId == -1) {
+                                WidgetUpdateService.ForceUpdateAll(getActivity());
+                            } else
+                                WidgetUpdateService.ForceUpdate(getActivity(), widgetId);
                         }
                     }, 200);
                     return true;
@@ -80,6 +85,13 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
         preference = findPreference("widget_show_status");
         assert preference != null;
         preference.setOnPreferenceChangeListener(forceChangePreferences);
+
+        if (widgetId == -1) {
+            preference = findPreference("widget_use_default");
+            assert preference != null;
+            ((CheckBoxPreference) preference).setChecked(false);
+            preference.setSelectable(false);
+        }
     }
 
     @Override
@@ -88,7 +100,12 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             return;
         Preference current = (Preference) context_object;
         LoadStoreIconData.IconState state = preference_to_state.get(context_object);
-        LoadStoreIconData.saveIcon(getActivity(), bitmap, LoadStoreIconData.uuidFromWidgetID(widgetId), LoadStoreIconData.IconType.WidgetIcon, state);
+        UUID uuid;
+        if (widgetId == -1)
+            uuid = LoadStoreIconData.uuidFromDefaultWidget();
+        else
+            uuid = LoadStoreIconData.uuidFromWidgetID(widgetId);
+        LoadStoreIconData.saveIcon(getActivity(), bitmap, uuid, LoadStoreIconData.IconType.WidgetIcon, state);
         if (bitmap == null) {
             current.setIcon(LoadStoreIconData.getResIdForState(state));
         } else {

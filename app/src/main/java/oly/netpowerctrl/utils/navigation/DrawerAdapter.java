@@ -240,13 +240,13 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
     public static class DrawerItem {
 
         public final boolean isHeader;
+        public final Bitmap bitmap = null;
         public String mTitle;
         public String mSummary;
         public String fragmentClassName;
         public boolean mDialog;
         public Bundle mExtra = null;
         public UUID uuid = UUID.randomUUID();
-        public Bitmap bitmap = null;
         public int intendLevel = 0;
         public View.OnClickListener clickHandler = null;
 

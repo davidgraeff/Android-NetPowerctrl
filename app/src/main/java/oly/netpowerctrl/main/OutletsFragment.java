@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -69,6 +68,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         LoadStoreIconData.IconSelected, SwipeRefreshLayout.OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks,
         onServiceRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged,
         DevicePortSourceConfigured.onChange, onDataQueryCompleted, onNewDevice {
+    private final ActionBarWithGroups actionBarWithGroups = new ActionBarWithGroups();
     int requestedColumnWidth;
     private DevicePortsExecuteAdapter adapter;
     private DevicePortSourceConfigured adapterSource;
@@ -78,7 +78,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private Button btnAutomaticConfiguration;
     private UUID groupFilter = null;
     private GridView mListView;
-    private ActionBarWithGroups actionBarWithGroups = new ActionBarWithGroups();
     private SwipeRefreshLayout mPullToRefreshLayout;
     private ProgressDialog progressDialog;
     private AnimationController animationController;
@@ -97,7 +96,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
-    private ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        animationController = new AnimationController(getActivity());
+        SharedPrefs.getInstance().registerHideNotReachable(this);
+        setHasOptionsMenu(true);
+    }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
@@ -110,14 +117,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                 }
             };
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        animationController = new AnimationController(getActivity());
-        SharedPrefs.getInstance().getInstance().registerHideNotReachable(this);
-        setHasOptionsMenu(true);
-    }
 
     @Override
     public void onStart() {
@@ -308,12 +307,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
         assert view != null;
         mListView = (GridView) view.findViewById(android.R.id.list);
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                adapter.handleClick(position, id);
-            }
-        });
 
         ///// For swiping elements out (hiding)
         SwipeDismissListViewTouchListener touchListener =
@@ -379,6 +372,23 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         animationController.setListView(mListView);
         adapter.setAnimationController(animationController);
 
+        // Click listener
+        adapter.titleClick = new DevicePortsExecuteAdapter.TitleClick() {
+            @Override
+            public void onTitleClick(int position) {
+                mListView.performItemClick(null, position, mListView.getItemIdAtPosition(position));
+            }
+        };
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                boolean restrict = SharedPrefs.getInstance().getSmallerClickExecuteArea();
+                if (restrict && view != null)
+                    return;
+                adapter.handleClick(position, id);
+            }
+        });
+
         checkEmptyChanged(checkEmptyAction.INIT_AFTER_VIEW);
         return view;
     }
@@ -406,9 +416,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private void checkEmptyChanged(checkEmptyAction newState) {
         if (mListView == null)
             return;
-
-        Log.w("DeviceQuery", newState.name());
-
 
         if (newState == checkEmptyAction.INIT_AFTER_VIEW)
             emptyInit = 1;

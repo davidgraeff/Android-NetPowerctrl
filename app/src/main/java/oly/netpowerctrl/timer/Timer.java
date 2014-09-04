@@ -30,6 +30,8 @@ public class Timer implements Storable {
     public static final int TYPE_RANGE_ON_RANDOM_WEEKDAYS = 2;
     public static final int TYPE_ONCE = 10; // fixed date+time
     public static final int TYPES = 3;
+    // Store days. Start with SUNDAY
+    public final boolean[] weekdays = new boolean[7];
     // Unique ID
     public long id = -1;
     public UUID port_id;
@@ -50,8 +52,6 @@ public class Timer implements Storable {
     public boolean enabled = true;
     // If this alarm is not from device (yet) but only from the cache, this flag is set.
     public boolean fromCache = false;
-    // Store days. Start with SUNDAY
-    public boolean weekdays[] = new boolean[7];
     // Absolute date and time
     public Date absolute_date;
 

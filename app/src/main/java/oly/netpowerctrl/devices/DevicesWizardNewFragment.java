@@ -28,8 +28,8 @@ import oly.netpowerctrl.network.Utils;
  * than one connection)
  */
 public class DevicesWizardNewFragment extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
-    AnelCreateDevice anelCreateDevice = new AnelCreateDevice("New device", null);
-    ArrayAdapter<String> ip_autocomplete;
+    private AnelCreateDevice anelCreateDevice = new AnelCreateDevice("New device", null);
+    private ArrayAdapter<String> ip_autocomplete;
 
     public DevicesWizardNewFragment() {
     }

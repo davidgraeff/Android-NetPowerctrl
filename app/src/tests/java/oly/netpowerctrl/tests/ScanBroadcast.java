@@ -18,9 +18,9 @@ import oly.netpowerctrl.network.DeviceObserverFinishedResult;
  * Created by david on 08.07.14.
  */
 public class ScanBroadcast extends AndroidTestCase {
-    AppData c;
-    int refreshStartedStopped_signal = 0;
-    private onServiceRefreshQuery refreshStartedStopped = new onServiceRefreshQuery() {
+    private AppData c;
+    private int refreshStartedStopped_signal = 0;
+    private final onServiceRefreshQuery refreshStartedStopped = new onServiceRefreshQuery() {
         @Override
         public void onRefreshStateChanged(boolean isRefreshing) {
             if (isRefreshing)
