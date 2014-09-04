@@ -5,6 +5,9 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
@@ -12,13 +15,15 @@ import java.util.Date;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.JSONHelper;
+import oly.netpowerctrl.data.Storable;
 import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
  * Created by david on 19.05.14.
  */
-public class Timer {
+public class Timer implements Storable {
     // Alarm type
     public static final int TYPE_RANGE_ON_WEEKDAYS = 1;
     public int type = TYPE_RANGE_ON_WEEKDAYS;
@@ -42,7 +47,7 @@ public class Timer {
      */
     public boolean freeDeviceAlarm;
     // True if the alarm is enabled.
-    public boolean enabled = false;
+    public boolean enabled = true;
     // If this alarm is not from device (yet) but only from the cache, this flag is set.
     public boolean fromCache = false;
     // Store days. Start with SUNDAY
@@ -57,68 +62,26 @@ public class Timer {
     // For random alarms in minutes of the day: hour*60+minute
     public int hour_minute_random_interval = -1;
 
-    public static Timer fromJSON(JsonReader reader) throws IOException, ClassNotFoundException, ParseException {
-        reader.beginObject();
-        Timer di = new Timer();
-        di.fromCache = true;
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            assert name != null;
-            switch (name) {
-                case "id":
-                    di.id = reader.nextLong();
-                    break;
-                case "port_id":
-                    di.port_id = UUID.fromString(reader.nextString());
-                    break;
-                case "deviceAlarm":
-                    di.deviceAlarm = reader.nextBoolean();
-                    break;
-                case "freeDeviceAlarm":
-                    di.freeDeviceAlarm = reader.nextBoolean();
-                    break;
-                case "enabled":
-                    di.enabled = reader.nextBoolean();
-                    break;
-                case "type":
-                    di.type = reader.nextInt();
-                    break;
-                case "absolute_date":
-                    di.absolute_date = DateFormat.getDateInstance().parse(reader.nextString());
-                    break;
-                case "hour_minute_start":
-                    di.hour_minute_start = reader.nextInt();
-                    break;
-                case "hour_minute_stop":
-                    di.hour_minute_stop = reader.nextInt();
-                    break;
-                case "hour_minute_random_interval":
-                    di.hour_minute_random_interval = reader.nextInt();
-                    break;
-                case "weekdays":
-                    reader.beginArray();
-                    int i = 0;
-                    while (reader.hasNext()) {
-                        di.weekdays[i++] = reader.nextBoolean();
-                    }
-                    reader.endArray();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
-        }
+    /**
+     * Convert minutes of the day to a string representation like "11:12".
+     *
+     * @param hour_minute minutes of the day: hour*60+minute
+     * @return A 24 hour based string representation.
+     */
+    public static String time(int hour_minute) {
+        if (hour_minute == -1)
+            return "-";
+        int hour = hour_minute / 60;
+        int minute = hour_minute % 60;
+        return (hour < 9 ? "0" : "") + String.valueOf(hour) + ":" + (minute < 9 ? "0" : "") + String.valueOf(minute);
+    }
 
-        reader.endObject();
+    public static int getHour(int hour_minute) {
+        return hour_minute / 60;
+    }
 
-        if (di.port_id == null)
-            throw new ClassNotFoundException();
-
-        di.port = RuntimeDataController.getDataController().findDevicePort(di.port_id);
-        if (di.port == null)
-            throw new ClassNotFoundException();
-
-        return di;
+    public static int getMinute(int hour_minute) {
+        return hour_minute % 60;
     }
 
     /**
@@ -146,20 +109,6 @@ public class Timer {
         return d;
     }
 
-    /**
-     * Convert minutes of the day to a string representation like "11:12".
-     *
-     * @param hour_minute minutes of the day: hour*60+minute
-     * @return A 24 hour based string representation.
-     */
-    public String time(int hour_minute) {
-        if (hour_minute == -1)
-            return "-";
-        int hour = hour_minute / 60;
-        int minute = hour_minute % 60;
-        return (hour < 9 ? "0" : "") + String.valueOf(hour) + ":" + (minute < 9 ? "0" : "") + String.valueOf(minute);
-    }
-
     public String toString(Context context) {
         String pre = "";
         if (port != null)
@@ -185,7 +134,23 @@ public class Timer {
             return "";
     }
 
-    public void toJSON(JsonWriter writer) throws IOException {
+    /**
+     * Return the json representation of this alarm
+     *
+     * @return JSON String
+     */
+    @Override
+    public String toString() {
+        try {
+            JSONHelper h = new JSONHelper();
+            toJSON(h.createWriter());
+            return h.getString();
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    private void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("id").value(id);
         writer.name("port_id").value(port_id.toString());
@@ -206,6 +171,94 @@ public class Timer {
         writer.endArray();
 
         writer.endObject();
+
+        writer.close();
     }
 
+    @Override
+    public StorableDataType getDataType() {
+        return StorableDataType.JSON;
+    }
+
+    @Override
+    public String getStorableName() {
+        return String.valueOf(id);
+    }
+
+    @Override
+    public void load(JsonReader reader) throws IOException, ClassNotFoundException {
+        reader.beginObject();
+        Timer timer = this;
+        timer.fromCache = true;
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            switch (name) {
+                case "id":
+                    timer.id = reader.nextLong();
+                    break;
+                case "port_id":
+                    timer.port_id = UUID.fromString(reader.nextString());
+                    break;
+                case "deviceAlarm":
+                    timer.deviceAlarm = reader.nextBoolean();
+                    break;
+                case "freeDeviceAlarm":
+                    timer.freeDeviceAlarm = reader.nextBoolean();
+                    break;
+                case "enabled":
+                    timer.enabled = reader.nextBoolean();
+                    break;
+                case "type":
+                    timer.type = reader.nextInt();
+                    break;
+                case "absolute_date":
+                    try {
+                        timer.absolute_date = DateFormat.getDateInstance().parse(reader.nextString());
+                    } catch (ParseException e) {
+                        throw new IOException(e);
+                    }
+                    break;
+                case "hour_minute_start":
+                    timer.hour_minute_start = reader.nextInt();
+                    break;
+                case "hour_minute_stop":
+                    timer.hour_minute_stop = reader.nextInt();
+                    break;
+                case "hour_minute_random_interval":
+                    timer.hour_minute_random_interval = reader.nextInt();
+                    break;
+                case "weekdays":
+                    reader.beginArray();
+                    int i = 0;
+                    while (reader.hasNext()) {
+                        timer.weekdays[i++] = reader.nextBoolean();
+                    }
+                    reader.endArray();
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+
+        reader.endObject();
+
+        if (timer.port_id == null)
+            throw new ClassNotFoundException();
+
+        timer.port = AppData.getInstance().findDevicePort(timer.port_id);
+        if (timer.port == null)
+            throw new ClassNotFoundException();
+    }
+
+    @Override
+    public void load(InputStream input) throws IOException, ClassNotFoundException {
+        load(new JsonReader(new InputStreamReader(input)));
+    }
+
+    @Override
+    public void save(OutputStream output) throws IOException {
+        toJSON(JSONHelper.createWriter(output));
+    }
 }

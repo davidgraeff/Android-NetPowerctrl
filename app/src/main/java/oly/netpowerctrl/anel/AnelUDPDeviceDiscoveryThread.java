@@ -4,16 +4,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
 import oly.netpowerctrl.devices.DeviceFeatureTemperature;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPReceiving;
-import oly.netpowerctrl.preferences.SharedPrefs;
 
 class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     public static AnelPlugin anelPlugin;
@@ -49,15 +49,15 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         }
 
         if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
-            NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+            App.getMainThreadHandler().post(new Runnable() {
                 public void run() {
-                    NetpowerctrlService service = NetpowerctrlService.getService();
+                    ListenService service = ListenService.getService();
                     if (service == null)
                         return;
                     String errMessage = msg[2].trim();
                     if (errMessage.trim().equals("NoPass"))
-                        errMessage = NetpowerctrlService.getService().getString(R.string.error_nopass);
-                    RuntimeDataController.getDataController().onDeviceErrorByName(
+                        errMessage = ListenService.getService().getString(R.string.error_nopass);
+                    AppData.getInstance().onDeviceErrorByName(
                             service,
                             msg[1].trim(),
                             errMessage);
@@ -133,6 +133,6 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             di.add(oi);
         }
 
-        RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(di);
+        AppData.getInstance().onDeviceUpdatedOtherThread(di);
     }
 }

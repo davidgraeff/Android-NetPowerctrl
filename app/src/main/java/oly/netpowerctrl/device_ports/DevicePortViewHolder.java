@@ -11,9 +11,9 @@ import android.widget.TextView;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
-import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.ListItemMenu;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.utils.controls.ListItemMenu;
 
 /**
  * An item in a devicePort adapter. Used for implementing the ViewHolder pattern.
@@ -75,7 +75,7 @@ class DevicePortViewHolder implements View.OnClickListener, IconDeferredLoadingT
 
     @SuppressWarnings("SameParameterValue")
     public void loadIcon(IconDeferredLoadingThread iconCache, UUID uuid,
-                         Icons.IconType iconType, Icons.IconState state,
+                         LoadStoreIconData.IconType iconType, LoadStoreIconData.IconState state,
                          int default_resource, int bitmapPosition) {
         iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
                 uuid, iconType, state, default_resource, this, bitmapPosition));

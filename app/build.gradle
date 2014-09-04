@@ -11,12 +11,14 @@ android {
 //        }
 //    }
 
+    def appID = "oly.netpowerctrl"
+
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 20
         versionCode 83
         versionName "5.7.2"
-        applicationId "oly.netpowerctrl"
+        applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
     }
 
@@ -33,10 +35,15 @@ android {
         release {
             zipAlign true
             runProguard true
+            resValue "string", "authority", appID + ".utils.AssetDocumentProvider"
+            //buildConfigField "String", "AUTHORITY", appID + ".utils.AssetDocumentProvider"
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
             debuggable false
         }
         debug {
+            applicationIdSuffix ".debug"
+            resValue "string", "authority", appID + ".utils.AssetDocumentProvider.Debug"
+            //buildConfigField "String", "AUTHORITY", appID + ".utils.AssetDocumentProvider.Debug"
             zipAlign true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             runProguard false
@@ -46,11 +53,11 @@ android {
 }
 
 dependencies {
-    //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08
-    compile 'com.google.android.gms:play-services:5.0.89'
+    compile project(':libraries:Donations')
+    //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08 5.0.89
+    //compile 'com.google.android.gms:play-services:5.2.08'
     compile 'com.github.gabrielemariotti.changeloglib:library:1.5.1'
     compile 'ch.acra:acra:4.5.0'
     compile 'com.android.support:support-v13:20.0.0'
-    compile 'com.github.chrisbanes.actionbarpulltorefresh:library:0.9'
-    androidTestCompile 'junit:junit:4.+'
+    androidTestCompile 'junit:junit:4.11'
 }

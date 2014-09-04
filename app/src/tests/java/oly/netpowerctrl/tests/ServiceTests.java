@@ -6,10 +6,10 @@ import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import oly.netpowerctrl.application_state.LoadStoreData;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.onServiceReady;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.LoadStoreJSonData;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.onServiceReady;
 
 /**
  * Testing service start and shutdown
@@ -24,25 +24,25 @@ public class ServiceTests extends AndroidTestCase {
     }
 
     public void testServiceInit() throws Exception {
-        RuntimeDataController c = RuntimeDataController.createRuntimeDataController(
-                new TestObjects.LoadStoreDataTest(getContext()));
+        AppData c = AppData.getInstance();
+        c.useAppData(new TestObjects.LoadStoreJSonDataTest());
         assertNotNull(c);
 
         // Test if load store is set up.
-        Field privateStringField = RuntimeDataController.class.
+        Field privateStringField = AppData.class.
                 getDeclaredField("loadStoreData");
         privateStringField.setAccessible(true);
-        LoadStoreData l = (LoadStoreData) privateStringField.get(c);
+        LoadStoreJSonData l = (LoadStoreJSonData) privateStringField.get(c);
         assertNotNull(l);
-        assertEquals(l instanceof TestObjects.LoadStoreDataTest, true);
+        assertEquals(l instanceof TestObjects.LoadStoreJSonDataTest, true);
 
-        assertNull(NetpowerctrlService.getService());
-        NetpowerctrlService.useService(getContext(), false, false);
+        assertNull(ListenService.getService());
+        ListenService.useService(getContext(), false, false);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        NetpowerctrlService.observersServiceReady.register(new onServiceReady() {
+        ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
+            public boolean onServiceReady(ListenService service) {
                 signal.countDown();
                 return false;
             }
@@ -54,16 +54,16 @@ public class ServiceTests extends AndroidTestCase {
 
         signal.await(4, TimeUnit.SECONDS);
 
-        NetpowerctrlService service = NetpowerctrlService.getService();
+        ListenService service = ListenService.getService();
         assertNotNull(service);
-        assertEquals(service, NetpowerctrlService.getService());
+        assertEquals(service, ListenService.getService());
 
-        assertEquals(NetpowerctrlService.getUsedCount(), 1);
+        assertEquals(ListenService.getUsedCount(), 1);
 
         final CountDownLatch shutDownSignal = new CountDownLatch(1);
-        NetpowerctrlService.observersServiceReady.register(new onServiceReady() {
+        ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
+            public boolean onServiceReady(ListenService service) {
                 return false;
             }
 
@@ -73,9 +73,9 @@ public class ServiceTests extends AndroidTestCase {
             }
         });
 
-        NetpowerctrlService.stopUseService();
+        ListenService.stopUseService();
         shutDownSignal.await(4, TimeUnit.SECONDS);
 
-        assertNull(NetpowerctrlService.getService());
+        assertNull(ListenService.getService());
     }
 }

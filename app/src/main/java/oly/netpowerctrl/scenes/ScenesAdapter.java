@@ -13,12 +13,14 @@ import java.lang.ref.WeakReference;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
-import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.ListItemMenu;
-import oly.netpowerctrl.utils_gui.AnimationController;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.controls.ListItemMenu;
 
-public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScenesUpdated {
+public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<SceneCollection, Scene> {
     private final SceneCollection scenes;
     private final LayoutInflater inflater;
     private final IconDeferredLoadingThread mIconCache;
@@ -69,16 +71,16 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
 
     @Override
     public Object getItem(int position) {
-        return scenes.getScene(position);
+        return scenes.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return scenes.getScene(position).id;
+        return scenes.get(position).id;
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
-        final Scene data = scenes.getScene(position);
+        final Scene data = scenes.get(position);
 
         ViewHolder current_viewHolder;
         if (convertView == null) {
@@ -103,8 +105,8 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
                 current_viewHolder.imageIcon.setOnClickListener(current_viewHolder);
             }
 
-            current_viewHolder.loadIcon(mIconCache, data.uuid, Icons.IconType.SceneIcon,
-                    Icons.IconState.StateUnknown, R.drawable.netpowerctrl, 0);
+            current_viewHolder.loadIcon(mIconCache, data.uuid, LoadStoreIconData.IconType.SceneIcon,
+                    LoadStoreIconData.IconState.StateUnknown, R.drawable.netpowerctrl, 0);
         }
 
         current_viewHolder.title.setText(data.sceneName);
@@ -122,16 +124,17 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
     }
 
     @Override
-    public void scenesUpdated(boolean addedOrRemoved) {
-        notifyDataSetChanged();
-    }
-
-    @Override
     public void notifyDataSetChanged() {
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
             a.animate();
         super.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean updated(SceneCollection sceneCollection, Scene scene, ObserverUpdateActions action) {
+        notifyDataSetChanged();
+        return true;
     }
 
     //ViewHolder pattern
@@ -157,8 +160,8 @@ public class ScenesAdapter extends BaseAdapter implements SceneCollection.IScene
             subtitle = (TextView) convertView.findViewById(R.id.subtitle);
         }
 
-        public void loadIcon(IconDeferredLoadingThread iconCache, UUID uuid, Icons.IconType iconType,
-                             Icons.IconState state, int default_resource, int bitmapPosition) {
+        public void loadIcon(IconDeferredLoadingThread iconCache, UUID uuid, LoadStoreIconData.IconType iconType,
+                             LoadStoreIconData.IconState state, int default_resource, int bitmapPosition) {
             iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
                     uuid, iconType, state, default_resource, this, bitmapPosition));
         }

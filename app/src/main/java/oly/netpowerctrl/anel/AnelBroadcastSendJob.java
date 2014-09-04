@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Set;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.PluginInterface;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPSending;
 
 /**
@@ -44,11 +44,11 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
 
     @Override
     public void process(UDPSending UDPSending) {
-        Context context = NetpowerctrlService.getService();
+        Context context = ListenService.getService();
         if (context == null)
             return;
 
-        Set<Integer> ports = RuntimeDataController.getDataController().getAllSendPorts();
+        Set<Integer> ports = AppData.getInstance().getAllSendPorts();
         boolean foundBroadcastAddresses = false;
 
         Enumeration list;
@@ -85,12 +85,12 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
 
             // Query all existing anel devices directly
 
-            List<Device> devices = RuntimeDataController.getDataController().deviceCollection.devices;
+            List<Device> devices = AppData.getInstance().deviceCollection.getItems();
             for (Device device : devices) {
                 if (device.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
                     PluginInterface i = device.getPluginInterface();
                     if (i == null) {
-                        device.setNotReachableAll(NetpowerctrlApplication.getAppString(R.string.error_plugin_not_installed));
+                        device.setNotReachableAll(App.getAppString(R.string.error_plugin_not_installed));
                         continue;
                     }
                     for (DeviceConnection ci : device.DeviceConnections) {

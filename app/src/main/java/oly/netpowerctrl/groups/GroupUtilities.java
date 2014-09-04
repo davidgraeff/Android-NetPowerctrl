@@ -9,7 +9,7 @@ import android.widget.Toast;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
@@ -17,7 +17,7 @@ import oly.netpowerctrl.device_ports.DevicePort;
  */
 public class GroupUtilities {
     public static void createGroup(final Context context, final DevicePort port, final groupsChangedInterface callback) {
-        final GroupCollection groupCollection = RuntimeDataController.getDataController().groupCollection;
+        final GroupCollection groupCollection = AppData.getInstance().groupCollection;
 
         // No groups? Ask the user to create one
         if (groupCollection.length() == 0) {
@@ -52,10 +52,10 @@ public class GroupUtilities {
                             if (!checked[i]) {
                                 continue;
                             }
-                            port.groups.add(groupCollection.groups.get(i).uuid);
+                            port.groups.add(groupCollection.get(i).uuid);
                             ++counter;
                         }
-                        RuntimeDataController.getDataController().deviceCollection.save();
+                        AppData.getInstance().deviceCollection.save(port.device);
                         Toast.makeText(context, context.getString(R.string.outlet_added_to_groups, counter), Toast.LENGTH_SHORT).show();
                         if (callback != null)
                             callback.onGroupsChanged(port);
@@ -86,9 +86,9 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                UUID group_uuid = RuntimeDataController.getDataController().groupCollection.add(name);
+                UUID group_uuid = AppData.getInstance().groupCollection.add(name);
                 port.addToGroup(group_uuid);
-                RuntimeDataController.getDataController().deviceCollection.save();
+                AppData.getInstance().deviceCollection.save(port.device);
                 if (callback != null)
                     callback.onGroupsChanged(port);
             }
@@ -99,8 +99,8 @@ public class GroupUtilities {
     }
 
     public static void renameGroup(Context context, UUID groupFilter) {
-        final GroupCollection.GroupItem groupItem = RuntimeDataController.getDataController().groupCollection.get(groupFilter);
-        if (groupItem == null)
+        final Group group = AppData.getInstance().groupCollection.get(groupFilter);
+        if (group == null)
             return;
 
         //noinspection ConstantConditions
@@ -109,7 +109,7 @@ public class GroupUtilities {
         alert.setTitle(R.string.menu_rename_group);
 
         final EditText input = new EditText(alert.getContext());
-        input.setText(groupItem.name);
+        input.setText(group.name);
         alert.setView(input);
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -117,7 +117,7 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                RuntimeDataController.getDataController().groupCollection.edit(groupItem.uuid, name);
+                AppData.getInstance().groupCollection.edit(group.uuid, name);
             }
         });
 

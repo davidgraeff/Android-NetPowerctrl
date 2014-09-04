@@ -69,28 +69,19 @@
         <item>Zum Quellcode</item>
         <item>In Google Play bewerten</item>
         <item>Change log</item>
-        <item>Spenden per %s</item>
     </string-array>
 
     <string name="drawer_switch_title">Schalten</string>
     <string name="drawer_overview">Übersicht</string>
     <string name="drawer_scenes">Szenenübersicht</string>
 
-    <string-array name="drawer_titles_app">
-        <item>App</item>
-        <item>Geräte</item>
-        <item>Einstellungen</item>
-        <item>GDrive Sicherung</item>
-        <item>Synchronisieren</item>
-    </string-array>
-
-    <string-array name="drawer_descriptions_app">
-        <item>-</item>
-        <item>Neue/eingerichte Geräte</item>
-        <item>Ports, Widgets, Theme, …</item>
-        <item>Auf Google Drive sichern</item>
-        <item>Telefone, Tablets synchronisieren</item>
-    </string-array>
+    <string name="drawer_app_title">App und Geräte</string>
+    <string name="drawer_devices">Geräte</string>
+    <string name="drawer_preferences">Einstellungen</string>
+    <string name="drawer_devices_detail">Neue/eingerichte Geräte</string>
+    <string name="drawer_preferences_detail">Ports, Widgets, Theme, …</string>
+    <string name="drawer_donate">Spenden</string>
+    <string name="drawer_donate_detail">Google, Paypal, Flattr</string>
 
     <string name="drawer_open">Öffne Navigationsleiste</string>
     <string name="drawer_close">Schließe Navigationsleiste</string>
@@ -115,8 +106,7 @@
     <string name="menu_device_configuration_page">Konfigurationsseite öffnen</string>
     <string name="error_not_reachable">Gerät nicht erreichbar</string>
 
-    <string name="empty_no_scenes">Keine Szenen gefunden. Erstelle eine mit dem (+) Icon oben rechts.\n\n
-Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
+    <string name="empty_no_scenes">Keine Szenen gefunden.\n\nMit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
 Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</string>
     <string name="empty_no_devices">Die automatische Suche hat keine Geräte gefunden.\n\n
@@ -191,8 +181,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen. Zuerst musst du aber Geräte einrichten.</string>
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Benutze den Plus-Button um ein Gerät zu erstellen, was nicht automatisch gefunden worden ist.\n\nDu musst auf deinen Geräten UDP eingeschaltet haben!</string>
     <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
-    <string name="preference_ports_unlimited">Unlimitierte Ports</string>
-    <string name="preference_ports_unlimited_summary">Wähle diese Option auf einem gerootetem Android Gerät um Ports kleiner als 1024 wählen zu können.</string>
     <string name="log_screen">Logbuch</string>
     <string name="preference_use_log_energy_saving_mode">Log: Energiesparmodus</string>
     <string name="preference_use_log_energy_saving_mod_summary">Alle Energiespar-Aktivitäten mitloggen</string>
@@ -240,11 +228,13 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="list_sorted">Neue Reihenfolge</string>
     <string name="help_sorting">Dieser Dialog erlaubt dir die Reihenfolge der Steckdosen oder Szenen zu ändern. Du kannst entweder ein vorgefertigtes Kriterium wählen oder die Reihenfolge selber festlegen. Wenn du die Reihenfolge selber festlegst musst du alle Elemente der rechten Liste einmal in deiner gewünschten Reihenfolge anklicken. Diese verschwinden und werden auf der linken Seite hinzugefügt. Am Ende sollten alle Elemente auf der linken Seite in deiner gewünschten Reihenfolge vorliegen.</string>
     <string name="create_device_not_all_data_set">Bitte erstmal alle Daten ausfüllen!</string>
-    <string name="menu_donate">Spenden</string>
-    <string name="menu_beer">Spende 1 Bier</string>
-    <string name="menu_beer2">Spende 2 Bier</string>
-    <string name="menu_beer3">Spende 5 Bier</string>
-    <string name="menu_beer4">Spende 10 Bier</string>
+
+    <string-array name="donation_google_catalog_values">
+        <item>Spende 1 Bier</item>
+        <item>Spende 2 Bier</item>
+        <item>Spende 5 Bier</item>
+        <item>Spende 10 Bier</item>
+    </string-array>
     <string name="gDrive_no_data">Es existieren noch keine Google Drive Sicherungen.</string>
     <string name="neighbour_paired">Gekoppelt</string>
     <string name="neighbour_paired_not_found">Nicht gefunden</string>
@@ -294,7 +284,7 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="alarm_no_target">Es wurde kein Zielgerät für diesen Alarm ausgewählt!</string>
     <string name="alarm_no_start_no_stop">Es wurden weder Einschalt- noch Ausschaltzeit angegeben!</string>
     <string name="confirmation_delete_all_alarms">Sollen wirklich alle Alarme zurückgesetzt werden?</string>
-    <string name="port_warning_1024">Ein Port kleiner als 1024 benötigt Root-Rechte unter Android! Deaktivie diese Überprüfung in den Einstellungen.</string>
+    <string name="port_warning_1024">Ein Empfangsport kleiner als 1024 benötigt Root-Rechte und das die App als System-App installiert ist! Soll für den jetzigen Vorgang die Portbeschränkung ignoriert werden?</string>
     <string name="alarm_receiving">Empfange Alarm %1$d</string>
     <string name="alarm_saving_now">Bitte warten. Speichere Alarm…</string>
     <string name="toWirelessSettings">WLAN einschalten</string>
@@ -350,4 +340,18 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="device_unqiue_id">Geräte ID (Mac)</string>
     <string name="device_already_exist">Device with this IP/Hostname already exist!</string>
     <string name="error_device_incomplete">Geräteangaben unvollständig!</string>
+    <string name="preference_user_interface">Benutzerinterface</string>
+    <string name="port_warning_1024_title">Allow administrative port range?</string>
+    <string name="preferences_all_widgets">Alle Widgets</string>
+    <string name="preference_widget_use_default">Standardeinstellung nutzen</string>
+    <string name="preferencewidget_use_default_summary_on">Es werden die Standardeinstellungen für Widgets genutzt</string>
+    <string name="preference_widget_use_default_summary_off">Eigene Einstellungen (weiter unten) gelten für dieses Widget</string>
+    <string name="preferences_all_widgets_summary">Öffnet die Standardeinstellungen für Widgets</string>
+    <string name="preferences_backup">Import/Export</string>
+    <string name="backup_import">Import</string>
+    <string name="backup_export">Export</string>
+    <string name="backup_export_summary">Alle Geräte, Gruppen, Szenen und Bilder an einen auszuwählenden Ort exportieren</string>
+    <string name="backup_import_summary">Importierte Daten überschreiben alle Geräte, Gruppen, Szenen und Bilder</string>
+    <string name="alarm_add">Neuer Alarm</string>
+    <string name="alarm_weekdays_summary">Wenn kein Wochentag ausgewählt wird, ist der Alarm inaktiv.</string>
 </resources>

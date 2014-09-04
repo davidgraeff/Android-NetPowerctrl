@@ -3,54 +3,43 @@
     android:title="Settings">
 
     <CheckBoxPreference
-        android:defaultValue="@bool/use_dark_theme"
-        android:key="use_dark_theme"
-        android:summary="@string/preference_use_dark_theme_summary"
-        android:title="@string/preference_use_dark_theme" />
-
-    <CheckBoxPreference
-        android:defaultValue="@bool/show_background"
-        android:key="show_background"
-        android:summary="@string/preference_show_background_summary"
-        android:title="@string/preference_show_background" />
-
-    <CheckBoxPreference
-        android:defaultValue="@bool/show_persistent_notification"
-        android:key="show_persistent_notification"
-        android:summary="@string/preference_show_persistent_notification_summary"
-        android:title="@string/preference_show_persistent_notification" />
-
-    <CheckBoxPreference
-        android:defaultValue="@bool/hide_not_reachable"
-        android:key="hide_not_reachable"
-        android:summary="@string/preference_hide_not_reachable_summary"
-        android:title="@string/preference_hide_not_reachable" />
-
-    <CheckBoxPreference
-        android:defaultValue="@bool/notify_on_non_reachable"
-        android:key="notify_on_non_reachable"
-        android:summary="@string/preference_notify_on_non_reachable_summary"
-        android:title="@string/preference_notify_on_non_reachable" />
-
-    <!--
-    <CheckBoxPreference
-        android:defaultValue="@bool/backup_to_gDrive"
-        android:key="backup_to_gDrive"
-        android:summary="@string/preference_backup_to_gDrive_summary"
-        android:title="@string/preference_backup_to_gDrive" />
-    -->
-
-    <CheckBoxPreference
-        android:defaultValue="@bool/ports_unlimited"
-        android:key="ports_unlimited"
-        android:summary="@string/preference_ports_unlimited_summary"
-        android:title="@string/preference_ports_unlimited" />
-
-    <CheckBoxPreference
         android:defaultValue="@bool/wakeup_energy_saving_mode"
         android:key="wakeup_energy_saving_mode"
         android:summary="@string/preference_wakeup_energy_saving_mode_summary"
         android:title="@string/preference_wakeup_energy_saving_mode" />
+
+    <PreferenceCategory android:title="@string/preference_user_interface">
+        <CheckBoxPreference
+            android:defaultValue="@bool/use_dark_theme"
+            android:key="use_dark_theme"
+            android:summary="@string/preference_use_dark_theme_summary"
+            android:title="@string/preference_use_dark_theme" />
+
+        <CheckBoxPreference
+            android:defaultValue="@bool/show_background"
+            android:key="show_background"
+            android:summary="@string/preference_show_background_summary"
+            android:title="@string/preference_show_background" />
+
+        <CheckBoxPreference
+            android:defaultValue="@bool/show_persistent_notification"
+            android:key="show_persistent_notification"
+            android:summary="@string/preference_show_persistent_notification_summary"
+            android:title="@string/preference_show_persistent_notification" />
+
+        <CheckBoxPreference
+            android:defaultValue="@bool/hide_not_reachable"
+            android:key="hide_not_reachable"
+            android:summary="@string/preference_hide_not_reachable_summary"
+            android:title="@string/preference_hide_not_reachable" />
+
+        <CheckBoxPreference
+            android:defaultValue="@bool/notify_on_non_reachable"
+            android:key="notify_on_non_reachable"
+            android:summary="@string/preference_notify_on_non_reachable_summary"
+            android:title="@string/preference_notify_on_non_reachable" />
+
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preference_error_report_tool">
         <CheckBoxPreference
@@ -88,7 +77,13 @@
 
     <PreferenceCategory
         android:key="widgets"
-        android:title="@string/pref_widgets" />
+        android:title="@string/pref_widgets">
+
+        <PreferenceScreen
+            android:key="all_widgets"
+            android:summary="@string/preferences_all_widgets_summary"
+            android:title="@string/preferences_all_widgets" />
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences_log_screen">
         <CheckBoxPreference
@@ -106,5 +101,17 @@
         <PreferenceScreen
             android:key="open_log"
             android:title="@string/log_screen" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/preferences_backup">
+        <PreferenceScreen
+            android:key="import"
+            android:summary="@string/backup_import_summary"
+            android:title="@string/backup_import" />
+
+        <PreferenceScreen
+            android:key="export"
+            android:summary="@string/backup_export_summary"
+            android:title="@string/backup_export" />
     </PreferenceCategory>
 </PreferenceScreen>

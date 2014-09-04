@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
 
 public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
     private final SparseBooleanArray checked = new SparseBooleanArray();
     private boolean checkable;
 
     public DevicePortsListAdapter(Context context, boolean checkable, DevicePortSource source,
-                                  IconDeferredLoadingThread iconCache) {
-        super(context, null, source, iconCache, true);
+                                  IconDeferredLoadingThread iconCache, boolean showGroups) {
+        super(context, null, source, iconCache, showGroups);
         this.checkable = checkable;
         if (checkable)
             setLayoutRes(R.layout.selectable_outlet_list_item);

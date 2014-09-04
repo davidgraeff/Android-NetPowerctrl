@@ -24,26 +24,26 @@ import android.widget.TextView;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.JSONHelper;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsCreateSceneAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.ActivityWithIconCache;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
-import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.JSONHelper;
-import oly.netpowerctrl.utils.ListItemMenu;
-import oly.netpowerctrl.utils.Shortcuts;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.utils.AndroidShortcuts;
+import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
+import oly.netpowerctrl.utils.controls.ListItemMenu;
 
 /**
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
 public class EditSceneActivity extends Activity implements ListItemMenu, EditSceneFragmentReady,
-        Icons.IconSelected, ActivityWithIconCache {
+        LoadStoreIconData.IconSelected, ActivityWithIconCache {
 
     /**
      * We pass arguments to this activity via the intent extra bundle.
@@ -158,13 +158,14 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     @Override
     protected void onResume() {
         super.onResume();
-        NetpowerctrlService.useService(this, false, false);
+        AppData.useAppData();
+        ListenService.useService(getApplicationContext(), false, false);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        NetpowerctrlService.stopUseService();
+        ListenService.stopUseService();
     }
 
     private void loadContent() {
@@ -174,11 +175,13 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
             if (extra != null) {
                 isSceneNotShortcut = extra.getBoolean(EDIT_SCENE_NOT_SHORTCUT);
 
-                String load_scene = extra.getString(LOAD_SCENE, null);
-                if (load_scene != null) {
+                String scene_string = extra.getString(LOAD_SCENE, null);
+                if (scene_string != null) {
                     try {
-                        scene = Scene.fromJSON(JSONHelper.getReader(load_scene));
-                    } catch (IOException ignored) {
+                        scene = new Scene();
+                        scene.load(JSONHelper.getReader(scene_string));
+                    } catch (IOException | ClassNotFoundException ignored) {
+                        scene = null;
                         finish();
                         return;
                     }
@@ -217,7 +220,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         if (isSceneNotShortcut) {
             if (isLoaded) {
                 setTitle(R.string.title_scene_edit);
-                setIcon(null, Icons.loadIcon(this, scene.uuid, Icons.IconType.SceneIcon, Icons.IconState.StateUnknown, 0));
+                setIcon(null, LoadStoreIconData.loadIcon(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown, 0));
             } else
                 setTitle(R.string.title_scene);
         } else {
@@ -248,18 +251,18 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
             return;
 
         if (isSceneNotShortcut) {
-            RuntimeDataController.getDataController().sceneCollection.setBitmap(this, scene, scene_icon);
-            RuntimeDataController.getDataController().sceneCollection.add(scene);
+            AppData.getInstance().sceneCollection.setBitmap(this, scene, scene_icon);
+            AppData.getInstance().sceneCollection.add(scene);
         } else {
-            Intent extra = Shortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
+            Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
                     scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
             // Return result
             Intent shortcut;
             if (scene_icon != null) {
-                shortcut = Shortcuts.createShortcut(extra, scene.sceneName,
-                        Icons.resizeBitmap(this, scene_icon));
+                shortcut = AndroidShortcuts.createShortcut(extra, scene.sceneName,
+                        LoadStoreIconData.resizeBitmap(this, scene_icon));
             } else
-                shortcut = Shortcuts.createShortcut(extra, scene.sceneName,
+                shortcut = AndroidShortcuts.createShortcut(extra, scene.sceneName,
                         EditSceneActivity.this);
             setResult(RESULT_OK, shortcut);
         }
@@ -273,7 +276,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         switch (item.getItemId()) {
             case android.R.id.home:
             case R.id.menu_icon:
-                Icons.show_select_icon_dialog(this, "scene_icons", this, null);
+                LoadStoreIconData.show_select_icon_dialog(this, "scene_icons", this, null);
                 return true;
             case R.id.menu_name:
                 requestName(scene);
@@ -347,7 +350,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        Icons.activityCheckForPickedImage(this, this, requestCode, resultCode, imageReturnedIntent);
+        LoadStoreIconData.activityCheckForPickedImage(this, this, requestCode, resultCode, imageReturnedIntent);
     }
 
     /**
@@ -388,7 +391,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
     public void sceneEditFragmentReady(final EditSceneFragment fragment) {
         if (fragment.equals(fragment_available)) {
             DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-            adapter_available = new DevicePortsListAdapter(this, false, s, mIconCache);
+            adapter_available = new DevicePortsListAdapter(this, false, s, mIconCache, true);
             fragment.setAdapter(adapter_available);
         } else {
             adapter_included = new DevicePortsCreateSceneAdapter(this, mIconCache);

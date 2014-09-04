@@ -7,11 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.listen_service.PluginInterface;
+import oly.netpowerctrl.main.App;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -48,7 +48,7 @@ public class DeviceQuery extends DeviceObserverBase {
      */
     public DeviceQuery(Context context, DeviceObserverResult target) {
         super(context, target);
-        List<Device> deviceList = RuntimeDataController.getDataController().deviceCollection.devices;
+        List<Device> deviceList = AppData.getInstance().deviceCollection.getItems();
         int wait = 0;
         for (Device device : deviceList) {
             wait += addDevice(device, false);
@@ -66,7 +66,7 @@ public class DeviceQuery extends DeviceObserverBase {
 
         PluginInterface pluginInterface = device.getPluginInterface();
         if (pluginInterface == null) {
-            device.setNotReachableAll(NetpowerctrlApplication.getAppString(R.string.error_plugin_not_installed));
+            device.setNotReachableAll(App.getAppString(R.string.error_plugin_not_installed));
             // remove from list of devices to observe and notify observers
             notifyObservers(device);
             return;

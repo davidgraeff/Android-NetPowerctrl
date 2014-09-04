@@ -4,52 +4,52 @@ import android.test.AndroidTestCase;
 
 import java.lang.reflect.Field;
 
-import oly.netpowerctrl.application_state.LoadStoreData;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.LoadStoreJSonData;
+import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.listen_service.ListenService;
 
 /**
  * Created by david on 08.07.14.
  */
 public class BasicTests extends AndroidTestCase {
-    RuntimeDataController c;
+    AppData c;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         testAndroidTestCaseSetupProperly();
-        c = RuntimeDataController.createRuntimeDataController(
-                new TestObjects.LoadStoreDataTest(getContext()));
+        c = AppData.getInstance();
+        c.useAppData(new TestObjects.LoadStoreJSonDataTest());
         assertNotNull(c);
-        new SharedPrefs(getContext());
+        SharedPrefs.getInstance();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        c.finish();
+        c.clear();
         super.tearDown();
     }
 
     public void testMainApp() throws Exception {
         // Test if load store is set up.
-        Field privateStringField = RuntimeDataController.class.
+        Field privateStringField = AppData.class.
                 getDeclaredField("loadStoreData");
         privateStringField.setAccessible(true);
-        LoadStoreData l = (LoadStoreData) privateStringField.get(c);
+        LoadStoreJSonData l = (LoadStoreJSonData) privateStringField.get(c);
         assertNotNull(l);
-        assertEquals(l instanceof TestObjects.LoadStoreDataTest, true);
+        assertEquals(l instanceof TestObjects.LoadStoreJSonDataTest, true);
 
-        assertNull(NetpowerctrlService.getService());
+        assertNull(ListenService.getService());
 
         c.onDeviceUpdated(TestObjects.createDevice());
 
-        assertEquals(c.deviceCollection.devices.size(), 0);
+        assertEquals(c.deviceCollection.size(), 0);
         assertEquals(c.newDevices.size(), 1);
 
         c.addToConfiguredDevices(getContext(), c.newDevices.get(0));
 
         assertEquals(c.newDevices.size(), 0);
-        assertEquals(c.deviceCollection.devices.size(), 1);
+        assertEquals(c.deviceCollection.size(), 1);
     }
 }

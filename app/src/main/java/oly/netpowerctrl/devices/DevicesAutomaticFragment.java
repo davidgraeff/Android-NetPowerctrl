@@ -13,12 +13,12 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelCreateDevice;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.main.App;
 
 /**
- * Created by david on 20.08.14.
+ * Try to setup all found devices, The dialog shows a short log about the actions.
  */
 public class DevicesAutomaticFragment extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
     TextView textView;
@@ -44,7 +44,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
     @Override
     public void onStart() {
         super.onStart();
-        deviceList = new ArrayList<>(RuntimeDataController.getDataController().newDevices);
+        deviceList = new ArrayList<>(AppData.getInstance().newDevices);
         takeNext();
     }
 
@@ -63,7 +63,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
             textView.append("\tPlugin failed\n");
             anelCreateDevice.listener = null;
             anelCreateDevice = null;
-            NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+            App.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
                     takeNext();
@@ -77,10 +77,10 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
         if (success) {
             textView.append("\tOK\n");
             final Device deviceToAdd = anelCreateDevice.device;
-            NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+            App.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    RuntimeDataController d = RuntimeDataController.getDataController();
+                    AppData d = AppData.getInstance();
                     // Add to group with name DeviceName
                     UUID group = d.groupCollection.add(deviceToAdd.DeviceName);
                     Iterator<DevicePort> devicePortIterator = deviceToAdd.getDevicePortIterator();
@@ -95,7 +95,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
         }
         anelCreateDevice.listener = null;
         anelCreateDevice = null;
-        NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+        App.getMainThreadHandler().post(new Runnable() {
             @Override
             public void run() {
                 takeNext();
@@ -108,7 +108,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
         anelCreateDevice.listener = null;
         anelCreateDevice = null;
         textView.append("\tLogin data wrong\n");
-        NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+        App.getMainThreadHandler().post(new Runnable() {
             @Override
             public void run() {
                 takeNext();

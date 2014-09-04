@@ -17,16 +17,19 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelCreateDevice;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.network.Utils;
 
 /**
- * Created by david on 20.08.14.
+ * Create new device. This dialog is different to the device edit dialog. One HTTP/UDP connection data-set
+ * can be entered (in contrast to the edit dialog, which hides connections by default and allow to have more
+ * than one connection)
  */
 public class DevicesWizardNewFragment extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
-    AnelCreateDevice anelCreateDevice = new AnelCreateDevice(null);
-    ArrayAdapter<String> ip_autocomple;
+    AnelCreateDevice anelCreateDevice = new AnelCreateDevice("New device", null);
+    ArrayAdapter<String> ip_autocomplete;
 
     public DevicesWizardNewFragment() {
     }
@@ -36,17 +39,17 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
         @SuppressLint("InflateParams")
         final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_new, null);
 
-        ip_autocomple = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
+        ip_autocomplete = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
         EditText textView;
 
-        List<Device> devices = RuntimeDataController.getDataController().deviceCollection.devices;
+        List<Device> devices = AppData.getInstance().deviceCollection.getItems();
         for (Device device : devices)
             for (DeviceConnection deviceConnection : device.DeviceConnections) {
-                ip_autocomple.remove(deviceConnection.HostName);
-                ip_autocomple.add(deviceConnection.HostName);
+                ip_autocomplete.remove(deviceConnection.HostName);
+                ip_autocomplete.add(deviceConnection.HostName);
             }
-        AutoCompleteTextView iptext = (AutoCompleteTextView) view.findViewById(R.id.device_ip);
-        iptext.setAdapter(ip_autocomple);
+        AutoCompleteTextView iptext = (AutoCompleteTextView) view.findViewById(R.id.device_host);
+        iptext.setAdapter(ip_autocomplete);
 
         textView = (EditText) view.findViewById(R.id.device_http_port);
         textView.setText("80");
@@ -107,7 +110,7 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
 
         TextView textView;
 
-        textView = (TextView) getDialog().findViewById(R.id.device_ip);
+        textView = (TextView) getDialog().findViewById(R.id.device_host);
         String hostname = textView.getText().toString();
 
         if (hostname.trim().isEmpty()) {
@@ -119,20 +122,20 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
         int httpPort = Integer.valueOf(textView.getText().toString());
 
         textView = (TextView) getDialog().findViewById(R.id.device_udp_receive);
-        int updReceive = Integer.valueOf(textView.getText().toString());
+        int udpReceive = Integer.valueOf(textView.getText().toString());
 
         textView = (TextView) getDialog().findViewById(R.id.device_udp_send);
         int udpSend = Integer.valueOf(textView.getText().toString());
 
-        if (udpSend < 1024 && !SharedPrefs.getInstance().isPortsUnlimited()) {
-            Toast.makeText(getActivity(), R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
+        if (!Utils.checkPortInvalid(udpReceive)) {
+            Utils.askForRootPorts(getActivity());
             return;
         }
 
         anelCreateDevice.device.UniqueDeviceID = null;
         anelCreateDevice.device.DeviceConnections.clear();
         anelCreateDevice.device.addConnection(new DeviceConnectionHTTP(anelCreateDevice.device, hostname, httpPort));
-        anelCreateDevice.device.addConnection(new DeviceConnectionUDP(anelCreateDevice.device, hostname, updReceive, udpSend));
+        anelCreateDevice.device.addConnection(new DeviceConnectionUDP(anelCreateDevice.device, hostname, udpReceive, udpSend));
 
         textView = (TextView) getDialog().findViewById(R.id.device_username);
         anelCreateDevice.device.UserName = textView.getText().toString();
@@ -140,7 +143,7 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
         textView = (TextView) getDialog().findViewById(R.id.device_password);
         anelCreateDevice.device.Password = textView.getText().toString();
 
-        if (ip_autocomple.getPosition(anelCreateDevice.device.DeviceConnections.get(0).HostName) != -1) {
+        if (ip_autocomplete.getPosition(anelCreateDevice.device.DeviceConnections.get(0).HostName) != -1) {
             Toast.makeText(getActivity(), R.string.device_already_exist, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -155,10 +158,10 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
     public void testFinished(boolean success) {
         if (success) {
             final Device deviceToAdd = anelCreateDevice.device;
-            NetpowerctrlApplication.getMainThreadHandler().post(new Runnable() {
+            App.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    RuntimeDataController.getDataController().addToConfiguredDevices(getActivity(),
+                    AppData.getInstance().addToConfiguredDevices(getActivity(),
                             deviceToAdd);
                 }
             });

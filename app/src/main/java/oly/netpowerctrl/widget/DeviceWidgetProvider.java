@@ -5,7 +5,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.data.SharedPrefs;
 
 public class DeviceWidgetProvider extends AppWidgetProvider {
     @Override

@@ -13,13 +13,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Base64;
-
-import java.io.UnsupportedEncodingException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.ChangeLogUtil;
-import oly.netpowerctrl.utils.Icons;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.utils.controls.ChangeLogUtil;
 
 public class FeedbackDialog extends DialogFragment {
 
@@ -32,16 +29,11 @@ public class FeedbackDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.netpowerctrl);
 
-        builder.setIcon(new BitmapDrawable(getResources(), Icons.resizeBitmap(getActivity(), b)));
+        builder.setIcon(new BitmapDrawable(getResources(), LoadStoreIconData.resizeBitmap(getActivity(), b)));
         builder.setTitle(R.string.app_name);
 
         // Support this app by a donation.
         String[] items = getResources().getStringArray(R.array.feedbackOptions);
-        try {
-            items[items.length - 1] = items[items.length - 1].replace("%s",
-                    new String(Base64.decode("UGF5UGFs", Base64.DEFAULT), "UTF-8"));
-        } catch (Exception ignored) {
-        }
 
         builder.setItems(items, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -85,16 +77,6 @@ public class FeedbackDialog extends DialogFragment {
                     break;
                     case 4: {
                         ChangeLogUtil.showChangeLog(getActivity());
-                    }
-                    break;
-                    case 5: {
-                        String p1 = "aHR0cHM6Ly93d3cucGF5cGFsLmNvbS9jZ2ktYmluL3dlYnNjcj9jbWQ9X3MteGNsaWNrJmhvc3RlZF9idXR0b25faWQ9OTNUQUFUSkIzV0pGMg==";
-                        try {
-                            String text = new String(Base64.decode(p1, Base64.DEFAULT), "UTF-8");
-                            Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(text));
-                            getActivity().startActivity(browse);
-                        } catch (UnsupportedEncodingException ignored) {
-                        }
                     }
                     break;
                 }

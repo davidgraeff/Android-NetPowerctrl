@@ -18,9 +18,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
+import oly.netpowerctrl.listen_service.ListenService;
 
 /**
  * All http related stuff
@@ -67,7 +67,7 @@ public class HttpThreadPool {
         return new Runnable() {
             @Override
             public void run() {
-                Context context = NetpowerctrlService.getService();
+                Context context = ListenService.getService();
                 if (context == null)
                     return;
 

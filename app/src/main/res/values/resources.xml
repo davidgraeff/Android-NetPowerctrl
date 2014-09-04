@@ -7,7 +7,7 @@
     <item name="use_dark_theme" format="boolean" type="bool">False</item>
     <item name="load_extensions" format="boolean" type="bool">False</item>
     <item name="widget_show_title" format="boolean" type="bool">True</item>
-    <item name="ports_unlimited" format="boolean" type="bool">False</item>
+    <item name="widget_use_default" format="boolean" type="bool">True</item>
     <item name="log_energy_saving_mode" format="boolean" type="bool">False</item>
     <item name="log_widgets" format="boolean" type="bool">False</item>
     <item name="showHiddenOutlets" format="boolean" type="bool">False</item>

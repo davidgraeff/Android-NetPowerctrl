@@ -5,7 +5,7 @@ import android.util.JsonWriter;
 
 import java.io.IOException;
 
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.data.SharedPrefs;
 
 /**
  * Created by david on 28.07.14.

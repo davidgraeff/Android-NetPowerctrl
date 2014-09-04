@@ -20,16 +20,17 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.groups.GroupCollection;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
-import oly.netpowerctrl.utils.ListItemMenu;
+import oly.netpowerctrl.scenes.SceneItem;
+import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
-import oly.netpowerctrl.utils_gui.AnimationController;
+import oly.netpowerctrl.utils.controls.ListItemMenu;
 
 public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface,
         SharedPrefs.IShowBackground {
@@ -171,8 +172,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      * @param scene
      */
     public void loadItemsOfScene(Scene scene) {
-        for (Scene.SceneItem sceneItem : scene.sceneItems) {
-            DevicePort port = RuntimeDataController.getDataController().findDevicePort(sceneItem.uuid);
+        for (SceneItem sceneItem : scene.sceneItems) {
+            DevicePort port = AppData.getInstance().findDevicePort(sceneItem.uuid);
             if (port == null) {
                 continue;
             }
@@ -186,12 +187,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      *
      * @return List of scene items.
      */
-    public List<Scene.SceneItem> getScene() {
-        List<Scene.SceneItem> list_of_scene_items = new ArrayList<>();
+    public List<SceneItem> getScene() {
+        List<SceneItem> list_of_scene_items = new ArrayList<>();
         for (DevicePortAdapterItem info : mItems) {
             if (info.port == null) // skip header items
                 continue;
-            list_of_scene_items.add(new Scene.SceneItem(info.port.uuid, info.command_value));
+            list_of_scene_items.add(new SceneItem(info.port.uuid, info.command_value));
         }
         return list_of_scene_items;
     }
@@ -266,7 +267,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             if (drawShadows)
                 cViewHolder.title.setShadowLayer(4f, 0, 0, Color.WHITE);
 
-            cViewHolder.subtitle.setText(port.device.DeviceName);
+            if (cViewHolder.subtitle != null)
+                cViewHolder.subtitle.setText(port.device.DeviceName);
 
             if (cViewHolder.progress != null) {
                 if (cViewHolder.progress.getVisibility() == View.VISIBLE && item.isEnabled() &&
@@ -489,7 +491,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     }
 
     private int addHeaderIfNotExists(UUID group, DevicePort oi) {
-        GroupCollection.GroupItem groupItem = RuntimeDataController.getDataController().groupCollection.get(group);
+        Group groupItem = AppData.getInstance().groupCollection.get(group);
         if (groupItem == null) {
             // Group does not exist. Remove it from oi
             oi.groups.remove(group);
@@ -737,5 +739,13 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
         if (mSource != null)
             mSource.updateNow();
+    }
+
+    public int indexOf(DevicePort port) {
+        for (int i = 0; i < mItems.size(); ++i) {
+            if (mItems.get(i).port != null && mItems.get(i).port.equals(port))
+                return i;
+        }
+        return -1;
     }
 }

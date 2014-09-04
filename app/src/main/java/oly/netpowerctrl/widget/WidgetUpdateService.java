@@ -19,23 +19,25 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.onServiceReady;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.Shortcuts;
+import oly.netpowerctrl.scenes.SceneItem;
+import oly.netpowerctrl.utils.AndroidShortcuts;
 
 /**
  * Widget Update Service
  */
-public class WidgetUpdateService extends Service implements DeviceObserverResult, onConfiguredDeviceUpdate, onServiceReady {
+public class WidgetUpdateService extends Service implements DeviceObserverResult, onCollectionUpdated<DeviceCollection, Device>, onServiceReady {
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     private static final String TAG = "WidgetUpdateService";
@@ -71,9 +73,9 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
          * system ends service) unregister from the listener service and from the shared preferences
          * changed signal.
          */
-        RuntimeDataController.getDataController().deviceCollection.unregisterDeviceObserver(this);
-        NetpowerctrlService.observersServiceReady.unregister(this);
-        NetpowerctrlService.stopUseService();
+        AppData.getInstance().deviceCollection.unregisterObserver(this);
+        ListenService.observersServiceReady.unregister(this);
+        ListenService.stopUseService();
     }
 
     @Override
@@ -82,8 +84,9 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
         context = getApplicationContext();
         assert context != null;
         appWidgetManager = AppWidgetManager.getInstance(context);
-        NetpowerctrlService.useService(this, false, false);
-        NetpowerctrlService.observersServiceReady.register(this);
+        AppData.useAppData();
+        ListenService.useService(getApplicationContext(), false, false);
+        ListenService.observersServiceReady.register(this);
         super.onCreate();
     }
 
@@ -95,7 +98,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     private void updateDevices() {
-        if (!NetpowerctrlService.isServiceReady())
+        if (!ListenService.isServiceReady())
             return;
 
         List<Device> devicesToUpdate = new ArrayList<>();
@@ -107,7 +110,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
                 setWidgetStateBroken(appWidgetId);
                 continue;
             }
-            DevicePort port = RuntimeDataController.getDataController().findDevicePort(
+            DevicePort port = AppData.getInstance().findDevicePort(
                     UUID.fromString(port_uuid));
             if (port == null) {
                 setWidgetStateBroken(appWidgetId);
@@ -118,7 +121,7 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
             allWidgets.append(appWidgetId, port);
             if (port.device.getUpdatedTime() > 0)
-                onConfiguredDeviceUpdated(port.device, false);
+                updated(null, port.device, ObserverUpdateActions.UpdateAction);
             else {
                 devicesToUpdate.add(port.device);
 //                widgetUpdateRequests.add(appWidgetId);
@@ -184,10 +187,10 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     private void setWidgetState(int appWidgetId, DevicePort oi) {
-        Scene.SceneItem item = new Scene.SceneItem(oi.uuid, DevicePort.TOGGLE);
+        SceneItem item = new SceneItem(oi.uuid, DevicePort.TOGGLE);
 
         // This intent will be executed by a click on the widget
-        Intent clickIntent = Shortcuts.createShortcutExecutionIntent(context, item, false, true);
+        Intent clickIntent = AndroidShortcuts.createShortcutExecutionIntent(context, item, false, true);
         clickIntent.setAction(Intent.ACTION_MAIN);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
@@ -207,9 +210,9 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
         if (oi.device.getFirstReachableConnection() == null) {
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
-                            Icons.IconType.WidgetIcon, Icons.IconState.StateUnknown,
-                            Icons.getResIdForState(Icons.IconState.StateUnknown))
+                    LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
+                            LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown,
+                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateUnknown))
             );
             views.setTextViewText(R.id.widget_name, oi.getDescription());
             views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_outlet_not_reachable));
@@ -222,9 +225,9 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
         } else if (oi.current_value > 0) { // On
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
-                            Icons.IconType.WidgetIcon, Icons.IconState.StateOn,
-                            Icons.getResIdForState(Icons.IconState.StateOn))
+                    LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
+                            LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn,
+                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn))
             );
             views.setTextViewText(R.id.widget_name, oi.getDescription());
             views.setTextViewText(R.id.widget_status, context.getString(R.string.widget_on));
@@ -232,9 +235,9 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
 
         } else { // Off
             views.setImageViewBitmap(R.id.widget_image,
-                    Icons.loadIcon(this, Icons.uuidFromWidgetID(appWidgetId),
-                            Icons.IconType.WidgetIcon, Icons.IconState.StateOff,
-                            Icons.getResIdForState(Icons.IconState.StateOff))
+                    LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
+                            LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOff,
+                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff))
             );
 
             views.setTextViewText(R.id.widget_name, oi.getDescription());
@@ -251,53 +254,22 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
     }
 
     @Override
-    public void onDeviceUpdated(Device di) {
-        onConfiguredDeviceUpdated(di, false);
-    }
-
-    @Override
-    public void onConfiguredDeviceUpdated(Device di, boolean willBeRemoved) {
-        //Log.w("widget", di != null ? di.DeviceName : "empty di");
-        if (di == null)
-            return;
-
-        /**
-         * If the service is kept running, we will receive further device updates
-         * and update the widgets here.
-         */
-        ComponentName thisWidget = new ComponentName(context,
-                DeviceWidgetProvider.class);
-        //noinspection ConstantConditions
-        appWidgetManager = AppWidgetManager.getInstance(context);
-        assert appWidgetManager != null;
-        int[] allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
-        for (int appWidgetId : allWidgetIds) {
-            DevicePort devicePort = allWidgets.get(appWidgetId);
-            if (devicePort == null) {
-                setWidgetStateBroken(appWidgetId);
-                continue;
-            }
-
-            if (devicePort.device.equalsByUniqueID(di)) {
-                setWidgetState(appWidgetId, devicePort);
-            }
-        }
-
-        finishServiceIfDone();
+    public void onObserverDeviceUpdated(Device device) {
+        updated(null, device, ObserverUpdateActions.UpdateAction);
     }
 
     @Override
     public void onObserverJobFinished(List<Device> timeout_devices) {
-        for (Device di : timeout_devices) {
-            onConfiguredDeviceUpdated(di, false);
+        for (Device device : timeout_devices) {
+            updated(null, device, ObserverUpdateActions.UpdateAction);
         }
     }
 
     @Override
-    public boolean onServiceReady(NetpowerctrlService service) {
+    public boolean onServiceReady(ListenService service) {
         if (allWidgets.size() == 0)
             updateDevices();
-        RuntimeDataController.getDataController().deviceCollection.registerDeviceObserver(this);
+        AppData.getInstance().deviceCollection.registerObserver(this);
 
         return true;
     }
@@ -316,5 +288,37 @@ public class WidgetUpdateService extends Service implements DeviceObserverResult
             return START_NOT_STICKY;
         }
         return START_STICKY;
+    }
+
+    @Override
+    public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action) {
+        //Log.w("widget", di != null ? di.DeviceName : "empty di");
+        if (device == null)
+            return true;
+
+        /**
+         * If the service is kept running, we will receive further device updates
+         * and update the widgets here.
+         */
+        ComponentName thisWidget = new ComponentName(context,
+                DeviceWidgetProvider.class);
+        //noinspection ConstantConditions
+        appWidgetManager = AppWidgetManager.getInstance(context);
+        assert appWidgetManager != null;
+        int[] allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget);
+        for (int appWidgetId : allWidgetIds) {
+            DevicePort devicePort = allWidgets.get(appWidgetId);
+            if (devicePort == null) {
+                setWidgetStateBroken(appWidgetId);
+                continue;
+            }
+
+            if (devicePort.device.equalsByUniqueID(device)) {
+                setWidgetState(appWidgetId, devicePort);
+            }
+        }
+
+        finishServiceIfDone();
+        return true;
     }
 }

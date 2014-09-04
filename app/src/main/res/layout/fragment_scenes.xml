@@ -34,6 +34,14 @@
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <Button
+            android:id="@+id/btnAddScene"
+            style="?colored_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/menu_add_scene" />
+
+        <Button
             android:id="@+id/btnChangeToDevices"
             style="?colored_button"
             android:layout_width="match_parent"

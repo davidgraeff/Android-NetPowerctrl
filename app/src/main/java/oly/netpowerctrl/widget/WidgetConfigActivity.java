@@ -8,15 +8,16 @@ import android.view.View;
 import android.widget.AdapterView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.scenes.EditSceneFragment;
 import oly.netpowerctrl.scenes.EditSceneFragmentReady;
-import oly.netpowerctrl.utils.ActivityWithIconCache;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
+import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
 public class WidgetConfigActivity extends Activity implements EditSceneFragmentReady, ActivityWithIconCache {
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
@@ -38,14 +39,15 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
 
     @Override
     protected void onPause() {
-        NetpowerctrlService.stopUseService();
+        ListenService.stopUseService();
         super.onPause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        NetpowerctrlService.useService(this, true, false);
+        AppData.useAppData();
+        ListenService.useService(getApplicationContext(), true, false);
     }
 
     @Override
@@ -82,7 +84,8 @@ public class WidgetConfigActivity extends Activity implements EditSceneFragmentR
     public void sceneEditFragmentReady(EditSceneFragment fragment) {
         fragment.getListView().setOnItemClickListener(selectedOutletListener);
         DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-        this.adapter = new DevicePortsListAdapter(this, false, s, mIconCache);
+        s.setAutomaticUpdate(true);
+        this.adapter = new DevicePortsListAdapter(this, false, s, mIconCache, true);
         fragment.setAdapter(this.adapter);
     }
 

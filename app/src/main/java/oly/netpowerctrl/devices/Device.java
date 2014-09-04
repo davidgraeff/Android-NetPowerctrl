@@ -4,6 +4,9 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,14 +20,15 @@ import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.data.JSONHelper;
+import oly.netpowerctrl.data.Storable;
 import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.utils.JSONHelper;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.PluginInterface;
+import oly.netpowerctrl.main.App;
 
 // An object of this class contains all the info about a specific device
-public class Device implements Comparable<Device> {
+public class Device implements Comparable<Device>, Storable {
     // Device Ports
     private final Map<Integer, DevicePort> DevicePorts = new TreeMap<>();
     private final Semaphore lock = new Semaphore(1);
@@ -54,87 +58,6 @@ public class Device implements Comparable<Device> {
 
     public Device(String pluginID) {
         this.pluginID = pluginID;
-    }
-
-    public static Device fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {
-        reader.beginObject();
-        Device di = new Device("");
-        di.configured = true;
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            assert name != null;
-            switch (name) {
-                case "DeviceName":
-                    di.DeviceName = reader.nextString();
-                    break;
-                case "UniqueDeviceID":
-                    di.UniqueDeviceID = reader.nextString();
-                    break;
-                case "UserName":
-                    di.UserName = reader.nextString();
-                    break;
-                case "Password":
-                    di.Password = reader.nextString();
-                    break;
-                case "Version":
-                    di.Version = reader.nextString();
-                    break;
-                case "Enabled":
-                    di.enabled = reader.nextBoolean();
-                    break;
-                case "Type":
-                    di.pluginID = reader.nextString();
-                    break;
-                case "Features":
-                    di.Features.clear();
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        DeviceFeature feature = DeviceFeatureFabric.fromJSON(reader);
-                        if (feature != null)
-                            di.Features.add(feature);
-                    }
-                    reader.endArray();
-                    break;
-                case "Connections":
-                    di.DeviceConnections.clear();
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        DeviceConnection connection = DeviceConnectionFabric.fromJSON(reader, di);
-                        if (connection != null) {
-                            di.DeviceConnections.add(connection);
-                            di.setReachable(di.DeviceConnections.size() - 1);
-                        }
-                    }
-                    reader.endArray();
-                    break;
-                case "DevicePorts":
-                    di.DevicePorts.clear();
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        try {
-                            di.add(DevicePort.fromJSON(reader, di));
-                        } catch (ClassNotFoundException e) {
-                            reader.skipValue();
-                        }
-                    }
-                    reader.endArray();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
-        }
-
-        reader.endObject();
-        di.compute_first_reachable();
-
-        if (di.pluginID.isEmpty())
-            throw new ClassNotFoundException();
-
-        NetpowerctrlService service = NetpowerctrlService.getService();
-        if (service != null)
-            di.pluginInterface = service.getPluginByID(di.pluginID);
-        return di;
     }
 
     public void setHasChanged() {
@@ -237,7 +160,7 @@ public class Device implements Comparable<Device> {
             // are not of any use if we have no known plugin to execute actions on.
             if (pluginInterface == null) {
                 if (other.pluginInterface == null) {
-                    setNotReachableAll(NetpowerctrlApplication.getAppString(R.string.error_plugin_not_installed));
+                    setNotReachableAll(App.getAppString(R.string.error_plugin_not_installed));
                     return true;
                 }
                 // Update plugin object reference
@@ -363,7 +286,8 @@ public class Device implements Comparable<Device> {
      *
      * @return JSON String
      */
-    public String toJSON() {
+    @Override
+    public String toString() {
         try {
             JSONHelper h = new JSONHelper();
             toJSON(h.createWriter());
@@ -373,7 +297,7 @@ public class Device implements Comparable<Device> {
         }
     }
 
-    public void toJSON(JsonWriter writer) throws IOException {
+    private void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("DeviceName").value(DeviceName);
         writer.name("Type").value(pluginID);
@@ -402,6 +326,8 @@ public class Device implements Comparable<Device> {
         writer.endArray();
 
         writer.endObject();
+
+        writer.close();
     }
 
     public long getUpdatedTime() {
@@ -495,7 +421,7 @@ public class Device implements Comparable<Device> {
 
     public String getNotReachableReasons() {
         if (!enabled)
-            return NetpowerctrlApplication.getAppString(R.string.error_device_disabled);
+            return App.getAppString(R.string.error_device_disabled);
         String f = "";
         for (DeviceConnection connection : DeviceConnections) {
             String a = connection.getNotReachableReason();
@@ -556,5 +482,105 @@ public class Device implements Comparable<Device> {
         }
 
         return false;
+    }
+
+    @Override
+    public StorableDataType getDataType() {
+        return StorableDataType.JSON;
+    }
+
+    @Override
+    public String getStorableName() {
+        return UniqueDeviceID;
+    }
+
+    @Override
+    public void load(JsonReader reader) throws IOException, ClassNotFoundException {
+        reader.beginObject();
+        configured = true;
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            switch (name) {
+                case "DeviceName":
+                    DeviceName = reader.nextString();
+                    break;
+                case "UniqueDeviceID":
+                    UniqueDeviceID = reader.nextString();
+                    break;
+                case "UserName":
+                    UserName = reader.nextString();
+                    break;
+                case "Password":
+                    Password = reader.nextString();
+                    break;
+                case "Version":
+                    Version = reader.nextString();
+                    break;
+                case "Enabled":
+                    enabled = reader.nextBoolean();
+                    break;
+                case "Type":
+                    pluginID = reader.nextString();
+                    break;
+                case "Features":
+                    Features.clear();
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        DeviceFeature feature = DeviceFeatureFabric.fromJSON(reader);
+                        if (feature != null)
+                            Features.add(feature);
+                    }
+                    reader.endArray();
+                    break;
+                case "Connections":
+                    DeviceConnections.clear();
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        DeviceConnection connection = DeviceConnectionFabric.fromJSON(reader, this);
+                        if (connection != null) {
+                            DeviceConnections.add(connection);
+                            setReachable(DeviceConnections.size() - 1);
+                        }
+                    }
+                    reader.endArray();
+                    break;
+                case "DevicePorts":
+                    DevicePorts.clear();
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        try {
+                            add(DevicePort.fromJSON(reader, this));
+                        } catch (ClassNotFoundException e) {
+                            reader.skipValue();
+                        }
+                    }
+                    reader.endArray();
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
+        }
+
+        reader.endObject();
+        compute_first_reachable();
+
+        if (pluginID.isEmpty())
+            throw new ClassNotFoundException();
+
+        ListenService service = ListenService.getService();
+        if (service != null)
+            pluginInterface = service.getPluginByID(pluginID);
+    }
+
+    @Override
+    public void load(InputStream input) throws IOException, ClassNotFoundException {
+        load(new JsonReader(new InputStreamReader(input)));
+    }
+
+    @Override
+    public void save(OutputStream output) throws IOException {
+        toJSON(JSONHelper.createWriter(output));
     }
 }

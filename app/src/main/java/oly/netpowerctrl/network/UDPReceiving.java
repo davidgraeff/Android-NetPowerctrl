@@ -8,8 +8,8 @@ import java.net.DatagramSocket;
 import java.net.NetworkInterface;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.utils_gui.ShowToast;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.utils.ShowToast;
 
 abstract public class UDPReceiving extends Thread {
     private final int receive_port;
@@ -24,7 +24,7 @@ abstract public class UDPReceiving extends Thread {
     }
 
     public void run() {
-        Context context = NetpowerctrlService.getService();
+        Context context = ListenService.getService();
         if (context == null)
             return;
 

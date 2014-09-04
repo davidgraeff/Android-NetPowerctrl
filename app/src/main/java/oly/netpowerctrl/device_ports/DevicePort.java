@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.utils.Icons;
 
 /**
  * Base class for actions (IO, Outlet, ...)
@@ -235,12 +235,12 @@ public final class DevicePort implements Comparable {
         return current_value > min_value ? min_value : max_value;
     }
 
-    public Icons.IconState getIconState() {
-        Icons.IconState t = Icons.IconState.StateOff;
+    public LoadStoreIconData.IconState getIconState() {
+        LoadStoreIconData.IconState t = LoadStoreIconData.IconState.StateOff;
         if (current_value != min_value &&
                 (getType() == DevicePort.DevicePortType.TypeToggle ||
                         getType() == DevicePort.DevicePortType.TypeRangedValue))
-            t = Icons.IconState.StateOn;
+            t = LoadStoreIconData.IconState.StateOn;
         return t;
     }
 

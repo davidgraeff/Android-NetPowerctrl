@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 
 /**
@@ -36,7 +35,7 @@ public class SortCriteriaDialog extends DialogFragment {
     private ArrayAdapter<AdapterItem> sortedAdapter;
     private ArrayAdapter<AdapterItem> availableAdapter;
 
-    public static Fragment instantiate(Context context, SortCriteriaInterface sortCriteriaInterface) {
+    public static DialogFragment instantiate(Context context, SortCriteriaInterface sortCriteriaInterface) {
         SortCriteriaDialog fragment = (SortCriteriaDialog) Fragment.instantiate(context, SortCriteriaDialog.class.getName());
         fragment.setData(sortCriteriaInterface);
         return fragment;
@@ -64,7 +63,6 @@ public class SortCriteriaDialog extends DialogFragment {
                                 sortOrder[i] = sortedList.get(i).originalIndex;
                             sortCriteriaInterface.setSortOrder(sortOrder);
                         }
-                        RuntimeDataController.getDataController().deviceCollection.save();
                     }
                 })
                 .setNeutralButton(R.string.menu_help, new DialogInterface.OnClickListener() {

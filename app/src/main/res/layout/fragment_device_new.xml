@@ -9,7 +9,7 @@
 
     <!--  Name -->
     <TextView
-        android:id="@+id/device_ip_label"
+        android:id="@+id/device_host_label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/device_ip" />
@@ -21,15 +21,15 @@
         android:layout_height="40dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/device_ip_label"
-        android:contentDescription="@+id/device_ip"
+        android:layout_below="@id/device_host_label"
+        android:contentDescription="@+id/device_host"
         android:src="@android:drawable/ic_menu_help" />
 
     <AutoCompleteTextView
-        android:id="@+id/device_ip"
+        android:id="@+id/device_host"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/device_ip_label"
+        android:layout_below="@id/device_host_label"
         android:layout_marginBottom="20dip"
         android:layout_toLeftOf="@id/device_ip_help_icon"
         android:layout_toStartOf="@id/device_ip_help_icon"
@@ -40,14 +40,14 @@
         android:id="@+id/device_http_port_label"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/device_ip"
+        android:layout_below="@id/device_host"
         android:text="@string/device_http_port" />
 
     <EditText
         android:id="@+id/device_http_port"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/device_ip"
+        android:layout_below="@id/device_host"
         android:layout_marginBottom="20dip"
         android:layout_toEndOf="@id/device_http_port_label"
         android:layout_toRightOf="@id/device_http_port_label"
