@@ -75,7 +75,7 @@ public class EditSceneFragment extends Fragment {
         mListView.setAdapter(mAdapter);
     }
 
-    public boolean isAvailableAdapter() {
+    boolean isAvailableAdapter() {
         return mAdapter instanceof DevicePortsListAdapter;
     }
 

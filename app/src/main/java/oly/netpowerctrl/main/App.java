@@ -11,6 +11,7 @@ import org.acra.ReportingInteractionMode;
 
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.AndroidStatusBarNotification;
 
 /**
  * Application:
@@ -18,8 +19,8 @@ import oly.netpowerctrl.R;
  * Crash management
  */
 public class App extends Application {
+    static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     public static App instance;
-    static boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
     public App() {
@@ -72,5 +73,7 @@ public class App extends Application {
             }
             //BugSenseHandler.initAndStartSession(MyActivity.this, "11178d09");
         }
+        AndroidStatusBarNotification.init(this);
+
     }
 }

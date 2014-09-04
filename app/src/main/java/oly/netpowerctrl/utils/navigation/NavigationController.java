@@ -43,7 +43,8 @@ import oly.netpowerctrl.utils.fragments.FragmentOnBackButton;
  */
 public class NavigationController {
     private final ArrayList<DrawerStateChanged> observers = new ArrayList<>();
-    public int drawerLastItemPosition = -1;
+    private final List<BackStackEntry> backstack = new ArrayList<>();
+    private int drawerLastItemPosition = -1;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -54,7 +55,6 @@ public class NavigationController {
     private String currentFragmentClass;
     private WeakReference<Activity> mDrawerActivity;
     private Bundle currentExtra;
-    private List<BackStackEntry> backstack = new ArrayList<>();
 
     public Fragment getCurrentFragment() {
         return currentFragment;
@@ -382,8 +382,8 @@ public class NavigationController {
     }
 
     private static class BackStackEntry {
-        String fragmentClass;
-        Bundle extra;
+        final String fragmentClass;
+        final Bundle extra;
 
         public BackStackEntry(String fragmentClassName, Bundle extra) {
             this.fragmentClass = fragmentClassName;

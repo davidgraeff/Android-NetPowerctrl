@@ -9,7 +9,6 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.provider.OpenableColumns;
 import android.util.Log;
 
 import java.io.FileNotFoundException;
@@ -57,9 +56,9 @@ public class AssetContentProvider extends ContentProvider implements ContentProv
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        if (projection == null) {
-            projection = new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE};
-        }
+//        if (projection == null) {
+//            projection = new String[]{OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE};
+//        }
 
         MatrixCursor c = new MatrixCursor(new String[]{"_id", "_data"});
 

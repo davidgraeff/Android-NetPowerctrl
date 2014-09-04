@@ -66,14 +66,14 @@ import java.util.List;
  */
 public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
     // Cached ViewConfiguration and system-wide constant values
-    private int mSlop;
-    private int mMinFlingVelocity;
-    private int mMaxFlingVelocity;
-    private long mAnimationTime;
+    private final int mSlop;
+    private final int mMinFlingVelocity;
+    private final int mMaxFlingVelocity;
+    private final long mAnimationTime;
 
     // Fixed properties
-    private AbsListView mListView;
-    private DismissCallbacks mCallbacks;
+    private final AbsListView mListView;
+    private final DismissCallbacks mCallbacks;
     private int mViewWidth = 1; // 1 and not 0 to prevent dividing by zero
 
     // Transient properties
@@ -111,7 +111,7 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
      *
      * @param enabled Whether or not to watch for gestures.
      */
-    public void setEnabled(boolean enabled) {
+    void setEnabled(boolean enabled) {
         mPaused = !enabled;
     }
 
@@ -312,8 +312,8 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
     }
 
     class PendingDismissData implements Comparable<PendingDismissData> {
-        public int position;
-        public View view;
+        public final int position;
+        public final View view;
 
         public PendingDismissData(int position, View view) {
             this.position = position;

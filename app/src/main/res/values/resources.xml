@@ -15,6 +15,7 @@
     <item name="hide_not_reachable" format="boolean" type="bool">True</item>
     <item name="notify_on_non_reachable" format="boolean" type="bool">False</item>
     <item name="show_background" format="boolean" type="bool">False</item>
+    <item name="smaller_click_execute_area" format="boolean" type="bool">False</item>
 
     <item name="atLeastKitKat" format="boolean" type="bool">False</item>
 </resources>

@@ -10,15 +10,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
@@ -27,13 +21,8 @@ import oly.netpowerctrl.utils.SortCriteriaInterface;
  * Choose setSortOrder criteria
  */
 public class SortCriteriaDialog extends DialogFragment {
-    private final List<AdapterItem> sortedList = new ArrayList<>();
-    private final List<AdapterItem> availableList = new ArrayList<>();
     private SortCriteriaInterface sortCriteriaInterface;
     private boolean criteriaChecked[];
-    private boolean criteriaOnly = true;
-    private ArrayAdapter<AdapterItem> sortedAdapter;
-    private ArrayAdapter<AdapterItem> availableAdapter;
 
     public static DialogFragment instantiate(Context context, SortCriteriaInterface sortCriteriaInterface) {
         SortCriteriaDialog fragment = (SortCriteriaDialog) Fragment.instantiate(context, SortCriteriaDialog.class.getName());
@@ -50,27 +39,18 @@ public class SortCriteriaDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder
-                .setTitle(R.string.menu_sort)
+                .setTitle(R.string.sort_title)
                 .setView(createView(inflater, null, savedInstanceState))
                 .setIcon(android.R.drawable.ic_menu_sort_by_size)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        if (criteriaOnly) {
-                            sortCriteriaInterface.applySortCriteria(criteriaChecked);
-                        } else {
-                            int sortOrder[] = new int[sortedList.size()];
-                            for (int i = 0; i < sortOrder.length; ++i)
-                                sortOrder[i] = sortedList.get(i).originalIndex;
-                            sortCriteriaInterface.setSortOrder(sortOrder);
-                        }
+                        sortCriteriaInterface.applySortCriteria(criteriaChecked);
                     }
                 })
-                .setNeutralButton(R.string.menu_help, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.sort_custom, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        new AlertDialog.Builder(getActivity())
-                                .setTitle(R.string.menu_help)
-                                .setMessage(R.string.help_sorting)
-                                .setIcon(android.R.drawable.ic_menu_help).show();
+                        DialogFragment customDialog = SortCustomDialog.instantiate(getActivity(), sortCriteriaInterface);
+                        MainActivity.getNavigationController().changeToDialog(getActivity(), customDialog);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -79,6 +59,14 @@ public class SortCriteriaDialog extends DialogFragment {
                     }
                 });
         return builder.create();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        AlertDialog d = (AlertDialog) getDialog();
+        d.getButton(DialogInterface.BUTTON_NEUTRAL).setVisibility(
+                sortCriteriaInterface.allowCustomSort() ? View.VISIBLE : View.GONE);
     }
 
     View createView(LayoutInflater inflater, final ViewGroup container,
@@ -107,85 +95,6 @@ public class SortCriteriaDialog extends DialogFragment {
             ++criteriaIndex;
         }
 
-        /// Custom sort ///
-        CheckBox customCheck = (CheckBox) view.findViewById(R.id.activate_custom_sort);
-        final View customContainer = view.findViewById(R.id.customSortContainer);
-        customContainer.setVisibility(
-                sortCriteriaInterface.allowCustomSort() ? View.VISIBLE : View.GONE);
-        customCheck.setVisibility(
-                sortCriteriaInterface.allowCustomSort() ? View.VISIBLE : View.GONE);
-        customCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                customContainer.setVisibility(b ? View.VISIBLE : View.GONE);
-                criteriaOnly = !b;
-                AlertDialog d = (AlertDialog) getDialog();
-                if (!b) {
-                    d.getButton(Dialog.BUTTON_POSITIVE).setEnabled(true);
-                } else
-                    //noinspection ConstantConditions
-                    d.getButton(Dialog.BUTTON_POSITIVE).setEnabled(availableAdapter.isEmpty());
-            }
-        });
-        customContainer.setVisibility(View.GONE);
-
-        /// Custom sort Adapter ///
-        String[] data = sortCriteriaInterface.getContentList(0);
-        int index = 0;
-        for (String d : data)
-            availableList.add(new AdapterItem(d, index++));
-
-        availableAdapter = new ArrayAdapter<>(
-                getActivity(),
-                android.R.layout.simple_list_item_1,
-                availableList);
-
-        sortedAdapter = new ArrayAdapter<>(
-                getActivity(),
-                android.R.layout.simple_list_item_1,
-                sortedList);
-
-        /// Custom sort lists ///
-        ListView listSorted = (ListView) view.findViewById(R.id.list_sorted);
-        listSorted.setAdapter(sortedAdapter);
-        listSorted.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                swapEntry(sortedAdapter, availableAdapter, i);
-            }
-        });
-        ListView listAvailable = (ListView) view.findViewById(R.id.list_available);
-        listAvailable.setAdapter(availableAdapter);
-        listAvailable.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                swapEntry(availableAdapter, sortedAdapter, i);
-            }
-        });
         return view;
-    }
-
-    private void swapEntry(ArrayAdapter<AdapterItem> a, ArrayAdapter<AdapterItem> b, int posFromA) {
-        AdapterItem item = a.getItem(posFromA);
-        a.remove(item);
-        b.add(item);
-        AlertDialog d = (AlertDialog) getDialog();
-        //noinspection ConstantConditions
-        d.getButton(Dialog.BUTTON_POSITIVE).setEnabled(availableAdapter.isEmpty());
-    }
-
-    private static class AdapterItem {
-        final String text;
-        final int originalIndex;
-
-        private AdapterItem(String text, int originalIndex) {
-            this.text = text;
-            this.originalIndex = originalIndex;
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
     }
 }

@@ -23,9 +23,9 @@ import oly.netpowerctrl.network.AsyncRunnerResult;
  * Control all configured alarms
  */
 public class TimerController extends CollectionWithStorableItems<TimerController, Timer> {
-    private List<Timer> available_timers = new ArrayList<>();
+    private final List<Timer> available_timers = new ArrayList<>();
     private boolean requestActive = false;
-    private Runnable notifyRunnable = new Runnable() {
+    private final Runnable notifyRunnable = new Runnable() {
         @Override
         public void run() {
             requestActive = false;
@@ -33,7 +33,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         }
     };
     private long lastExecuted;
-    private Runnable notifyRunnableNow = new Runnable() {
+    private final Runnable notifyRunnableNow = new Runnable() {
         @Override
         public void run() {
             if (System.currentTimeMillis() - lastExecuted < 200)
@@ -51,15 +51,15 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         return items.size() + available_timers.size();
     }
 
-    private boolean replaced(List<Timer> list, Timer timer) {
+    private boolean not_replaced(List<Timer> list, Timer timer) {
         for (int i = 0; i < list.size(); ++i) {
             Timer a = list.get(i);
             if (a.id == timer.id && a.port_id.equals(timer.port_id)) {
                 list.set(i, timer);
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -91,11 +91,11 @@ public class TimerController extends CollectionWithStorableItems<TimerController
     synchronized public void alarmsFromPlugin(List<Timer> new_timers) {
         for (Timer new_timer : new_timers) {
             if (new_timer.freeDeviceAlarm) {
-                if (!replaced(available_timers, new_timer)) {
+                if (not_replaced(available_timers, new_timer)) {
                     available_timers.add(new_timer);
                 }
             } else {
-                if (!replaced(items, new_timer) && new_timer.port_id != null) {
+                if (not_replaced(items, new_timer) && new_timer.port_id != null) {
                     items.add(new_timer);
                 }
             }
@@ -110,7 +110,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         return available_timers;
     }
 
-    public void removeAlarm(Timer timer, AsyncRunnerResult callback) {
+    void removeAlarm(Timer timer, AsyncRunnerResult callback) {
         PluginInterface p = timer.port.device.getPluginInterface();
         p.removeAlarm(timer, callback);
     }

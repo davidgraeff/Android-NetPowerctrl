@@ -23,7 +23,7 @@ import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.fragments.FragmentChangeArguments;
 
 public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener, FragmentChangeArguments {
-    ActionBarDoneCancel actionBarDoneCancel = new ActionBarDoneCancel();
+    private final ActionBarDoneCancel actionBarDoneCancel = new ActionBarDoneCancel();
     private DevicePort master;
     private DevicePortsListAdapter adapter;
 

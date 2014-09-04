@@ -24,9 +24,8 @@ import oly.netpowerctrl.main.App;
 public abstract class DeviceObserverBase {
     protected final Handler mainLoopHandler;
     protected final Context context;
-    protected boolean broadcast = false;
-    protected AtomicInteger countWait = new AtomicInteger();
-    private List<Device> devices_to_observe = new ArrayList<>();
+    protected final AtomicInteger countWait = new AtomicInteger();
+    private final List<Device> devices_to_observe = new ArrayList<>();
     final Runnable redoRunnable = new Runnable() {
         @Override
         public void run() {
@@ -52,7 +51,8 @@ public abstract class DeviceObserverBase {
             AppData.getInstance().removeUpdateDeviceState(DeviceObserverBase.this);
         }
     };
-    private List<Device> devices_to_observe_not_filtered = new ArrayList<>();
+    private final List<Device> devices_to_observe_not_filtered = new ArrayList<>();
+    protected boolean broadcast = false;
     private DeviceObserverResult target;
 
     DeviceObserverBase(Context context, DeviceObserverResult target) {
@@ -226,8 +226,8 @@ public abstract class DeviceObserverBase {
     }
 
     private static class ResolveHostnameRunnable implements Runnable {
-        private Device device;
-        private WeakReference<DeviceObserverBase> deviceObserverBaseWeakReference;
+        private final Device device;
+        private final WeakReference<DeviceObserverBase> deviceObserverBaseWeakReference;
 
         public ResolveHostnameRunnable(Device device, DeviceObserverBase deviceObserverBase) {
             this.device = device;

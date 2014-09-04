@@ -25,7 +25,7 @@ import oly.netpowerctrl.R;
  */
 public class Utils {
     private static final String TAG = "NetworkUtils";
-    public static boolean root_port_allowed = false;
+    private static boolean root_port_allowed = false;
 
     /**
      * Return broadcast address of given IP or null if no broadcast address exists (IPv6).

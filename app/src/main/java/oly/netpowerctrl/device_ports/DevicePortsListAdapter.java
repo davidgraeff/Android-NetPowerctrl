@@ -15,7 +15,7 @@ import oly.netpowerctrl.data.IconDeferredLoadingThread;
 
 public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
     private final SparseBooleanArray checked = new SparseBooleanArray();
-    private boolean checkable;
+    private final boolean checkable;
 
     public DevicePortsListAdapter(Context context, boolean checkable, DevicePortSource source,
                                   IconDeferredLoadingThread iconCache, boolean showGroups) {

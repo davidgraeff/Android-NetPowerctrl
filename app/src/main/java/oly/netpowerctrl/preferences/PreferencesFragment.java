@@ -14,6 +14,7 @@ import android.preference.PreferenceScreen;
 import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.text.DateFormat;
@@ -26,12 +27,13 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.utils.Github;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements Github.IGithubOpenIssues {
-    Preference.OnPreferenceChangeListener reloadActivity = new Preference.OnPreferenceChangeListener() {
+    private final Preference.OnPreferenceChangeListener reloadActivity = new Preference.OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             //noinspection ConstantConditions
@@ -39,6 +41,14 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             return true;
         }
     };
+
+    @Override
+    public void onPause() {
+        ListView lv = (ListView) getActivity().findViewById(android.R.id.list);
+        if (lv != null)
+            getPreferenceManager().getSharedPreferences().edit().putInt("scroll", lv.getFirstVisiblePosition()).apply();
+        super.onPause();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -154,9 +164,9 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Bundle extra = new Bundle();
-                extra.putString("key", preference.getKey());
+                extra.putString("key", SharedPrefs.PREF_WIDGET_BASENAME);
                 extra.putInt("widgetId", -1);
-                MainActivity.getNavigationController().changeToFragment(preference.getFragment(), extra, true);
+                MainActivity.getNavigationController().changeToFragment(WidgetPreferenceFragment.class.getName(), extra, true);
                 return false;
             }
         });
@@ -203,6 +213,14 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Github.getOpenIssues(this, false);
+        final ListView lv = (ListView) getActivity().findViewById(android.R.id.list);
+        if (lv != null)
+            App.getMainThreadHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    lv.setSelection(getPreferenceManager().getSharedPreferences().getInt("scroll", 0));
+                }
+            });
     }
 
     @Override
@@ -221,9 +239,9 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     }
 
     private static class WidgetData {
-        CharSequence data;
-        String prefName;
-        int widgetID;
+        final CharSequence data;
+        final String prefName;
+        final int widgetID;
 
         private WidgetData(CharSequence data, String prefName, int widgetID) {
             this.data = data;

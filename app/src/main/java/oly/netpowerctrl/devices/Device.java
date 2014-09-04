@@ -29,6 +29,9 @@ import oly.netpowerctrl.main.App;
 
 // An object of this class contains all the info about a specific device
 public class Device implements Comparable<Device>, Storable {
+    // Connections to the destination device. This is prioritized, the first reachable connection
+    // is preferred before the second reachable etc.
+    public final List<DeviceConnection> DeviceConnections = new ArrayList<>();
     // Device Ports
     private final Map<Integer, DevicePort> DevicePorts = new TreeMap<>();
     private final Semaphore lock = new Semaphore(1);
@@ -44,10 +47,6 @@ public class Device implements Comparable<Device>, Storable {
     public String Password = "";
     // Additional features
     public List<DeviceFeature> Features = new ArrayList<>();
-
-    // Connections to the destination device. This is prioritized, the first reachable connection
-    // is preferred before the second reachable etc.
-    public List<DeviceConnection> DeviceConnections = new ArrayList<>();
     // Temporary state variables
     public boolean configured = false;
     DeviceConnection cached_deviceConnection;

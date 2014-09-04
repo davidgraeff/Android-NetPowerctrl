@@ -26,7 +26,7 @@ import oly.netpowerctrl.utils.ShowToast;
  */
 public class LoadStoreJSonData {
 
-    private onStorageUpdate storageUpdate = new onStorageUpdate() {
+    private final onStorageUpdate storageUpdate = new onStorageUpdate() {
         @Override
         public void save(CollectionWithType collection, Storable item) {
             File file = new File(App.instance.getDir(collection.type(), 0), item.getStorableName());

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.preference.PreferenceManager;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,11 +28,12 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
     public final static String hide_not_reachable = "hide_not_reachable";
     private final static int PREF_CURRENT_VERSION = 4;
+    private final static String firstTabExtraFilename = "firstTabExtra";
     public final String PREF_use_dark_theme = "use_dark_theme";
     public final String PREF_show_persistent_notification = "show_persistent_notification";
     private final Context context;
-    private WeakHashMap<IShowBackground, Boolean> observers_showBackground = new WeakHashMap<>();
-    private WeakHashMap<IHideNotReachable, Boolean> observers_HideNotReachable = new WeakHashMap<>();
+    private final WeakHashMap<IShowBackground, Boolean> observers_showBackground = new WeakHashMap<>();
+    private final WeakHashMap<IHideNotReachable, Boolean> observers_HideNotReachable = new WeakHashMap<>();
 
     private SharedPrefs() {
         this.context = App.instance;
@@ -69,9 +71,13 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public Bundle getFirstTabExtra() {
+        File file = context.getFileStreamPath(firstTabExtraFilename);
+        if (!file.exists())
+            return null;
+
         Parcel parcel = Parcel.obtain(); //creating empty parcel object
         try {
-            FileInputStream fis = context.openFileInput("firstTabExtra");
+            FileInputStream fis = context.openFileInput(firstTabExtraFilename);
             byte[] array = new byte[(int) fis.getChannel().size()];
             fis.read(array, 0, array.length);
             fis.close();
@@ -96,7 +102,7 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         if (extra != null) {
             Parcel parcel = Parcel.obtain(); //creating empty parcel object
             try {
-                FileOutputStream fos = context.openFileOutput("firstTabExtra", Context.MODE_PRIVATE);
+                FileOutputStream fos = context.openFileOutput(firstTabExtraFilename, Context.MODE_PRIVATE);
                 extra.writeToParcel(parcel, 0); //saving bundle as parcel
                 fos.write(parcel.marshall()); //writing parcel to file
                 fos.flush();
@@ -106,7 +112,8 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
             } finally {
                 parcel.recycle();
             }
-
+        } else {
+            context.deleteFile(firstTabExtraFilename);
         }
     }
 
@@ -238,7 +245,7 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return name.equals("use_log_energy_saving_mode");
     }
 
-    public String getVersionName(Context context) {
+    String getVersionName(Context context) {
         try {
             Class cls = App.class;
             ComponentName comp = new ComponentName(context, cls);
@@ -330,6 +337,12 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return prefs.getLong("open_issues_last_access", -1);
     }
 
+    public boolean getSmallerClickExecuteArea() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.smaller_click_execute_area);
+        return prefs.getBoolean("smaller_click_execute_area", value);
+    }
+
     public void setOpenIssues(int value, long last_access) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -366,6 +379,7 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
             }
         }
     }
+
 
     public interface IShowBackground {
         void backgroundChanged(boolean showBackground);

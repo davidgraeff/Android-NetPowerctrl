@@ -2,9 +2,7 @@ package oly.netpowerctrl.timer;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Paint;
 import android.text.Html;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +22,8 @@ import oly.netpowerctrl.utils.AnimationController;
  */
 public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<TimerController, Timer> {
     private final TimerController controller;
-    private LayoutInflater inflater;
-    private Context context;
+    private final LayoutInflater inflater;
+    private final Context context;
     private WeakReference<AnimationController> removeAnimationWeakReference = new WeakReference<>(null);
 
     public TimerAdapter(Context context, TimerController timerController) {
@@ -99,8 +97,8 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
         if (convertView == null) {
             if (timer.type == Timer.TYPE_RANGE_ON_WEEKDAYS || timer.type == Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
                 convertView = inflater.inflate(R.layout.alarm_range_weekdays, null);
-            else if (timer.type == Timer.TYPE_ONCE)
-                convertView = inflater.inflate(R.layout.alarm_once, null);
+//            else if (timer.type == Timer.TYPE_ONCE)
+//                convertView = inflater.inflate(R.layout.alarm_once, null);
         }
 
         assert convertView != null;
@@ -126,41 +124,41 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
             // start+stop time
             txt = (TextView) convertView.findViewById(R.id.alarm_time);
             txt.setText(Html.fromHtml(context.getString(R.string.alarm_switch_on_off,
-                    timer.time(timer.hour_minute_start),
-                    timer.time(timer.hour_minute_stop))));
+                    Timer.time(timer.hour_minute_start),
+                    Timer.time(timer.hour_minute_stop))));
 
             txt = (TextView) convertView.findViewById(R.id.alarm_random);
             if (timer.type == Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS) {
                 // random time
                 txt.setText(Html.fromHtml(context.getString(R.string.alarm_toggle_random,
-                        timer.time(timer.hour_minute_random_interval))));
+                        Timer.time(timer.hour_minute_random_interval))));
                 txt.setVisibility(View.VISIBLE);
             } else {
                 txt.setVisibility(View.GONE);
             }
 
-        } else if (timer.type == Timer.TYPE_ONCE) {
-            // Port name, device name
-            TextView txt = (TextView) convertView.findViewById(R.id.alarm_target);
-            txt.setText(timer.getTargetName());
-            if (timer.enabled)
-                txt.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.presence_online, 0, 0, 0);
-            else
-                txt.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.presence_busy, 0, 0, 0);
-
-            // date
-            txt = (TextView) convertView.findViewById(R.id.alarm_date);
-            txt.setText(DateFormat.getDateFormat(context).format(timer.absolute_date));
-
-            // start time
-            txt = (TextView) convertView.findViewById(R.id.alarm_start);
-            txt.setText(timer.time(timer.hour_minute_start));
-            txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-
-            // stop time
-            txt = (TextView) convertView.findViewById(R.id.alarm_stop);
-            txt.setText(timer.time(timer.hour_minute_stop));
-            txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+//        } else if (timer.type == Timer.TYPE_ONCE) {
+//            // Port name, device name
+//            TextView txt = (TextView) convertView.findViewById(R.id.alarm_target);
+//            txt.setText(timer.getTargetName());
+//            if (timer.enabled)
+//                txt.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.presence_online, 0, 0, 0);
+//            else
+//                txt.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.presence_busy, 0, 0, 0);
+//
+//            // date
+//            txt = (TextView) convertView.findViewById(R.id.alarm_date);
+//            txt.setText(DateFormat.getDateFormat(context).format(timer.absolute_date));
+//
+//            // start time
+//            txt = (TextView) convertView.findViewById(R.id.alarm_start);
+//            txt.setText(Timer.time(timer.hour_minute_start));
+//            txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+//
+//            // stop time
+//            txt = (TextView) convertView.findViewById(R.id.alarm_stop);
+//            txt.setText(Timer.time(timer.hour_minute_stop));
+//            txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         }
 
         return convertView;

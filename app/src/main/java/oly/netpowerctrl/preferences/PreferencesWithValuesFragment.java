@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * A preference fragment where preferences show their values instead of the summary
  */
-public class PreferencesWithValuesFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+class PreferencesWithValuesFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     @Override
     public void onResume() {
         super.onResume();

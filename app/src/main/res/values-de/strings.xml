@@ -223,10 +223,10 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="neighbour_pairing_accepted">Verbindungsanfrage angenommen</string>
     <string name="neighbour_pairing_denied">Verbindungsanfrage abgelehnt</string>
     <string name="outlet_set_icon">Zustandsbild…</string>
-    <string name="menu_sort">Anders anordnen</string>
+    <string name="sort_title">Anders anordnen</string>
     <string name="sort_custom">Eigene Reihenfolge</string>
     <string name="list_sorted">Neue Reihenfolge</string>
-    <string name="help_sorting">Dieser Dialog erlaubt dir die Reihenfolge der Steckdosen oder Szenen zu ändern. Du kannst entweder ein vorgefertigtes Kriterium wählen oder die Reihenfolge selber festlegen. Wenn du die Reihenfolge selber festlegst musst du alle Elemente der rechten Liste einmal in deiner gewünschten Reihenfolge anklicken. Diese verschwinden und werden auf der linken Seite hinzugefügt. Am Ende sollten alle Elemente auf der linken Seite in deiner gewünschten Reihenfolge vorliegen.</string>
+    <string name="help_sorting">Klicke alle Elemente der linken Liste in deiner gewünschten Reihenfolge an. Am Ende sollten alle Elemente auf der rechten Seite in deiner gewünschten Reihenfolge vorliegen.</string>
     <string name="create_device_not_all_data_set">Bitte erstmal alle Daten ausfüllen!</string>
 
     <string-array name="donation_google_catalog_values">
@@ -354,4 +354,8 @@ Es müssen alle Teilnehmer die selbe Netzwerk ID haben.</string>
     <string name="backup_import_summary">Importierte Daten überschreiben alle Geräte, Gruppen, Szenen und Bilder</string>
     <string name="alarm_add">Neuer Alarm</string>
     <string name="alarm_weekdays_summary">Wenn kein Wochentag ausgewählt wird, ist der Alarm inaktiv.</string>
+    <string name="sort_custom_title">Eigene Reihenfolge</string>
+    <string name="preference_smaller_click_execute_area">Ungewolltes Auslösen reduzieren</string>
+    <string name="preference_smaller_click_execute_area_summary_on">Klicke in der Übersicht auf den Namen eines Steckdoseneintrags um diese umzuschalten</string>
+    <string name="preference_smaller_click_execute_area_summary_off">Klicke in der Übersicht irgendwo auf einen Steckdoseneintrag um diese umzuschalten</string>
 </resources>

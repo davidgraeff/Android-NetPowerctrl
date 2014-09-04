@@ -17,7 +17,6 @@
 package oly.netpowerctrl.main;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.nfc.NdefMessage;
@@ -45,6 +44,7 @@ import oly.netpowerctrl.utils.NFC;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.ChangeLogUtil;
 import oly.netpowerctrl.utils.navigation.NavigationController;
+import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback, ActivityWithIconCache {
     private static final long TIME_INTERVAL_MS = 2000;
@@ -88,9 +88,6 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
 
         assignContentView();
 
-        // Clear the backstack on entering this activity
-        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
         // Hack to always show the overflow of the actionbar instead of
         // relying on the menu button that is only present on some devices
         // and may cause confusion.
@@ -105,6 +102,8 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         }
 
         checkUseHomeButton();
+
+        WidgetUpdateService.ForceUpdateAll(this);
 
         mIconCache.start();
 

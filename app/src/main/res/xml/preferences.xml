@@ -22,6 +22,13 @@
             android:title="@string/preference_show_background" />
 
         <CheckBoxPreference
+            android:defaultValue="@bool/smaller_click_execute_area"
+            android:key="smaller_click_execute_area"
+            android:summaryOff="@string/preference_smaller_click_execute_area_summary_off"
+            android:summaryOn="@string/preference_smaller_click_execute_area_summary_on"
+            android:title="@string/preference_smaller_click_execute_area" />
+
+        <CheckBoxPreference
             android:defaultValue="@bool/show_persistent_notification"
             android:key="show_persistent_notification"
             android:summary="@string/preference_show_persistent_notification_summary"

@@ -13,8 +13,6 @@ import java.io.OutputStream;
 public interface Storable {
     public StorableDataType getDataType();
 
-    ;
-
     public String getStorableName();
 
     public void load(JsonReader reader) throws IOException, ClassNotFoundException;
