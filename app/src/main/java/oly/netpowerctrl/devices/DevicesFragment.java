@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,23 +20,20 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.onRefreshStartedStopped;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.PluginInterface;
+import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
-import oly.netpowerctrl.utils_gui.ShowToast;
-import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
-import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
-import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
+import oly.netpowerctrl.utils.ShowToast;
 
 /**
  */
-public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, OnRefreshListener, onRefreshStartedStopped {
+public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, onServiceRefreshQuery {
     private DevicesAdapter adapter;
-    private PullToRefreshLayout mPullToRefreshLayout;
+    private SwipeRefreshLayout mPullToRefreshLayout;
     private ListView mListView;
 
     public DevicesFragment() {
@@ -46,12 +44,12 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.devices, menu);
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_delete_all_devices).setVisible(RuntimeDataController.getDataController().deviceCollection.hasDevices());
+        menu.findItem(R.id.menu_delete_all_devices).setVisible(AppData.getInstance().deviceCollection.hasDevices());
     }
 
     @Override
     public void onPause() {
-        NetpowerctrlService.observersStartStopRefresh.unregister(this);
+        ListenService.observersStartStopRefresh.unregister(this);
         super.onPause();
         if (adapter != null)
             adapter.onPause();
@@ -59,7 +57,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onResume() {
-        NetpowerctrlService.observersStartStopRefresh.register(this);
+        ListenService.observersStartStopRefresh.register(this);
         super.onResume();
         if (adapter != null)
             adapter.onResume();
@@ -91,7 +89,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
-                                RuntimeDataController.getDataController().deviceCollection.removeAll();
+                                AppData.getInstance().deviceCollection.removeAll();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -135,13 +133,12 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 MainActivity.getNavigationController().changeToFragment(PreferencesFragment.class.getName());
             }
         });
-        mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
-
-        // Now setup the PullToRefreshLayout
-        ActionBarPullToRefresh.from(getActivity())
-                .allChildrenArePullable()
-                .listener(this)
-                .setup(mPullToRefreshLayout);
+        mPullToRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
+        mPullToRefreshLayout.setOnRefreshListener(this);
+        mPullToRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
 
         return view;
     }
@@ -172,8 +169,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                                     it.next().addToGroup(uuidOfDevice);
                                 }
                                 current_device.releaseDevicePorts();
-                                RuntimeDataController.getDataController().deviceCollection.save();
-                                RuntimeDataController.getDataController().groupCollection.edit(uuidOfDevice, current_device.DeviceName);
+                                AppData.getInstance().deviceCollection.save(current_device);
+                                AppData.getInstance().groupCollection.edit(uuidOfDevice, current_device.DeviceName);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -188,8 +185,8 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                RuntimeDataController.getDataController().deviceCollection.remove(current_device);
-                                NetpowerctrlService.getService().findDevices(false, null);
+                                AppData.getInstance().deviceCollection.remove(current_device);
+                                ListenService.getService().findDevices(false, null);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -240,17 +237,17 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
-    @Override
-    public void onRefreshStarted(View view) {
-        refresh();
-    }
-
     private void refresh() {
-        NetpowerctrlService.getService().findDevices(true, null);
+        ListenService.getService().findDevices(true, null);
     }
 
     @Override
     public void onRefreshStateChanged(boolean isRefreshing) {
         mPullToRefreshLayout.setRefreshing(isRefreshing);
+    }
+
+    @Override
+    public void onRefresh() {
+        refresh();
     }
 }

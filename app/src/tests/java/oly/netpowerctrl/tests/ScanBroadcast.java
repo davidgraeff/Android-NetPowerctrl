@@ -6,21 +6,21 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.onDataQueryCompleted;
-import oly.netpowerctrl.application_state.onRefreshStartedStopped;
-import oly.netpowerctrl.application_state.onServiceReady;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.onServiceReady;
+import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
 import oly.netpowerctrl.network.DeviceObserverFinishedResult;
 
 /**
  * Created by david on 08.07.14.
  */
 public class ScanBroadcast extends AndroidTestCase {
-
+    AppData c;
     int refreshStartedStopped_signal = 0;
-    private onRefreshStartedStopped refreshStartedStopped = new onRefreshStartedStopped() {
+    private onServiceRefreshQuery refreshStartedStopped = new onServiceRefreshQuery() {
         @Override
         public void onRefreshStateChanged(boolean isRefreshing) {
             if (isRefreshing)
@@ -37,19 +37,19 @@ public class ScanBroadcast extends AndroidTestCase {
 //        assertEquals(getApplication(), NetpowerctrlApplication.instance);
 //        assertNotNull(getApplication());
 
-        RuntimeDataController c = RuntimeDataController.createRuntimeDataController(
-                new TestObjects.LoadStoreDataTest(getContext()));
+        c = AppData.getInstance();
+        c.useAppData(new TestObjects.LoadStoreJSonDataTest());
         assertNotNull(c);
 
-        assertEquals(NetpowerctrlService.getUsedCount(), 0);
-        assertNull(NetpowerctrlService.getService());
-        NetpowerctrlService.useService(getContext(), false, false);
-        assertEquals(NetpowerctrlService.getUsedCount(), 1);
+        assertEquals(ListenService.getUsedCount(), 0);
+        assertNull(ListenService.getService());
+        ListenService.useService(getContext(), false, false);
+        assertEquals(ListenService.getUsedCount(), 1);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        NetpowerctrlService.observersServiceReady.register(new onServiceReady() {
+        ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
+            public boolean onServiceReady(ListenService service) {
                 signal.countDown();
                 return false;
             }
@@ -60,17 +60,17 @@ public class ScanBroadcast extends AndroidTestCase {
         });
 
         signal.await(4, TimeUnit.SECONDS);
-        assertEquals(NetpowerctrlService.getUsedCount(), 1);
+        assertEquals(ListenService.getUsedCount(), 1);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        assertEquals(NetpowerctrlService.getUsedCount(), 1);
+        assertEquals(ListenService.getUsedCount(), 1);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        NetpowerctrlService.observersServiceReady.register(new onServiceReady() {
+        ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
+            public boolean onServiceReady(ListenService service) {
                 return false;
             }
 
@@ -80,22 +80,24 @@ public class ScanBroadcast extends AndroidTestCase {
             }
         });
 
-        NetpowerctrlService.stopUseService();
+        ListenService.stopUseService();
         signal.await(4, TimeUnit.SECONDS);
 
-        assertNull(NetpowerctrlService.getService());
+        assertNull(ListenService.getService());
+
+        c.clear();
 
         super.tearDown();
     }
 
     public void testScanBroadcast() throws Exception {
-        NetpowerctrlService service = NetpowerctrlService.getService();
+        ListenService service = ListenService.getService();
         assertNotNull(service);
 
         // DataQueryCompleted should be issued and onObserverJobFinished
         final CountDownLatch signal_receive = new CountDownLatch(2);
 
-        RuntimeDataController.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
             @Override
             public boolean onDataQueryFinished() {
                 signal_receive.countDown();
@@ -103,7 +105,7 @@ public class ScanBroadcast extends AndroidTestCase {
             }
         });
 
-        NetpowerctrlService.observersStartStopRefresh.register(refreshStartedStopped);
+        ListenService.observersStartStopRefresh.register(refreshStartedStopped);
 
         service.findDevices(false, new DeviceObserverFinishedResult() {
             @Override
@@ -115,9 +117,9 @@ public class ScanBroadcast extends AndroidTestCase {
 
         assertTrue("Timeout of findDevices", signal_receive.await(4, TimeUnit.SECONDS));
 
-        NetpowerctrlService.observersStartStopRefresh.unregister(refreshStartedStopped);
+        ListenService.observersStartStopRefresh.unregister(refreshStartedStopped);
         assertEquals("RefreshStartStop count wrong", 0, refreshStartedStopped_signal);
 
-        assertTrue("No devices found!", RuntimeDataController.getDataController().newDevices.size() > 0);
+        assertTrue("No devices found!", AppData.getInstance().newDevices.size() > 0);
     }
 }

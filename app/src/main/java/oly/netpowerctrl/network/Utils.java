@@ -1,6 +1,8 @@
 package oly.netpowerctrl.network;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.format.DateFormat;
@@ -17,13 +19,13 @@ import java.util.Enumeration;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Get network address, get broadcast address
  */
 public class Utils {
     private static final String TAG = "NetworkUtils";
+    public static boolean root_port_allowed = false;
 
     /**
      * Return broadcast address of given IP or null if no broadcast address exists (IPv6).
@@ -95,7 +97,6 @@ public class Utils {
         }
     }
 
-
     private static String capitalize(String s) {
         if (s == null || s.length() == 0) {
             return "";
@@ -152,13 +153,33 @@ public class Utils {
     }
 
     public static boolean checkPortInvalid(int port) {
-        if (SharedPrefs.getInstance().isPortsUnlimited())
+        if (root_port_allowed)
             return (port < 1) || port > 65555;
         else
             return (port < 1024) || port > 65555;
     }
 
-    public static void warn_port(Context context) {
+    public static void askForRootPorts(Context context) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                context);
+        alertDialogBuilder
+                .setTitle(R.string.port_warning_1024_title)
+                .setMessage(R.string.port_warning_1024)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        root_port_allowed = true;
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        root_port_allowed = false;
+                    }
+                });
+
+        // show it
+        alertDialogBuilder.create().show();
         Toast.makeText(context, R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
+
     }
 }

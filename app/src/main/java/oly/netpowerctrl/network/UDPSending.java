@@ -13,11 +13,12 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.utils_gui.ShowToast;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * udpSending spawns a separate thread for UDP sending and enqueues all send jobs.
@@ -155,7 +156,7 @@ public class UDPSending {
         final int errorID;
         private final DeviceObserverResult deviceObserverResult = new DeviceObserverResult() {
             @Override
-            public void onDeviceUpdated(Device di) {
+            public void onObserverDeviceUpdated(Device di) {
             }
 
             @Override
@@ -188,7 +189,7 @@ public class UDPSending {
 
         @Override
         public void process(UDPSending udpSending) {
-            Context context = NetpowerctrlService.getService();
+            Context context = ListenService.getService();
             if (context == null)
                 return;
 
@@ -211,7 +212,12 @@ public class UDPSending {
                 addDevice(ci.getDevice(), false);
 
                 // Register on main application object to receive device updates
-                RuntimeDataController.getDataController().addUpdateDeviceState(this);
+                App.getMainThreadHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        AppData.getInstance().addUpdateDeviceState(SendAndObserveJob.this);
+                    }
+                });
             }
 
             try {
@@ -278,7 +284,7 @@ public class UDPSending {
             if (ip == null)
                 return;
 
-            Context context = NetpowerctrlService.getService();
+            Context context = ListenService.getService();
             if (context == null)
                 return;
 

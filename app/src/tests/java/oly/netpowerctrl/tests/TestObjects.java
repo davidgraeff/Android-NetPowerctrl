@@ -1,16 +1,11 @@
 package oly.netpowerctrl.tests;
 
-import android.content.Context;
-
 import oly.netpowerctrl.anel.AnelPlugin;
-import oly.netpowerctrl.application_state.LoadStoreData;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.LoadStoreJSonData;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
-import oly.netpowerctrl.groups.GroupCollection;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.scenes.SceneCollection;
-import oly.netpowerctrl.timer.TimerController;
 
 /**
  * Mock objects for testing
@@ -28,27 +23,22 @@ public class TestObjects {
     }
 
     /**
-     * Created by david on 08.07.14.
+     * Replace the original LoadStoreData class with a stub class.
      */
-    public static class LoadStoreDataTest extends LoadStoreData {
-        public LoadStoreDataTest(Context context) {
-            super(context);
+    public static class LoadStoreJSonDataTest extends LoadStoreJSonData {
+        public LoadStoreJSonDataTest() {
+            super();
         }
 
-        public void read(SceneCollection target) {
-
+        @Override
+        public void loadData(final AppData appData) {
+            // Do nothing
+            // Notify data is loaded now
+            AppData.observersOnDataLoaded.onDataLoaded();
         }
 
-        public void read(DeviceCollection target) {
-
-        }
-
-        public void read(GroupCollection target) {
-
-        }
-
-        public void read(TimerController target) {
-
+        @Override
+        public void finish() {
         }
 
         public void markVersion() {

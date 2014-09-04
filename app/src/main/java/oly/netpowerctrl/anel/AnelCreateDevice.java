@@ -5,17 +5,19 @@ import android.os.Handler;
 
 import java.util.List;
 
-import oly.netpowerctrl.application_state.PluginInterface;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
 
 /**
  * Created by david on 20.08.14.
  */
-public class AnelCreateDevice implements DeviceObserverResult, onConfiguredDeviceUpdate {
+public class AnelCreateDevice implements DeviceObserverResult, onCollectionUpdated<DeviceCollection, Device> {
     public final Device device;
     public AnelCreateDeviceResult listener = null;
     TestStates test_state = TestStates.TEST_INIT;
@@ -49,14 +51,44 @@ public class AnelCreateDevice implements DeviceObserverResult, onConfiguredDevic
     }
 
     @Override
-    public void onDeviceUpdated(Device di) {
-        onConfiguredDeviceUpdated(di, false);
+    public void onObserverDeviceUpdated(Device di) {
+        updated(null, di, ObserverUpdateActions.UpdateAction);
     }
 
     @Override
-    public void onConfiguredDeviceUpdated(Device updated_device, boolean willBeRemoved) {
-        if (!updated_device.equalsByUniqueID(device))
+    public void onObserverJobFinished(List<Device> timeout_devices) {
+        if (test_state != TestStates.TEST_REACHABLE)
             return;
+
+        for (Device di : timeout_devices) {
+            if (!di.equalsByUniqueID(device))
+                continue;
+            test_state = TestStates.TEST_INIT;
+            if (listener != null)
+                listener.testFinished(false);
+            break;
+        }
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean startTest(Context context) {
+        test_state = TestStates.TEST_REACHABLE;
+
+        if (wakeupPlugin(context))
+            deviceQuery = new DeviceQuery(context, this, device);
+        else
+            return false;
+        return true;
+    }
+
+    public boolean isTesting() {
+        return test_state != TestStates.TEST_INIT && test_state != TestStates.TEST_OK;
+    }
+
+    @Override
+    public boolean updated(DeviceCollection deviceCollection, Device updated_device, ObserverUpdateActions action) {
+        if (!updated_device.equalsByUniqueID(device))
+            return true;
 
         if (!updated_device.isReachable()) {
             test_state = TestStates.TEST_INIT;
@@ -99,36 +131,8 @@ public class AnelCreateDevice implements DeviceObserverResult, onConfiguredDevic
             device.copyValuesFromUpdated(updated_device);
             test_state = TestStates.TEST_OK;
         }
-    }
 
-    @Override
-    public void onObserverJobFinished(List<Device> timeout_devices) {
-        if (test_state != TestStates.TEST_REACHABLE)
-            return;
-
-        for (Device di : timeout_devices) {
-            if (!di.equalsByUniqueID(device))
-                continue;
-            test_state = TestStates.TEST_INIT;
-            if (listener != null)
-                listener.testFinished(false);
-            break;
-        }
-    }
-
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean startTest(Context context) {
-        test_state = TestStates.TEST_REACHABLE;
-
-        if (wakeupPlugin(context))
-            deviceQuery = new DeviceQuery(context, this, device);
-        else
-            return false;
         return true;
-    }
-
-    public boolean isTesting() {
-        return test_state != TestStates.TEST_INIT && test_state != TestStates.TEST_OK;
     }
 
     enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}

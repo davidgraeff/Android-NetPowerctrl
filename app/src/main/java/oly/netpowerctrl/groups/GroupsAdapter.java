@@ -9,9 +9,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.Icons;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
 
-public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroupsUpdated {
+public class GroupsAdapter extends BaseAdapter implements onCollectionUpdated<GroupCollection, Group> {
     private final LayoutInflater inflater;
     private final GroupCollection groupCollection;
     private final Context context;
@@ -39,12 +41,12 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
 
     @Override
     public Object getItem(int position) {
-        return groupCollection.groups.get(position);
+        return groupCollection.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return groupCollection.groups.get(position).id;
+        return groupCollection.get(position).id;
     }
 
     @Override
@@ -54,7 +56,7 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
             convertView = inflater.inflate(R.layout.grid_icon_item, parent);
         }
 
-        GroupCollection.GroupItem data = groupCollection.groups.get(position);
+        Group data = groupCollection.get(position);
 
         assert convertView != null;
         TextView tvName = (TextView) convertView.findViewById(R.id.text1);
@@ -62,8 +64,8 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
 
         ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
         if (data.bitmap == null) {
-            data.bitmap = Icons.loadIcon(context, data.uuid,
-                    Icons.IconType.GroupIcon, Icons.IconState.StateUnknown, R.drawable.stateon);
+            data.bitmap = LoadStoreIconData.loadIcon(context, data.uuid,
+                    LoadStoreIconData.IconType.GroupIcon, LoadStoreIconData.IconState.StateUnknown, R.drawable.stateon);
         }
 
         image.setImageBitmap(data.bitmap);
@@ -71,7 +73,8 @@ public class GroupsAdapter extends BaseAdapter implements GroupCollection.IGroup
     }
 
     @Override
-    public void groupsUpdated(boolean addedOrRemoved) {
+    public boolean updated(GroupCollection groupCollection, Group group, ObserverUpdateActions action) {
         notifyDataSetChanged();
+        return true;
     }
 }

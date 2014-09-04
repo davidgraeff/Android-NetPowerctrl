@@ -24,26 +24,26 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.PluginInterface;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.PluginInterface;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSending;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils_gui.ShowToast;
+import oly.netpowerctrl.utils.ShowToast;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
@@ -82,7 +82,7 @@ final public class AnelPlugin implements PluginInterface {
     private void executeDeviceBatch(Device device, List<Scene.PortAndCommand> command_list,
                                     ExecutionFinished callback) {
         // Get necessary objects
-        NetpowerctrlService service = NetpowerctrlService.getService();
+        ListenService service = ListenService.getService();
         if (service == null)
             return;
 
@@ -205,7 +205,7 @@ final public class AnelPlugin implements PluginInterface {
 
     public void startUDPDiscoveryThreads(Set<Integer> additional_port) {
         // Get all ports of configured devices and add the additional_port if != 0
-        Set<Integer> ports = RuntimeDataController.getDataController().getAllReceivePorts();
+        Set<Integer> ports = AppData.getInstance().getAllReceivePorts();
         if (additional_port != null)
             ports.addAll(additional_port);
 
@@ -252,10 +252,10 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     public void stopUDPDiscoveryThreads(Context context) {
-        RuntimeDataController d = RuntimeDataController.getDataController();
-        for (Device di : d.deviceCollection.devices) {
+        AppData d = AppData.getInstance();
+        for (Device di : d.deviceCollection.getItems()) {
             if (this.equals(di.getPluginInterface())) {
-                di.setNotReachable("UDP", NetpowerctrlApplication.getAppString(R.string.device_energysave_mode));
+                di.setNotReachable("UDP", App.getAppString(R.string.device_energysave_mode));
                 d.onDeviceUpdated(di);
             }
         }
@@ -284,7 +284,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     public void execute(DevicePort port, int command, ExecutionFinished callback) {
         // Get necessary objects
-        NetpowerctrlService service = NetpowerctrlService.getService();
+        ListenService service = ListenService.getService();
         if (service == null)
             return;
 
@@ -350,7 +350,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     private boolean warnUDPSending() {
         if (udpSending == null) {
-            ShowToast.FromOtherThread(NetpowerctrlService.getService(), "udpSending null");
+            ShowToast.FromOtherThread(ListenService.getService(), "udpSending null");
             return true;
         }
         return false;
@@ -358,18 +358,18 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void onDestroy() {
-        stopUDPDiscoveryThreads(NetpowerctrlService.getService());
+        stopUDPDiscoveryThreads(ListenService.getService());
     }
 
     @Override
-    public void onStart(NetpowerctrlService service) {
+    public void onStart(ListenService service) {
 
     }
 
     @Override
     public void requestData() {
         // Get necessary objects
-        NetpowerctrlService service = NetpowerctrlService.getService();
+        ListenService service = ListenService.getService();
         if (service == null)
             return;
         if (warnUDPSending()) {
@@ -382,7 +382,7 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public void requestData(DeviceConnection ci) {
         // Get necessary objects
-        NetpowerctrlService service = NetpowerctrlService.getService();
+        ListenService service = ListenService.getService();
         if (service == null)
             return;
 
@@ -433,7 +433,7 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public void showConfigureDeviceScreen(Device device) {
         anelCreateDevice = new AnelCreateDevice(MainActivity.instance.getString(R.string.default_device_name), device);
-        MainActivity.getNavigationController().changeToDialog(MainActivity.instance, AnelDevicePreferences.class.getName());
+        MainActivity.getNavigationController().changeToDialog(MainActivity.instance, AnelEditDeviceFragmentDialog.class.getName());
     }
 
     private List<Timer> extractAlarms(final DevicePort port, final String html) throws SAXException, IOException {
@@ -697,7 +697,7 @@ final public class AnelPlugin implements PluginInterface {
         if (type != Timer.TYPE_RANGE_ON_WEEKDAYS && type != Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
             return null;
 
-        TimerController c = RuntimeDataController.getDataController().timerController;
+        TimerController c = AppData.getInstance().timerController;
         List<Timer> available_timers = c.getAvailableDeviceAlarms();
         for (Timer available : available_timers) {
             // Find alarm for the selected port
@@ -718,7 +718,7 @@ final public class AnelPlugin implements PluginInterface {
         final String getData = "dd.htm?DD" + String.valueOf(timer.port.id);
         final int timerNumber = (int) (timer.id >> 8) & 255;
         // Get the timerController object. We will add received alarms to that instance.
-        final TimerController timerController = RuntimeDataController.getDataController().timerController;
+        final TimerController timerController = AppData.getInstance().timerController;
         final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) timer.port.device.getFirstReachableConnection("HTTP");
         if (ci == null)
             return;

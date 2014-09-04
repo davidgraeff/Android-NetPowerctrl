@@ -10,10 +10,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.main.App;
 
 /**
  * This base class is used by the device query and device-resend-command class.
@@ -35,27 +36,24 @@ public abstract class DeviceObserverBase {
             }
         }
     };
-    private List<Device> devices_to_observe_not_filtered = new ArrayList<>();
-    private DeviceObserverResult target;
     final Runnable timeoutRunnable = new Runnable() {
         @Override
         public void run() {
-            //Remove update listener
-            RuntimeDataController.getDataController().removeUpdateDeviceState(DeviceObserverBase.this);
-
             for (Device device : devices_to_observe) {
                 if (device.getFirstReachableConnection() != null)
                     device.setNotReachableAll(context.getString(R.string.error_timeout_device, ""));
                 // Call onConfiguredDeviceUpdated to update device info.
-                RuntimeDataController.getDataController().deviceCollection.updateNotReachable(context, device);
+                AppData.getInstance().deviceCollection.updateNotReachable(context, device);
             }
+            devices_to_observe.clear();
 
-            // Update status observer
-            if (target != null) {
-                target.onObserverJobFinished(devices_to_observe);
-            }
+            checkIfDone();
+            // Remove update listener manually. Normally this is done by the notify.. method caller.
+            AppData.getInstance().removeUpdateDeviceState(DeviceObserverBase.this);
         }
     };
+    private List<Device> devices_to_observe_not_filtered = new ArrayList<>();
+    private DeviceObserverResult target;
 
     DeviceObserverBase(Context context, DeviceObserverResult target) {
         this.context = context;
@@ -87,13 +85,13 @@ public abstract class DeviceObserverBase {
                     device_to_observe.setNotReachableAll(null);
                     it.remove();
                     if (target != null)
-                        target.onDeviceUpdated(device);
+                        target.onObserverDeviceUpdated(device);
                     break;
                 }
             } else if (device_to_observe.equalsByUniqueID(device)) {
                 it.remove();
                 if (target != null)
-                    target.onDeviceUpdated(device);
+                    target.onObserverDeviceUpdated(device);
                 break;
             }
         }
@@ -108,7 +106,7 @@ public abstract class DeviceObserverBase {
             if (eq) {
                 it.remove();
                 if (target != null)
-                    target.onDeviceUpdated(device);
+                    target.onObserverDeviceUpdated(device);
                 break;
             }
         }
@@ -125,7 +123,7 @@ public abstract class DeviceObserverBase {
     }
 
     public void startQuery() {
-        NetpowerctrlService service = NetpowerctrlService.getService();
+        ListenService service = ListenService.getService();
         if ((isEmpty() && !broadcast) || service == null) {
             if (target != null)
                 target.onObserverJobFinished(devices_to_observe_not_filtered);
@@ -133,7 +131,7 @@ public abstract class DeviceObserverBase {
         }
 
         // Register on main application object to receive device updates
-        RuntimeDataController.getDataController().addUpdateDeviceState(this);
+        AppData.getInstance().addUpdateDeviceState(this);
 
         // We do not repeat the broadcast as much as individual requests
         if (!broadcast) {
@@ -163,7 +161,7 @@ public abstract class DeviceObserverBase {
 
         if (!device.isEnabled()) {
             device.setNotReachableAll(context.getString(R.string.error_device_disabled));
-            RuntimeDataController.getDataController().deviceCollection.updateNotReachable(context, device);
+            AppData.getInstance().deviceCollection.updateNotReachable(context, device);
             return countWait.get();
         }
 
@@ -173,7 +171,7 @@ public abstract class DeviceObserverBase {
         // But we do not allow a device without a unique id and without a hostname.
         if (device.UniqueDeviceID == null && device.DeviceConnections.isEmpty()) {
             device.setNotReachableAll(context.getString(R.string.error_device_incomplete));
-            RuntimeDataController.getDataController().deviceCollection.updateNotReachable(context, device);
+            AppData.getInstance().deviceCollection.updateNotReachable(context, device);
             return countWait.get();
         }
 
@@ -244,13 +242,19 @@ public abstract class DeviceObserverBase {
                 }
             }
 
-            DeviceObserverBase deviceObserverBase = deviceObserverBaseWeakReference.get();
+            final DeviceObserverBase deviceObserverBase = deviceObserverBaseWeakReference.get();
             if (deviceObserverBase == null)
                 return;
 
             deviceObserverBase.devices_to_observe.add(device);
-            if (deviceObserverBase.countWait.decrementAndGet() == 0)
-                deviceObserverBase.startQuery();
+            if (deviceObserverBase.countWait.decrementAndGet() == 0) {
+                App.getMainThreadHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        deviceObserverBase.startQuery();
+                    }
+                });
+            }
         }
     }
 }

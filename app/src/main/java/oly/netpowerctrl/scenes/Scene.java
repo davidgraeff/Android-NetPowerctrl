@@ -4,17 +4,21 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.JSONHelper;
+import oly.netpowerctrl.data.Storable;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.utils.JSONHelper;
 
-public class Scene {
+public class Scene implements Storable {
     private static long nextStableID = 0;
     //public Bitmap bitmap = null;
     public final long id = nextStableID++;
@@ -49,42 +53,6 @@ public class Scene {
         scene.sceneItems.add(item);
     }
 
-    public static Scene fromJSON(JsonReader reader) throws IOException {
-        Scene scene = new Scene();
-
-        reader.beginObject();
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            assert name != null;
-            switch (name) {
-                case "sceneName":
-                    scene.sceneName = reader.nextString();
-                    break;
-                case "uuid":
-                    scene.uuid = UUID.fromString(reader.nextString());
-                    break;
-                case "uuid_master":
-                    scene.uuid_master = UUID.fromString(reader.nextString());
-                    break;
-                case "favourite":
-                    scene.favourite = reader.nextBoolean();
-                    break;
-                case "groupItems":
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        readSceneItem(reader, scene);
-                    }
-                    reader.endArray();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
-        }
-        reader.endObject();
-        return scene;
-    }
-
     public boolean isFavourite() {
         return favourite;
     }
@@ -116,7 +84,7 @@ public class Scene {
                 if (item.command != DevicePort.TOGGLE)
                     return item.command;
                 // If the command is toggle, we have to find out the final command.
-                DevicePort port = RuntimeDataController.getDataController().findDevicePort(item.uuid);
+                DevicePort port = AppData.getInstance().findDevicePort(item.uuid);
                 if (port == null)
                     return DevicePort.INVALID;
 
@@ -150,7 +118,7 @@ public class Scene {
     public int getDevices(TreeSet<Device> devices) {
         int valid_commands = 0;
         for (SceneItem c : sceneItems) {
-            DevicePort port = RuntimeDataController.getDataController().findDevicePort(c.uuid);
+            DevicePort port = AppData.getInstance().findDevicePort(c.uuid);
             if (port != null) {
                 devices.add(port.device);
                 ++valid_commands;
@@ -166,15 +134,6 @@ public class Scene {
      */
     @Override
     public String toString() {
-        return toJSON();
-    }
-
-    /**
-     * Return the json representation of this scene
-     *
-     * @return JSON String
-     */
-    public String toJSON() {
         try {
             JSONHelper h = new JSONHelper();
             toJSON(h.createWriter());
@@ -184,7 +143,7 @@ public class Scene {
         }
     }
 
-    public void toJSON(JsonWriter writer) throws IOException {
+    private void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("sceneName").value(sceneName);
         writer.name("uuid").value(uuid.toString());
@@ -200,6 +159,8 @@ public class Scene {
         }
         writer.endArray();
         writer.endObject();
+
+        writer.close();
     }
 
     private SceneItem getSceneItem(UUID uuid) {
@@ -212,17 +173,60 @@ public class Scene {
         return null;
     }
 
-    public static class SceneItem {
-        public UUID uuid = UUID.randomUUID();
-        public int command;
+    @Override
+    public StorableDataType getDataType() {
+        return StorableDataType.JSON;
+    }
 
-        public SceneItem() {
-        }
+    @Override
+    public String getStorableName() {
+        return uuid.toString();
+    }
 
-        public SceneItem(UUID uuid, int command) {
-            this.uuid = uuid;
-            this.command = command;
+    @Override
+    public void load(JsonReader reader) throws IOException, ClassNotFoundException {
+        Scene scene = this;
+
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            assert name != null;
+            switch (name) {
+                case "sceneName":
+                    scene.sceneName = reader.nextString();
+                    break;
+                case "uuid":
+                    scene.uuid = UUID.fromString(reader.nextString());
+                    break;
+                case "uuid_master":
+                    scene.uuid_master = UUID.fromString(reader.nextString());
+                    break;
+                case "favourite":
+                    scene.favourite = reader.nextBoolean();
+                    break;
+                case "groupItems":
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        readSceneItem(reader, scene);
+                    }
+                    reader.endArray();
+                    break;
+                default:
+                    reader.skipValue();
+                    break;
+            }
         }
+        reader.endObject();
+    }
+
+    @Override
+    public void load(InputStream input) throws IOException, ClassNotFoundException {
+        load(new JsonReader(new InputStreamReader(input)));
+    }
+
+    @Override
+    public void save(OutputStream output) throws IOException {
+        toJSON(JSONHelper.createWriter(output));
     }
 
     public static class PortAndCommand {

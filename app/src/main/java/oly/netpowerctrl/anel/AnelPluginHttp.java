@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
+import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.timer.Timer;
 
@@ -35,11 +35,11 @@ public class AnelPluginHttp {
             final Device device = ci.getDevice();
             if (!callback_success) {
                 ci.setNotReachable(response_message);
-                RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(device);
+                AppData.getInstance().onDeviceUpdatedOtherThread(device);
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
-                    ci.setNotReachable(NetpowerctrlService.getService().getString(R.string.error_packet_received));
+                    ci.setNotReachable(ListenService.getService().getString(R.string.error_packet_received));
                 } else {
                     // The name is the second ";" separated entry of the response_message.
                     device.DeviceName = data[1].trim();
@@ -61,7 +61,7 @@ public class AnelPluginHttp {
                         // we have to set the changed flag.
                         device.setHasChanged();
                     }
-                    RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(device);
+                    AppData.getInstance().onDeviceUpdatedOtherThread(device);
                 }
 
             }
@@ -77,7 +77,7 @@ public class AnelPluginHttp {
                     final Device device = ci.getDevice();
                     if (!callback_success) {
                         ci.setNotReachable(response_message);
-                        RuntimeDataController.getDataController().onDeviceUpdatedOtherThread(device);
+                        AppData.getInstance().onDeviceUpdatedOtherThread(device);
                     } else
                         HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
                 }

@@ -15,12 +15,14 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils_gui.AnimationController;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.utils.AnimationController;
 
 /**
  * List all alarms of the timer controller
  */
-public class TimerAdapter extends BaseAdapter implements TimerController.IAlarmsUpdated {
+public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<TimerController, Timer> {
     private final TimerController controller;
     private LayoutInflater inflater;
     private Context context;
@@ -61,7 +63,7 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
 
     @Override
     public int getCount() {
-        return controller.getCount();
+        return controller.size();
     }
 
     @Override
@@ -71,12 +73,12 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
 
     @Override
     public Object getItem(int position) {
-        return controller.getItem(position);
+        return controller.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return controller.getItem(position).id;
+        return controller.get(position).id;
     }
 
     @Override
@@ -86,13 +88,13 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
 
     @Override
     public int getItemViewType(int position) {
-        Timer data = controller.getItem(position);
+        Timer data = controller.get(position);
         return data.type;
     }
 
     @SuppressLint("InflateParams")
     public View getView(int position, View convertView, ViewGroup parent) {
-        Timer timer = controller.getItem(position);
+        Timer timer = controller.get(position);
 
         if (convertView == null) {
             if (timer.type == Timer.TYPE_RANGE_ON_WEEKDAYS || timer.type == Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
@@ -164,15 +166,14 @@ public class TimerAdapter extends BaseAdapter implements TimerController.IAlarms
         return convertView;
     }
 
+    public Timer getAlarm(int position) {
+        return controller.get(position);
+    }
+
+
     @Override
-    public boolean alarmsUpdated(boolean addedOrRemoved, boolean inProgress) {
+    public boolean updated(TimerController timerController, Timer timer, ObserverUpdateActions action) {
         notifyDataSetChanged();
         return true;
     }
-
-    public Timer getAlarm(int position) {
-        return controller.getItem(position);
-    }
-
-
 }

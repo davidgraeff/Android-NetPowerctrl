@@ -1,6 +1,7 @@
 package oly.netpowerctrl.scenes;
 
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,26 +22,22 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.SortCriteriaDialog;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.ActivityWithIconCache;
-import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.JSONHelper;
-import oly.netpowerctrl.utils.ListItemMenu;
-import oly.netpowerctrl.utils.Shortcuts;
-import oly.netpowerctrl.utils_gui.AnimationController;
-import oly.netpowerctrl.utils_gui.ShowToast;
+import oly.netpowerctrl.utils.AndroidShortcuts;
+import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
+import oly.netpowerctrl.utils.controls.ListItemMenu;
 
 /**
  */
 public class ScenesFragment extends Fragment implements
-        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, Icons.IconSelected, ListItemMenu {
+        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, LoadStoreIconData.IconSelected, ListItemMenu {
     private SceneCollection scenes;
     private GridView mListView;
     private ScenesAdapter adapter;
@@ -73,7 +70,7 @@ public class ScenesFragment extends Fragment implements
         inflater.inflate(R.menu.scenes, menu);
 
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_add_scene).setVisible(RuntimeDataController.getDataController().deviceCollection.hasDevices());
+        menu.findItem(R.id.menu_add_scene).setVisible(AppData.getInstance().deviceCollection.hasDevices());
 
         if (adapter == null || adapter.getCount() == 0) {
             //noinspection ConstantConditions
@@ -108,7 +105,7 @@ public class ScenesFragment extends Fragment implements
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
-                                scenes.deleteAll();
+                                scenes.removeAll();
                                 getActivity().invalidateOptionsMenu();
                             }
                         })
@@ -147,8 +144,8 @@ public class ScenesFragment extends Fragment implements
             }
 
             case R.id.menu_sort: {
-                Fragment fragment = SortCriteriaDialog.instantiate(getActivity(), scenes);
-                ShowToast.showDialogFragment(getActivity(), fragment);
+                DialogFragment fragment = SortCriteriaDialog.instantiate(getActivity(), scenes);
+                MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
                 return true;
             }
         }
@@ -165,7 +162,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        scenes = RuntimeDataController.getDataController().sceneCollection;
+        scenes = AppData.getInstance().sceneCollection;
         setHasOptionsMenu(true);
     }
 
@@ -184,7 +181,7 @@ public class ScenesFragment extends Fragment implements
         adapter.setAnimationController(animationController);
 
         setListOrGrid(SharedPrefs.getInstance().getScenesList());
-        if (!RuntimeDataController.getDataController().deviceCollection.hasDevices()) {
+        if (!AppData.getInstance().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes_no_devices));
             Button btnEmpty = ((Button) view.findViewById(R.id.btnChangeToDevices));
@@ -198,28 +195,34 @@ public class ScenesFragment extends Fragment implements
         } else {
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes));
+            Button btnEmpty = ((Button) view.findViewById(R.id.btnAddScene));
+            btnEmpty.setVisibility(View.VISIBLE);
+            btnEmpty.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent it = new Intent(getActivity(), EditSceneActivity.class);
+                    it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
+                    startActivity(it);
+                }
+            });
         }
+
         mListView.setEmptyView(view.findViewById(android.R.id.empty));
-        onConfigurationChanged(getResources().getConfiguration());
+        //onConfigurationChanged(getResources().getConfiguration());
         return view;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         final int position = (Integer) mListView.getTag();
-        Scene scene = scenes.getScene(position);
+        Scene scene = scenes.get(position);
 
         switch (menuItem.getItemId()) {
             case R.id.menu_edit_scene: {
-                JSONHelper h = new JSONHelper();
-                try {
-                    Intent it = new Intent(getActivity(), EditSceneActivity.class);
-                    it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                    scene.toJSON(h.createWriter());
-                    it.putExtra(EditSceneActivity.LOAD_SCENE, h.getString());
-                    startActivity(it);
-                } catch (IOException ignored) {
-                }
+                Intent it = new Intent(getActivity(), EditSceneActivity.class);
+                it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
+                it.putExtra(EditSceneActivity.LOAD_SCENE, scene.toString());
+                startActivity(it);
                 return true;
             }
             case R.id.menu_remove_scene: {
@@ -230,22 +233,20 @@ public class ScenesFragment extends Fragment implements
             }
             case R.id.menu_remove_favourite: {
                 scenes.setFavourite(scene, false);
-                scenes.save();
                 return true;
             }
             case R.id.menu_set_favourite: {
                 scenes.setFavourite(scene, true);
-                scenes.save();
                 return true;
             }
 
             case R.id.menu_icon:
-                Icons.show_select_icon_dialog(getActivity(), "scene_icons", this, scene);
+                LoadStoreIconData.show_select_icon_dialog(getActivity(), "scene_icons", this, scene);
                 return true;
 
             case R.id.menu_add_homescreen: {
                 //noinspection ConstantConditions
-                Shortcuts.createHomeIcon(getActivity().getApplicationContext(), scene);
+                AndroidShortcuts.createHomeIcon(getActivity().getApplicationContext(), scene);
                 return true;
             }
         }
@@ -258,7 +259,7 @@ public class ScenesFragment extends Fragment implements
         adapter.handleClick(position, view);
         //noinspection ConstantConditions
         Toast.makeText(getActivity(),
-                getActivity().getString(R.string.scene_executed, scenes.getScene(position).sceneName),
+                getActivity().getString(R.string.scene_executed, scenes.get(position).sceneName),
                 Toast.LENGTH_SHORT).show();
     }
 
@@ -266,14 +267,14 @@ public class ScenesFragment extends Fragment implements
     public void setIcon(Object context_object, Bitmap bitmap) {
         if (context_object == null)
             return;
-        RuntimeDataController.getDataController().sceneCollection.setBitmap(getActivity(),
+        AppData.getInstance().sceneCollection.setBitmap(getActivity(),
                 (Scene) context_object, bitmap);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        Icons.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
+        LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
     }
 
     @Override
@@ -286,7 +287,7 @@ public class ScenesFragment extends Fragment implements
         view.startAnimation(a);
 
         mListView.setTag(position);
-        Scene scene = scenes.getScene(position);
+        Scene scene = scenes.get(position);
 
         @SuppressWarnings("ConstantConditions")
         PopupMenu popup = new PopupMenu(getActivity(), view);

@@ -11,19 +11,19 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.onDataQueryCompleted;
-import oly.netpowerctrl.application_state.onServiceReady;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.JSONHelper;
+import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.JSONHelper;
-import oly.netpowerctrl.utils_gui.ShowToast;
+import oly.netpowerctrl.utils.ShowToast;
 
 public class ExecutionActivity extends Activity implements DeviceObserverResult, ExecutionFinished {
     private Scene scene = null;
@@ -34,14 +34,15 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
 
     @Override
     protected void onPause() {
-        NetpowerctrlService.stopUseService();
+        ListenService.stopUseService();
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        NetpowerctrlService.useService(getApplicationContext(), false, false);
+        AppData.useAppData();
+        ListenService.useService(getApplicationContext(), false, false);
         Intent it = getIntent();
         if (it == null) {
             finish();
@@ -61,9 +62,9 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
         }
 
         // The application may have be started here, we have to wait for the service to be ready
-        NetpowerctrlService.observersServiceReady.register(new onServiceReady() {
+        ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(NetpowerctrlService service) {
+            public boolean onServiceReady(ListenService service) {
                 // Execute single action (in contrast to scene)
                 if (extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID)) {
                     executeSingleAction(extra.getString(EditSceneActivity.RESULT_ACTION_UUID),
@@ -90,16 +91,16 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
 
     void executeSingleAction(String port_uuid_string, final int command) {
         final UUID port_uuid = UUID.fromString(port_uuid_string);
-        final DevicePort port = RuntimeDataController.getDataController().findDevicePort(port_uuid);
+        final DevicePort port = AppData.getInstance().findDevicePort(port_uuid);
         if (port == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        RuntimeDataController.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
             @Override
             public boolean onDataQueryFinished() {
-                RuntimeDataController.getDataController().execute(port, command, ExecutionActivity.this);
+                AppData.getInstance().execute(port, command, ExecutionActivity.this);
                 return false;
             }
         });
@@ -108,8 +109,9 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
     void executeScene(String scene_string) {
         // Extract scene from extra bundle
         try {
-            scene = Scene.fromJSON(JSONHelper.getReader(scene_string));
-        } catch (IOException ignored) {
+            scene = new Scene();
+            scene.load(JSONHelper.getReader(scene_string));
+        } catch (IOException | ClassNotFoundException ignored) {
             scene = null;
         }
         if (scene == null) {
@@ -133,7 +135,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
     }
 
     @Override
-    public void onDeviceUpdated(Device di) {
+    public void onObserverDeviceUpdated(Device di) {
     }
 
     @Override
@@ -147,7 +149,7 @@ public class ExecutionActivity extends Activity implements DeviceObserverResult,
             ShowToast.showToast(this,
                     this.getString(R.string.scene_executed, scene.sceneName), 800);
         }
-        RuntimeDataController.getDataController().execute(scene, this);
+        AppData.getInstance().execute(scene, this);
     }
 //
 //    @Override

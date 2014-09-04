@@ -6,12 +6,12 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
-import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.ListItemMenu;
-import oly.netpowerctrl.utils_gui.AnimationController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.controls.ListItemMenu;
 
 public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         SeekBar.OnSeekBarChangeListener {
@@ -56,16 +56,16 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 case TypeToggle: {
                     cViewHolder.seekBar.setVisibility(View.GONE);
                     cViewHolder.loadIcon(mIconCache, port.uuid,
-                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
-                            Icons.getResIdForState(Icons.IconState.StateOff), 0);
+                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff,
+                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff), 0);
                     cViewHolder.loadIcon(mIconCache, port.uuid,
-                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
-                            Icons.getResIdForState(Icons.IconState.StateOn), 1);
+                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn,
+                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn), 1);
                     break;
                 }
                 case TypeButton: {
                     cViewHolder.loadIcon(mIconCache, port.uuid,
-                            Icons.IconType.DevicePortIcon, Icons.IconState.StateToggle,
+                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateToggle,
                             R.drawable.netpowerctrl, 0);
                     cViewHolder.seekBar.setVisibility(View.GONE);
                     cViewHolder.setCurrentBitmapIndex(0);
@@ -73,11 +73,11 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 }
                 case TypeRangedValue:
                     cViewHolder.loadIcon(mIconCache, port.uuid,
-                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOff,
-                            Icons.getResIdForState(Icons.IconState.StateOff), 0);
+                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff,
+                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff), 0);
                     cViewHolder.loadIcon(mIconCache, port.uuid,
-                            Icons.IconType.DevicePortIcon, Icons.IconState.StateOn,
-                            Icons.getResIdForState(Icons.IconState.StateOn), 1);
+                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn,
+                            LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn), 1);
                     cViewHolder.seekBar.setVisibility(View.VISIBLE);
                     cViewHolder.seekBar.setOnSeekBarChangeListener(this);
                     cViewHolder.seekBar.setTag(-1);
@@ -110,7 +110,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     // Called from the listView that uses this adapter
     public void handleClick(int position, long id) {
         DevicePortAdapterItem info = mItems.get(position);
-        RuntimeDataController.getDataController().execute(info.port, DevicePort.TOGGLE, null);
+        AppData.getInstance().execute(info.port, DevicePort.TOGGLE, null);
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
             a.addHighlight(id, R.id.text1);
@@ -125,7 +125,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         DevicePortAdapterItem info = mItems.get(position);
         info.port.current_value = value + info.port.min_value;
         info.command_value = info.port.current_value;
-        RuntimeDataController.getDataController().execute(info.port, info.command_value, null);
+        AppData.getInstance().execute(info.port, info.command_value, null);
     }
 
     @Override

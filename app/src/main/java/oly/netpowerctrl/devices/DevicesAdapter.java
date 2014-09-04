@@ -9,16 +9,17 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
-import oly.netpowerctrl.application_state.onDataLoaded;
-import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.network.onNewDevice;
 
 /**
  * An adapter for showing all configured (and newly discovered) devices. Configured and new devices
  * are separated by headers.
  */
-public class DevicesAdapter extends BaseAdapter implements onConfiguredDeviceUpdate, onDataLoaded, onNewDevice {
+public class DevicesAdapter extends BaseAdapter implements onCollectionUpdated<DeviceCollection, Device>, onDataLoaded, onNewDevice {
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_ITEM = 1;
     private final LayoutInflater inflater;
@@ -32,17 +33,17 @@ public class DevicesAdapter extends BaseAdapter implements onConfiguredDeviceUpd
     }
 
     public void onPause() {
-        RuntimeDataController d = RuntimeDataController.getDataController();
-        d.deviceCollection.unregisterDeviceObserver(this);
-        RuntimeDataController.observersOnDataLoaded.unregister(this);
-        RuntimeDataController.observersNew.unregister(this);
+        AppData d = AppData.getInstance();
+        d.deviceCollection.unregisterObserver(this);
+        AppData.observersOnDataLoaded.unregister(this);
+        AppData.observersNew.unregister(this);
     }
 
     public void onResume() {
-        RuntimeDataController.observersOnDataLoaded.register(this);
+        AppData.observersOnDataLoaded.register(this);
         onDataLoaded();
         if (showNewDevices) {
-            RuntimeDataController.observersNew.register(this);
+            AppData.observersNew.register(this);
         }
     }
 
@@ -50,8 +51,8 @@ public class DevicesAdapter extends BaseAdapter implements onConfiguredDeviceUpd
     public int getItemViewType(int position) {
         if (position == 0)
             return TYPE_HEADER;
-        RuntimeDataController d = RuntimeDataController.getDataController();
-        int cs = d.deviceCollection.devices.size();
+        AppData d = AppData.getInstance();
+        int cs = d.deviceCollection.size();
         if (cs > 0 && position - 1 == cs)
             return TYPE_HEADER;
         else
@@ -62,19 +63,19 @@ public class DevicesAdapter extends BaseAdapter implements onConfiguredDeviceUpd
     public Object getItem(int position) {
         if (position == 0)
             return null;
-        RuntimeDataController d = RuntimeDataController.getDataController();
-        int cs = d.deviceCollection.devices.size();
+        AppData d = AppData.getInstance();
+        int cs = d.deviceCollection.size();
         if (cs > 0 && position - 1 == cs)
             return null;
         else if (position - 1 < cs) // minus one header
-            return d.deviceCollection.devices.get(position - 1);
+            return d.deviceCollection.get(position - 1);
         else // minus deviceCollection size and two headers
             return d.newDevices.get(position - (cs > 0 ? 2 : 1) - cs);
     }
 
     @Override
     public int getViewTypeCount() {
-        RuntimeDataController d = RuntimeDataController.getDataController();
+        AppData d = AppData.getInstance();
         int c = 1; // always one view type!
         if ((showNewDevices && d.newDevices.size() > 0) ||
                 d.deviceCollection.hasDevices())
@@ -85,8 +86,8 @@ public class DevicesAdapter extends BaseAdapter implements onConfiguredDeviceUpd
 
     @Override
     public int getCount() {
-        RuntimeDataController d = RuntimeDataController.getDataController();
-        int c = d.deviceCollection.devices.size();
+        AppData d = AppData.getInstance();
+        int c = d.deviceCollection.size();
         if (c > 0) ++c; // header
         if (showNewDevices) {
             c += d.newDevices.size();
@@ -146,7 +147,7 @@ public class DevicesAdapter extends BaseAdapter implements onConfiguredDeviceUpd
                 convertView = inflater.inflate(R.layout.device_group_header, viewGroup, false);
             assert convertView != null;
 
-            RuntimeDataController d = RuntimeDataController.getDataController();
+            AppData d = AppData.getInstance();
             boolean isNewDeviceHeader = (!d.deviceCollection.hasDevices()
                     || position != 0);
 
@@ -159,18 +160,18 @@ public class DevicesAdapter extends BaseAdapter implements onConfiguredDeviceUpd
 
     @Override
     public boolean onDataLoaded() {
-        RuntimeDataController.getDataController().deviceCollection.registerDeviceObserver(this);
+        AppData.getInstance().deviceCollection.registerObserver(this);
         return true;
     }
 
     @Override
-    public void onConfiguredDeviceUpdated(Device di, boolean willBeRemoved) {
+    public void onNewDevice(Device device) {
         notifyDataSetChanged();
     }
 
-
     @Override
-    public void onNewDevice(Device device) {
+    public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action) {
         notifyDataSetChanged();
+        return true;
     }
 }

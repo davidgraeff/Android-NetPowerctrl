@@ -12,10 +12,10 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.utils_gui.AnimationController;
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.utils.AnimationController;
 
 /**
  */
@@ -89,7 +89,7 @@ public class EditSceneFragment extends Fragment {
         if (isAvailableAdapter()) {
             // We assign the empty view after a short delay time,
             // to reduce visual flicker on activity start
-            Handler h = NetpowerctrlApplication.getMainThreadHandler();
+            Handler h = App.getMainThreadHandler();
             h.postDelayed(new Runnable() {
                 @Override
                 public void run() {

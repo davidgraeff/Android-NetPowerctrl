@@ -2,14 +2,17 @@ package oly.netpowerctrl.device_ports;
 
 import java.lang.ref.WeakReference;
 
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
+import oly.netpowerctrl.devices.DeviceCollection;
 
 /**
  * Created by david on 07.07.14.
  */
-public class DevicePortSourceConfigured implements DevicePortSource, onConfiguredDeviceUpdate {
+public class DevicePortSourceConfigured implements DevicePortSource, onCollectionUpdated<DeviceCollection, Device>, onDataLoaded {
     final static String TAG = "DevicePortSourceConfigured";
     private WeakReference<DevicePortsBaseAdapter> adapterWeakReference;
     private boolean automaticUpdatesEnabled = false;
@@ -41,7 +44,7 @@ public class DevicePortSourceConfigured implements DevicePortSource, onConfigure
 
         adapter.markAllRemoved();
 
-        for (Device device : RuntimeDataController.getDataController().deviceCollection.devices) {
+        for (Device device : AppData.getInstance().deviceCollection.getItems()) {
             if (hideNotReachable && device.getFirstReachableConnection() == null)
                 continue;
             adapter.addAll(device, false);
@@ -58,9 +61,14 @@ public class DevicePortSourceConfigured implements DevicePortSource, onConfigure
     public void setAutomaticUpdate(boolean enabled) {
         automaticUpdatesEnabled = enabled;
         if (!enabled) {
-            RuntimeDataController.getDataController().deviceCollection.unregisterDeviceObserver(this);
+            AppData.getInstance().deviceCollection.unregisterObserver(this);
         } else {
-            RuntimeDataController.getDataController().deviceCollection.registerDeviceObserver(this);
+            // If no data has been loaded so far, wait for load action to be completed before
+            // registering to deviceCollection changes.
+            if (!AppData.observersOnDataLoaded.dataLoaded)
+                AppData.observersOnDataLoaded.register(this);
+            else
+                AppData.getInstance().deviceCollection.registerObserver(this);
         }
     }
 
@@ -85,17 +93,16 @@ public class DevicePortSourceConfigured implements DevicePortSource, onConfigure
     }
 
     @Override
-    public void onConfiguredDeviceUpdated(Device device, boolean willBeRemoved) {
+    public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action) {
         if (adapterWeakReference == null || device == null)
-            return;
+            return true;
 
         DevicePortsBaseAdapter adapter = adapterWeakReference.get();
         if (adapter == null) {
-            setAutomaticUpdate(false);
-            return;
+            return true;
         }
 
-        if (willBeRemoved || (hideNotReachable && device.getFirstReachableConnection() == null))
+        if (action == ObserverUpdateActions.RemoveAction || (hideNotReachable && device.getFirstReachableConnection() == null))
             adapter.removeAll(device, true);
         else {
             adapter.addAll(device, true);
@@ -104,6 +111,15 @@ public class DevicePortSourceConfigured implements DevicePortSource, onConfigure
         adapter.notifyDataSetChanged();
         if (onChangeListener != null)
             onChangeListener.devicePortSourceChanged();
+
+        return true;
+    }
+
+    @Override
+    public boolean onDataLoaded() {
+        setAutomaticUpdate(automaticUpdatesEnabled);
+        // Remove listener now
+        return false;
     }
 
     public interface onChange {

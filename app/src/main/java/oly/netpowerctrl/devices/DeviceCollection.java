@@ -2,117 +2,28 @@ package oly.netpowerctrl.devices;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.JsonReader;
-import android.util.JsonWriter;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.CollectionWithStorableItems;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.data.onStorageUpdate;
 import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.network.onConfiguredDeviceUpdate;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.Icons;
-import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  * Contains DeviceInfos. Used for NFC and backup transfers
  */
-public class DeviceCollection {
-    private final WeakHashMap<onConfiguredDeviceUpdate, Boolean> observersConfiguredDevice = new WeakHashMap<>();
-    public List<Device> devices = new ArrayList<>();
-    private IDevicesSave storage;
-
-    public static DeviceCollection fromDevices(List<Device> devices, IDevicesSave storage) {
+public class DeviceCollection extends CollectionWithStorableItems<DeviceCollection, Device> {
+    public static DeviceCollection fromDevices(List<Device> devices, onStorageUpdate storage) {
         DeviceCollection dc = new DeviceCollection();
         dc.storage = storage;
-        dc.devices = devices;
+        dc.items = devices;
         return dc;
-    }
-
-    /**
-     * @param reader     A json reader
-     * @param tryToMerge If you merge the data instead of replacing them the process will be slower.
-     * @throws IOException
-     * @throws IllegalStateException
-     */
-    public void fromJSON(JsonReader reader, boolean tryToMerge)
-            throws IOException, IllegalStateException {
-
-        if (reader == null)
-            return;
-
-        if (!tryToMerge)
-            devices = new ArrayList<>();
-
-        reader.beginArray();
-        while (reader.hasNext()) {
-            try {
-                Device di = Device.fromJSON(reader);
-                if (!tryToMerge)
-                    devices.add(di);
-                else {
-                    add(di);
-                }
-            } catch (ClassNotFoundException e) {
-                // If we read a device description, where we do not support that device type,
-                // we just ignore that device and go on. Nevertheless print a backtrace.
-                e.printStackTrace();
-            }
-        }
-        reader.endArray();
-    }
-
-    /**
-     * Return the json representation of all groups
-     *
-     * @return JSON String
-     */
-    @Override
-    public String toString() {
-        return toJSON();
-    }
-
-    /**
-     * Return the json representation of this scene
-     *
-     * @return JSON String
-     */
-    public String toJSON() {
-        try {
-            JSONHelper h = new JSONHelper();
-            toJSON(h.createWriter());
-            return h.getString();
-        } catch (IOException ignored) {
-            return null;
-        }
-    }
-
-    void toJSON(JsonWriter writer) throws IOException {
-        writer.beginArray();
-        for (Device di : devices) {
-            di.toJSON(writer);
-        }
-        writer.endArray();
-    }
-
-    @SuppressWarnings("unused")
-    public void registerDeviceObserver(onConfiguredDeviceUpdate o) {
-        observersConfiguredDevice.put(o, true);
-    }
-
-    @SuppressWarnings("unused")
-    public void unregisterDeviceObserver(onConfiguredDeviceUpdate o) {
-        observersConfiguredDevice.remove(o);
-    }
-
-    void notifyDeviceObservers(Device di, boolean willBeRemoved) {
-        for (onConfiguredDeviceUpdate o : observersConfiguredDevice.keySet())
-            o.onConfiguredDeviceUpdated(di, willBeRemoved);
     }
 
     /**
@@ -128,7 +39,7 @@ public class DeviceCollection {
         // be at the end of the list.
         int highestPosition = 0;
         int nextPos = 0;
-        for (Device local_device : devices) {
+        for (Device local_device : items) {
             nextPos += local_device.count();
             Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
@@ -147,44 +58,48 @@ public class DeviceCollection {
         }
 
         // Already in configured devices?
-        for (int i = devices.size() - 1; i >= 0; --i) {
-            if (device.equalsByUniqueID(devices.get(i))) {
-                devices.set(i, device);
-                save();
-                notifyDeviceObservers(device, false);
+        for (int i = items.size() - 1; i >= 0; --i) {
+            if (device.equalsByUniqueID(items.get(i))) {
+                items.set(i, device);
+                if (storage != null)
+                    storage.save(this, device);
+                notifyObservers(device, ObserverUpdateActions.UpdateAction);
                 return true;
             }
         }
 
-        devices.add(device);
-        notifyDeviceObservers(device, false);
-        save();
+        items.add(device);
+        notifyObservers(device, ObserverUpdateActions.AddAction);
+        if (storage != null)
+            storage.save(this, device);
         return false;
     }
 
     public void removeAll() {
-        devices.clear();
-        notifyDeviceObservers(null, true);
-        save();
+        items.clear();
+        notifyObservers(null, ObserverUpdateActions.RemoveAction);
+        if (storage != null)
+            storage.clear(this);
     }
 
-    public void save() {
+    public void save(Device device) {
         if (storage != null)
-            storage.devicesSave(this);
+            storage.save(this, device);
     }
 
     public void remove(Device device) {
-        int position = devices.indexOf(device);
+        int position = items.indexOf(device);
         if (position == -1)
             return;
         device.configured = false;
-        devices.remove(position);
-        notifyDeviceObservers(device, true);
-        save();
+        items.remove(position);
+        notifyObservers(device, ObserverUpdateActions.RemoveAction);
+        if (storage != null)
+            storage.remove(this, device);
     }
 
     public void updateNotReachable(Context context, Device device) {
-        notifyDeviceObservers(device, false);
+        notifyObservers(device, ObserverUpdateActions.UpdateAction);
 
         if (SharedPrefs.getInstance().notifyDeviceNotReachable()) {
             long current_time = System.currentTimeMillis();
@@ -197,7 +112,7 @@ public class DeviceCollection {
     }
 
     /**
-     * Do not call this directly! This is called by {@link oly.netpowerctrl.application_state.RuntimeDataController}
+     * Do not call this directly! This is called by {@link oly.netpowerctrl.data.AppData}
      *
      * @param newValues_device Incoming device with new updated values. You may use a reference to a configured device
      *                         here
@@ -209,16 +124,17 @@ public class DeviceCollection {
         if (newValues_device.UniqueDeviceID == null)
             return null;
 
-        for (Device existing_device : devices) {
+        for (Device existing_device : items) {
             if (!newValues_device.equalsByUniqueID(existing_device))
                 continue;
 
             if (existing_device.updateConnection(newValues_device.DeviceConnections)) {
-                save();
+                if (storage != null)
+                    storage.save(this, existing_device);
             }
 
             if (existing_device.copyValuesFromUpdated(newValues_device)) {
-                notifyDeviceObservers(existing_device, false);
+                notifyObservers(existing_device, ObserverUpdateActions.UpdateAction);
             }
 
             return existing_device;
@@ -228,28 +144,25 @@ public class DeviceCollection {
 
     public void updateExisting(Device existing_device) {
         if (existing_device.copyValuesFromUpdated(existing_device)) {
-            notifyDeviceObservers(existing_device, false);
+            notifyObservers(existing_device, ObserverUpdateActions.UpdateAction);
         }
     }
 
     public boolean hasDevices() {
-        return devices.size() > 0;
+        return items.size() > 0;
     }
 
     public void setDevicePortBitmap(Context context, DevicePort port, Bitmap bitmap) {
         if (port == null)
             return;
 
-        Icons.saveIcon(context, Icons.resizeBitmap(context, bitmap, 128, 128), port.uuid,
-                Icons.IconType.DevicePortIcon, port.getIconState());
-        notifyDeviceObservers(port.device, false);
+        LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, bitmap, 128, 128), port.uuid,
+                LoadStoreIconData.IconType.DevicePortIcon, port.getIconState());
+        notifyObservers(port.device, ObserverUpdateActions.UpdateAction);
     }
 
-    public void setStorage(IDevicesSave storage) {
-        this.storage = storage;
-    }
-
-    public interface IDevicesSave {
-        void devicesSave(DeviceCollection devices);
+    @Override
+    public String type() {
+        return "devices";
     }
 }

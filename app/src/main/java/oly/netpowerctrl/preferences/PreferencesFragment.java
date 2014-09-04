@@ -1,14 +1,17 @@
 package oly.netpowerctrl.preferences;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.appwidget.AppWidgetManager;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -19,10 +22,12 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.utils.Github;
-import oly.netpowerctrl.utils.Icons;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements Github.IGithubOpenIssues {
@@ -48,14 +53,52 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                //noinspection ConstantConditions
-                Fragment fragment = Fragment.instantiate(getActivity(), EnergySaveLogFragment.class.getName());
-                //noinspection ConstantConditions
-                getFragmentManager().beginTransaction().addToBackStack(null).
-                        replace(R.id.content_frame, fragment).commit();
+                MainActivity.getNavigationController().changeToDialog(getActivity(), EnergySaveLogFragment.class.getName());
                 return false;
             }
         });
+
+        //noinspection ConstantConditions
+        findPreference("import").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                    Toast.makeText(getActivity(), "This is only available for Android 4.4 and newer", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.setType("image/*");
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    startActivityForResult(intent, 9876);
+                } catch (ActivityNotFoundException ignored) {
+                    Toast.makeText(getActivity(), "Cannot open file chooser", Toast.LENGTH_SHORT).show();
+                }
+                return false;
+            }
+        });
+
+        //noinspection ConstantConditions
+        findPreference("export").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                    Toast.makeText(getActivity(), "This is only available for Android 4.4 and newer", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                try {
+                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                            .addCategory(Intent.CATEGORY_OPENABLE)
+                            .setType(DocumentsContract.Document.MIME_TYPE_DIR)
+                            .putExtra(Intent.EXTRA_TITLE, "test.bkp");
+                    startActivityForResult(intent, 9875);
+                } catch (ActivityNotFoundException ignored) {
+                    Toast.makeText(getActivity(), "Cannot open file chooser", Toast.LENGTH_SHORT).show();
+                }
+                return false;
+            }
+        });
+
 //
 //        //noinspection ConstantConditions
 //        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -89,13 +132,13 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         List<WidgetData> widgetDataList = new ArrayList<>();
 
         for (int appWidgetId : allWidgetIds) {
-            String prefName = SharedPrefs.getInstance().PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
+            String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
             String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
             if (port_uuid == null) {
                 Log.e("PREFERENCES", "Loading widget failed: " + String.valueOf(appWidgetId));
                 continue;
             }
-            DevicePort port = RuntimeDataController.getDataController().findDevicePort(
+            DevicePort port = AppData.getInstance().findDevicePort(
                     UUID.fromString(port_uuid));
             if (port == null) {
                 Log.e("PREFERENCES", "Port for widget not found: " + String.valueOf(appWidgetId));
@@ -106,39 +149,44 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                     prefName, appWidgetId));
         }
 
-        PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.getInstance().PREF_widgets);
-        assert lp != null;
-        if (widgetDataList.isEmpty()) {
-            getPreferenceScreen().removePreference(lp);
-        } else {
-            for (final WidgetData aWidgetDataList : widgetDataList) {
-                //noinspection ConstantConditions
-                PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
-                assert s != null;
-                s.setKey(aWidgetDataList.prefName);
-                s.setFragment(WidgetPreferenceFragment.class.getName());
-                s.setTitle(aWidgetDataList.data);
-                s.setIcon(Icons.loadDrawable(getActivity(), Icons.uuidFromWidgetID(aWidgetDataList.widgetID),
-                        Icons.IconType.WidgetIcon, Icons.IconState.StateOn,
-                        Icons.getResIdForState(Icons.IconState.StateOn)));
-                lp.addPreference(s);
-                s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                    @Override
-                    public boolean onPreferenceClick(Preference preference) {
-                        if (preference.getKey() == null || preference.getKey().isEmpty())
-                            return true;
-                        Fragment fragment = Fragment.instantiate(getActivity(), preference.getFragment());
-                        Bundle b = new Bundle();
-                        b.putString("key", preference.getKey());
-                        b.putInt("widgetId", aWidgetDataList.widgetID);
-                        fragment.setArguments(b);
-                        //noinspection ConstantConditions
-                        getFragmentManager().beginTransaction().addToBackStack(null).
-                                replace(R.id.content_frame, fragment).commit();
-                        return true;
-                    }
-                });
+        //noinspection ConstantConditions
+        findPreference("all_widgets").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Bundle extra = new Bundle();
+                extra.putString("key", preference.getKey());
+                extra.putInt("widgetId", -1);
+                MainActivity.getNavigationController().changeToFragment(preference.getFragment(), extra, true);
+                return false;
             }
+        });
+
+        PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.PREF_widgets);
+        assert lp != null;
+
+        for (final WidgetData aWidgetDataList : widgetDataList) {
+            //noinspection ConstantConditions
+            PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
+            assert s != null;
+            s.setKey(aWidgetDataList.prefName);
+            s.setFragment(WidgetPreferenceFragment.class.getName());
+            s.setTitle(aWidgetDataList.data);
+            s.setIcon(LoadStoreIconData.loadDrawable(getActivity(), LoadStoreIconData.uuidFromWidgetID(aWidgetDataList.widgetID),
+                    LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn,
+                    LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn)));
+            lp.addPreference(s);
+            s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    if (preference.getKey() == null || preference.getKey().isEmpty())
+                        return true;
+                    Bundle extra = new Bundle();
+                    extra.putString("key", preference.getKey());
+                    extra.putInt("widgetId", aWidgetDataList.widgetID);
+                    MainActivity.getNavigationController().changeToFragment(preference.getFragment(), extra, true);
+                    return true;
+                }
+            });
         }
 
         //noinspection ConstantConditions

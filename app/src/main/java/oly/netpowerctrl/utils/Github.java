@@ -11,7 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.data.JSONHelper;
+import oly.netpowerctrl.data.SharedPrefs;
 
 /**
  * Created by david on 07.08.14.

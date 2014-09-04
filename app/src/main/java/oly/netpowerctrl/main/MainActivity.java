@@ -31,24 +31,24 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
 
+import org.sufficientlysecure.donations.DonationsFragment;
+
 import java.lang.reflect.Field;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
-import oly.netpowerctrl.application_state.NetpowerctrlService;
-import oly.netpowerctrl.application_state.StatusNotification;
-import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.utils.ActivityWithIconCache;
-import oly.netpowerctrl.utils.ChangeLogUtil;
-import oly.netpowerctrl.utils.Donate;
-import oly.netpowerctrl.utils.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.utils.AndroidStatusBarNotification;
 import oly.netpowerctrl.utils.NFC;
-import oly.netpowerctrl.utils_gui.NavigationController;
+import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
+import oly.netpowerctrl.utils.controls.ChangeLogUtil;
+import oly.netpowerctrl.utils.navigation.NavigationController;
 
 public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback, ActivityWithIconCache {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
-    public final Donate donate = new Donate();
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     private final NavigationController navigationController = new NavigationController();
     private long mBackPressed;
@@ -64,14 +64,14 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        donate.onDestroy(this);
         instance = null;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        donate.onActivityResult(this, requestCode, resultCode, data);
+        if (DonationsFragment.class.equals(navigationController.getCurrentFragment().getClass()))
+            navigationController.getCurrentFragment().onActivityResult(requestCode, resultCode, data);
     }
 
 
@@ -109,7 +109,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         mIconCache.start();
 
         // Delayed loading of drawer and nfc
-        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
+        App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 // NFC
@@ -119,18 +119,16 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
                     mNfcAdapter.setNdefPushMessageCallback(MainActivity.this,
                             MainActivity.this);
                 }
-
-                donate.start(MainActivity.this);
             }
         }, 100);
-        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
+        App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (SharedPrefs.getInstance().showChangeLog()) {
                     ChangeLogUtil.showChangeLog(MainActivity.this);
                 }
 
-                StatusNotification.init(getApplicationContext());
+                AndroidStatusBarNotification.init(getApplicationContext());
             }
         }, 150);
     }
@@ -174,7 +172,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         navigationController.saveSelection();
 
         // Stop listener
-        NetpowerctrlService.stopUseService();
+        ListenService.stopUseService();
     }
 
     @Override
@@ -185,7 +183,8 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     @Override
     public void onResume() {
         NFC.checkIntentForNFC(this, getIntent());
-        NetpowerctrlService.useService(getApplicationContext(), true, false);
+        AppData.useAppData();
+        ListenService.useService(getApplicationContext(), true, false);
         super.onResume();
     }
 

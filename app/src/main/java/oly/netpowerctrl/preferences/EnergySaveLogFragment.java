@@ -23,13 +23,13 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.NetpowerctrlApplication;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils_gui.DoneCancelFragmentHelper;
+import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;
 
 public class EnergySaveLogFragment extends ListFragment {
     private final ArrayList<String> listItems = new ArrayList<>();
-    DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
+    ActionBarDoneCancel actionBarDoneCancel = new ActionBarDoneCancel();
     private ArrayAdapter<String> arrayAdapter;
 
     public EnergySaveLogFragment() {
@@ -48,7 +48,7 @@ public class EnergySaveLogFragment extends ListFragment {
         super.onStart();
 
         //noinspection ConstantConditions
-        doneCancelFragmentHelper.setTitle(getActivity(), R.string.log_screen);
+        actionBarDoneCancel.setTitle(getActivity(), R.string.log_screen);
         setListAdapter(arrayAdapter);
     }
 
@@ -56,7 +56,7 @@ public class EnergySaveLogFragment extends ListFragment {
     public void onResume() {
         super.onResume();
         loadData();
-        NetpowerctrlApplication.getMainThreadHandler().postDelayed(new Runnable() {
+        App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 ListView v = getListView();
@@ -68,7 +68,7 @@ public class EnergySaveLogFragment extends ListFragment {
 
     @Override
     public void onDestroy() {
-        doneCancelFragmentHelper.restoreTitle(getActivity());
+        actionBarDoneCancel.restoreTitle(getActivity());
         super.onDestroy();
     }
 

@@ -12,18 +12,18 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.application_state.RuntimeDataController;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSource;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.utils.ActivityWithIconCache;
-import oly.netpowerctrl.utils_gui.ChangeArgumentsFragment;
-import oly.netpowerctrl.utils_gui.DoneCancelFragmentHelper;
+import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;
+import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
+import oly.netpowerctrl.utils.fragments.FragmentChangeArguments;
 
-public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener, ChangeArgumentsFragment {
-    DoneCancelFragmentHelper doneCancelFragmentHelper = new DoneCancelFragmentHelper();
+public class MasterSlaveFragment extends ListFragment implements AdapterView.OnItemClickListener, FragmentChangeArguments {
+    ActionBarDoneCancel actionBarDoneCancel = new ActionBarDoneCancel();
     private DevicePort master;
     private DevicePortsListAdapter adapter;
 
@@ -34,11 +34,11 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
     public void onStart() {
         super.onStart();
         if (master != null)
-            doneCancelFragmentHelper.setTitle(getActivity(),
+            actionBarDoneCancel.setTitle(getActivity(),
                     getString(R.string.outlet_master_slave_title, master.getDescription()));
         else
-            doneCancelFragmentHelper.setTitle(getActivity(), R.string.master_slave);
-        doneCancelFragmentHelper.addCancelDone(getActivity(), R.layout.device_done);
+            actionBarDoneCancel.setTitle(getActivity(), R.string.master_slave);
+        actionBarDoneCancel.addCancelDone(getActivity(), R.layout.device_done);
 
         Activity a = getActivity();
         View btnDone = a.findViewById(R.id.action_mode_save_button);
@@ -67,7 +67,7 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
         if (master_uuid == null)
             return;
 
-        master = RuntimeDataController.getDataController().findDevicePort(UUID.fromString(master_uuid));
+        master = AppData.getInstance().findDevicePort(UUID.fromString(master_uuid));
     }
 
     private void save() {
@@ -75,16 +75,15 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
             return;
 
         master.setSlaves(adapter.getCheckedUUids());
-        RuntimeDataController.getDataController().deviceCollection.save();
+        AppData.getInstance().deviceCollection.save(master.device);
 
-        //noinspection ConstantConditions
-        getFragmentManager().popBackStack();
+        MainActivity.getNavigationController().onBackPressed();
     }
 
     @Override
     public void onStop() {
-        doneCancelFragmentHelper.restoreTitle(getActivity());
-        doneCancelFragmentHelper.restoreActionBar(getActivity());
+        actionBarDoneCancel.restoreTitle(getActivity());
+        actionBarDoneCancel.restoreActionBar(getActivity());
         super.onStop();
     }
 
@@ -97,8 +96,8 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
 
         // Add all device ports that are not equal to master and type of toggle.
         DevicePortSource s = new DevicePortSourceConfigured();
-        adapter = new DevicePortsListAdapter(getActivity(), true, s, ((ActivityWithIconCache) getActivity()).getIconCache());
-        List<Device> configuredDevices = RuntimeDataController.getDataController().deviceCollection.devices;
+        adapter = new DevicePortsListAdapter(getActivity(), true, s, ((ActivityWithIconCache) getActivity()).getIconCache(), true);
+        List<Device> configuredDevices = AppData.getInstance().deviceCollection.getItems();
         for (Device device : configuredDevices) {
             device.lockDevicePorts();
             Iterator<DevicePort> it_port = device.getDevicePortIterator();

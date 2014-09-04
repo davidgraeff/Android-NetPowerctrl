@@ -52,31 +52,4 @@
         android:showAsAction="ifRoom"
         android:title="@string/menu_sort" />
 
-    <item
-        android:id="@+id/menu_main_donate"
-        android:icon="@drawable/ic_beer"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_donate">
-        <menu>
-            <item
-                android:id="@+id/menu_main_beer"
-                android:title="@string/menu_beer" />
-            <item
-                android:id="@+id/menu_main_beer2"
-                android:title="@string/menu_beer2" />
-            <item
-                android:id="@+id/menu_main_beer3"
-                android:title="@string/menu_beer3" />
-            <item
-                android:id="@+id/menu_main_beer4"
-                android:title="@string/menu_beer4" />
-        </menu>
-    </item>
-
-    <item
-        android:id="@+id/menu_add_scene"
-        android:icon="@android:drawable/ic_menu_set_as"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_add_scene" />
-
 </menu>
