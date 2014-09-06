@@ -135,7 +135,7 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
         if (item.isHeader) {
 
             if (v == null) {
-                v = inflater.inflate(R.layout.drawer_list_header, parent, false);
+                v = inflater.inflate(R.layout.list_header_drawer, parent, false);
             }
 
             assert v != null;
@@ -145,7 +145,7 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
 
         } else {
             if (v == null) {
-                v = inflater.inflate(R.layout.drawer_list_item, parent, false);
+                v = inflater.inflate(R.layout.list_item_drawer, parent, false);
             }
 
             assert v != null;

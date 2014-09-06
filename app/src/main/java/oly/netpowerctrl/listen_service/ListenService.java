@@ -26,9 +26,9 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.DeviceObserverFinishedResult;
-import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.onDeviceObserverFinishedResult;
+import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -392,7 +392,7 @@ public class ListenService extends Service {
         }
     }
 
-    public void findDevices(final boolean showNotification, final DeviceObserverFinishedResult callback) {
+    public void findDevices(final boolean showNotification, final onDeviceObserverFinishedResult callback) {
         if (mNetworkReducedMode) {
             if (SharedPrefs.getInstance().logEnergySaveMode())
                 Logging.appendLog(this, "Energiesparen aus: Suche Geräte");
@@ -423,7 +423,7 @@ public class ListenService extends Service {
 
         // First try a broadcast
         AppData.getInstance().clearNewDevices();
-        new DeviceQuery(this, new DeviceObserverResult() {
+        new DeviceQuery(this, new onDeviceObserverResult() {
             @Override
             public void onObserverDeviceUpdated(Device di) {
             }
@@ -467,5 +467,12 @@ public class ListenService extends Service {
 
     public boolean isNetworkReducedMode() {
         return mNetworkReducedMode;
+    }
+
+    public String[] pluginIDs() {
+        String[] ids = new String[plugins.size()];
+        for (int i = 0; i < plugins.size(); ++i)
+            ids[i] = plugins.get(i).getPluginID();
+        return ids;
     }
 }

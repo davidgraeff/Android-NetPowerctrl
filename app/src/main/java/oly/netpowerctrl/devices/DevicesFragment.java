@@ -203,8 +203,21 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     private void show_configure_device_dialog(Device device) {
-        if (device == null) { // new device
-            MainActivity.getNavigationController().changeToDialog(getActivity(), DevicesWizardNewFragment.class.getName());
+        if (device == null) {
+            // new device
+            int selected = -1;
+            String[] plugins = ListenService.getService().pluginIDs();
+            if (plugins.length == 1)
+                selected = 0;
+
+            //TODO: if more than one plugin
+
+            if (selected == -1)
+                return; // no plugin id selected
+
+            DevicesWizardNewFragment newFragment = (DevicesWizardNewFragment) Fragment.instantiate(getActivity(), DevicesWizardNewFragment.class.getName());
+            newFragment.setPlugin(ListenService.getService().getPluginByID(plugins[selected]));
+            MainActivity.getNavigationController().changeToDialog(getActivity(), newFragment);
         } else {
             PluginInterface pluginInterface = device.getPluginInterface();
             if (pluginInterface == null) {

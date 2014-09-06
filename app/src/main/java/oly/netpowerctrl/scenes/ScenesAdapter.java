@@ -18,15 +18,15 @@ import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.utils.AnimationController;
-import oly.netpowerctrl.utils.controls.ListItemMenu;
+import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<SceneCollection, Scene> {
     private final SceneCollection scenes;
     private final LayoutInflater inflater;
     private final IconDeferredLoadingThread mIconCache;
     private WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
-    private ListItemMenu mListContextMenu = null;
-    private int outlet_res_id = R.layout.grid_icon_item;
+    private onListItemElementClicked mListContextMenu = null;
+    private int outlet_res_id = R.layout.grid_item_icon;
 
     public ScenesAdapter(Context context, SceneCollection data, IconDeferredLoadingThread iconCache) {
         inflater = LayoutInflater.from(context);
@@ -55,7 +55,7 @@ public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<Sc
         notifyDataSetChanged();
     }
 
-    public void setListContextMenu(ListItemMenu listItemMenu) {
+    public void setListContextMenu(onListItemElementClicked listItemMenu) {
         this.mListContextMenu = listItemMenu;
     }
 
@@ -149,9 +149,9 @@ public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<Sc
         final Drawable[] drawables = new Drawable[1];
         public int position;
         boolean isNew = true;
-        private ListItemMenu mListContextMenu = null;
+        private onListItemElementClicked mListContextMenu = null;
 
-        ViewHolder(View convertView, ListItemMenu listContextMenu) {
+        ViewHolder(View convertView, onListItemElementClicked listContextMenu) {
             mListContextMenu = listContextMenu;
             imageIcon = (ImageView) convertView.findViewById(R.id.icon_bitmap);
             imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);

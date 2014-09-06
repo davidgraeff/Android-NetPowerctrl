@@ -1,5 +1,6 @@
 package oly.netpowerctrl.utils.controls;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -41,12 +42,13 @@ public class ChangeLogUtil {
         public ChangeLogDialog() {
         }
 
+        @SuppressLint("InflateParams")
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
 
             LayoutInflater layoutInflater = (LayoutInflater) getActivity().getSystemService(
                     Context.LAYOUT_INFLATER_SERVICE);
-            ChangeLogListView chgList = (ChangeLogListView) layoutInflater.inflate(R.layout.changelog_fragment, null);
+            ChangeLogListView chgList = (ChangeLogListView) layoutInflater.inflate(R.layout.fragment_changelog, null);
 
 
             return new AlertDialog.Builder(getActivity())

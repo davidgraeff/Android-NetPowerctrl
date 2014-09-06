@@ -27,7 +27,7 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;
 
-class EnergySaveLogFragment extends ListFragment {
+public class EnergySaveLogFragment extends ListFragment {
     private final ArrayList<String> listItems = new ArrayList<>();
     private final ActionBarDoneCancel actionBarDoneCancel = new ActionBarDoneCancel();
     private ArrayAdapter<String> arrayAdapter;

@@ -1,6 +1,5 @@
 package oly.netpowerctrl.timer;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -90,13 +89,12 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
         return data.type;
     }
 
-    @SuppressLint("InflateParams")
     public View getView(int position, View convertView, ViewGroup parent) {
         Timer timer = controller.get(position);
 
         if (convertView == null) {
             if (timer.type == Timer.TYPE_RANGE_ON_WEEKDAYS || timer.type == Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
-                convertView = inflater.inflate(R.layout.alarm_range_weekdays, null);
+                convertView = inflater.inflate(R.layout.list_item_alarm_range_weekdays, parent, false);
 //            else if (timer.type == Timer.TYPE_ONCE)
 //                convertView = inflater.inflate(R.layout.alarm_once, null);
         }

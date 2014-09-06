@@ -1,5 +1,6 @@
 package oly.netpowerctrl.timer;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -22,10 +23,10 @@ import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.listen_service.PluginInterface;
-import oly.netpowerctrl.network.AsyncRunnerResult;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
-public class TimerEditFragmentDialog extends DialogFragment implements AsyncRunnerResult {
+public class TimerEditFragmentDialog extends DialogFragment implements onAsyncRunnerResult {
     private Timer timer = new Timer();
     private View rootView;
     private View titleView;
@@ -39,9 +40,10 @@ public class TimerEditFragmentDialog extends DialogFragment implements AsyncRunn
         }
     }
 
+    @SuppressLint("InflateParams")
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_alarm, null);
+        rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_alarm_edit, null);
 
         // Port selection
         {
@@ -152,9 +154,9 @@ public class TimerEditFragmentDialog extends DialogFragment implements AsyncRunn
             }
         });
 
-        titleView = getActivity().getLayoutInflater().inflate(R.layout.dialog_device_preferences_title, null);
+        titleView = getActivity().getLayoutInflater().inflate(R.layout.dialog_title_device_edit, null);
         CheckBox checkBox = ((CheckBox) titleView.findViewById(android.R.id.title));
-        checkBox.setText("Alarm aktiv");
+        checkBox.setText(R.string.alarm_enabled);
         checkBox.setChecked(timer.enabled);
 
         ((TextView) titleView.findViewById(R.id.device_name)).setText(timer.id == -1 ? R.string.alarm_add : R.string.alarm_edit);

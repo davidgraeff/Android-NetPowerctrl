@@ -14,8 +14,8 @@ public abstract class DeviceConnection {
     public final Device device;
     public String HostName;
     public String not_reachable_reason;
-    public boolean mIsCustom = false;
     public boolean updatedFlag;
+    protected boolean mIsAssignedByDevice = false;
     // Cache
     private InetAddress[] cached_addresses;
 
@@ -79,8 +79,12 @@ public abstract class DeviceConnection {
         return false;
     }
 
-    public boolean isCustom() {
-        return mIsCustom;
+    public boolean isAssignedByDevice() {
+        return mIsAssignedByDevice;
+    }
+
+    public void setIsAssignedByDevice(boolean mIsCustom) {
+        this.mIsAssignedByDevice = mIsCustom;
     }
 
     public abstract void toJSON(JsonWriter writer) throws IOException;

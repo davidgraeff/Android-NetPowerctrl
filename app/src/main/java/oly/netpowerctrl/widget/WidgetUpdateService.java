@@ -32,15 +32,15 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceReady;
-import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.scenes.SceneItem;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 
 /**
  * Widget Update Service
  */
-public class WidgetUpdateService extends Service implements DeviceObserverResult, onCollectionUpdated<DeviceCollection, Device>, onServiceReady, onDataLoaded {
+public class WidgetUpdateService extends Service implements onDeviceObserverResult, onCollectionUpdated<DeviceCollection, Device>, onServiceReady, onDataLoaded {
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     private static final String TAG = "WidgetUpdateService";

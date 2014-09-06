@@ -36,13 +36,13 @@ import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
-import oly.netpowerctrl.utils.controls.ListItemMenu;
+import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 /**
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditSceneActivity extends Activity implements ListItemMenu, EditSceneFragmentReady,
+public class EditSceneActivity extends Activity implements onListItemElementClicked, onEditSceneFragmentReady,
         LoadStoreIconData.IconSelected, ActivityWithIconCache {
 
     /**
@@ -94,7 +94,7 @@ public class EditSceneActivity extends Activity implements ListItemMenu, EditSce
         bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                 ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
         bar.setHomeButtonEnabled(true);
-        bar.setCustomView(R.layout.create_scene_done);
+        bar.setCustomView(R.layout.actionbar_create_scene_done);
 
         btnDone = findViewById(R.id.action_mode_save_button);
         btnDone.setOnClickListener(new View.OnClickListener() {

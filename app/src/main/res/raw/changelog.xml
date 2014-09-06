@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion changeDate="05. September 2014" versionName="5.8">
+        <changelogbug>Viele Stabilitätsprobleme behoben</changelogbug>
+        <changelogbug>Ausgewählte Gruppe im Hauptfenster bleibt auch bei Neuöffnen der App
+            erhalten
+        </changelogbug>
+        <changelogimprovement>Google Drive Support und Nachbarsynchronisierung entfernt.
+            Der Import/Export (ab Android 4.4) kann über die Einstellungen erreicht werden.
+        </changelogimprovement>
+        <changelogimprovement>Zeitschaltungen: Bearbeiten Fenster verbessert</changelogimprovement>
+        <changelogimprovement>Geräte: Neu/Bearbeiten Fenster verbessert</changelogimprovement>
+        <changelogimprovement>Widgets: Funktionieren zuverlässiger. Standardeinstellungen für
+            Widgets einstellbar (zB Icons)
+        </changelogimprovement>
+        <changelogimprovement>Übersetzungen aufgeräumt</changelogimprovement>
+    </changelogversion>
+
     <changelogversion changeDate="22. August 2014" versionName="5.7.1">
         <changelogbug>Absturz bei Start behoben (IllegalStateException)</changelogbug>
         <changelogbug>Auflösen von nicht numerischen Hostnamen zu IP-Adressen wird jetzt an der

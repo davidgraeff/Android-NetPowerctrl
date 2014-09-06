@@ -24,7 +24,7 @@ import oly.netpowerctrl.utils.SortCriteriaInterface;
 /**
  * Choose setSortOrder criteria
  */
-class SortCustomDialog extends DialogFragment {
+public class SortCustomDialog extends DialogFragment {
     private final List<AdapterItem> sortedList = new ArrayList<>();
     private final List<AdapterItem> availableList = new ArrayList<>();
     private SortCriteriaInterface sortCriteriaInterface;
@@ -46,7 +46,7 @@ class SortCustomDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder
-                .setTitle(R.string.sort_custom)
+                .setTitle(R.string.sort_custom_title)
                 .setView(createView(inflater, null, savedInstanceState))
                 .setIcon(android.R.drawable.ic_menu_sort_by_size)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {

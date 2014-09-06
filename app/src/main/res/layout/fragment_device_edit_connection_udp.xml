@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/connection_udp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dip">
+
+    <TextView
+        android:id="@+id/connection_name_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/device_udp" />
+
+    <ImageButton
+        android:id="@+id/connection_delete"
+        style="?colored_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/connection_name_label"
+        android:contentDescription="@string/remove"
+        android:src="@android:drawable/ic_menu_delete" />
+
+    <!--  Host -->
+    <EditText
+        android:id="@+id/device_host"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/connection_name_label"
+        android:layout_marginBottom="20dip"
+        android:layout_toLeftOf="@id/connection_delete"
+        android:layout_toStartOf="@id/connection_delete"
+        android:inputType="textUri"
+        android:singleLine="true" />
+
+    <!--  Receive -->
+    <TextView
+        android:id="@+id/device_udp_receive_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_host"
+        android:text="@string/device_receive_udp_port" />
+
+    <EditText
+        android:id="@+id/device_udp_receive"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_host"
+        android:layout_toEndOf="@id/device_udp_receive_label"
+        android:layout_toRightOf="@id/device_udp_receive_label"
+        android:inputType="number"
+        android:singleLine="true" />
+
+    <!--  Send -->
+    <TextView
+        android:id="@+id/device_udp_send_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_udp_receive"
+        android:text="@string/device_receive_udp_port" />
+
+    <EditText
+        android:id="@+id/device_udp_send"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/device_udp_receive"
+        android:layout_toEndOf="@id/device_udp_receive_label"
+        android:layout_toRightOf="@id/device_udp_receive_label"
+        android:inputType="number"
+        android:singleLine="true" />
+
+</RelativeLayout>

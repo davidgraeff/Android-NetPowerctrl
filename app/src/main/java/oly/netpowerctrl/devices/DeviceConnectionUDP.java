@@ -26,7 +26,6 @@ public class DeviceConnectionUDP extends DeviceConnection {
         this.HostName = hostName;
         this.PortUDPReceive = PortUDPReceive;
         this.PortUDPSend = PortUDPSend;
-
     }
 
     public void toJSON(JsonWriter writer) throws IOException {
@@ -36,7 +35,7 @@ public class DeviceConnectionUDP extends DeviceConnection {
         writer.name("PortUDPSend").value(PortUDPSend);
         writer.name("PortUDPReceive").value(PortUDPReceive);
         writer.name("HostName").value(HostName);
-        writer.name("AllowHostnameUpdates").value(mIsCustom);
+        writer.name("AllowHostnameUpdates").value(mIsAssignedByDevice);
         writer.endObject();
     }
 
@@ -58,7 +57,7 @@ public class DeviceConnectionUDP extends DeviceConnection {
                     ++members;
                     break;
                 case "AllowHostnameUpdates":
-                    mIsCustom = reader.nextBoolean();
+                    mIsAssignedByDevice = reader.nextBoolean();
                     ++members;
                     break;
                 case "PortUDPSend":
@@ -79,7 +78,7 @@ public class DeviceConnectionUDP extends DeviceConnection {
 
         //DEPRECATED
         if (members == 4) {
-            mIsCustom = HostName.startsWith("192.") || HostName.startsWith("10.");
+            mIsAssignedByDevice = HostName.startsWith("192.") || HostName.startsWith("10.");
         }
 
         return members >= 5;

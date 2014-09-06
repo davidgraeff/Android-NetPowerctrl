@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * Created by david on 28.07.14.
  */
-public class DeviceFeatureTemperature implements DeviceFeature {
+public class DeviceFeatureTemperature implements DeviceFeatureInterface {
     public static final String ID = "Temperature";
     public String temp;
 

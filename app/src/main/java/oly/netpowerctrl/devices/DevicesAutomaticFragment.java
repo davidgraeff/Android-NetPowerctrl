@@ -12,18 +12,19 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anel.AnelCreateDevice;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
-public class DevicesAutomaticFragment extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
+public class DevicesAutomaticFragment extends DialogFragment implements onCreateDeviceResult {
     private TextView textView;
     private List<Device> deviceList;
-    private AnelCreateDevice anelCreateDevice;
+    private EditDeviceInterface editDevice;
     private int current = 0;
 
     public DevicesAutomaticFragment() {
@@ -54,15 +55,29 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
             return;
         }
         Device device = deviceList.get(current);
+
         ++current;
         textView.append("Check " + device.DeviceName + "...\n");
 
-        anelCreateDevice = new AnelCreateDevice(device);
-        anelCreateDevice.listener = this;
-        if (!anelCreateDevice.startTest(getActivity())) {
+        PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
+        if (pluginInterface == null) {
+            textView.append("\tPlugin not found\n");
+            editDevice = null;
+            App.getMainThreadHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    takeNext();
+                }
+            });
+            return;
+        }
+
+        editDevice = pluginInterface.openEditDevice(device);
+        editDevice.setResultListener(this);
+
+        if (!editDevice.startTest(getActivity())) {
             textView.append("\tPlugin failed\n");
-            anelCreateDevice.listener = null;
-            anelCreateDevice = null;
+            editDevice = null;
             App.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
@@ -76,7 +91,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
     public void testFinished(boolean success) {
         if (success) {
             textView.append("\tOK\n");
-            final Device deviceToAdd = anelCreateDevice.device;
+            final Device deviceToAdd = editDevice.getDevice();
             App.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
@@ -93,8 +108,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
         } else {
             textView.append("\tFAILED\n");
         }
-        anelCreateDevice.listener = null;
-        anelCreateDevice = null;
+        editDevice = null;
         App.getMainThreadHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -105,8 +119,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements AnelCrea
 
     @Override
     public void testDeviceNotReachable() {
-        anelCreateDevice.listener = null;
-        anelCreateDevice = null;
+        editDevice = null;
         textView.append("\tLogin data wrong\n");
         App.getMainThreadHandler().post(new Runnable() {
             @Override

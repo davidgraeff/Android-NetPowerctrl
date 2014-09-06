@@ -17,13 +17,13 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.JSONHelper;
-import oly.netpowerctrl.data.Storable;
+import oly.netpowerctrl.data.StorableInterface;
 import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
  * Created by david on 19.05.14.
  */
-public class Timer implements Storable {
+public class Timer implements StorableInterface {
     // Alarm type
     public static final int TYPE_RANGE_ON_WEEKDAYS = 1;
     public int type = TYPE_RANGE_ON_WEEKDAYS;

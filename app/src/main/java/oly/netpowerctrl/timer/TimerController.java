@@ -17,7 +17,7 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.network.AsyncRunnerResult;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
 
 /**
  * Control all configured alarms
@@ -110,7 +110,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         return available_timers;
     }
 
-    void removeAlarm(Timer timer, AsyncRunnerResult callback) {
+    void removeAlarm(Timer timer, onAsyncRunnerResult callback) {
         PluginInterface p = timer.port.device.getPluginInterface();
         p.removeAlarm(timer, callback);
     }

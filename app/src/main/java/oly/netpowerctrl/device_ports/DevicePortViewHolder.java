@@ -13,7 +13,7 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.utils.controls.ListItemMenu;
+import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 /**
  * An item in a devicePort adapter. Used for implementing the ViewHolder pattern.
@@ -34,9 +34,9 @@ class DevicePortViewHolder implements View.OnClickListener, IconDeferredLoadingT
     boolean isNew = true;
     int layoutChangeId;
     int currentBitmapIndex = -1;
-    private ListItemMenu mListContextMenu = null;
+    private onListItemElementClicked mListContextMenu = null;
 
-    DevicePortViewHolder(View convertView, ListItemMenu listContextMenu, int layoutChangeId,
+    DevicePortViewHolder(View convertView, onListItemElementClicked listContextMenu, int layoutChangeId,
                          DevicePortAdapterItem.groupTypeEnum groupTypeEnum) {
         this.layoutChangeId = layoutChangeId;
         mListContextMenu = listContextMenu;

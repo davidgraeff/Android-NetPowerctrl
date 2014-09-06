@@ -17,14 +17,14 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
     private final SparseBooleanArray checked = new SparseBooleanArray();
     private final boolean checkable;
 
-    public DevicePortsListAdapter(Context context, boolean checkable, DevicePortSource source,
+    public DevicePortsListAdapter(Context context, boolean checkable, DevicePortSourceInterface source,
                                   IconDeferredLoadingThread iconCache, boolean showGroups) {
         super(context, null, source, iconCache, showGroups);
         this.checkable = checkable;
         if (checkable)
-            setLayoutRes(R.layout.selectable_outlet_list_item);
+            setLayoutRes(R.layout.list_item_selectable_outlet);
         else
-            setLayoutRes(R.layout.available_outlet_list_item);
+            setLayoutRes(R.layout.list_item_available_outlet);
         if (source != null)
             source.updateNow();
     }

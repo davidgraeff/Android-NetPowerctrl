@@ -10,7 +10,7 @@ import java.io.IOException;
  */
 public class DeviceFeatureFabric {
 
-    public static DeviceFeature fromJSON(JsonReader reader)
+    public static DeviceFeatureInterface fromJSON(JsonReader reader)
             throws IOException, ClassNotFoundException {
         reader.beginObject();
         if (!reader.hasNext()) {
@@ -26,7 +26,7 @@ public class DeviceFeatureFabric {
 
         name = reader.nextString();
 
-        DeviceFeature deviceFeature;
+        DeviceFeatureInterface deviceFeature;
 
         switch (name) {
             case DeviceFeatureTemperature.ID: {

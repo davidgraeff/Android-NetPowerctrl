@@ -327,7 +327,7 @@ public class LoadStoreIconData {
         void startActivityForResult(Intent intent, int requestCode);
     }
 
-    public static class IconFile implements Storable {
+    public static class IconFile implements StorableInterface {
         public final File file;
         public final IconState state;
         public final IconType type;

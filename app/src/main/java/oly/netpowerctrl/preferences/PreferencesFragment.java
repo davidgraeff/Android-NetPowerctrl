@@ -109,6 +109,8 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             }
         });
 
+        getPreferenceScreen().removePreference(findPreference("extensions"));
+
 //
 //        //noinspection ConstantConditions
 //        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

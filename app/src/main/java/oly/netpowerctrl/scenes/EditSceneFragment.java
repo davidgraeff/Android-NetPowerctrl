@@ -21,13 +21,13 @@ import oly.netpowerctrl.utils.AnimationController;
  */
 public class EditSceneFragment extends Fragment {
     private DevicePortsBaseAdapter mAdapter;
-    private WeakReference<EditSceneFragmentReady> manipulatorReference;
+    private WeakReference<onEditSceneFragmentReady> manipulatorReference;
     private ListView mListView;
 
     public EditSceneFragment() {
     }
 
-    public void setReadyObserver(EditSceneFragmentReady readyObserver) {
+    public void setReadyObserver(onEditSceneFragmentReady readyObserver) {
         if (mListView != null) {
             readyObserver.sceneEditFragmentReady(this);
         } else
@@ -47,11 +47,11 @@ public class EditSceneFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.create_scene_outlet_list, container, false);
+        final View view = inflater.inflate(R.layout.fragment_scene_edit, container, false);
         assert view != null;
         mListView = (ListView) view.findViewById(android.R.id.list);
 
-        EditSceneFragmentReady manipulator = manipulatorReference == null ? null : manipulatorReference.get();
+        onEditSceneFragmentReady manipulator = manipulatorReference == null ? null : manipulatorReference.get();
         if (manipulator != null) {
             manipulator.sceneEditFragmentReady(this);
             manipulatorReference = null;

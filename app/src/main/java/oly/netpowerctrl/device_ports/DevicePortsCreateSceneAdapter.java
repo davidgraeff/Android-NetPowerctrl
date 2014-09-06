@@ -85,7 +85,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
 
         // Not our business, if port is null
         if (port == null) {
-            mOutlet_res_id = R.layout.create_scene_outlet_list_item;
+            mOutlet_res_id = R.layout.list_item_edit_scene;
             convertView = super.getView(position, convertView, parent);
             return convertView;
         }
@@ -93,7 +93,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
 
         DevicePort.DevicePortType type = port.getType();
         if (type == DevicePort.DevicePortType.TypeToggle) {
-            mOutlet_res_id = R.layout.create_scene_outlet_list_switch;
+            mOutlet_res_id = R.layout.list_item_edit_scene_switch;
             convertView = super.getView(position, convertView, parent);
 
             assert convertView != null;
@@ -127,7 +127,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             }
 
         } else if (type == DevicePort.DevicePortType.TypeRangedValue) {
-            mOutlet_res_id = R.layout.create_scene_outlet_list_ranged;
+            mOutlet_res_id = R.layout.list_item_edit_scene_ranged;
             convertView = super.getView(position, convertView, parent);
 
             assert convertView != null;
@@ -138,11 +138,11 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
             seekBar.setProgress(item.command_value);
             seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
         } else if (type == DevicePort.DevicePortType.TypeButton) {
-            mOutlet_res_id = R.layout.create_scene_outlet_list_item;
+            mOutlet_res_id = R.layout.list_item_edit_scene;
             convertView = super.getView(position, convertView, parent);
 
         } else {
-            mOutlet_res_id = R.layout.create_scene_outlet_list_item;
+            mOutlet_res_id = R.layout.list_item_edit_scene;
             convertView = super.getView(position, convertView, parent);
         }
 

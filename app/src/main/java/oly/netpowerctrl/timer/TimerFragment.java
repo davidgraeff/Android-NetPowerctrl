@@ -28,11 +28,11 @@ import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.AsyncRunnerResult;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
 
-public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, AsyncRunnerResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
+public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, onAsyncRunnerResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private SwipeRefreshLayout mPullToRefreshLayout;
@@ -77,7 +77,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
 
-        final View view = inflater.inflate(R.layout.fragment_timer, container, false);
+        final View view = inflater.inflate(R.layout.fragment_alarms, container, false);
         progressText = (TextView) view.findViewById(R.id.progressText);
 
         TimerController c = AppData.getInstance().timerController;

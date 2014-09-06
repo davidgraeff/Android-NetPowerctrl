@@ -1,5 +1,6 @@
 package oly.netpowerctrl.anel;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -31,14 +32,16 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
+import oly.netpowerctrl.devices.DeviceEditFragmentDialog;
+import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.AsyncRunnerResult;
-import oly.netpowerctrl.network.ExecutionFinished;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSending;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
@@ -54,7 +57,6 @@ final public class AnelPlugin implements PluginInterface {
     private static final byte[] requestMessage = "wer da?\r\n".getBytes();
     private final List<AnelUDPDeviceDiscoveryThread> discoveryThreads = new ArrayList<>();
     private final List<Scene.PortAndCommand> command_list = new ArrayList<>();
-    AnelCreateDevice anelCreateDevice;
     private UDPSending udpSending;
 
     private static byte switchOn(byte data, int outletNumber) {
@@ -80,7 +82,7 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     private void executeDeviceBatch(Device device, List<Scene.PortAndCommand> command_list,
-                                    ExecutionFinished callback) {
+                                    onExecutionFinished callback) {
         // Get necessary objects
         ListenService service = ListenService.getService();
         if (service == null)
@@ -282,7 +284,7 @@ final public class AnelPlugin implements PluginInterface {
      * @param command  Execute this command
      * @param callback This callback will be called when the execution finished
      */
-    public void execute(DevicePort port, int command, ExecutionFinished callback) {
+    public void execute(DevicePort port, int command, onExecutionFinished callback) {
         // Get necessary objects
         ListenService service = ListenService.getService();
         if (service == null)
@@ -425,15 +427,17 @@ final public class AnelPlugin implements PluginInterface {
         ));
     }
 
-    public void configureDeviceScreenClose() {
-        anelCreateDevice = null;
+    @Override
+    public EditDeviceInterface openEditDevice(Device device) {
+        return new AnelEditDevice(MainActivity.instance.getString(R.string.default_device_name), device);
     }
 
     // We assume the MainActivity exist!
     @Override
     public void showConfigureDeviceScreen(Device device) {
-        anelCreateDevice = new AnelCreateDevice(MainActivity.instance.getString(R.string.default_device_name), device);
-        MainActivity.getNavigationController().changeToDialog(MainActivity.instance, AnelEditDeviceFragmentDialog.class.getName());
+        DeviceEditFragmentDialog f = (DeviceEditFragmentDialog) Fragment.instantiate(MainActivity.instance, DeviceEditFragmentDialog.class.getName());
+        f.setDevice(device);
+        MainActivity.getNavigationController().changeToDialog(MainActivity.instance, f);
     }
 
     private List<Timer> extractAlarms(final DevicePort port, final String html) throws SAXException, IOException {
@@ -551,7 +555,7 @@ final public class AnelPlugin implements PluginInterface {
      * @param callback A callback for the done/failed message.
      */
     @Override
-    public void rename(final DevicePort port, final String new_name, final AsyncRunnerResult callback) {
+    public void rename(final DevicePort port, final String new_name, final onAsyncRunnerResult callback) {
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
@@ -608,7 +612,7 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void executeTransaction(ExecutionFinished callback) {
+    public void executeTransaction(onExecutionFinished callback) {
         TreeMap<Device, List<Scene.PortAndCommand>> commands_grouped_by_devices =
                 new TreeMap<>();
 
@@ -709,7 +713,7 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void saveAlarm(final Timer timer, final AsyncRunnerResult callback) {
+    public void saveAlarm(final Timer timer, final onAsyncRunnerResult callback) {
         if (callback != null)
             callback.asyncRunnerStart(timer.port);
 
@@ -779,7 +783,7 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void removeAlarm(Timer timer, final AsyncRunnerResult callback) {
+    public void removeAlarm(Timer timer, final onAsyncRunnerResult callback) {
         if (callback != null)
             callback.asyncRunnerStart(timer.port);
 

@@ -5,8 +5,9 @@ import android.content.Context;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.network.AsyncRunnerResult;
-import oly.netpowerctrl.network.ExecutionFinished;
+import oly.netpowerctrl.devices.EditDeviceInterface;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
 
@@ -24,18 +25,22 @@ public interface PluginInterface {
 
     void requestData(DeviceConnection ci);
 
-    void execute(DevicePort port, final int command, ExecutionFinished callback);
+    void execute(DevicePort port, final int command, onExecutionFinished callback);
 
     void addToTransaction(DevicePort port, final int command);
 
-    void executeTransaction(ExecutionFinished callback);
+    void executeTransaction(onExecutionFinished callback);
 
-    void rename(DevicePort port, final String new_name, final AsyncRunnerResult callback);
+    void rename(DevicePort port, final String new_name, final onAsyncRunnerResult callback);
 
     ////////////// Auxilary //////////////
     String getPluginID();
 
     void openConfigurationPage(Device device, Context context);
+
+    void showConfigureDeviceScreen(Device device);
+
+    EditDeviceInterface openEditDevice(Device device);
 
     ////////////// Reduce power consumption //////////////
 
@@ -55,11 +60,10 @@ public interface PluginInterface {
     ////////////// Alarms //////////////
     Timer getNextFreeAlarm(DevicePort port, int type);
 
-    void saveAlarm(Timer timer, final AsyncRunnerResult callback);
+    void saveAlarm(Timer timer, final onAsyncRunnerResult callback);
 
-    void removeAlarm(Timer timer, final AsyncRunnerResult callback);
+    void removeAlarm(Timer timer, final onAsyncRunnerResult callback);
 
     void requestAlarms(DevicePort port, TimerController timerController);
 
-    void showConfigureDeviceScreen(Device device);
 }

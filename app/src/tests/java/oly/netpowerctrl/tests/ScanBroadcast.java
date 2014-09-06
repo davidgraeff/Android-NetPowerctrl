@@ -12,7 +12,7 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
-import oly.netpowerctrl.network.DeviceObserverFinishedResult;
+import oly.netpowerctrl.network.onDeviceObserverFinishedResult;
 
 /**
  * Created by david on 08.07.14.
@@ -107,7 +107,7 @@ public class ScanBroadcast extends AndroidTestCase {
 
         ListenService.observersStartStopRefresh.register(refreshStartedStopped);
 
-        service.findDevices(false, new DeviceObserverFinishedResult() {
+        service.findDevices(false, new onDeviceObserverFinishedResult() {
             @Override
             public void onObserverJobFinished(List<Device> timeout_devices) {
                 assertTrue(timeout_devices.size() == 0);
