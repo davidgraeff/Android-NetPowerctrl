@@ -111,7 +111,7 @@ public class DevicesAdapter extends BaseAdapter implements onCollectionUpdated<D
     public View getView(int position, View convertView, ViewGroup viewGroup) {
         if (getItemViewType(position) == TYPE_ITEM) {
             if (convertView == null)
-                convertView = inflater.inflate(R.layout.device_list_item, viewGroup, false);
+                convertView = inflater.inflate(R.layout.list_item_device, viewGroup, false);
             assert convertView != null;
 
             Device device = (Device) getItem(position);
@@ -144,7 +144,7 @@ public class DevicesAdapter extends BaseAdapter implements onCollectionUpdated<D
             return convertView;
         } else { // HEADER
             if (convertView == null)
-                convertView = inflater.inflate(R.layout.device_group_header, viewGroup, false);
+                convertView = inflater.inflate(R.layout.list_header_device_group, viewGroup, false);
             assert convertView != null;
 
             AppData d = AppData.getInstance();

@@ -19,9 +19,10 @@ import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
+import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.network.AsyncRunnerResult;
-import oly.netpowerctrl.network.ExecutionFinished;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
 import oly.netpowerctrl.timer.Timer;
@@ -271,7 +272,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void rename(DevicePort port, String new_name, AsyncRunnerResult callback) {
+    public void rename(DevicePort port, String new_name, onAsyncRunnerResult callback) {
         try {
             if (service != null) {
                 service.rename(port.id, new_name);
@@ -293,7 +294,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void executeTransaction(ExecutionFinished callback) {
+    public void executeTransaction(onExecutionFinished callback) {
         if (callback != null)
             callback.onExecutionFinished(transaction_counter);
 
@@ -342,17 +343,17 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void saveAlarm(Timer timer, final AsyncRunnerResult callback) {
+    public void saveAlarm(Timer timer, final onAsyncRunnerResult callback) {
 
     }
 
     @Override
-    public void removeAlarm(Timer timer, final AsyncRunnerResult callback) {
+    public void removeAlarm(Timer timer, final onAsyncRunnerResult callback) {
 
     }
 
     @Override
-    public void execute(DevicePort port, int command, ExecutionFinished callback) {
+    public void execute(DevicePort port, int command, onExecutionFinished callback) {
         if (service == null) {
             if (callback != null)
                 callback.onExecutionFinished(1);
@@ -389,6 +390,12 @@ public class PluginRemote implements PluginInterface {
     @Override
     public void showConfigureDeviceScreen(Device device) {
         //TODO
+    }
+
+    @Override
+    public EditDeviceInterface openEditDevice(Device device) {
+        //TODO
+        return null;
     }
 
     private void post() {

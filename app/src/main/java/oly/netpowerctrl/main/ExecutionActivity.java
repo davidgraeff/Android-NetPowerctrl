@@ -18,14 +18,14 @@ import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceReady;
-import oly.netpowerctrl.network.DeviceObserverResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.ExecutionFinished;
+import oly.netpowerctrl.network.onDeviceObserverResult;
+import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.ShowToast;
 
-public class ExecutionActivity extends Activity implements DeviceObserverResult, ExecutionFinished {
+public class ExecutionActivity extends Activity implements onDeviceObserverResult, onExecutionFinished {
     private Scene scene = null;
     private int scene_commands = 0;
     private int scene_executed_commands = 0;

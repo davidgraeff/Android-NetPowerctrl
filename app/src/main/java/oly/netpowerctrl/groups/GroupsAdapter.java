@@ -53,7 +53,7 @@ public class GroupsAdapter extends BaseAdapter implements onCollectionUpdated<Gr
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.grid_icon_item, parent);
+            convertView = inflater.inflate(R.layout.grid_item_icon, parent);
         }
 
         Group data = groupCollection.get(position);

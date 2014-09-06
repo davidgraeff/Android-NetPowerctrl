@@ -28,7 +28,7 @@ public class LoadStoreJSonData {
 
     private final onStorageUpdate storageUpdate = new onStorageUpdate() {
         @Override
-        public void save(CollectionWithType collection, Storable item) {
+        public void save(CollectionWithType collection, StorableInterface item) {
             File file = new File(App.instance.getDir(collection.type(), 0), item.getStorableName());
             try {
                 FileOutputStream f = new FileOutputStream(file);
@@ -41,7 +41,7 @@ public class LoadStoreJSonData {
         }
 
         @Override
-        public void remove(CollectionWithType collection, Storable item) {
+        public void remove(CollectionWithType collection, StorableInterface item) {
             File file = new File(App.instance.getDir(collection.type(), 0), item.getStorableName());
             file.delete();
         }
@@ -171,7 +171,7 @@ public class LoadStoreJSonData {
          * @throws IOException
          * @throws IllegalStateException
          */
-        public <T extends Storable> void fromJSON(List<T> items, JsonReader reader, CreateNewObject<T> creator)
+        public <T extends StorableInterface> void fromJSON(List<T> items, JsonReader reader, CreateNewObject<T> creator)
                 throws IOException, IllegalStateException {
 
             if (reader == null)

@@ -47,24 +47,24 @@ import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceModeChanged;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
-import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.NotReachableUpdate;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
 import oly.netpowerctrl.network.onNewDevice;
+import oly.netpowerctrl.network.onNotReachableUpdate;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.ShowToast;
 import oly.netpowerctrl.utils.actionbar.ActionBarWithGroups;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
-import oly.netpowerctrl.utils.controls.ListItemMenu;
 import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
-import oly.netpowerctrl.utils.fragments.FragmentChangeArguments;
+import oly.netpowerctrl.utils.controls.onListItemElementClicked;
+import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        NotReachableUpdate, ListItemMenu, FragmentChangeArguments, AsyncRunnerResult,
+        onNotReachableUpdate, onListItemElementClicked, onFragmentChangeArguments, onAsyncRunnerResult,
         LoadStoreIconData.IconSelected, SwipeRefreshLayout.OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks,
         onServiceRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged,
         DevicePortSourceConfigured.onChange, onDataQueryCompleted, onNewDevice {
@@ -104,6 +104,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         setHasOptionsMenu(true);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        actionBarWithGroups.initNavigation(getActivity().getActionBar(), MainActivity.getNavigationController());
+        actionBarWithGroups.showNavigation();
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -117,13 +124,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                 }
             };
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        actionBarWithGroups.initNavigation(getActivity().getActionBar(), MainActivity.getNavigationController());
-        actionBarWithGroups.showNavigation();
-    }
 
     @Override
     public void onStop() {
@@ -175,10 +175,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         SharedPrefs.getInstance().setOutletsGrid(grid);
 
         if (!grid) {
-            adapter.setLayoutRes(R.layout.list_icon_item);
+            adapter.setLayoutRes(R.layout.list_item_icon);
             requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
         } else {
-            adapter.setLayoutRes(R.layout.grid_icon_item);
+            adapter.setLayoutRes(R.layout.grid_item_icon);
             requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
         }
 
@@ -226,7 +226,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_renameGroup).setVisible(groupFilter != null);
 
-        boolean isList = adapter == null || adapter.getLayoutRes() == R.layout.list_icon_item;
+        boolean isList = adapter == null || adapter.getLayoutRes() == R.layout.list_item_icon;
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_view_list).setVisible(!isList);
         //noinspection ConstantConditions

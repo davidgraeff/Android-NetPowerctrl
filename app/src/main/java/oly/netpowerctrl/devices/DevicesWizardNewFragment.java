@@ -16,9 +16,9 @@ import android.widget.Toast;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anel.AnelCreateDevice;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.Utils;
 
@@ -27,16 +27,21 @@ import oly.netpowerctrl.network.Utils;
  * can be entered (in contrast to the edit dialog, which hides connections by default and allow to have more
  * than one connection)
  */
-public class DevicesWizardNewFragment extends DialogFragment implements AnelCreateDevice.AnelCreateDeviceResult {
-    private AnelCreateDevice anelCreateDevice = new AnelCreateDevice("New device", null);
+public class DevicesWizardNewFragment extends DialogFragment implements onCreateDeviceResult {
+    private EditDeviceInterface editDevice = null;
     private ArrayAdapter<String> ip_autocomplete;
 
     public DevicesWizardNewFragment() {
     }
 
+    public void setPlugin(PluginInterface pluginInterface) {
+        editDevice = pluginInterface.openEditDevice(null);
+        editDevice.setResultListener(this);
+    }
+
+    @SuppressLint("InflateParams")
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        @SuppressLint("InflateParams")
         final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_new, null);
 
         ip_autocomplete = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
@@ -61,10 +66,10 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
         textView.setText(String.valueOf(SharedPrefs.getInstance().getDefaultReceivePort()));
 
         textView = (EditText) view.findViewById(R.id.device_username);
-        textView.setText(anelCreateDevice.device.UserName);
+        textView.setText(editDevice.getDevice().UserName);
 
         textView = (EditText) view.findViewById(R.id.device_password);
-        textView.setText(anelCreateDevice.device.Password);
+        textView.setText(editDevice.getDevice().Password);
 
         view.findViewById(R.id.device_ip_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,7 +111,7 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
     }
 
     void startTest() {
-        anelCreateDevice.listener = this;
+        editDevice.setResultListener(this);
 
         TextView textView;
 
@@ -132,24 +137,23 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
             return;
         }
 
-        anelCreateDevice.device.UniqueDeviceID = null;
-        anelCreateDevice.device.DeviceConnections.clear();
-        anelCreateDevice.device.addConnection(new DeviceConnectionHTTP(anelCreateDevice.device, hostname, httpPort));
-        anelCreateDevice.device.addConnection(new DeviceConnectionUDP(anelCreateDevice.device, hostname, udpReceive, udpSend));
+        editDevice.getDevice().UniqueDeviceID = null;
+        editDevice.getDevice().DeviceConnections.clear();
+        editDevice.getDevice().addConnection(new DeviceConnectionHTTP(editDevice.getDevice(), hostname, httpPort));
+        editDevice.getDevice().addConnection(new DeviceConnectionUDP(editDevice.getDevice(), hostname, udpReceive, udpSend));
 
         textView = (TextView) getDialog().findViewById(R.id.device_username);
-        anelCreateDevice.device.UserName = textView.getText().toString();
+        editDevice.getDevice().UserName = textView.getText().toString();
 
         textView = (TextView) getDialog().findViewById(R.id.device_password);
-        anelCreateDevice.device.Password = textView.getText().toString();
+        editDevice.getDevice().Password = textView.getText().toString();
 
-        if (ip_autocomplete.getPosition(anelCreateDevice.device.DeviceConnections.get(0).HostName) != -1) {
+        if (ip_autocomplete.getPosition(editDevice.getDevice().DeviceConnections.get(0).HostName) != -1) {
             Toast.makeText(getActivity(), R.string.device_already_exist, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!anelCreateDevice.startTest(getActivity())) {
-            anelCreateDevice.listener = null;
+        if (!editDevice.startTest(getActivity())) {
             Toast.makeText(getActivity(), R.string.error_plugin_not_installed, Toast.LENGTH_SHORT).show();
         }
     }
@@ -157,7 +161,7 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
     @Override
     public void testFinished(boolean success) {
         if (success) {
-            final Device deviceToAdd = anelCreateDevice.device;
+            final Device deviceToAdd = editDevice.getDevice();
             App.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
@@ -169,13 +173,11 @@ public class DevicesWizardNewFragment extends DialogFragment implements AnelCrea
         } else {
             Toast.makeText(getActivity(), R.string.error_device_not_reachable, Toast.LENGTH_SHORT).show();
         }
-        anelCreateDevice.listener = null;
     }
 
     @Override
     public void testDeviceNotReachable() {
-        anelCreateDevice.listener = null;
-        anelCreateDevice = null;
+        editDevice = null;
         Toast.makeText(getActivity(), R.string.error_device_no_access, Toast.LENGTH_SHORT).show();
     }
 }

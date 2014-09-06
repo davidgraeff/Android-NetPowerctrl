@@ -14,12 +14,12 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.Storable;
+import oly.netpowerctrl.data.StorableInterface;
 
 /**
  * Created by david on 31.08.14.
  */
-public class Group implements Storable {
+public class Group implements StorableInterface {
     public final long id = GroupCollection.nextStableID++;
     public UUID uuid;
     public String name;

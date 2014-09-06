@@ -8,7 +8,7 @@ import java.util.WeakHashMap;
 /**
  * Created by david on 01.09.14.
  */
-abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends Storable> implements CollectionWithType {
+abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends StorableInterface> implements CollectionWithType {
 
     private final WeakHashMap<onCollectionUpdated, Boolean> observers = new WeakHashMap<>();
 
@@ -47,7 +47,7 @@ abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends Stora
             return;
 
         storage.clear(this);
-        for (Storable item : items)
+        for (StorableInterface item : items)
             storage.save(this, item);
     }
 

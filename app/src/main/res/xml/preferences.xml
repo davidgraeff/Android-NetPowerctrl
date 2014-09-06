@@ -67,8 +67,9 @@
             android:title="@string/issues" />
     </PreferenceCategory>
 
-    <!--
+
     <PreferenceCategory
+        android:key="extensions"
         android:title="@string/extensions">
         <CheckBoxPreference
             android:defaultValue="@bool/load_extensions"
@@ -80,7 +81,6 @@
             android:key="show_extensions"
             android:title="@string/show_extensions_in_market" />
     </PreferenceCategory>
-    -->
 
     <PreferenceCategory
         android:key="widgets"

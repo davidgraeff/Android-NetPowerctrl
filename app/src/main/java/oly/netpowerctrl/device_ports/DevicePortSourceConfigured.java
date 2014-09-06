@@ -12,7 +12,7 @@ import oly.netpowerctrl.devices.DeviceCollection;
 /**
  * Created by david on 07.07.14.
  */
-public class DevicePortSourceConfigured implements DevicePortSource, onCollectionUpdated<DeviceCollection, Device>, onDataLoaded {
+public class DevicePortSourceConfigured implements DevicePortSourceInterface, onCollectionUpdated<DeviceCollection, Device>, onDataLoaded {
     final static String TAG = "DevicePortSourceConfigured";
     private WeakReference<DevicePortsBaseAdapter> adapterWeakReference;
     private boolean automaticUpdatesEnabled = false;

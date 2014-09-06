@@ -154,7 +154,7 @@ public class UDPSending {
         final DeviceConnection ci;
         final List<byte[]> messages = new ArrayList<>();
         final int errorID;
-        private final DeviceObserverResult deviceObserverResult = new DeviceObserverResult() {
+        private final onDeviceObserverResult deviceObserverResult = new onDeviceObserverResult() {
             @Override
             public void onObserverDeviceUpdated(Device di) {
             }

@@ -21,7 +21,7 @@ import oly.netpowerctrl.main.App;
  */
 public class DeviceQuery extends DeviceObserverBase {
 
-    public DeviceQuery(Context context, DeviceObserverResult target, Device device_to_observe) {
+    public DeviceQuery(Context context, onDeviceObserverResult target, Device device_to_observe) {
         super(context, target);
         int wait = addDevice(device_to_observe, false);
 
@@ -29,7 +29,7 @@ public class DeviceQuery extends DeviceObserverBase {
             startQuery();
     }
 
-    public DeviceQuery(Context context, DeviceObserverResult target, Iterator<Device> devices_to_observe) {
+    public DeviceQuery(Context context, onDeviceObserverResult target, Iterator<Device> devices_to_observe) {
         super(context, target);
         int wait = 0;
         while (devices_to_observe.hasNext()) {
@@ -46,7 +46,7 @@ public class DeviceQuery extends DeviceObserverBase {
      *
      * @param target The object where the result will be propagated to.
      */
-    public DeviceQuery(Context context, DeviceObserverResult target) {
+    public DeviceQuery(Context context, onDeviceObserverResult target) {
         super(context, target);
         List<Device> deviceList = AppData.getInstance().deviceCollection.getItems();
         int wait = 0;

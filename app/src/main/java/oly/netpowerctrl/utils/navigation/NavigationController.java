@@ -35,8 +35,8 @@ import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.scenes.ScenesFragment;
 import oly.netpowerctrl.timer.TimerFragment;
 import oly.netpowerctrl.utils.DonateData;
-import oly.netpowerctrl.utils.fragments.FragmentChangeArguments;
-import oly.netpowerctrl.utils.fragments.FragmentOnBackButton;
+import oly.netpowerctrl.utils.fragments.onFragmentBackButton;
+import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 
 /**
  * All navigation related functionality used by the main activity
@@ -168,8 +168,8 @@ public class NavigationController {
                 public void onDrawerOpened(View drawerView) {
                     //getActionBar().setTitle(mDrawerTitle);
                     context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                    if (currentFragment != null && currentFragment instanceof FragmentOnBackButton)
-                        ((FragmentOnBackButton) currentFragment).onBackButton();
+                    if (currentFragment != null && currentFragment instanceof onFragmentBackButton)
+                        ((onFragmentBackButton) currentFragment).onBackButton();
                 }
             };
             mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -244,8 +244,8 @@ public class NavigationController {
     }
 
     public boolean onBackPressed() {
-        if (currentFragment != null && currentFragment instanceof FragmentOnBackButton)
-            if (((FragmentOnBackButton) currentFragment).onBackButton())
+        if (currentFragment != null && currentFragment instanceof onFragmentBackButton)
+            if (((onFragmentBackButton) currentFragment).onBackButton())
                 return true;
 
         if (backstack.size() > 0) {
@@ -326,8 +326,8 @@ public class NavigationController {
     public void changeArgumentsOfCurrentFragment(Bundle extra) {
         currentExtra = extra;
         // Deliver arguments to fragment via ChangeArgumentsFragment interface
-        if (currentFragment instanceof FragmentChangeArguments) {
-            ((FragmentChangeArguments) currentFragment).changeArguments(extra);
+        if (currentFragment instanceof onFragmentChangeArguments) {
+            ((onFragmentChangeArguments) currentFragment).changeArguments(extra);
         } else if (extra != null && !currentFragment.isResumed()) // Old school setArguments call
             currentFragment.setArguments(extra);
     }

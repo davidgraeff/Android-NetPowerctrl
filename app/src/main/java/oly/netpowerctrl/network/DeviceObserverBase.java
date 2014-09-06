@@ -53,15 +53,15 @@ public abstract class DeviceObserverBase {
     };
     private final List<Device> devices_to_observe_not_filtered = new ArrayList<>();
     protected boolean broadcast = false;
-    private DeviceObserverResult target;
+    private onDeviceObserverResult target;
 
-    DeviceObserverBase(Context context, DeviceObserverResult target) {
+    DeviceObserverBase(Context context, onDeviceObserverResult target) {
         this.context = context;
         mainLoopHandler = new Handler(context.getMainLooper());
         setDeviceQueryResult(target);
     }
 
-    public void setDeviceQueryResult(DeviceObserverResult target) {
+    public void setDeviceQueryResult(onDeviceObserverResult target) {
         this.target = target;
     }
 

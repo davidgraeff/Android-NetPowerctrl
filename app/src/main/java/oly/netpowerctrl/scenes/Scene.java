@@ -14,11 +14,11 @@ import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.JSONHelper;
-import oly.netpowerctrl.data.Storable;
+import oly.netpowerctrl.data.StorableInterface;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 
-public class Scene implements Storable {
+public class Scene implements StorableInterface {
     private static long nextStableID = 0;
     //public Bitmap bitmap = null;
     public final long id = nextStableID++;

@@ -30,7 +30,7 @@ public class DeviceConnectionHTTP extends DeviceConnection {
         writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("HttpPort").value(PortHttp);
         writer.name("HostName").value(HostName);
-        writer.name("AllowHostnameUpdates").value(mIsCustom);
+        writer.name("AllowHostnameUpdates").value(mIsAssignedByDevice);
         writer.endObject();
     }
 
@@ -52,7 +52,7 @@ public class DeviceConnectionHTTP extends DeviceConnection {
                     ++members;
                     break;
                 case "AllowHostnameUpdates":
-                    mIsCustom = reader.nextBoolean();
+                    mIsAssignedByDevice = reader.nextBoolean();
                     ++members;
                     break;
                 case "HttpPort":
@@ -68,7 +68,7 @@ public class DeviceConnectionHTTP extends DeviceConnection {
         reader.endObject();
 
         if (members == 3) {
-            mIsCustom = HostName.startsWith("192.") || HostName.startsWith("10.");
+            mIsAssignedByDevice = HostName.startsWith("192.") || HostName.startsWith("10.");
         }
 
         return members >= 4;

@@ -21,14 +21,14 @@ import java.util.concurrent.Semaphore;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.JSONHelper;
-import oly.netpowerctrl.data.Storable;
+import oly.netpowerctrl.data.StorableInterface;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 
 // An object of this class contains all the info about a specific device
-public class Device implements Comparable<Device>, Storable {
+public class Device implements Comparable<Device>, StorableInterface {
     // Connections to the destination device. This is prioritized, the first reachable connection
     // is preferred before the second reachable etc.
     public final List<DeviceConnection> DeviceConnections = new ArrayList<>();
@@ -46,7 +46,7 @@ public class Device implements Comparable<Device>, Storable {
     public String UserName = "";
     public String Password = "";
     // Additional features
-    public List<DeviceFeature> Features = new ArrayList<>();
+    public List<DeviceFeatureInterface> Features = new ArrayList<>();
     // Temporary state variables
     public boolean configured = false;
     DeviceConnection cached_deviceConnection;
@@ -214,7 +214,7 @@ public class Device implements Comparable<Device>, Storable {
         Iterator<DeviceConnection> it = other_deviceConnections.iterator();
         while (it.hasNext()) {
             DeviceConnection deviceConnection = it.next();
-            if (!deviceConnection.updatedFlag && deviceConnection.isCustom())
+            if (!deviceConnection.updatedFlag && deviceConnection.isAssignedByDevice())
                 it.remove();
         }
 
@@ -307,7 +307,7 @@ public class Device implements Comparable<Device>, Storable {
         writer.name("Enabled").value(enabled);
 
         writer.name("Features").beginArray();
-        for (DeviceFeature deviceFeature : Features) {
+        for (DeviceFeatureInterface deviceFeature : Features) {
             deviceFeature.toJSON(writer);
         }
         writer.endArray();
@@ -398,7 +398,7 @@ public class Device implements Comparable<Device>, Storable {
 
     public String getFeatureString() {
         String f = "";
-        for (DeviceFeature feature : Features)
+        for (DeviceFeatureInterface feature : Features)
             f += feature.getString() + " ";
         return f;
     }
@@ -526,7 +526,7 @@ public class Device implements Comparable<Device>, Storable {
                     Features.clear();
                     reader.beginArray();
                     while (reader.hasNext()) {
-                        DeviceFeature feature = DeviceFeatureFabric.fromJSON(reader);
+                        DeviceFeatureInterface feature = DeviceFeatureFabric.fromJSON(reader);
                         if (feature != null)
                             Features.add(feature);
                     }

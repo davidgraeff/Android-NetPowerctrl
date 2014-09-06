@@ -11,7 +11,7 @@ import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.utils.AnimationController;
-import oly.netpowerctrl.utils.controls.ListItemMenu;
+import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         SeekBar.OnSeekBarChangeListener {
@@ -27,11 +27,11 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
         }
     };
 
-    public DevicePortsExecuteAdapter(Context context, ListItemMenu mListContextMenu, DevicePortSource source,
+    public DevicePortsExecuteAdapter(Context context, onListItemElementClicked mListContextMenu, DevicePortSourceInterface source,
                                      IconDeferredLoadingThread iconCache) {
         super(context, mListContextMenu, source, iconCache, true);
         mShowHidden = SharedPrefs.getInstance().getShowHiddenOutlets();
-        setLayoutRes(R.layout.list_icon_item);
+        setLayoutRes(R.layout.list_item_icon);
         if (source != null)
             source.updateNow();
     }

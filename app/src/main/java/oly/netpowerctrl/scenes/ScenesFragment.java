@@ -32,12 +32,12 @@ import oly.netpowerctrl.main.SortCriteriaDialog;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
-import oly.netpowerctrl.utils.controls.ListItemMenu;
+import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 /**
  */
 public class ScenesFragment extends Fragment implements
-        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, LoadStoreIconData.IconSelected, ListItemMenu {
+        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, LoadStoreIconData.IconSelected, onListItemElementClicked {
     private SceneCollection scenes;
     private GridView mListView;
     private ScenesAdapter adapter;
@@ -51,10 +51,10 @@ public class ScenesFragment extends Fragment implements
         float width;
 
         if (!grid) {
-            adapter.setLayoutRes(R.layout.list_icon_item);
+            adapter.setLayoutRes(R.layout.list_item_icon);
             width = getResources().getDimension(R.dimen.min_list_item_width);
         } else {
-            adapter.setLayoutRes(R.layout.grid_icon_item);
+            adapter.setLayoutRes(R.layout.grid_item_icon);
             width = getResources().getDimension(R.dimen.min_grid_item_width);
         }
 
@@ -86,7 +86,7 @@ public class ScenesFragment extends Fragment implements
 
         menu.findItem(R.id.menu_sort).setVisible(true);
 
-        boolean isList = adapter.getLayoutRes() == R.layout.list_icon_item;
+        boolean isList = adapter.getLayoutRes() == R.layout.list_item_icon;
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_view_list).setVisible(!isList);
         //noinspection ConstantConditions

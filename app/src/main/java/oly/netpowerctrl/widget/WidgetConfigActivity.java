@@ -16,10 +16,10 @@ import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.scenes.EditSceneFragment;
-import oly.netpowerctrl.scenes.EditSceneFragmentReady;
+import oly.netpowerctrl.scenes.onEditSceneFragmentReady;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
-public class WidgetConfigActivity extends Activity implements EditSceneFragmentReady, ActivityWithIconCache {
+public class WidgetConfigActivity extends Activity implements onEditSceneFragmentReady, ActivityWithIconCache {
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {

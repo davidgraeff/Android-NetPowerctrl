@@ -8,6 +8,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
 import oly.netpowerctrl.devices.DeviceFeatureTemperature;
@@ -69,7 +70,9 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
 
         final String HostName = msg[2];
         final Device di = createReceivedAnelDevice(msg[1].trim(), msg[5]);
-        di.addConnection(new DeviceConnectionUDP(di, HostName, receive_port, SharedPrefs.getInstance().getDefaultSendPort()));
+        DeviceConnection deviceConnection = new DeviceConnectionUDP(di, HostName, receive_port, SharedPrefs.getInstance().getDefaultSendPort());
+        deviceConnection.setIsAssignedByDevice(true);
+        di.addConnection(deviceConnection);
 
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
@@ -86,7 +89,10 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             } catch (NumberFormatException ignored) {
                 httpPort = -1;
             }
-            di.addConnection(new DeviceConnectionHTTP(di, HostName, httpPort));
+
+            deviceConnection = new DeviceConnectionHTTP(di, HostName, httpPort);
+            deviceConnection.setIsAssignedByDevice(true);
+            di.addConnection(deviceConnection);
 
             // IO ports
             if (msg.length > 23) {

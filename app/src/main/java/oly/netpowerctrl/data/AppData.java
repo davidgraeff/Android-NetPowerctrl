@@ -19,10 +19,10 @@ import oly.netpowerctrl.devices.DeviceConnectionUDP;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.network.AsyncRunnerResult;
 import oly.netpowerctrl.network.DeviceObserverBase;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.ExecutionFinished;
+import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
@@ -287,7 +287,7 @@ public class AppData {
         return null;
     }
 
-    public void rename(DevicePort port, String new_name, AsyncRunnerResult callback) {
+    public void rename(DevicePort port, String new_name, onAsyncRunnerResult callback) {
         if (callback != null)
             callback.asyncRunnerStart(port);
 
@@ -304,7 +304,7 @@ public class AppData {
      * @param scene    The scene to execute
      * @param callback The callback for the execution-done messages
      */
-    public void execute(Scene scene, ExecutionFinished callback) {
+    public void execute(Scene scene, onExecutionFinished callback) {
         List<PluginInterface> pluginInterfaces = new ArrayList<>();
 
         // Master/Slave
@@ -341,7 +341,7 @@ public class AppData {
      * @param command  The command to execute
      * @param callback The callback for the execution-done messages
      */
-    public void execute(final DevicePort port, final int command, final ExecutionFinished callback) {
+    public void execute(final DevicePort port, final int command, final onExecutionFinished callback) {
         PluginInterface remote = port.device.getPluginInterface();
         if (remote != null) {
             remote.execute(port, command, callback);

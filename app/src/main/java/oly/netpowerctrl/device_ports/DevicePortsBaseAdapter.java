@@ -1,6 +1,5 @@
 package oly.netpowerctrl.device_ports;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -30,7 +29,7 @@ import oly.netpowerctrl.scenes.SceneItem;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
-import oly.netpowerctrl.utils.controls.ListItemMenu;
+import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface,
         SharedPrefs.IShowBackground {
@@ -39,12 +38,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     final List<DevicePortAdapterItem> mItems;
     private final LayoutInflater mInflater;
     // Source of values for this adapter.
-    private final DevicePortSource mSource;
+    private final DevicePortSourceInterface mSource;
     int mOutlet_res_id = 0;
     boolean mShowHidden = true;
     DevicePortViewHolder cViewHolder;
     // Some observers
-    ListItemMenu mListContextMenu;
+    onListItemElementClicked mListContextMenu;
     // Animation ids
     WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
     private boolean drawShadows;
@@ -56,8 +55,8 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     private boolean mShowGroups;
     private int mItemsInRow = 1;
 
-    DevicePortsBaseAdapter(Context context, ListItemMenu listContextMenu,
-                           DevicePortSource source, IconDeferredLoadingThread iconCache,
+    DevicePortsBaseAdapter(Context context, onListItemElementClicked listContextMenu,
+                           DevicePortSourceInterface source, IconDeferredLoadingThread iconCache,
                            boolean showGroups) {
         mSource = source;
         mListContextMenu = listContextMenu;
@@ -78,7 +77,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         notifyDataSetChanged();
     }
 
-    public DevicePortSource getSource() {
+    public DevicePortSourceInterface getSource() {
         return mSource;
     }
 
@@ -107,7 +106,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         this.mOutlet_res_id = layout_res;
     }
 
-    public void setListItemMenu(ListItemMenu listItemMenu) {
+    public void setListItemMenu(onListItemElementClicked listItemMenu) {
         this.mListContextMenu = listItemMenu;
     }
 
@@ -213,7 +212,6 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         return -1;
     }
 
-    @SuppressLint("InflateParams")
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         final DevicePortAdapterItem item = mItems.get(position);
@@ -233,11 +231,11 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             switch (item.groupType()) {
                 case PRE_GROUP_FILL_ELEMENT_TYPE:
                 case NOGROUP_TYPE:
-                    convertView = mInflater.inflate(mOutlet_res_id, null);
+                    convertView = mInflater.inflate(mOutlet_res_id, parent, false);
                     break;
                 case GROUP_TYPE:
                 case GROUP_SPAN_TYPE:
-                    convertView = mInflater.inflate(R.layout.list_icon_header, null);
+                    convertView = mInflater.inflate(R.layout.list_header_icon, parent, false);
                     break;
             }
             assert convertView != null;
