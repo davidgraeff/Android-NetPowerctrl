@@ -152,17 +152,21 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         return items.size() > 0;
     }
 
-    public void setDevicePortBitmap(Context context, DevicePort port, Bitmap bitmap) {
+    public void setDevicePortBitmap(Context context, DevicePort port, Bitmap bitmap, LoadStoreIconData.IconState state) {
         if (port == null)
             return;
 
         LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, bitmap, 128, 128), port.uuid,
-                LoadStoreIconData.IconType.DevicePortIcon, port.getIconState());
+                LoadStoreIconData.IconType.DevicePortIcon, state);
         notifyObservers(port.device, ObserverUpdateActions.UpdateAction);
     }
 
     @Override
     public String type() {
         return "devices";
+    }
+
+    public void groupsUpdated(Device device) {
+        notifyObservers(device, ObserverUpdateActions.ClearAndNewAction);
     }
 }

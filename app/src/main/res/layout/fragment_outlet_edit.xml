@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:padding="@dimen/list_inner_padding">
+
+        <!--  alarm_device_port -->
+        <TextView
+            android:id="@+id/outlet_name_label"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/outlet_name_label" />
+
+        <EditText
+            android:id="@+id/outlet_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text="@string/alarm_type_weekdays" />
+
+        <TextView
+            android:id="@+id/outlet_icons_label"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/outlet_icons_label" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/outlet_icon_off_label" />
+
+            <ImageButton
+                android:id="@+id/outlet_icon_off"
+                style="?colored_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/menu_help" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/outlet_icon_on_label" />
+
+            <ImageButton
+                android:id="@+id/outlet_icon_on"
+                style="?colored_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/menu_help" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/outlet_groups_label"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/outlet_groups_label" />
+
+    </LinearLayout>
+</ScrollView>

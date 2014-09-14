@@ -55,6 +55,11 @@ public class Device implements Comparable<Device>, StorableInterface {
     private boolean hasChanged = false;
     private PluginInterface pluginInterface = null;
 
+    // Invalid Device
+    @SuppressWarnings("unused")
+    public Device() {
+    }
+
     public Device(String pluginID) {
         this.pluginID = pluginID;
     }

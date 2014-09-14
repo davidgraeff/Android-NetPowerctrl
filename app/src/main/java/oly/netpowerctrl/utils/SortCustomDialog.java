@@ -1,4 +1,4 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl.utils;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.SortCriteriaInterface;
 
 /**
  * Choose setSortOrder criteria

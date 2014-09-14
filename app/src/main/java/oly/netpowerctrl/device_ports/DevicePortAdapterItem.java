@@ -54,7 +54,7 @@ public class DevicePortAdapterItem {
         return port.last_command_timecode <= port.device.getUpdatedTime();
     }
 
-    public void clearState() {
+    public void clearMarkRemoved() {
         marked_removed = false;
     }
 
@@ -87,6 +87,10 @@ public class DevicePortAdapterItem {
 
     void setGroupType(groupTypeEnum groupType) {
         this.groupType = groupType;
+    }
+
+    public UUID groupID() {
+        return group;
     }
 
     public enum groupTypeEnum {NOGROUP_TYPE, GROUP_TYPE, PRE_GROUP_FILL_ELEMENT_TYPE, GROUP_SPAN_TYPE}

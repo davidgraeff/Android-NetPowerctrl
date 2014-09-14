@@ -19,9 +19,6 @@ package oly.netpowerctrl.main;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.nfc.NdefMessage;
-import android.nfc.NfcAdapter;
-import android.nfc.NfcEvent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -39,14 +36,12 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.utils.AndroidStatusBarNotification;
-import oly.netpowerctrl.utils.NFC;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.ChangeLogUtil;
 import oly.netpowerctrl.utils.navigation.NavigationController;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
-public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessageCallback, ActivityWithIconCache {
+public class MainActivity extends Activity implements ActivityWithIconCache {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
@@ -108,18 +103,16 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
         mIconCache.start();
 
         // Delayed loading of drawer and nfc
-        App.getMainThreadHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // NFC
-                NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(MainActivity.this);
-                if (mNfcAdapter != null) {
-                    // Register callback
-                    mNfcAdapter.setNdefPushMessageCallback(MainActivity.this,
-                            MainActivity.this);
-                }
-            }
-        }, 100);
+//        App.getMainThreadHandler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                // NFC
+//                NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(MainActivity.this);
+//                if (mNfcAdapter != null) {
+//
+//                }
+//            }
+//        }, 100);
         App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -127,7 +120,6 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
                     ChangeLogUtil.showChangeLog(MainActivity.this);
                 }
 
-                AndroidStatusBarNotification.init(getApplicationContext());
             }
         }, 150);
     }
@@ -175,13 +167,7 @@ public class MainActivity extends Activity implements NfcAdapter.CreateNdefMessa
     }
 
     @Override
-    public NdefMessage createNdefMessage(NfcEvent event) {
-        return NFC.createNdefMessage();
-    }
-
-    @Override
     public void onResume() {
-        NFC.checkIntentForNFC(this, getIntent());
         AppData.useAppData();
         ListenService.useService(getApplicationContext(), true, false);
         super.onResume();

@@ -8,6 +8,7 @@ import org.acra.ACRA;
 import org.acra.ACRAConfiguration;
 import org.acra.ACRAConfigurationException;
 import org.acra.ReportingInteractionMode;
+import org.acra.sender.HttpSender;
 
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
@@ -56,6 +57,7 @@ public class App extends Application {
                 acraConfiguration.setMode(ReportingInteractionMode.TOAST);
                 acraConfiguration.setFormUri("http://www.bugsense.com/api/acra?api_key=11178d09");
                 acraConfiguration.setFormKey("");
+                acraConfiguration.setReportType(HttpSender.Type.FORM);
                 acraConfiguration.setResToastText(R.string.crash_toast_text);
                 ACRA.init(this);
 

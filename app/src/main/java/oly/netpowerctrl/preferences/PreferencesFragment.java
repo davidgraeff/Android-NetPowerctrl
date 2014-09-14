@@ -1,17 +1,19 @@
 package oly.netpowerctrl.preferences;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
-import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
@@ -24,15 +26,21 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.ImportExport;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.main.NfcTagWriterActivity;
+import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Github;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements Github.IGithubOpenIssues {
+    private static final int REQUEST_CODE_IMPORT = 100;
+    private static final int REQUEST_CODE_EXPORT = 101;
+
     private final Preference.OnPreferenceChangeListener reloadActivity = new Preference.OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -63,13 +71,14 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                MainActivity.getNavigationController().changeToDialog(getActivity(), EnergySaveLogFragment.class.getName());
+                MainActivity.getNavigationController().changeToFragment(EnergySaveLogFragment.class.getName());
                 return false;
             }
         });
 
         //noinspection ConstantConditions
         findPreference("import").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @TargetApi(Build.VERSION_CODES.KITKAT)
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
@@ -77,10 +86,10 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                     return false;
                 }
                 try {
-                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.setType("image/*");
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    startActivityForResult(intent, 9876);
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                            .addCategory(Intent.CATEGORY_OPENABLE)
+                            .setType("application/zip");
+                    startActivityForResult(intent, REQUEST_CODE_IMPORT);
                 } catch (ActivityNotFoundException ignored) {
                     Toast.makeText(getActivity(), "Cannot open file chooser", Toast.LENGTH_SHORT).show();
                 }
@@ -90,6 +99,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
 
         //noinspection ConstantConditions
         findPreference("export").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @TargetApi(Build.VERSION_CODES.KITKAT)
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
@@ -99,9 +109,9 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 try {
                     Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
                             .addCategory(Intent.CATEGORY_OPENABLE)
-                            .setType(DocumentsContract.Document.MIME_TYPE_DIR)
-                            .putExtra(Intent.EXTRA_TITLE, "test.bkp");
-                    startActivityForResult(intent, 9875);
+                            .setType("application/zip")
+                            .putExtra(Intent.EXTRA_TITLE, getActivity().getPackageName() + "-" + Utils.getDateTime(getActivity()) + ".zip");
+                    startActivityForResult(intent, REQUEST_CODE_EXPORT);
                 } catch (ActivityNotFoundException ignored) {
                     Toast.makeText(getActivity(), "Cannot open file chooser", Toast.LENGTH_SHORT).show();
                 }
@@ -134,6 +144,22 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 return true;
             }
         });
+
+
+        if (NfcAdapter.getDefaultAdapter(getActivity()) == null) {
+            getPreferenceScreen().removePreference(findPreference("nfc_bind"));
+        } else {
+            //noinspection ConstantConditions
+            findPreference("nfc_bind").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @TargetApi(Build.VERSION_CODES.KITKAT)
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(getActivity(), NfcTagWriterActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
+            });
+        }
 
         //noinspection ConstantConditions
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
@@ -223,6 +249,20 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                     lv.setSelection(getPreferenceManager().getSharedPreferences().getInt("scroll", 0));
                 }
             });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == REQUEST_CODE_IMPORT) {
+                ImportExport.importData(getActivity(), intent.getData());
+                return;
+            } else if (requestCode == REQUEST_CODE_EXPORT) {
+                ImportExport.exportData(getActivity(), intent.getData());
+                return;
+            }
+        }
+        //super.onActivityResult(requestCode, resultCode, intent);
     }
 
     @Override

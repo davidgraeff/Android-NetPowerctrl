@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -179,7 +178,6 @@ public class Utils {
 
         // show it
         alertDialogBuilder.create().show();
-        Toast.makeText(context, R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
-
+        //Toast.makeText(context, R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
     }
 }

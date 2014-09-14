@@ -53,6 +53,12 @@ public class Scene implements StorableInterface {
         scene.sceneItems.add(item);
     }
 
+    /**
+     * Return true if this scene is a favourite. If you want to set the favourite
+     * flag use AppData.getInstance().sceneCollection.setFavaourite(scene, boolean);
+     *
+     * @return Return true if this scene is a favourite.
+     */
     public boolean isFavourite() {
         return favourite;
     }

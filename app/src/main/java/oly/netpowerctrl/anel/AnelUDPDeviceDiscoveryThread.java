@@ -83,6 +83,8 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
                 disabledOutlets = Integer.parseInt(msg[14]);
             } catch (NumberFormatException ignored) {
             }
+        }
+        if (msg.length > 15) {
             int httpPort;
             try {
                 httpPort = Integer.parseInt(msg[15]);
@@ -93,31 +95,29 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             deviceConnection = new DeviceConnectionHTTP(di, HostName, httpPort);
             deviceConnection.setIsAssignedByDevice(true);
             di.addConnection(deviceConnection);
+        }
+        // IO ports
+        if (msg.length > 25) {
+            // 1-based id. IO output range: 11..19, IO input range is 21..29
+            int io_id = 10;
+            for (int i = 16; i <= 23; ++i) {
+                io_id++;
+                String io_port[] = msg[i].split(",");
+                if (io_port.length != 3) continue;
 
-            // IO ports
-            if (msg.length > 23) {
-                // 1-based id. IO output range: 11..19, IO input range is 21..29
-                int io_id = 10;
-                for (int i = 16; i <= 23; ++i) {
-                    io_id++;
-                    String io_port[] = msg[i].split(",");
-                    if (io_port.length != 3) continue;
+                DevicePort oi = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
 
-                    DevicePort oi = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
+                if (io_port[1].equals("1")) // input
+                    oi.id = io_id + 10;
+                else
+                    oi.id = io_id;
 
-                    if (io_port[1].equals("1")) // input
-                        oi.id = io_id + 10;
-                    else
-                        oi.id = io_id;
-
-                    oi.setDescription(io_port[0]);
-                    oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
-                    di.add(oi);
-                }
-                di.Features.add(new DeviceFeatureTemperature(msg[24]));
-                di.Version = msg[25].trim();
+                oi.setDescription(io_port[0]);
+                oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
+                di.add(oi);
             }
-
+            di.Features.add(new DeviceFeatureTemperature(msg[24]));
+            di.Version = msg[25].trim();
         }
         // For old firmwares
         else if (msg.length < 14) {

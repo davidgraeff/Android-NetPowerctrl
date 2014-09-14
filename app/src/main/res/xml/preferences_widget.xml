@@ -12,30 +12,25 @@
 
     <CheckBoxPreference
         android:defaultValue="@bool/widget_show_title"
-        android:dependency="widget_use_default"
         android:key="widget_show_title"
         android:summary="@string/preference_widget_show_title_summary"
         android:title="@string/preference_widget_show_title" />
 
     <CheckBoxPreference
         android:defaultValue="@bool/widget_show_title"
-        android:dependency="widget_use_default"
         android:key="widget_show_status"
         android:summary="@string/preference_widget_show_status_summary"
         android:title="@string/preference_widget_show_status" />
 
     <Preference
-        android:dependency="widget_use_default"
         android:key="widget_image_on"
         android:title="@string/widget_image_on" />
 
     <Preference
-        android:dependency="widget_use_default"
         android:key="widget_image_off"
         android:title="@string/widget_image_off" />
 
     <Preference
-        android:dependency="widget_use_default"
         android:key="widget_image_not_reachable"
         android:title="@string/widget_image_not_reachable" />
 </PreferenceScreen>

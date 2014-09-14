@@ -25,6 +25,11 @@ public class Group implements StorableInterface {
     public String name;
     public Bitmap bitmap = null;
 
+    // Invalid Group
+    @SuppressWarnings("unused")
+    public Group() {
+    }
+
     public Group(UUID uuid, String name) {
         this.uuid = uuid;
         this.name = name;

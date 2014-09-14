@@ -17,7 +17,7 @@ public class DevicePortsCreateSceneAdapter extends DevicePortsBaseAdapter {
     private final View.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            mListContextMenu.onMenuItemClicked(view, (Integer) view.getTag());
+            mListContextMenu.onListItemElementClicked(view, (Integer) view.getTag());
         }
     };
     private final SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
-    <string name="app_name">Power Control</string>
+    <string name="app_name">Smart Power Control</string>
     <string name="app_name_shortcut">Power-Control Scene</string>
     <string name="app_name_shortcut_desc">Start a scene from your home screen</string>
     <string name="app_name_widget">Power-Control Outlet State</string>
@@ -31,9 +31,9 @@
 
     <string name="menu_add_device">Add device</string>
     <string name="menu_add_scene">Add scene</string>
-    <string name="menu_remove_scene">Delete</string>
+    <string name="menu_remove">Delete</string>
     <string name="menu_remove_all">Delete all</string>
-    <string name="menu_edit_scene">Edit</string>
+    <string name="menu_edit">Edit</string>
     <string name="menu_cancel">Cancel</string>
     <string name="menu_delete_all">Delete all</string>
     <string name="menu_refresh">Refresh</string>
@@ -87,7 +87,7 @@
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Edit scene</string>
-    <string name="menu_add_homescreen">Add to homescreen</string>
+    <string name="scene_add_homescreen">Add to homescreen</string>
     <string name="error_reading_scenes">Error reading scenes</string>
     <string name="error_device_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
@@ -132,7 +132,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="scene_set_icon">Set icon</string>
     <string name="dialog_icon_title">Icon</string>
     <string name="dialog_icon_default">Default Icon</string>
-    <string name="dialog_icon_select">Select Scene Icon…</string>
+    <string name="dialog_icon_select">Select Icon…</string>
     <string name="error_icon">Failed to set icon</string>
     <string name="scene_create_include_onepane">No actions so far! Swipe the screen to the right to unveil available actions. Click on one of them to add it to the scene.</string>
     <string name="scene_create_include_twopane">No actions so far! Click on one of the right actions to add it to the scene.</string>
@@ -158,8 +158,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="menu_remove_group">Remove group</string>
     <string name="menu_rename_group">Rename group</string>
     <string name="drawer_feedback">Feedback</string>
-    <string name="menu_set_favourite">Make favorite</string>
-    <string name="menu_remove_favourite">No favorite anymore</string>
+    <string name="scene_make_favourite">Make favorite</string>
+    <string name="scene_remove_favourite">No favorite anymore</string>
     <string name="help_scene">A scene combines multiple actions. A scene can have a name and an icon. You may add a copy of a scene to your homescreen for fast access. If a scene is a favorite, it appears in the left navigation menu.</string>
     <string name="error_plugin_not_installed">Plugin not installed!</string>
     <string name="renameInProgress">Renaming in progress…</string>
@@ -233,7 +233,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="alarm_no_target">You have to setup the target device!</string>
     <string name="alarm_no_start_no_stop">There is neither a start nor a stop time set!</string>
     <string name="confirmation_delete_all_alarms">Remove all alarms?</string>
-    <string name="port_warning_1024">For using a receive port number smaller than 1024 you need to have root access and make this app a system application. Allow administrative port range for now?</string>
+    <string name="port_warning_1024">For using a receive port number smaller than 1024 you need to have root access and make this app a system application. Allow administrative port range for now? Redo your previous action after granting!</string>
     <string name="alarm_receiving">Receiving alarm $d</string>
     <string name="alarm_saving_now">Please wait. Saving alarm…</string>
     <string name="toWirelessSettings">Activate WiFi</string>
@@ -299,4 +299,31 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="error_invalid_port">Invalid port entered!</string>
     <string name="device_assignedConnections">This device has %1$d automatically assigned connections</string>
     <string name="error_invalid_host">Invalid host or IP address</string>
+    <string name="log_no_records">No records found!</string>
+    <string name="scene_create_basics">Name/Icon/Options</string>
+    <string name="backup_password">Backup Password</string>
+    <string name="backup_password_summary">The password will be used on creating backups and on importing backups. All characters are allowed. The usual security guidelines for password strengths apply.</string>
+    <string name="import_sucess">Importing successful</string>
+    <string name="scene_nfc_write">Write NFC Tag</string>
+    <string name="scene_add_homescreen_success">Icon successfully created on home screen</string>
+    <string name="nfc_writer_title">NFC Write %1$s</string>
+    <string name="nfc_writer_description">Place your NFC Tag next to your device now</string>
+    <string name="nfc_WriteFailed">Write failed!</string>
+    <string name="nfc_tagNotWritable">Tag is write protected!</string>
+    <string name="nfc_tagTooSmallMessage">Tag\'s storage is too small!</string>
+    <string name="nfc_cannotWriteTechMessage">Tag is not compatible!</string>
+    <string name="nfc_WriteSuccess">Write successful</string>
+    <string name="nfc_AvailableEnabled">NFC is active</string>
+    <string name="nfc_AvailableDisabled">NFC is disabled!</string>
+    <string name="nfc_noNfcMessage">NFC not supported by this device!</string>
+    <string name="error_import_legacy_data">Fehler beim Importieren vorheriger Daten :(</string>
+    <string name="preference_nfc_bind">Write NFC Tag</string>
+    <string name="preference_nfc_bind_summary">Open this app on contact with the written NFC tag</string>
+    <string name="outlet_edit_title">Edit %1$s</string>
+    <string name="outlet_name_label">Name</string>
+    <string name="outlet_icons_label">Zustandsgrafiken</string>
+    <string name="outlet_groups_label">Zugewiesene Gruppen</string>
+    <string name="outlet_icon_off_label">Aus:</string>
+    <string name="outlet_icon_on_label">An:</string>
+    <string name="error_rename_only_with_http_connection">Umbenennen nur mit HTTP Verbindung möglich</string>
 </resources>

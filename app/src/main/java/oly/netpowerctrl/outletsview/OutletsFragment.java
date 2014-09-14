@@ -1,14 +1,10 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl.outletsview;
 
-import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -23,7 +19,6 @@ import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -34,10 +29,10 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.device_ports.DevicePortAdapterItem;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsExecuteAdapter;
 import oly.netpowerctrl.devices.Device;
@@ -47,14 +42,13 @@ import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceModeChanged;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
-import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onNewDevice;
 import oly.netpowerctrl.network.onNotReachableUpdate;
-import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.SortCriteriaDialog;
 import oly.netpowerctrl.utils.actionbar.ActionBarWithGroups;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
@@ -64,8 +58,7 @@ import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 /**
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        onNotReachableUpdate, onListItemElementClicked, onFragmentChangeArguments, onAsyncRunnerResult,
-        LoadStoreIconData.IconSelected, SwipeRefreshLayout.OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks,
+        onNotReachableUpdate, onListItemElementClicked, onFragmentChangeArguments, SwipeRefreshLayout.OnRefreshListener, SwipeDismissListViewTouchListener.DismissCallbacks,
         onServiceRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged,
         DevicePortSourceConfigured.onChange, onDataQueryCompleted, onNewDevice {
     private final ActionBarWithGroups actionBarWithGroups = new ActionBarWithGroups();
@@ -79,7 +72,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private UUID groupFilter = null;
     private GridView mListView;
     private SwipeRefreshLayout mPullToRefreshLayout;
-    private ProgressDialog progressDialog;
     private AnimationController animationController;
     private int emptyInit = 0;
     private checkEmptyState lastState = checkEmptyState.UNKNOWN;
@@ -92,7 +84,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         super.onConfigurationChanged(newConfig);
 
         if (mListView != null) {
-            mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumsChangeListener);
+            mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
         }
     }
 
@@ -111,12 +103,18 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         actionBarWithGroups.showNavigation();
     }
 
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumsChangeListener =
+    @Override
+    public void onStop() {
+        super.onStop();
+        actionBarWithGroups.finishNavigation();
+    }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
                     //noinspection deprecation
-                    mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumsChangeListener);
+                    mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
                     //getActivity().findViewById(R.id.content_frame).getWidth();
                     //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
                     int i = mListView.getWidth() / requestedColumnWidth;
@@ -124,12 +122,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                 }
             };
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        actionBarWithGroups.finishNavigation();
-    }
 
     @Override
     public void onPause() {
@@ -154,13 +146,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void changeArguments(Bundle mExtra) {
+        UUID groupFilterBefore = groupFilter;
 
         if (mExtra != null && mExtra.containsKey("filter"))
             groupFilter = UUID.fromString(mExtra.getString("filter"));
         else
             groupFilter = null;
 
-        if (actionBarWithGroups != null)
+        if ((groupFilterBefore == null && groupFilter != null) || groupFilterBefore != null && !groupFilterBefore.equals(groupFilter))
             actionBarWithGroups.setCurrentIndex(groupFilter);
 
         if (adapter != null) {
@@ -184,7 +177,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         mListView.setColumnWidth(requestedColumnWidth);
         mListView.setNumColumns(GridView.AUTO_FIT);
-        mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumsChangeListener);
+        mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
         mListView.setAdapter(adapter);
     }
 
@@ -197,10 +190,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             menu.findItem(R.id.menu_showhidden).setVisible(false);
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_hidehidden).setVisible(false);
-            //noinspection ConstantConditions
-            menu.findItem(R.id.menu_removeGroup).setVisible(false);
-            //noinspection ConstantConditions
-            menu.findItem(R.id.menu_renameGroup).setVisible(false);
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_view_list).setVisible(false);
             //noinspection ConstantConditions
@@ -221,10 +210,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         menu.findItem(R.id.menu_showhidden).setVisible(!hiddenShown);
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_hidehidden).setVisible(hiddenShown);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_removeGroup).setVisible(groupFilter != null);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_renameGroup).setVisible(groupFilter != null);
 
         boolean isList = adapter == null || adapter.getLayoutRes() == R.layout.list_item_icon;
         //noinspection ConstantConditions
@@ -238,18 +223,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_removeGroup: {
-                if (!AppData.getInstance().groupCollection.remove(groupFilter)) {
-                    return true;
-                }
-                MainActivity.getNavigationController().changeToFragment(OutletsFragment.class.getName());
-                return true;
-            }
-            case R.id.menu_renameGroup: {
-                GroupUtilities.renameGroup(getActivity(), groupFilter);
-                return true;
-            }
-
             case R.id.refresh: {
                 ListenService service = ListenService.getService();
                 if (service != null)
@@ -289,6 +262,11 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             case R.id.menu_sort: {
                 DialogFragment fragment = SortCriteriaDialog.instantiate(getActivity(), adapter);
                 MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
+                return true;
+            }
+
+            case R.id.menu_group_add: {
+                GroupUtilities.createGroupForDevicePort(getActivity(), null);
                 return true;
             }
 
@@ -382,6 +360,17 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                DevicePortAdapterItem item = adapter.getItem(position);
+                if (!(item.groupType() == DevicePortAdapterItem.groupTypeEnum.NOGROUP_TYPE)) {
+                    mListView.setTag(position);
+                    //noinspection ConstantConditions
+                    PopupMenu popup = new PopupMenu(getActivity(), view);
+                    MenuInflater inflater = popup.getMenuInflater();
+                    inflater.inflate(R.menu.group, popup.getMenu());
+                    popup.setOnMenuItemClickListener(OutletsFragment.this);
+                    popup.show();
+                    return;
+                }
                 boolean restrict = SharedPrefs.getInstance().getSmallerClickExecuteArea();
                 if (restrict && view != null)
                     return;
@@ -485,76 +474,47 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         final int position = (Integer) mListView.getTag();
-        final DevicePort oi = adapter.getDevicePort(position);
+        final DevicePort devicePort = adapter.getDevicePort(position);
 
         switch (menuItem.getItemId()) {
-            case R.id.menu_outlet_rename: {
-                //noinspection ConstantConditions
-                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-
-                alert.setTitle(R.string.outlet_rename_title);
-                alert.setMessage(getString(R.string.outlet_rename_message, oi.getDescription()));
-
-                final EditText input = new EditText(alert.getContext());
-                input.setText(oi.getDescription());
-                alert.setView(input);
-
-                alert.setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        //noinspection ConstantConditions
-                        AppData.getInstance().rename(oi, input.getText().toString().trim(), OutletsFragment.this);
-                    }
-                });
-
-                alert.setNegativeButton(getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    }
-                });
-
-                alert.show();
+            case R.id.menu_removeGroup: {
+                UUID uuid = adapter.getItem(position).groupID();
+                if (!AppData.getInstance().groupCollection.remove(uuid)) {
+                    return true;
+                }
+                // change to overview if the removed group is the current group
+                if (uuid.equals(groupFilter))
+                    MainActivity.getNavigationController().changeToFragment(OutletsFragment.class.getName());
+                return true;
+            }
+            case R.id.menu_renameGroup: {
+                GroupUtilities.renameGroup(getActivity(), adapter.getItem(position).groupID());
+                return true;
+            }
+            case R.id.menu_outlet_edit: {
+                OutletEditDialog dialog = (OutletEditDialog) Fragment.instantiate(getActivity(), OutletEditDialog.class.getName());
+                dialog.setDevicePort(devicePort);
+                dialog.setAdapter(adapter);
+                MainActivity.getNavigationController().changeToDialog(getActivity(), dialog);
                 return true;
             }
 
-            case R.id.menu_outlet_changeGroups: {
-                GroupUtilities.createGroup(getActivity(), oi, new GroupUtilities.groupsChangedInterface() {
-                    @Override
-                    public void onGroupsChanged(DevicePort port) {
-                        adapterSource.updateNow();
-                    }
-                });
-                return true;
-            }
-            case R.id.menu_outlet_hide: {
-                hideItem(oi);
-                return true;
-            }
             case R.id.menu_outlet_unhide: {
-                oi.Hidden = false;
+                devicePort.Hidden = false;
                 adapter.notifyDataSetChanged();
                 // Only change the view, if we are actually showing an item and do not show hidden items.
                 if (!adapter.isShowingHidden()) {
-                    adapter.addItem(oi, oi.getCurrentValueToggled(), true);
+                    adapter.addItem(devicePort, devicePort.getCurrentValueToggled(), true);
                 } else // just update the alpha value of the newly hidden item
                     adapter.notifyDataSetChanged();
-                AppData.getInstance().deviceCollection.save(oi.device);
-                return true;
-            }
-            case R.id.menu_add_homescreen: {
-                Scene scene = new Scene();
-                scene.sceneName = oi.getDescription();
-                scene.add(oi.uuid, DevicePort.TOGGLE);
-                //noinspection ConstantConditions
-                AndroidShortcuts.createHomeIcon(getActivity().getApplicationContext(), scene);
+                AppData.getInstance().deviceCollection.save(devicePort.device);
                 return true;
             }
             case R.id.menu_outlet_master_slave:
                 //noinspection ConstantConditions
                 Bundle b = new Bundle();
-                b.putString("master_uuid", oi.uuid.toString());
+                b.putString("master_uuid", devicePort.uuid.toString());
                 MainActivity.getNavigationController().changeToFragment(MasterSlaveFragment.class.getName(), b, true);
-                return true;
-            case R.id.menu_icon:
-                LoadStoreIconData.show_select_icon_dialog(getActivity(), "scene_icons", this, oi);
                 return true;
         }
         return false;
@@ -590,7 +550,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     @Override
-    public void onMenuItemClicked(View view, int position) {
+    public void onListItemElementClicked(View view, int position) {
         // Animate press
         Animation a = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f, view.getWidth() / 2, view.getHeight() / 2);
         a.setRepeatMode(Animation.REVERSE);
@@ -609,59 +569,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         Menu menu = popup.getMenu();
 
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_outlet_hide).setVisible(!oi.Hidden);
-        //noinspection ConstantConditions
         menu.findItem(R.id.menu_outlet_unhide).setVisible(oi.Hidden);
 
         popup.setOnMenuItemClickListener(this);
         popup.show();
-    }
-
-    @Override
-    public void asyncRunnerResult(DevicePort oi, boolean success, String error_message) {
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-            progressDialog = null;
-        }
-
-        if (!success) {
-            //noinspection ConstantConditions
-            Toast.makeText(getActivity(), getString(R.string.renameFailed, error_message), Toast.LENGTH_SHORT).show();
-        } else {
-            oi.device.setHasChanged();
-            new DeviceQuery(getActivity(), null, oi.device);
-        }
-    }
-
-    @Override
-    public void asyncRunnerStart(DevicePort oi) {
-        Context context = getActivity();
-        if (context == null)
-            return;
-
-        if (progressDialog == null)
-            progressDialog = new ProgressDialog(context);
-
-        progressDialog.setTitle(R.string.renameInProgress);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-    }
-
-    @Override
-    public void setIcon(Object context_object, Bitmap bitmap) {
-        if (context_object == null)
-            return;
-        AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
-                (DevicePort) context_object, bitmap);
-
-        adapter.invalidateViewHolders();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
     }
 
     @Override

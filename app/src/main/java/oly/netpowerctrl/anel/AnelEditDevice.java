@@ -89,7 +89,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
     @Override
     public boolean updated(DeviceCollection deviceCollection, Device updated_device, ObserverUpdateActions action) {
-        if (!updated_device.equalsByUniqueID(device))
+        if (updated_device.UniqueDeviceID == null || !updated_device.equalsByUniqueID(device))
             return true;
 
         if (!updated_device.isReachable()) {

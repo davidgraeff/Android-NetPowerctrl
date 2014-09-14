@@ -67,11 +67,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="application/oly.netpowerctrl" />
-            </intent-filter>
         </activity>
 
         <activity
@@ -83,6 +78,11 @@
             android:theme="@style/Theme.Transparent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/oly.netpowerctrl" />
             </intent-filter>
         </activity>
 
@@ -100,12 +100,19 @@
         </activity>
 
         <activity
+            android:name=".main.NfcTagWriterActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
+            android:description="@string/app_name_widget"
+            android:icon="@drawable/netpowerctrl"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Transparent"></activity>
+
+        <activity
             android:name=".scenes.EditSceneActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
             android:description="@string/app_name_shortcut_desc"
             android:icon="@drawable/netpowerctrl"
             android:label="@string/app_name_shortcut"
-            android:noHistory="true"
             android:theme="@style/Theme.StartTheme"
             android:uiOptions="splitActionBarWhenNarrow">
             <meta-data

@@ -3,21 +3,8 @@
     <!--<item android:id="@+id/menu_backup_scene" android:title="@string/menu_backup_scene"></item>-->
     <item
         android:id="@+id/menu_edit_scene"
-        android:title="@string/menu_edit_scene" />
+        android:title="@string/menu_edit" />
     <item
         android:id="@+id/menu_remove_scene"
-        android:title="@string/menu_remove_scene" />
-    <item
-        android:id="@+id/menu_add_homescreen"
-        android:title="@string/menu_add_homescreen" />
-    <item
-        android:id="@+id/menu_set_favourite"
-        android:title="@string/menu_set_favourite" />
-    <item
-        android:id="@+id/menu_remove_favourite"
-        android:title="@string/menu_remove_favourite" />
-    <item
-        android:id="@+id/menu_icon"
-        android:title="@string/scene_set_icon" />
-
+        android:title="@string/menu_remove" />
 </menu>

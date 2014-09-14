@@ -25,7 +25,7 @@ public class AndroidShortcuts {
 
         // Create shortcut intent
         Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
-        shortcutIntent.putExtra(EditSceneActivity.RESULT_SCENE, og.toString());
+        shortcutIntent.putExtra(EditSceneActivity.RESULT_SCENE_JSON, og.toString());
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);

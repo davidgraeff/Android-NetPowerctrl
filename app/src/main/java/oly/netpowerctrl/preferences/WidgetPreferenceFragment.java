@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 
 import java.util.Map;
@@ -41,6 +40,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
                     return true;
                 }
             };
+    private UUID widget_uuid;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,45 +53,57 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
         getPreferenceManager().setSharedPreferencesName(arguments.getString("key"));
         addPreferencesFromResource(R.xml.preferences_widget);
 
+        widget_uuid = (widgetId == -1) ? LoadStoreIconData.uuidFromDefaultWidget() : LoadStoreIconData.uuidFromWidgetID(widgetId);
+
         Preference preference;
+
+        preference = findPreference("widget_use_default");
+        if (widgetId == -1) {
+            getPreferenceScreen().removePreference(preference);
+        }
 
         preference = findPreference("widget_image_on");
         assert preference != null;
+        if (widgetId != -1)
+            preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateOn);
-        preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), LoadStoreIconData.uuidFromWidgetID(widgetId),
+        preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
                 LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn,
                 LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_off");
         assert preference != null;
+        if (widgetId != -1)
+            preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateOff);
-        preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), LoadStoreIconData.uuidFromWidgetID(widgetId),
+        preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
                 LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOff,
                 LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_not_reachable");
         assert preference != null;
+        if (widgetId != -1)
+            preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateUnknown);
-        preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), LoadStoreIconData.uuidFromWidgetID(widgetId),
+        preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
                 LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown,
                 LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateUnknown)));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_show_title");
         assert preference != null;
-        preference.setOnPreferenceChangeListener(forceChangePreferences);
-        preference = findPreference("widget_show_status");
-        assert preference != null;
+        if (widgetId != -1)
+            preference.setDependency("widget_use_default");
         preference.setOnPreferenceChangeListener(forceChangePreferences);
 
-        if (widgetId == -1) {
-            preference = findPreference("widget_use_default");
-            assert preference != null;
-            ((CheckBoxPreference) preference).setChecked(false);
-            preference.setSelectable(false);
-        }
+        preference = findPreference("widget_show_status");
+        assert preference != null;
+        if (widgetId != -1)
+            preference.setDependency("widget_use_default");
+        preference.setOnPreferenceChangeListener(forceChangePreferences);
+
     }
 
     @Override
@@ -100,12 +112,8 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             return;
         Preference current = (Preference) context_object;
         LoadStoreIconData.IconState state = preference_to_state.get(context_object);
-        UUID uuid;
-        if (widgetId == -1)
-            uuid = LoadStoreIconData.uuidFromDefaultWidget();
-        else
-            uuid = LoadStoreIconData.uuidFromWidgetID(widgetId);
-        LoadStoreIconData.saveIcon(getActivity(), bitmap, uuid, LoadStoreIconData.IconType.WidgetIcon, state);
+
+        LoadStoreIconData.saveIcon(getActivity(), bitmap, widget_uuid, LoadStoreIconData.IconType.WidgetIcon, state);
         if (bitmap == null) {
             current.setIcon(LoadStoreIconData.getResIdForState(state));
         } else {
@@ -116,7 +124,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        //super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
         LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
     }

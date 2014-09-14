@@ -1,23 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_outlet_hide"
-        android:title="@string/menu_hide_outlet" />
-    <item
         android:id="@+id/menu_outlet_unhide"
         android:title="@string/menu_unhide_outlet" />
     <item
-        android:id="@+id/menu_outlet_rename"
-        android:title="@string/menu_rename_outlet" />
-    <item
-        android:id="@+id/menu_add_homescreen"
-        android:title="@string/menu_add_homescreen" />
-    <item
-        android:id="@+id/menu_outlet_changeGroups"
-        android:title="@string/menu_outlet_createGroup" />
-    <item
-        android:id="@+id/menu_icon"
-        android:title="@string/outlet_set_icon" />
+        android:id="@+id/menu_outlet_edit"
+        android:title="@string/menu_edit" />
     <item
         android:id="@+id/menu_outlet_master_slave"
         android:title="@string/menu_outlet_master_slave" />

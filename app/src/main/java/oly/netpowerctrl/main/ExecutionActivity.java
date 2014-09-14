@@ -1,11 +1,17 @@
 package oly.netpowerctrl.main;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
+import org.ndeftools.Message;
+import org.ndeftools.MimeRecord;
+import org.ndeftools.Record;
+import org.ndeftools.util.activity.NfcReaderActivity;
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -25,17 +31,33 @@ import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.ShowToast;
 
-public class ExecutionActivity extends Activity implements onDeviceObserverResult, onExecutionFinished {
+public class ExecutionActivity extends NfcReaderActivity implements onDeviceObserverResult, onExecutionFinished {
     private Scene scene = null;
     private int scene_commands = 0;
     private int scene_executed_commands = 0;
     private boolean enable_feedback;
+    private String scene_uuid;
 //    private boolean updateWidget = false;
 
     @Override
     protected void onPause() {
         ListenService.stopUseService();
         super.onPause();
+    }
+
+    @Override
+    protected void onNfcFeatureNotFound() {
+
+    }
+
+    @Override
+    protected void onNfcStateEnabled() {
+
+    }
+
+    @Override
+    protected void onNfcStateDisabled() {
+
     }
 
     @Override
@@ -54,25 +76,37 @@ public class ExecutionActivity extends Activity implements onDeviceObserverResul
         // Extract name group from intent extra
         final Bundle extra = it.getExtras();
 
-        if (extra == null) {
+        if (extra == null ||
+                (!extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID) &&
+                        !extra.containsKey(EditSceneActivity.RESULT_SCENE_JSON) &&
+                        !extra.containsKey(EditSceneActivity.RESULT_SCENE_UUID) &&
+                        scene_uuid == null)) {
             //noinspection ConstantConditions
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        // Read data from intent
+        final boolean show_mainwindow = extra.getBoolean("show_mainWindow", false);
+        enable_feedback = extra.getBoolean("enable_feedback", true);
+        final String action_uuid = extra.getString(EditSceneActivity.RESULT_ACTION_UUID);
+        final int action_command = extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND);
+        final String scene_json = extra.getString(EditSceneActivity.RESULT_SCENE_JSON);
+        scene_uuid = extra.getString(EditSceneActivity.RESULT_SCENE_UUID, scene_uuid);
+
         // The application may have be started here, we have to wait for the service to be ready
         ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
             public boolean onServiceReady(ListenService service) {
-                // Execute single action (in contrast to scene)
-                if (extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID)) {
-                    executeSingleAction(extra.getString(EditSceneActivity.RESULT_ACTION_UUID),
-                            extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND));
-                } else {
-                    enable_feedback = extra.getBoolean("enable_feedback");
-                    executeScene(extra.getString(EditSceneActivity.RESULT_SCENE));
-                }
+                AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+
+                    @Override
+                    public boolean onDataQueryFinished() {
+                        serviceAndDataReady(action_uuid, action_command, scene_json);
+                        return false;
+                    }
+                });
                 return false;
             }
 
@@ -83,10 +117,36 @@ public class ExecutionActivity extends Activity implements onDeviceObserverResul
         });
 
         // Show main window
-        if (extra.getBoolean("show_mainWindow")) {
+        if (show_mainwindow) {
             Intent mainIt = new Intent(this, MainActivity.class);
             startActivity(mainIt);
         }
+    }
+
+    void serviceAndDataReady(String action_uuid, int action_command, String scene_json) {
+        // Execute single action (in contrast to scene)
+        if (action_uuid != null) {
+            executeSingleAction(action_uuid, action_command);
+        } else {
+            if (scene_uuid != null) {
+                Log.e("serviceAndDataReady", UUID.fromString(scene_uuid).toString());
+                scene = AppData.getInstance().sceneCollection.get(UUID.fromString(scene_uuid));
+            } else if (scene_json != null) {
+                // Extract scene from extra bundle
+                try {
+                    scene = new Scene();
+                    scene.load(JSONHelper.getReader(scene_json));
+                } catch (IOException | ClassNotFoundException ignored) {
+                    scene = null;
+                }
+            }
+            executeScene();
+        }
+    }
+
+    @Override
+    protected void onNfcStateChange(boolean enabled) {
+
     }
 
     void executeSingleAction(String port_uuid_string, final int command) {
@@ -97,23 +157,10 @@ public class ExecutionActivity extends Activity implements onDeviceObserverResul
             finish();
             return;
         }
-        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
-            @Override
-            public boolean onDataQueryFinished() {
-                AppData.getInstance().execute(port, command, ExecutionActivity.this);
-                return false;
-            }
-        });
+        AppData.getInstance().execute(port, command, ExecutionActivity.this);
     }
 
-    void executeScene(String scene_string) {
-        // Extract scene from extra bundle
-        try {
-            scene = new Scene();
-            scene.load(JSONHelper.getReader(scene_string));
-        } catch (IOException | ClassNotFoundException ignored) {
-            scene = null;
-        }
+    void executeScene() {
         if (scene == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();
@@ -151,9 +198,29 @@ public class ExecutionActivity extends Activity implements onDeviceObserverResul
         }
         AppData.getInstance().execute(scene, this);
     }
-//
-//    @Override
-//    public void onDeviceError(DeviceInfo di) {
-//        Toast.makeText(this, getString(R.string.error_nopass, di.DeviceName), Toast.LENGTH_SHORT).show();
-//    }
+
+    @Override
+    protected void readNdefMessage(Message message) {
+        for (Record record : message) {
+            if (record instanceof MimeRecord) {
+                MimeRecord mimeRecord = (MimeRecord) record;
+                if (mimeRecord.getMimeType() != null && mimeRecord.getMimeType().equals("application/oly.netpowerctrl")) {
+                    try {
+                        scene_uuid = new String(mimeRecord.getData(), "ASCII");
+                    } catch (UnsupportedEncodingException ignored) {
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void readEmptyNdefMessage() {
+
+    }
+
+    @Override
+    protected void readNonNdefMessage() {
+
+    }
 }

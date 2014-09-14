@@ -50,6 +50,7 @@ public class EnergySaveLogFragment extends ListFragment {
         //noinspection ConstantConditions
         actionBarDoneCancel.setTitle(getActivity(), R.string.log_screen);
         setListAdapter(arrayAdapter);
+        setEmptyText(getString(R.string.log_no_records));
     }
 
     @Override

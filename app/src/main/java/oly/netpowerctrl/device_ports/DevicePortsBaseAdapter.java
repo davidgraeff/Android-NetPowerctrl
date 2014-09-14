@@ -106,7 +106,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         this.mOutlet_res_id = layout_res;
     }
 
-    public void setListItemMenu(onListItemElementClicked listItemMenu) {
+    public void setListItemElementClickedListener(onListItemElementClicked listItemMenu) {
         this.mListContextMenu = listItemMenu;
     }
 
@@ -123,12 +123,6 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         SharedPrefs.getInstance().setShowHiddenOutlets(mShowHidden);
         if (mSource != null)
             mSource.updateNow();
-    }
-
-    @Override
-    public boolean isEnabled(int position) {
-        DevicePortAdapterItem item = mItems.get(position);
-        return item.port != null && item.port.device.getFirstReachableConnection() != null;
     }
 
     @Override
@@ -156,6 +150,13 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     public DevicePortAdapterItem getItem(int position) {
         return mItems.get(position);
+    }
+
+    public DevicePortAdapterItem getGroup(UUID uuid) {
+        for (DevicePortAdapterItem item : mItems)
+            if (uuid.equals(item.groupID()))
+                return item;
+        return null;
     }
 
     @Override
@@ -411,18 +412,21 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
      *
      * @param devicePort    The device port to add.
      * @param command_value The command value to issue if clicked or interacted with.
+     * @return Return true if a recomputation of the group spans is necessary (if the
+     * device port didn't exist before)
      */
-    public void addItem(DevicePort devicePort, int command_value, boolean finalAction) {
+    public boolean addItem(DevicePort devicePort, int command_value, boolean finalAction) {
         assert devicePort.device != null;
         if (devicePort.Disabled || (devicePort.Hidden && !mShowHidden))
-            return;
+            return false;
 
         // FilterGroup
         if (mFilterGroup != null) {
             if (!devicePort.groups.contains(mFilterGroup))
-                return;
+                return false;
         }
 
+        boolean needGroupSpanRecompute = false;
         if (!mShowGroups || devicePort.groups.isEmpty() || mFilterGroup != null)
             addItemToGroup(devicePort, command_value, 0);
         else {
@@ -430,8 +434,9 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                 // Get group header item
                 int positionOfGroup = addHeaderIfNotExists(group, devicePort);
                 // add child
-                if (addItemToGroup(devicePort, command_value, positionOfGroup + 1) &&
-                        positionOfGroup != -1) {
+                boolean newItemAdded = addItemToGroup(devicePort, command_value, positionOfGroup + 1);
+                needGroupSpanRecompute |= newItemAdded;
+                if (newItemAdded && positionOfGroup != -1) {
                     // Increase child count
                     mItems.get(positionOfGroup).groupItems++;
 
@@ -439,8 +444,11 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             }
         }
 
-        if (finalAction)
+        if (finalAction) {
             computeGroupSpans();
+            return false;
+        }
+        return needGroupSpanRecompute;
     }
 
     /**
@@ -471,14 +479,10 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
             // If the same DevicePort already exists in this adapter, we will update that instead
             if (l.port.uuid.equals(devicePort.uuid)) {
-                // Animate if value has changed
-//                if (l.command_value != command_value && a != null) {
-//                    a.addSmallHighlight(l.id);
-//                }
                 // Apply new values to existing item
                 l.command_value = command_value;
                 l.setPort(devicePort);
-                l.clearState();
+                l.clearMarkRemoved();
                 return false;
             }
         }
@@ -502,6 +506,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         for (int i = 0; i < mItems.size(); ++i) {
             if (mItems.get(i).isGroup(group)) {
                 group_position = i;
+                mItems.get(i).clearMarkRemoved();
             } else if (group_position != -1)
                 return group_position;
         }
@@ -525,14 +530,16 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     public void addAll(Device device, boolean finalAction) {
         device.lockDevicePorts();
 
+        boolean needGroupSpanRecompute = false;
+
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
             DevicePort oi = it.next();
-            addItem(oi, oi.current_value, false);
+            needGroupSpanRecompute |= addItem(oi, oi.current_value, false);
         }
         device.releaseDevicePorts();
 
-        if (finalAction)
+        if (finalAction && needGroupSpanRecompute)
             computeGroupSpans();
     }
 

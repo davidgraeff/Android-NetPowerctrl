@@ -14,12 +14,11 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
+import oly.netpowerctrl.device_ports.DevicePortsListFragment;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.scenes.EditSceneFragment;
-import oly.netpowerctrl.scenes.onEditSceneFragmentReady;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
-public class WidgetConfigActivity extends Activity implements onEditSceneFragmentReady, ActivityWithIconCache {
+public class WidgetConfigActivity extends Activity implements ActivityWithIconCache {
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
@@ -62,12 +61,18 @@ public class WidgetConfigActivity extends Activity implements onEditSceneFragmen
         }
         setContentView(R.layout.activity_main_one_pane);
         findViewById(R.id.left_drawer_list).setVisibility(View.GONE);
+        //noinspection ConstantConditions
         getActionBar().setHomeButtonEnabled(false);
 
         mIconCache.start();
 
-        EditSceneFragment f = new EditSceneFragment();
-        f.setReadyObserver(this);
+        DevicePortSourceConfigured s = new DevicePortSourceConfigured();
+        s.setAutomaticUpdate(true);
+        this.adapter = new DevicePortsListAdapter(this, false, s, mIconCache, true);
+
+        DevicePortsListFragment f = new DevicePortsListFragment();
+        f.setAdapter(this.adapter);
+        f.setOnItemClickListener(selectedOutletListener);
 
         getFragmentManager().beginTransaction().replace(R.id.content_frame, f).commit();
 
@@ -78,15 +83,6 @@ public class WidgetConfigActivity extends Activity implements onEditSceneFragmen
                     AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-    }
-
-    @Override
-    public void sceneEditFragmentReady(EditSceneFragment fragment) {
-        fragment.getListView().setOnItemClickListener(selectedOutletListener);
-        DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-        s.setAutomaticUpdate(true);
-        this.adapter = new DevicePortsListAdapter(this, false, s, mIconCache, true);
-        fragment.setAdapter(this.adapter);
     }
 
     @Override

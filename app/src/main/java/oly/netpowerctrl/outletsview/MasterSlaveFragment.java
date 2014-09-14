@@ -1,4 +1,4 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl.outletsview;
 
 import android.app.Activity;
 import android.app.ListFragment;
@@ -18,6 +18,7 @@ import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortSourceInterface;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;

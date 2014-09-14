@@ -30,7 +30,7 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.FeedbackDialog;
-import oly.netpowerctrl.main.OutletsFragment;
+import oly.netpowerctrl.outletsview.OutletsFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.scenes.ScenesFragment;
 import oly.netpowerctrl.timer.TimerFragment;
@@ -100,6 +100,10 @@ public class NavigationController {
     }
 
     public void createDrawer(final Activity context, RestorePositionEnum restore) {
+        // Do restore only once
+        if (restore == RestorePositionEnum.RestoreLastSaved && mDrawerLayout != null)
+            return;
+
         mDrawerActivity = new WeakReference<>(context);
         // References for the drawer
         mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);

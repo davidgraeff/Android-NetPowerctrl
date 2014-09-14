@@ -2,9 +2,7 @@ package oly.netpowerctrl.scenes;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.FragmentManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -13,12 +11,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -42,8 +36,7 @@ import oly.netpowerctrl.utils.controls.onListItemElementClicked;
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditSceneActivity extends Activity implements onListItemElementClicked, onEditSceneFragmentReady,
-        LoadStoreIconData.IconSelected, ActivityWithIconCache {
+public class EditSceneActivity extends Activity implements onListItemElementClicked, ActivityWithIconCache, onEditSceneBasicsChanged {
 
     /**
      * We pass arguments to this activity via the intent extra bundle.
@@ -51,13 +44,12 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
      */
     public static final String EDIT_SCENE_NOT_SHORTCUT = "scenes";
     public static final String LOAD_SCENE = "load";
-    public static final String RESULT_SCENE = "scene";
+    public static final String RESULT_SCENE_JSON = "scene";
+    public static final String RESULT_SCENE_UUID = "scene_uuid";
     public static final String RESULT_ACTION_UUID = "action_uuid";
     public static final String RESULT_ACTION_COMMAND = "action_command";
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
-    // UI widgets
-    private Switch show_mainWindow;
-    private Switch enable_feedback;
+    boolean reInitUIDone = false;
     private View btnDone;
     private DevicePortsListAdapter adapter_available;
     private DevicePortsCreateSceneAdapter adapter_included;
@@ -65,11 +57,11 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
     private Scene scene;
     private boolean isLoaded = false;
     private boolean isSceneNotShortcut = false;
-
     // Scene Icon
     private Bitmap scene_icon;
-    private EditSceneFragment fragment_included;
-    private EditSceneFragment fragment_available;
+    private EditSceneBasicFragment fragment_basics;
+    private EditSceneIncludedFragment fragment_included;
+    private EditSceneAvailableFragment fragment_available;
     private boolean twoPane = false;
 
     @Override
@@ -119,9 +111,6 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
 
         // set content view, get references to widgets
         setContentView(R.layout.activity_create_scene);
-        show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
-        enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
-
 
         // Show the included and available list for the scene. Both are fragments. Either in a
         // viewPager (small width) or both visible at the same time.
@@ -130,18 +119,28 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         if (pager != null) {
             twoPane = false;
             EditScenePagerAdapter pagerAdapter = new EditScenePagerAdapter(this, m);
+            fragment_basics = pagerAdapter.getFragmentBasic();
             fragment_included = pagerAdapter.getFragmentIncluded();
             fragment_available = pagerAdapter.getFragmentAvailable();
             pager.setAdapter(pagerAdapter);
         } else {
             twoPane = true;
-            fragment_included = (EditSceneFragment) m.findFragmentById(R.id.scene_edit_fragment1);
-            fragment_available = (EditSceneFragment) m.findFragmentById(R.id.scene_edit_fragment2);
+            fragment_basics = (EditSceneBasicFragment) m.findFragmentById(R.id.scene_edit_fragment0);
+            fragment_included = (EditSceneIncludedFragment) m.findFragmentById(R.id.scene_edit_fragment1);
+            fragment_available = (EditSceneAvailableFragment) m.findFragmentById(R.id.scene_edit_fragment2);
         }
 
-        // Assign data to the fragments
-        fragment_included.setReadyObserver(this);
-        fragment_available.setReadyObserver(this);
+        if (reInitUIDone)
+            return;
+        reInitUIDone = true;
+
+        Handler h = new Handler();
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                loadContent();
+            }
+        }, 50);
     }
 
     @Override
@@ -169,6 +168,10 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
     }
 
     private void loadContent() {
+        DevicePortSourceConfigured s = new DevicePortSourceConfigured();
+        adapter_available = new DevicePortsListAdapter(this, false, s, mIconCache, true);
+        adapter_included = new DevicePortsCreateSceneAdapter(this, mIconCache);
+
         Intent it = getIntent();
         if (it != null) {
             Bundle extra = it.getExtras();
@@ -202,14 +205,16 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         }
 
         // Add click listener for the remove button on each included action
-        adapter_included.setListItemMenu(this);
+        adapter_included.setListItemElementClickedListener(this);
 
         // Add click listener to available gridGrid to move the clicked action
         // to the included gridView.
-        fragment_available.getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        fragment_available.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 DevicePort oi = adapter_available.getDevicePort(position);
+                if (oi == null)
+                    return;
                 fragment_available.dismissItem(position);
                 adapter_included.addItem(oi, DevicePort.TOGGLE, true);
                 fragment_included.notifyDataSetChanged();
@@ -220,27 +225,21 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         if (isSceneNotShortcut) {
             if (isLoaded) {
                 setTitle(R.string.title_scene_edit);
-                setIcon(null, LoadStoreIconData.loadIcon(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown, 0));
+                onIconChanged(LoadStoreIconData.loadIcon(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown, 0));
             } else
                 setTitle(R.string.title_scene);
         } else {
-            show_mainWindow.setVisibility(View.VISIBLE);
-            enable_feedback.setVisibility(View.VISIBLE);
             setTitle(R.string.title_shortcut);
         }
 
-        sceneNameChanged();
+        onNameChanged();
 
-        fragment_available.checkEmpty(twoPane);
-        fragment_included.checkEmpty(twoPane);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.shortcut_create_menu, menu);
-        return true;
+        fragment_included.setTwoPaneFragment(twoPane);
+        fragment_included.setAdapter(adapter_included);
+        fragment_included.setAdapterAvailable(adapter_available);
+        fragment_available.setAdapter(adapter_available);
+        fragment_basics.setScene(scene, isSceneNotShortcut, isLoaded);
+        fragment_basics.setOnBasicsChangedListener(this);
     }
 
     private void save_and_close() {
@@ -255,7 +254,7 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
             AppData.getInstance().sceneCollection.add(scene);
         } else {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
-                    scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
+                    scene, fragment_basics.show_mainWindow.isChecked(), fragment_basics.enable_feedback.isChecked());
             // Return result
             Intent shortcut;
             if (scene_icon != null) {
@@ -269,90 +268,6 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         finish();
     }
 
-    /*
-     * ActionBar icon clicked
-     */
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-            case R.id.menu_icon:
-                LoadStoreIconData.show_select_icon_dialog(this, "scene_icons", this, null);
-                return true;
-            case R.id.menu_name:
-                requestName(scene);
-                return true;
-            case R.id.menu_switch_all_on:
-                adapter_included.switchAllOn();
-                return true;
-            case R.id.menu_switch_all_off:
-                adapter_included.switchAllOff();
-                return true;
-            case R.id.menu_switch_all_toogle:
-                adapter_included.toggleAll();
-                return true;
-            case R.id.menu_switch_all_ignore:
-                adapter_included.clear();
-                adapter_available.getSource().updateNow();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void requestName(final Scene scene) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-        alert.setTitle(this.getString(R.string.scene_rename));
-
-        final EditText input = new EditText(alert.getContext());
-        input.setText(scene.sceneName);
-        alert.setView(input);
-
-        alert.setPositiveButton(this.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                @SuppressWarnings("ConstantConditions")
-                String name = input.getText().toString();
-                if (name.trim().isEmpty())
-                    return;
-                scene.sceneName = name;
-                sceneNameChanged();
-            }
-        });
-
-        alert.setNegativeButton(this.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
-
-        alert.show();
-    }
-
-    /**
-     * Called by the widget/object/dialog that is responsible for asking the
-     * user for a new scene name after a name has been chosen.
-     */
-    void sceneNameChanged() {
-        //noinspection ConstantConditions
-        getActionBar().setSubtitle(scene.sceneName.length() == 0 ? getString(R.string.scene_no_name) : scene.sceneName);
-        invalidateOptionsMenu();
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Override
-    public void setIcon(Object context_object, Bitmap o) {
-        scene_icon = o;
-        if (o == null) {
-            getActionBar().setIcon(getApplicationInfo().icon);
-        } else
-            getActionBar().setIcon(new BitmapDrawable(getResources(), o));
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        LoadStoreIconData.activityCheckForPickedImage(this, this, requestCode, resultCode, imageReturnedIntent);
-    }
-
     /**
      * This is called when the user clicks on remove-action on an included action of a scene.
      *
@@ -360,7 +275,7 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
      * @param position
      */
     @Override
-    public void onMenuItemClicked(View v, int position) {
+    public void onListItemElementClicked(View v, int position) {
         adapter_available.addItem(adapter_included.getDevicePort(position), DevicePort.TOGGLE, true);
         fragment_available.notifyDataSetChanged();
         fragment_included.dismissItem(position);
@@ -377,42 +292,47 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         boolean en = (adapter_included.getCount() != 0) && scene.sceneName.length() > 0;
         btnDone.setVisibility(en ? View.VISIBLE : View.GONE);
         TextView text = (TextView) findViewById(R.id.hintText);
-        if (adapter_included.getCount() == 0)
-            text.setText(getString(R.string.error_scene_no_actions));
-        else if (scene.sceneName.length() == 0) {
+        if (scene.sceneName.length() == 0) {
             text.setText(getString(R.string.error_scene_no_name));
-        }
+        } else if (adapter_included.getCount() == 0)
+            text.setText(getString(R.string.error_scene_no_actions));
+
         text.setVisibility(en ? View.GONE : View.VISIBLE);
 
         return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
-    public void sceneEditFragmentReady(final EditSceneFragment fragment) {
-        if (fragment.equals(fragment_available)) {
-            DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-            adapter_available = new DevicePortsListAdapter(this, false, s, mIconCache, true);
-            fragment.setAdapter(adapter_available);
-        } else {
-            adapter_included = new DevicePortsCreateSceneAdapter(this, mIconCache);
-            fragment.setAdapter(adapter_included);
-        }
+    public IconDeferredLoadingThread getIconCache() {
+        return mIconCache;
+    }
 
-        // When both adapters and gridViews are available, we
-        // can start loading the content after a short delay.
-        if (adapter_available != null && adapter_included != null) {
-            Handler h = new Handler();
-            h.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    loadContent();
-                }
-            }, 50);
-        }
+
+    /**
+     * Called by the widget/object/dialog that is responsible for asking the
+     * user for a new scene name after a name has been chosen.
+     */
+    @Override
+    public void onNameChanged() {
+        //noinspection ConstantConditions
+        getActionBar().setSubtitle(scene.sceneName.length() == 0 ? getString(R.string.scene_no_name) : scene.sceneName);
+        invalidateOptionsMenu();
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Override
+    public void onIconChanged(Bitmap icon) {
+        scene_icon = icon;
+        if (icon == null) {
+            getActionBar().setIcon(getApplicationInfo().icon);
+        } else
+            getActionBar().setIcon(new BitmapDrawable(getResources(), icon));
+
     }
 
     @Override
-    public IconDeferredLoadingThread getIconCache() {
-        return mIconCache;
+    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        LoadStoreIconData.activityCheckForPickedImage(this, fragment_basics, requestCode, resultCode, imageReturnedIntent);
     }
 }
