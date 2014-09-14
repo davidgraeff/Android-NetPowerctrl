@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,13 +28,14 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     public final static String PREF_widgets = "widgets";
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
     public final static String hide_not_reachable = "hide_not_reachable";
+    public final static String PREF_use_dark_theme = "use_dark_theme";
+    public final static String PREF_show_persistent_notification = "show_persistent_notification";
     private final static int PREF_CURRENT_VERSION = 4;
     private final static String firstTabExtraFilename = "firstTabExtra";
-    public final String PREF_use_dark_theme = "use_dark_theme";
-    public final String PREF_show_persistent_notification = "show_persistent_notification";
     private final Context context;
     private final WeakHashMap<IShowBackground, Boolean> observers_showBackground = new WeakHashMap<>();
     private final WeakHashMap<IHideNotReachable, Boolean> observers_HideNotReachable = new WeakHashMap<>();
+    private final WeakHashMap<IShowPersistentNotification, Boolean> observers_ShowPersistentNotification = new WeakHashMap<>();
 
     private SharedPrefs() {
         this.context = App.instance;
@@ -79,6 +81,7 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         try {
             FileInputStream fis = context.openFileInput(firstTabExtraFilename);
             byte[] array = new byte[(int) fis.getChannel().size()];
+            //noinspection ResultOfMethodCallIgnored
             fis.read(array, 0, array.length);
             fis.close();
             parcel.unmarshall(array, 0, array.length);
@@ -279,24 +282,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return true;
     }
 
-    public boolean gDriveEnabled() {
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("backup_to_gDrive", false);
-    }
-
-    public void saveNeighbours(String json) {
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putString("neighbours", json).apply();
-    }
-
-    public String loadNeighbours() {
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString("neighbours", null);
-    }
-
     public boolean isNotification() {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -343,6 +328,18 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return prefs.getBoolean("smaller_click_execute_area", value);
     }
 
+    public String getBackupPassword() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String value = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        return prefs.getString("backup_password", value);
+    }
+
+    public void setBackupPassword(String password) {
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putString("backup_password", password).apply();
+    }
+
     public void setOpenIssues(int value, long last_access) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -377,9 +374,24 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
                 }
                 break;
             }
+            case SharedPrefs.PREF_show_persistent_notification: {
+                value = isNotification();
+                Set<IShowPersistentNotification> observers = observers_ShowPersistentNotification.keySet();
+                for (IShowPersistentNotification observer : observers) {
+                    observer.showPersistentNotificationChanged(value);
+                }
+                break;
+            }
         }
     }
 
+    public void registerShowPersistentNotification(IShowPersistentNotification observer) {
+        observers_ShowPersistentNotification.put(observer, true);
+    }
+
+    public interface IShowPersistentNotification {
+        void showPersistentNotificationChanged(boolean enabled);
+    }
 
     public interface IShowBackground {
         void backgroundChanged(boolean showBackground);

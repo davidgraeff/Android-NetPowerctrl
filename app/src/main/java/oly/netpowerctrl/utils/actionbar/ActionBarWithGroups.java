@@ -137,10 +137,14 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
         }
 
         updateLock = true;
-        if (groupID == null)
-            actionBar.setSelectedNavigationItem(0);
-        else
-            actionBar.setSelectedNavigationItem(AppData.getInstance().groupCollection.indexOf(groupID) + 1);
+        try {
+            if (groupID == null)
+                actionBar.setSelectedNavigationItem(0);
+            else
+                actionBar.setSelectedNavigationItem(AppData.getInstance().groupCollection.indexOf(groupID) + 1);
+        } catch (java.lang.IllegalStateException ignored) {
+            // setSelectedNavigationIndex not valid for current navigation mode
+        }
         updateLock = false;
     }
 }

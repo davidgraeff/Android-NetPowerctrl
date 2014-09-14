@@ -4,5 +4,5 @@ import android.view.View;
 
 public interface onListItemElementClicked {
     // Request this device to be configured
-    public void onMenuItemClicked(View v, int position);
+    public void onListItemElementClicked(View v, int position);
 }

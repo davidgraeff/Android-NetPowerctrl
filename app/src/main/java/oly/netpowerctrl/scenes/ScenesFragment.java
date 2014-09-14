@@ -5,7 +5,6 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,20 +23,18 @@ import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.main.SortCriteriaDialog;
-import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.SortCriteriaDialog;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 /**
  */
 public class ScenesFragment extends Fragment implements
-        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, LoadStoreIconData.IconSelected, onListItemElementClicked {
+        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, onListItemElementClicked {
     private SceneCollection scenes;
     private GridView mListView;
     private ScenesAdapter adapter;
@@ -231,24 +228,6 @@ public class ScenesFragment extends Fragment implements
                 getActivity().invalidateOptionsMenu();
                 return true;
             }
-            case R.id.menu_remove_favourite: {
-                scenes.setFavourite(scene, false);
-                return true;
-            }
-            case R.id.menu_set_favourite: {
-                scenes.setFavourite(scene, true);
-                return true;
-            }
-
-            case R.id.menu_icon:
-                LoadStoreIconData.show_select_icon_dialog(getActivity(), "scene_icons", this, scene);
-                return true;
-
-            case R.id.menu_add_homescreen: {
-                //noinspection ConstantConditions
-                AndroidShortcuts.createHomeIcon(getActivity().getApplicationContext(), scene);
-                return true;
-            }
         }
         return false;
     }
@@ -264,21 +243,7 @@ public class ScenesFragment extends Fragment implements
     }
 
     @Override
-    public void setIcon(Object context_object, Bitmap bitmap) {
-        if (context_object == null)
-            return;
-        AppData.getInstance().sceneCollection.setBitmap(getActivity(),
-                (Scene) context_object, bitmap);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, imageReturnedIntent);
-    }
-
-    @Override
-    public void onMenuItemClicked(View view, int position) {
+    public void onListItemElementClicked(View view, int position) {
         // Animate press
         Animation a = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f, view.getWidth() / 2, view.getHeight() / 2);
         a.setRepeatMode(Animation.REVERSE);
@@ -287,19 +252,12 @@ public class ScenesFragment extends Fragment implements
         view.startAnimation(a);
 
         mListView.setTag(position);
-        Scene scene = scenes.get(position);
 
         @SuppressWarnings("ConstantConditions")
         PopupMenu popup = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popup.getMenuInflater();
         Menu menu = popup.getMenu();
         inflater.inflate(R.menu.scenes_item, menu);
-
-        boolean isFav = scene.isFavourite();
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_set_favourite).setVisible(!isFav);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_remove_favourite).setVisible(isFav);
 
         popup.setOnMenuItemClickListener(this);
         popup.show();

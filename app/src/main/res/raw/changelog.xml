@@ -1,5 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion changeDate="13. September 2014" versionName="5.9.2">
+        <changelogbug>Einige Fehler behoben</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="10. September 2014" versionName="5.9.1">
+        <changelogbug>Widget Bilder Zuweisung: Falsches Unterfenster wurde danach angezeigt
+        </changelogbug>
+        <changelogbug>Netzwerk/UDP: Szenen haben nicht immer richtig geschaltet</changelogbug>
+        <changelogimprovement>Verbesserungen bei Gruppen</changelogimprovement>
+        <changelogimprovement>Eigenes Fenster für Steckdose bearbeiten statt eines sehr vollen
+            Kontextmenüs
+        </changelogimprovement>
+    </changelogversion>
+
+    <changelogversion changeDate="08. September 2014" versionName="5.9">
+        <changelogbug>Absturz beim Importieren von Daten von Version 5.7 und älter behoben
+        </changelogbug>
+        <changelogbug>Absturzberichte werden (hoffentlich) wieder automatisiert zugestellt (sofern
+            in den Einstellungen aktiviert)
+        </changelogbug>
+        <changelogbug>Import/Export funktioniert jetzt auf mehr Geräten als nur dem Entwicklergerät
+            ;)
+        </changelogbug>
+        <changelogbug>Icons im Einstellungsfenster für Widgets waren nicht immer korrekt
+        </changelogbug>
+        <changelogimprovement>Szenen können an NFC Tags zur Ausführung gebunden werden
+        </changelogimprovement>
+        <changelogimprovement>Szenen Erstellen/Bearbeiten Fenster überarbeitet
+        </changelogimprovement>
+        <changelogimprovement>Die Übersichtsseite aktualisiert Einträge etwas intelligenter
+        </changelogimprovement>
+        <changelogimprovement>Gruppen können von der Übersichtsseite durch einen Klick auf den
+            Gruppennamen umbenannt und entfernt werden
+        </changelogimprovement>
+    </changelogversion>
+
     <changelogversion changeDate="05. September 2014" versionName="5.8">
         <changelogbug>Viele Stabilitätsprobleme behoben</changelogbug>
         <changelogbug>Ausgewählte Gruppe im Hauptfenster bleibt auch bei Neuöffnen der App

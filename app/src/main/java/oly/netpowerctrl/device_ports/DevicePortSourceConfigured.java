@@ -7,12 +7,13 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.groups.Group;
+import oly.netpowerctrl.groups.GroupCollection;
 
 /**
  * Created by david on 07.07.14.
  */
-public class DevicePortSourceConfigured implements DevicePortSourceInterface, onCollectionUpdated<DeviceCollection, Device>, onDataLoaded {
+public class DevicePortSourceConfigured implements DevicePortSourceInterface, onCollectionUpdated<Object, Object>, onDataLoaded {
     final static String TAG = "DevicePortSourceConfigured";
     private WeakReference<DevicePortsBaseAdapter> adapterWeakReference;
     private boolean automaticUpdatesEnabled = false;
@@ -67,8 +68,10 @@ public class DevicePortSourceConfigured implements DevicePortSourceInterface, on
             // registering to deviceCollection changes.
             if (!AppData.observersOnDataLoaded.dataLoaded)
                 AppData.observersOnDataLoaded.register(this);
-            else
+            else {
                 AppData.getInstance().deviceCollection.registerObserver(this);
+                AppData.getInstance().groupCollection.registerObserver(this);
+            }
         }
     }
 
@@ -93,8 +96,15 @@ public class DevicePortSourceConfigured implements DevicePortSourceInterface, on
     }
 
     @Override
-    public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action) {
-        if (adapterWeakReference == null || device == null)
+    public boolean onDataLoaded() {
+        setAutomaticUpdate(automaticUpdatesEnabled);
+        // Remove listener now
+        return false;
+    }
+
+    @Override
+    public boolean updated(Object collection, Object item, ObserverUpdateActions action) {
+        if (adapterWeakReference == null || item == null)
             return true;
 
         DevicePortsBaseAdapter adapter = adapterWeakReference.get();
@@ -102,24 +112,36 @@ public class DevicePortSourceConfigured implements DevicePortSourceInterface, on
             return true;
         }
 
-        if (action == ObserverUpdateActions.RemoveAction || (hideNotReachable && device.getFirstReachableConnection() == null))
-            adapter.removeAll(device, true);
-        else {
-            adapter.addAll(device, true);
+        if (collection instanceof GroupCollection) {
+            if (action == ObserverUpdateActions.UpdateAction) { // if a group is renamed just update existing items
+                Group group = ((Group) item);
+                adapter.getGroup(group.uuid).displayText = group.name;
+                changed(adapter);
+            } else
+                updateNow(); // make complete update if a group is removed
+            return true;
         }
 
-        adapter.notifyDataSetChanged();
-        if (onChangeListener != null)
-            onChangeListener.devicePortSourceChanged();
+        Device device = (Device) item;
+
+        if (action == ObserverUpdateActions.RemoveAction || (hideNotReachable && device.getFirstReachableConnection() == null))
+            adapter.removeAll(device, true);
+        else if (action == ObserverUpdateActions.AddAction || action == ObserverUpdateActions.UpdateAction) {
+            adapter.addAll(device, true);
+        } else if (action == ObserverUpdateActions.ClearAndNewAction) {
+            updateNow();
+            return true;
+        }
+
+        changed(adapter);
 
         return true;
     }
 
-    @Override
-    public boolean onDataLoaded() {
-        setAutomaticUpdate(automaticUpdatesEnabled);
-        // Remove listener now
-        return false;
+    private void changed(DevicePortsBaseAdapter adapter) {
+        adapter.notifyDataSetChanged();
+        if (onChangeListener != null)
+            onChangeListener.devicePortSourceChanged();
     }
 
     public interface onChange {

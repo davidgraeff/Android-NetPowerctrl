@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_removeGroup"
+        android:icon="@drawable/ic_menu_delete"
+        android:showAsAction="collapseActionView|withText"
+        android:title="@string/menu_remove_group" />
+
+    <item
+        android:id="@+id/menu_renameGroup"
+        android:icon="@drawable/ic_menu_edit"
+        android:showAsAction="collapseActionView|withText"
+        android:title="@string/menu_rename_group" />
+
+</menu>

@@ -34,9 +34,9 @@
 
     <string name="menu_add_device">Neues Gerät</string>
     <string name="menu_add_scene">Neue Szene</string>
-    <string name="menu_remove_scene">Entfernen</string>
+    <string name="menu_remove">Entfernen</string>
     <string name="menu_remove_all">Entferne alle Einträge</string>
-    <string name="menu_edit_scene">Szene bearbeiten</string>
+    <string name="menu_edit">Bearbeiten</string>
     <string name="menu_cancel">Abbruch</string>
     <string name="menu_delete_all">Alle löschen</string>
     <string name="menu_refresh">Aktualisieren</string>
@@ -88,7 +88,7 @@
     <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
     <string name="Version">Version</string>
     <string name="title_scene_edit">Szene bearbeiten</string>
-    <string name="menu_add_homescreen">Zum Startbildschirm hinzufügen</string>
+    <string name="scene_add_homescreen">Zum Startbildschirm hinzufügen</string>
     <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
@@ -157,8 +157,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_remove_group">Gruppe entfernen</string>
     <string name="menu_rename_group">Gruppe umbenennen</string>
     <string name="drawer_feedback">Feedback</string>
-    <string name="menu_set_favourite">Mache zu Favorit</string>
-    <string name="menu_remove_favourite">Kein Favorit mehr</string>
+    <string name="scene_make_favourite">Mache zu Favorit</string>
+    <string name="scene_remove_favourite">Kein Favorit mehr</string>
     <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
     Lege die Kopie einer Szene auf deinem Homescreen ab und führe diese von dort direkt aus.\nMache eine Szene zu einem Favoriten, so wird sie im Navigationsmenü aufgelistet. Wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
     \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
@@ -236,7 +236,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_no_target">Es wurde kein Zielgerät für diesen Alarm ausgewählt!</string>
     <string name="alarm_no_start_no_stop">Es wurden weder Einschalt- noch Ausschaltzeit angegeben!</string>
     <string name="confirmation_delete_all_alarms">Sollen wirklich alle Alarme zurückgesetzt werden?</string>
-    <string name="port_warning_1024">Ein Empfangsport kleiner als 1024 benötigt Root-Rechte und das die App als System-App installiert ist! Soll für den jetzigen Vorgang die Portbeschränkung ignoriert werden?</string>
+    <string name="port_warning_1024">Ein Empfangsport kleiner als 1024 benötigt Root-Rechte und das die App als System-App installiert ist! Soll für den jetzigen Vorgang die Portbeschränkung ignoriert werden?\nBitte die vorherige Aktion nach Bestätigung wiederholen.</string>
     <string name="alarm_receiving">Empfange Alarm %1$d</string>
     <string name="alarm_saving_now">Bitte warten. Speichere Alarm…</string>
     <string name="toWirelessSettings">WLAN einschalten</string>
@@ -302,4 +302,31 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="error_invalid_port">Ungültiger Port angegeben!</string>
     <string name="device_assignedConnections">Dieses Gerät hat %1$d automatisch verwaltete Verbindungen</string>
     <string name="error_invalid_host">Invalid host or IP address</string>
+    <string name="log_no_records">Es liegen keine Aufzeichnungen vor!</string>
+    <string name="scene_create_basics">Name/Icon/Optionen</string>
+    <string name="backup_password">Backup Passwort</string>
+    <string name="backup_password_summary">Das Backup Passwort wird beim Erstellen und beim Einlesen von Backups verwendet. Alle Zeichen sind erlaubt. Die üblichen Sicherheitsrichtlinien für Passwörter gelten.</string>
+    <string name="import_sucess">Importing successfull</string>
+    <string name="scene_nfc_write">Mit NFC Tag koppeln</string>
+    <string name="scene_add_homescreen_success">Icon erfolgreich auf dem Startbildschirm abgelegt</string>
+    <string name="nfc_writer_title">Schreibe %1$s</string>
+    <string name="nfc_writer_description">Place your NFC Tag next to your device now</string>
+    <string name="nfc_WriteFailed">Write failed!</string>
+    <string name="nfc_tagNotWritable">Tag is write protected!</string>
+    <string name="nfc_tagTooSmallMessage">Tag\'s storage is too small!</string>
+    <string name="nfc_cannotWriteTechMessage">Tag is not compatible!</string>
+    <string name="nfc_WriteSuccess">Write successfull</string>
+    <string name="nfc_AvailableEnabled">NFC is active</string>
+    <string name="nfc_AvailableDisabled">NFC is disabled!</string>
+    <string name="nfc_noNfcMessage">NFC not supported by this device!</string>
+    <string name="error_import_legacy_data">Fehler beim Importieren vorheriger Daten :(</string>
+    <string name="preference_nfc_bind">NFC Tag schreiben</string>
+    <string name="preference_nfc_bind_summary">Öffnet diese App bei Kontakt mit dem beschriebenem NFC Tag</string>
+    <string name="outlet_edit_title">Bearbeite %1$s</string>
+    <string name="outlet_name_label">Name</string>
+    <string name="outlet_icons_label">Zustandsgrafiken</string>
+    <string name="outlet_groups_label">Gruppen</string>
+    <string name="outlet_icon_off_label">Aus:</string>
+    <string name="outlet_icon_on_label">An:</string>
+    <string name="error_rename_only_with_http_connection">Umbenennen nur mit HTTP Verbindung möglich</string>
 </resources>

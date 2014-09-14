@@ -118,21 +118,37 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
         textView = (TextView) getDialog().findViewById(R.id.device_host);
         String hostname = textView.getText().toString();
 
+        textView = (TextView) getDialog().findViewById(R.id.device_http_port);
+        int httpPort = -1;
+        try {
+            httpPort = Integer.valueOf(textView.getText().toString());
+        } catch (NumberFormatException ignored) {
+        }
+
         if (hostname.trim().isEmpty()) {
             Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
             return;
         }
-
-        textView = (TextView) getDialog().findViewById(R.id.device_http_port);
-        int httpPort = Integer.valueOf(textView.getText().toString());
-
         textView = (TextView) getDialog().findViewById(R.id.device_udp_receive);
-        int udpReceive = Integer.valueOf(textView.getText().toString());
+        int udpReceive = -1;
+        try {
+            udpReceive = Integer.valueOf(textView.getText().toString());
+        } catch (NumberFormatException ignored) {
+        }
 
         textView = (TextView) getDialog().findViewById(R.id.device_udp_send);
-        int udpSend = Integer.valueOf(textView.getText().toString());
+        int udpSend = -1;
+        try {
+            udpSend = Integer.valueOf(textView.getText().toString());
+        } catch (NumberFormatException ignored) {
+        }
 
-        if (!Utils.checkPortInvalid(udpReceive)) {
+        if (hostname.trim().isEmpty() || udpReceive == -1 || udpSend == -1 || httpPort == -1) {
+            Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (Utils.checkPortInvalid(udpReceive)) {
             Utils.askForRootPorts(getActivity());
             return;
         }
@@ -140,7 +156,9 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
         editDevice.getDevice().UniqueDeviceID = null;
         editDevice.getDevice().DeviceConnections.clear();
         editDevice.getDevice().addConnection(new DeviceConnectionHTTP(editDevice.getDevice(), hostname, httpPort));
-        editDevice.getDevice().addConnection(new DeviceConnectionUDP(editDevice.getDevice(), hostname, udpReceive, udpSend));
+        DeviceConnection deviceConnection = new DeviceConnectionUDP(editDevice.getDevice(), hostname, udpReceive, udpSend);
+        deviceConnection.setIsAssignedByDevice(true); // TODO not sure about this
+        editDevice.getDevice().addConnection(deviceConnection);
 
         textView = (TextView) getDialog().findViewById(R.id.device_username);
         editDevice.getDevice().UserName = textView.getText().toString();

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
@@ -163,5 +164,12 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
     @Override
     public String type() {
         return "scenes";
+    }
+
+    public Scene get(UUID sceneId) {
+        for (Scene s : items)
+            if (s.uuid.equals(sceneId))
+                return s;
+        return null;
     }
 }

@@ -25,17 +25,16 @@
         android:title="@string/menu_view_grid" />
 
     <item
-        android:id="@+id/menu_removeGroup"
-        android:icon="@drawable/ic_menu_delete"
-        android:showAsAction="collapseActionView|withText"
-        android:title="@string/menu_remove_group" />
+        android:id="@+id/menu_sort"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:showAsAction="ifRoom"
+        android:title="@string/sort_title" />
 
     <item
-        android:id="@+id/menu_renameGroup"
-        android:icon="@drawable/ic_menu_edit"
-        android:showAsAction="collapseActionView|withText"
-        android:title="@string/menu_rename_group" />
-
+        android:id="@+id/menu_group_add"
+        android:icon="@android:drawable/ic_menu_add"
+        android:showAsAction="ifRoom"
+        android:title="@string/createGroup" />
 
     <item
         android:id="@+id/menu_showhidden"
@@ -45,11 +44,5 @@
         android:id="@+id/menu_hidehidden"
         android:showAsAction="collapseActionView|withText"
         android:title="@string/hide_hidden" />
-
-    <item
-        android:id="@+id/menu_sort"
-        android:icon="@android:drawable/ic_menu_sort_by_size"
-        android:showAsAction="ifRoom"
-        android:title="@string/sort_title" />
 
 </menu>

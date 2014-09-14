@@ -20,42 +20,43 @@ import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.utils.ShowToast;
 
+
 /**
  * For loading and storing scenes, groups, devices to local storage, google drive, neighbours.
  * Storing data is done in a thread. WIP
  */
-public class LoadStoreJSonData {
+public class LoadStoreJSonData implements onStorageUpdate {
 
-    private final onStorageUpdate storageUpdate = new onStorageUpdate() {
-        @Override
-        public void save(CollectionWithType collection, StorableInterface item) {
-            File file = new File(App.instance.getDir(collection.type(), 0), item.getStorableName());
-            try {
-                FileOutputStream f = new FileOutputStream(file);
-                item.save(f);
-                f.flush();
-                f.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    @Override
+    public void save(CollectionWithType collection, StorableInterface item) {
+        File dir = new File(App.instance.getFilesDir(), collection.type());
+        dir.mkdirs();
+        File file = new File(dir, item.getStorableName());
+        try {
+            FileOutputStream f = new FileOutputStream(file);
+            item.save(f);
+            f.flush();
+            f.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        @Override
-        public void remove(CollectionWithType collection, StorableInterface item) {
-            File file = new File(App.instance.getDir(collection.type(), 0), item.getStorableName());
-            file.delete();
-        }
+    @Override
+    public void remove(CollectionWithType collection, StorableInterface item) {
+        File file = new File(new File(App.instance.getFilesDir(), collection.type()), item.getStorableName());
+        file.delete();
+    }
 
-        @Override
-        public void clear(CollectionWithType collection) {
-            File dir = App.instance.getDir(collection.type(), 0);
-            String[] children = dir.list();
-            for (String aChildren : children) {
-                //noinspection ResultOfMethodCallIgnored
-                new File(dir, aChildren).delete();
-            }
+    @Override
+    public void clear(CollectionWithType collection) {
+        File dir = new File(App.instance.getFilesDir(), collection.type());
+        String[] children = dir.list();
+        for (String aChildren : children) {
+            //noinspection ResultOfMethodCallIgnored
+            new File(dir, aChildren).delete();
         }
-    };
+    }
 
     /**
      * Call this to reload all data from disk. This is useful after NFC/Neighbour/GDrive sync.
@@ -65,10 +66,10 @@ public class LoadStoreJSonData {
      */
     public void loadData(final AppData appData) {
         final int lastPrefVersion = SharedPrefs.getInstance().getLastPreferenceVersion();
-        appData.deviceCollection.setStorage(storageUpdate);
-        appData.sceneCollection.setStorage(storageUpdate);
-        appData.groupCollection.setStorage(storageUpdate);
-        appData.timerController.setStorage(storageUpdate);
+        appData.deviceCollection.setStorage(this);
+        appData.sceneCollection.setStorage(this);
+        appData.groupCollection.setStorage(this);
+        appData.timerController.setStorage(this);
 
         new AsyncTask<Void, Void, Boolean>() {
 
@@ -83,8 +84,12 @@ public class LoadStoreJSonData {
                 readOtherThread(appData);
                 // LEGACY import
                 if (lastPrefVersion == 3) {
-                    LEGACY_READ_FROM_PREFERENCES a = new LEGACY_READ_FROM_PREFERENCES();
-                    a.read(appData);
+                    try {
+                        LEGACY_READ_FROM_PREFERENCES a = new LEGACY_READ_FROM_PREFERENCES();
+                        a.read(appData);
+                    } catch (Exception e) {
+                        ShowToast.FromOtherThread(App.instance, R.string.error_import_legacy_data);
+                    }
                 }
                 return null;
             }
@@ -106,56 +111,56 @@ public class LoadStoreJSonData {
         appData.timerController.setStorage(null);
     }
 
-    private void readOtherThread(final AppData appData) {
-        appData.deviceCollection.getItems().clear();
-        appData.sceneCollection.getItems().clear();
-        appData.groupCollection.getItems().clear();
-        appData.timerController.getItems().clear();
+    private <COLLECTION, ITEM extends StorableInterface>
+    void readOtherThreadCollection(CollectionWithStorableItems<COLLECTION, ITEM> collection,
+                                   Class<ITEM> classType) throws IllegalAccessException, InstantiationException {
 
         File files;
 
-        files = App.instance.getDir(appData.deviceCollection.type(), 0);
+        { // legacy folder support
+            files = App.instance.getDir(collection.type(), 0);
+            if (files.exists())
+                //noinspection ResultOfMethodCallIgnored
+                files.renameTo(new File(App.instance.getFilesDir(), collection.type()));
+        }
+
+        files = new File(App.instance.getFilesDir(), collection.type());
+
+        collection.getItems().clear();
         for (File file : files.listFiles()) {
-            Device item = new Device("");
+            ITEM item = classType.newInstance();
             try {
                 item.load(new FileInputStream(file));
-                appData.deviceCollection.items.add(item);
+                collection.getItems().add((ITEM) item);
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
+    }
 
-        files = App.instance.getDir(appData.sceneCollection.type(), 0);
-        for (File file : files.listFiles()) {
-            Scene item = new Scene();
-            try {
-                item.load(new FileInputStream(file));
-                appData.sceneCollection.items.add(item);
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+    private void readOtherThread(final AppData appData) {
+        try {
+            readOtherThreadCollection(appData.deviceCollection, Device.class);
+        } catch (IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
         }
 
-        files = App.instance.getDir(appData.groupCollection.type(), 0);
-        for (File file : files.listFiles()) {
-            Group item = new Group(null, null);
-            try {
-                item.load(new FileInputStream(file));
-                appData.groupCollection.items.add(item);
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+        try {
+            readOtherThreadCollection(appData.sceneCollection, Scene.class);
+        } catch (IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
         }
 
-        files = App.instance.getDir(appData.timerController.type(), 0);
-        for (File file : files.listFiles()) {
-            Timer item = new Timer();
-            try {
-                item.load(new FileInputStream(file));
-                appData.timerController.items.add(item);
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+        try {
+            readOtherThreadCollection(appData.groupCollection, Group.class);
+        } catch (IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            readOtherThreadCollection(appData.timerController, Timer.class);
+        } catch (IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
         }
     }
 
@@ -171,8 +176,8 @@ public class LoadStoreJSonData {
          * @throws IOException
          * @throws IllegalStateException
          */
-        public <T extends StorableInterface> void fromJSON(List<T> items, JsonReader reader, CreateNewObject<T> creator)
-                throws IOException, IllegalStateException {
+        public <ITEM extends StorableInterface> void fromJSON(List<ITEM> items, JsonReader reader, Class<ITEM> classType)
+                throws IOException, IllegalStateException, IllegalAccessException, InstantiationException {
 
             if (reader == null)
                 return;
@@ -180,7 +185,7 @@ public class LoadStoreJSonData {
             reader.beginArray();
             while (reader.hasNext()) {
                 try {
-                    T item = creator.create();
+                    ITEM item = classType.newInstance();
                     item.load(reader);
                     items.add(item);
                 } catch (ClassNotFoundException e) {
@@ -196,60 +201,35 @@ public class LoadStoreJSonData {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
             try {
-                fromJSON(appData.sceneCollection.getItems(), JSONHelper.getReader(prefs.getString("scenes", null)), new CreateNewObject<Scene>() {
-                    @Override
-                    public Scene create() {
-                        return new Scene();
-                    }
-                });
+                fromJSON(appData.sceneCollection.getItems(), JSONHelper.getReader(prefs.getString("scenes", null)), Scene.class);
                 if (appData.sceneCollection.getItems().size() > 0)
                     appData.sceneCollection.saveAll();
-            } catch (IOException ignored) {
+            } catch (IOException | InstantiationException | IllegalAccessException ignored) {
                 ShowToast.FromOtherThread(context, R.string.error_reading_scenes);
             }
             try {
-                fromJSON(appData.deviceCollection.getItems(), JSONHelper.getReader(prefs.getString("devices", null)), new CreateNewObject<Device>() {
-                    @Override
-                    public Device create() {
-                        return new Device(null);
-                    }
-                });
+                fromJSON(appData.deviceCollection.getItems(), JSONHelper.getReader(prefs.getString("devices", null)), Device.class);
                 if (appData.deviceCollection.getItems().size() > 0)
                     appData.deviceCollection.saveAll();
 
-            } catch (Exception ignored) {
+            } catch (IOException | InstantiationException | IllegalAccessException ignored) {
                 ShowToast.FromOtherThread(context, R.string.error_reading_devices);
             }
             try {
-                fromJSON(appData.groupCollection.getItems(), JSONHelper.getReader(prefs.getString("groups", null)), new CreateNewObject<Group>() {
-                    @Override
-                    public Group create() {
-                        return new Group(null, null);
-                    }
-                });
+                fromJSON(appData.groupCollection.getItems(), JSONHelper.getReader(prefs.getString("groups", null)), Group.class);
                 if (appData.groupCollection.getItems().size() > 0)
                     appData.groupCollection.saveAll();
 
-            } catch (IOException ignored) {
+            } catch (IOException | InstantiationException | IllegalAccessException ignored) {
                 ShowToast.FromOtherThread(context, R.string.error_reading_groups);
             }
             try {
-                fromJSON(appData.timerController.getItems(), JSONHelper.getReader(prefs.getString("alarms", null)), new CreateNewObject<Timer>() {
-                    @Override
-                    public Timer create() {
-                        return new Timer();
-                    }
-                });
+                fromJSON(appData.timerController.getItems(), JSONHelper.getReader(prefs.getString("alarms", null)), Timer.class);
                 if (appData.timerController.getItems().size() > 0)
                     appData.timerController.saveAll();
-            } catch (IOException ignored) {
+            } catch (IOException | InstantiationException | IllegalAccessException ignored) {
                 ShowToast.FromOtherThread(context, R.string.error_reading_alarms);
             }
-        }
-
-
-        private interface CreateNewObject<T> {
-            T create();
         }
     }
 }

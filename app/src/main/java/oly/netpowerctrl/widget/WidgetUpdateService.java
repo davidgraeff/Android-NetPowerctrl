@@ -52,7 +52,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     static public void ForceUpdate(Context ctx, int widgetId) {
         Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
                 ctx, DeviceWidgetProvider.class);
-        updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{widgetId});
+        updateWidget.putExtra(DeviceWidgetProvider.EXTRA_WIDGET_IDS, new int[]{widgetId});
         ctx.sendBroadcast(updateWidget);
     }
 
@@ -157,7 +157,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             allWidgetIds = getAllWidgetIDs();
         } else {
             // Extract widget ids from intent
-            allWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+            allWidgetIds = intent.getIntArrayExtra(DeviceWidgetProvider.EXTRA_WIDGET_IDS);
             command = intent.getIntExtra("name", UPDATE_WIDGET);
         }
 
@@ -181,11 +181,8 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     private void preCheckUpdate() {
-        Log.w(TAG, "preCheckUpdate");
         if (ListenService.isServiceReady()) {
-            Log.w(TAG, "service ready");
             if (AppData.observersOnDataLoaded.dataLoaded) {
-                Log.w(TAG, "data ready");
                 updateDevices();
             } else { // data not loaded
                 AppData.observersOnDataLoaded.register(this);
@@ -307,7 +304,6 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     private int finishServiceIfDone() {
         if (getAllWidgetIDs().length == 0) {
-            Log.w("WidgetUpdateService", "finish");
             stopSelf();
             return START_NOT_STICKY;
         }

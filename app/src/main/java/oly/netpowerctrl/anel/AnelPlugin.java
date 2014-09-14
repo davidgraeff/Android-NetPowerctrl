@@ -85,12 +85,18 @@ final public class AnelPlugin implements PluginInterface {
                                     onExecutionFinished callback) {
         // Get necessary objects
         ListenService service = ListenService.getService();
-        if (service == null)
+        if (service == null) {
+            if (callback != null)
+                callback.onExecutionFinished(command_list.size());
             return;
+        }
 
         DeviceConnection ci = device.getFirstReachableConnection();
-        if (ci == null)
+        if (ci == null) {
+            if (callback != null)
+                callback.onExecutionFinished(command_list.size());
             return;
+        }
 
         if (ci instanceof DeviceConnectionHTTP) { // http
             // Use Http instead of UDP for sending. For each batch command we will send a single http request
@@ -103,11 +109,15 @@ final public class AnelPlugin implements PluginInterface {
                 HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci, "ctrl.htm",
                         "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
             }
-        } else if (!(ci instanceof DeviceConnectionUDP)) { // not udp: return: unknown protocol
+        } else if (!(ci instanceof DeviceConnectionUDP)) { // unknown protocol
+            if (callback != null)
+                callback.onExecutionFinished(command_list.size());
             return;
         }
 
         if (warnUDPSending()) {
+            if (callback != null)
+                callback.onExecutionFinished(command_list.size());
             return;
         }
 
@@ -120,31 +130,22 @@ final public class AnelPlugin implements PluginInterface {
         byte data_io = 0;
         boolean containsOutlets = false;
         boolean containsIO = false;
-        int valid_commands = 0;
 
         // First step: Setup data byte (outlet, io) to reflect the current state of the device ports.
         device.lockDevicePorts();
         Iterator<DevicePort> it = device.getDevicePortIterator();
         while (it.hasNext()) {
             DevicePort oi = it.next();
-            if (oi.Disabled || oi.current_value == 0)
+            if (oi.Disabled || oi.current_value == 0) // Only take "ON" commands into account for the bulk change byte
                 continue;
             int id = oi.id;
             if (id >= 10 && id < 20) {
                 data_io = switchOn(data_io, id - 10);
-                ++valid_commands;
             } else if (id >= 0) {
                 data_outlet = switchOn(data_outlet, id);
-                ++valid_commands;
             }
         }
         device.releaseDevicePorts();
-
-        if (valid_commands == 0) {
-            if (callback != null)
-                callback.onExecutionFinished(command_list.size());
-            return;
-        }
 
         // Second step: Apply commands
         for (Scene.PortAndCommand c : command_list) {
@@ -560,8 +561,10 @@ final public class AnelPlugin implements PluginInterface {
         // and have to set all the others to the same values as before)
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
         final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) port.device.getFirstReachableConnection("HTTP");
-        if (ci == null)
+        if (ci == null) {
+            Toast.makeText(App.instance, R.string.error_rename_only_with_http_connection, Toast.LENGTH_SHORT).show();
             return;
+        }
 
         HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
                 port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {

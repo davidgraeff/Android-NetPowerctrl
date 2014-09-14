@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Streams;
 
 /**
@@ -42,8 +43,8 @@ import oly.netpowerctrl.utils.Streams;
  */
 public class LoadStoreIconData {
 
-    private static final int PICK_IMAGE_BEFORE_KITKAT = 1;
-    private static final int PICK_IMAGE_KITKAT = 2;
+    private static final int PICK_IMAGE_BEFORE_KITKAT = 10;
+    private static final int PICK_IMAGE_KITKAT = 11;
     private static WeakReference<Object> icon_callback_context_object;
 
     /**
@@ -87,12 +88,24 @@ public class LoadStoreIconData {
     }
 
     public static File getImageDirectory(Context context, IconType iconType, IconState state) {
-        return new File(context.getDir("images", 0), iconType.name() + state.name());
+        File dir = new File(context.getFilesDir(), "images");
+        return new File(dir, iconType.name() + state.name());
+    }
+
+    public static void init() {
+        { // Legacy dir support
+            File dir = new File(App.instance.getFilesDir(), "images");
+            File old_dir = App.instance.getDir("images", 0);
+            if (old_dir.exists())
+                old_dir.renameTo(dir);
+        }
     }
 
 
     public static void saveIcon(Context context, Bitmap bitmap, UUID uuid, IconType iconType, IconState state) {
         File myDir = getImageDirectory(context, iconType, state);
+        //noinspection ResultOfMethodCallIgnored
+        myDir.mkdirs();
 
         String fileName = uuid.toString();
         File file;
@@ -131,17 +144,17 @@ public class LoadStoreIconData {
     /**
      * Resize a bitmap to the size of an app icon
      *
-     * @param context
-     * @param bm
-     * @return
+     * @param context The context
+     * @param bitmap  The bitmap
+     * @return A bitmap in the size of an app icon
      */
-    public static Bitmap resizeBitmap(Context context, Bitmap bm) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
+    public static Bitmap resizeBitmap(Context context, Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
         float size = context.getResources().getDimension(android.R.dimen.app_icon_size);
         Matrix matrix = new Matrix();
         matrix.postScale(size / width, size / height);
-        return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+        return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, false);
     }
 
     public static Bitmap resizeBitmap(Context context, Bitmap bm, int newHeightDP, int newWidthDP) {
@@ -192,24 +205,24 @@ public class LoadStoreIconData {
         return list.toArray(new IconFile[list.size()]);
     }
 
-    public static void saveIcon(Context context, String fileName, IconType iconType, IconState state, InputStream input) {
-        @SuppressWarnings("ConstantConditions")
-        File myDir = getImageDirectory(context, iconType, state);
-
-        try {
-            byte[] buffer = new byte[4096]; // To hold file contents
-            int bytes_read; // How many bytes in buffer
-            FileOutputStream out = new FileOutputStream(new File(myDir, fileName));
-            while ((bytes_read = input.read(buffer)) != -1)
-                // Read until EOF
-                out.write(buffer, 0, bytes_read); // write
-            out.flush();
-            out.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void saveIcon(Context context, String fileName, IconType iconType, IconState state, InputStream input) {
+//        @SuppressWarnings("ConstantConditions")
+//        File myDir = getImageDirectory(context, iconType, state);
+//
+//        try {
+//            byte[] buffer = new byte[4096]; // To hold file contents
+//            int bytes_read; // How many bytes in buffer
+//            FileOutputStream out = new FileOutputStream(new File(myDir, fileName));
+//            while ((bytes_read = input.read(buffer)) != -1)
+//                // Read until EOF
+//                out.write(buffer, 0, bytes_read); // write
+//            out.flush();
+//            out.close();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static void show_select_icon_dialog(final Context context, String assetSet,
                                                final IconSelected callback, final Object callback_context_object) {
@@ -292,7 +305,7 @@ public class LoadStoreIconData {
                                                    final IconSelected callback,
                                                    int requestCode, int resultCode,
                                                    Intent imageReturnedIntent) {
-        if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK && (requestCode == PICK_IMAGE_KITKAT || requestCode == PICK_IMAGE_BEFORE_KITKAT)) {
             Uri selectedImage = imageReturnedIntent.getData();
             try {
                 Bitmap b = LoadStoreIconData.getDrawableFromUri(context, selectedImage).getBitmap();

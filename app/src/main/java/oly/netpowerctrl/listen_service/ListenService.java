@@ -454,6 +454,7 @@ public class ListenService extends Service {
 
                 if (timeout_devices.size() == 0)
                     return;
+                Log.w(TAG, "findDevices:timeout_devices");
 
                 // Do we need to go into network reduced mode?
                 if (timeout_devices.size() == AppData.getInstance().countNetworkDevices()) {

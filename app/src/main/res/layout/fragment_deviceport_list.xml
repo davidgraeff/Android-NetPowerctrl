@@ -3,29 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <ListView
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <ListView
-            android:id="@android:id/list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:divider="#00000000"
-            android:dividerHeight="0dp" />
-
-        <TextView
-            android:id="@+id/hintText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?drawer_item_background"
-            android:gravity="center"
-            android:padding="5dp"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:visibility="gone" />
-    </LinearLayout>
+        android:divider="#00000000"
+        android:dividerHeight="0dp" />
 
     <LinearLayout
         android:id="@+id/empty"
@@ -41,9 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?item_selector"
-            android:drawableLeft="@android:drawable/ic_media_rew"
             android:padding="5dp"
-            android:text="@string/scene_create_helptext_available"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
     </LinearLayout>

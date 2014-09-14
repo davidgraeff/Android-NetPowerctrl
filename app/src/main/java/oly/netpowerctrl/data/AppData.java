@@ -40,6 +40,7 @@ public class AppData {
     public static final DataQueryCompletedObserver observersDataQueryCompleted = new DataQueryCompletedObserver();
     public static final DataLoadedObserver observersOnDataLoaded = new DataLoadedObserver();
     public static final NewDeviceObserver observersNew = new NewDeviceObserver();
+    private static final String TAG = AppData.class.getName();
 
     public final List<Device> newDevices = new ArrayList<>();
     final public DeviceCollection deviceCollection = new DeviceCollection();
@@ -67,10 +68,15 @@ public class AppData {
 
         appData.loadStoreJSonData = new LoadStoreJSonData();
         appData.loadStoreJSonData.loadData(appData);
+        LoadStoreIconData.init();
     }
 
     public static boolean isDataLoaded() {
         return observersOnDataLoaded.dataLoaded;
+    }
+
+    public LoadStoreJSonData getLoadStoreJSonData() {
+        return loadStoreJSonData;
     }
 
     /**
@@ -312,12 +318,16 @@ public class AppData {
 
         for (SceneItem item : scene.sceneItems) {
             DevicePort p = getInstance().findDevicePort(item.uuid);
-            if (p == null)
+            if (p == null) {
+                Log.e(TAG, "Execute scene, DevicePort not found " + item.uuid.toString());
                 continue;
+            }
 
             PluginInterface remote = p.device.getPluginInterface();
-            if (remote == null)
+            if (remote == null) {
+                Log.e(TAG, "Execute scene, PluginInterface not found " + item.uuid.toString());
                 continue;
+            }
 
             int command = item.command;
             // Replace toggle by master command if master is set

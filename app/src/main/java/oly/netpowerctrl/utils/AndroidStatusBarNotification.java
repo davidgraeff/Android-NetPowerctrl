@@ -5,9 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -22,19 +20,9 @@ import oly.netpowerctrl.scenes.SceneCollection;
  * Created by david on 08.07.14.
  */
 public class AndroidStatusBarNotification {
-    public static void update(Context context) {
-        NotificationManager mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    private static onCollectionUpdated<SceneCollection, Scene> collectionUpdateListener = null;
 
-        if (mNotificationManager == null)
-            return;
-
-        if (!SharedPrefs.getInstance().isNotification()) {
-//            Log.w("r","remove");
-            mNotificationManager.cancel(1);
-            return;
-        }
-
+    private static Notification createNotification(Context context) {
         Intent startMainIntent = new Intent(context, MainActivity.class);
         startMainIntent.setAction(Intent.ACTION_MAIN);
         PendingIntent startMainPendingIntent =
@@ -65,25 +53,48 @@ public class AndroidStatusBarNotification {
             }
         }
 
-        mNotificationManager.notify(1, b.getNotification());
+        //noinspection deprecation
+        return b.getNotification();
+    }
+
+    private static void setEnabled(final Context context, boolean enabled) {
+        NotificationManager mNotificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (mNotificationManager == null)
+            return;
+
+        if (enabled) {
+            if (collectionUpdateListener == null) {
+                collectionUpdateListener = new onCollectionUpdated<SceneCollection, Scene>() {
+                    @Override
+                    public boolean updated(SceneCollection sceneCollection, Scene scene, ObserverUpdateActions action) {
+                        setEnabled(context, true);
+                        return true;
+                    }
+                };
+                AppData.getInstance().sceneCollection.registerObserver(collectionUpdateListener);
+            }
+
+            mNotificationManager.notify(1, createNotification(context));
+        } else { // disabled
+            if (collectionUpdateListener != null) {
+                AppData.getInstance().sceneCollection.unregisterObserver(collectionUpdateListener);
+                collectionUpdateListener = null;
+            }
+            mNotificationManager.cancel(1);
+        }
     }
 
     public static void init(final Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context).registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+        SharedPrefs.getInstance().registerShowPersistentNotification(new SharedPrefs.IShowPersistentNotification() {
             @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-//                    Log.w("changed", s);
-                if (s.equals(SharedPrefs.getInstance().PREF_show_persistent_notification))
-                    AndroidStatusBarNotification.update(context);
+            public void showPersistentNotificationChanged(boolean enabled) {
+                setEnabled(context, enabled);
             }
         });
-        AppData.getInstance().sceneCollection.registerObserver(new onCollectionUpdated<SceneCollection, Scene>() {
-            @Override
-            public boolean updated(SceneCollection sceneCollection, Scene scene, ObserverUpdateActions action) {
-                AndroidStatusBarNotification.update(context);
-                return true;
-            }
-        });
-        AndroidStatusBarNotification.update(context);
+
+        if (SharedPrefs.getInstance().isNotification())
+            setEnabled(context, true);
     }
 }

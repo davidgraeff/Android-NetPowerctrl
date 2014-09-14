@@ -92,7 +92,7 @@ class DevicePortViewHolder implements View.OnClickListener, IconDeferredLoadingT
 
     @Override
     public void onClick(View view) {
-        mListContextMenu.onMenuItemClicked(view, position);
+        mListContextMenu.onListItemElementClicked(view, position);
     }
 
     @Override
