@@ -128,7 +128,7 @@ public class Device implements Comparable<Device>, StorableInterface {
         for (oly.netpowerctrl.devices.DeviceConnection di : DeviceConnections)
             di.setNotReachable(not_reachable_reason);
         cached_deviceConnection = null;
-        hasChanged = true;
+        setHasChanged();
     }
 
     @Override
@@ -207,8 +207,9 @@ public class Device implements Comparable<Device>, StorableInterface {
             while (it.hasNext()) {
                 DeviceConnection otherConnection = it.next();
                 if (di.hasAddress(otherConnection.getHostnameIPs())) {
-                    di.updatedFlag = true;
-                    hasChanged = true;
+                    di.updatedFlag = di.needsUpdate(otherConnection);
+                    if (di.updatedFlag)
+                        setHasChanged();
                     di.setNotReachable(otherConnection.getNotReachableReason());
                     it.remove();
                 }
@@ -226,7 +227,7 @@ public class Device implements Comparable<Device>, StorableInterface {
         // add connections
         for (DeviceConnection deviceConnection : other_deviceConnections) {
             DeviceConnections.add(deviceConnection);
-            hasChanged = true;
+            setHasChanged();
         }
 
         compute_first_reachable();
@@ -323,11 +324,13 @@ public class Device implements Comparable<Device>, StorableInterface {
         }
         writer.endArray();
 
+        lockDevicePorts();
         writer.name("DevicePorts").beginArray();
         for (Map.Entry<Integer, DevicePort> entry : DevicePorts.entrySet()) {
             entry.getValue().toJSON(writer);
         }
         writer.endArray();
+        releaseDevicePorts();
 
         writer.endObject();
 

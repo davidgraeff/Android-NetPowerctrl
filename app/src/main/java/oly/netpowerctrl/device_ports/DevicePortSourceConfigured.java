@@ -63,6 +63,7 @@ public class DevicePortSourceConfigured implements DevicePortSourceInterface, on
         automaticUpdatesEnabled = enabled;
         if (!enabled) {
             AppData.getInstance().deviceCollection.unregisterObserver(this);
+            AppData.getInstance().groupCollection.unregisterObserver(this);
         } else {
             // If no data has been loaded so far, wait for load action to be completed before
             // registering to deviceCollection changes.

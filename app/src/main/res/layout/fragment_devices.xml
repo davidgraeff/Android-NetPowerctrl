@@ -19,17 +19,6 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <TextView
-        android:id="@+id/hintText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="?drawer_item_background"
-        android:gravity="left"
-        android:padding="5dp"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:visibility="gone" />
-
     <LinearLayout
         android:id="@android:id/empty"
         android:layout_width="match_parent"
@@ -54,4 +43,14 @@
             android:layout_marginTop="5dp"
             android:text="@string/preferences" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/notifications"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="start"
+        android:orientation="vertical"
+        android:padding="5dp"
+        android:visibility="visible" />
 </RelativeLayout>

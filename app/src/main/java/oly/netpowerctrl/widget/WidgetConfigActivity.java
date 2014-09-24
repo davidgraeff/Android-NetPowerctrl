@@ -11,6 +11,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
@@ -24,7 +25,13 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
     private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            SharedPrefs.getInstance().SaveWidget(widgetId, adapter.getDevicePort(position).uuid.toString());
+            if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
+                return;
+            DevicePort devicePort = adapter.getDevicePort(position);
+            if (devicePort == null)
+                return;
+
+            SharedPrefs.getInstance().SaveWidget(widgetId, devicePort.uuid.toString());
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);

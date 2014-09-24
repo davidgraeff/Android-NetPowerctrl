@@ -27,7 +27,7 @@ import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  */
@@ -221,7 +221,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         } else {
             PluginInterface pluginInterface = device.getPluginInterface();
             if (pluginInterface == null) {
-                ShowToast.showException(getActivity(), "Unexpected state: Plugin not known");
+                InAppNotifications.showException(getActivity(), "Unexpected state: Plugin not known");
                 return;
             }
             pluginInterface.showConfigureDeviceScreen(device);

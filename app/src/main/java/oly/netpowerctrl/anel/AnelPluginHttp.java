@@ -19,6 +19,7 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
 import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.timer.Timer;
 
@@ -33,11 +34,24 @@ public class AnelPluginHttp {
             final Device device = ci.getDevice();
             if (!callback_success) {
                 ci.setNotReachable(response_message);
-                AppData.getInstance().onDeviceUpdatedOtherThread(device);
+                // Call onConfiguredDeviceUpdated to update device info.
+                App.getMainThreadHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        AppData.getInstance().deviceCollection.updateNotReachable(App.instance, device);
+                    }
+                });
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
                     ci.setNotReachable(ListenService.getService().getString(R.string.error_packet_received));
+                    // Call onConfiguredDeviceUpdated to update device info.
+                    App.getMainThreadHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            AppData.getInstance().deviceCollection.updateNotReachable(App.instance, device);
+                        }
+                    });
                 } else {
                     // The name is the second ";" separated entry of the response_message.
                     device.DeviceName = data[1].trim();
@@ -77,7 +91,7 @@ public class AnelPluginHttp {
                         ci.setNotReachable(response_message);
                         AppData.getInstance().onDeviceUpdatedOtherThread(device);
                     } else
-                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
+                        HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
                 }
             };
 

@@ -58,8 +58,10 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
         if (test_state != TestStates.TEST_REACHABLE)
             return;
 
+        // The device may not have a unique id and may be returned as timeout device.
+        // Be careful with equalsByUniqueID which will crash on a device without an id!
         for (Device di : timeout_devices) {
-            if (!di.equalsByUniqueID(device))
+            if (di != device || !di.equalsByUniqueID(device))
                 continue;
             test_state = TestStates.TEST_INIT;
             if (listener != null)
@@ -70,6 +72,9 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean startTest(Context context) {
+        if (device == null)
+            return false;
+
         test_state = TestStates.TEST_REACHABLE;
 
         if (wakeupPlugin(context))

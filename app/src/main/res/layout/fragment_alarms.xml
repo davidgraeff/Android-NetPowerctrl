@@ -20,7 +20,6 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
-
     <LinearLayout
         android:id="@android:id/empty"
         android:layout_width="match_parent"
@@ -60,5 +59,15 @@
         android:paddingLeft="@dimen/list_outer_padding"
         android:paddingRight="@dimen/list_outer_padding"
         android:textAppearance="@android:style/TextAppearance.Medium" />
+
+    <LinearLayout
+        android:id="@+id/notifications"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="start"
+        android:orientation="vertical"
+        android:padding="5dp"
+        android:visibility="visible" />
 
 </RelativeLayout>

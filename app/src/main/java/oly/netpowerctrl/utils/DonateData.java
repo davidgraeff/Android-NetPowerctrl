@@ -21,8 +21,7 @@ public class DonateData {
      * Flattr
      */
     public static final String FLATTR_PROJECT_URL = "https://github.com/davidgraeff/Android-NetPowerctrl";
-    // FLATTR_URL without http:// !
-    public static final String FLATTR_URL = "flattr.com/thing/111111/test";
+    public static final String FLATTR_URL = "https://flattr.com/submit/auto?user_id=davidgraeff&url=https://github.com/davidgraeff/Android-NetPowerctrl&title=Smart Power Control&description=netpowerctrl is an Android App for controlling ANEL switchable network outlets.&language=de_DE&tags=android,anel,outlets,smart home&hidden=0&category=software";
 
     /**
      * Bitcoin

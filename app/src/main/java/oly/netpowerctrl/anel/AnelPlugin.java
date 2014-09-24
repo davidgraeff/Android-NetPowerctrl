@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -46,7 +47,7 @@ import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
@@ -106,7 +107,7 @@ final public class AnelPlugin implements PluginInterface {
                     continue;
                 c.port.last_command_timecode = System.currentTimeMillis();
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci, "ctrl.htm",
+                HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci, "ctrl.htm",
                         "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
             }
         } else if (!(ci instanceof DeviceConnectionUDP)) { // unknown protocol
@@ -254,25 +255,16 @@ final public class AnelPlugin implements PluginInterface {
         HttpThreadPool.startHTTP();
     }
 
-    public void stopUDPDiscoveryThreads(Context context) {
-        AppData d = AppData.getInstance();
-        for (Device di : d.deviceCollection.getItems()) {
-            if (this.equals(di.getPluginInterface())) {
-                di.setNotReachable("UDP", App.getAppString(R.string.device_energysave_mode));
-                d.onDeviceUpdated(di);
-            }
+    public void stopNetwork() {
+        if (udpSending != null && udpSending.isRunning()) {
+            udpSending.interrupt();
+            udpSending = null;
         }
 
-        if (discoveryThreads.size() == 0)
-            return;
-
-        for (AnelUDPDeviceDiscoveryThread thr : discoveryThreads)
-            thr.interrupt();
-        discoveryThreads.clear();
-        // socket needs minimal time to really go away
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ignored) {
+        if (discoveryThreads.size() > 0) {
+            for (AnelUDPDeviceDiscoveryThread thr : discoveryThreads)
+                thr.interrupt();
+            discoveryThreads.clear();
         }
 
         HttpThreadPool.stopHTTP();
@@ -313,11 +305,11 @@ final public class AnelPlugin implements PluginInterface {
             // The http interface can only toggle. If the current state is the same as the command state
             // then we request values instead of sending a command.
             if (command == DevicePort.TOGGLE && port.current_value == command)
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci, "strg.cfg",
+                HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci, "strg.cfg",
                         "", ci, false, AnelPluginHttp.receiveCtrlHtml));
             else
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
-                HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci, "ctrl.htm",
+                HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci, "ctrl.htm",
                         "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
         } else if (ci instanceof DeviceConnectionUDP) {
             if (warnUDPSending()) {
@@ -353,7 +345,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     private boolean warnUDPSending() {
         if (udpSending == null) {
-            ShowToast.FromOtherThread(ListenService.getService(), "udpSending null");
+            InAppNotifications.showException(ListenService.getService(), "udpSending null");
             return true;
         }
         return false;
@@ -361,7 +353,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void onDestroy() {
-        stopUDPDiscoveryThreads(ListenService.getService());
+        stopNetwork();
     }
 
     @Override
@@ -394,7 +386,7 @@ final public class AnelPlugin implements PluginInterface {
             return;
 
         if (ci instanceof DeviceConnectionHTTP) {
-            HttpThreadPool.execute(HttpThreadPool.createHTTPRunner((DeviceConnectionHTTP) ci,
+            HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci,
                     "strg.cfg", "", ci, false, AnelPluginHttp.receiveCtrlHtml));
         } else {
             if (warnUDPSending()) {
@@ -411,20 +403,20 @@ final public class AnelPlugin implements PluginInterface {
         if (ci == null)
             return;
 
-        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
+        HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, getData, null,
                 port, false, new HttpThreadPool.HTTPCallback<DevicePort>() {
-                    @Override
-                    public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
-                        if (!callback_success) {
-                            return;
-                        }
-                        try {
-                            timerController.alarmsFromPlugin(extractAlarms(port, response_message));
-                        } catch (SAXException | IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+            @Override
+            public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
+                if (!callback_success) {
+                    return;
                 }
+                try {
+                    timerController.alarmsFromPlugin(extractAlarms(port, response_message));
+                } catch (SAXException | IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         ));
     }
 
@@ -566,46 +558,46 @@ final public class AnelPlugin implements PluginInterface {
             return;
         }
 
-        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
+        HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, getData, null,
                 port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+            @Override
+            public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
+                if (!callback_success) {
+                    callback.asyncRunnerResult(port, false, response_message);
+                    return;
+                }
+
+                String postData;
+                // Parse received web page
+                try {
+                    postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message, new_name, new Timer[5]);
+                } catch (UnsupportedEncodingException e) {
+                    callback.asyncRunnerResult(port, false, "url_encode failed");
+                    return;
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                    callback.asyncRunnerResult(port, false, "Html Parsing failed");
+                    return;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
+                    return;
+                }
+
+                HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, getData, postData,
+                        port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                     @Override
-                    public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
-                        if (!callback_success) {
-                            callback.asyncRunnerResult(port, false, response_message);
-                            return;
+                    public void httpResponse(DevicePort port, boolean callback_success,
+                                             String response_message) {
+                        if (callback_success) {
+                            port.setDescription(new_name);
                         }
-
-                        String postData;
-                        // Parse received web page
-                        try {
-                            postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message, new_name, new Timer[5]);
-                        } catch (UnsupportedEncodingException e) {
-                            callback.asyncRunnerResult(port, false, "url_encode failed");
-                            return;
-                        } catch (SAXException e) {
-                            e.printStackTrace();
-                            callback.asyncRunnerResult(port, false, "Html Parsing failed");
-                            return;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
-                            return;
-                        }
-
-                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, postData,
-                                port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
-                                    @Override
-                                    public void httpResponse(DevicePort port, boolean callback_success,
-                                                             String response_message) {
-                                        if (callback_success) {
-                                            port.setDescription(new_name);
-                                        }
-                                        callback.asyncRunnerResult(port, callback_success, response_message);
-                                    }
-                                }
-                        ));
+                        callback.asyncRunnerResult(port, callback_success, response_message);
                     }
                 }
+                ));
+            }
+        }
         ));
     }
 
@@ -671,11 +663,22 @@ final public class AnelPlugin implements PluginInterface {
         if (SharedPrefs.getInstance().logEnergySaveMode())
             Logging.appendLog(context, "Anel: enterNetworkReducedState");
 
-        stopUDPDiscoveryThreads(context);
-        boolean running = udpSending != null && udpSending.isRunning();
-        if (running) {
-            udpSending.interrupt();
-            udpSending = null;
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                stopNetwork();
+                return null;
+            }
+        }.execute();
+
+        AppData d = AppData.getInstance();
+        for (Device di : d.deviceCollection.getItems()) {
+            // Mark all devices as changed: If network reduced mode ends all
+            // devices propagate changes then.
+            if (this.equals(di.getPluginInterface())) {
+                di.setNotReachable("UDP", App.getAppString(R.string.device_energysave_mode));
+                d.onDeviceUpdated(di);
+            }
         }
     }
 
@@ -730,58 +733,58 @@ final public class AnelPlugin implements PluginInterface {
         if (ci == null)
             return;
 
-        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, null,
+        HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, getData, null,
                 timer.port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+            @Override
+            public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
+                if (!callback_success) {
+                    if (callback != null)
+                        callback.asyncRunnerResult(port, false, response_message);
+                    return;
+                }
+
+                Timer[] timers = new Timer[5];
+                timers[timerNumber] = timer;
+
+                String postData;
+                // Parse received web page
+                try {
+                    postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message,
+                            null, timers);
+                } catch (UnsupportedEncodingException e) {
+                    if (callback != null)
+                        callback.asyncRunnerResult(port, false, "url_encode failed");
+                    return;
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                    if (callback != null)
+                        callback.asyncRunnerResult(port, false, "Html Parsing failed");
+                    return;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    if (callback != null)
+                        callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
+                    return;
+                }
+
+                HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, getData, postData,
+                        port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
                     @Override
-                    public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
-                        if (!callback_success) {
-                            if (callback != null)
-                                callback.asyncRunnerResult(port, false, response_message);
-                            return;
-                        }
+                    public void httpResponse(DevicePort port, boolean callback_success,
+                                             String response_message) {
+                        if (callback != null)
+                            callback.asyncRunnerResult(port, callback_success, response_message);
 
-                        Timer[] timers = new Timer[5];
-                        timers[timerNumber] = timer;
-
-                        String postData;
-                        // Parse received web page
                         try {
-                            postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message,
-                                    null, timers);
-                        } catch (UnsupportedEncodingException e) {
-                            if (callback != null)
-                                callback.asyncRunnerResult(port, false, "url_encode failed");
-                            return;
-                        } catch (SAXException e) {
+                            timerController.alarmsFromPlugin(extractAlarms(port, response_message));
+                        } catch (SAXException | IOException e) {
                             e.printStackTrace();
-                            if (callback != null)
-                                callback.asyncRunnerResult(port, false, "Html Parsing failed");
-                            return;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            if (callback != null)
-                                callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
-                            return;
                         }
-
-                        HttpThreadPool.execute(HttpThreadPool.createHTTPRunner(ci, getData, postData,
-                                port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
-                                    @Override
-                                    public void httpResponse(DevicePort port, boolean callback_success,
-                                                             String response_message) {
-                                        if (callback != null)
-                                            callback.asyncRunnerResult(port, callback_success, response_message);
-
-                                        try {
-                                            timerController.alarmsFromPlugin(extractAlarms(port, response_message));
-                                        } catch (SAXException | IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                }
-                        ));
                     }
                 }
+                ));
+            }
+        }
         ));
     }
 

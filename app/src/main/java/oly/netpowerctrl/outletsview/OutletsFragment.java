@@ -47,13 +47,14 @@ import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onNewDevice;
 import oly.netpowerctrl.network.onNotReachableUpdate;
 import oly.netpowerctrl.utils.AnimationController;
-import oly.netpowerctrl.utils.ShowToast;
 import oly.netpowerctrl.utils.SortCriteriaDialog;
 import oly.netpowerctrl.utils.actionbar.ActionBarWithGroups;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.utils.notifications.TextNotification;
 
 /**
  */
@@ -65,7 +66,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     int requestedColumnWidth;
     private DevicePortsExecuteAdapter adapter;
     private DevicePortSourceConfigured adapterSource;
-    private TextView hintText;
     private TextView emptyText;
     private Button btnChangeToDevices;
     private Button btnAutomaticConfiguration;
@@ -109,6 +109,16 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         actionBarWithGroups.finishNavigation();
     }
 
+    @Override
+    public void onPause() {
+        ListenService.observersStartStopRefresh.unregister(this);
+        ListenService.observersServiceModeChanged.unregister(this);
+        AppData.observersNew.unregister(this);
+        super.onPause();
+        if (adapterSource != null)
+            adapterSource.onPause();
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -124,16 +134,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             };
 
     @Override
-    public void onPause() {
-        ListenService.observersStartStopRefresh.unregister(this);
-        ListenService.observersServiceModeChanged.unregister(this);
-        AppData.observersNew.unregister(this);
-        super.onPause();
-        if (adapterSource != null)
-            adapterSource.onPause();
-    }
-
-    @Override
     public void onResume() {
         ListenService.observersStartStopRefresh.register(this);
         ListenService.observersServiceModeChanged.register(this);
@@ -141,6 +141,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         if (adapterSource != null)
             adapterSource.onResume();
+
+        InAppNotifications.showPermanentNotifications(getActivity());
+
         super.onResume();
     }
 
@@ -186,18 +189,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         inflater.inflate(R.menu.outlets, menu);
 
         if (!AppData.getInstance().deviceCollection.hasDevices()) {
-            //noinspection ConstantConditions
             menu.findItem(R.id.menu_showhidden).setVisible(false);
-            //noinspection ConstantConditions
             menu.findItem(R.id.menu_hidehidden).setVisible(false);
-            //noinspection ConstantConditions
             menu.findItem(R.id.menu_view_list).setVisible(false);
-            //noinspection ConstantConditions
             menu.findItem(R.id.menu_view_grid).setVisible(false);
-            //noinspection ConstantConditions
             menu.findItem(R.id.menu_sort).setVisible(false);
-            //noinspection ConstantConditions
             menu.findItem(R.id.refresh).setVisible(false);
+            menu.findItem(R.id.menu_debug_toggle_network_reduced).setVisible(false);
+            menu.findItem(R.id.menu_debug_crash_test).setVisible(false);
+            menu.findItem(R.id.menu_group_add).setVisible(false);
             return;
         }
 
@@ -218,6 +218,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         menu.findItem(R.id.menu_view_grid).setVisible(isList);
 
         menu.findItem(R.id.menu_debug_toggle_network_reduced).setVisible(App.isDebug());
+        menu.findItem(R.id.menu_debug_crash_test).setVisible(App.isDebug());
     }
 
     @Override
@@ -228,7 +229,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 if (service != null)
                     service.findDevices(true, null);
                 else {
-                    ShowToast.showException(getActivity(), "Unexpected state: Service is down. Restart the app");
+                    InAppNotifications.showException(getActivity(), "Unexpected state: Service is down. Restart the app");
                 }
                 return true;
             }
@@ -274,6 +275,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 ListenService.debug_toggle_network_reduced();
                 return true;
             }
+            case R.id.menu_debug_crash_test: {
+                InAppNotifications.showException(getActivity(), "Test exception");
+                return true;
+            }
         }
         return false;
     }
@@ -304,7 +309,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         ///// END: For pull to refresh
 
         // Empty text and hint text
-        hintText = (TextView) view.findViewById(R.id.hintText);
         emptyText = (TextView) view.findViewById(R.id.empty_text);
 
         // Empty list: Buttons
@@ -354,7 +358,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         adapter.titleClick = new DevicePortsExecuteAdapter.TitleClick() {
             @Override
             public void onTitleClick(int position) {
-                mListView.performItemClick(null, position, mListView.getItemIdAtPosition(position));
+                if (adapter.isEnabled(position))
+                    mListView.performItemClick(null, position, mListView.getItemIdAtPosition(position));
             }
         };
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -426,7 +431,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 if (lastState == checkEmptyState.EMPTY)
                     checkEmpty();
                 break;
-
+            case SERVICE:
+                if (emptyInit == 2) {
+                    checkEmpty();
+                    checkService();
+                }
+                break;
         }
     }
 
@@ -467,8 +477,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     void checkService() {
         boolean en = (!ListenService.isServiceReady() || ListenService.getService().isNetworkReducedMode());
         if (en)
-            hintText.setText(getString(R.string.device_energysave_mode));
-        hintText.setVisibility(en ? View.VISIBLE : View.GONE);
+            InAppNotifications.addPermanentNotification(getActivity(), new TextNotification("energy", getString(R.string.device_energysave_mode), false));
+        else
+            InAppNotifications.removePermanentNotification(getActivity(), "energy");
     }
 
     @Override
@@ -542,10 +553,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             for (Device di : not_reachable) {
                 devices += di.DeviceName + " ";
             }
-            hintText.setText(context.getString(R.string.error_not_reachable) + ": " + devices);
-            hintText.setVisibility(View.VISIBLE);
+            InAppNotifications.addPermanentNotification(getActivity(), new TextNotification("not_reachable",
+                    getString(R.string.error_not_reachable, devices), true));
         } else {
-            hintText.setVisibility(View.GONE);
+            InAppNotifications.removePermanentNotification(getActivity(), "not_reachable");
         }
     }
 
@@ -600,7 +611,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onServiceModeChanged(boolean isNetworkDown) {
-        checkService();
+        if (!isNetworkDown)
+            checkService();
+        else
+            checkEmptyChanged(checkEmptyAction.SERVICE);
     }
 
     @Override

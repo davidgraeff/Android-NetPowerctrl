@@ -516,34 +516,21 @@ public class DonationsFragment extends Fragment {
         // make text white and background transparent
         String htmlStart = "<html> <head><style type='text/css'>*{color: #FFFFFF; background-color: transparent;}</style>";
 
-        // https is not working in android 2.1 and 2.2
-        String flattrScheme;
-        if (Build.VERSION.SDK_INT >= 9) {
-            flattrScheme = "https://";
-        } else {
-            flattrScheme = "http://";
-        }
-
         // set url of flattr link
         mFlattrUrlTextView = (TextView) getActivity().findViewById(R.id.donations__flattr_url);
-        mFlattrUrlTextView.setText(flattrScheme + mFlattrUrl);
+        mFlattrUrlTextView.setText(mFlattrProjectUrl);
 
         String flattrJavascript = "<script type='text/javascript'>"
                 + "/* <![CDATA[ */"
                 + "(function() {"
                 + "var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];"
-                + "s.type = 'text/javascript';" + "s.async = true;" + "s.src = '" + flattrScheme
-                + "api.flattr.com/js/0.6/load.js?mode=auto';" + "t.parentNode.insertBefore(s, t);"
+                + "s.type = 'text/javascript';" + "s.async = true;" + "s.src = '"
+                + "https://api.flattr.com/js/0.6/load.js?mode=auto';" + "t.parentNode.insertBefore(s, t);"
                 + "})();" + "/* ]]> */" + "</script>";
         String htmlMiddle = "</head> <body> <div align='center'>";
         String flattrHtml = "<a class='FlattrButton' style='display:none;' href='"
-                + mFlattrProjectUrl
-                + "' target='_blank'></a> <noscript><a href='"
-                + flattrScheme
                 + mFlattrUrl
-                + "' target='_blank'> <img src='"
-                + flattrScheme
-                + "api.flattr.com/button/flattr-badge-large.png' alt='Flattr this' title='Flattr this' border='0' /></a></noscript>";
+                + "' target='_blank'></a>";
         String htmlEnd = "</div> </body> </html>";
 
         String flattrCode = htmlStart + flattrJavascript + htmlMiddle + flattrHtml + htmlEnd;

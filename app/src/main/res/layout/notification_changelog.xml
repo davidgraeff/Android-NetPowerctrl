@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
+    android:background="?attr/list_item_background">
+
+    <TextView
+        android:id="@+id/notification_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:text="@string/notification_title_changelog" />
+
+    <Button
+        android:id="@+id/btnShowChangelog"
+        style="?colored_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/notification_title"
+        android:layout_margin="5dp"
+        android:padding="5dp"
+        android:text="@string/changelog_title" />
+
+    <ImageButton
+        android:id="@+id/notification_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/notification_title"
+        android:src="@android:drawable/ic_menu_close_clear_cancel" />
+</RelativeLayout>

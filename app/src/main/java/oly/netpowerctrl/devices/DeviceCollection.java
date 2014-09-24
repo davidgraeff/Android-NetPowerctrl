@@ -2,12 +2,14 @@ package oly.netpowerctrl.devices;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
@@ -19,6 +21,8 @@ import oly.netpowerctrl.device_ports.DevicePort;
  * Contains DeviceInfos. Used for NFC and backup transfers
  */
 public class DeviceCollection extends CollectionWithStorableItems<DeviceCollection, Device> {
+    private static final String TAG = "DeviceCollection";
+
     public static DeviceCollection fromDevices(List<Device> devices, onStorageUpdate storage) {
         DeviceCollection dc = new DeviceCollection();
         dc.storage = storage;
@@ -134,6 +138,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
             }
 
             if (existing_device.copyValuesFromUpdated(newValues_device)) {
+                Log.w(TAG, "-- update: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
                 notifyObservers(existing_device, ObserverUpdateActions.UpdateAction);
             }
 
@@ -142,8 +147,14 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         return null;
     }
 
+    /**
+     * Call this if you have made your changes to the given device and want to propagate those now.
+     *
+     * @param existing_device
+     */
     public void updateExisting(Device existing_device) {
-        if (existing_device.copyValuesFromUpdated(existing_device)) {
+        if (AppData.observersOnDataLoaded.dataLoaded && existing_device.copyValuesFromUpdated(existing_device)) {
+            Log.w(TAG, "-- updateExisting: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
             notifyObservers(existing_device, ObserverUpdateActions.UpdateAction);
         }
     }
@@ -168,5 +179,10 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
 
     public void groupsUpdated(Device device) {
         notifyObservers(device, ObserverUpdateActions.ClearAndNewAction);
+    }
+
+    public void setHasChangedAll() {
+        for (Device existing_device : items)
+            existing_device.setHasChanged();
     }
 }

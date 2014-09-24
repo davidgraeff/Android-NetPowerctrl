@@ -19,6 +19,7 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.JSONHelper;
+import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
@@ -29,7 +30,7 @@ import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 public class ExecutionActivity extends NfcReaderActivity implements onDeviceObserverResult, onExecutionFinished {
     private Scene scene = null;
@@ -63,15 +64,13 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
     @Override
     protected void onResume() {
         super.onResume();
-        AppData.useAppData();
-        ListenService.useService(getApplicationContext(), false, false);
+        setVisible(false);
+
         Intent it = getIntent();
         if (it == null) {
             finish();
             return;
         }
-
-        setVisible(false);
 
         // Extract name group from intent extra
         final Bundle extra = it.getExtras();
@@ -87,6 +86,17 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
             return;
         }
 
+        // Load app data
+        AppData.useAppData();
+        // If app data loaded -> start service
+        AppData.observersOnDataLoaded.register(new onDataLoaded() {
+            @Override
+            public boolean onDataLoaded() {
+                ListenService.useService(getApplicationContext(), false, false);
+                return false;
+            }
+        });
+
         // Read data from intent
         final boolean show_mainwindow = extra.getBoolean("show_mainWindow", false);
         enable_feedback = extra.getBoolean("enable_feedback", true);
@@ -95,10 +105,11 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
         final String scene_json = extra.getString(EditSceneActivity.RESULT_SCENE_JSON);
         scene_uuid = extra.getString(EditSceneActivity.RESULT_SCENE_UUID, scene_uuid);
 
-        // The application may have be started here, we have to wait for the service to be ready
+        // The application may have be started here -> we have to wait for the service to be ready
         ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
             public boolean onServiceReady(ListenService service) {
+                // wait for first data to be loaded
                 AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
 
                     @Override
@@ -193,7 +204,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
 
         if (enable_feedback) {
             //noinspection ConstantConditions
-            ShowToast.showToast(this,
+            InAppNotifications.toastWithLength(this,
                     this.getString(R.string.scene_executed, scene.sceneName), 800);
         }
         AppData.getInstance().execute(scene, this);

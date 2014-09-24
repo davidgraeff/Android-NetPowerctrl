@@ -25,7 +25,12 @@ public abstract class DeviceObserverBase {
     protected final Handler mainLoopHandler;
     protected final Context context;
     protected final AtomicInteger countWait = new AtomicInteger();
-
+    final Runnable timeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            finishWithTimeouts();
+        }
+    };
     private final List<Device> devices_to_observe = new ArrayList<>();
     final Runnable redoRunnable = new Runnable() {
         @Override
@@ -34,21 +39,6 @@ public abstract class DeviceObserverBase {
             for (Device device : deviceList) {
                 doAction(device, true);
             }
-        }
-    };
-    final Runnable timeoutRunnable = new Runnable() {
-        @Override
-        public void run() {
-            for (Device device : devices_to_observe) {
-                if (device.getFirstReachableConnection() != null)
-                    device.setNotReachableAll(context.getString(R.string.error_timeout_device, ""));
-                // Call onConfiguredDeviceUpdated to update device info.
-                AppData.getInstance().deviceCollection.updateNotReachable(context, device);
-                timeout_devices.add(device);
-            }
-            devices_to_observe.clear();
-
-            checkIfDone(true);
         }
     };
     private final List<Device> timeout_devices = new ArrayList<>();
@@ -95,7 +85,7 @@ public abstract class DeviceObserverBase {
                 break;
             }
         }
-        return checkIfDone(false);
+        return devices_to_observe.isEmpty();
     }
 
     public boolean notifyObservers(String device_name) {
@@ -110,7 +100,7 @@ public abstract class DeviceObserverBase {
                 break;
             }
         }
-        return checkIfDone(false);
+        return devices_to_observe.isEmpty();
     }
 
     public void clearDevicesToObserve() {
@@ -201,24 +191,6 @@ public abstract class DeviceObserverBase {
         }
     }
 
-    private boolean checkIfDone(boolean removeObserverListener) {
-        if (devices_to_observe.isEmpty()) {
-            mainLoopHandler.removeCallbacks(timeoutRunnable);
-            mainLoopHandler.removeCallbacks(redoRunnable);
-
-            // Remove update listener manually to be sure. Normally this is done by the notify.. method caller by
-            // returning false if all devices responded. We have to remove the listener before calling
-            // onObserverJobFinished to not get into an endless loop!
-            if (removeObserverListener)
-                AppData.getInstance().removeUpdateDeviceState(DeviceObserverBase.this);
-
-            if (target != null)
-                target.onObserverJobFinished(timeout_devices);
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Called right before this object is removed from the Application list
      * of DeviceQueries because the listener service has been shutdown. All
@@ -226,10 +198,22 @@ public abstract class DeviceObserverBase {
      */
     public void finishWithTimeouts() {
         mainLoopHandler.removeCallbacks(timeoutRunnable);
-        for (Device di : devices_to_observe) {
-            di.setNotReachableAll(context.getString(R.string.error_timeout_device, ""));
-            timeout_devices.add(di);
+        mainLoopHandler.removeCallbacks(redoRunnable);
+
+        // Remove update listener manually to be sure. Normally this is done by the notify.. method caller by
+        // returning false if all devices responded. We have to remove the listener before calling
+        // onObserverJobFinished to not get into an endless loop!
+        AppData.getInstance().removeUpdateDeviceState(DeviceObserverBase.this);
+
+        for (Device device : devices_to_observe) {
+            if (device.getFirstReachableConnection() != null)
+                device.setNotReachableAll(context.getString(R.string.error_timeout_device, ""));
+            // Call onConfiguredDeviceUpdated to update device info.
+            AppData.getInstance().deviceCollection.updateNotReachable(context, device);
+            timeout_devices.add(device);
         }
+        devices_to_observe.clear();
+
         if (target != null)
             target.onObserverJobFinished(timeout_devices);
     }

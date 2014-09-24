@@ -67,13 +67,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         if (storage == null)
             return;
 
-        // Remove cache-only entries before saving
         Iterator<Timer> it = items.iterator();
-        while (it.hasNext()) {
-            if (it.next().fromCache) {
-                it.remove();
-            }
-        }
 
         notifyObservers(null, ObserverUpdateActions.UpdateAction);
 

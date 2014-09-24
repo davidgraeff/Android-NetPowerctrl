@@ -586,12 +586,21 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
             notifyDataSetChanged();
     }
 
-    public void removeAt(int position, boolean finalAction) {
-        if (position == -1) return;
+    /**
+     * Remove item at position.
+     *
+     * @param position    Index of item to remove
+     * @param finalAction If this is a final action, group spans are recomputed.
+     * @return Return amount of items that have been removed
+     * (0, 1 or 2 if a group has been removed)
+     */
+    public int removeAt(int position, boolean finalAction) {
+        if (position == -1) return 0;
         AnimationController a = mAnimationWeakReference.get();
         if (a != null)
             a.beforeRemoval(position);
 
+        int removedItems = 1;
         mItems.remove(position);
 
         /**
@@ -601,14 +610,19 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
          */
         for (int indexGroup = position - 1; indexGroup >= 0; --indexGroup) {
             DevicePortAdapterItem headerItem = mItems.get(indexGroup);
-            if (headerItem.port == null) { // is header
-                --headerItem.groupItems;
+            if (headerItem.groupType() == DevicePortAdapterItem.groupTypeEnum.GROUP_TYPE) { // is header
+                if (--headerItem.groupItems <= 0) {
+                    mItems.remove(indexGroup);
+                    ++removedItems;
+                }
                 break;
             }
         }
 
         if (finalAction)
             computeGroupSpans();
+
+        return removedItems;
     }
 
     public void remove(DevicePort oi, boolean finalAction) {
@@ -626,16 +640,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     }
 
     public void removeAllMarked(boolean finalAction) {
-        int[] toBeRemoved = new int[mItems.size()];
-        int lenToBeRemoved = 0;
-        for (int index = 0; index < mItems.size(); ++index) {
+        for (int index = mItems.size() - 1; index >= 0; ) {
             if (mItems.get(index).isMarkedRemoved()) {
-                toBeRemoved[lenToBeRemoved++] = index;
-            }
+                index -= removeAt(index, false);
+            } else
+                --index;
         }
-        // Remove now
-        for (int i = lenToBeRemoved - 1; i >= 0; --i)
-            removeAt(toBeRemoved[i], false);
 
         if (finalAction)
             computeGroupSpans();

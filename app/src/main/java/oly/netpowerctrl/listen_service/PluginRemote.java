@@ -27,7 +27,7 @@ import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  * Establish connection to plugin service, contains adapter with
@@ -204,7 +204,7 @@ public class PluginRemote implements PluginInterface {
         Intent in = new Intent();
         in.setClassName(packageName, serviceName);
         if (!context.bindService(in, r.svcConn, Context.BIND_AUTO_CREATE)) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
             return null;
         } else {
             //ShowToast.FromOtherThread(context, context.getString(R.string.plugin_loaded, localized_name));
@@ -232,11 +232,11 @@ public class PluginRemote implements PluginInterface {
                 service.init(callback);
                 isInitialized = true;
             } else
-                ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+                InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
         } catch (RemoteException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         } catch (Exception e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
             Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
             e.printStackTrace();
         }
@@ -256,11 +256,11 @@ public class PluginRemote implements PluginInterface {
                 Log.w(TAG, "refresh");
                 service.requestValues();
             } else
-                ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_no_service_connection, localized_name));
+                InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_no_service_connection, localized_name));
         } catch (RemoteException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         } catch (Exception e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
             Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
             e.printStackTrace();
         }
@@ -277,11 +277,11 @@ public class PluginRemote implements PluginInterface {
             if (service != null) {
                 service.rename(port.id, new_name);
             } else
-                ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+                InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
         } catch (RemoteException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         } catch (Exception e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
             Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
             e.printStackTrace();
         }
@@ -375,7 +375,7 @@ public class PluginRemote implements PluginInterface {
                     break;
             }
         } catch (NullPointerException | RemoteException e) {
-            ShowToast.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
         }
 
         if (callback != null)

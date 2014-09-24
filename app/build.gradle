@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 20
-        versionCode 87
-        versionName "5.9.2"
+        versionCode 92
+        versionName "5.12"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"

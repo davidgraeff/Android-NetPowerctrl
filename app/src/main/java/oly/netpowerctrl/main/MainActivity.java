@@ -37,8 +37,9 @@ import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
-import oly.netpowerctrl.utils.controls.ChangeLogUtil;
 import oly.netpowerctrl.utils.navigation.NavigationController;
+import oly.netpowerctrl.utils.notifications.ChangeLogNotification;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class MainActivity extends Activity implements ActivityWithIconCache {
@@ -102,22 +103,11 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
 
         mIconCache.start();
 
-        // Delayed loading of drawer and nfc
-//        App.getMainThreadHandler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                // NFC
-//                NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(MainActivity.this);
-//                if (mNfcAdapter != null) {
-//
-//                }
-//            }
-//        }, 100);
         App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (SharedPrefs.getInstance().showChangeLog()) {
-                    ChangeLogUtil.showChangeLog(MainActivity.this);
+                if (SharedPrefs.getInstance().hasBeenUpdated()) {
+                    InAppNotifications.addPermanentNotification(MainActivity.this, new ChangeLogNotification());
                 }
 
             }

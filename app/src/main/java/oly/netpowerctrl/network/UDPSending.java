@@ -18,7 +18,7 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  * udpSending spawns a separate thread for UDP sending and enqueues all send jobs.
@@ -46,19 +46,19 @@ public class UDPSending {
         String exceptionString = (e == null || e.getMessage() == null) ? "" : e.getMessage();
         switch (errorID) {
             case INQUERY_REQUEST:
-                ShowToast.FromOtherThread(context,
+                InAppNotifications.FromOtherThread(context,
                         context.getString(R.string.error_sending_inquiry, ip) + ": " + exceptionString);
                 break;
             case INQUERY_BROADCAST_REQUEST:
-                ShowToast.FromOtherThread(context,
+                InAppNotifications.FromOtherThread(context,
                         context.getString(R.string.error_sending_broadcast_inquiry, port) + ": " + exceptionString);
                 break;
             case NETWORK_UNREACHABLE:
-                ShowToast.FromOtherThread(context,
+                InAppNotifications.FromOtherThread(context,
                         context.getString(R.string.error_not_in_range, ip));
                 break;
             case NETWORK_UNKNOWN_HOSTNAME:
-                ShowToast.FromOtherThread(context,
+                InAppNotifications.FromOtherThread(context,
                         context.getString(R.string.error_not_in_range, ip) + ": " + exceptionString);
                 break;
         }
@@ -151,6 +151,8 @@ public class UDPSending {
     }
 
     static public class SendAndObserveJob extends DeviceObserverBase implements Job {
+        @SuppressWarnings("unused")
+        private static final String TAG = "SendAndObserveJob";
         final DeviceConnection ci;
         final List<byte[]> messages = new ArrayList<>();
         final int errorID;
@@ -172,6 +174,7 @@ public class UDPSending {
 
         public SendAndObserveJob(Context context, DeviceConnection ci, byte[] message, int errorID) {
             super(context, null);
+//            Log.w(TAG, "SendAndObserveJob");
             this.messages.add(message);
             this.errorID = errorID;
             this.ci = ci;
@@ -180,6 +183,7 @@ public class UDPSending {
 
         public SendAndObserveJob(Context context, DeviceConnection ci, byte[] message, byte[] message2, int errorID) {
             super(context, null);
+//            Log.w(TAG, "SendAndObserveJob");
             this.messages.add(message);
             this.messages.add(message2);
             this.errorID = errorID;

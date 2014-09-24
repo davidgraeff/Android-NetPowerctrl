@@ -30,6 +30,7 @@ import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.SortCriteriaDialog;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  */
@@ -154,6 +155,8 @@ public class ScenesFragment extends Fragment implements
         super.onResume();
         //noinspection ConstantConditions
         getActivity().invalidateOptionsMenu();
+
+        InAppNotifications.showPermanentNotifications(getActivity());
     }
 
     @Override

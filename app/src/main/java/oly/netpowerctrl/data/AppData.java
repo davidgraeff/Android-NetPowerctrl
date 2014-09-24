@@ -27,7 +27,7 @@ import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
 import oly.netpowerctrl.timer.TimerController;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  * Device Updates go into this object and are propagated to all observers and the device collection.
@@ -40,7 +40,7 @@ public class AppData {
     public static final DataQueryCompletedObserver observersDataQueryCompleted = new DataQueryCompletedObserver();
     public static final DataLoadedObserver observersOnDataLoaded = new DataLoadedObserver();
     public static final NewDeviceObserver observersNew = new NewDeviceObserver();
-    private static final String TAG = AppData.class.getName();
+    private static final String TAG = "AppData";
 
     public final List<Device> newDevices = new ArrayList<>();
     final public DeviceCollection deviceCollection = new DeviceCollection();
@@ -127,7 +127,6 @@ public class AppData {
      * @param deviceObserverBase The DeviceObserver
      */
     public void removeUpdateDeviceState(DeviceObserverBase deviceObserverBase) {
-        Log.w("DeviceQuery", "remove");
         updateDeviceStateList.remove(deviceObserverBase);
     }
 
@@ -148,11 +147,23 @@ public class AppData {
      * @param source Source device that has been updated
      */
     private void notifyDeviceQueries(Device source) {
+        List<DeviceObserverBase> deviceObserverBaseList = new ArrayList<>();
+
         Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
         while (it.hasNext()) {
             // Return true if the DeviceQuery object has finished its task.
-            if (it.next().notifyObservers(source))
+            DeviceObserverBase deviceObserverBase = it.next();
+            if (deviceObserverBase.notifyObservers(source)) {
                 it.remove();
+                deviceObserverBaseList.add(deviceObserverBase);
+            }
+        }
+
+        // Handle all finished device observers now. We have to split the finishing operation
+        // and updateDeviceStateList iteration because finishWithTimeouts may cause that that this
+        // method is called again and would lead to a concurrent access violation otherwise.
+        for (DeviceObserverBase deviceObserverBase : deviceObserverBaseList) {
+            deviceObserverBase.finishWithTimeouts();
         }
     }
 
@@ -248,13 +259,16 @@ public class AppData {
         Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
         while (it.hasNext()) {
             // Return true if the DeviceQuery object has finished its task.
-            if (it.next().notifyObservers(name))
+            DeviceObserverBase deviceObserverBase = it.next();
+            if (deviceObserverBase.notifyObservers(name)) {
                 it.remove();
+                deviceObserverBase.finishWithTimeouts();
+            }
         }
 
         // error packet received
         String error = context.getString(R.string.error_packet_received) + ": " + errMessage;
-        ShowToast.FromOtherThread(context, error);
+        InAppNotifications.FromOtherThread(context, error);
     }
 
     public int getReachableConfiguredDevices() {
@@ -354,6 +368,12 @@ public class AppData {
     public void execute(final DevicePort port, final int command, final onExecutionFinished callback) {
         PluginInterface remote = port.device.getPluginInterface();
         if (remote != null) {
+            // mark device as changed. Slaves (see below) will also enter this method and will be
+            // marked as changed. This is necessary for this scenario: The slave is already in the target state
+            // but will be marked as currently-executed (progressbar is visible). Because an update of the device
+            // will not be propagated because nothing actually changed, this currently-executed state will
+            // stay indefinitely. Therefore we mark all currently-executed devices as changed here.
+            port.device.setHasChanged();
             remote.execute(port, command, callback);
 
             // Support for slaves of an outlet.
@@ -369,7 +389,7 @@ public class AppData {
 
                 for (UUID slave_uuid : slaves) {
                     DevicePort p = getInstance().findDevicePort(slave_uuid);
-                    if (p != null)
+                    if (p != null && p != port)
                         execute(p, bValue ? DevicePort.ON : DevicePort.OFF, null);
                 }
             }
