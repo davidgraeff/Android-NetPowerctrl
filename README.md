@@ -22,7 +22,7 @@ For bugs and feature requests please use [Github Issues](https://github.com/davi
 <table><tr valign="top">
 <td><img width="150px" src="doc/device-2014-02-27-111333.png" /></td>
 <td><img width="150px" src="doc/device-2014-02-27-111655.png" /></td>
-<td><img width="150px" src="doc/device-2014-02-27-111810.png" /></td>
+<td><img width="150px" src="doc/device-2014-02-27-133810.png" /></td>
 </tr></table>
 
 ### Automatic device detection
