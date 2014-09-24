@@ -19,11 +19,11 @@ For bugs and feature requests please use [Github Issues](https://github.com/davi
 * Outlets and IO ports of Anel devices are supported.
 * Supports plugins to use functionality of other (related) apps.
 
-<table><tr valign="top"><td>
-<img width="200px" src="doc/devices.png" />
-</td><td>
-<img width="200px" src="doc/outlets.png" />
-</td></tr></table>
+<table><tr valign="top">
+<td><img width="150px" src="doc/device-2014-02-27-111333.png" /></td>
+<td><img width="150px" src="doc/device-2014-02-27-111655.png" /></td>
+<td><img width="150px" src="doc/device-2014-02-27-111810.png" /></td>
+</tr></table>
 
 ### Automatic device detection
 Devices are detected automatically if they are configured for UDP communication.
