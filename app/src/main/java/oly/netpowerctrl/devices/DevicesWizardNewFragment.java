@@ -153,20 +153,22 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
             return;
         }
 
-        editDevice.getDevice().UniqueDeviceID = null;
-        editDevice.getDevice().DeviceConnections.clear();
-        editDevice.getDevice().addConnection(new DeviceConnectionHTTP(editDevice.getDevice(), hostname, httpPort));
-        DeviceConnection deviceConnection = new DeviceConnectionUDP(editDevice.getDevice(), hostname, udpReceive, udpSend);
+        Device device = editDevice.getDevice();
+
+        device.UniqueDeviceID = null;
+        device.DeviceConnections.clear();
+        device.addConnection(new DeviceConnectionHTTP(device, hostname, httpPort));
+        DeviceConnection deviceConnection = new DeviceConnectionUDP(device, hostname, udpReceive, udpSend);
         deviceConnection.setIsAssignedByDevice(true); // TODO not sure about this
-        editDevice.getDevice().addConnection(deviceConnection);
+        device.addConnection(deviceConnection);
 
         textView = (TextView) getDialog().findViewById(R.id.device_username);
-        editDevice.getDevice().UserName = textView.getText().toString();
+        device.UserName = textView.getText().toString();
 
         textView = (TextView) getDialog().findViewById(R.id.device_password);
-        editDevice.getDevice().Password = textView.getText().toString();
+        device.Password = textView.getText().toString();
 
-        if (ip_autocomplete.getPosition(editDevice.getDevice().DeviceConnections.get(0).HostName) != -1) {
+        if (ip_autocomplete.getPosition(device.DeviceConnections.get(0).HostName) != -1) {
             Toast.makeText(getActivity(), R.string.device_already_exist, Toast.LENGTH_SHORT).show();
             return;
         }

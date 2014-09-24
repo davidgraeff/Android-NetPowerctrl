@@ -18,7 +18,7 @@ import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 
 /**
@@ -88,7 +88,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
                         LEGACY_READ_FROM_PREFERENCES a = new LEGACY_READ_FROM_PREFERENCES();
                         a.read(appData);
                     } catch (Exception e) {
-                        ShowToast.FromOtherThread(App.instance, R.string.error_import_legacy_data);
+                        InAppNotifications.FromOtherThread(App.instance, R.string.error_import_legacy_data);
                     }
                 }
                 return null;
@@ -205,7 +205,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
                 if (appData.sceneCollection.getItems().size() > 0)
                     appData.sceneCollection.saveAll();
             } catch (IOException | InstantiationException | IllegalAccessException ignored) {
-                ShowToast.FromOtherThread(context, R.string.error_reading_scenes);
+                InAppNotifications.FromOtherThread(context, R.string.error_reading_scenes);
             }
             try {
                 fromJSON(appData.deviceCollection.getItems(), JSONHelper.getReader(prefs.getString("devices", null)), Device.class);
@@ -213,7 +213,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
                     appData.deviceCollection.saveAll();
 
             } catch (IOException | InstantiationException | IllegalAccessException ignored) {
-                ShowToast.FromOtherThread(context, R.string.error_reading_devices);
+                InAppNotifications.FromOtherThread(context, R.string.error_reading_devices);
             }
             try {
                 fromJSON(appData.groupCollection.getItems(), JSONHelper.getReader(prefs.getString("groups", null)), Group.class);
@@ -221,14 +221,14 @@ public class LoadStoreJSonData implements onStorageUpdate {
                     appData.groupCollection.saveAll();
 
             } catch (IOException | InstantiationException | IllegalAccessException ignored) {
-                ShowToast.FromOtherThread(context, R.string.error_reading_groups);
+                InAppNotifications.FromOtherThread(context, R.string.error_reading_groups);
             }
             try {
                 fromJSON(appData.timerController.getItems(), JSONHelper.getReader(prefs.getString("alarms", null)), Timer.class);
                 if (appData.timerController.getItems().size() > 0)
                     appData.timerController.saveAll();
             } catch (IOException | InstantiationException | IllegalAccessException ignored) {
-                ShowToast.FromOtherThread(context, R.string.error_reading_alarms);
+                InAppNotifications.FromOtherThread(context, R.string.error_reading_alarms);
             }
         }
     }

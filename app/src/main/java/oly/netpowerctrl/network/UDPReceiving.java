@@ -9,7 +9,7 @@ import java.net.NetworkInterface;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.utils.ShowToast;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 abstract public class UDPReceiving extends Thread {
     private final int receive_port;
@@ -47,7 +47,7 @@ abstract public class UDPReceiving extends Thread {
                     msg += e.getLocalizedMessage();
                     if (receive_port < 1024)
                         msg += context.getString(R.string.error_port_lt_1024);
-                    ShowToast.FromOtherThread(context, msg);
+                    InAppNotifications.FromOtherThread(context, msg);
                 }
                 break;
             }

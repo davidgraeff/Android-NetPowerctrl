@@ -1,7 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion changeDate="13. September 2014" versionName="5.9.2">
-        <changelogbug>Einige Fehler behoben</changelogbug>
+    <changelogversion changeDate="24. September 2014" versionName="6.0">
+        <changelogbug>Kleinere Probleme an einigen Stellen behoben</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="23. September 2014" versionName="5.12">
+        <changelogbug>Einrichten von neuen Geräten führte manchmal zum Absturz</changelogbug>
+        <changelogbug>Widget Hintergrunddienst beendet sich nun nicht mehr selbst, obwohl noch
+            Widgets aktiv sind
+        </changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="22. September 2014" versionName="5.10-5.11">
+        <changelogimprovement>Verbesserte Datenverarbeitung</changelogimprovement>
+        <changelogimprovement>Nachrichten wie die Aktualisierungsbenachrichtigung werden
+            unauffälliger dargestellt
+        </changelogimprovement>
+        <changelogimprovement>Widgets funktionieren besser, sind nun animiert und geben Rückmeldung
+            bei Nicht-Erreichbarkeit
+        </changelogimprovement>
+        <changelogbug>Melden von Fehlern funktioniert wieder</changelogbug>
+        <changelogbug>Zeitschaltungen werden wieder korrekt aufgelistet</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="14. September 2014" versionName="5.9.2-5.9.4">
+        <changelogbug>Netzwerk/Http: Es wurden nicht immer alle Geräte als außer-Reichweite
+            erkannt
+        </changelogbug>
+        <changelogbug>Einrichten von neuen Geräten (manuell) ohne "Port kleiner 1024" Warnung
+            funktioniert wieder
+        </changelogbug>
+        <changelogbug>Layout Fehler in Übersichtsansicht behoben</changelogbug>
     </changelogversion>
 
     <changelogversion changeDate="10. September 2014" versionName="5.9.1">

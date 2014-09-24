@@ -37,6 +37,12 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     }
 
     @Override
+    public boolean isEnabled(int position) {
+        DevicePort port = mItems.get(position).port;
+        return port == null || port.device.getFirstReachableConnection() != null;
+    }
+
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         DevicePortAdapterItem item = mItems.get(position);
         DevicePort port = item.port;

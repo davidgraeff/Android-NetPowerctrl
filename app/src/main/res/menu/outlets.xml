@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <item
         android:id="@+id/refresh"
         android:icon="@drawable/ic_menu_refresh"
         android:showAsAction="always"
         android:title="@string/menu_refresh" />
-
-    <item
-        android:id="@+id/menu_debug_toggle_network_reduced"
-        android:icon="@android:drawable/ic_dialog_alert"
-        android:showAsAction="always"
-        android:title="@string/menu_debug_toggle_network_reduced" />
 
     <item
         android:id="@+id/menu_view_list"
@@ -44,5 +39,19 @@
         android:id="@+id/menu_hidehidden"
         android:showAsAction="collapseActionView|withText"
         android:title="@string/hide_hidden" />
+
+
+    <item
+        android:id="@+id/menu_debug_toggle_network_reduced"
+        android:icon="@android:drawable/ic_dialog_alert"
+        android:showAsAction="never"
+        android:title="@string/menu_debug_toggle_network_reduced" />
+
+    <item
+        android:id="@+id/menu_debug_crash_test"
+        android:icon="@android:drawable/ic_dialog_alert"
+        android:showAsAction="never"
+        android:title="Test crash"
+        tools:ignore="HardcodedText" />
 
 </menu>

@@ -3,14 +3,10 @@ package oly.netpowerctrl.utils;
 import android.content.Context;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -23,30 +19,30 @@ public class Logging {
     public static File getLogFile(Context context) {
         return new File(context.getExternalFilesDir("logs"), "main_log.txt");
     }
-
-    private static String convertStreamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        reader.close();
-        return sb.toString();
-    }
-
-    public static String getStringFromFile(Context context) {
-        FileInputStream fin;
-        String ret = "";
-        try {
-            fin = new FileInputStream(getLogFile(context));
-            ret = convertStreamToString(fin);
-            //Make sure you close all streams.
-            fin.close();
-        } catch (Exception ignored) {
-        }
-        return ret;
-    }
+//
+//    private static String convertStreamToString(InputStream is) throws Exception {
+//        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+//        StringBuilder sb = new StringBuilder();
+//        String line;
+//        while ((line = reader.readLine()) != null) {
+//            sb.append(line).append("\n");
+//        }
+//        reader.close();
+//        return sb.toString();
+//    }
+//
+//    public static String getStringFromFile(Context context) {
+//        FileInputStream fin;
+//        String ret = "";
+//        try {
+//            fin = new FileInputStream(getLogFile(context));
+//            ret = convertStreamToString(fin);
+//            //Make sure you close all streams.
+//            fin.close();
+//        } catch (Exception ignored) {
+//        }
+//        return ret;
+//    }
 
     synchronized static public void appendLog(Context context, String text) {
         text = DateFormat.getDateTimeInstance().format(new Date()) + "\n  " + text;

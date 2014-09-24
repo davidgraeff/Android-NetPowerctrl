@@ -75,7 +75,9 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
         if (master == null)
             return;
 
-        master.setSlaves(adapter.getCheckedUUids());
+        List<UUID> slaves = adapter.getCheckedUUids();
+        slaves.remove(master.uuid);
+        master.setSlaves(slaves);
         AppData.getInstance().deviceCollection.save(master.device);
 
         MainActivity.getNavigationController().onBackPressed();

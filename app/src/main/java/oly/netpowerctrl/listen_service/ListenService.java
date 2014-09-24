@@ -46,6 +46,7 @@ public class ListenService extends Service {
     private static final String PAYLOAD_LOCALIZED_NAME = "LOCALIZED_NAME";
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
+    static int findDevicesRun = 0;
     ///////////////// Service start/stop listener /////////////////
     static private int mDiscoverServiceRefCount = 0;
     static private ListenService mDiscoverService;
@@ -86,6 +87,8 @@ public class ListenService extends Service {
         }
     };
     private final List<PluginInterface> plugins = new ArrayList<>();
+    // Debug
+    long startTime;
     private boolean isExtensionsListener = false;
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
@@ -102,9 +105,7 @@ public class ListenService extends Service {
             }
         }
     };
-
     private boolean isNetworkChangedListener = false;
-
     /**
      * Detect new devices and check reach-ability of configured devices.
      */
@@ -145,6 +146,10 @@ public class ListenService extends Service {
             if (refreshDevices)
                 mDiscoverService.findDevices(showNotification, null);
         }
+    }
+
+    public static boolean isServiceUsed() {
+        return mDiscoverServiceRefCount > 0;
     }
 
     public static void stopUseService() {
@@ -264,6 +269,7 @@ public class ListenService extends Service {
 
     ///////////////// Service start/stop /////////////////
     private void enterNetworkReducedMode() {
+        Log.w(TAG, "findDevices:enterNetworkReducedMode " + String.valueOf((System.nanoTime() - startTime) / 1000000.0));
         mNetworkReducedMode = true;
 
         observersServiceModeChanged.onServiceModeChanged(true);
@@ -290,6 +296,8 @@ public class ListenService extends Service {
 
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterFullNetworkState(this, null);
+
+        AppData.getInstance().deviceCollection.setHasChangedAll();
 
         if (!isNetworkChangedListener) {
             if (SharedPrefs.getInstance().logEnergySaveMode())
@@ -369,7 +377,7 @@ public class ListenService extends Service {
             if (plugin == null || device.getPluginInterface() == plugin) {
                 device.setPluginInterface(null);
                 device.setHasChanged();
-                deviceCollection.update(device);
+                deviceCollection.updateExisting(device);
             }
         }
     }
@@ -393,31 +401,30 @@ public class ListenService extends Service {
     }
 
     public void findDevices(final boolean showNotification, final onDeviceObserverFinishedResult callback) {
-        if (mNetworkReducedMode) {
-            if (SharedPrefs.getInstance().logEnergySaveMode())
-                Logging.appendLog(this, "Energiesparen aus: Suche Geräte");
-            // Restart all listener services and try again
-            Handler h = new Handler();
-            h.post(new Runnable() {
-                @Override
-                public void run() {
-                    enterFullNetworkMode(true, showNotification);
-                }
-            });
-            return;
-        }
+        final int currentRun = ++findDevicesRun;
+
         // The following mechanism allows only one update request within a
         // 1sec timeframe.
         if (isDetecting)
             return;
         isDetecting = true;
-        Handler h = new Handler();
-        h.postDelayed(new Runnable() {
+
+        startTime = System.nanoTime();
+        Log.w(TAG, "findDevices:start " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
+
+        App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 isDetecting = false;
             }
         }, 1000);
+
+        if (mNetworkReducedMode) {
+            if (SharedPrefs.getInstance().logEnergySaveMode())
+                Logging.appendLog(this, "Energiesparen aus: Suche Geräte");
+
+            enterFullNetworkMode(false, false);
+        }
 
         observersStartStopRefresh.onRefreshStateChanged(true);
 
@@ -430,6 +437,7 @@ public class ListenService extends Service {
 
             @Override
             public void onObserverJobFinished(List<Device> timeout_devices) {
+                Log.w(TAG, "findDevices:job_finished " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
                 AppData.observersDataQueryCompleted.onDataQueryFinished();
                 if (callback != null)
                     callback.onObserverJobFinished(timeout_devices);
@@ -454,7 +462,7 @@ public class ListenService extends Service {
 
                 if (timeout_devices.size() == 0)
                     return;
-                Log.w(TAG, "findDevices:timeout_devices");
+                Log.w(TAG, "findDevices:timeout_devices " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
 
                 // Do we need to go into network reduced mode?
                 if (timeout_devices.size() == AppData.getInstance().countNetworkDevices()) {

@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 
+import oly.netpowerctrl.main.MainActivity;
+
 /**
  * Use this helper class to add a "done" and "cancel"
  * actions to the action bar and change the title of the action bar
@@ -42,5 +44,8 @@ public class ActionBarDoneCancel {
         assert bar != null;
         bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                 ActionBar.DISPLAY_SHOW_TITLE);
+
+        if (MainActivity.instance != null)
+            MainActivity.getNavigationController().createDrawerToggle(activity);
     }
 }

@@ -97,4 +97,10 @@ public abstract class DeviceConnection {
 
     public abstract String getProtocol();
 
+    public boolean needsUpdate(DeviceConnection otherConnection) {
+        if (not_reachable_reason == null) {
+            return otherConnection.not_reachable_reason != null;
+        } else
+            return not_reachable_reason.equals(otherConnection.not_reachable_reason);
+    }
 }

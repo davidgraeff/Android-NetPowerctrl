@@ -17,7 +17,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import org.acra.ACRA;
 import org.sufficientlysecure.donations.DonationsFragment;
 
 import java.lang.ref.WeakReference;
@@ -37,6 +36,7 @@ import oly.netpowerctrl.timer.TimerFragment;
 import oly.netpowerctrl.utils.DonateData;
 import oly.netpowerctrl.utils.fragments.onFragmentBackButton;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  * All navigation related functionality used by the main activity
@@ -156,27 +156,7 @@ public class NavigationController {
 
 
         if (mDrawerLayout != null) {
-            // ActionBarDrawerToggle ties together the the proper interactions
-            // between the sliding drawer and the action bar app icon
-            mDrawerToggle = new ActionBarDrawerToggle(
-                    context,                  /* host Activity */
-                    mDrawerLayout,         /* DrawerLayout object */
-                    R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
-                    R.string.drawer_open,  /* "open drawer" description for accessibility */
-                    R.string.drawer_close  /* "close drawer" description for accessibility */
-            ) {
-                public void onDrawerClosed(View view) {
-                    context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                }
-
-                public void onDrawerOpened(View drawerView) {
-                    //getActionBar().setTitle(mDrawerTitle);
-                    context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-                    if (currentFragment != null && currentFragment instanceof onFragmentBackButton)
-                        ((onFragmentBackButton) currentFragment).onBackButton();
-                }
-            };
-            mDrawerLayout.setDrawerListener(mDrawerToggle);
+            createDrawerToggle(context);
         }
 
         if (restore == RestorePositionEnum.RestoreLastSaved) {
@@ -200,6 +180,30 @@ public class NavigationController {
             // Sync the toggle state after onRestoreInstanceState has occurred.
             mDrawerToggle.syncState();
         }
+    }
+
+    public void createDrawerToggle(final Activity context) {
+        // ActionBarDrawerToggle ties together the the proper interactions
+        // between the sliding drawer and the action bar app icon
+        mDrawerToggle = new ActionBarDrawerToggle(
+                context,                  /* host Activity */
+                mDrawerLayout,         /* DrawerLayout object */
+                R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
+                R.string.drawer_open,  /* "open drawer" description for accessibility */
+                R.string.drawer_close  /* "close drawer" description for accessibility */
+        ) {
+            public void onDrawerClosed(View view) {
+                context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            public void onDrawerOpened(View drawerView) {
+                //getActionBar().setTitle(mDrawerTitle);
+                context.invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                if (currentFragment != null && currentFragment instanceof onFragmentBackButton)
+                    ((onFragmentBackButton) currentFragment).onBackButton();
+            }
+        };
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
     }
 
     public void onPrepareOptionsMenu(Menu menu) {
@@ -304,8 +308,7 @@ public class NavigationController {
                 }
             } catch (Exception exception) {
                 if (!App.isDebug()) {
-                    ACRA.getErrorReporter().putCustomData("fragmentName", currentFragmentClass);
-                    ACRA.getErrorReporter().handleSilentException(exception);
+                    InAppNotifications.showException(context, exception, "fragmentName: " + currentFragmentClass);
                 }
                 exception.printStackTrace();
 

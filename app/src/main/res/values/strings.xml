@@ -98,8 +98,7 @@
     <string name="menu_switch_all_ignore">Remove all from scene</string>
     <string name="menu_help">Help</string>
     <string name="menu_device_configuration_page">Open configuration page</string>
-    <string name="error_not_reachable">Devices not reachable</string>
-
+    <string name="error_not_reachable">Devices %1$s not reachable</string>
     <string name="empty_no_scenes">No scene found.\n\n
 A scene combines multiple actions and execute them at once.</string>
     <string name="empty_no_outlets">No outlets to display.\n\n
@@ -326,4 +325,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="outlet_icon_off_label">Aus:</string>
     <string name="outlet_icon_on_label">An:</string>
     <string name="error_rename_only_with_http_connection">Umbenennen nur mit HTTP Verbindung möglich</string>
+    <string name="notification_title_changelog">The app has been updated to version %1$s</string>
+    <string name="widget_inProgress">Waiting</string>
+    <string name="log_data_send">Data have been send</string>
 </resources>

@@ -3,7 +3,6 @@ package oly.netpowerctrl.network;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -132,15 +131,6 @@ public class Utils {
             ni.getHardwareAddress();
             return Utils.MacToLong(ni.getHardwareAddress());
         } catch (SocketException ignored) {
-            return 0;
-        }
-    }
-
-    public static int getVersionCode(Context context) {
-        try {
-            //noinspection ConstantConditions
-            return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
             return 0;
         }
     }

@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.preference.PreferenceManager;
@@ -44,6 +45,27 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
 
     public static SharedPrefs getInstance() {
         return SingletonHolder.instance;
+    }
+
+    public static String getVersionName(Context context) {
+        try {
+            Class cls = App.class;
+            ComponentName comp = new ComponentName(context, cls);
+            PackageInfo pinfo = context.getPackageManager().getPackageInfo(
+                    comp.getPackageName(), 0);
+            return pinfo.versionName;
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            return "";
+        }
+    }
+
+    public static int getVersionCode(Context context) {
+        try {
+            //noinspection ConstantConditions
+            return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return 0;
+        }
     }
 
     public int getLastPreferenceVersion() {
@@ -248,38 +270,26 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return name.equals("use_log_energy_saving_mode");
     }
 
-    String getVersionName(Context context) {
-        try {
-            Class cls = App.class;
-            ComponentName comp = new ComponentName(context, cls);
-            PackageInfo pinfo = context.getPackageManager().getPackageInfo(
-                    comp.getPackageName(), 0);
-            return pinfo.versionName;
-        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
-            return "";
-        }
-    }
-
     /**
-     * @return Return true if first run. All later calls will always return false.
+     * @return Return true if this version is newer than a previous stored version. A
+     * version is stored by calling {@see acceptUpdatedVersion}. False is returned if
+     * this app runs the first time and for all subsequent starts with the same version.
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean showChangeLog() {
-
+    public boolean hasBeenUpdated() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String lastStoredVersion = prefs.getString("lastVersion", null);
         String currentVersion = getVersionName(context);
-        // Do not show changelog on first app opening (but on the next opening)
-        if (lastStoredVersion == null && getFirstTab().equals("")) {
-            prefs.edit().putString("lastVersion", "").apply();
+        if (lastStoredVersion == null) {
+            prefs.edit().putString("lastVersion", currentVersion).apply();
             return false;
         }
-        // last version == current version: do not show changelog
-        if (currentVersion.equals(lastStoredVersion))
-            return false;
-        // update last version and show change log
+        return !currentVersion.equals(lastStoredVersion);
+    }
+
+    public void acceptUpdatedVersion() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String currentVersion = getVersionName(context);
         prefs.edit().putString("lastVersion", currentVersion).apply();
-        return true;
     }
 
     public boolean isNotification() {

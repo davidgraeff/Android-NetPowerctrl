@@ -20,9 +20,12 @@ import oly.netpowerctrl.main.App;
  * all devices to query.
  */
 public class DeviceQuery extends DeviceObserverBase {
+    @SuppressWarnings("unused")
+    private static final String TAG = "DeviceQuery";
 
     public DeviceQuery(Context context, onDeviceObserverResult target, Device device_to_observe) {
         super(context, target);
+//        Log.w(TAG, "DeviceQuery");
         int wait = addDevice(device_to_observe, false);
 
         if (wait == 0)
@@ -31,6 +34,7 @@ public class DeviceQuery extends DeviceObserverBase {
 
     public DeviceQuery(Context context, onDeviceObserverResult target, Iterator<Device> devices_to_observe) {
         super(context, target);
+//        Log.w(TAG, "DeviceQuery");
         int wait = 0;
         while (devices_to_observe.hasNext()) {
             wait = addDevice(devices_to_observe.next(), false);
@@ -48,6 +52,7 @@ public class DeviceQuery extends DeviceObserverBase {
      */
     public DeviceQuery(Context context, onDeviceObserverResult target) {
         super(context, target);
+//        Log.w(TAG, "DeviceQuery");
         List<Device> deviceList = AppData.getInstance().deviceCollection.getItems();
         int wait = 0;
         for (Device device : deviceList) {
@@ -62,7 +67,7 @@ public class DeviceQuery extends DeviceObserverBase {
     @Override
     protected void doAction(Device device, boolean repeated) {
         if (repeated)
-            Log.w("DeviceObserverBase", "redo: " + device.DeviceName);
+            Log.w(TAG, "redo: " + device.DeviceName);
 
         PluginInterface pluginInterface = device.getPluginInterface();
         if (pluginInterface == null) {
@@ -72,8 +77,25 @@ public class DeviceQuery extends DeviceObserverBase {
             return;
         }
 
-        for (DeviceConnection ci : device.DeviceConnections) {
-            pluginInterface.requestData(ci);
+        boolean requestAll = true;
+        if (!repeated) {
+            // if this is the first request, we only use the first available connection.
+            // If there are no available, we use all.
+            for (DeviceConnection ci : device.DeviceConnections) {
+                if (ci.isReachable()) {
+                    requestAll = false;
+                    pluginInterface.requestData(ci);
+                    break;
+                }
+            }
         }
+
+        // If this is a repeated request or if no single device connections
+        // was available before, we use all device connections.
+        if (requestAll)
+            for (DeviceConnection ci : device.DeviceConnections) {
+                pluginInterface.requestData(ci);
+            }
+
     }
 }

@@ -6,8 +6,9 @@ import android.os.Looper;
 
 import org.acra.ACRA;
 import org.acra.ACRAConfiguration;
-import org.acra.ACRAConfigurationException;
+import org.acra.ReportField;
 import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
 
 import oly.netpowerctrl.BuildConfig;
@@ -19,6 +20,10 @@ import oly.netpowerctrl.utils.AndroidStatusBarNotification;
  * We keep track of Anel device states via the listener service.
  * Crash management
  */
+@ReportsCrashes(formKey = "", formUri = "https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_update/report",
+        mode = ReportingInteractionMode.TOAST, reportType = HttpSender.Type.JSON,
+        resToastText = R.string.crash_toast_text, formUriBasicAuthLogin = "wherentritstallevencendo",
+        formUriBasicAuthPassword = "Ap1xIKwclTDDcU3BiNDtjl5Q")
 public class App extends Application {
     static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     public static App instance;
@@ -44,6 +49,19 @@ public class App extends Application {
         return isDebugFlag;
     }
 
+    public static void setErrorReportContentCrash() {
+        ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
+        config.setCustomReportContent(new ReportField[]{ReportField.REPORT_ID, ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.PACKAGE_NAME, ReportField.PHONE_MODEL, ReportField.ANDROID_VERSION, ReportField.BUILD, ReportField.BRAND, ReportField.PRODUCT, ReportField.TOTAL_MEM_SIZE, ReportField.AVAILABLE_MEM_SIZE, ReportField.CUSTOM_DATA, ReportField.STACK_TRACE, ReportField.USER_COMMENT, ReportField.USER_APP_START_DATE, ReportField.USER_CRASH_DATE, ReportField.USER_EMAIL, ReportField.IS_SILENT, ReportField.DEVICE_FEATURES, ReportField.SHARED_PREFERENCES, ReportField.THREAD_DETAILS});
+        ACRA.setConfig(config);
+    }
+
+    public static void setErrorReportContentLogFile(String filename) {
+        ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
+        config.setApplicationLogFile(filename);
+        config.setCustomReportContent(new ReportField[]{ReportField.REPORT_ID, ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.PACKAGE_NAME, ReportField.PHONE_MODEL, ReportField.ANDROID_VERSION, ReportField.BUILD, ReportField.BRAND, ReportField.PRODUCT, ReportField.CUSTOM_DATA, ReportField.APPLICATION_LOG, ReportField.USER_COMMENT, ReportField.USER_APP_START_DATE, ReportField.USER_EMAIL, ReportField.DEVICE_FEATURES, ReportField.SHARED_PREFERENCES});
+        ACRA.setConfig(config);
+    }
+
     /**
      * We do not do any loading or starting when the application is loaded.
      * This can be requested by using useService()
@@ -51,31 +69,10 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!isDebugFlag) {
-            ACRAConfiguration acraConfiguration = ACRA.getConfig();
-            try {
-                acraConfiguration.setMode(ReportingInteractionMode.TOAST);
-                acraConfiguration.setFormUri("http://www.bugsense.com/api/acra?api_key=11178d09");
-                acraConfiguration.setFormKey("");
-                acraConfiguration.setReportType(HttpSender.Type.FORM);
-                acraConfiguration.setResToastText(R.string.crash_toast_text);
-                ACRA.init(this);
-
-                //@ReportsCrashes(
-//        formKey = "",
-//        formUri = "https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_update/report",
-//        reportType = org.acra.sender.HttpSender.Type.JSON,
-//        httpMethod = org.acra.sender.HttpSender.Method.PUT,
-//        formUriBasicAuthLogin="waystruchatedurneintshin",
-//        formUriBasicAuthPassword="bwDrmPKlGxb8vsRBLc0IRFql",
-//        mode = ReportingInteractionMode.TOAST,
-//        resToastText = R.string.crash_toast_text)
-            } catch (ACRAConfigurationException e) {
-                e.printStackTrace();
-            }
-            //BugSenseHandler.initAndStartSession(MyActivity.this, "11178d09");
-        }
+        ACRA.init(this);
+        setErrorReportContentCrash();
         AndroidStatusBarNotification.init(this);
 
     }
+
 }

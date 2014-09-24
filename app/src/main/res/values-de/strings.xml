@@ -98,8 +98,7 @@
     <string name="menu_switch_all_ignore">Alle von Szene entfernen</string>
     <string name="menu_help">Hilfe</string>
     <string name="menu_device_configuration_page">Konfigurationsseite öffnen</string>
-    <string name="error_not_reachable">Gerät nicht erreichbar</string>
-
+    <string name="error_not_reachable">Gerät %1$s nicht erreichbar</string>
     <string name="empty_no_scenes">Keine Szenen gefunden.\n\nMit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
 Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</string>
@@ -329,4 +328,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="outlet_icon_off_label">Aus:</string>
     <string name="outlet_icon_on_label">An:</string>
     <string name="error_rename_only_with_http_connection">Umbenennen nur mit HTTP Verbindung möglich</string>
+    <string name="notification_title_changelog">App aktualisiert auf Version %1$s</string>
+    <string name="widget_inProgress">Warte</string>
+    <string name="log_data_send">Daten wurden gesendet</string>
 </resources>

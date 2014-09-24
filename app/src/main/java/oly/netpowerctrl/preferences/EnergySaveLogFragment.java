@@ -2,16 +2,15 @@ package oly.netpowerctrl.preferences;
 
 import android.app.AlertDialog;
 import android.app.ListFragment;
-import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import org.acra.ACRA;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +59,7 @@ public class EnergySaveLogFragment extends ListFragment {
         App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                setListAdapter(arrayAdapter);
                 ListView v = getListView();
                 if (v != null)
                     v.setItemChecked(arrayAdapter.getCount() - 1, true);
@@ -119,22 +119,10 @@ public class EnergySaveLogFragment extends ListFragment {
                 return true;
             }
             case R.id.menu_log_send_mail: {
-                @SuppressWarnings("ConstantConditions")
-                ApplicationInfo info = getActivity().getApplicationContext().getApplicationInfo();
-                PackageManager pm = getActivity().getApplicationContext().getPackageManager();
-                assert pm != null;
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"david.graeff@web.de"});
-                intent.putExtra(Intent.EXTRA_TEXT, Logging.getStringFromFile(getActivity()));
-                try {
-                    assert info != null;
-                    //noinspection ConstantConditions
-                    intent.putExtra(Intent.EXTRA_SUBJECT, info.loadLabel(pm).toString() + "(" + pm.getPackageInfo(info.packageName, 0).versionName + ")" + " Log | Device: " + Build.MANUFACTURER + " " + Build.DEVICE + "(" + Build.MODEL + ") API: " + Build.VERSION.SDK_INT);
-                } catch (PackageManager.NameNotFoundException ignored) {
-                }
-                intent.setType("plain/html");
-                getActivity().startActivity(intent);
+                App.setErrorReportContentLogFile(Logging.logFile.getAbsolutePath());
+                ACRA.getErrorReporter().handleSilentException(null);
+                App.setErrorReportContentCrash();
+                Toast.makeText(getActivity(), R.string.log_data_send, Toast.LENGTH_SHORT).show();
                 return true;
             }
 
