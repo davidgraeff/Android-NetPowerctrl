@@ -262,8 +262,12 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
 
     public boolean logEnergySaveMode() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.log_energy_saving_mode);
-        return prefs.getBoolean("use_log_energy_saving_mode", value);
+        return prefs.getBoolean("use_log_energy_saving_mode", false);
+    }
+
+    public boolean logExtensions() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("use_log_extensions", false);
     }
 
     public boolean isPreferenceNameLogEnergySaveMode(String name) {

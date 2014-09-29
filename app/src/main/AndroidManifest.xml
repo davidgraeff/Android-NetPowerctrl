@@ -9,6 +9,11 @@
         android:minSdkVersion="14"
         android:targetSdkVersion="19" />-->
 
+    <permission
+        android:name="oly.netpowerctrl.permission.PLUGINS"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="oly.netpowerctrl.permission.PLUGINS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -105,7 +110,7 @@
             android:description="@string/app_name_widget"
             android:icon="@drawable/netpowerctrl"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Transparent"></activity>
+            android:theme="@style/Theme.Transparent" />
 
         <activity
             android:name=".scenes.EditSceneActivity"
@@ -140,9 +145,20 @@
 
         <service
             android:name=".listen_service.ListenService"
-            android:permission="android.permission.INTERNET" />
+            android:exported="true"
+            android:permission="oly.netpowerctrl.permission.PLUGINS">
 
-        <service android:name="oly.netpowerctrl.widget.WidgetUpdateService" />
+            <intent-filter>
+                <action
+                    android:name="oly.netpowerctrl.plugins.PLUGIN_RESPONSE_ACTION"
+                    android:enabled="true" />
+            </intent-filter>
+
+        </service>
+
+        <service
+            android:name="oly.netpowerctrl.widget.WidgetUpdateService"
+            android:exported="false" />
     </application>
 
 

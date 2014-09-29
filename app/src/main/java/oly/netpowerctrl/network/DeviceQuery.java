@@ -76,6 +76,12 @@ public class DeviceQuery extends DeviceObserverBase {
             notifyObservers(device);
             return;
         }
+        if (pluginInterface.isNetworkReducedState()) {
+            device.setNotReachableAll(App.getAppString(R.string.device_energysave_mode));
+            // remove from list of devices to observe and notify observers
+            notifyObservers(device);
+            return;
+        }
 
         boolean requestAll = true;
         if (!repeated) {

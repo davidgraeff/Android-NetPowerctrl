@@ -216,7 +216,7 @@ public class DeviceEditFragmentDialog extends DialogFragment implements onCreate
             final DeviceConnectionHTTP connection = (DeviceConnectionHTTP) connection1;
 
             View p = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_edit_connection_http, layout, false);
-            ((EditText) p.findViewById(R.id.device_host)).setText(connection.HostName);
+            ((EditText) p.findViewById(R.id.device_host)).setText(connection.mHostName);
             ((EditText) p.findViewById(R.id.device_http_port)).setText(String.valueOf(connection.getDestinationPort()));
             ImageView imageView = ((ImageView) p.findViewById(R.id.connection_reachable));
             imageView.setVisibility(View.VISIBLE);

@@ -55,6 +55,8 @@ public interface PluginInterface {
 
     void enterNetworkReducedState(Context context);
 
+    boolean isNetworkReducedState();
+
     boolean isNetworkPlugin();
 
     ////////////// Alarms //////////////
@@ -65,5 +67,4 @@ public interface PluginInterface {
     void removeAlarm(Timer timer, final onAsyncRunnerResult callback);
 
     void requestAlarms(DevicePort port, TimerController timerController);
-
 }

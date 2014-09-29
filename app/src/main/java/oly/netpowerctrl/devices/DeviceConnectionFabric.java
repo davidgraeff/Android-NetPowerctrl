@@ -35,11 +35,14 @@ public class DeviceConnectionFabric {
             case DeviceConnectionHTTP.ID:
                 deviceConnection = new DeviceConnectionHTTP(device);
                 break;
+            case DeviceConnectionAPI.ID:
+                deviceConnection = new DeviceConnectionAPI(device);
+                break;
             default:
                 throw new ClassNotFoundException("Unexpected connection_type: " + name);
         }
 
-        if (!deviceConnection.fromJSON(reader)) {
+        if (!deviceConnection.fromJSON(reader, true)) {
             return null;
         } else
             return deviceConnection;

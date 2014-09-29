@@ -87,7 +87,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     @Override
     public void onDestroy() {
         if (ListenService.isServiceReady() && allWidgets.size() > 0)
-            InAppNotifications.showException(this, "WidgetService: Unexpected request to close");
+            InAppNotifications.showException(this, null, "WidgetService: Unexpected request to close");
 
         /**
          * If the service is kept running but now should be finished (preferences changed,
@@ -382,7 +382,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     @Override
     public void onServiceFinished() {
         if (ListenService.isServiceUsed())
-            InAppNotifications.showException(this, "WidgetService: ListenService unexpectedly closed");
+            InAppNotifications.showException(this, null, "WidgetService: ListenService unexpectedly closed");
         stopSelf();
     }
 

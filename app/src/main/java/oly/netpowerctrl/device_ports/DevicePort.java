@@ -174,7 +174,7 @@ public final class DevicePort implements Comparable {
     }
 
 
-    public void toJSON(JsonWriter writer) throws IOException {
+    public void toJSON(JsonWriter writer, boolean addDeviceID) throws IOException {
         writer.beginObject();
         writer.name("Type").value(ui_type.ordinal());
         writer.name("Description").value(Description);
@@ -194,12 +194,14 @@ public final class DevicePort implements Comparable {
         for (UUID slave_uuid : slaves)
             writer.value(slave_uuid.toString());
         writer.endArray();
+        if (addDeviceID)
+            writer.name("device_id").value(device.UniqueDeviceID);
         writer.endObject();
     }
 
-    public String debugOut() {
-        return Description + " " + String.valueOf(current_value);
-    }
+//    public String debugOut() {
+//        return Description + " " + String.valueOf(current_value);
+//    }
 
     public String getDescription() {
         return this.Description;

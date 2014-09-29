@@ -23,7 +23,7 @@ public class DeviceConnectionUDP extends DeviceConnection {
 
     public DeviceConnectionUDP(Device device, String hostName, int PortUDPReceive, int PortUDPSend) {
         super(device);
-        this.HostName = hostName;
+        this.mHostName = hostName;
         this.PortUDPReceive = PortUDPReceive;
         this.PortUDPSend = PortUDPSend;
     }
@@ -34,22 +34,24 @@ public class DeviceConnectionUDP extends DeviceConnection {
         writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("PortUDPSend").value(PortUDPSend);
         writer.name("PortUDPReceive").value(PortUDPReceive);
-        writer.name("HostName").value(HostName);
+        writer.name("HostName").value(mHostName);
         writer.name("AllowHostnameUpdates").value(mIsAssignedByDevice);
         writer.endObject();
     }
 
     @Override
-    public boolean fromJSON(JsonReader reader) throws IOException, ClassNotFoundException {
+    public boolean fromJSON(JsonReader reader, boolean beginObjectAlreadyCalled) throws IOException, ClassNotFoundException {
+        if (!beginObjectAlreadyCalled)
+            reader.beginObject();
+
         int members = 0;
-//        reader.beginObject();
-        // no beginObject! we are already inside a json object
+
         while (reader.hasNext()) {
             String name = reader.nextName();
             assert name != null;
             switch (name) {
                 case "HostName":
-                    HostName = reader.nextString();
+                    mHostName = reader.nextString();
                     ++members;
                     break;
                 case "DefaultPorts":
@@ -78,13 +80,12 @@ public class DeviceConnectionUDP extends DeviceConnection {
 
         //DEPRECATED
         if (members == 4) {
-            mIsAssignedByDevice = HostName.startsWith("192.") || HostName.startsWith("10.");
+            mIsAssignedByDevice = mHostName.startsWith("192.") || mHostName.startsWith("10.");
         }
 
         return members >= 5;
     }
 
-    @Override
     public int getListenPort() {
         if (DefaultPorts)
             return SharedPrefs.getInstance().getDefaultReceivePort();
@@ -100,6 +101,20 @@ public class DeviceConnectionUDP extends DeviceConnection {
 
     @Override
     public String getProtocol() {
-        return "UDP";
+        return ID;
+    }
+
+    @Override
+    public boolean equals(DeviceConnection deviceConnection) {
+        return this == deviceConnection ||
+                deviceConnection instanceof DeviceConnectionUDP &&
+                        equalsByDestinationAddress(deviceConnection) &&
+                        PortUDPReceive == ((DeviceConnectionUDP) deviceConnection).PortUDPReceive &&
+                        PortUDPSend == ((DeviceConnectionUDP) deviceConnection).PortUDPSend;
+    }
+
+    @Override
+    public boolean equalsByDestinationAddress(DeviceConnection otherConnection) {
+        return cached_addresses == null ? mHostName.equals(otherConnection.mHostName) : hasAddress(otherConnection.getHostnameIPs());
     }
 }

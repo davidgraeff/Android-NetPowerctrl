@@ -30,6 +30,9 @@ public class AnelPluginHttp {
     static final HttpThreadPool.HTTPCallback<DeviceConnection> receiveCtrlHtml = new HttpThreadPool.HTTPCallback<DeviceConnection>() {
         @Override
         public void httpResponse(DeviceConnection ci, boolean callback_success, String response_message) {
+            if (response_message == null)
+                response_message = "";
+
             //Log.w("AnelPluginHttp", "http receive" + response_message);
             final Device device = ci.getDevice();
             if (!callback_success) {

@@ -42,6 +42,11 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
     @SuppressLint("InflateParams")
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        if (editDevice == null)
+            throw new RuntimeException("DevicesWizardNewFragment: editDevice not set");
+        if (editDevice.getDevice() == null)
+            throw new RuntimeException("DevicesWizardNewFragment: editDevice.getDevice not set");
+
         final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_new, null);
 
         ip_autocomplete = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
@@ -50,8 +55,8 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
         List<Device> devices = AppData.getInstance().deviceCollection.getItems();
         for (Device device : devices)
             for (DeviceConnection deviceConnection : device.DeviceConnections) {
-                ip_autocomplete.remove(deviceConnection.HostName);
-                ip_autocomplete.add(deviceConnection.HostName);
+                ip_autocomplete.remove(deviceConnection.mHostName);
+                ip_autocomplete.add(deviceConnection.mHostName);
             }
         AutoCompleteTextView iptext = (AutoCompleteTextView) view.findViewById(R.id.device_host);
         iptext.setAdapter(ip_autocomplete);
@@ -65,11 +70,13 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
         textView = (EditText) view.findViewById(R.id.device_udp_receive);
         textView.setText(String.valueOf(SharedPrefs.getInstance().getDefaultReceivePort()));
 
+        Device device = editDevice.getDevice();
+
         textView = (EditText) view.findViewById(R.id.device_username);
-        textView.setText(editDevice.getDevice().UserName);
+        textView.setText(device.UserName);
 
         textView = (EditText) view.findViewById(R.id.device_password);
-        textView.setText(editDevice.getDevice().Password);
+        textView.setText(device.Password);
 
         view.findViewById(R.id.device_ip_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,7 +175,7 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
         textView = (TextView) getDialog().findViewById(R.id.device_password);
         device.Password = textView.getText().toString();
 
-        if (ip_autocomplete.getPosition(device.DeviceConnections.get(0).HostName) != -1) {
+        if (ip_autocomplete.getPosition(device.DeviceConnections.get(0).mHostName) != -1) {
             Toast.makeText(getActivity(), R.string.device_already_exist, Toast.LENGTH_SHORT).show();
             return;
         }

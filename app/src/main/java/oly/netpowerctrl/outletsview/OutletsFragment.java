@@ -119,20 +119,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             adapterSource.onPause();
     }
 
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-                    //getActivity().findViewById(R.id.content_frame).getWidth();
-                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
-                    int i = mListView.getWidth() / requestedColumnWidth;
-                    adapter.setItemsInRow(i);
-
-                }
-            };
-
     @Override
     public void onResume() {
         ListenService.observersStartStopRefresh.register(this);
@@ -146,6 +132,20 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         super.onResume();
     }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+                    //getActivity().findViewById(R.id.content_frame).getWidth();
+                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
+                    int i = mListView.getWidth() / requestedColumnWidth;
+                    adapter.setItemsInRow(i);
+
+                }
+            };
 
     @Override
     public void changeArguments(Bundle mExtra) {
@@ -225,12 +225,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh: {
-                ListenService service = ListenService.getService();
-                if (service != null)
-                    service.findDevices(true, null);
-                else {
-                    InAppNotifications.showException(getActivity(), "Unexpected state: Service is down. Restart the app");
-                }
+                onRefresh();
                 return true;
             }
             case R.id.menu_view_list: {
@@ -276,7 +271,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_debug_crash_test: {
-                InAppNotifications.showException(getActivity(), "Test exception");
+                InAppNotifications.showException(getActivity(), null, "Test exception");
                 return true;
             }
         }
@@ -624,7 +619,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onRefresh() {
-        ListenService.getService().findDevices(true, null);
+        ListenService service = ListenService.getService();
+        if (service != null)
+            service.findDevices(true, null);
+        else {
+            InAppNotifications.showException(getActivity(), null, "OutletsFragment refresh: Service is down.");
+        }
     }
 
     private enum checkEmptyState {UNKNOWN, EMPTY, FILLED}

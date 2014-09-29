@@ -55,6 +55,12 @@ public class App extends Application {
         ACRA.setConfig(config);
     }
 
+    public static void setErrorReportContentMessage() {
+        ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
+        config.setCustomReportContent(new ReportField[]{ReportField.REPORT_ID, ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.PACKAGE_NAME, ReportField.PHONE_MODEL, ReportField.ANDROID_VERSION, ReportField.BUILD, ReportField.BRAND, ReportField.PRODUCT, ReportField.TOTAL_MEM_SIZE, ReportField.AVAILABLE_MEM_SIZE, ReportField.CUSTOM_DATA, ReportField.USER_COMMENT, ReportField.USER_APP_START_DATE, ReportField.USER_CRASH_DATE, ReportField.USER_EMAIL, ReportField.IS_SILENT, ReportField.DEVICE_FEATURES, ReportField.SHARED_PREFERENCES, ReportField.THREAD_DETAILS});
+        ACRA.setConfig(config);
+    }
+
     public static void setErrorReportContentLogFile(String filename) {
         ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
         config.setApplicationLogFile(filename);

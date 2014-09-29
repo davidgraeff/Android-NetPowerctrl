@@ -210,7 +210,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_username_summary">Der Benutzername für das Gerät. Auf der Webseite des Geräts können bis zu acht Benutzer mit unterschiedlichen Zugriffsrechten eingerichtet werden.</string>
     <string name="device_password_summary">Das Gerätepasswort. Das Passwort wird unverschlüsselt über das Netzwerk geschickt!</string>
     <string name="device_ip_summary">Die IP-Adresse oder der DNS-Hostname des Geräts.</string>
-    <string name="device_http_port_summary">Der HTTP Port des Geräts. Das ist der selbe, welcher auch für den Webzugriff genutzt wird.</string>
+    <string name="device_http_port_summary">Der HTTP Port des Geräts. Das ist derselbe, welcher auch für den Webzugriff genutzt wird.</string>
     <string name="alarm_weekdays_range">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s</string>
     <string name="alarm_weekdays_range_alarm">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s, Zufälliges Umschaltinterval: %4$s</string>
     <string name="alarm_once">Einmalig ausführen: $s</string>
@@ -240,8 +240,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_saving_now">Bitte warten. Speichere Alarm…</string>
     <string name="toWirelessSettings">WLAN einschalten</string>
     <string name="outlets_hidden">Elemente versteckt</string>
-    <string name="press_back_to_exit">Please click BACK again to exit</string>
-    <string name="error_plugin_no_service_connection">Plugin connection failed: %1$s</string>
+    <string name="press_back_to_exit">Noch einmal Zurück antippen um die App zu schließen.</string>
+    <string name="error_plugin_no_service_connection">Laden der Erweiterung fehlgeschlagen: %1$s</string>
     <string name="preference_hide_not_reachable">Verstecke Unerreichbare Geräte</string>
     <string name="preference_hide_not_reachable_summary">Unerreichbare Geräte werden in der Übersicht nicht angezeigt</string>
     <string name="preference_log_widgets_summary">Alle Widget Aktivitäten mitloggen</string>
@@ -309,14 +309,14 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="scene_nfc_write">Mit NFC Tag koppeln</string>
     <string name="scene_add_homescreen_success">Icon erfolgreich auf dem Startbildschirm abgelegt</string>
     <string name="nfc_writer_title">Schreibe %1$s</string>
-    <string name="nfc_writer_description">Place your NFC Tag next to your device now</string>
-    <string name="nfc_WriteFailed">Write failed!</string>
-    <string name="nfc_tagNotWritable">Tag is write protected!</string>
-    <string name="nfc_tagTooSmallMessage">Tag\'s storage is too small!</string>
-    <string name="nfc_cannotWriteTechMessage">Tag is not compatible!</string>
-    <string name="nfc_WriteSuccess">Write successfull</string>
-    <string name="nfc_AvailableEnabled">NFC is active</string>
-    <string name="nfc_AvailableDisabled">NFC is disabled!</string>
+    <string name="nfc_writer_description">Plaziere dein Gerät nun über dem NFC Tag.</string>
+    <string name="nfc_WriteFailed">Schreiben fehlgeschlagen! Bitte noch einmal probieren.</string>
+    <string name="nfc_tagNotWritable">Tag ist schreibgeschützt!</string>
+    <string name="nfc_tagTooSmallMessage">Speicher auf dem Tag zu gering!</string>
+    <string name="nfc_cannotWriteTechMessage">Tag ist nicht kompatibel!</string>
+    <string name="nfc_WriteSuccess">Schreiben erfolgreich</string>
+    <string name="nfc_AvailableEnabled">NFC ist aktiv</string>
+    <string name="nfc_AvailableDisabled">NFC ist abgeschaltet!</string>
     <string name="nfc_noNfcMessage">NFC not supported by this device!</string>
     <string name="error_import_legacy_data">Fehler beim Importieren vorheriger Daten :(</string>
     <string name="preference_nfc_bind">NFC Tag schreiben</string>
@@ -331,4 +331,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="notification_title_changelog">App aktualisiert auf Version %1$s</string>
     <string name="widget_inProgress">Warte</string>
     <string name="log_data_send">Daten wurden gesendet</string>
+    <string name="preference_log_extensions">Log: Erweiterungen</string>
+    <string name="preference_log_extensions_summary">Alle Erweiterungsaktivitäten loggen</string>
+    <string name="error_restart_app">Bitte die App neu starten!</string>
 </resources>

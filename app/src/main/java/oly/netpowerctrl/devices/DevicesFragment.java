@@ -221,7 +221,7 @@ public class DevicesFragment extends Fragment implements PopupMenu.OnMenuItemCli
         } else {
             PluginInterface pluginInterface = device.getPluginInterface();
             if (pluginInterface == null) {
-                InAppNotifications.showException(getActivity(), "Unexpected state: Plugin not known");
+                InAppNotifications.showException(getActivity(), null, "show_configure_device_dialog: Plugin not known!");
                 return;
             }
             pluginInterface.showConfigureDeviceScreen(device);

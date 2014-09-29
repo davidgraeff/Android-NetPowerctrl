@@ -100,16 +100,22 @@
 
     <PreferenceCategory android:title="@string/preferences_log_screen">
         <CheckBoxPreference
-            android:defaultValue="@bool/log_energy_saving_mode"
+            android:defaultValue="false"
             android:key="use_log_energy_saving_mode"
             android:summary="@string/preference_use_log_energy_saving_mod_summary"
             android:title="@string/preference_use_log_energy_saving_mode" />
 
         <CheckBoxPreference
-            android:defaultValue="@bool/log_widgets"
+            android:defaultValue="false"
             android:key="log_widgets"
             android:summary="@string/preference_log_widgets_summary"
             android:title="@string/preference_log_widgets" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="log_extensions"
+            android:summary="@string/preference_log_extensions_summary"
+            android:title="@string/preference_log_extensions" />
 
         <PreferenceScreen
             android:key="open_log"

@@ -10,8 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import org.acra.ACRA;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,6 +23,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;
+import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 public class EnergySaveLogFragment extends ListFragment {
     private final ArrayList<String> listItems = new ArrayList<>();
@@ -120,7 +119,7 @@ public class EnergySaveLogFragment extends ListFragment {
             }
             case R.id.menu_log_send_mail: {
                 App.setErrorReportContentLogFile(Logging.logFile.getAbsolutePath());
-                ACRA.getErrorReporter().handleSilentException(null);
+                InAppNotifications.silentException(null);
                 App.setErrorReportContentCrash();
                 Toast.makeText(getActivity(), R.string.log_data_send, Toast.LENGTH_SHORT).show();
                 return true;

@@ -12,19 +12,19 @@ import java.net.UnknownHostException;
  */
 public abstract class DeviceConnection {
     public final Device device;
-    public String HostName;
+    public String mHostName;
     public String not_reachable_reason;
     public boolean updatedFlag;
     protected boolean mIsAssignedByDevice = false;
     // Cache
-    private InetAddress[] cached_addresses;
+    protected InetAddress[] cached_addresses;
 
     public DeviceConnection(Device device) {
         this.device = device;
     }
 
     public String getDestinationHost() {
-        return HostName;
+        return mHostName;
     }
 
     public Device getDevice() {
@@ -48,7 +48,7 @@ public abstract class DeviceConnection {
     }
 
     public String getString() {
-        return getProtocol() + "/" + HostName + ":" + String.valueOf(getDestinationPort());
+        return getProtocol() + "/" + mHostName + ":" + String.valueOf(getDestinationPort());
     }
 
     public boolean needResolveName() {
@@ -59,7 +59,7 @@ public abstract class DeviceConnection {
     public InetAddress[] getHostnameIPs() {
         if (cached_addresses == null || cached_addresses.length == 0) {
             try {
-                cached_addresses = InetAddress.getAllByName(HostName);
+                cached_addresses = InetAddress.getAllByName(mHostName);
             } catch (UnknownHostException e) {
                 e.printStackTrace();
                 cached_addresses = new InetAddress[0];
@@ -89,9 +89,7 @@ public abstract class DeviceConnection {
 
     public abstract void toJSON(JsonWriter writer) throws IOException;
 
-    public abstract boolean fromJSON(JsonReader reader) throws IOException, ClassNotFoundException;
-
-    public abstract int getListenPort();
+    public abstract boolean fromJSON(JsonReader reader, boolean beginObjectAlreadyCalled) throws IOException, ClassNotFoundException;
 
     public abstract int getDestinationPort();
 
@@ -103,4 +101,8 @@ public abstract class DeviceConnection {
         } else
             return not_reachable_reason.equals(otherConnection.not_reachable_reason);
     }
+
+    public abstract boolean equals(DeviceConnection deviceConnection);
+
+    public abstract boolean equalsByDestinationAddress(DeviceConnection otherConnection);
 }

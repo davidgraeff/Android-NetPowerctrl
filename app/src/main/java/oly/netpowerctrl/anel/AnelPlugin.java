@@ -345,7 +345,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     private boolean warnUDPSending() {
         if (udpSending == null) {
-            InAppNotifications.showException(ListenService.getService(), "udpSending null");
+            InAppNotifications.showException(ListenService.getService(), new Exception(), "udpSending null");
             return true;
         }
         return false;
@@ -652,7 +652,7 @@ final public class AnelPlugin implements PluginInterface {
             Set<Integer> ports = new TreeSet<>();
             for (DeviceConnection ci : device.DeviceConnections) {
                 if (ci instanceof DeviceConnectionUDP)
-                    ports.add(ci.getListenPort());
+                    ports.add(((DeviceConnectionUDP) ci).getListenPort());
             }
             startUDPDiscoveryThreads(ports);
         }
@@ -680,6 +680,11 @@ final public class AnelPlugin implements PluginInterface {
                 d.onDeviceUpdated(di);
             }
         }
+    }
+
+    @Override
+    public boolean isNetworkReducedState() {
+        return (udpSending == null);
     }
 
     @Override
@@ -810,7 +815,7 @@ final public class AnelPlugin implements PluginInterface {
 //                continue;
 //
 //            try {
-//                InetAddress address = InetAddress.getByName(di.HostName);
+//                InetAddress address = InetAddress.getByName(di.mHostName);
 //                linkLocals &= (address.isLinkLocalAddress() || address.isSiteLocalAddress());
 //            } catch (UnknownHostException e) {
 //                // we couldn't resolve the device hostname to an IP address. One reason is, that

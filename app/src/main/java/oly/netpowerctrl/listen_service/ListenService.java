@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
@@ -39,13 +41,14 @@ public class ListenService extends Service {
     public static final ServiceRefreshQueryObserver observersStartStopRefresh = new ServiceRefreshQueryObserver();
     public static final ServiceModeChangedObserver observersServiceModeChanged = new ServiceModeChangedObserver();
     private static final String TAG = "NetpowerctrlService";
-    private static final String PLUGIN_RESPONSE_ACTION = "oly.netpowerctrl.plugins.PLUGIN_RESPONSE_ACTION";
-    private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.action.QUERY_CONDITION";
-    private static final String PAYLOAD_SERVICENAME = "SERVICENAME";
-    private static final String PAYLOAD_PACKAGENAME = "PACKAGENAME";
+    private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
+    private static final String PAYLOAD_SERVICE_NAME = "SERVICE_NAME";
+    private static final String PAYLOAD_SERVICE_VERSION = "SERVICE_VERSION";
+    private static final String PAYLOAD_PACKAGE_NAME = "PACKAGE_NAME";
     private static final String PAYLOAD_LOCALIZED_NAME = "LOCALIZED_NAME";
     private static final String RESULT_CODE = "RESULT_CODE";
     private static final int INITIAL_VALUES = 1337;
+    public static String service_shutdown_reason = "";
     static int findDevicesRun = 0;
     ///////////////// Service start/stop listener /////////////////
     static private int mDiscoverServiceRefCount = 0;
@@ -63,12 +66,7 @@ public class ListenService extends Service {
         }
     };
     private final Handler stopServiceHandler = new Handler();
-    private final BroadcastReceiver extensionsListener = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context ignored, Intent i) {
-            extensionDiscovered(i);
-        }
-    };
+
     private final BroadcastReceiver networkChangedListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -87,9 +85,17 @@ public class ListenService extends Service {
         }
     };
     private final List<PluginInterface> plugins = new ArrayList<>();
+    private onDataLoaded onDataLoadedListener = new onDataLoaded() {
+        @Override
+        public boolean onDataLoaded() {
+            for (PluginInterface pluginInterface : plugins)
+                updatePluginReferencesInDevices(pluginInterface);
+
+            return false;
+        }
+    };
     // Debug
     long startTime;
-    private boolean isExtensionsListener = false;
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
@@ -142,6 +148,7 @@ public class ListenService extends Service {
             intent.putExtra("showNotification", showNotification);
             context.startService(intent);
         } else { // service already running. refresh devices?
+            service_shutdown_reason = "";
             mDiscoverService.stopServiceHandler.removeCallbacks(mDiscoverService.stopRunnable);
             if (refreshDevices)
                 mDiscoverService.findDevices(showNotification, null);
@@ -157,6 +164,7 @@ public class ListenService extends Service {
             mDiscoverServiceRefCount--;
         }
         if (mDiscoverServiceRefCount == 0 && mDiscoverService != null) {
+            service_shutdown_reason = "No use of service!";
             mDiscoverService.stopServiceHandler.postDelayed(mDiscoverService.stopRunnable, 2000);
         }
     }
@@ -193,7 +201,7 @@ public class ListenService extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(final Intent intent, final int flags, final int startId) {
         if (mDiscoverService != null)
             return super.onStartCommand(intent, flags, startId);
 
@@ -209,6 +217,12 @@ public class ListenService extends Service {
             updatePluginReferencesInDevices(pluginInterface);
         }
 
+        // We may be in the situation that the service and plugins are ready before
+        // all devices are loaded. Therefore update plugin references after load.
+        if (!AppData.observersOnDataLoaded.dataLoaded) {
+            AppData.observersOnDataLoaded.register(onDataLoadedListener);
+        }
+
         // Listen to preferences changes
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
@@ -221,7 +235,7 @@ public class ListenService extends Service {
         else
             enterFullNetworkMode(true, false);
 
-        observersServiceReady.onServiceReady(this);
+        observersServiceReady.onServiceReady(ListenService.this);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -231,15 +245,6 @@ public class ListenService extends Service {
         if (isNetworkChangedListener) {
             isNetworkChangedListener = false;
             unregisterReceiver(networkChangedListener);
-        }
-
-        // Unregister extensions receiver
-        if (isExtensionsListener) {
-            isExtensionsListener = false;
-            try {
-                unregisterReceiver(extensionsListener);
-            } catch (IllegalArgumentException ignored) {
-            }
         }
 
         // Unregister from preferences changes
@@ -258,6 +263,8 @@ public class ListenService extends Service {
         observersServiceReady.onServiceFinished();
 
         // Clean up
+        for (PluginInterface pluginInterface : plugins)
+            pluginInterface.onDestroy();
         plugins.clear();
         removePluginReferencesInDevices(null);
 
@@ -313,26 +320,22 @@ public class ListenService extends Service {
             findDevices(showNotification, null);
     }
 
-    private void extensionDiscovered(Intent i) {
-        final String serviceName = i.getStringExtra(PAYLOAD_SERVICENAME);
-        final String localized_name = i.getStringExtra(PAYLOAD_LOCALIZED_NAME);
-        final String packageName = i.getStringExtra(PAYLOAD_PACKAGENAME);
-
-        if (i.getIntExtra(RESULT_CODE, -1) != INITIAL_VALUES) {
-            if (SharedPrefs.getInstance().logEnergySaveMode())
+    private void extensionDiscovered(String serviceName, String localized_name, String packageName) {
+        if (serviceName == null || serviceName.isEmpty() || packageName == null || packageName.isEmpty()) {
+            if (SharedPrefs.getInstance().logExtensions())
                 Logging.appendLog(this, localized_name + "failed");
-            Log.e(TAG, localized_name + "failed");
+            Log.e(TAG, localized_name + " failed");
             return;
         }
 
-        if (serviceName == null || serviceName.isEmpty() || packageName == null || packageName.isEmpty())
-            return;
+        Log.w(TAG, "Extension: " + serviceName + " " + localized_name + " " + packageName);
 
         /**
          * We received a message from a plugin, we already know: ignore
          */
         for (PluginInterface pi : plugins) {
             if (pi instanceof PluginRemote && ((PluginRemote) pi).serviceName.equals(serviceName)) {
+                updatePluginReferencesInDevices(pi);
                 return;
             }
         }
@@ -350,7 +353,7 @@ public class ListenService extends Service {
     private void updatePluginReferencesInDevices(PluginInterface plugin) {
         DeviceCollection deviceCollection = AppData.getInstance().deviceCollection;
         for (Device device : deviceCollection.getItems()) {
-            if (device.pluginID.equals(plugin.getPluginID())) {
+            if (device.pluginID.equals(plugin.getPluginID()) && device.getPluginInterface() != plugin) {
                 device.setPluginInterface(plugin);
                 device.setHasChanged();
                 deviceCollection.updateExisting(device);
@@ -388,15 +391,15 @@ public class ListenService extends Service {
         }
 
         if (SharedPrefs.getInstance().getLoadExtensions()) {
-            if (!isExtensionsListener) {
-                isExtensionsListener = true;
-                registerReceiver(extensionsListener,
-                        new IntentFilter(PLUGIN_RESPONSE_ACTION));
-            }
-
             Intent i = new Intent(PLUGIN_QUERY_ACTION);
-            i.putExtra(PAYLOAD_SERVICENAME, MainActivity.class.getCanonicalName());
-            sendBroadcast(i);
+            i.addFlags(Intent.FLAG_FROM_BACKGROUND);
+            i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            i.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
+            i.putExtra(PAYLOAD_SERVICE_NAME, MainActivity.class.getCanonicalName());
+            List<ResolveInfo> list = getPackageManager().queryIntentServices(i, 0);
+            for (ResolveInfo resolveInfo : list) {
+                extensionDiscovered(resolveInfo.serviceInfo.name, resolveInfo.loadLabel(getPackageManager()).toString(), resolveInfo.serviceInfo.packageName);
+            }
         }
     }
 

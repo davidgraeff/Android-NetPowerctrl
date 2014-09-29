@@ -64,7 +64,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         addPreferencesFromResource(R.xml.preferences);
 
         //noinspection ConstantConditions
-        findPreference(SharedPrefs.getInstance().PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
+        findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
         findPreference("show_background").setOnPreferenceChangeListener(reloadActivity);
 
         //noinspection ConstantConditions
@@ -119,7 +119,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             }
         });
 
-        getPreferenceScreen().removePreference(findPreference("extensions"));
+        //getPreferenceScreen().removePreference(findPreference("extensions"));
 
 //
 //        //noinspection ConstantConditions
@@ -256,13 +256,10 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_CODE_IMPORT) {
                 ImportExport.importData(getActivity(), intent.getData());
-                return;
             } else if (requestCode == REQUEST_CODE_EXPORT) {
                 ImportExport.exportData(getActivity(), intent.getData());
-                return;
             }
         }
-        //super.onActivityResult(requestCode, resultCode, intent);
     }
 
     @Override

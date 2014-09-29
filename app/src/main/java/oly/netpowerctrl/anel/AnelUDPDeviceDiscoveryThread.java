@@ -114,7 +114,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
 
                 oi.setDescription(io_port[0]);
                 oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
-                di.add(oi);
+                di.putPort(oi);
             }
             di.Features.add(new DeviceFeatureTemperature(msg[24]));
             di.Version = msg[25].trim();
@@ -136,7 +136,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
                 oi.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;
             oi.Disabled = (disabledOutlets & (1 << i)) != 0;
 
-            di.add(oi);
+            di.putPort(oi);
         }
 
         AppData.getInstance().onDeviceUpdatedOtherThread(di);

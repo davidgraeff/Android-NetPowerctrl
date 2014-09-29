@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anel.AnelPlugin;
+import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
 
 /**
@@ -53,16 +55,26 @@ public class InAppNotifications {
         }, length);
     }
 
-    public static void showException(Context context, String message) {
-        FromOtherThread(context, message);
+    public static void showException(Context context, Throwable exception, String message) {
+        FromOtherThread(context, message + "\n" + context.getString(R.string.error_restart_app));
         ACRA.getErrorReporter().putCustomData("misc", message);
-        ACRA.getErrorReporter().handleException(new Exception(message), false);
+        boolean serviceRunning = ListenService.getService() != null;
+        ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
+        if (serviceRunning) {
+            ACRA.getErrorReporter().putCustomData("plugin_anel_state", ListenService.getService().getPluginByID(AnelPlugin.PLUGIN_ID).isNetworkReducedState() ? "down" : "running");
+        } else {
+            ACRA.getErrorReporter().putCustomData("service_shutdown_reason", ListenService.service_shutdown_reason);
+        }
+
+        if (exception == null)
+            App.setErrorReportContentMessage();
+        ACRA.getErrorReporter().handleException(exception, false);
+        if (exception == null)
+            App.setErrorReportContentCrash();
     }
 
-    public static void showException(Context context, Exception exception, String message) {
-        FromOtherThread(context, message);
-        ACRA.getErrorReporter().putCustomData("misc", message);
-        ACRA.getErrorReporter().handleException(exception, false);
+    public static void silentException(Throwable exception) {
+        ACRA.getErrorReporter().handleSilentException(exception);
     }
 
     public static void addPermanentNotification(Activity activity, PermanentNotification permanentNotification) {

@@ -206,7 +206,7 @@ public class Device implements Comparable<Device>, StorableInterface {
             Iterator<DeviceConnection> it = other_deviceConnections.iterator();
             while (it.hasNext()) {
                 DeviceConnection otherConnection = it.next();
-                if (di.hasAddress(otherConnection.getHostnameIPs())) {
+                if (di.equals(otherConnection)) {
                     di.updatedFlag = di.needsUpdate(otherConnection);
                     if (di.updatedFlag)
                         setHasChanged();
@@ -216,7 +216,7 @@ public class Device implements Comparable<Device>, StorableInterface {
             }
         }
 
-        // Remove non used custom connections
+        // Remove non used assigned-by-device connections
         Iterator<DeviceConnection> it = other_deviceConnections.iterator();
         while (it.hasNext()) {
             DeviceConnection deviceConnection = it.next();
@@ -283,7 +283,7 @@ public class Device implements Comparable<Device>, StorableInterface {
      */
     @SuppressWarnings("unused")
     public boolean equalsByUniqueID(Device other) {
-        return UniqueDeviceID.equals(other.UniqueDeviceID);
+        return UniqueDeviceID != null && UniqueDeviceID.equals(other.UniqueDeviceID);
     }
 
     /**
@@ -327,7 +327,7 @@ public class Device implements Comparable<Device>, StorableInterface {
         lockDevicePorts();
         writer.name("DevicePorts").beginArray();
         for (Map.Entry<Integer, DevicePort> entry : DevicePorts.entrySet()) {
-            entry.getValue().toJSON(writer);
+            entry.getValue().toJSON(writer, false);
         }
         writer.endArray();
         releaseDevicePorts();
@@ -345,14 +345,27 @@ public class Device implements Comparable<Device>, StorableInterface {
         updated = System.currentTimeMillis();
     }
 
-    public void add(DevicePort oi) {
-        DevicePorts.put(oi.id, oi);
+    /**
+     * Add or update a DevicePort of this device.
+     *
+     * @param devicePort The new or updated device port.
+     * @return Return true if this is an update otherwise false.
+     */
+    public boolean putPort(DevicePort devicePort) {
+        return DevicePorts.put(devicePort.id, devicePort) != null;
     }
 
-    public void addSafe(DevicePort oi) {
+    /**
+     * Same as putPort but the DevicePort list lock is acquired before and released after the operation.
+     *
+     * @param devicePort The new or updated device port.
+     * @return Return true if this is an update otherwise false.
+     */
+    public boolean putPortSafe(DevicePort devicePort) {
         lock.acquireUninterruptibly();
-        DevicePorts.put(oi.id, oi);
+        boolean isUpdate = DevicePorts.put(devicePort.id, devicePort) != null;
         lock.release();
+        return isUpdate;
     }
 
     public DevicePort getFirst() {
@@ -442,9 +455,7 @@ public class Device implements Comparable<Device>, StorableInterface {
     public void removeConnection(DeviceConnection removeConnection) {
         for (int i = 0; i < DeviceConnections.size(); ++i) {
             final DeviceConnection connection = DeviceConnections.get(i);
-            if (connection.getDestinationHost().equals(removeConnection.getDestinationHost()) &&
-                    connection.getListenPort() == removeConnection.getListenPort() &&
-                    connection.getProtocol().equals(removeConnection.getProtocol())) {
+            if (connection.equals(removeConnection)) {
                 DeviceConnections.remove(i);
                 return;
             }
@@ -454,9 +465,7 @@ public class Device implements Comparable<Device>, StorableInterface {
 
     public void addConnection(DeviceConnection newConnection) {
         for (DeviceConnection connection : DeviceConnections)
-            if (connection.getDestinationHost().equals(newConnection.getDestinationHost()) &&
-                    connection.getListenPort() == newConnection.getListenPort() &&
-                    connection.getProtocol().equals(newConnection.getProtocol()))
+            if (connection.equals(newConnection))
                 return;
 
         if (newConnection instanceof DeviceConnectionUDP) {
@@ -557,7 +566,7 @@ public class Device implements Comparable<Device>, StorableInterface {
                     reader.beginArray();
                     while (reader.hasNext()) {
                         try {
-                            add(DevicePort.fromJSON(reader, this));
+                            putPort(DevicePort.fromJSON(reader, this));
                         } catch (ClassNotFoundException e) {
                             reader.skipValue();
                         }

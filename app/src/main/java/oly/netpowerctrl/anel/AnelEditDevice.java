@@ -33,8 +33,9 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
             // Default values for user and password
             device.UserName = "admin";
             device.Password = "anel";
-        } else
+        } else {
             device = di;
+        }
     }
 
     @Override

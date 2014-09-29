@@ -328,4 +328,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="notification_title_changelog">The app has been updated to version %1$s</string>
     <string name="widget_inProgress">Waiting</string>
     <string name="log_data_send">Data have been send</string>
+    <string name="preference_log_extensions">Log: Extensions</string>
+    <string name="preference_log_extensions_summary">Log all extensions activities</string>
+    <string name="error_restart_app">Please restart the app!</string>
 </resources>

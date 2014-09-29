@@ -115,7 +115,7 @@ public class AppData {
         for (Device di : deviceCollection.items)
             for (DeviceConnection ci : di.DeviceConnections)
                 if (ci instanceof DeviceConnectionUDP)
-                    ports.add(ci.getListenPort());
+                    ports.add(((DeviceConnectionUDP) ci).getListenPort());
 
         return ports;
     }
@@ -190,6 +190,10 @@ public class AppData {
     }
 
     public void addToConfiguredDevices(Context context, Device device) {
+        if (device.UniqueDeviceID == null) {
+            InAppNotifications.showException(context, null, "addToConfiguredDevices. Failed to add device: no unique id!");
+            return;
+        }
         if (deviceCollection.add(device)) {
             // An existing device has been replaced. Do nothing else here.
             return;
@@ -244,14 +248,16 @@ public class AppData {
         // notify observers who are using the DeviceQuery class (new device)
         notifyDeviceQueries(device_info);
 
-        // Do we have this new device already in the list?
-        for (Device target : newDevices) {
-            if (device_info.UniqueDeviceID.equals(target.UniqueDeviceID))
-                return;
+        if (device_info.UniqueDeviceID != null) {
+            // Do we have this new device already in the list?
+            for (Device target : newDevices) {
+                if (device_info.equalsByUniqueID(target))
+                    return;
+            }
+            // No: Add device to new_device list
+            newDevices.add(device_info);
+            observersNew.onNewDevice(device_info);
         }
-        // No: Add device to new_device list
-        newDevices.add(device_info);
-        observersNew.onNewDevice(device_info);
     }
 
     public void onDeviceErrorByName(Context context, String name, String errMessage) {
