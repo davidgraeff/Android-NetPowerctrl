@@ -163,6 +163,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="error_plugin_not_installed">Plugin not installed!</string>
     <string name="renameInProgress">Renaming in progress…</string>
     <string name="renameFailed">Renaming failed: %1$s</string>
+    <string name="device_notReachable">Not reachable: %1$s</string>
     <string name="menu_view_list">View as list</string>
     <string name="menu_view_grid">View as grid</string>
     <string name="empty_no_scenes_no_devices">No scenes found. With a scene you may combine multiple outlet actions. First you have to configure some devices though.</string>
@@ -259,6 +260,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_energysave_mode">Energy save mode</string>
     <string name="device_http_new">New HTTP Connection</string>
     <string name="device_http_new_summary">HTTP is slower than UDP but is more reliable for an internet connected device</string>
+    <string name="device_http_new_info">Please enter the Hostname/IP and port. A hostname is only accepted if it exists!</string>
     <string name="error_reading_alarms">Failed to load cached alarms!</string>
     <string name="preference_show_background">Show background image</string>
     <string name="preference_show_background_summary">Use a background texture instead of the solid color background.</string>

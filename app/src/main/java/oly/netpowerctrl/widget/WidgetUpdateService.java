@@ -55,7 +55,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     private final List<WidgetClick> widgetClicks = new ArrayList<>();
     private AppWidgetManager appWidgetManager;
     private int[] updateWidgetIDs = null;
-    private Context context;
+    private boolean initDone = false;
 
     static public void ForceUpdate(Context ctx, int widgetId) {
         Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
@@ -97,7 +97,6 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         AppData.getInstance().deviceCollection.unregisterObserver(this);
         ListenService.observersServiceReady.unregister(this);
         ListenService.stopUseService();
-        context = null;
         appWidgetManager = null;
     }
 
@@ -149,10 +148,8 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     private void firstTimeInit() {
-        if (context == null) {
-            //noinspection ConstantConditions
-            context = getApplicationContext();
-            assert context != null;
+        if (!initDone) {
+            initDone = true;
             AppData.useAppData();
             ListenService.useService(getApplicationContext(), false, false);
             ListenService.observersServiceReady.register(this);
@@ -160,46 +157,47 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     private void preCheckUpdate() {
-        if (ListenService.isServiceReady()) {
-            if (AppData.observersOnDataLoaded.dataLoaded) {
+        if (!ListenService.isServiceReady())
+            return;
 
-                // Filter: Only those widgets ids with linked preferences are valid
-                if (updateWidgetIDs != null) {
-                    for (int appWidgetId : updateWidgetIDs) {
-                        String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
-                        DevicePort port = null;
-                        if (port_uuid != null)
-                            port = AppData.getInstance().findDevicePort(
-                                    UUID.fromString(port_uuid));
+        if (!AppData.observersOnDataLoaded.dataLoaded) {
+            AppData.observersOnDataLoaded.register(this);
+            return;
+        }
 
-                        if (port == null) {
-                            Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId));
-                            setWidgetStateBroken(appWidgetId);
-                            continue;
-                        }
+        // Filter: Only those widgets ids with linked preferences are valid
+        if (updateWidgetIDs != null) {
+            for (int appWidgetId : updateWidgetIDs) {
+                String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
+                DevicePort port = null;
+                if (port_uuid != null)
+                    port = AppData.getInstance().findDevicePort(
+                            UUID.fromString(port_uuid));
 
-                        allWidgets.put(appWidgetId, port);
-                    }
-
-                    // Exit if no widgets
-                    if (allWidgets.size() == 0) {
-                        stopSelf();
-                        return;
-                    }
-
-                    updateWidgetIDs = null;
+                if (port == null) {
+                    Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId));
+                    setWidgetStateBroken(appWidgetId);
+                    continue;
                 }
 
-                if (widgetClicks.size() > 0) {
-                    for (WidgetClick widgetClick : widgetClicks)
-                        executeSingleAction(widgetClick.uuid, widgetClick.command);
-                    widgetClicks.clear();
-                } else
-                    updateDevices();
-            } else { // data not loaded
-                AppData.observersOnDataLoaded.register(this);
+                allWidgets.put(appWidgetId, port);
             }
+
+            // Exit if no widgets
+            if (allWidgets.size() == 0) {
+                stopSelf();
+                return;
+            }
+
+            updateWidgetIDs = null;
         }
+
+        if (widgetClicks.size() > 0) {
+            for (WidgetClick widgetClick : widgetClicks)
+                executeSingleAction(widgetClick.uuid, widgetClick.command);
+            widgetClicks.clear();
+        } else
+            updateDevices();
     }
 
     private void setWidgetStateBroken(int appWidgetId) {
@@ -276,11 +274,11 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             return;
         }
 
-        Intent clickIntent = new Intent(context, WidgetUpdateService.class);
+        Intent clickIntent = new Intent(this, WidgetUpdateService.class);
         clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, oi.uuid.toString());
         clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, DevicePort.TOGGLE);
         clickIntent.putExtra(DeviceWidgetProvider.EXTRA_WIDGET_COMMAND, CLICK_WIDGET);
-        PendingIntent pendingIntent = PendingIntent.getService(context, (int) System.currentTimeMillis(), clickIntent, 0);
+        PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), clickIntent, 0);
 
         // Load preferences
         boolean widget_show_title;
@@ -305,7 +303,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             widget_show_status = false;
 
         // Manipulate view
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
+        RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.widget);
 
         views.setViewVisibility(R.id.widget_name, widget_show_title ? View.VISIBLE : View.GONE);
         views.setViewVisibility(R.id.widget_status, widget_show_status ? View.VISIBLE : View.GONE);
@@ -331,7 +329,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         views.setTextViewText(R.id.widget_name, oi.getDescription());
-        views.setTextViewText(R.id.widget_status, context.getString(string_res));
+        views.setTextViewText(R.id.widget_status, this.getString(string_res));
 
         // If the device is not reachable there is no sense in assigning a click event pointing to
         // the ExecutionActivity. We do that nevertheless here to let the ExecutionActivity

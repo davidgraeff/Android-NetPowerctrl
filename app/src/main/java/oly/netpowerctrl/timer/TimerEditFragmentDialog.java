@@ -23,10 +23,10 @@ import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.listen_service.PluginInterface;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
-public class TimerEditFragmentDialog extends DialogFragment implements onAsyncRunnerResult {
+public class TimerEditFragmentDialog extends DialogFragment implements onHttpRequestResult {
     private Timer timer = new Timer();
     private View rootView;
     private View titleView;
@@ -252,7 +252,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onAsyncRu
     }
 
     @Override
-    public void asyncRunnerResult(DevicePort oi, boolean success, String error_message) {
+    public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
         if (!success) {
             Toast.makeText(getActivity(), error_message, Toast.LENGTH_SHORT).show();
             return;
@@ -261,7 +261,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onAsyncRu
     }
 
     @Override
-    public void asyncRunnerStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
+    public void httpRequestStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
         Toast.makeText(getActivity(), "Bitte warten. Speichere Alarm...", Toast.LENGTH_SHORT).show();
     }
 }

@@ -74,8 +74,8 @@ public class UDPSending {
                 sendThread.join();
             } catch (InterruptedException ignored) {
             }
-            sendThread = null;
         }
+        sendThread = null;
     }
 
     public boolean isRunning() {

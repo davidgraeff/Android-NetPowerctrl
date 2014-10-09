@@ -18,10 +18,18 @@ public class DeviceConnectionHTTP extends DeviceConnection {
         super(device);
     }
 
+    /**
+     * Create a new http connection with hostname and port that does not use default ports.
+     *
+     * @param device   The device
+     * @param hostName The hostname or IP
+     * @param httpPort The http port
+     */
     public DeviceConnectionHTTP(Device device, String hostName, int httpPort) {
         super(device);
         this.mHostName = hostName;
         this.PortHttp = httpPort;
+        DefaultPorts = false;
     }
 
     public void toJSON(JsonWriter writer) throws IOException {

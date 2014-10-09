@@ -165,6 +165,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="error_plugin_not_installed">Plugin nicht installiert!</string>
     <string name="renameInProgress">Benenne um…</string>
     <string name="renameFailed">Umbenennung fehlgeschlagen: %1$s</string>
+    <string name="device_notReachable">%1$s nicht erreichbar</string>
     <string name="menu_view_list">Listenansicht</string>
     <string name="menu_view_grid">Rasteransicht</string>
     <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen. Zuerst musst du aber Geräte einrichten.</string>
@@ -262,6 +263,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_energysave_mode">Energiesparmodus</string>
     <string name="device_http_new">Neue HTTP Verbindung</string>
     <string name="device_http_new_summary">HTTP ist langsamer als UDP, eignet sich für die Steuerung aus dem Internet aber besser.</string>
+    <string name="device_http_new_info">Bitte gib den Hostnamen/IP und den Port ein. Bei Eingabe eines Hostnames muss dieser existieren!</string>
     <string name="error_reading_alarms">Einlesen der zwischengespeicherten Zeitschaltungen fehlgeschlagen!</string>
     <string name="preference_show_background">Hintergrundbild anzeigen</string>
     <string name="preference_show_background_summary">Im Hintergrund wird ein Bild statt einer einfarbigen Fläche angezeigt.</string>

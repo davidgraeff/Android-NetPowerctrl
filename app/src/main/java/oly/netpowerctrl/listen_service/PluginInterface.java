@@ -6,8 +6,8 @@ import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
 
@@ -31,7 +31,7 @@ public interface PluginInterface {
 
     void executeTransaction(onExecutionFinished callback);
 
-    void rename(DevicePort port, final String new_name, final onAsyncRunnerResult callback);
+    void rename(DevicePort port, final String new_name, final onHttpRequestResult callback);
 
     ////////////// Auxilary //////////////
     String getPluginID();
@@ -62,9 +62,9 @@ public interface PluginInterface {
     ////////////// Alarms //////////////
     Timer getNextFreeAlarm(DevicePort port, int type);
 
-    void saveAlarm(Timer timer, final onAsyncRunnerResult callback);
+    void saveAlarm(Timer timer, final onHttpRequestResult callback);
 
-    void removeAlarm(Timer timer, final onAsyncRunnerResult callback);
+    void removeAlarm(Timer timer, final onHttpRequestResult callback);
 
     void requestAlarms(DevicePort port, TimerController timerController);
 }

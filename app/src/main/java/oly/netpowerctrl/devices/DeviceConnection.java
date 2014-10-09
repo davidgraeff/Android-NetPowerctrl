@@ -55,6 +55,10 @@ public abstract class DeviceConnection {
         return cached_addresses == null;
     }
 
+    public void lookupIPs() throws UnknownHostException {
+        cached_addresses = InetAddress.getAllByName(mHostName);
+    }
+
     // This has to be executed in another thread not the gui thread!
     public InetAddress[] getHostnameIPs() {
         if (cached_addresses == null || cached_addresses.length == 0) {

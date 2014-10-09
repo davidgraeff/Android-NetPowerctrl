@@ -146,15 +146,7 @@
         <service
             android:name=".listen_service.ListenService"
             android:exported="true"
-            android:permission="oly.netpowerctrl.permission.PLUGINS">
-
-            <intent-filter>
-                <action
-                    android:name="oly.netpowerctrl.plugins.PLUGIN_RESPONSE_ACTION"
-                    android:enabled="true" />
-            </intent-filter>
-
-        </service>
+            android:permission="oly.netpowerctrl.permission.PLUGINS"></service>
 
         <service
             android:name="oly.netpowerctrl.widget.WidgetUpdateService"

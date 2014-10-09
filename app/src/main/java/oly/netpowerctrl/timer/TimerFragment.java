@@ -28,11 +28,11 @@ import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
 
-public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, onAsyncRunnerResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
+public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, onHttpRequestResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private SwipeRefreshLayout mPullToRefreshLayout;
@@ -199,12 +199,12 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
-    public void asyncRunnerResult(DevicePort oi, boolean success, String error_message) {
+    public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
         Toast.makeText(getActivity(), R.string.alarm_saving_now, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void asyncRunnerStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
+    public void httpRequestStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
 
     }
 

@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion changeDate="24. September 2014" versionName="6.0">
-        <changelogbug>Kleinere Probleme an einigen Stellen behoben</changelogbug>
+    <changelogversion changeDate="09. Oktober 2014" versionName="6.2">
+        <changelogbug>Das Hinzufügen von HTTP Verbindungen mit Hostnamen statt IPs funktioniert
+            nun
+        </changelogbug>
+        <changelogimprovement>Neu gestaltetes Fenster für das Hinzufügen von HTTP Verbindungen
+        </changelogimprovement>
     </changelogversion>
 
-    <changelogversion changeDate="23. September 2014" versionName="5.12">
+    <changelogversion changeDate="24. September 2014" versionName="6.0-6.1">
+        <changelogbug>Viele Probleme an diversen Stellen behoben</changelogbug>
+        <changelogbug>Erweiterungen funktionieren nun wieder</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="23. September 2014" versionName="5.11">
         <changelogbug>Einrichten von neuen Geräten führte manchmal zum Absturz</changelogbug>
         <changelogbug>Widget Hintergrunddienst beendet sich nun nicht mehr selbst, obwohl noch
             Widgets aktiv sind
         </changelogbug>
     </changelogversion>
 
-    <changelogversion changeDate="22. September 2014" versionName="5.10-5.11">
-        <changelogimprovement>Verbesserte Datenverarbeitung</changelogimprovement>
+    <changelogversion changeDate="22. September 2014" versionName="5.10">
+    <changelogimprovement>Verbesserte Datenverarbeitung</changelogimprovement>
         <changelogimprovement>Nachrichten wie die Aktualisierungsbenachrichtigung werden
             unauffälliger dargestellt
         </changelogimprovement>
@@ -23,27 +32,16 @@
         <changelogbug>Zeitschaltungen werden wieder korrekt aufgelistet</changelogbug>
     </changelogversion>
 
-    <changelogversion changeDate="14. September 2014" versionName="5.9.2-5.9.4">
+    <changelogversion changeDate="14. September 2014" versionName="5.9">
         <changelogbug>Netzwerk/Http: Es wurden nicht immer alle Geräte als außer-Reichweite
-            erkannt
+            markiert
         </changelogbug>
         <changelogbug>Einrichten von neuen Geräten (manuell) ohne "Port kleiner 1024" Warnung
-            funktioniert wieder
         </changelogbug>
         <changelogbug>Layout Fehler in Übersichtsansicht behoben</changelogbug>
-    </changelogversion>
-
-    <changelogversion changeDate="10. September 2014" versionName="5.9.1">
         <changelogbug>Widget Bilder Zuweisung: Falsches Unterfenster wurde danach angezeigt
         </changelogbug>
         <changelogbug>Netzwerk/UDP: Szenen haben nicht immer richtig geschaltet</changelogbug>
-        <changelogimprovement>Verbesserungen bei Gruppen</changelogimprovement>
-        <changelogimprovement>Eigenes Fenster für Steckdose bearbeiten statt eines sehr vollen
-            Kontextmenüs
-        </changelogimprovement>
-    </changelogversion>
-
-    <changelogversion changeDate="08. September 2014" versionName="5.9">
         <changelogbug>Absturz beim Importieren von Daten von Version 5.7 und älter behoben
         </changelogbug>
         <changelogbug>Absturzberichte werden (hoffentlich) wieder automatisiert zugestellt (sofern
@@ -54,6 +52,10 @@
         </changelogbug>
         <changelogbug>Icons im Einstellungsfenster für Widgets waren nicht immer korrekt
         </changelogbug>
+        <changelogimprovement>Verbesserungen bei Gruppen</changelogimprovement>
+        <changelogimprovement>Eigenes Fenster für Steckdose bearbeiten statt eines sehr vollen
+            Kontextmenüs
+        </changelogimprovement>
         <changelogimprovement>Szenen können an NFC Tags zur Ausführung gebunden werden
         </changelogimprovement>
         <changelogimprovement>Szenen Erstellen/Bearbeiten Fenster überarbeitet
@@ -81,31 +83,27 @@
         <changelogimprovement>Übersetzungen aufgeräumt</changelogimprovement>
     </changelogversion>
 
-    <changelogversion changeDate="22. August 2014" versionName="5.7.1">
-        <changelogbug>Absturz bei Start behoben (IllegalStateException)</changelogbug>
+    <changelogversion changeDate="22. August 2014" versionName="5.7">
+    <changelogbug>Absturz bei Start behoben (IllegalStateException)</changelogbug>
         <changelogbug>Auflösen von nicht numerischen Hostnamen zu IP-Adressen wird jetzt an der
             richtigen Stelle durchgeführt (NetworkOnMainThreadException)
         </changelogbug>
         <changelogtext>Es fehlt das neue grafische Interface um zusätzliche Hostnamen hinzufügen.
             Bitte auf Version 5.8 warten.
         </changelogtext>
-    </changelogversion>
-
-    <changelogversion changeDate="21. August 2014" versionName="5.7">
         <changelogimprovement>Automatische Ersteinrichtung</changelogimprovement>
         <changelogimprovement>Geräte hinzufügen/editieren verbessert</changelogimprovement>
         <changelogbug>Einstellungen überarbeitet</changelogbug>
         <changelogbug>Geräteerkennung überarbeitet</changelogbug>
     </changelogversion>
 
-    <changelogversion changeDate="20. August 2014" versionName="5.6.3">
-        <changelogbug>Deutlicher Hinweis in der Übersicht, wenn sich der Hintergrunddienst im
+    <changelogversion changeDate="20. August 2014" versionName="5.6">
+    <changelogbug>Deutlicher Hinweis in der Übersicht, wenn sich der Hintergrunddienst im
             Energiesparmodus befindet
         </changelogbug>
         <changelogbug>Geräte können wieder manuell erstellt werden</changelogbug>
         <changelogbug>Bekannte Geräte jedoch mit geänderten IP-Adressen werden korrekt erkannt
         </changelogbug>
-        <changelogbug>Probleme mit der Rasteransicht behoben</changelogbug>
         <changelogbug>"Zurück" funktioniert nun besser</changelogbug>
         <changelogbug>Absturz behoben, wenn nur HTTP und kein UDP verwendet wird</changelogbug>
         <changelogbug>Seltener Absturz bei Schließen/Öffnen der App (hoffentlich) behoben
@@ -113,9 +111,6 @@
         <changelogimprovement>Benutze die verbesserte Bild Auswahl unter Android 4.4 für Widget
             Icons
         </changelogimprovement>
-    </changelogversion>
-
-    <changelogversion changeDate="7. August 2014" versionName="5.6">
         <changelogbug>Probleme mit der Listen- und Rasteransicht behoben</changelogbug>
         <changelogbug>UDP Energiesparmodus repariert</changelogbug>
         <changelogbug>Absturz bei Gerätedrehung behoben</changelogbug>
@@ -279,6 +274,7 @@
         <changelogtext>Changelog wird bei aller erster Benutzung jetzt nicht mehr angezeigt
         </changelogtext>
     </changelogversion>
+
     <changelogversion changeDate="46" versionName="2.8-3.0">
         <changelogtext>Master/Slave Szenen: Alle Steckdosen richten sich nach dem Schaltzustand
             einer

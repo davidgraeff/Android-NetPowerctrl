@@ -21,8 +21,8 @@ import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceObserverBase;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
@@ -313,15 +313,15 @@ public class AppData {
         return null;
     }
 
-    public void rename(DevicePort port, String new_name, onAsyncRunnerResult callback) {
+    public void rename(DevicePort port, String new_name, onHttpRequestResult callback) {
         if (callback != null)
-            callback.asyncRunnerStart(port);
+            callback.httpRequestStart(port);
 
         PluginInterface remote = port.device.getPluginInterface();
         if (remote != null) {
             remote.rename(port, new_name, callback);
         } else if (callback != null)
-            callback.asyncRunnerResult(port, false, App.getAppString(R.string.error_plugin_not_installed));
+            callback.httpRequestResult(port, false, App.getAppString(R.string.error_plugin_not_installed));
     }
 
     /**

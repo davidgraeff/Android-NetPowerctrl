@@ -27,9 +27,9 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
+import oly.netpowerctrl.network.onHttpRequestResult;
 
-public class OutletEditDialog extends DialogFragment implements onAsyncRunnerResult,
+public class OutletEditDialog extends DialogFragment implements onHttpRequestResult,
         LoadStoreIconData.IconSelected {
     private DevicePort devicePort;
     private DevicePortsExecuteAdapter adapter;
@@ -166,7 +166,7 @@ public class OutletEditDialog extends DialogFragment implements onAsyncRunnerRes
     }
 
     @Override
-    public void asyncRunnerResult(DevicePort oi, boolean success, String error_message) {
+    public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
         if (progressDialog != null) {
             progressDialog.dismiss();
             progressDialog = null;
@@ -184,7 +184,7 @@ public class OutletEditDialog extends DialogFragment implements onAsyncRunnerRes
     }
 
     @Override
-    public void asyncRunnerStart(DevicePort oi) {
+    public void httpRequestStart(DevicePort oi) {
         Context context = getActivity();
         if (context == null)
             return;

@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
@@ -121,18 +122,18 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
 
         //getPreferenceScreen().removePreference(findPreference("extensions"));
 
-//
-//        //noinspection ConstantConditions
-//        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-//            @Override
-//            public boolean onPreferenceClick(Preference preference) {
-//                @SuppressWarnings("ConstantConditions")
-//                Intent browse = new Intent(Intent.ACTION_VIEW,
-//                        Uri.parse("market://search?q=pub:David Gräff&c=apps"));
-//                getActivity().startActivity(browse);
-//                return false;
-//            }
-//        });
+
+        //noinspection ConstantConditions
+        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                @SuppressWarnings("ConstantConditions")
+                Intent browse = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("market://search?q=pub:David Gräff&c=apps"));
+                getActivity().startActivity(browse);
+                return false;
+            }
+        });
 
         //noinspection ConstantConditions
         findPreference("use_log_energy_saving_mode").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

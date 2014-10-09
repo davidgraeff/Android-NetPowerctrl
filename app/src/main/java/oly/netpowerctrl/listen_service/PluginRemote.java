@@ -22,8 +22,8 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
 import oly.netpowerctrl.timer.Timer;
@@ -200,7 +200,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void rename(DevicePort port, String new_name, onAsyncRunnerResult callback) {
+    public void rename(DevicePort port, String new_name, onHttpRequestResult callback) {
         try {
             if (service != null) {
                 try {
@@ -281,12 +281,12 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void saveAlarm(Timer timer, final onAsyncRunnerResult callback) {
+    public void saveAlarm(Timer timer, final onHttpRequestResult callback) {
 
     }
 
     @Override
-    public void removeAlarm(Timer timer, final onAsyncRunnerResult callback) {
+    public void removeAlarm(Timer timer, final onHttpRequestResult callback) {
 
     }
 

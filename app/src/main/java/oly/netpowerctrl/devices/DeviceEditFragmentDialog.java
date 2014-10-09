@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
@@ -25,6 +26,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
+import oly.netpowerctrl.main.MainActivity;
 
 public class DeviceEditFragmentDialog extends DialogFragment implements onCreateDeviceResult {
     final List<View> connectionViews = new ArrayList<>();
@@ -129,39 +131,9 @@ public class DeviceEditFragmentDialog extends DialogFragment implements onCreate
         btnAddHttp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_edit_connection_http, null);
-                rootView.findViewById(R.id.connection_delete).setVisibility(View.GONE);
-
-                // Use the Builder class for convenient dialog construction
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setView(rootView)
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                String host = ((EditText) rootView.findViewById(R.id.device_host)).getText().toString();
-                                int port;
-                                try {
-                                    port = Integer.valueOf(((EditText) rootView.findViewById(R.id.device_http_port)).getText().toString());
-                                } catch (NumberFormatException e) {
-                                    Toast.makeText(getActivity(), R.string.error_invalid_port, Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
-
-                                if (host.trim().isEmpty()) {
-                                    Toast.makeText(getActivity(), R.string.error_invalid_host, Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
-
-                                device.addConnection(new DeviceConnectionHTTP(device, host, port));
-
-                                updateConnections();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                            }
-                        });
-                // Create the AlertDialog object and return it
-                builder.create().show();
+                DeviceEditNewHttpDialog dialog = (DeviceEditNewHttpDialog) Fragment.instantiate(getActivity(), DeviceEditNewHttpDialog.class.getName());
+                dialog.setDevice(device);
+                MainActivity.getNavigationController().changeToDialog(getActivity(), dialog);
             }
         });
         btnAddHttpHelp = (ImageButton) rootView.findViewById(R.id.device_new_http_help_icon);
@@ -215,7 +187,7 @@ public class DeviceEditFragmentDialog extends DialogFragment implements onCreate
 
             final DeviceConnectionHTTP connection = (DeviceConnectionHTTP) connection1;
 
-            View p = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_edit_connection_http, layout, false);
+            View p = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_list_connection_http, layout, false);
             ((EditText) p.findViewById(R.id.device_host)).setText(connection.mHostName);
             ((EditText) p.findViewById(R.id.device_http_port)).setText(String.valueOf(connection.getDestinationPort()));
             ImageView imageView = ((ImageView) p.findViewById(R.id.connection_reachable));

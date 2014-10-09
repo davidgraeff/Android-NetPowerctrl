@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.JsonReader;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -113,7 +114,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
 
     private <COLLECTION, ITEM extends StorableInterface>
     void readOtherThreadCollection(CollectionWithStorableItems<COLLECTION, ITEM> collection,
-                                   Class<ITEM> classType) throws IllegalAccessException, InstantiationException {
+                                   Class<ITEM> classType, boolean keepOnFailure) throws IllegalAccessException, InstantiationException {
 
         File files;
 
@@ -131,34 +132,39 @@ public class LoadStoreJSonData implements onStorageUpdate {
             ITEM item = classType.newInstance();
             try {
                 item.load(new FileInputStream(file));
-                collection.getItems().add((ITEM) item);
-            } catch (IOException | ClassNotFoundException e) {
+                collection.getItems().add(item);
+            } catch (IOException e) {
                 e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                if (keepOnFailure)
+                    e.printStackTrace();
+                else if (!file.delete())
+                    Log.e("readOtherThreadCollection", "Failed to delete " + file.getAbsolutePath());
             }
         }
     }
 
     private void readOtherThread(final AppData appData) {
         try {
-            readOtherThreadCollection(appData.deviceCollection, Device.class);
+            readOtherThreadCollection(appData.deviceCollection, Device.class, true);
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }
 
         try {
-            readOtherThreadCollection(appData.sceneCollection, Scene.class);
+            readOtherThreadCollection(appData.sceneCollection, Scene.class, true);
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }
 
         try {
-            readOtherThreadCollection(appData.groupCollection, Group.class);
+            readOtherThreadCollection(appData.groupCollection, Group.class, true);
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }
 
         try {
-            readOtherThreadCollection(appData.timerController, Timer.class);
+            readOtherThreadCollection(appData.timerController, Timer.class, false);
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }

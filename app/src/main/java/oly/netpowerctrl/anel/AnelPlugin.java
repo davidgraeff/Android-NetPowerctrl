@@ -41,8 +41,8 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSending;
-import oly.netpowerctrl.network.onAsyncRunnerResult;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
@@ -256,18 +256,21 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     public void stopNetwork() {
-        if (udpSending != null && udpSending.isRunning()) {
-            udpSending.interrupt();
+        synchronized (this) {
+            UDPSending copy = udpSending;
             udpSending = null;
-        }
+            if (copy != null && copy.isRunning()) {
+                copy.interrupt();
+            }
 
-        if (discoveryThreads.size() > 0) {
-            for (AnelUDPDeviceDiscoveryThread thr : discoveryThreads)
-                thr.interrupt();
-            discoveryThreads.clear();
-        }
+            if (discoveryThreads.size() > 0) {
+                for (AnelUDPDeviceDiscoveryThread thr : discoveryThreads)
+                    thr.interrupt();
+                discoveryThreads.clear();
+            }
 
-        HttpThreadPool.stopHTTP();
+            HttpThreadPool.stopHTTP();
+        }
     }
 
     /**
@@ -548,7 +551,7 @@ final public class AnelPlugin implements PluginInterface {
      * @param callback A callback for the done/failed message.
      */
     @Override
-    public void rename(final DevicePort port, final String new_name, final onAsyncRunnerResult callback) {
+    public void rename(final DevicePort port, final String new_name, final onHttpRequestResult callback) {
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
@@ -563,7 +566,7 @@ final public class AnelPlugin implements PluginInterface {
             @Override
             public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
                 if (!callback_success) {
-                    callback.asyncRunnerResult(port, false, response_message);
+                    callback.httpRequestResult(port, false, response_message);
                     return;
                 }
 
@@ -572,15 +575,15 @@ final public class AnelPlugin implements PluginInterface {
                 try {
                     postData = AnelPluginHttp.createHTTP_Post_byHTTP_response(response_message, new_name, new Timer[5]);
                 } catch (UnsupportedEncodingException e) {
-                    callback.asyncRunnerResult(port, false, "url_encode failed");
+                    callback.httpRequestResult(port, false, "url_encode failed");
                     return;
                 } catch (SAXException e) {
                     e.printStackTrace();
-                    callback.asyncRunnerResult(port, false, "Html Parsing failed");
+                    callback.httpRequestResult(port, false, "Html Parsing failed");
                     return;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
+                    callback.httpRequestResult(port, false, "Html IO Parsing failed");
                     return;
                 }
 
@@ -592,7 +595,7 @@ final public class AnelPlugin implements PluginInterface {
                         if (callback_success) {
                             port.setDescription(new_name);
                         }
-                        callback.asyncRunnerResult(port, callback_success, response_message);
+                        callback.httpRequestResult(port, callback_success, response_message);
                     }
                 }
                 ));
@@ -724,9 +727,9 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void saveAlarm(final Timer timer, final onAsyncRunnerResult callback) {
+    public void saveAlarm(final Timer timer, final onHttpRequestResult callback) {
         if (callback != null)
-            callback.asyncRunnerStart(timer.port);
+            callback.httpRequestStart(timer.port);
 
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
@@ -744,7 +747,7 @@ final public class AnelPlugin implements PluginInterface {
             public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
                 if (!callback_success) {
                     if (callback != null)
-                        callback.asyncRunnerResult(port, false, response_message);
+                        callback.httpRequestResult(port, false, response_message);
                     return;
                 }
 
@@ -758,17 +761,17 @@ final public class AnelPlugin implements PluginInterface {
                             null, timers);
                 } catch (UnsupportedEncodingException e) {
                     if (callback != null)
-                        callback.asyncRunnerResult(port, false, "url_encode failed");
+                        callback.httpRequestResult(port, false, "url_encode failed");
                     return;
                 } catch (SAXException e) {
                     e.printStackTrace();
                     if (callback != null)
-                        callback.asyncRunnerResult(port, false, "Html Parsing failed");
+                        callback.httpRequestResult(port, false, "Html Parsing failed");
                     return;
                 } catch (IOException e) {
                     e.printStackTrace();
                     if (callback != null)
-                        callback.asyncRunnerResult(port, false, "Html IO Parsing failed");
+                        callback.httpRequestResult(port, false, "Html IO Parsing failed");
                     return;
                 }
 
@@ -778,7 +781,7 @@ final public class AnelPlugin implements PluginInterface {
                     public void httpResponse(DevicePort port, boolean callback_success,
                                              String response_message) {
                         if (callback != null)
-                            callback.asyncRunnerResult(port, callback_success, response_message);
+                            callback.httpRequestResult(port, callback_success, response_message);
 
                         try {
                             timerController.alarmsFromPlugin(extractAlarms(port, response_message));
@@ -794,9 +797,9 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void removeAlarm(Timer timer, final onAsyncRunnerResult callback) {
+    public void removeAlarm(Timer timer, final onHttpRequestResult callback) {
         if (callback != null)
-            callback.asyncRunnerStart(timer.port);
+            callback.httpRequestStart(timer.port);
 
         // Reset all data to default values
         timer.hour_minute_start = 0;

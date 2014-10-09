@@ -1,51 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/connection_udp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="10dip">
 
-    <ImageView
-        android:id="@+id/connection_reachable"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_gravity="center_vertical"
-        android:visibility="gone" />
-
-    <!--  Host -->
-    <EditText
-        android:id="@+id/device_host"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:inputType="textUri"
-        android:singleLine="true" />
-
-    <!--  port -->
     <TextView
-        android:id="@+id/device_http_port_label"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=":"
-        tools:ignore="HardcodedText" />
+        android:text="@string/device_http_new_info" />
 
-    <EditText
-        android:id="@+id/device_http_port"
-        android:layout_width="wrap_content"
+    <include layout="@layout/fragment_device_list_connection_http" />
+
+    <ProgressBar
+        android:id="@+id/connection_progressbar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="number"
-        android:minWidth="60dp"
-        android:singleLine="true" />
-
-    <ImageButton
-        android:id="@+id/connection_delete"
-        style="?colored_button"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:contentDescription="@string/remove"
-        android:src="@android:drawable/ic_menu_delete" />
+        android:visibility="invisible" />
 
 </LinearLayout>
