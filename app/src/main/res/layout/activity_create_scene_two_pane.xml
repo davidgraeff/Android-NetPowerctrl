@@ -32,7 +32,7 @@
 
         <fragment
             android:id="@+id/scene_edit_fragment0"
-            class="oly.netpowerctrl.scenes.EditSceneIncludedFragment"
+            class="oly.netpowerctrl.scenes.EditSceneBasicFragment"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_below="@id/scene_edit_fragment0_text"

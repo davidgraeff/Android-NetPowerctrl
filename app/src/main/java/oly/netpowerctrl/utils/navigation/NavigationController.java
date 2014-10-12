@@ -1,5 +1,6 @@
 package oly.netpowerctrl.utils.navigation;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -69,8 +70,10 @@ public class NavigationController {
         Activity context = mDrawerActivity.get();
         if (context == null) // should never happen
             return;
-        //noinspection ConstantConditions
-        context.getActionBar().setTitle(mTitle);
+        ActionBar actionBar = context.getActionBar();
+        if (actionBar == null) // should never happen
+            return;
+        actionBar.setTitle(mTitle);
     }
 
     public void detachCurrentFragment() {

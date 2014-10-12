@@ -3,6 +3,7 @@ package oly.netpowerctrl.network;
 import android.content.Context;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -85,7 +86,7 @@ public class UDPSending {
     public void start(String threadName) {
         if (sendThread != null && sendThread.isAlive())
             return;
-        sendThread = new SendThread(this, threadName);
+        sendThread = new SendThread(threadName);
     }
 
     public void addJob(Job job) {
@@ -102,16 +103,14 @@ public class UDPSending {
     }
 
     public static interface Job {
-        void process(UDPSending UDPSending) throws InterruptedException;
+        void process() throws InterruptedException;
     }
 
     private static class SendThread extends Thread {
         private final LinkedBlockingQueue<Job> q = new LinkedBlockingQueue<>();
-        private final UDPSending UDPSending;
 
-        SendThread(UDPSending UDPSending, String threadName) {
+        SendThread(String threadName) {
             super(threadName);
-            this.UDPSending = UDPSending;
         }
 
         public void add(Job job) {
@@ -123,7 +122,7 @@ public class UDPSending {
             while (true) {
                 try {
                     Job j = q.take();
-                    j.process(UDPSending);
+                    j.process();
                 } catch (InterruptedException e) {
                     q.clear();
                     return;
@@ -134,14 +133,14 @@ public class UDPSending {
 
     static class KillJob implements Job {
         @Override
-        public void process(UDPSending UDPSending) throws InterruptedException {
+        public void process() throws InterruptedException {
             throw new InterruptedException();
         }
     }
 
     static class WaitJob implements Job {
         @Override
-        public void process(UDPSending UDPSending) {
+        public void process() {
             // wait 100ms
             try {
                 Thread.sleep(100);
@@ -167,13 +166,14 @@ public class UDPSending {
                 mainLoopHandler.removeCallbacks(timeoutRunnable);
             }
         };
+        final private WeakReference<UDPSending> udpSendingReference;
         InetAddress ip = null;
         int redoCounter = 0;
         private boolean initialized = false;
-        private UDPSending udpSending = null;
 
-        public SendAndObserveJob(Context context, DeviceConnection ci, byte[] message, int errorID) {
+        public SendAndObserveJob(UDPSending udpSending, Context context, DeviceConnection ci, byte[] message, int errorID) {
             super(context, null);
+            this.udpSendingReference = new WeakReference<>(udpSending);
 //            Log.w(TAG, "SendAndObserveJob");
             this.messages.add(message);
             this.errorID = errorID;
@@ -181,8 +181,9 @@ public class UDPSending {
             assert (ci != null);
         }
 
-        public SendAndObserveJob(Context context, DeviceConnection ci, byte[] message, byte[] message2, int errorID) {
+        public SendAndObserveJob(UDPSending udpSending, Context context, DeviceConnection ci, byte[] message, byte[] message2, int errorID) {
             super(context, null);
+            this.udpSendingReference = new WeakReference<>(udpSending);
 //            Log.w(TAG, "SendAndObserveJob");
             this.messages.add(message);
             this.messages.add(message2);
@@ -192,12 +193,11 @@ public class UDPSending {
         }
 
         @Override
-        public void process(UDPSending udpSending) {
+        public void process() {
             Context context = ListenService.getService();
             if (context == null)
                 return;
 
-            this.udpSending = udpSending;
             // Get IP
             try {
                 if (ip == null) {
@@ -224,10 +224,15 @@ public class UDPSending {
                 });
             }
 
+            UDPSending udpSending = udpSendingReference.get();
+            if (udpSending == null)
+                return;
+            DatagramSocket datagramSocket = udpSending.datagramSocket;
+
             try {
                 // Send all messages
                 for (byte[] message : messages) {
-                    udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, ci.getDestinationPort()));
+                    datagramSocket.send(new DatagramPacket(message, message.length, ip, ci.getDestinationPort()));
                     Thread.sleep(30);
                 }
 
@@ -251,6 +256,7 @@ public class UDPSending {
 
         @Override
         protected void doAction(Device device, boolean repeated) {
+            UDPSending udpSending = udpSendingReference.get();
             if (udpSending != null)
                 udpSending.addJob(this);
         }
@@ -260,9 +266,11 @@ public class UDPSending {
     static public class SendRawJob implements Job {
         final byte[] message;
         final int sendPort;
+        final private WeakReference<UDPSending> udpSendingReference;
         public InetAddress ip = null;
 
-        public SendRawJob(byte[] message, InetAddress ip, int sendPort) {
+        public SendRawJob(UDPSending udpSending, byte[] message, InetAddress ip, int sendPort) {
+            this.udpSendingReference = new WeakReference<>(udpSending);
             this.message = message;
             this.sendPort = sendPort;
             this.ip = ip;
@@ -274,7 +282,8 @@ public class UDPSending {
          * @param message
          * @param sendPort
          */
-        public SendRawJob(byte[] message, int sendPort) {
+        public SendRawJob(UDPSending udpSending, byte[] message, int sendPort) {
+            this.udpSendingReference = new WeakReference<>(udpSending);
             this.message = message;
             this.sendPort = sendPort;
             this.ip = Utils.getBroadcast(Utils.getIpv4Address());
@@ -284,7 +293,7 @@ public class UDPSending {
         }
 
         @Override
-        public void process(UDPSending udpSending) {
+        public void process() {
             if (ip == null)
                 return;
 
@@ -292,8 +301,13 @@ public class UDPSending {
             if (context == null)
                 return;
 
+            UDPSending udpSending = udpSendingReference.get();
+            if (udpSending == null)
+                return;
+            DatagramSocket datagramSocket = udpSending.datagramSocket;
+
             try {
-                udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, sendPort));
+                datagramSocket.send(new DatagramPacket(message, message.length, ip, sendPort));
 
             } catch (final SocketException e) {
                 if (e.getMessage().contains("ENETUNREACH"))

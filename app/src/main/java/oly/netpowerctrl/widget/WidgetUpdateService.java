@@ -97,7 +97,6 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         AppData.getInstance().deviceCollection.unregisterObserver(this);
         ListenService.observersServiceReady.unregister(this);
         ListenService.stopUseService();
-        appWidgetManager = null;
     }
 
     /**

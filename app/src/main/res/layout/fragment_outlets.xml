@@ -73,4 +73,35 @@
         android:orientation="vertical"
         android:padding="5dp"
         android:visibility="visible" />
+
+    <oly.netpowerctrl.utils.controls.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/fabPrevious"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:visibility="gone"
+        app:color="#FFDF4D38"
+        app:drawable="@android:drawable/ic_media_previous" />
+
+    <oly.netpowerctrl.utils.controls.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/fabNext"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:visibility="gone"
+        app:color="#FFDF4D38"
+        app:drawable="@android:drawable/ic_media_next" />
 </RelativeLayout>

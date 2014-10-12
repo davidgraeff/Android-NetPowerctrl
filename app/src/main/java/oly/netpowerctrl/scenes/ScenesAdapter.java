@@ -27,6 +27,7 @@ public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<Sc
     private WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
     private onListItemElementClicked mListContextMenu = null;
     private int outlet_res_id = R.layout.grid_item_icon;
+    private boolean enableEditing;
 
     public ScenesAdapter(Context context, SceneCollection data, IconDeferredLoadingThread iconCache) {
         inflater = LayoutInflater.from(context);
@@ -98,8 +99,13 @@ public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<Sc
             // For a grid view with a dedicated edit button (image) we use that for
             // setOnClickListener. In the other case we use the main icon for setOnClickListener.
             if (current_viewHolder.imageEdit != null) {
-                current_viewHolder.imageEdit.setTag(position);
-                current_viewHolder.imageEdit.setOnClickListener(current_viewHolder);
+                if (!enableEditing)
+                    current_viewHolder.imageEdit.setVisibility(View.GONE);
+                else {
+                    current_viewHolder.imageEdit.setTag(position);
+                    current_viewHolder.imageEdit.setOnClickListener(current_viewHolder);
+                    current_viewHolder.imageEdit.setVisibility(View.VISIBLE);
+                }
             } else {
                 current_viewHolder.imageIcon.setTag(position);
                 current_viewHolder.imageIcon.setOnClickListener(current_viewHolder);
@@ -110,16 +116,14 @@ public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<Sc
         }
 
         current_viewHolder.title.setText(data.sceneName);
-        if (data.isMasterSlave()) {
-            current_viewHolder.subtitle.setText("Master/Slave");
-        } else
-            current_viewHolder.subtitle.setText("");
 
-        // For a grid view with a dedicated edit button (image) we use that for
-        // setOnClickListener. In the other case we use the main icon for setOnClickListener.
-        ImageView image_edit = current_viewHolder.imageEdit;
-        if (image_edit != null)
-            image_edit.setVisibility(View.VISIBLE);
+        if (current_viewHolder.subtitle != null) {
+            if (data.isMasterSlave()) {
+                current_viewHolder.subtitle.setText("Master/Slave");
+            } else
+                current_viewHolder.subtitle.setText("");
+        }
+
         return convertView;
     }
 
@@ -135,6 +139,14 @@ public class ScenesAdapter extends BaseAdapter implements onCollectionUpdated<Sc
     public boolean updated(SceneCollection sceneCollection, Scene scene, ObserverUpdateActions action) {
         notifyDataSetChanged();
         return true;
+    }
+
+    public boolean isEnableEditing() {
+        return enableEditing;
+    }
+
+    public void setEnableEditing(boolean enableEditing) {
+        this.enableEditing = enableEditing;
     }
 
     //ViewHolder pattern

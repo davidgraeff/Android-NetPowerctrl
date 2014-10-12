@@ -16,15 +16,19 @@
 
 package oly.netpowerctrl.main;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.sufficientlysecure.donations.DonationsFragment;
@@ -34,6 +38,7 @@ import java.lang.reflect.Field;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
@@ -82,6 +87,16 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
             setTheme(R.style.Theme_CustomLightTheme);
         }
 
+        if (SharedPrefs.getInstance().isFullscreen()) {
+            //getActionBar().hide();
+
+            //Remove title bar
+            this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+            //Remove notification bar
+            this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
         assignContentView();
 
         // Hack to always show the overflow of the actionbar instead of
@@ -124,7 +139,12 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
         setContentView(R.layout.activity_main);
         if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
-            v.setBackgroundResource(R.drawable.bg);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                v.setBackground(LoadStoreIconData.loadDrawable(this, LoadStoreIconData.uuidForBackground(),
+                        LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateUnknown, R.drawable.bg));
+            } else {
+                v.setBackgroundResource(R.drawable.bg);
+            }
         }
     }
 
@@ -193,16 +213,20 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
     private void checkUseHomeButton() {
         // enable ActionBar app icon to behave as action to toggle nav drawer
         boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
-        //noinspection ConstantConditions
-        getActionBar().setDisplayHomeAsUpEnabled(!has_two_panes);
-        getActionBar().setHomeButtonEnabled(!has_two_panes);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(!has_two_panes);
+            actionBar.setHomeButtonEnabled(!has_two_panes);
+        }
     }
 
     @Override
     public void setTitle(CharSequence title) {
         navigationController.setTitle(title);
-        //noinspection ConstantConditions
-        getActionBar().setTitle(title);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(title);
+        }
     }
 
     @Override

@@ -166,8 +166,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="renameInProgress">Benenne um…</string>
     <string name="renameFailed">Umbenennung fehlgeschlagen: %1$s</string>
     <string name="device_notReachable">%1$s nicht erreichbar</string>
-    <string name="menu_view_list">Listenansicht</string>
-    <string name="menu_view_grid">Rasteransicht</string>
     <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen. Zuerst musst du aber Geräte einrichten.</string>
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Du musst auf deinen Geräten UDP für die automatische Einrichtung eingeschaltet haben! Benutze den Plus-Button um ein Gerät einzurichten, welches nicht automatisch gefunden wurde.</string>
     <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
@@ -266,7 +264,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_http_new_info">Bitte gib den Hostnamen/IP und den Port ein. Bei Eingabe eines Hostnames muss dieser existieren!</string>
     <string name="error_reading_alarms">Einlesen der zwischengespeicherten Zeitschaltungen fehlgeschlagen!</string>
     <string name="preference_show_background">Hintergrundbild anzeigen</string>
-    <string name="preference_show_background_summary">Im Hintergrund wird ein Bild statt einer einfarbigen Fläche angezeigt.</string>
+    <string name="preference_show_background_summary">Im Hintergrund wird ein Bild statt einer einfarbigen Fläche angezeigt. Ein eigenes Bild ist ab Android 4.1 möglich.</string>
     <string name="issues_wait">Rufe ab…</string>
     <string name="issues_open">Gemeldete offene Fehler: %1$s</string>
     <string name="issues_error">Abrufen der gemeldeten Fehler gescheitert!</string>
@@ -297,8 +295,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_weekdays_summary">Wenn kein Wochentag ausgewählt wird, ist der Alarm inaktiv.</string>
     <string name="sort_custom_title">Eigene Reihenfolge</string>
     <string name="preference_smaller_click_execute_area">Ungewolltes Auslösen reduzieren</string>
-    <string name="preference_smaller_click_execute_area_summary_on">Klicke in der Übersicht auf den Namen eines Steckdoseneintrags um diese umzuschalten</string>
-    <string name="preference_smaller_click_execute_area_summary_off">Klicke in der Übersicht irgendwo auf einen Steckdoseneintrag um diese umzuschalten</string>
+    <string name="preference_smaller_click_execute_area_summary_on">Klicke in der Steckdosenübersicht auf den Namen eines Eintrags um die Steckdose zu schalten</string>
+    <string name="preference_smaller_click_execute_area_summary_off">Klicke in der Steckdosenübersicht irgendwo auf einen Eintrag um die Steckdose zu schalten</string>
     <string name="alarm_enabled">Alarm aktiv</string>
     <string name="error_invalid_port">Ungültiger Port angegeben!</string>
     <string name="device_assignedConnections">Dieses Gerät hat %1$d automatisch verwaltete Verbindungen</string>
@@ -307,7 +305,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="scene_create_basics">Name/Icon/Optionen</string>
     <string name="backup_password">Backup Passwort</string>
     <string name="backup_password_summary">Das Backup Passwort wird beim Erstellen und beim Einlesen von Backups verwendet. Alle Zeichen sind erlaubt. Die üblichen Sicherheitsrichtlinien für Passwörter gelten.</string>
-    <string name="import_sucess">Importing successfull</string>
+    <string name="import_sucess">Importieren erfolgreich</string>
     <string name="scene_nfc_write">Mit NFC Tag koppeln</string>
     <string name="scene_add_homescreen_success">Icon erfolgreich auf dem Startbildschirm abgelegt</string>
     <string name="nfc_writer_title">Schreibe %1$s</string>
@@ -336,4 +334,11 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_log_extensions">Log: Erweiterungen</string>
     <string name="preference_log_extensions_summary">Alle Erweiterungsaktivitäten loggen</string>
     <string name="error_restart_app">Bitte die App neu starten!</string>
+    <string name="preference_fullscreen">Vollbild</string>
+    <string name="preference_fullscreen_summary">Verstecke die Android Leiste und die Aktionsleiste</string>
+    <string name="error_not_in_fullscreen_mode">Diese Aktion kann nicht im Vollbildmodus durchgeführt werden!</string>
+    <string name="preference_outlet_editing_enabled">Steckdose/Szene bearbeitebar</string>
+    <string name="preference_outlet_editing_enabled_summary">Das Schraubenschlüssel Icon zur Bearbeitung von Steckdosen/Szenen wird angezeigt/ausgeblendet.</string>
+    <string name="menu_view_change">Ansicht wechseln</string>
+    <string name="preference_select_background_image">Wähle Hintergrundbild</string>
 </resources>

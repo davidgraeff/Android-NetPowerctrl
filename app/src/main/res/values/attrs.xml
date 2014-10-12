@@ -3,6 +3,7 @@
     <attr name="drawer_item_background" format="color" />
     <attr name="list_item_background" format="color" />
     <attr name="preferences_title_light" format="color" />
+    <attr name="text_transparent_background" format="reference" />
     <attr name="item_selector" format="reference" />
     <attr name="segment_button" format="reference" />
     <attr name="segment_radio_left" format="reference" />
@@ -13,6 +14,15 @@
 
     <declare-styleable name="CompoundButton">
         <attr name="android:button" />
+    </declare-styleable>
+
+    <declare-styleable name="FloatingActionButton">
+        <attr name="drawable" format="integer" />
+        <attr name="color" format="color" />
+        <attr name="shadowRadius" format="float" />
+        <attr name="shadowDx" format="float" />
+        <attr name="shadowDy" format="float" />
+        <attr name="shadowColor" format="integer" />
     </declare-styleable>
 
     <attr name="colored_button" format="reference" />

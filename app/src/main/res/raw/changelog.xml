@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion changeDate="12. Oktober 2014" versionName="6.3">
+        <changelogimprovement>Fullscreen Modus</changelogimprovement>
+        <changelogimprovement>Hintergrundbild wählbar</changelogimprovement>
+        <changelogimprovement>Neuer Ansichtsmodus für die Übersicht</changelogimprovement>
+        <changelogbug>WidgetService stürzte manchmal ab</changelogbug>
+        <changelogbug>Auf Tablets stürzte die Oberfläche manchmal ab</changelogbug>
+    </changelogversion>
+
     <changelogversion changeDate="09. Oktober 2014" versionName="6.2">
         <changelogbug>Das Hinzufügen von HTTP Verbindungen mit Hostnamen statt IPs funktioniert
             nun

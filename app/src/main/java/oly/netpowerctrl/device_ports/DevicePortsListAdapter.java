@@ -41,7 +41,7 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
             return convertView;
 
         if (checkable) {
-            CheckedTextView t = (CheckedTextView) cViewHolder.title;
+            CheckedTextView t = (CheckedTextView) current_viewHolder.title;
             t.setChecked(checked.get(position));
         }
         return convertView;

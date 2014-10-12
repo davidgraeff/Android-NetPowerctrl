@@ -164,8 +164,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="renameInProgress">Renaming in progress…</string>
     <string name="renameFailed">Renaming failed: %1$s</string>
     <string name="device_notReachable">Not reachable: %1$s</string>
-    <string name="menu_view_list">View as list</string>
-    <string name="menu_view_grid">View as grid</string>
     <string name="empty_no_scenes_no_devices">No scenes found. With a scene you may combine multiple outlet actions. First you have to configure some devices though.</string>
     <string name="help_devices">On this screen you may see all automatically found devices. Click on an entry within the category "Unknown Devices" to open the new device wizard. Click the refresh button on the top right to search the network again. UDP have to be enabled on your devices to be found automatically. If you want to add a device that was not found, you may do so by clicking the add button.</string>
     <string name="empty_no_outlets_no_devices">Welcome!\nWith this app you may control Anel devices. First you have to configure some devices though. Use the navigation to come back to the outlet overview. Open the navigation from anywhere in your app by swiping from the left edge of the screen.</string>
@@ -263,7 +261,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_http_new_info">Please enter the Hostname/IP and port. A hostname is only accepted if it exists!</string>
     <string name="error_reading_alarms">Failed to load cached alarms!</string>
     <string name="preference_show_background">Show background image</string>
-    <string name="preference_show_background_summary">Use a background texture instead of the solid color background.</string>
+    <string name="preference_show_background_summary">Use a background texture instead of the solid color background. Your own image is selectable with android 4.1+.</string>
     <string name="issues_wait">Collecting data…</string>
     <string name="issues_open">Open bug reports: %1$s</string>
     <string name="issues_error">Retrieving of reported errors failed!</string>
@@ -333,4 +331,11 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_log_extensions">Log: Extensions</string>
     <string name="preference_log_extensions_summary">Log all extensions activities</string>
     <string name="error_restart_app">Please restart the app!</string>
+    <string name="preference_fullscreen">Fullscreen</string>
+    <string name="preference_fullscreen_summary">Hide the android top bar and the action bar.</string>
+    <string name="error_not_in_fullscreen_mode">This cannot be done in fullscreen mode!</string>
+    <string name="preference_outlet_editing_enabled">Allow Outlet/Scene Editing</string>
+    <string name="preference_outlet_editing_enabled_summary">The tool icon to edit outlets/scenes will be shown/hidden.</string>
+    <string name="menu_view_change">Change view</string>
+    <string name="preference_select_background_image">Choose background image</string>
 </resources>

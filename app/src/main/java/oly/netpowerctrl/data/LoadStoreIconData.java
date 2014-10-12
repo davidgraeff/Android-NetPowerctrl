@@ -65,6 +65,10 @@ public class LoadStoreIconData {
         return new BitmapDrawable(context.getResources(), image);
     }
 
+    public static UUID uuidForBackground() {
+        return new UUID(0xABCD, 0xABCD);
+    }
+
     public static UUID uuidFromWidgetID(int widgetId) {
         return new UUID(0xABCD, (long) widgetId);
     }
@@ -324,7 +328,8 @@ public class LoadStoreIconData {
         SceneIcon,
         WidgetIcon,
         DevicePortIcon,
-        GroupIcon
+        GroupIcon,
+        BackgroundImage
     }
 
 

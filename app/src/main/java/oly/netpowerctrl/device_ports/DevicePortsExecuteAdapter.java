@@ -26,6 +26,7 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 titleClick.onTitleClick((Integer) view.getTag());
         }
     };
+    private boolean enableEditing;
 
     public DevicePortsExecuteAdapter(Context context, onListItemElementClicked mListContextMenu, DevicePortSourceInterface source,
                                      IconDeferredLoadingThread iconCache) {
@@ -51,60 +52,64 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
 
         // Not our business, if port is null
         if (port == null) {
-            if (cViewHolder.isNew && cViewHolder.imageEdit != null) {
-                cViewHolder.imageEdit.setVisibility(View.INVISIBLE);
+            if (current_viewHolder.isNew && current_viewHolder.imageEdit != null) {
+                current_viewHolder.imageEdit.setVisibility(View.INVISIBLE);
             }
             return convertView;
         }
 
         // Assign position to title view. Used in the custom OnClickListener
-        cViewHolder.title.setTag(position);
+        current_viewHolder.title.setTag(position);
 
         // We do this only once, if the viewHolder is new
-        if (cViewHolder.isNew) {
+        if (current_viewHolder.isNew) {
             // We use the tools icon for the context menu.
-            if (cViewHolder.imageEdit != null) {
-                cViewHolder.imageEdit.setVisibility(View.VISIBLE);
-                cViewHolder.imageEdit.setTag(position);
-                cViewHolder.imageEdit.setOnClickListener(cViewHolder);
+            if (current_viewHolder.imageEdit != null) {
+                if (!enableEditing)
+                    current_viewHolder.imageEdit.setVisibility(View.GONE);
+                else {
+                    current_viewHolder.imageEdit.setTag(position);
+                    current_viewHolder.imageEdit.setOnClickListener(current_viewHolder);
+                    current_viewHolder.imageEdit.setVisibility(View.VISIBLE);
+                }
             }
 
             // If we have a listener for title clicks, we set the click listener now
             if (titleClick != null) {
-                cViewHolder.title.setOnClickListener(titleOnlyClick);
+                current_viewHolder.title.setOnClickListener(titleOnlyClick);
             }
 
             //current_viewHolder.mainTextView.setTag(position);
             switch (port.getType()) {
                 case TypeToggle: {
-                    cViewHolder.seekBar.setVisibility(View.GONE);
-                    cViewHolder.loadIcon(mIconCache, port.uuid,
+                    current_viewHolder.seekBar.setVisibility(View.GONE);
+                    current_viewHolder.loadIcon(mIconCache, port.uuid,
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff,
                             LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff), 0);
-                    cViewHolder.loadIcon(mIconCache, port.uuid,
+                    current_viewHolder.loadIcon(mIconCache, port.uuid,
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn,
                             LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn), 1);
                     break;
                 }
                 case TypeButton: {
-                    cViewHolder.loadIcon(mIconCache, port.uuid,
+                    current_viewHolder.loadIcon(mIconCache, port.uuid,
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateToggle,
                             R.drawable.netpowerctrl, 0);
-                    cViewHolder.seekBar.setVisibility(View.GONE);
-                    cViewHolder.setCurrentBitmapIndex(0);
+                    current_viewHolder.seekBar.setVisibility(View.GONE);
+                    current_viewHolder.setCurrentBitmapIndex(0);
                     break;
                 }
                 case TypeRangedValue:
-                    cViewHolder.loadIcon(mIconCache, port.uuid,
+                    current_viewHolder.loadIcon(mIconCache, port.uuid,
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff,
                             LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff), 0);
-                    cViewHolder.loadIcon(mIconCache, port.uuid,
+                    current_viewHolder.loadIcon(mIconCache, port.uuid,
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn,
                             LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn), 1);
-                    cViewHolder.seekBar.setVisibility(View.VISIBLE);
-                    cViewHolder.seekBar.setOnSeekBarChangeListener(this);
-                    cViewHolder.seekBar.setTag(-1);
-                    cViewHolder.seekBar.setMax(port.max_value - port.min_value);
+                    current_viewHolder.seekBar.setVisibility(View.VISIBLE);
+                    current_viewHolder.seekBar.setOnSeekBarChangeListener(this);
+                    current_viewHolder.seekBar.setTag(-1);
+                    current_viewHolder.seekBar.setMax(port.max_value - port.min_value);
                     break;
             }
 
@@ -116,14 +121,14 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
                 break;
             }
             case TypeToggle: {
-                cViewHolder.setCurrentBitmapIndex(port.current_value >= port.max_value ? 1 : 0);
+                current_viewHolder.setCurrentBitmapIndex(port.current_value >= port.max_value ? 1 : 0);
                 break;
             }
             case TypeRangedValue:
-                cViewHolder.seekBar.setTag(-1);
-                cViewHolder.seekBar.setProgress(port.current_value - port.min_value);
-                cViewHolder.seekBar.setTag(position);
-                cViewHolder.setCurrentBitmapIndex(port.current_value <= port.min_value ? 0 : 1);
+                current_viewHolder.seekBar.setTag(-1);
+                current_viewHolder.seekBar.setProgress(port.current_value - port.min_value);
+                current_viewHolder.seekBar.setTag(position);
+                current_viewHolder.setCurrentBitmapIndex(port.current_value <= port.min_value ? 0 : 1);
                 break;
         }
 
@@ -159,6 +164,14 @@ public class DevicePortsExecuteAdapter extends DevicePortsBaseAdapter implements
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         getSource().setAutomaticUpdate(true);
+    }
+
+    public boolean isEnableEditing() {
+        return enableEditing;
+    }
+
+    public void setEnableEditing(boolean enableEditing) {
+        this.enableEditing = enableEditing;
     }
 
     public interface TitleClick {

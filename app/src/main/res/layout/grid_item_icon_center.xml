@@ -4,16 +4,15 @@
     android:id="@+id/item_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?item_selector"
     android:gravity="center_horizontal"
     android:minWidth="150dp"
-    android:paddingLeft="5dip"
-    android:paddingRight="5dip">
+    android:padding="5dip">
 
     <ImageView
         android:id="@+id/icon_bitmap"
         android:layout_width="match_parent"
         android:layout_height="128dp"
+        android:background="?attr/text_transparent_background"
         android:gravity="center_horizontal"
         tools:ignore="ContentDescription" />
 
@@ -29,29 +28,22 @@
 
     <TextView
         android:id="@+id/text1"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/icon_bitmap"
         android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:background="?attr/text_transparent_background"
         android:singleLine="true"
         android:textAppearance="@android:style/TextAppearance.Medium"
         android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/subtitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/text1"
-        android:singleLine="true"
-        android:textAppearance="@android:style/TextAppearance.Small" />
 
     <ImageView
         android:id="@+id/icon_edit"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_alignEnd="@id/text1"
         android:layout_alignParentBottom="true"
-        android:layout_alignRight="@id/text1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:alpha="0.5"
         android:src="@android:drawable/ic_menu_manage"
         tools:ignore="ContentDescription" />

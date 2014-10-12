@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.os.Build;
@@ -66,7 +67,8 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
 
         //noinspection ConstantConditions
         findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
-        findPreference("show_background").setOnPreferenceChangeListener(reloadActivity);
+        findPreference(SharedPrefs.PREF_fullscreen).setOnPreferenceChangeListener(reloadActivity);
+        findPreference(SharedPrefs.PREF_background).setOnPreferenceChangeListener(reloadActivity);
 
         //noinspection ConstantConditions
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -122,6 +124,32 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
 
         //getPreferenceScreen().removePreference(findPreference("extensions"));
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            //noinspection ConstantConditions
+            findPreference("select_background_image").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    LoadStoreIconData.show_select_icon_dialog(getActivity(), "backgrounds", new LoadStoreIconData.IconSelected() {
+                        @Override
+                        public void setIcon(Object context_object, Bitmap bitmap) {
+                            LoadStoreIconData.saveIcon(getActivity(), bitmap, LoadStoreIconData.uuidForBackground(),
+                                    LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateUnknown);
+
+                            if (SharedPrefs.getInstance().isBackground())
+                                reloadActivity.onPreferenceChange(null, null);
+                        }
+
+                        @Override
+                        public void startActivityForResult(Intent intent, int requestCode) {
+                            PreferencesFragment.this.startActivityForResult(intent, requestCode);
+                        }
+                    }, null);
+                    return false;
+                }
+            });
+        } else {
+            getPreferenceScreen().removePreference(findPreference("select_background_image"));
+        }
 
         //noinspection ConstantConditions
         findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

@@ -1,7 +1,6 @@
 package oly.netpowerctrl.device_ports;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.Log;
@@ -31,8 +30,7 @@ import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
-public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface,
-        SharedPrefs.IShowBackground {
+public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaInterface {
 
     final IconDeferredLoadingThread mIconCache;
     final List<DevicePortAdapterItem> mItems;
@@ -41,12 +39,12 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
     private final DevicePortSourceInterface mSource;
     int mOutlet_res_id = 0;
     boolean mShowHidden = true;
-    DevicePortViewHolder cViewHolder;
+    DevicePortViewHolder current_viewHolder;
     // Some observers
     onListItemElementClicked mListContextMenu;
     // Animation ids
     WeakReference<AnimationController> mAnimationWeakReference = new WeakReference<>(null);
-    private boolean drawShadows;
+
     private int mNextId = 0; // we need stable IDs
     // If you change the layout or an image we increment this layout change id
     // to invalidate ViewHolders (for reloading images or layout items).
@@ -67,14 +65,6 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         if (source != null) {
             source.setTargetAdapter(this);
         }
-        drawShadows = SharedPrefs.getInstance().isBackground();
-        SharedPrefs.getInstance().registerShowBackground(this);
-    }
-
-    @Override
-    public void backgroundChanged(boolean showBackground) {
-        drawShadows = showBackground;
-        notifyDataSetChanged();
     }
 
     public DevicePortSourceInterface getSource() {
@@ -219,16 +209,16 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
         final DevicePort port = item.port;
 
         if (convertView != null) {
-            cViewHolder = (DevicePortViewHolder) convertView.getTag();
-            if (!cViewHolder.isStillValid(mLayoutChangeId)) {
-                cViewHolder = null;
+            current_viewHolder = (DevicePortViewHolder) convertView.getTag();
+            if (!current_viewHolder.isStillValid(mLayoutChangeId)) {
+                current_viewHolder = null;
             } else
-                cViewHolder.isNew = false;
+                current_viewHolder.isNew = false;
         } else {
-            cViewHolder = null;
+            current_viewHolder = null;
         }
 
-        if (cViewHolder == null) {
+        if (current_viewHolder == null) {
             switch (item.groupType()) {
                 case PRE_GROUP_FILL_ELEMENT_TYPE:
                 case NOGROUP_TYPE:
@@ -240,50 +230,48 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
                     break;
             }
             assert convertView != null;
-            cViewHolder = new DevicePortViewHolder(convertView, mListContextMenu, mLayoutChangeId,
+            current_viewHolder = new DevicePortViewHolder(convertView, mListContextMenu, mLayoutChangeId,
                     item.groupType());
 
-            convertView.setTag(cViewHolder);
+            convertView.setTag(current_viewHolder);
         }
 
-        cViewHolder.position = position;
+        current_viewHolder.position = position;
 
         if (port == null) { // header
             switch (item.groupType()) {
                 case GROUP_SPAN_TYPE:
                 case GROUP_TYPE:
-                    cViewHolder.title.setText(item.displayText);
-                    if (cViewHolder.line != null)
-                        cViewHolder.line.setVisibility(item.displayText.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                    current_viewHolder.title.setText(item.displayText);
+                    if (current_viewHolder.line != null)
+                        current_viewHolder.line.setVisibility(item.displayText.isEmpty() ? View.INVISIBLE : View.VISIBLE);
                     break;
             }
         } else { // no header
-            cViewHolder.title.setTypeface(
+            current_viewHolder.title.setTypeface(
                     port.Hidden ? Typeface.MONOSPACE : Typeface.DEFAULT,
                     port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-            cViewHolder.title.setText(port.getDescription());
-            cViewHolder.title.setEnabled(item.isEnabled());
+            current_viewHolder.title.setText(port.getDescription());
+            current_viewHolder.title.setEnabled(item.isEnabled());
 
-            if (drawShadows)
-                cViewHolder.title.setShadowLayer(4f, 0, 0, Color.WHITE);
+            if (current_viewHolder.subtitle != null) {
+                current_viewHolder.subtitle.setText(port.device.DeviceName);
+            }
 
-            if (cViewHolder.subtitle != null)
-                cViewHolder.subtitle.setText(port.device.DeviceName);
-
-            if (cViewHolder.progress != null) {
-                if (cViewHolder.progress.getVisibility() == View.VISIBLE && item.isEnabled() &&
-                        cViewHolder.animation == null) {
-                    animateHideProgressbar(cViewHolder.position, cViewHolder);
+            if (current_viewHolder.progress != null) {
+                if (current_viewHolder.progress.getVisibility() == View.VISIBLE && item.isEnabled() &&
+                        current_viewHolder.animation == null) {
+                    animateHideProgressbar(current_viewHolder.position, current_viewHolder);
                 } else
-                    cViewHolder.progress.setVisibility(item.isEnabled() ? View.GONE : View.VISIBLE);
+                    current_viewHolder.progress.setVisibility(item.isEnabled() ? View.GONE : View.VISIBLE);
             }
 
             if (port.device.getFirstReachableConnection() != null)
-                cViewHolder.title.setPaintFlags(
-                        cViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
+                current_viewHolder.title.setPaintFlags(
+                        current_viewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
             else
-                cViewHolder.title.setPaintFlags(
-                        cViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                current_viewHolder.title.setPaintFlags(
+                        current_viewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
         return convertView;
@@ -291,7 +279,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
     private void animateHideProgressbar(final int current_position, final DevicePortViewHolder viewHolder) {
         Animation a = new AlphaAnimation(1, 0);
-        cViewHolder.animation = a;
+        current_viewHolder.animation = a;
         a.setDuration(1200);
         a.setAnimationListener(new Animation.AnimationListener() {
             @Override
@@ -311,7 +299,7 @@ public class DevicePortsBaseAdapter extends BaseAdapter implements SortCriteriaI
 
             }
         });
-        cViewHolder.progress.startAnimation(a);
+        current_viewHolder.progress.startAnimation(a);
     }
 
     //////////////// Group Spans //////////////

@@ -12,6 +12,7 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.navigation.NavigationController;
 
 /**
@@ -20,7 +21,7 @@ import oly.netpowerctrl.utils.navigation.NavigationController;
  */
 public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection, Group>,
         ActionBar.OnNavigationListener, NavigationController.DrawerStateChanged {
-    private ActionBar actionBar;
+    private ActionBar actionBar = null;
     private NavigationController navigationController;
     private int lastNavigationMode = -1;
     private int lastDisplayOptions = -1;
@@ -28,12 +29,19 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
     private boolean updateLock = false;
     private boolean synthetic = true;
     private UUID groupID;
+    private int lastSelectedGroup = 0;
 
     public void initNavigation(ActionBar actionBar, NavigationController navigationController) {
         this.actionBar = actionBar;
+        if (actionBar == null) {
+            synthetic = false;
+            adapter = new ArrayAdapter<>(App.instance, android.R.layout.simple_spinner_dropdown_item);
+        } else {
+            adapter = new ArrayAdapter<>(actionBar.getThemedContext(), android.R.layout.simple_spinner_dropdown_item);
+            actionBar.setListNavigationCallbacks(adapter, this);
+        }
+
         this.navigationController = navigationController;
-        adapter = new ArrayAdapter<>(actionBar.getThemedContext(), android.R.layout.simple_spinner_dropdown_item);
-        actionBar.setListNavigationCallbacks(adapter, this);
         navigationController.registerOpenStateChanged(this);
         AppData.getInstance().groupCollection.registerObserver(this);
     }
@@ -43,7 +51,7 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
     }
 
     private void hideNavigation() {
-        if (lastNavigationMode == -1)
+        if (actionBar == null || lastNavigationMode == -1)
             return;
 
         //noinspection ResourceType
@@ -73,6 +81,8 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
         if (updateLock)
             return true;
 
+        lastSelectedGroup = i;
+
         if (i == 0) {
             navigationController.changeArgumentsOfCurrentFragment(null);
             return true;
@@ -100,16 +110,12 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
 
     @Override
     public boolean updated(GroupCollection groupCollection, Group group, ObserverUpdateActions action) {
-        if (actionBar == null) {
-            return false;
-        }
-
         if (groupCollection.length() == 0) {
             hideNavigation();
             return true;
         }
 
-        if (lastNavigationMode == -1) {
+        if (lastNavigationMode == -1 && actionBar != null) {
             lastNavigationMode = actionBar.getNavigationMode();
             lastDisplayOptions = actionBar.getDisplayOptions();
             actionBar.setDisplayShowTitleEnabled(false);
@@ -118,12 +124,14 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
 
         updateLock = true;
         adapter.clear();
-        adapter.add(actionBar.getThemedContext().getString(R.string.drawer_overview));
+        adapter.add(App.getAppString(R.string.drawer_overview));
         adapter.addAll(groupCollection.getGroupsArray());
-        if (groupID == null)
-            actionBar.setSelectedNavigationItem(0);
-        else
-            actionBar.setSelectedNavigationItem(AppData.getInstance().groupCollection.indexOf(groupID) + 1);
+        if (actionBar != null) {
+            if (groupID == null)
+                actionBar.setSelectedNavigationItem(0);
+            else
+                actionBar.setSelectedNavigationItem(AppData.getInstance().groupCollection.indexOf(groupID) + 1);
+        }
         updateLock = false;
 
         return true;
@@ -146,5 +154,13 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
             // setSelectedNavigationIndex not valid for current navigation mode
         }
         updateLock = false;
+    }
+
+    public void previous() {
+        onNavigationItemSelected(lastSelectedGroup - 1 < 0 ? adapter.getCount() - 1 : lastSelectedGroup - 1, 0);
+    }
+
+    public void next() {
+        onNavigationItemSelected(lastSelectedGroup + 1 >= adapter.getCount() ? 0 : lastSelectedGroup + 1, 0);
     }
 }

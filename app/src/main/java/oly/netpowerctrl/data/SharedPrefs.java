@@ -30,6 +30,8 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
     public final static String hide_not_reachable = "hide_not_reachable";
     public final static String PREF_use_dark_theme = "use_dark_theme";
+    public final static String PREF_background = "show_background";
+    public final static String PREF_fullscreen = "fullscreen";
     public final static String PREF_show_persistent_notification = "show_persistent_notification";
     private final static int PREF_CURRENT_VERSION = 4;
     private final static String firstTabExtraFilename = "firstTabExtra";
@@ -236,28 +238,35 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return value;
     }
 
-    public boolean getOutletsGrid() {
-
+    public int getOutletsViewType() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("OutletsGrid", false);
+        return prefs.getInt("OutletsViewType", 0);
     }
 
-    public void setOutletsGrid(boolean grid) {
+    public void setOutletsViewType(int type) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("OutletsGrid", grid).apply();
+        prefs.edit().putInt("OutletsViewType", type).apply();
     }
 
-    public boolean getScenesList() {
-
+    public int getNextOutletsViewType() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("ScenesList", false);
+        return (prefs.getInt("OutletsViewType", 0) + 1) % 3;
     }
 
-    public void setScenesList(boolean grid) {
-
+    public int getScenesViewType() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("ScenesList", grid).apply();
+        return prefs.getInt("ScenesViewType", 0);
+    }
+
+    public void setScenesViewType(int type) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putInt("ScenesViewType", type).apply();
+    }
+
+    public int getNextScenesViewType() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return (prefs.getInt("ScenesViewType", 0) + 1) % 3;
     }
 
     public boolean logEnergySaveMode() {
@@ -317,11 +326,22 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return prefs.getBoolean("notify_on_non_reachable", value);
     }
 
-    public boolean isBackground() {
+    public boolean isOutletEditingEnabled() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.outlet_editing_enabled);
+        return prefs.getBoolean("outlet_editing_enabled", value);
+    }
 
+    public boolean isBackground() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.show_background);
-        return prefs.getBoolean("show_background", value);
+        return prefs.getBoolean(PREF_background, value);
+    }
+
+    public boolean isFullscreen() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.fullscreen);
+        return prefs.getBoolean(PREF_fullscreen, value);
     }
 
     public int getOpenIssues() {

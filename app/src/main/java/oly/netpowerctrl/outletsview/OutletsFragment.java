@@ -50,6 +50,7 @@ import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.SortCriteriaDialog;
 import oly.netpowerctrl.utils.actionbar.ActionBarWithGroups;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
+import oly.netpowerctrl.utils.controls.FloatingActionButton;
 import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
@@ -133,20 +134,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         super.onResume();
     }
 
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-                    //getActivity().findViewById(R.id.content_frame).getWidth();
-                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
-                    int i = mListView.getWidth() / requestedColumnWidth;
-                    adapter.setItemsInRow(i);
-
-                }
-            };
-
     @Override
     public void changeArguments(Bundle mExtra) {
         UUID groupFilterBefore = groupFilter;
@@ -167,17 +154,40 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         checkEmptyChanged(checkEmptyAction.ADDREMOVE);
     }
 
-    private void setListOrGrid(boolean grid) {
-        SharedPrefs.getInstance().setOutletsGrid(grid);
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+                    //getActivity().findViewById(R.id.content_frame).getWidth();
+                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
+                    int i = mListView.getWidth() / requestedColumnWidth;
+                    adapter.setItemsInRow(i);
 
-        if (!grid) {
-            adapter.setLayoutRes(R.layout.list_item_icon);
-            requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
-        } else {
-            adapter.setLayoutRes(R.layout.grid_item_icon);
-            requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
+                }
+            };
+
+    private void setViewType(int viewType) {
+        SharedPrefs.getInstance().setOutletsViewType(viewType);
+
+        switch (viewType) {
+            case 2:
+                adapter.setLayoutRes(R.layout.grid_item_icon_center);
+                requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
+                break;
+            case 1:
+                adapter.setLayoutRes(R.layout.grid_item_icon);
+                requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
+                break;
+            case 0:
+            default:
+                adapter.setLayoutRes(R.layout.list_item_icon);
+                requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
+                break;
         }
 
+        adapter.setEnableEditing(SharedPrefs.getInstance().isOutletEditingEnabled());
         mListView.setColumnWidth(requestedColumnWidth);
         mListView.setNumColumns(GridView.AUTO_FIT);
         mListView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
@@ -191,8 +201,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (!AppData.getInstance().deviceCollection.hasDevices()) {
             menu.findItem(R.id.menu_showhidden).setVisible(false);
             menu.findItem(R.id.menu_hidehidden).setVisible(false);
-            menu.findItem(R.id.menu_view_list).setVisible(false);
-            menu.findItem(R.id.menu_view_grid).setVisible(false);
+            menu.findItem(R.id.menu_view_change).setVisible(false);
             menu.findItem(R.id.menu_sort).setVisible(false);
             menu.findItem(R.id.refresh).setVisible(false);
             menu.findItem(R.id.menu_debug_toggle_network_reduced).setVisible(false);
@@ -211,11 +220,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_hidehidden).setVisible(hiddenShown);
 
-        boolean isList = adapter == null || adapter.getLayoutRes() == R.layout.list_item_icon;
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_view_list).setVisible(!isList);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_view_grid).setVisible(isList);
+        menu.findItem(R.id.menu_view_change).setVisible(true);
 
         menu.findItem(R.id.menu_debug_toggle_network_reduced).setVisible(App.isDebug());
         menu.findItem(R.id.menu_debug_crash_test).setVisible(App.isDebug());
@@ -228,15 +234,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 onRefresh();
                 return true;
             }
-            case R.id.menu_view_list: {
-                setListOrGrid(false);
-                //noinspection ConstantConditions
-                getActivity().invalidateOptionsMenu();
-                return true;
-            }
-
-            case R.id.menu_view_grid: {
-                setListOrGrid(true);
+            case R.id.menu_view_change: {
+                setViewType(SharedPrefs.getInstance().getNextOutletsViewType());
                 //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
@@ -323,6 +322,25 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
         });
 
+        if (SharedPrefs.getInstance().isFullscreen()) {
+            FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fabNext);
+            fab.setVisibility(View.VISIBLE);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    actionBarWithGroups.next();
+                }
+            });
+            fab = (FloatingActionButton) view.findViewById(R.id.fabPrevious);
+            fab.setVisibility(View.VISIBLE);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    actionBarWithGroups.previous();
+                }
+            });
+        }
+
         Button btnWirelessLan = (Button) view.findViewById(R.id.btnWirelessSettings);
         btnWirelessLan.setVisibility(ListenService.isWirelessLanConnected(getActivity()) ? View.GONE : View.VISIBLE);
         btnWirelessLan.setOnClickListener(new View.OnClickListener() {
@@ -384,7 +402,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        setListOrGrid(SharedPrefs.getInstance().getOutletsGrid());
+        setViewType(SharedPrefs.getInstance().getOutletsViewType());
 
         AppData.observersDataQueryCompleted.register(this);
 
@@ -517,6 +535,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_outlet_master_slave:
+                if (getActivity().getActionBar() == null) {
+                    Toast.makeText(getActivity(), R.string.error_not_in_fullscreen_mode, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 //noinspection ConstantConditions
                 Bundle b = new Bundle();
                 b.putString("master_uuid", devicePort.uuid.toString());

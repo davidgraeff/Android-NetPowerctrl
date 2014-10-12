@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import java.lang.ref.WeakReference;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -229,9 +230,14 @@ public abstract class DeviceObserverBase {
 
         @Override
         public void run() {
-            for (final DeviceConnection connection : device.DeviceConnections) {
+            List<DeviceConnection> connections = new ArrayList<>(device.DeviceConnections);
+            for (final DeviceConnection connection : connections) {
                 if (connection.needResolveName()) {
-                    connection.getHostnameIPs();
+                    try {
+                        connection.lookupIPs();
+                    } catch (UnknownHostException e) {
+                        connection.setNotReachable(e.getLocalizedMessage());
+                    }
                 }
             }
 

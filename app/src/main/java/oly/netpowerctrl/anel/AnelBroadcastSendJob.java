@@ -3,7 +3,9 @@ package oly.netpowerctrl.anel;
 import android.content.Context;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -25,10 +27,16 @@ import oly.netpowerctrl.network.UDPSending;
  * A DeviceSend.Job that provide broadcast sending to anel devices.
  */
 public class AnelBroadcastSendJob implements UDPSending.Job {
-    private void sendPacket(Context context, UDPSending udpSending, InetAddress ip, int SendPort, byte[] message) {
+    final private WeakReference<UDPSending> udpSendingReference;
+
+    public AnelBroadcastSendJob(UDPSending udpSending) {
+        this.udpSendingReference = new WeakReference<>(udpSending);
+    }
+
+    private void sendPacket(Context context, DatagramSocket datagramSocket, InetAddress ip, int SendPort, byte[] message) {
         try {
-            udpSending.datagramSocket.setBroadcast(true);
-            udpSending.datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
+            datagramSocket.setBroadcast(true);
+            datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
             //Log.w("AnelBroadcastSendJob",ip.getHostAddress());
         } catch (final SocketException e) {
             if (e.getMessage().contains("ENETUNREACH"))
@@ -43,7 +51,7 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
     }
 
     @Override
-    public void process(UDPSending UDPSending) {
+    public void process() {
         Context context = ListenService.getService();
         if (context == null)
             return;
@@ -51,23 +59,28 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
         Set<Integer> ports = AppData.getInstance().getAllSendPorts();
         boolean foundBroadcastAddresses = false;
 
+        UDPSending udpSending = udpSendingReference.get();
+        if (udpSending == null)
+            return;
+        DatagramSocket datagramSocket = udpSending.datagramSocket;
+
         Enumeration list;
         try {
             list = NetworkInterface.getNetworkInterfaces();
 
             while (list.hasMoreElements()) {
-                NetworkInterface iface = (NetworkInterface) list.nextElement();
+                NetworkInterface networkInterface = (NetworkInterface) list.nextElement();
 
-                if (iface == null) continue;
+                if (networkInterface == null) continue;
 
-                if (!iface.isLoopback() && iface.isUp()) {
-                    for (InterfaceAddress address : iface.getInterfaceAddresses()) {
+                if (!networkInterface.isLoopback() && networkInterface.isUp()) {
+                    for (InterfaceAddress address : networkInterface.getInterfaceAddresses()) {
                         //System.out.println("Found address: " + address);
                         if (address == null) continue;
                         InetAddress broadcast = address.getBroadcast();
                         if (broadcast == null) continue;
                         for (int port : ports)
-                            sendPacket(context, UDPSending, broadcast, port, "wer da?\r\n".getBytes());
+                            sendPacket(context, datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
                         foundBroadcastAddresses = true;
                     }
                 }

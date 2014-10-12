@@ -36,6 +36,7 @@ import oly.netpowerctrl.utils.notifications.InAppNotifications;
  */
 public class ScenesFragment extends Fragment implements
         PopupMenu.OnMenuItemClickListener, AdapterView.OnItemClickListener, onListItemElementClicked {
+    int requestedColumnWidth;
     private SceneCollection scenes;
     private GridView mListView;
     private ScenesAdapter adapter;
@@ -43,22 +44,28 @@ public class ScenesFragment extends Fragment implements
     public ScenesFragment() {
     }
 
-    private void setListOrGrid(boolean grid) {
-        SharedPrefs.getInstance().setScenesList(grid);
+    private void setViewType(int viewType) {
+        SharedPrefs.getInstance().setScenesViewType(viewType);
 
-        float width;
-
-        if (!grid) {
-            adapter.setLayoutRes(R.layout.list_item_icon);
-            width = getResources().getDimension(R.dimen.min_list_item_width);
-        } else {
-            adapter.setLayoutRes(R.layout.grid_item_icon);
-            width = getResources().getDimension(R.dimen.min_grid_item_width);
+        switch (viewType) {
+            case 2:
+                adapter.setLayoutRes(R.layout.grid_item_icon_center);
+                requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
+                break;
+            case 1:
+                adapter.setLayoutRes(R.layout.grid_item_icon);
+                requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
+                break;
+            case 0:
+            default:
+                adapter.setLayoutRes(R.layout.list_item_icon);
+                requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
+                break;
         }
 
-        mListView.setColumnWidth((int) width);
+        mListView.setColumnWidth(requestedColumnWidth);
         mListView.setNumColumns(GridView.AUTO_FIT);
-
+        adapter.setEnableEditing(SharedPrefs.getInstance().isOutletEditingEnabled());
         mListView.setAdapter(adapter);
     }
 
@@ -74,21 +81,14 @@ public class ScenesFragment extends Fragment implements
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_remove_scene).setVisible(false);
             //noinspection ConstantConditions
-            menu.findItem(R.id.menu_view_list).setVisible(false);
-            //noinspection ConstantConditions
-            menu.findItem(R.id.menu_view_grid).setVisible(false);
+            menu.findItem(R.id.menu_view_change).setVisible(false);
             //noinspection ConstantConditions
             menu.findItem(R.id.menu_sort).setVisible(false);
             return;
         }
 
         menu.findItem(R.id.menu_sort).setVisible(true);
-
-        boolean isList = adapter.getLayoutRes() == R.layout.list_item_icon;
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_view_list).setVisible(!isList);
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_view_grid).setVisible(isList);
+        menu.findItem(R.id.menu_view_change).setVisible(true);
     }
 
     @Override
@@ -118,15 +118,8 @@ public class ScenesFragment extends Fragment implements
                 return true;
             }
 
-            case R.id.menu_view_list: {
-                setListOrGrid(false);
-                //noinspection ConstantConditions
-                getActivity().invalidateOptionsMenu();
-                return true;
-            }
-
-            case R.id.menu_view_grid: {
-                setListOrGrid(true);
+            case R.id.menu_view_change: {
+                setViewType(SharedPrefs.getInstance().getNextScenesViewType());
                 //noinspection ConstantConditions
                 getActivity().invalidateOptionsMenu();
                 return true;
@@ -180,7 +173,7 @@ public class ScenesFragment extends Fragment implements
         animationController.setListView(mListView);
         adapter.setAnimationController(animationController);
 
-        setListOrGrid(SharedPrefs.getInstance().getScenesList());
+        setViewType(SharedPrefs.getInstance().getScenesViewType());
         if (!AppData.getInstance().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes_no_devices));

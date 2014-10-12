@@ -26,6 +26,10 @@
             android:summary="@string/preference_show_background_summary"
             android:title="@string/preference_show_background" />
 
+        <PreferenceScreen
+            android:key="select_background_image"
+            android:title="@string/preference_select_background_image" />
+
         <CheckBoxPreference
             android:defaultValue="@bool/smaller_click_execute_area"
             android:key="smaller_click_execute_area"
@@ -51,6 +55,17 @@
             android:summary="@string/preference_notify_on_non_reachable_summary"
             android:title="@string/preference_notify_on_non_reachable" />
 
+        <CheckBoxPreference
+            android:defaultValue="@bool/outlet_editing_enabled"
+            android:key="outlet_editing_enabled"
+            android:summary="@string/preference_outlet_editing_enabled_summary"
+            android:title="@string/preference_outlet_editing_enabled" />
+
+        <CheckBoxPreference
+            android:defaultValue="@bool/fullscreen"
+            android:key="fullscreen"
+            android:summary="@string/preference_fullscreen_summary"
+            android:title="@string/preference_fullscreen" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preference_error_report_tool">

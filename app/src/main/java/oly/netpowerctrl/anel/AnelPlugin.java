@@ -192,14 +192,14 @@ final public class AnelPlugin implements PluginInterface {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(service, ci, data,
+            udpSending.addJob(new UDPSending.SendAndObserveJob(udpSending, service, ci, data,
                     requestMessage, UDPSending.INQUERY_REQUEST));
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(service, ci, data,
+            udpSending.addJob(new UDPSending.SendAndObserveJob(udpSending, service, ci, data,
                     requestMessage, UDPSending.INQUERY_REQUEST));
         }
 
@@ -325,12 +325,12 @@ final public class AnelPlugin implements PluginInterface {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         port.id - 10, device.UserName, device.Password).getBytes();
-                j = new UDPSending.SendAndObserveJob(service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                j = new UDPSending.SendAndObserveJob(udpSending, service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             } else if (port.id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         port.id, device.UserName, device.Password).getBytes();
-                j = new UDPSending.SendAndObserveJob(service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                j = new UDPSending.SendAndObserveJob(udpSending, service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             }
 
             if (j != null)
@@ -374,7 +374,7 @@ final public class AnelPlugin implements PluginInterface {
             return;
         }
 
-        udpSending.addJob(new AnelBroadcastSendJob());
+        udpSending.addJob(new AnelBroadcastSendJob(udpSending));
     }
 
     @Override
@@ -395,7 +395,7 @@ final public class AnelPlugin implements PluginInterface {
             if (warnUDPSending()) {
                 return;
             }
-            udpSending.addJob(new UDPSending.SendAndObserveJob(service, ci, requestMessage, UDPSending.INQUERY_REQUEST));
+            udpSending.addJob(new UDPSending.SendAndObserveJob(udpSending, service, ci, requestMessage, UDPSending.INQUERY_REQUEST));
         }
     }
 
