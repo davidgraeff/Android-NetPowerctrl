@@ -2,9 +2,9 @@ package oly.netpowerctrl.listen_service;
 
 import android.content.Context;
 
-import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;

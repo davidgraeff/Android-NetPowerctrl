@@ -21,11 +21,11 @@ import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
-import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
-import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.device_ports.ExecutableAdapterItem;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.executables.ExecutableAdapterItem;
+import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
+import oly.netpowerctrl.executables.ExecutablesListAdapter;
+import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
@@ -52,7 +52,7 @@ public class EditSceneActivity extends ActionBarActivity
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     boolean reInitUIDone = false;
     private View btnDone;
-    private DevicePortsListAdapter adapter_available;
+    private ExecutablesListAdapter adapter_available;
     private SceneElementsAdapter adapter_included;
     // Scene and flag variables
     private Scene scene;
@@ -166,8 +166,8 @@ public class EditSceneActivity extends ActionBarActivity
     }
 
     private void loadContent() {
-        DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-        adapter_available = new DevicePortsListAdapter(false, s, mIconCache, true);
+        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
+        adapter_available = new ExecutablesListAdapter(false, s, mIconCache, true);
         adapter_included = new SceneElementsAdapter(this);
 
         Intent it = getIntent();
@@ -233,7 +233,7 @@ public class EditSceneActivity extends ActionBarActivity
         fragment_basics.setOnBasicsChangedListener(this);
     }
 
-    private void removeIncludedFromAvailable(DevicePortsBaseAdapter available, SceneElementsAdapter included) {
+    private void removeIncludedFromAvailable(ExecutablesBaseAdapter available, SceneElementsAdapter included) {
         // ToBeRemoved will be an ordered list of indecies to be removed
         int[] toBeRemoved = new int[available.mItems.size()];
         int lenToBeRemoved = 0;

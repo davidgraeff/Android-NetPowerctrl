@@ -30,7 +30,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ImportExport;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;

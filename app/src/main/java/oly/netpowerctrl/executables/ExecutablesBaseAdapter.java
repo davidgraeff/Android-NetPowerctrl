@@ -1,4 +1,4 @@
-package oly.netpowerctrl.device_ports;
+package oly.netpowerctrl.executables;
 
 import android.graphics.Paint;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,12 +17,12 @@ import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.groups.Group;
 
-public class DevicePortsBaseAdapter extends RecyclerView.Adapter<DevicePortViewHolder> {
+public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewHolder> {
 
     public final List<ExecutableAdapterItem> mItems;
     final IconDeferredLoadingThread mIconCache;
     // Source of values for this adapter.
-    private final DevicePortSourceInterface mSource;
+    private final ExecutablesSourceBase mSource;
     protected int mNextId = 0; // we need stable IDs
     int mOutlet_res_id = 0;
     private UUID mFilterGroup = null;
@@ -40,7 +40,7 @@ public class DevicePortsBaseAdapter extends RecyclerView.Adapter<DevicePortViewH
         }
     };
 
-    DevicePortsBaseAdapter(DevicePortSourceInterface source, IconDeferredLoadingThread iconCache,
+    ExecutablesBaseAdapter(ExecutablesSourceBase source, IconDeferredLoadingThread iconCache,
                            boolean showGroups) {
         mSource = source;
         mShowGroups = showGroups;
@@ -51,7 +51,7 @@ public class DevicePortsBaseAdapter extends RecyclerView.Adapter<DevicePortViewH
         }
     }
 
-    public DevicePortSourceInterface getSource() {
+    public ExecutablesSourceBase getSource() {
         return mSource;
     }
 
@@ -71,7 +71,7 @@ public class DevicePortsBaseAdapter extends RecyclerView.Adapter<DevicePortViewH
     }
 
     @Override
-    public DevicePortViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public ExecutableViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         viewType -= mOutlet_res_id;
 
         ExecutableAdapterItem.groupTypeEnum groupTypeEnum;
@@ -91,7 +91,7 @@ public class DevicePortsBaseAdapter extends RecyclerView.Adapter<DevicePortViewH
                 break;
         }
 
-        return new DevicePortViewHolder(view, groupTypeEnum);
+        return new ExecutableViewHolder(view, groupTypeEnum);
     }
 
     public GridLayoutManager.SpanSizeLookup getSpanSizeLookup() {
@@ -99,34 +99,34 @@ public class DevicePortsBaseAdapter extends RecyclerView.Adapter<DevicePortViewH
     }
 
     @Override
-    public void onBindViewHolder(DevicePortViewHolder devicePortViewHolder, int position) {
+    public void onBindViewHolder(ExecutableViewHolder executableViewHolder, int position) {
         final ExecutableAdapterItem item = mItems.get(position);
         final Executable executable = item.getExecutable();
 
-        devicePortViewHolder.position = position;
+        executableViewHolder.position = position;
 
         if (executable == null) { // header
-            devicePortViewHolder.title.setText(item.groupName);
-            if (devicePortViewHolder.line != null)
-                devicePortViewHolder.line.setVisibility(item.groupName.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            executableViewHolder.title.setText(item.groupName);
+            if (executableViewHolder.line != null)
+                executableViewHolder.line.setVisibility(item.groupName.isEmpty() ? View.INVISIBLE : View.VISIBLE);
         } else { // no header
 //            current_viewHolder.title.setTypeface(
 //                    port.Hidden ? Typeface.MONOSPACE : Typeface.DEFAULT,
 //                    port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
 
-            if (devicePortViewHolder.subtitle != null) {
-                devicePortViewHolder.subtitle.setText(executable.getDescription());
+            if (executableViewHolder.subtitle != null) {
+                executableViewHolder.subtitle.setText(executable.getDescription());
             }
 
-            devicePortViewHolder.title.setText(executable.getTitle());
-            devicePortViewHolder.title.setEnabled(executable.isEnabled());
+            executableViewHolder.title.setText(executable.getTitle());
+            executableViewHolder.title.setEnabled(executable.isEnabled());
 
             if (executable.isReachable())
-                devicePortViewHolder.title.setPaintFlags(
-                        devicePortViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
+                executableViewHolder.title.setPaintFlags(
+                        executableViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
             else
-                devicePortViewHolder.title.setPaintFlags(
-                        devicePortViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                executableViewHolder.title.setPaintFlags(
+                        executableViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
     }
 

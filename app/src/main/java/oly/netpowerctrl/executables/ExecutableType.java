@@ -1,4 +1,4 @@
-package oly.netpowerctrl.device_ports;
+package oly.netpowerctrl.executables;
 
 /**
  * Created by david on 22.10.14.

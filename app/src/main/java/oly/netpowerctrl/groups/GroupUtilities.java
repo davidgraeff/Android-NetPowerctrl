@@ -9,7 +9,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.DevicePort;
 
 /**
  * Utility methods for groups

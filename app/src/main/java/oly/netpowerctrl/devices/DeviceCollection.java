@@ -13,7 +13,6 @@ import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onStorageUpdate;
-import oly.netpowerctrl.device_ports.DevicePort;
 
 /**
  * Contains DeviceInfos. Used for NFC and backup transfers

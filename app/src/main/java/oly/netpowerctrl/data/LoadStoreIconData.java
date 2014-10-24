@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Streams;
 

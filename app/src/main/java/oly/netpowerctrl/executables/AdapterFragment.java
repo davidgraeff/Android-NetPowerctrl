@@ -1,4 +1,4 @@
-package oly.netpowerctrl.device_ports;
+package oly.netpowerctrl.executables;
 
 import android.app.Fragment;
 import android.os.Bundle;

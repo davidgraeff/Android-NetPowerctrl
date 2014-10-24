@@ -3,7 +3,7 @@ package oly.netpowerctrl.scenes;
 import java.util.ArrayList;
 import java.util.List;
 
-import oly.netpowerctrl.device_ports.ExecutableAdapterItem;
+import oly.netpowerctrl.executables.ExecutableAdapterItem;
 
 /**
  * Created by david on 22.10.14.

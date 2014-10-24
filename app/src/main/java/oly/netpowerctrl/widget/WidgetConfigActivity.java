@@ -10,10 +10,10 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_ports.AdapterFragment;
-import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
-import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
-import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
+import oly.netpowerctrl.executables.AdapterFragment;
+import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
+import oly.netpowerctrl.executables.ExecutablesListAdapter;
+import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
@@ -22,7 +22,7 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private RecyclerItemClickListener selectedOutletListener;
-    private DevicePortsBaseAdapter adapter;
+    private ExecutablesBaseAdapter adapter;
 
     @Override
     protected void onPause() {
@@ -54,9 +54,9 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
 
         mIconCache.start();
 
-        DevicePortSourceConfigured s = new DevicePortSourceConfigured();
+        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
         s.setAutomaticUpdate(true);
-        this.adapter = new DevicePortsListAdapter(false, s, mIconCache, true);
+        this.adapter = new ExecutablesListAdapter(false, s, mIconCache, true);
 
         AdapterFragment f = new AdapterFragment();
         f.setAdapter(this.adapter);

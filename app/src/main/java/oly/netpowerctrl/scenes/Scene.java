@@ -16,9 +16,9 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.StorableInterface;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.ExecutableType;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.executables.ExecutableType;
 
 public class Scene implements StorableInterface, Executable {
     private static long nextStableID = 0;

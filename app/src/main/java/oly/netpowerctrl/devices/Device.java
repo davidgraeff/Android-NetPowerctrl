@@ -22,7 +22,6 @@ import java.util.concurrent.Semaphore;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.StorableInterface;
-import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;

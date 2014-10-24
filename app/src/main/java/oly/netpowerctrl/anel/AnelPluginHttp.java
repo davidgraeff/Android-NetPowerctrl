@@ -14,11 +14,11 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.ExecutableType;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;

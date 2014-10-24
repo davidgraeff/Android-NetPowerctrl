@@ -20,8 +20,8 @@ import android.widget.Toast;
 import java.text.DateFormatSymbols;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.onHttpRequestResult;
 
@@ -46,7 +46,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         // Port selection
         {
-            final DevicePortSourceConfigured s = new DevicePortSourceConfigured();
+            final ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
             s.updateNow();
 
             Spinner spinner = ((Spinner) rootView.findViewById(R.id.alarm_port));

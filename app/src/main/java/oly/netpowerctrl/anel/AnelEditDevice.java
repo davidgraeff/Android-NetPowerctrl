@@ -7,9 +7,9 @@ import java.util.List;
 
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
 import oly.netpowerctrl.listen_service.PluginInterface;

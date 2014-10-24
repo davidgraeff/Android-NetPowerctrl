@@ -22,7 +22,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;

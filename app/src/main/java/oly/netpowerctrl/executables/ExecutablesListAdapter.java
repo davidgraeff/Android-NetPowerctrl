@@ -1,4 +1,4 @@
-package oly.netpowerctrl.device_ports;
+package oly.netpowerctrl.executables;
 
 import android.util.SparseBooleanArray;
 import android.widget.CheckedTextView;
@@ -7,11 +7,11 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 
-public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
+public class ExecutablesListAdapter extends ExecutablesBaseAdapter {
     private final SparseBooleanArray checked = new SparseBooleanArray();
     private final boolean checkable;
 
-    public DevicePortsListAdapter(boolean checkable, DevicePortSourceInterface source,
+    public ExecutablesListAdapter(boolean checkable, ExecutablesSourceBase source,
                                   IconDeferredLoadingThread iconCache, boolean showGroups) {
         super(source, iconCache, showGroups);
         this.checkable = checkable;
@@ -24,8 +24,8 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
     }
 
     @Override
-    public void onBindViewHolder(DevicePortViewHolder devicePortViewHolder, int position) {
-        super.onBindViewHolder(devicePortViewHolder, position);
+    public void onBindViewHolder(ExecutableViewHolder executableViewHolder, int position) {
+        super.onBindViewHolder(executableViewHolder, position);
 
         ExecutableAdapterItem item = mItems.get(position);
         Executable port = item.getExecutable();
@@ -35,7 +35,7 @@ public class DevicePortsListAdapter extends DevicePortsBaseAdapter {
             return;
 
         if (checkable) {
-            CheckedTextView t = (CheckedTextView) devicePortViewHolder.title;
+            CheckedTextView t = (CheckedTextView) executableViewHolder.title;
             t.setChecked(checked.get(position));
         }
     }

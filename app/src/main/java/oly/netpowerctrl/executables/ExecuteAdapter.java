@@ -1,4 +1,4 @@
-package oly.netpowerctrl.device_ports;
+package oly.netpowerctrl.executables;
 
 import android.view.View;
 import android.widget.SeekBar;
@@ -8,15 +8,16 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.devices.DevicePort;
 
-public class ExecuteAdapter extends DevicePortsBaseAdapter implements
+public class ExecuteAdapter extends ExecutablesBaseAdapter implements
         SeekBar.OnSeekBarChangeListener {
 
     // We block updates while moving the range slider
-    private static final String TAG = "PortAdapter";
+    private static final String TAG = "ExecuteAdapter";
     private boolean enableEditing;
 
-    public ExecuteAdapter(DevicePortSourceInterface source,
+    public ExecuteAdapter(ExecutablesSourceBase source,
                           IconDeferredLoadingThread iconCache) {
         super(source, iconCache, true);
         setLayoutRes(R.layout.list_item_icon);
@@ -25,17 +26,17 @@ public class ExecuteAdapter extends DevicePortsBaseAdapter implements
     }
 
     @Override
-    public void onBindViewHolder(DevicePortViewHolder devicePortViewHolder, int position) {
-        boolean isNew = devicePortViewHolder.isNew;
-        super.onBindViewHolder(devicePortViewHolder, position);
+    public void onBindViewHolder(ExecutableViewHolder executableViewHolder, int position) {
+        boolean isNew = executableViewHolder.isNew;
+        super.onBindViewHolder(executableViewHolder, position);
 
         ExecutableAdapterItem item = mItems.get(position);
         Executable executable = item.getExecutable();
 
         // Not our business, if port is null
         if (executable == null) {
-            if (isNew && devicePortViewHolder.imageEdit != null) {
-                devicePortViewHolder.imageEdit.setVisibility(View.INVISIBLE);
+            if (isNew && executableViewHolder.imageEdit != null) {
+                executableViewHolder.imageEdit.setVisibility(View.INVISIBLE);
             }
             return;
         }
@@ -43,37 +44,37 @@ public class ExecuteAdapter extends DevicePortsBaseAdapter implements
         // We do this only once, if the viewHolder is new
         if (isNew) {
             // We use the tools icon for the context menu.
-            if (devicePortViewHolder.imageEdit != null) {
-                devicePortViewHolder.imageEdit.setVisibility(enableEditing ? View.VISIBLE : View.GONE);
+            if (executableViewHolder.imageEdit != null) {
+                executableViewHolder.imageEdit.setVisibility(enableEditing ? View.VISIBLE : View.GONE);
             }
 
             //current_viewHolder.mainTextView.setTag(position);
             switch (executable.getType()) {
                 case TypeToggle: {
-                    devicePortViewHolder.seekBar.setVisibility(View.GONE);
-                    devicePortViewHolder.loadIcon(mIconCache, executable.getUid(),
+                    executableViewHolder.seekBar.setVisibility(View.GONE);
+                    executableViewHolder.loadIcon(mIconCache, executable.getUid(),
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff, 0);
-                    devicePortViewHolder.loadIcon(mIconCache, executable.getUid(),
+                    executableViewHolder.loadIcon(mIconCache, executable.getUid(),
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn, 1);
                     break;
                 }
                 case TypeButton: {
-                    devicePortViewHolder.loadIcon(mIconCache, executable.getUid(),
+                    executableViewHolder.loadIcon(mIconCache, executable.getUid(),
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.OnlyOneState, 0);
-                    devicePortViewHolder.seekBar.setVisibility(View.GONE);
-                    devicePortViewHolder.setBitmapOff();
+                    executableViewHolder.seekBar.setVisibility(View.GONE);
+                    executableViewHolder.setBitmapOff();
                     break;
                 }
                 case TypeRangedValue:
                     DevicePort devicePort = (DevicePort) executable;
-                    devicePortViewHolder.loadIcon(mIconCache, executable.getUid(),
+                    executableViewHolder.loadIcon(mIconCache, executable.getUid(),
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff, 0);
-                    devicePortViewHolder.loadIcon(mIconCache, executable.getUid(),
+                    executableViewHolder.loadIcon(mIconCache, executable.getUid(),
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn, 1);
-                    devicePortViewHolder.seekBar.setVisibility(View.VISIBLE);
-                    devicePortViewHolder.seekBar.setOnSeekBarChangeListener(this);
-                    devicePortViewHolder.seekBar.setTag(-1);
-                    devicePortViewHolder.seekBar.setMax(devicePort.max_value - devicePort.min_value);
+                    executableViewHolder.seekBar.setVisibility(View.VISIBLE);
+                    executableViewHolder.seekBar.setOnSeekBarChangeListener(this);
+                    executableViewHolder.seekBar.setTag(-1);
+                    executableViewHolder.seekBar.setMax(devicePort.max_value - devicePort.min_value);
                     break;
             }
 
@@ -87,20 +88,20 @@ public class ExecuteAdapter extends DevicePortsBaseAdapter implements
             case TypeToggle: {
                 DevicePort devicePort = (DevicePort) executable;
                 if (devicePort.current_value >= devicePort.max_value)
-                    devicePortViewHolder.setBitmapOn();
+                    executableViewHolder.setBitmapOn();
                 else
-                    devicePortViewHolder.setBitmapOff();
+                    executableViewHolder.setBitmapOff();
                 break;
             }
             case TypeRangedValue:
                 DevicePort devicePort = (DevicePort) executable;
-                devicePortViewHolder.seekBar.setTag(-1);
-                devicePortViewHolder.seekBar.setProgress(devicePort.current_value - devicePort.min_value);
-                devicePortViewHolder.seekBar.setTag(position);
+                executableViewHolder.seekBar.setTag(-1);
+                executableViewHolder.seekBar.setProgress(devicePort.current_value - devicePort.min_value);
+                executableViewHolder.seekBar.setTag(position);
                 if (devicePort.current_value <= devicePort.min_value)
-                    devicePortViewHolder.setBitmapOff();
+                    executableViewHolder.setBitmapOff();
                 else
-                    devicePortViewHolder.setBitmapOn();
+                    executableViewHolder.setBitmapOn();
                 break;
         }
     }

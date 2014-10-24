@@ -13,10 +13,10 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
-import oly.netpowerctrl.device_ports.DevicePortSourceInterface;
-import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
+import oly.netpowerctrl.executables.DevicePort;
+import oly.netpowerctrl.executables.DevicePortSourceConfigured;
+import oly.netpowerctrl.executables.DevicePortSourceInterface;
+import oly.netpowerctrl.executables.DevicePortsListAdapter;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;

@@ -5,13 +5,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_ports.AdapterFragment;
-import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
+import oly.netpowerctrl.executables.AdapterFragment;
+import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.main.App;
 
 /**
  */
-public class EditSceneAvailableFragment extends AdapterFragment<DevicePortsListAdapter> {
+public class EditSceneAvailableFragment extends AdapterFragment<ExecutablesListAdapter> {
     public EditSceneAvailableFragment() {
     }
 

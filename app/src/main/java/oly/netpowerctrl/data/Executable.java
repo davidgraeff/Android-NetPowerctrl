@@ -3,7 +3,7 @@ package oly.netpowerctrl.data;
 import java.util.List;
 import java.util.UUID;
 
-import oly.netpowerctrl.device_ports.ExecutableType;
+import oly.netpowerctrl.executables.ExecutableType;
 
 /**
  * Created by david on 22.10.14.

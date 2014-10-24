@@ -22,9 +22,9 @@ import android.widget.Toast;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.DevicePortViewHolder;
 import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.executables.ExecutableViewHolder;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceQuery;
@@ -39,7 +39,7 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
     private boolean[] checked;
     private ImageButton btnOn;
     private ImageButton btnOff;
-    private DevicePortViewHolder devicePortViewHolder;
+    private ExecutableViewHolder executableViewHolder;
     private RecyclerView.Adapter<?> adapter;
 
     public OutletEditDialog() {
@@ -154,16 +154,16 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
                 deviceCollection.save(devicePort.device);
                 Toast.makeText(getActivity(), getString(R.string.outlet_added_to_groups, counter), Toast.LENGTH_SHORT).show();
 
-                devicePortViewHolder.reload();
-                adapter.notifyItemChanged(devicePortViewHolder.position);
+                executableViewHolder.reload();
+                adapter.notifyItemChanged(executableViewHolder.position);
 
                 dismiss();
             }
         });
     }
 
-    public void setDevicePort(DevicePort devicePort, DevicePortViewHolder devicePortViewHolder, RecyclerView.Adapter<?> adapter) {
-        this.devicePortViewHolder = devicePortViewHolder;
+    public void setDevicePort(DevicePort devicePort, ExecutableViewHolder executableViewHolder, RecyclerView.Adapter<?> adapter) {
+        this.executableViewHolder = executableViewHolder;
         this.devicePort = devicePort;
         this.adapter = adapter;
     }

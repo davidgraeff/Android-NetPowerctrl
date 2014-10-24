@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Set;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.listen_service.PluginInterface;

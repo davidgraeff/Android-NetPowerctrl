@@ -1,4 +1,4 @@
-package oly.netpowerctrl.device_ports;
+package oly.netpowerctrl.executables;
 
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -20,7 +20,7 @@ import oly.netpowerctrl.main.App;
 /**
  * An item in a devicePort adapter. Used for implementing the ViewHolder pattern.
  */
-public class DevicePortViewHolder extends RecyclerView.ViewHolder implements IconDeferredLoadingThread.IconLoaded {
+public class ExecutableViewHolder extends RecyclerView.ViewHolder implements IconDeferredLoadingThread.IconLoaded {
     final ImageView imageIcon;
     final ImageView imageEdit;
     //LinearLayout mainTextView;
@@ -37,7 +37,7 @@ public class DevicePortViewHolder extends RecyclerView.ViewHolder implements Ico
     private boolean multiStateDrawables = false;
     private DrawableState state = DrawableState.Off;
 
-    DevicePortViewHolder(View convertView, ExecutableAdapterItem.groupTypeEnum groupTypeEnum) {
+    ExecutableViewHolder(View convertView, ExecutableAdapterItem.groupTypeEnum groupTypeEnum) {
         super(convertView);
 
         entry = convertView.findViewById(R.id.item_layout);

@@ -15,9 +15,9 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.Executable;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.ExecutableAdapterItem;
-import oly.netpowerctrl.device_ports.ExecutableType;
+import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.executables.ExecutableAdapterItem;
+import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.utils.controls.SegmentedRadioGroup;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 

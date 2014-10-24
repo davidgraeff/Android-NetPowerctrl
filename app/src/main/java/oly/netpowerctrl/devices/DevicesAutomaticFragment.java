@@ -13,7 +13,6 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;

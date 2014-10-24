@@ -7,14 +7,14 @@ import android.view.MenuItem;
 import android.view.View;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_ports.AdapterFragment;
-import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
+import oly.netpowerctrl.executables.AdapterFragment;
+import oly.netpowerctrl.executables.ExecutablesListAdapter;
 
 /**
  */
 public class EditSceneIncludedFragment extends AdapterFragment<SceneElementsAdapter> {
     private boolean isTwoPaneFragment;
-    private DevicePortsListAdapter adapter_available;
+    private ExecutablesListAdapter adapter_available;
 
     public EditSceneIncludedFragment() {
     }
@@ -35,7 +35,7 @@ public class EditSceneIncludedFragment extends AdapterFragment<SceneElementsAdap
         this.isTwoPaneFragment = isTwoPaneFragment;
     }
 
-    public void setAdapterAvailable(DevicePortsListAdapter adapter_available) {
+    public void setAdapterAvailable(ExecutablesListAdapter adapter_available) {
         this.adapter_available = adapter_available;
     }
 

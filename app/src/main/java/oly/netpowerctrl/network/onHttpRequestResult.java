@@ -1,6 +1,6 @@
 package oly.netpowerctrl.network;
 
-import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.DevicePort;
 
 /**
  * Implement this interface if you want to be notified of a failed/successful http request of a DevicePort.

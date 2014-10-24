@@ -35,15 +35,18 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataQueryCompleted;
-import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
-import oly.netpowerctrl.device_ports.DevicePortViewHolder;
-import oly.netpowerctrl.device_ports.ExecutableAdapterItem;
-import oly.netpowerctrl.device_ports.ExecuteAdapter;
 import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.DevicesAutomaticFragment;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
+import oly.netpowerctrl.executables.ExecutableAdapterItem;
+import oly.netpowerctrl.executables.ExecutableViewHolder;
+import oly.netpowerctrl.executables.ExecutablesSourceBase;
+import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
+import oly.netpowerctrl.executables.ExecutablesSourceGroups;
+import oly.netpowerctrl.executables.ExecutablesSourceScenes;
+import oly.netpowerctrl.executables.ExecuteAdapter;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceModeChanged;
@@ -66,7 +69,7 @@ import oly.netpowerctrl.utils.notifications.TextNotification;
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         onNotReachableUpdate, onFragmentChangeArguments, SwipeRefreshLayout.OnRefreshListener,
         onServiceRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged,
-        DevicePortSourceConfigured.onChange, onDataQueryCompleted, onCollectionUpdated<UnconfiguredDeviceCollection, Device> {
+        ExecutablesSourceDevicePorts.onChange, onDataQueryCompleted, onCollectionUpdated<UnconfiguredDeviceCollection, Device> {
 
     public static final int VIEW_AS_LIST = 0;
     public static final int VIEW_AS_GRID = 1;
@@ -75,7 +78,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private final ActionBarWithGroups actionBarWithGroups = new ActionBarWithGroups();
     int requestedColumnWidth;
     private ExecuteAdapter adapter;
-    private DevicePortSourceConfigured adapterSource;
+    private ExecutablesSourceBase adapterSource;
     private TextView emptyText;
     private Button btnChangeToDevices;
     private Button btnAutomaticConfiguration;
@@ -173,28 +176,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         checkEmptyChanged(checkEmptyAction.ADDREMOVE);
     }
 
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-                    //getActivity().findViewById(R.id.content_frame).getWidth();
-                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    adapter.setItemsInRow(i);
-//                    SpannableGridLayoutManager spannableGridLayoutManager = new SpannableGridLayoutManager(getActivity());
-//                    spannableGridLayoutManager.setNumColumns(i);
-//                    spannableGridLayoutManager.setNumRows(1);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(adapter.getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-
-                }
-            };
-
     private void setViewType(int viewType) {
         SharedPrefs.getInstance().setOutletsViewType(viewType);
 
@@ -217,6 +198,28 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
         adapter.setEnableEditing(SharedPrefs.getInstance().isOutletEditingEnabled());
     }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+                    //getActivity().findViewById(R.id.content_frame).getWidth();
+                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
+                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
+                    adapter.setItemsInRow(i);
+//                    SpannableGridLayoutManager spannableGridLayoutManager = new SpannableGridLayoutManager(getActivity());
+//                    spannableGridLayoutManager.setNumColumns(i);
+//                    spannableGridLayoutManager.setNumRows(1);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(adapter.getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(adapter);
+
+                }
+            };
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -309,10 +312,23 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         });
 
         // Create adapter first
-        adapterSource = new DevicePortSourceConfigured();
+        adapterSource = new ExecutablesSourceDevicePorts();
         adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
         adapterSource.setAutomaticUpdate(true);
         adapterSource.setOnChangeListener(this);
+
+        ExecutablesSourceGroups groupSource = new ExecutablesSourceGroups();
+        groupSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
+        groupSource.setAutomaticUpdate(true);
+
+        adapterSource.addChainItem(groupSource);
+
+        ExecutablesSourceScenes sceneSource = new ExecutablesSourceScenes();
+        sceneSource.setAutomaticUpdate(true);
+        sceneSource.setOnChangeListener(this);
+
+        groupSource.addChainItem(sceneSource);
+
         adapter = new ExecuteAdapter(adapterSource,
                 ((ActivityWithIconCache) getActivity()).getIconCache());
         if (groupFilter != null) {
@@ -346,7 +362,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                 // We animate the click event. This is done by calling animate on the
                 // viewHolder of the current position.
-                ((DevicePortViewHolder) mRecyclerView.findViewHolderForPosition(position)).animate();
+                ((ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position)).animate();
                 adapter.notifyItemChanged(position);
 
                 AppData.getInstance().executeToggle(item.getExecutable(), null);
@@ -484,16 +500,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         return false;
     }
 
-//    private void showReorder() {
-//        //noinspection ConstantConditions
-//        Bundle b = new Bundle();
-//        b.putString("master_uuid", devicePort.uuid.toString());
-//        MainActivity.getNavigationController().changeToFragment(MasterSlaveFragment.class.getName(), b, true);
-//
-//    DialogFragment fragment = SortCriteriaDialog.instantiate(getActivity(), adapter);
-//    MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
-//    }
-
     @Override
     public void onNotReachableUpdate(List<Device> not_reachable) {
         Context context = getActivity();
@@ -512,6 +518,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         }
     }
 
+//    private void showReorder() {
+//        //noinspection ConstantConditions
+//        Bundle b = new Bundle();
+//        b.putString("master_uuid", devicePort.uuid.toString());
+//        MainActivity.getNavigationController().changeToFragment(MasterSlaveFragment.class.getName(), b, true);
+//
+//    DialogFragment fragment = SortCriteriaDialog.instantiate(getActivity(), adapter);
+//    MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
+//    }
 
     public void onEditViewClicked(View view, int position) {
         // Animate press
@@ -526,7 +541,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             DevicePort devicePort = (DevicePort) executable;
 
             OutletEditDialog dialog = (OutletEditDialog) Fragment.instantiate(getActivity(), OutletEditDialog.class.getName());
-            dialog.setDevicePort(devicePort, (DevicePortViewHolder) mRecyclerView.findViewHolderForPosition(position), adapter);
+            dialog.setDevicePort(devicePort, (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position), adapter);
             MainActivity.getNavigationController().changeToDialog(getActivity(), dialog);
         } else if (executable instanceof Scene) {
             Intent it = new Intent(getActivity(), EditSceneActivity.class);

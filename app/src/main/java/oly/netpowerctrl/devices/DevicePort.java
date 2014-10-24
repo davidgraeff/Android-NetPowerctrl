@@ -1,4 +1,4 @@
-package oly.netpowerctrl.device_ports;
+package oly.netpowerctrl.devices;
 
 import android.util.JsonReader;
 import android.util.JsonWriter;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.executables.ExecutableType;
 
 /**
  * Base class for actions (IO, Outlet, ...)
@@ -23,16 +23,14 @@ public final class DevicePort implements Comparable, Executable {
     public int max_value = ON;
     public static final int TOGGLE = -1;
     public static final int INVALID = -2;
-    public final List<UUID> groups = new ArrayList<>();
-    // Device
     public final Device device;
-    // Action specific
+    public final List<UUID> groups;
     public int current_value = 0;
     public boolean Disabled = false;
+
     public int id = 0; // unique identity among device ports on this device
-    // last_command_timecode: Updated after name has been send.
     // Used to disable control in list until ack from device has been received.
-    public long last_command_timecode = 0;
+    public long last_command_timecode = 0; // Updated after name has been send.
     private String uuid; // unique identity among all device ports
     // UI specific
     private ExecutableType ui_type;
@@ -41,19 +39,26 @@ public final class DevicePort implements Comparable, Executable {
     public DevicePort(Device di, ExecutableType ui_type) {
         device = di;
         this.ui_type = ui_type;
+        groups = new ArrayList<>();
         uuid = UUID.randomUUID().toString();
     }
 
     public DevicePort(DevicePort other) {
-        Description = other.Description;
-        current_value = other.current_value;
+        device = other.device;
+        groups = new ArrayList<>(other.groups);
+
         max_value = other.max_value;
         min_value = other.min_value;
+        current_value = other.current_value;
         Disabled = other.Disabled;
-        ui_type = other.ui_type;
-        device = other.device;
+
         id = other.id;
         uuid = UUID.randomUUID().toString();
+
+        last_command_timecode = other.last_command_timecode;
+
+        Description = other.Description;
+        ui_type = other.ui_type;
         // do not copy last_command_timecode! This value is set by the executeToggle(..) methods
     }
 

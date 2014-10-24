@@ -17,7 +17,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.StorableInterface;
-import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.devices.DevicePort;
 
 /**
  * Created by david on 19.05.14.
