@@ -68,7 +68,7 @@ public class AndroidStatusBarNotification {
             if (collectionUpdateListener == null) {
                 collectionUpdateListener = new onCollectionUpdated<SceneCollection, Scene>() {
                     @Override
-                    public boolean updated(SceneCollection sceneCollection, Scene scene, ObserverUpdateActions action) {
+                    public boolean updated(SceneCollection sceneCollection, Scene scene, ObserverUpdateActions action, int position) {
                         setEnabled(context, true);
                         return true;
                     }

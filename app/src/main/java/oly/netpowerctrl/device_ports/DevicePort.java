@@ -8,13 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.devices.Device;
 
 /**
  * Base class for actions (IO, Outlet, ...)
  */
-public final class DevicePort implements Comparable {
+public final class DevicePort implements Comparable, Executable {
     // Some value constants
     public static final int OFF = 0;
     public int min_value = OFF;
@@ -27,23 +28,20 @@ public final class DevicePort implements Comparable {
     public final Device device;
     // Action specific
     public int current_value = 0;
-    public boolean Hidden = false;
     public boolean Disabled = false;
-    public UUID uuid = UUID.randomUUID(); // unique identity among all device ports
     public int id = 0; // unique identity among device ports on this device
     // last_command_timecode: Updated after name has been send.
     // Used to disable control in list until ack from device has been received.
     public long last_command_timecode = 0;
+    private String uuid; // unique identity among all device ports
     // UI specific
-    public int positionRequest;
-    private DevicePortType ui_type;
+    private ExecutableType ui_type;
     private String Description = "";
-    private List<UUID> slaves = new ArrayList<>();
 
-
-    public DevicePort(Device di, DevicePortType ui_type) {
+    public DevicePort(Device di, ExecutableType ui_type) {
         device = di;
         this.ui_type = ui_type;
+        uuid = UUID.randomUUID().toString();
     }
 
     public DevicePort(DevicePort other) {
@@ -52,19 +50,17 @@ public final class DevicePort implements Comparable {
         max_value = other.max_value;
         min_value = other.min_value;
         Disabled = other.Disabled;
-        Hidden = other.Hidden;
-        positionRequest = other.positionRequest;
         ui_type = other.ui_type;
         device = other.device;
-        slaves = other.slaves;
         id = other.id;
-        // do not copy last_command_timecode! This value is set by the execute(..) methods
+        uuid = UUID.randomUUID().toString();
+        // do not copy last_command_timecode! This value is set by the executeToggle(..) methods
     }
 
     public static DevicePort fromJSON(JsonReader reader, Device di)
             throws IOException, ClassNotFoundException {
         reader.beginObject();
-        DevicePort oi = new DevicePort(di, DevicePortType.TypeUnknown);
+        DevicePort oi = new DevicePort(di, ExecutableType.TypeUnknown);
         oi.last_command_timecode = di.getUpdatedTime();
 
         while (reader.hasNext()) {
@@ -75,9 +71,9 @@ public final class DevicePort implements Comparable {
             switch (name) {
                 case "Type":
                     int t = reader.nextInt();
-                    if (t > DevicePortType.values().length)
+                    if (t > ExecutableType.values().length)
                         throw new ClassNotFoundException();
-                    oi.ui_type = DevicePortType.values()[t];
+                    oi.ui_type = ExecutableType.values()[t];
                     break;
                 case "Description":
                     oi.Description = reader.nextString();
@@ -94,25 +90,11 @@ public final class DevicePort implements Comparable {
                 case "Disabled":
                     oi.Disabled = reader.nextBoolean();
                     break;
-                case "Hidden":
-                    oi.Hidden = reader.nextBoolean();
-                    break;
-                case "positionRequest":
-                    oi.positionRequest = reader.nextInt();
-                    break;
                 case "id":
                     oi.id = reader.nextInt();
                     break;
                 case "uuid":
-                    oi.uuid = UUID.fromString(reader.nextString());
-                    break;
-                case "slaves":
-                    oi.slaves.clear();
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        oi.slaves.add(UUID.fromString(reader.nextString()));
-                    }
-                    reader.endArray();
+                    oi.uuid = reader.nextString();
                     break;
                 case "groups":
                     oi.groups.clear();
@@ -133,16 +115,26 @@ public final class DevicePort implements Comparable {
     }
 
     @Override
+    public List<UUID> getGroups() {
+        return groups;
+    }
+
+    @Override
+    public String getUid() {
+        return uuid;
+    }
+
+    public boolean isEnabled() {
+        return last_command_timecode <= device.getUpdatedTime();
+    }
+
+    @Override
     public int compareTo(Object o) {
         DevicePort other = (DevicePort) o;
         if (other.equals(this))
             return 0;
 
-        if (positionRequest == 0 && other.positionRequest == 0) {
-            return getDescription().compareTo(other.getDescription());
-        } else {
-            return positionRequest < other.positionRequest ? -1 : 1;
-        }
+        return getTitle().compareTo(other.getTitle());
     }
 
     public boolean equals(DevicePort other) {
@@ -165,14 +157,13 @@ public final class DevicePort implements Comparable {
         min_value = source_oi.min_value;
         hasChanged |= Disabled != source_oi.Disabled;
         Disabled = source_oi.Disabled;
-        hasChanged |= setDescription(source_oi.getDescription());
+        hasChanged |= setTitle(source_oi.getTitle());
         return hasChanged;
     }
 
-    public DevicePortType getType() {
+    public ExecutableType getType() {
         return ui_type;
     }
-
 
     public void toJSON(JsonWriter writer, boolean addDeviceID) throws IOException {
         writer.beginObject();
@@ -182,17 +173,11 @@ public final class DevicePort implements Comparable {
         writer.name("max_value").value(max_value);
         writer.name("min_value").value(min_value);
         writer.name("Disabled").value(Disabled);
-        writer.name("Hidden").value(Hidden);
-        writer.name("positionRequest").value(positionRequest);
         writer.name("id").value(id);
-        writer.name("uuid").value(uuid.toString());
+        writer.name("uuid").value(uuid);
         writer.name("groups").beginArray();
         for (UUID group_uuid : groups)
             writer.value(group_uuid.toString());
-        writer.endArray();
-        writer.name("slaves").beginArray();
-        for (UUID slave_uuid : slaves)
-            writer.value(slave_uuid.toString());
         writer.endArray();
         if (addDeviceID)
             writer.name("device_id").value(device.UniqueDeviceID);
@@ -204,7 +189,17 @@ public final class DevicePort implements Comparable {
 //    }
 
     public String getDescription() {
+        return device.DeviceName;
+    }
+
+    @Override
+    public String getTitle() {
         return this.Description;
+    }
+
+    @Override
+    public boolean isReachable() {
+        return device.getFirstReachableConnection() != null;
     }
 
     /**
@@ -214,7 +209,7 @@ public final class DevicePort implements Comparable {
      *
      * @param desc The new descriptive name.
      */
-    public boolean setDescription(String desc) {
+    public boolean setTitle(String desc) {
         boolean hasChanged = !desc.equals(Description);
         Description = desc;
         return hasChanged;
@@ -225,14 +220,6 @@ public final class DevicePort implements Comparable {
             groups.add(uuid);
     }
 
-    public List<UUID> getSlaves() {
-        return slaves;
-    }
-
-    public void setSlaves(List<UUID> slaves) {
-        this.slaves = slaves;
-    }
-
     public int getCurrentValueToggled() {
         return current_value > min_value ? min_value : max_value;
     }
@@ -240,13 +227,10 @@ public final class DevicePort implements Comparable {
     public LoadStoreIconData.IconState getIconState() {
         LoadStoreIconData.IconState t = LoadStoreIconData.IconState.StateOff;
         if (current_value != min_value &&
-                (getType() == DevicePort.DevicePortType.TypeToggle ||
-                        getType() == DevicePort.DevicePortType.TypeRangedValue))
+                (getType() == ExecutableType.TypeToggle ||
+                        getType() == ExecutableType.TypeRangedValue))
             t = LoadStoreIconData.IconState.StateOn;
         return t;
     }
 
-    public enum DevicePortType {
-        TypeUnknown, TypeRangedValue, TypeToggle, TypeButton
-    }
 }

@@ -29,7 +29,7 @@ public class GroupUtilities {
 
         final EditText input = new EditText(alert.getContext());
         if (port != null)
-            input.setText(port.getDescription());
+            input.setText(port.getTitle());
         alert.setView(input);
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {

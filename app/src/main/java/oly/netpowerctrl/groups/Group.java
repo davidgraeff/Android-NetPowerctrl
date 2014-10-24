@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.StorableInterface;
@@ -51,8 +50,8 @@ public class Group implements StorableInterface {
 
     public Bitmap getBitmap(Context context) {
         if (bitmap == null) {
-            bitmap = LoadStoreIconData.loadIcon(context, uuid,
-                    LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown, R.drawable.netpowerctrl);
+            bitmap = LoadStoreIconData.loadIcon(context, uuid.toString(),
+                    LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateNotApplicable);
         }
         return bitmap;
     }

@@ -10,12 +10,10 @@
         android:paddingLeft="@dimen/list_outer_padding"
         android:paddingRight="@dimen/list_outer_padding">
 
-        <ListView
+        <android.support.v7.widget.RecyclerView
             android:id="@android:id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:divider="@null"
-            android:dividerHeight="0dp" />
+            android:layout_height="match_parent" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -25,7 +23,8 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
@@ -44,13 +43,17 @@
             android:text="@string/preferences" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/notifications"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+
+    <oly.netpowerctrl.utils.controls.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/btnAdd"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:layout_alignParentBottom="true"
-        android:gravity="start"
-        android:orientation="vertical"
-        android:padding="5dp"
-        android:visibility="visible" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        app:drawable="@android:drawable/ic_menu_add"
+        app:mainColor="#FFDF4D38" />
 </RelativeLayout>

@@ -5,42 +5,23 @@ import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.device_ports.AdapterFragment;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
 import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.device_ports.DevicePortsListFragment;
 import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.utils.RecyclerItemClickListener;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
 public class WidgetConfigActivity extends Activity implements ActivityWithIconCache {
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    private final AdapterView.OnItemClickListener selectedOutletListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
-                return;
-            DevicePort devicePort = adapter.getDevicePort(position);
-            if (devicePort == null)
-                return;
-
-            SharedPrefs.getInstance().SaveWidget(widgetId, devicePort.uuid.toString());
-
-            Intent resultValue = new Intent();
-            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-            setResult(RESULT_OK, resultValue);
-            finish();
-
-            WidgetUpdateService.ForceUpdate(WidgetConfigActivity.this, widgetId);
-        }
-    };
+    private RecyclerItemClickListener selectedOutletListener;
     private DevicePortsBaseAdapter adapter;
 
     @Override
@@ -75,9 +56,9 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
 
         DevicePortSourceConfigured s = new DevicePortSourceConfigured();
         s.setAutomaticUpdate(true);
-        this.adapter = new DevicePortsListAdapter(this, false, s, mIconCache, true);
+        this.adapter = new DevicePortsListAdapter(false, s, mIconCache, true);
 
-        DevicePortsListFragment f = new DevicePortsListFragment();
+        AdapterFragment f = new AdapterFragment();
         f.setAdapter(this.adapter);
         f.setOnItemClickListener(selectedOutletListener);
 
@@ -90,6 +71,26 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
                     AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
         }
+
+        selectedOutletListener = new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
+                    return;
+                String uid = adapter.getItem(position).getExecutableUid();
+                if (uid == null)
+                    return;
+
+                SharedPrefs.getInstance().SaveWidget(widgetId, uid);
+
+                Intent resultValue = new Intent();
+                resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+                setResult(RESULT_OK, resultValue);
+                finish();
+
+                WidgetUpdateService.ForceUpdate(WidgetConfigActivity.this, widgetId);
+            }
+        }, null);
     }
 
     @Override

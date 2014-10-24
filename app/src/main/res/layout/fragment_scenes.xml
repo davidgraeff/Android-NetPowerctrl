@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/list_outer_padding"
-    android:paddingRight="@dimen/list_outer_padding">
+    android:orientation="vertical">
 
     <GridView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:horizontalSpacing="@dimen/list_inner_padding"
         android:paddingBottom="@dimen/list_inner_padding"
+        android:paddingLeft="@dimen/list_outer_padding"
+        android:paddingRight="@dimen/list_outer_padding"
         android:paddingTop="@dimen/list_inner_padding"
         android:verticalSpacing="@dimen/list_inner_padding" />
 
@@ -34,14 +33,6 @@
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <Button
-            android:id="@+id/btnAddScene"
-            style="?colored_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:text="@string/menu_add_scene" />
-
-        <Button
             android:id="@+id/btnChangeToDevices"
             style="?colored_button"
             android:layout_width="match_parent"
@@ -51,13 +42,16 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/notifications"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <oly.netpowerctrl.utils.controls.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/btnAdd"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:layout_alignParentBottom="true"
-        android:gravity="start"
-        android:orientation="vertical"
-        android:padding="5dp"
-        android:visibility="visible" />
-</LinearLayout>
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        app:drawable="@android:drawable/ic_menu_add"
+        app:mainColor="#FFDF4D38" />
+</RelativeLayout>

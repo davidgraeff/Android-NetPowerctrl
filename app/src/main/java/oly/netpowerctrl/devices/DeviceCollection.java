@@ -2,10 +2,8 @@ package oly.netpowerctrl.devices;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.widget.Toast;
 
-import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -38,50 +36,28 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
      * @return Return true if an existing device has been replaced instead of adding a new entry.
      */
     public boolean add(Device device) {
-        // Determine next free devicePort position.
-        // This position is only for the listView to let all devicePorts of this new device
-        // be at the end of the list.
-        int highestPosition = 0;
-        int nextPos = 0;
-        for (Device local_device : items) {
-            nextPos += local_device.count();
-            Iterator<DevicePort> it = device.getDevicePortIterator();
-            while (it.hasNext()) {
-                DevicePort port = it.next();
-                highestPosition = port.positionRequest > highestPosition ? port.positionRequest : highestPosition;
-            }
-        }
-        nextPos = highestPosition > nextPos ? highestPosition : nextPos;
-
-        // Assign devicePort positions
-        Iterator<DevicePort> it = device.getDevicePortIterator();
-        while (it.hasNext()) {
-            DevicePort port = it.next();
-            port.positionRequest = nextPos;
-            nextPos++;
-        }
-
         // Already in configured devices?
         for (int i = items.size() - 1; i >= 0; --i) {
             if (device.equalsByUniqueID(items.get(i))) {
                 items.set(i, device);
                 if (storage != null)
                     storage.save(this, device);
-                notifyObservers(device, ObserverUpdateActions.UpdateAction);
+                notifyObservers(device, ObserverUpdateActions.UpdateAction, i);
                 return true;
             }
         }
 
         items.add(device);
-        notifyObservers(device, ObserverUpdateActions.AddAction);
+        notifyObservers(device, ObserverUpdateActions.AddAction, items.size() - 1);
         if (storage != null)
             storage.save(this, device);
         return false;
     }
 
     public void removeAll() {
+        int all = items.size();
         items.clear();
-        notifyObservers(null, ObserverUpdateActions.RemoveAction);
+        notifyObservers(null, ObserverUpdateActions.RemoveAllAction, all - 1);
         if (storage != null)
             storage.clear(this);
     }
@@ -97,13 +73,13 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
             return;
         device.configured = false;
         items.remove(position);
-        notifyObservers(device, ObserverUpdateActions.RemoveAction);
+        notifyObservers(device, ObserverUpdateActions.RemoveAction, position);
         if (storage != null)
             storage.remove(this, device);
     }
 
     public void updateNotReachable(Context context, Device device) {
-        notifyObservers(device, ObserverUpdateActions.UpdateAction);
+        notifyObservers(device, ObserverUpdateActions.UpdateAction, items.indexOf(device));
 
         if (SharedPrefs.getInstance().notifyDeviceNotReachable()) {
             long current_time = System.currentTimeMillis();
@@ -128,7 +104,10 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         if (newValues_device.UniqueDeviceID == null)
             return null;
 
+        int position = -1;
         for (Device existing_device : items) {
+            ++position;
+
             if (!newValues_device.equalsByUniqueID(existing_device))
                 continue;
 
@@ -138,8 +117,8 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
             }
 
             if (existing_device.copyValuesFromUpdated(newValues_device)) {
-                Log.w(TAG, "-- update: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
-                notifyObservers(existing_device, ObserverUpdateActions.UpdateAction);
+                //Log.w(TAG, "-- update: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
+                notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
             }
 
             return existing_device;
@@ -154,8 +133,8 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
      */
     public void updateExisting(Device existing_device) {
         if (AppData.observersOnDataLoaded.dataLoaded && existing_device.copyValuesFromUpdated(existing_device)) {
-            Log.w(TAG, "-- updateExisting: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
-            notifyObservers(existing_device, ObserverUpdateActions.UpdateAction);
+            //Log.w(TAG, "-- updateExisting: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
+            notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, items.indexOf(existing_device));
         }
     }
 
@@ -167,9 +146,9 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         if (port == null)
             return;
 
-        LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, bitmap, 128, 128), port.uuid,
+        LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, bitmap, 128, 128), port.getUid(),
                 LoadStoreIconData.IconType.DevicePortIcon, state);
-        notifyObservers(port.device, ObserverUpdateActions.UpdateAction);
+        notifyObservers(port.device, ObserverUpdateActions.UpdateAction, items.indexOf(port.device));
     }
 
     @Override
@@ -178,7 +157,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
     }
 
     public void groupsUpdated(Device device) {
-        notifyObservers(device, ObserverUpdateActions.ClearAndNewAction);
+        notifyObservers(device, ObserverUpdateActions.ClearAndNewAction, -1);
     }
 
     public void setHasChangedAll() {

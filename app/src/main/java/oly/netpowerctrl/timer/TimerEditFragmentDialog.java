@@ -7,6 +7,7 @@ import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -21,10 +22,8 @@ import java.text.DateFormatSymbols;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
-import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
 public class TimerEditFragmentDialog extends DialogFragment implements onHttpRequestResult {
     private Timer timer = new Timer();
@@ -47,17 +46,17 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         // Port selection
         {
-            DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-            final DevicePortsListAdapter adapter = new DevicePortsListAdapter(getActivity(), false, s,
-                    ((ActivityWithIconCache) getActivity()).getIconCache(), false);
+            final DevicePortSourceConfigured s = new DevicePortSourceConfigured();
+            s.updateNow();
 
             Spinner spinner = ((Spinner) rootView.findViewById(R.id.alarm_port));
+
             // Only enable device port selection if this is a new alarm
             spinner.setEnabled(timer.id == -1);
             spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    timer.port = adapter.getDevicePort(i);
+                    timer.port = s.getDevicePortList().get(i);
                 }
 
                 @Override
@@ -65,8 +64,14 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
                     timer.port = null;
                 }
             });
-            spinner.setAdapter(adapter);
-            spinner.setSelection(adapter.indexOf(timer.port));
+
+            ArrayAdapter<String> array_adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_available_outlet);
+            for (int i = 0; i < s.getDevicePortList().size(); ++i)
+                if (s.getDevicePortList().get(i) != null)
+                    array_adapter.add(s.getDevicePortList().get(i).getTitle());
+
+            spinner.setAdapter(array_adapter);
+            spinner.setSelection(s.indexOf(timer.port));
         }
 
         // Add weekdays
@@ -221,12 +226,12 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         timer.enabled = ((CheckBox) titleView.findViewById(android.R.id.title)).isChecked();
 
         // Check input data
-        if (timer.port == null || timer.port.uuid == null) {
+        if (timer.port == null || timer.port.getUid() == null) {
             Toast.makeText(getActivity(), R.string.alarm_no_target, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        timer.port_id = timer.port.uuid;
+        timer.port_id = timer.port.getUid();
 
         // Check input data
         if (timer.hour_minute_start == -1 && timer.hour_minute_stop == -1) {

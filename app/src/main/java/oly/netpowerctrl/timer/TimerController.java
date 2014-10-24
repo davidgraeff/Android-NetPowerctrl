@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
@@ -39,7 +38,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
             if (System.currentTimeMillis() - lastExecuted < 200)
                 return;
             lastExecuted = System.currentTimeMillis();
-            notifyObservers(null, ObserverUpdateActions.UpdateAction);
+            notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
         }
     };
 
@@ -69,7 +68,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
 
         Iterator<Timer> it = items.iterator();
 
-        notifyObservers(null, ObserverUpdateActions.UpdateAction);
+        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
 
         it = items.iterator();
         while (it.hasNext()) {
@@ -124,13 +123,13 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         available_timers.clear();
 
         // Flag all alarms as from-cache
-        HashSet<UUID> alarm_uuids = new HashSet<>();
+        HashSet<String> alarm_uuids = new HashSet<>();
         for (Timer timer : items) {
             timer.fromCache = true;
             alarm_uuids.add(timer.port_id);
         }
 
-        notifyObservers(null, ObserverUpdateActions.UpdateAction);
+        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
 
         if (service.isNetworkReducedMode() || requestActive) {
             return requestActive;
@@ -158,7 +157,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
                 if (port.Disabled)
                     continue;
 
-                if (alarm_uuids.contains(port.uuid))
+                if (alarm_uuids.contains(port.getUid()))
                     alarm_ports.add(0, port); // add in front of all alarm_uuids
                 else
                     alarm_ports.add(port);
@@ -178,7 +177,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         Handler h = App.getMainThreadHandler();
         h.removeCallbacks(notifyRunnable);
         requestActive = false;
-        notifyObservers(null, ObserverUpdateActions.UpdateAction);
+        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
     }
 
     public void clear() {
@@ -186,7 +185,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         for (Timer timer : getItems())
             removeAlarm(timer, null);
         items.clear();
-        notifyObservers(null, ObserverUpdateActions.UpdateAction);
+        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
     }
 
     @Override

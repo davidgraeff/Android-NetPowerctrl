@@ -45,7 +45,7 @@ public class DevicesAutomaticFragment extends DialogFragment implements onCreate
     @Override
     public void onStart() {
         super.onStart();
-        deviceList = new ArrayList<>(AppData.getInstance().newDevices);
+        deviceList = new ArrayList<>(AppData.getInstance().unconfiguredDeviceCollection.getItems());
         takeNext();
     }
 

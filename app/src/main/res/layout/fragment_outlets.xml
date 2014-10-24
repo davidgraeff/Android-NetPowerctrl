@@ -10,11 +10,9 @@
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/ptr_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="@dimen/list_inner_padding"
-        android:paddingTop="@dimen/list_inner_padding">
+        android:layout_height="match_parent">
 
-        <GridView
+        <android.support.v7.widget.RecyclerView
             android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -64,16 +62,6 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/notifications"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="start"
-        android:orientation="vertical"
-        android:padding="5dp"
-        android:visibility="visible" />
-
     <oly.netpowerctrl.utils.controls.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/fabPrevious"
         android:layout_width="72dp"
@@ -85,8 +73,8 @@
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
         android:visibility="gone"
-        app:color="#FFDF4D38"
-        app:drawable="@android:drawable/ic_media_previous" />
+        app:drawable="@android:drawable/ic_media_previous"
+        app:mainColor="#FFDF4D38" />
 
     <oly.netpowerctrl.utils.controls.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/fabNext"
@@ -102,6 +90,6 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:visibility="gone"
-        app:color="#FFDF4D38"
-        app:drawable="@android:drawable/ic_media_next" />
+        app:drawable="@android:drawable/ic_media_next"
+        app:mainColor="#FFDF4D38" />
 </RelativeLayout>

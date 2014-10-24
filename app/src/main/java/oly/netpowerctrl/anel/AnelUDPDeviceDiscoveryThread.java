@@ -7,6 +7,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.device_ports.ExecutableType;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
@@ -105,14 +106,14 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
                 String io_port[] = msg[i].split(",");
                 if (io_port.length != 3) continue;
 
-                DevicePort oi = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
+                DevicePort oi = new DevicePort(di, ExecutableType.TypeToggle);
 
                 if (io_port[1].equals("1")) // input
                     oi.id = io_id + 10;
                 else
                     oi.id = io_id;
 
-                oi.setDescription(io_port[0]);
+                oi.setTitle(io_port[0]);
                 oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
                 di.putPort(oi);
             }
@@ -129,9 +130,9 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             String outlet[] = msg[6 + i].split(",");
             if (outlet.length < 1)
                 continue;
-            DevicePort oi = new DevicePort(di, DevicePort.DevicePortType.TypeToggle);
+            DevicePort oi = new DevicePort(di, ExecutableType.TypeToggle);
             oi.id = i + 1; // 1-based
-            oi.setDescription(outlet[0]);
+            oi.setTitle(outlet[0]);
             if (outlet.length > 1)
                 oi.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;
             oi.Disabled = (disabledOutlets & (1 << i)) != 0;

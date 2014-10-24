@@ -484,7 +484,7 @@ final public class AnelPlugin implements PluginInterface {
                     case 0: { // enabled / disabled
                         timer.deviceAlarm = true;
                         timer.port = port;
-                        timer.port_id = port.uuid;
+                        timer.port_id = port.getUid();
                         timer.enabled = checked != null;
                         timer.id = (port.id & 255) | timerNumber << 8;
                         timer.type = timerNumber < 4 ? Timer.TYPE_RANGE_ON_WEEKDAYS : Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS;
@@ -593,7 +593,7 @@ final public class AnelPlugin implements PluginInterface {
                     public void httpResponse(DevicePort port, boolean callback_success,
                                              String response_message) {
                         if (callback_success) {
-                            port.setDescription(new_name);
+                            port.setTitle(new_name);
                         }
                         callback.httpRequestResult(port, callback_success, response_message);
                     }
@@ -622,7 +622,7 @@ final public class AnelPlugin implements PluginInterface {
             commands_grouped_by_devices.get(portAndCommand.port.device).add(portAndCommand);
         }
 
-        // execute by device
+        // executeToggle by device
         for (TreeMap.Entry<Device, List<Scene.PortAndCommand>> entry : commands_grouped_by_devices.entrySet()) {
             executeDeviceBatch(entry.getKey(), entry.getValue(), callback);
         }

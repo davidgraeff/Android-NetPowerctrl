@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -22,7 +23,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.device_ports.DevicePort;
-import oly.netpowerctrl.device_ports.DevicePortsExecuteAdapter;
+import oly.netpowerctrl.device_ports.DevicePortViewHolder;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.main.App;
@@ -32,13 +33,14 @@ import oly.netpowerctrl.network.onHttpRequestResult;
 public class OutletEditDialog extends DialogFragment implements onHttpRequestResult,
         LoadStoreIconData.IconSelected {
     private DevicePort devicePort;
-    private DevicePortsExecuteAdapter adapter;
     private ProgressDialog progressDialog;
     private EditText editName;
     private LoadStoreIconData.IconState iconState;
     private boolean[] checked;
     private ImageButton btnOn;
     private ImageButton btnOff;
+    private DevicePortViewHolder devicePortViewHolder;
+    private RecyclerView.Adapter<?> adapter;
 
     public OutletEditDialog() {
     }
@@ -51,11 +53,11 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
         //noinspection ConstantConditions
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setTitle(getString(R.string.outlet_edit_title, devicePort.getDescription()));
-        //builder.setMessage(getString(R.string.outlet_rename_message, devicePort.getDescription()));
+        builder.setTitle(getString(R.string.outlet_edit_title, devicePort.getTitle()));
+        //builder.setMessage(getString(R.string.outlet_rename_message, devicePort.getTitle()));
 
         editName = (EditText) rootView.findViewById(R.id.outlet_name);
-        editName.setText(devicePort.getDescription());
+        editName.setText(devicePort.getTitle());
 
         btnOff = (ImageButton) rootView.findViewById(R.id.outlet_icon_off);
         btnOff.setOnClickListener(new View.OnClickListener() {
@@ -119,10 +121,10 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
     }
 
     private void loadImages() {
-        btnOff.setImageDrawable(LoadStoreIconData.loadDrawable(getActivity(), devicePort.uuid, LoadStoreIconData.IconType.DevicePortIcon,
-                LoadStoreIconData.IconState.StateOff, LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff)));
-        btnOn.setImageDrawable(LoadStoreIconData.loadDrawable(getActivity(), devicePort.uuid, LoadStoreIconData.IconType.DevicePortIcon,
-                LoadStoreIconData.IconState.StateOn, LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn)));
+        btnOff.setImageDrawable(LoadStoreIconData.loadDrawable(getActivity(), devicePort.getUid(), LoadStoreIconData.IconType.DevicePortIcon,
+                LoadStoreIconData.IconState.StateOff));
+        btnOn.setImageDrawable(LoadStoreIconData.loadDrawable(getActivity(), devicePort.getUid(), LoadStoreIconData.IconType.DevicePortIcon,
+                LoadStoreIconData.IconState.StateOn));
     }
 
     @Override
@@ -133,7 +135,7 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
             @Override
             public void onClick(View v) {
                 String newName = editName.getText().toString().trim();
-                if (!newName.isEmpty() && !devicePort.getDescription().equals(newName))
+                if (!newName.isEmpty() && !devicePort.getTitle().equals(newName))
                     //noinspection ConstantConditions
                     AppData.getInstance().rename(devicePort, newName, OutletEditDialog.this);
 
@@ -152,16 +154,17 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
                 deviceCollection.save(devicePort.device);
                 Toast.makeText(getActivity(), getString(R.string.outlet_added_to_groups, counter), Toast.LENGTH_SHORT).show();
 
+                devicePortViewHolder.reload();
+                adapter.notifyItemChanged(devicePortViewHolder.position);
+
                 dismiss();
             }
         });
     }
 
-    public void setDevicePort(DevicePort devicePort) {
+    public void setDevicePort(DevicePort devicePort, DevicePortViewHolder devicePortViewHolder, RecyclerView.Adapter<?> adapter) {
+        this.devicePortViewHolder = devicePortViewHolder;
         this.devicePort = devicePort;
-    }
-
-    public void setAdapter(DevicePortsExecuteAdapter adapter) {
         this.adapter = adapter;
     }
 
@@ -206,7 +209,6 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
                 (DevicePort) context_object, bitmap, iconState);
 
         loadImages();
-        adapter.invalidateViewHolders();
     }
 
     @Override

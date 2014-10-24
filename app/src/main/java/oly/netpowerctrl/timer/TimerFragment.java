@@ -30,14 +30,13 @@ import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.controls.FloatingActionButton;
 import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
 
 public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, onHttpRequestResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private SwipeRefreshLayout mPullToRefreshLayout;
-    private AnimationController animationController;
-
 
     public TimerFragment() {
     }
@@ -92,10 +91,6 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         mListView.setEmptyView(empty);
         mListView.setAdapter(timerAdapter);
 
-        animationController.setAdapter(timerAdapter);
-        animationController.setListView(mListView);
-        timerAdapter.setRemoveAnimation(animationController);
-
         ///// For swiping elements out (hiding)
         SwipeDismissListViewTouchListener touchListener =
                 new SwipeDismissListViewTouchListener(
@@ -123,6 +118,15 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                 MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
             }
         });
+
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.btnAdd);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.getNavigationController().changeToDialog(getActivity(), TimerEditFragmentDialog.class.getName());
+            }
+        });
+        AnimationController.animateFloatingButton(fab);
 
         return view;
     }
@@ -171,7 +175,6 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        animationController = new AnimationController(getActivity());
         setHasOptionsMenu(true);
     }
 
@@ -220,7 +223,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
-    public boolean updated(TimerController timerController, Timer timer, ObserverUpdateActions action) {
+    public boolean updated(TimerController timerController, Timer timer, ObserverUpdateActions action, int position) {
         boolean inProgress = timerController.isRequestActive();
         if (inProgress) {
             progressText.setText(getString(R.string.alarm_receiving, timerController.countAllDeviceAlarms()));

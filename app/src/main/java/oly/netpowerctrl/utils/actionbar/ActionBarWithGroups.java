@@ -1,7 +1,7 @@
 package oly.netpowerctrl.utils.actionbar;
 
-import android.app.ActionBar;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.widget.ArrayAdapter;
 
 import java.util.UUID;
@@ -12,6 +12,7 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.navigation.NavigationController;
 
@@ -47,7 +48,7 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
     }
 
     public void showNavigation() {
-        updated(AppData.getInstance().groupCollection, null, null);
+        updated(AppData.getInstance().groupCollection, null, null, -1);
     }
 
     private void hideNavigation() {
@@ -90,6 +91,12 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
         --i; // the first item is added manually and not part of groupCollection
 
         GroupCollection g = AppData.getInstance().groupCollection;
+
+        if (i == g.size()) { // the last item is added manually
+            GroupUtilities.createGroupForDevicePort(actionBar.getThemedContext(), null);
+            return true;
+        }
+
         Group group = g.get(i);
 
         Bundle extra = new Bundle();
@@ -104,12 +111,12 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
         if (open) {
             hideNavigation();
         } else {
-            updated(AppData.getInstance().groupCollection, null, null);
+            updated(AppData.getInstance().groupCollection, null, null, -1);
         }
     }
 
     @Override
-    public boolean updated(GroupCollection groupCollection, Group group, ObserverUpdateActions action) {
+    public boolean updated(GroupCollection groupCollection, Group group, ObserverUpdateActions action, int position) {
         if (groupCollection.length() == 0) {
             hideNavigation();
             return true;
@@ -132,6 +139,7 @@ public class ActionBarWithGroups implements onCollectionUpdated<GroupCollection,
             else
                 actionBar.setSelectedNavigationItem(AppData.getInstance().groupCollection.indexOf(groupID) + 1);
         }
+        adapter.add(App.getAppString(R.string.createGroup));
         updateLock = false;
 
         return true;

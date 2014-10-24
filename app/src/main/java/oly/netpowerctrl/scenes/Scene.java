@@ -13,22 +13,26 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.StorableInterface;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.device_ports.ExecutableType;
 import oly.netpowerctrl.devices.Device;
 
-public class Scene implements StorableInterface {
+public class Scene implements StorableInterface, Executable {
     private static long nextStableID = 0;
     //public Bitmap bitmap = null;
     public final long id = nextStableID++;
+    public final List<UUID> groups = new ArrayList<>();
     public String sceneName = "";
-    public UUID uuid = UUID.randomUUID();
+    public String uuid;
     public List<SceneItem> sceneItems = new ArrayList<>();
     boolean favourite;
-    private UUID uuid_master = null;
+    private String uuid_master = null;
 
     public Scene() {
+        uuid = UUID.randomUUID().toString();
     }
 
     private static void readSceneItem(JsonReader reader, Scene scene) throws IOException {
@@ -42,7 +46,7 @@ public class Scene implements StorableInterface {
                     item.command = reader.nextInt();
                     break;
                 case "uuid":
-                    item.uuid = UUID.fromString(reader.nextString());
+                    item.uuid = reader.nextString();
                     break;
                 default:
                     reader.skipValue();
@@ -64,10 +68,10 @@ public class Scene implements StorableInterface {
     }
 
     public void setMaster(DevicePort master) {
-        uuid_master = (master != null) ? master.uuid : null;
+        uuid_master = (master != null) ? master.getUid() : null;
     }
 
-    public UUID getMasterUUid() {
+    public String getMasterUUid() {
         return uuid_master;
     }
 
@@ -113,7 +117,7 @@ public class Scene implements StorableInterface {
         return uuid.equals(other.uuid);
     }
 
-    public void add(UUID action_uuid, int command) {
+    public void add(String action_uuid, int command) {
         sceneItems.add(new SceneItem(action_uuid, command));
     }
 
@@ -152,24 +156,31 @@ public class Scene implements StorableInterface {
     private void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("sceneName").value(sceneName);
-        writer.name("uuid").value(uuid.toString());
+        writer.name("uuid").value(uuid);
         if (getSceneItem(uuid_master) != null)
-            writer.name("uuid_master").value(uuid_master.toString());
+            writer.name("uuid_master").value(uuid_master);
         writer.name("favourite").value(favourite);
+
         writer.name("groupItems").beginArray();
         for (SceneItem c : sceneItems) {
             writer.beginObject();
-            writer.name("uuid").value(c.uuid.toString());
+            writer.name("uuid").value(c.uuid);
             writer.name("name").value(c.command);
             writer.endObject();
         }
         writer.endArray();
+
+        writer.name("groups").beginArray();
+        for (UUID group_uuid : groups)
+            writer.value(group_uuid.toString());
+        writer.endArray();
+
         writer.endObject();
 
         writer.close();
     }
 
-    private SceneItem getSceneItem(UUID uuid) {
+    private SceneItem getSceneItem(String uuid) {
         if (uuid == null)
             return null;
 
@@ -202,13 +213,21 @@ public class Scene implements StorableInterface {
                     scene.sceneName = reader.nextString();
                     break;
                 case "uuid":
-                    scene.uuid = UUID.fromString(reader.nextString());
+                    scene.uuid = reader.nextString();
                     break;
                 case "uuid_master":
-                    scene.uuid_master = UUID.fromString(reader.nextString());
+                    scene.uuid_master = reader.nextString();
                     break;
                 case "favourite":
                     scene.favourite = reader.nextBoolean();
+                    break;
+                case "groups":
+                    scene.groups.clear();
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        scene.groups.add(UUID.fromString(reader.nextString()));
+                    }
+                    reader.endArray();
                     break;
                 case "groupItems":
                     reader.beginArray();
@@ -233,6 +252,41 @@ public class Scene implements StorableInterface {
     @Override
     public void save(OutputStream output) throws IOException {
         toJSON(JSONHelper.createWriter(output));
+    }
+
+    @Override
+    public List<UUID> getGroups() {
+        return groups;
+    }
+
+    @Override
+    public String getUid() {
+        return uuid.toString();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public ExecutableType getType() {
+        return ExecutableType.TypeScene;
+    }
+
+    @Override
+    public String getTitle() {
+        return sceneName;
+    }
+
+    @Override
+    public String getDescription() {
+        return "";
+    }
+
+    @Override
+    public boolean isReachable() {
+        return true;
     }
 
     public static class PortAndCommand {

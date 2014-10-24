@@ -3,6 +3,15 @@
     <item name="default_send_port" format="integer" type="integer">1075</item>
     <item name="default_receive_port" format="integer" type="integer">1077</item>
 
+    <item name="default_fallback_icon_set" format="string" type="string">power</item>
+
+    <string-array name="default_fallback_icon_set_keys">
+        <item>power</item>
+        <item>default</item>
+        <item>circle</item>
+        <item>flat</item>
+    </string-array>
+
     <item name="wakeup_energy_saving_mode" format="boolean" type="bool">False</item>
     <item name="use_dark_theme" format="boolean" type="bool">False</item>
     <item name="load_extensions" format="boolean" type="bool">False</item>

@@ -1,0 +1,99 @@
+
+    private void removeHeaders() {
+        Iterator<DevicePortAdapterItem> iterator = mItems.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().port == null)
+                iterator.remove();
+        }
+    }
+
+    @Override
+    public String[] getSortCriteria() {
+        String[] s = new String[2];
+        s[0] = "Alphabetisch";
+        s[1] = "Nach Geräten";
+        return s;
+    }
+
+    @Override
+    public void applySortCriteria(final boolean[] criteria) {
+        removeHeaders();
+
+        // Sort
+        Sorting.qSort(mItems, 0, mItems.size() - 1, new Sorting.qSortComparable<DevicePortAdapterItem>() {
+            @Override
+            public boolean isGreater(DevicePortAdapterItem first, DevicePortAdapterItem second) {
+                boolean isGreater = false;
+                if (criteria[0] &&
+                        first.port.getDescription().compareTo(second.port.getDescription()) > 0) { // alphabetical
+                    isGreater = true;
+                }
+                if (criteria[1] &&
+                        first.port.device.DeviceName.compareTo(second.port.device.DeviceName) > 0) {
+                    isGreater = true;
+                }
+                return isGreater;
+            }
+        });
+
+        // Assign positionRequest numbers
+        this.sortOrder = new int[mItems.size()];
+        for (int i = 0; i < mItems.size(); ++i) {
+            sortOrder[i] = i;
+        }
+
+        if (mSource != null)
+            mSource.updateNow();
+    }
+
+    @Override
+    public boolean allowCustomSort() {
+        return true;
+    }
+
+    @Override
+    public void setSortOrder(int[] sortOrder) {
+        removeHeaders();
+
+        if (sortOrder.length != mItems.size()) {
+            Log.e("DevicePortsBaseAdapter", "setSortOrder length wrong");
+            if (mSource != null)
+                mSource.updateNow();
+            return;
+        }
+
+        this.sortOrder = sortOrder;
+
+        if (mSource != null)
+            mSource.updateNow();
+    }
+
+
+    @Override
+    public String[] getContentList(int startPosition) {
+        int c = 0;
+        for (DevicePortAdapterItem mItem : mItems) {
+            if (mItem.port != null)
+                ++c;
+        }
+
+        String[] l = new String[c];
+        c = 0;
+        for (DevicePortAdapterItem mItem : mItems) {
+            DevicePort port = mItem.port;
+            if (port == null)
+                continue;
+            l[c++] = port.device.DeviceName + ": " + port.getDescription();
+        }
+        return l;
+    }
+
+
+
+    public int indexOf(DevicePort port) {
+        for (int i = 0; i < mItems.size(); ++i) {
+            if (mItems.get(i).port != null && mItems.get(i).port.equals(port))
+                return i;
+        }
+        return -1;
+    }

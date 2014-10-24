@@ -43,8 +43,8 @@
     <string name="confirmation_delete_device">Delete all devices?</string>
     <string name="confirmation_delete_all_devices">Are you sure you want to delete all devices?</string>
 
-    <string name="title_shortcut">Create Shortcut</string>
-    <string name="title_scene">Create scene</string>
+    <string name="title_shortcut">Create Shortcut: %1$s</string>
+    <string name="title_scene_create">Create scene: %1$s</string>
 
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
     <string name="delete_all_groups">Delete all scenes?</string>
@@ -63,8 +63,9 @@
     </string-array>
 
     <string name="drawer_switch_title">Trigger actions</string>
-    <string name="drawer_overview">Overview</string>
-    <string name="drawer_scenes">Scene Overview</string>
+    <string name="drawer_overview_list">View as list</string>
+    <string name="drawer_overview_grid">View as grid</string>
+    <string name="drawer_overview_compact">Compact view</string>
     <string name="drawer_app_title">App and Devices</string>
 
     <string name="drawer_devices">Devices</string>
@@ -86,7 +87,7 @@
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
     <string name="Version">Version</string>
-    <string name="title_scene_edit">Edit scene</string>
+    <string name="title_scene_edit">Edit scene: %1$s</string>
     <string name="scene_add_homescreen">Add to homescreen</string>
     <string name="error_reading_scenes">Error reading scenes</string>
     <string name="error_device_not_reachable">Test reachable failed</string>
@@ -139,7 +140,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="error_scene_no_name">No name set. Saving disabled!</string>
     <string name="scene_create_helptext_available">No more actions. You already have used all available or there are no one available.</string>
     <string name="error_reading_groups">Reading groups failed</string>
-    <string name="scene_no_name">No name!</string>
     <string name="widget_on">(On)</string>
     <string name="widget_off">(Off)</string>
     <string name="preference_widget_show_title">Show title</string>
@@ -149,7 +149,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_createGroup">Create group with device outlets</string>
     <string name="menu_outlet_createGroup">Groups</string>
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
-    <string name="createGroup">Create group</string>
+    <string name="createGroup">Create group…</string>
     <string name="outlet_added_to_groups">Belong to %1$d groups</string>
     <string name="outlet_to_group_title">Groups of %1$s</string>
     <string name="group_create">Create a new group. Enter a name please.</string>
@@ -320,11 +320,11 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_nfc_bind_summary">Open this app on contact with the written NFC tag</string>
     <string name="outlet_edit_title">Edit %1$s</string>
     <string name="outlet_name_label">Name</string>
-    <string name="outlet_icons_label">Zustandsgrafiken</string>
-    <string name="outlet_groups_label">Zugewiesene Gruppen</string>
+    <string name="outlet_icons_label">State icons</string>
+    <string name="outlet_groups_label">Assigned groups</string>
     <string name="outlet_icon_off_label">Aus:</string>
     <string name="outlet_icon_on_label">An:</string>
-    <string name="error_rename_only_with_http_connection">Umbenennen nur mit HTTP Verbindung möglich</string>
+    <string name="error_rename_only_with_http_connection">Renaming only possible with http connection</string>
     <string name="notification_title_changelog">The app has been updated to version %1$s</string>
     <string name="widget_inProgress">Waiting</string>
     <string name="log_data_send">Data have been send</string>
@@ -338,4 +338,14 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_outlet_editing_enabled_summary">The tool icon to edit outlets/scenes will be shown/hidden.</string>
     <string name="menu_view_change">Change view</string>
     <string name="preference_select_background_image">Choose background image</string>
+    <string name="title_scene_no_name">No Name!</string>
+    <string name="device_new">New: %1$s</string>
+    <string name="preference_default_fallback_icon_set_names">Standard Icon Set</string>
+
+    <string-array name="default_fallback_icon_set_names">
+        <item>Rund, Dreidimensional, Transparent</item>
+        <item>Rund, Flach</item>
+        <item>Rund, Dreidimensional</item>
+        <item>Farbiges Powerzeichen, Flach</item>
+    </string-array>
 </resources>

@@ -1,42 +1,31 @@
 package oly.netpowerctrl.utils;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.content.Context;
+import android.animation.ObjectAnimator;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.AbsListView;
-import android.widget.BaseAdapter;
+import android.view.animation.OvershootInterpolator;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import oly.netpowerctrl.R;
+import oly.netpowerctrl.utils.controls.FloatingActionButton;
 
 /**
  * Created by david on 08.07.14.
  */
 public class AnimationController {
-    private static final int MOVE_DURATION = 150;
-    final private Animation highlightAnimation;
-    final private Animation updateAnimation;
-    private final HashMap<Long, Integer> mRemoveItemIdTopMap = new HashMap<>();
-    private final Map<Long, Integer> mHighlightItemIdTopMap = new TreeMap<>();
-    private final Set<Long> mSmallHighlightItemIdTopMap = new TreeSet<>();
-    private BaseAdapter adapter;
-    private AbsListView listView;
-    private boolean firstAnimation = true;
-
-    public AnimationController(Context context) {
-        highlightAnimation = AnimationUtils.loadAnimation(context, R.anim.button_zoom);
-        updateAnimation = AnimationUtils.loadAnimation(context, R.anim.button_zoom);
+    public static void animateFloatingButton(final FloatingActionButton button) {
+        button.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                button.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                button.setTranslationY(button.getHeight() * 2);
+                final ObjectAnimator o = ObjectAnimator.ofFloat(button, "translationY", 0f);
+                o.setDuration(500);
+                o.setInterpolator(new OvershootInterpolator());
+                o.start();
+            }
+        });
     }
 
     public static void animateView(final View view, final boolean in, final float max) {
@@ -103,103 +92,5 @@ public class AnimationController {
             }
         });
         view.startAnimation(animation1);
-    }
-
-    public void addHighlight(long id, int view_id) {
-        mHighlightItemIdTopMap.put(id, view_id);
-        highlightAnimation.reset();
-    }
-
-    public void beforeRemoval(int removePosition) { // View viewToRemove
-        int firstVisiblePosition = listView.getFirstVisiblePosition();
-        for (int i = 0; i < listView.getChildCount(); ++i) {
-            View child = listView.getChildAt(i);
-            int position = firstVisiblePosition + i;
-//            if (child != viewToRemove) {
-            if (position != removePosition) {
-                long itemId = adapter.getItemId(position);
-                mRemoveItemIdTopMap.put(itemId, child.getTop());
-            }
-        }
-    }
-
-    public void animate() {
-        if (mRemoveItemIdTopMap.isEmpty() && mHighlightItemIdTopMap.isEmpty())
-            return;
-
-        firstAnimation = true;
-
-        final ViewTreeObserver observer = listView.getViewTreeObserver();
-        observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            public boolean onPreDraw() {
-                observer.removeOnPreDrawListener(this);
-                int firstVisiblePosition = listView.getFirstVisiblePosition();
-                for (int i = 0; i < listView.getChildCount(); ++i) {
-                    final View child = listView.getChildAt(i);
-                    int position = firstVisiblePosition + i;
-                    long itemId = adapter.getItemId(position);
-                    Integer startTop = mRemoveItemIdTopMap.get(itemId);
-                    int top = child.getTop();
-
-                    if (!mRemoveItemIdTopMap.isEmpty()) { // remove animation
-                        if (startTop == null) {
-                            // Animate new views along with the others. The catch is that they did not
-                            // exist in the start state, so we must calculate their starting position
-                            // based on neighboring views.
-                            int childHeight = child.getHeight() /*+ listView.getDividerHeight() */;
-                            startTop = top + (i > 0 ? childHeight : -childHeight);
-                            int delta = startTop - top;
-                            child.setTranslationY(delta);
-                            child.animate().setDuration(MOVE_DURATION).translationY(0);
-                            reEnableList(listView, child);
-                        } else if (startTop != top) {
-                            int delta = startTop - top;
-                            child.setTranslationY(delta);
-                            child.animate().setDuration(MOVE_DURATION).translationY(0);
-                            reEnableList(listView, child);
-                        }
-                    }
-                    Integer view_id = mHighlightItemIdTopMap.get(itemId);
-                    if (view_id != null) {
-                        View v = child.findViewById(view_id);
-                        if (v != null)
-                            v.startAnimation(highlightAnimation);
-                    }
-                    if (mSmallHighlightItemIdTopMap.contains(itemId)) {
-                        child.startAnimation(updateAnimation);
-                    }
-                }
-                mRemoveItemIdTopMap.clear();
-                mHighlightItemIdTopMap.clear();
-                mSmallHighlightItemIdTopMap.clear();
-                return true;
-            }
-        });
-    }
-
-    private void reEnableList(final AbsListView listView, View child) {
-        if (!firstAnimation)
-            return;
-        firstAnimation = false;
-
-        // disable list for the duration of the animation
-        final boolean enabledBefore = listView.isEnabled();
-        listView.setEnabled(false);
-
-        child.animate().setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                //mBackgroundContainer.hideBackground();
-                listView.setEnabled(enabledBefore);
-            }
-        });
-    }
-
-    public void setAdapter(BaseAdapter adapter) {
-        this.adapter = adapter;
-    }
-
-    public void setListView(AbsListView listView) {
-        this.listView = listView;
     }
 }

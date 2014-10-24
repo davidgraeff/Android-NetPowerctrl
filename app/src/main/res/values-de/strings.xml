@@ -46,8 +46,8 @@
     <string name="confirmation_delete_device">Sind Sie sicher, dass Sie dieses Gerät löschen wollen?</string>
     <string name="confirmation_delete_all_devices">Sind Sie sicher, dass Sie alle Geräte löschen wollen?</string>
 
-    <string name="title_shortcut">Erstelle Shortcut</string>
-    <string name="title_scene">Erstelle Szene</string>
+    <string name="title_shortcut">Erstelle Shortcut: %1$s</string>
+    <string name="title_scene_create">Erstelle Szene: %1$s</string>
 
     <string name="shortcut_show_mainwindow">Öffne App beim Ausführen</string>
     <string name="delete_all_groups">Alle Szenen löschen?</string>
@@ -67,7 +67,9 @@
 
     <string name="drawer_switch_title">Schalten</string>
     <string name="drawer_overview">Übersicht</string>
-    <string name="drawer_scenes">Szenenübersicht</string>
+    <string name="drawer_overview_list">Listenansicht</string>
+    <string name="drawer_overview_grid">Rasteransicht</string>
+    <string name="drawer_overview_compact">Kompakte Ansicht</string>
 
     <string name="drawer_app_title">App und Geräte</string>
     <string name="drawer_devices">Geräte</string>
@@ -87,7 +89,7 @@
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
     <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
     <string name="Version">Version</string>
-    <string name="title_scene_edit">Szene bearbeiten</string>
+    <string name="title_scene_edit">Bearbeite Szene: %1$s</string>
     <string name="scene_add_homescreen">Zum Startbildschirm hinzufügen</string>
     <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
@@ -138,7 +140,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="error_scene_no_name">Keinen Namen vergeben. Speichern nicht erlaubt!</string>
     <string name="scene_create_helptext_available">Keine weiteren Aktionen vorhanden! Entweder nutzt du bereits alle oder es gibt einfach keine.</string>
     <string name="error_reading_groups">Gruppen konnten nicht geladen werden</string>
-    <string name="scene_no_name">Kein Name!</string>
     <string name="widget_on">(An)</string>
     <string name="widget_off">(Aus)</string>
     <string name="preference_widget_show_title">Zeige Titel</string>
@@ -148,7 +149,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
     <string name="menu_outlet_createGroup">In Gruppen…</string>
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
-    <string name="createGroup">Gruppe erstellen</string>
+    <string name="createGroup">Gruppe erstellen…</string>
     <string name="outlet_added_to_groups">Gehört zu %1$d Gruppen</string>
     <string name="outlet_to_group_title">%1$s in Gruppen…</string>
     <string name="group_create">Erstelle eine neue Gruppe. Bitte den Namen eingeben.</string>
@@ -341,4 +342,14 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_outlet_editing_enabled_summary">Das Schraubenschlüssel Icon zur Bearbeitung von Steckdosen/Szenen wird angezeigt/ausgeblendet.</string>
     <string name="menu_view_change">Ansicht wechseln</string>
     <string name="preference_select_background_image">Wähle Hintergrundbild</string>
+    <string name="title_scene_no_name">Kein Name!</string>
+    <string name="device_new">Neu: %1$s</string>
+    <string name="preference_default_fallback_icon_set_names">Standard Icon Set</string>
+
+    <string-array name="default_fallback_icon_set_names">
+        <item>Rund, Dreidimensional, Transparent</item>
+        <item>Rund, Flach</item>
+        <item>Rund, Dreidimensional</item>
+        <item>Farbiges Powerzeichen, Flach</item>
+    </string-array>
 </resources>

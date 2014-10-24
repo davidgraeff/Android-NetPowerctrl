@@ -9,12 +9,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
-
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.utils.AnimationController;
 
 /**
  * List all alarms of the timer controller
@@ -23,7 +20,6 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
     private final TimerController controller;
     private final LayoutInflater inflater;
     private final Context context;
-    private WeakReference<AnimationController> removeAnimationWeakReference = new WeakReference<>(null);
 
     public TimerAdapter(Context context, TimerController timerController) {
         this.context = context;
@@ -31,23 +27,8 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
         this.controller = timerController;
     }
 
-    public void setRemoveAnimation(AnimationController animationController) {
-        removeAnimationWeakReference = new WeakReference<>(animationController);
-    }
-
     public void remove(int position) {
-        AnimationController a = removeAnimationWeakReference.get();
-        if (a != null)
-            a.beforeRemoval(position);
         controller.removeFromCache(position);
-    }
-
-    @Override
-    public void notifyDataSetChanged() {
-        super.notifyDataSetChanged();
-        AnimationController a = removeAnimationWeakReference.get();
-        if (a != null)
-            a.animate();
     }
 
     public void start() {
@@ -168,7 +149,7 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
 
 
     @Override
-    public boolean updated(TimerController timerController, Timer timer, ObserverUpdateActions action) {
+    public boolean updated(TimerController timerController, Timer timer, ObserverUpdateActions action, int position) {
         notifyDataSetChanged();
         return true;
     }

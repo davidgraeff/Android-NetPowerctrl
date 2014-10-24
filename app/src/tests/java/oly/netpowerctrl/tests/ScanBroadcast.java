@@ -120,6 +120,6 @@ public class ScanBroadcast extends AndroidTestCase {
         ListenService.observersStartStopRefresh.unregister(refreshStartedStopped);
         assertEquals("RefreshStartStop count wrong", 0, refreshStartedStopped_signal);
 
-        assertTrue("No devices found!", AppData.getInstance().newDevices.size() > 0);
+        assertTrue("No devices found!", AppData.getInstance().unconfiguredDeviceCollection.size() > 0);
     }
 }

@@ -30,6 +30,14 @@
             android:key="select_background_image"
             android:title="@string/preference_select_background_image" />
 
+
+        <ListPreference
+            android:defaultValue="@string/default_fallback_icon_set"
+            android:entries="@array/default_fallback_icon_set_names"
+            android:entryValues="@array/default_fallback_icon_set_keys"
+            android:key="default_fallback_icon_set"
+            android:title="@string/preference_default_fallback_icon_set_names" />
+
         <CheckBoxPreference
             android:defaultValue="@bool/smaller_click_execute_area"
             android:key="smaller_click_execute_area"

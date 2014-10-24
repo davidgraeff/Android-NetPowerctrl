@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_ports.DevicePort;
@@ -16,6 +15,7 @@ import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionUDP;
+import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
@@ -32,18 +32,17 @@ import oly.netpowerctrl.utils.notifications.InAppNotifications;
 /**
  * Device Updates go into this object and are propagated to all observers and the device collection.
  * All data collections are centralized in this class. Helper methods regarding configured devices
- * are implemented in this class. Those are: execute, rename, countReachable, countNetworkDevices.
+ * are implemented in this class. Those are: executeToggle, rename, countReachable, countNetworkDevices.
  * This class is a singleton (Initialization on Demand Holder).
  */
 public class AppData {
     // Observers are static for this singleton class
     public static final DataQueryCompletedObserver observersDataQueryCompleted = new DataQueryCompletedObserver();
     public static final DataLoadedObserver observersOnDataLoaded = new DataLoadedObserver();
-    public static final NewDeviceObserver observersNew = new NewDeviceObserver();
     private static final String TAG = "AppData";
 
-    public final List<Device> newDevices = new ArrayList<>();
     final public DeviceCollection deviceCollection = new DeviceCollection();
+    final public UnconfiguredDeviceCollection unconfiguredDeviceCollection = new UnconfiguredDeviceCollection();
     final public GroupCollection groupCollection = new GroupCollection();
     final public SceneCollection sceneCollection = new SceneCollection();
     final public TimerController timerController = new TimerController();
@@ -68,7 +67,6 @@ public class AppData {
 
         appData.loadStoreJSonData = new LoadStoreJSonData();
         appData.loadStoreJSonData.loadData(appData);
-        LoadStoreIconData.init();
     }
 
     public static boolean isDataLoaded() {
@@ -176,7 +174,7 @@ public class AppData {
         for (DeviceObserverBase dq : updateDeviceStateList)
             dq.finishWithTimeouts();
         updateDeviceStateList.clear();
-        newDevices.clear();
+        unconfiguredDeviceCollection.getItems().clear();
         deviceCollection.getItems().clear();
         sceneCollection.getItems().clear();
         groupCollection.getItems().clear();
@@ -185,8 +183,7 @@ public class AppData {
     }
 
     public void clearNewDevices() {
-        newDevices.clear();
-        observersNew.onNewDevice(null);
+        unconfiguredDeviceCollection.removeAll();
     }
 
     public void addToConfiguredDevices(Context context, Device device) {
@@ -202,14 +199,7 @@ public class AppData {
         // This device is now configured
         device.configured = true;
 
-        // Remove from new devices list
-        for (int i = 0; i < newDevices.size(); ++i) {
-            if (newDevices.get(i).equalsByUniqueID(device)) {
-                newDevices.remove(i);
-                observersNew.onNewDevice(device);
-                break;
-            }
-        }
+        unconfiguredDeviceCollection.remove(device);
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
         if (device.getFirstReachableConnection() == null)
@@ -248,16 +238,7 @@ public class AppData {
         // notify observers who are using the DeviceQuery class (new device)
         notifyDeviceQueries(device_info);
 
-        if (device_info.UniqueDeviceID != null) {
-            // Do we have this new device already in the list?
-            for (Device target : newDevices) {
-                if (device_info.equalsByUniqueID(target))
-                    return;
-            }
-            // No: Add device to new_device list
-            newDevices.add(device_info);
-            observersNew.onNewDevice(device_info);
-        }
+        unconfiguredDeviceCollection.add(device_info);
     }
 
     public void onDeviceErrorByName(Context context, String name, String errMessage) {
@@ -285,7 +266,7 @@ public class AppData {
         return r;
     }
 
-    public DevicePort findDevicePort(UUID uuid) {
+    public DevicePort findDevicePort(String uuid) {
         if (uuid == null)
             return null;
 
@@ -294,7 +275,7 @@ public class AppData {
             Iterator<DevicePort> it = di.getDevicePortIterator();
             while (it.hasNext()) {
                 DevicePort port = it.next();
-                if (port.uuid.equals(uuid)) {
+                if (port.getUid().equals(uuid)) {
                     di.releaseDevicePorts();
                     return port;
                 }
@@ -327,7 +308,7 @@ public class AppData {
     /**
      * Notice: Only call this method if the NetpowerctrlService service is running!
      *
-     * @param scene    The scene to execute
+     * @param scene    The scene to executeToggle
      * @param callback The callback for the execution-done messages
      */
     public void execute(Scene scene, onExecutionFinished callback) {
@@ -367,38 +348,40 @@ public class AppData {
     /**
      * Notice: Only call this method if the NetpowerctrlService service is running!
      *
+     * @param executable A scene or a device port
+     * @param callback   The callback for the execution-done messages
+     */
+    public void executeToggle(final Executable executable, final onExecutionFinished callback) {
+        if (executable instanceof Scene) {
+            execute(((Scene) executable), callback);
+            return;
+        } else if (executable instanceof DevicePort) {
+            DevicePort devicePort = (DevicePort) executable;
+            PluginInterface remote = devicePort.device.getPluginInterface();
+            if (remote != null) {
+                remote.execute(devicePort, DevicePort.TOGGLE, callback);
+            }
+
+            if (callback != null)
+                callback.onExecutionFinished(1);
+            return;
+        }
+
+        if (callback != null)
+            callback.onExecutionFinished(1);
+    }
+
+    /**
+     * Notice: Only call this method if the NetpowerctrlService service is running!
+     *
      * @param port     The device port
-     * @param command  The command to execute
+     * @param command  The command to executeToggle
      * @param callback The callback for the execution-done messages
      */
     public void execute(final DevicePort port, final int command, final onExecutionFinished callback) {
         PluginInterface remote = port.device.getPluginInterface();
         if (remote != null) {
-            // mark device as changed. Slaves (see below) will also enter this method and will be
-            // marked as changed. This is necessary for this scenario: The slave is already in the target state
-            // but will be marked as currently-executed (progressbar is visible). Because an update of the device
-            // will not be propagated because nothing actually changed, this currently-executed state will
-            // stay indefinitely. Therefore we mark all currently-executed devices as changed here.
-            port.device.setHasChanged();
             remote.execute(port, command, callback);
-
-            // Support for slaves of an outlet.
-            List<UUID> slaves = port.getSlaves();
-            if (slaves.size() > 0) {
-                boolean bValue = false;
-                if (command == DevicePort.ON)
-                    bValue = true;
-                else if (command == DevicePort.OFF)
-                    bValue = false;
-                else if (command == DevicePort.TOGGLE)
-                    bValue = port.current_value <= 0;
-
-                for (UUID slave_uuid : slaves) {
-                    DevicePort p = getInstance().findDevicePort(slave_uuid);
-                    if (p != null && p != port)
-                        execute(p, bValue ? DevicePort.ON : DevicePort.OFF, null);
-                }
-            }
             return;
         }
 

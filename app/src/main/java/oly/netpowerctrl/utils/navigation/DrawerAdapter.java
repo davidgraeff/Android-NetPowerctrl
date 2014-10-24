@@ -1,12 +1,11 @@
 package oly.netpowerctrl.utils.navigation;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,24 +14,19 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.ObserverUpdateActions;
-import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.scenes.SceneCollection;
 
 /**
  * Adapter with items and headers
  */
-public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<SceneCollection, Scene> {
+public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.ViewHolder> {
 
+    private static final int TYPE_HEADER = 0;
+    private static final int TYPE_ITEM = 1;
     private final List<DrawerItem> mItems = new ArrayList<>();
-    private final LayoutInflater inflater;
-    private UUID scenes_position = null;
-    private int scenes_size = 0;
+    private int selectedItemPosition = -1;
+    private int lastSelectedItemPosition = -1;
 
-    public DrawerAdapter(Context context) {
-        inflater = LayoutInflater.from(context);
+    public DrawerAdapter() {
     }
 
     public void add(String[] mFragmentNames, String[] mFragmentDesc, String[] mFragmentClasses) {
@@ -54,21 +48,6 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
             }
         }
         return -1;
-    }
-
-    private int indexOf(UUID uuid) {
-        for (int i = 0; i < mItems.size(); i++) {
-            DrawerItem item = mItems.get(i);
-            if (item.uuid.equals(uuid)) return i;
-
-        }
-        return -1;
-    }
-
-    public void usePositionForScenes() {
-        scenes_position = mItems.get(mItems.size() - 1).uuid;
-        AppData.getInstance().sceneCollection.registerObserver(this);
-        updated(AppData.getInstance().sceneCollection, null, null);
     }
 
     public void remove(UUID id) {
@@ -103,13 +82,7 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
         return item;
     }
 
-    @Override
-    public int getCount() {
-        return mItems.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
+    public DrawerItem getItem(int position) {
         return mItems.get(position);
     }
 
@@ -119,55 +92,57 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
     }
 
     @Override
+    public int getItemCount() {
+        return mItems.size();
+    }
+
+    @Override
     public int getItemViewType(int position) {
-        return mItems.get(position).isHeader ? 0 : 1;
+        return mItems.get(position).isHeader ? TYPE_HEADER : TYPE_ITEM;
     }
 
     @Override
-    public int getViewTypeCount() {
-        return 2;
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        if (viewType == TYPE_HEADER) {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_header_drawer, viewGroup, false);
+            return new ViewHolder(v, true);
+        } else {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_drawer, viewGroup, false);
+            return new ViewHolder(v, false);
+        }
     }
 
     @Override
-    public View getView(int position, View v, ViewGroup parent) {
-        DrawerItem item = (DrawerItem) getItem(position);
+    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+        DrawerItem item = mItems.get(position);
 
         if (item.isHeader) {
-
-            if (v == null) {
-                v = inflater.inflate(R.layout.list_header_drawer, parent, false);
-            }
-
-            assert v != null;
-            ((TextView) v.findViewById(R.id.headerTitle)).setText(item.mTitle);
-
-            return v;
-
+            viewHolder.headerTitle.setText(item.mTitle);
         } else {
-            if (v == null) {
-                v = inflater.inflate(R.layout.list_item_drawer, parent, false);
-            }
+//            View layout_item = viewHolder.layout_item;
+//            layout_item.setPadding(v.getPaddingRight() + layout_item.getPaddingRight() * item.intendLevel, v.getPaddingTop(),
+//                    v.getPaddingRight(), v.getPaddingBottom());
 
-            assert v != null;
-            View layout_item = v.findViewById(R.id.drawer_list_item);
-            layout_item.setPadding(v.getPaddingRight() + layout_item.getPaddingRight() * item.intendLevel, v.getPaddingTop(),
-                    v.getPaddingRight(), v.getPaddingBottom());
-
-            ImageView image = (ImageView) v.findViewById(R.id.drawer_icon_bitmap);
+            ImageView image = viewHolder.image;
             if (item.bitmap != null) {
                 image.setImageBitmap(item.bitmap);
                 image.setVisibility(View.VISIBLE);
             } else
                 image.setVisibility(View.GONE);
 
-            TextView title = ((TextView) v.findViewById(R.id.text1));
-            title.setText(item.mTitle);
+            viewHolder.title.setText(item.mTitle);
 
-            TextView summary = ((TextView) v.findViewById(R.id.summary));
-            summary.setVisibility(item.mSummary.isEmpty() ? View.GONE : View.VISIBLE);
-            summary.setText(item.mSummary);
+            viewHolder.summary.setVisibility(item.mSummary.isEmpty() ? View.GONE : View.VISIBLE);
+            viewHolder.summary.setText(item.mSummary);
 
-            return v;
+            if (lastSelectedItemPosition == position) {
+                viewHolder.layout_item.setActivated(false);
+                lastSelectedItemPosition = -1;
+            }
+
+            if (selectedItemPosition == position) {
+                viewHolder.layout_item.setActivated(true);
+            }
         }
     }
 
@@ -175,66 +150,13 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
         return mItems.get(position);
     }
 
-    @Override
-    public boolean updated(SceneCollection sceneCollection, Scene item, ObserverUpdateActions action) {
-        if (scenes_position == null)
-            return false;
-        int startPosition = indexOf(scenes_position);
-        if (startPosition == -1)
-            return true;
-        ++startPosition; // Add 1, otherwise we point to the item before the first scene item
+    public void setSelectedItem(int pos) {
+        lastSelectedItemPosition = selectedItemPosition;
+        if (lastSelectedItemPosition != -1)
+            notifyItemChanged(lastSelectedItemPosition);
 
-        int maxLength = 0;
-        for (Scene scene : sceneCollection.getItems()) {
-            if (scene.isFavourite())
-                ++maxLength;
-        }
-
-        if (action == ObserverUpdateActions.RemoveAction || action == ObserverUpdateActions.AddAction || scenes_size != maxLength) {
-            // Remove all scenes first
-            for (int i = 0; i < scenes_size; ++i)
-                mItems.remove(startPosition);
-            scenes_size = 0;
-
-            // Read scenes, insert scene if its a favourite
-            int counter = 0;
-            for (final Scene scene : sceneCollection.getItems()) {
-                if (!scene.isFavourite())
-                    continue;
-                DrawerItem drawerItem = new DrawerItem(scene.sceneName, "");
-                drawerItem.uuid = scene.uuid;
-                //item.bitmap = scene.getBitmap();
-                drawerItem.intendLevel = 1;
-                drawerItem.clickHandler = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        AppData.getInstance().execute(scene, null);
-                    }
-                };
-                mItems.add(startPosition + counter++, drawerItem);
-            }
-            scenes_size = maxLength;
-            notifyDataSetChanged();
-        } else { // just update names
-            int counter = 0;
-            for (final Scene scene : sceneCollection.getItems()) {
-                if (!scene.isFavourite())
-                    continue;
-                DrawerItem drawerItem = mItems.get(counter++ + startPosition);
-                drawerItem.uuid = scene.uuid;
-                //item.bitmap = scene.getBitmap();
-                drawerItem.mTitle = scene.sceneName;
-                drawerItem.clickHandler = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        AppData.getInstance().execute(scene, null);
-                    }
-                };
-            }
-            notifyDataSetChanged();
-        }
-
-        return true;
+        selectedItemPosition = pos;
+        notifyItemChanged(pos);
     }
 
     public static class DrawerItem {
@@ -259,6 +181,29 @@ public class DrawerAdapter extends BaseAdapter implements onCollectionUpdated<Sc
             mTitle = title;
             mSummary = summary;
             isHeader = false;
+        }
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView title;
+        public TextView summary;
+        public TextView headerTitle;
+        public ImageView image;
+        public View layout_item;
+        public boolean isHeader;
+
+        public ViewHolder(View itemView, boolean isHeader) {
+            super(itemView);
+            this.isHeader = isHeader;
+
+            if (isHeader) {
+                headerTitle = (TextView) itemView.findViewById(R.id.headerTitle);
+            } else {
+                title = (TextView) itemView.findViewById(R.id.title);
+                summary = (TextView) itemView.findViewById(R.id.summary);
+                image = (ImageView) itemView.findViewById(R.id.drawer_icon_bitmap);
+                layout_item = itemView.findViewById(R.id.drawer_list_item);
+            }
         }
     }
 }

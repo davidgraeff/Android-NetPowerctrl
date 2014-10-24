@@ -27,10 +27,10 @@ abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends Stora
         observers.remove(o);
     }
 
-    final protected void notifyObservers(ITEM item, ObserverUpdateActions actions) {
+    final protected void notifyObservers(ITEM item, ObserverUpdateActions actions, int position) {
         Iterator<onCollectionUpdated> it = observers.keySet().iterator();
         while (it.hasNext())
-            if (!it.next().updated(this, item, actions))
+            if (!it.next().updated(this, item, actions, position))
                 it.remove();
     }
 

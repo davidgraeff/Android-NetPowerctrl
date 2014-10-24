@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/menu_add_timer"
-        android:icon="@android:drawable/ic_menu_add"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_add_timer" />
-
-    <item
-        android:id="@+id/menu_remove_all_timer"
-        android:icon="@android:drawable/ic_menu_delete"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_remove_all" />
-
-    <item
-        android:id="@+id/refresh"
-        android:icon="@drawable/ic_menu_refresh"
-        android:showAsAction="always"
-        android:title="@string/menu_refresh" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/menu_help"
         android:icon="@android:drawable/ic_menu_help"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_help" />
+        android:title="@string/menu_help"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_add_timer"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/menu_add_timer"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_remove_all_timer"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/menu_remove_all"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/refresh"
+        android:icon="@drawable/ic_menu_refresh"
+        android:title="@string/menu_refresh"
+        app:showAsAction="never" />
 </menu>

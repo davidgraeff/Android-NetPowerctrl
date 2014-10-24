@@ -24,7 +24,6 @@ import android.widget.Toast;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -149,6 +148,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             });
         } else {
             getPreferenceScreen().removePreference(findPreference("select_background_image"));
+            getPreferenceScreen().removePreference(findPreference("show_background"));
         }
 
         //noinspection ConstantConditions
@@ -205,14 +205,13 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 Log.e("PREFERENCES", "Loading widget failed: " + String.valueOf(appWidgetId));
                 continue;
             }
-            DevicePort port = AppData.getInstance().findDevicePort(
-                    UUID.fromString(port_uuid));
+            DevicePort port = AppData.getInstance().findDevicePort(port_uuid);
             if (port == null) {
                 Log.e("PREFERENCES", "Port for widget not found: " + String.valueOf(appWidgetId));
                 continue;
             }
             widgetDataList.add(new WidgetData(
-                    port.device.DeviceName + ", " + port.getDescription(),
+                    port.device.DeviceName + ", " + port.getTitle(),
                     prefName, appWidgetId));
         }
 
@@ -223,7 +222,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 Bundle extra = new Bundle();
                 extra.putString("key", SharedPrefs.PREF_WIDGET_BASENAME);
                 extra.putInt("widgetId", -1);
-                MainActivity.getNavigationController().changeToFragment(WidgetPreferenceFragment.class.getName(), extra, true);
+                MainActivity.getNavigationController().changeToFragment(WidgetPreferenceFragment.class.getName(), extra);
                 return false;
             }
         });
@@ -239,8 +238,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             s.setFragment(WidgetPreferenceFragment.class.getName());
             s.setTitle(aWidgetDataList.data);
             s.setIcon(LoadStoreIconData.loadDrawable(getActivity(), LoadStoreIconData.uuidFromWidgetID(aWidgetDataList.widgetID),
-                    LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn,
-                    LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn)));
+                    LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn));
             lp.addPreference(s);
             s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
@@ -250,7 +248,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                     Bundle extra = new Bundle();
                     extra.putString("key", preference.getKey());
                     extra.putInt("widgetId", aWidgetDataList.widgetID);
-                    MainActivity.getNavigationController().changeToFragment(preference.getFragment(), extra, true);
+                    MainActivity.getNavigationController().changeToFragment(preference.getFragment(), extra);
                     return true;
                 }
             });

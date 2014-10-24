@@ -1,5 +1,6 @@
 package oly.netpowerctrl.scenes;
 
+import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -12,7 +13,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -25,10 +29,12 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.SortCriteriaDialog;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
+import oly.netpowerctrl.utils.controls.FloatingActionButton;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
@@ -174,6 +180,17 @@ public class ScenesFragment extends Fragment implements
         adapter.setAnimationController(animationController);
 
         setViewType(SharedPrefs.getInstance().getScenesViewType());
+
+        FloatingActionButton btnAddScene = (FloatingActionButton) view.findViewById(R.id.btnAdd);
+        btnAddScene.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent it = new Intent(getActivity(), EditSceneActivity.class);
+                it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
+                startActivity(it);
+            }
+        });
+
         if (!AppData.getInstance().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes_no_devices));
@@ -185,23 +202,15 @@ public class ScenesFragment extends Fragment implements
                     MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
                 }
             });
+            btnAddScene.setVisibility(View.GONE);
         } else {
+            AnimationController.animateFloatingButton(btnAddScene);
+
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes));
-            Button btnEmpty = ((Button) view.findViewById(R.id.btnAddScene));
-            btnEmpty.setVisibility(View.VISIBLE);
-            btnEmpty.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent it = new Intent(getActivity(), EditSceneActivity.class);
-                    it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                    startActivity(it);
-                }
-            });
         }
 
         mListView.setEmptyView(view.findViewById(android.R.id.empty));
-        //onConfigurationChanged(getResources().getConfiguration());
         return view;
     }
 

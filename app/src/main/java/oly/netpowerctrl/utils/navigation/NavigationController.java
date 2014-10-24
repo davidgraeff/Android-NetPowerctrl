@@ -1,6 +1,5 @@
 package oly.netpowerctrl.utils.navigation;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -9,14 +8,17 @@ import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import org.sufficientlysecure.donations.DonationsFragment;
 
@@ -32,9 +34,9 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.FeedbackDialog;
 import oly.netpowerctrl.outletsview.OutletsFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
-import oly.netpowerctrl.scenes.ScenesFragment;
 import oly.netpowerctrl.timer.TimerFragment;
 import oly.netpowerctrl.utils.DonateData;
+import oly.netpowerctrl.utils.RecyclerItemClickListener;
 import oly.netpowerctrl.utils.fragments.onFragmentBackButton;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 import oly.netpowerctrl.utils.notifications.InAppNotifications;
@@ -42,19 +44,21 @@ import oly.netpowerctrl.utils.notifications.InAppNotifications;
 /**
  * All navigation related functionality used by the main activity
  */
-public class NavigationController {
+public class NavigationController implements RecyclerItemClickListener.OnItemClickListener {
     private final ArrayList<DrawerStateChanged> observers = new ArrayList<>();
     private final List<BackStackEntry> backstack = new ArrayList<>();
-    private int drawerLastItemPosition = -1;
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private RecyclerView mRecyclerView;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerAdapter mDrawerAdapter;
     //private CharSequence mTitle;
     private boolean drawerControllableByMenuKey = false;
+    private WeakReference<ActionBarActivity> mDrawerActivity;
+
+    // Current
+    private int drawerLastItemPosition = -1;
     private Fragment currentFragment;
     private String currentFragmentClass;
-    private WeakReference<Activity> mDrawerActivity;
     private Bundle currentExtra;
 
     public Fragment getCurrentFragment() {
@@ -62,15 +66,15 @@ public class NavigationController {
     }
 
     public boolean isLoading() {
-        return (mDrawerList == null);
+        return (mRecyclerView == null);
     }
 
     public void setTitle(CharSequence mTitle) {
         //this.mTitle = mTitle;
-        Activity context = mDrawerActivity.get();
+        ActionBarActivity context = mDrawerActivity.get();
         if (context == null) // should never happen
             return;
-        ActionBar actionBar = context.getActionBar();
+        ActionBar actionBar = context.getSupportActionBar();
         if (actionBar == null) // should never happen
             return;
         actionBar.setTitle(mTitle);
@@ -102,7 +106,7 @@ public class NavigationController {
         }
     }
 
-    public void createDrawer(final Activity context, RestorePositionEnum restore) {
+    public void createDrawer(final ActionBarActivity context, RestorePositionEnum restore) {
         // Do restore only once
         if (restore == RestorePositionEnum.RestoreLastSaved && mDrawerLayout != null)
             return;
@@ -110,21 +114,23 @@ public class NavigationController {
         mDrawerActivity = new WeakReference<>(context);
         // References for the drawer
         mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) context.findViewById(R.id.left_drawer_list);
+        mRecyclerView = (RecyclerView) context.findViewById(R.id.left_drawer_list);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         // set a custom shadow that overlays the main content when the drawer opens
         if (mDrawerLayout != null)
             mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
 
-        mDrawerAdapter = new DrawerAdapter(context);
+        mDrawerAdapter = new DrawerAdapter();
         mDrawerAdapter.addHeader(context.getString(R.string.drawer_switch_title));
-        mDrawerAdapter.addItem(context.getString(R.string.drawer_overview), "",
-                OutletsFragment.class.getName(), false);
-
-        mDrawerAdapter.addItem(context.getString(R.string.drawer_scenes), "",
-                ScenesFragment.class.getName(), false);
-        mDrawerAdapter.usePositionForScenes();
+        mDrawerAdapter.addItem(context.getString(R.string.drawer_overview_list), "",
+                OutletsFragment.class.getName(), false).mExtra = OutletsFragment.createBundleForView(OutletsFragment.VIEW_AS_LIST);
+        mDrawerAdapter.addItem(context.getString(R.string.drawer_overview_grid), "",
+                OutletsFragment.class.getName(), false).mExtra = OutletsFragment.createBundleForView(OutletsFragment.VIEW_AS_GRID);
+        mDrawerAdapter.addItem(context.getString(R.string.drawer_overview_compact), "",
+                OutletsFragment.class.getName(), false).mExtra = OutletsFragment.createBundleForView(OutletsFragment.VIEW_AS_COMPACT);
 
         mDrawerAdapter.addItem(context.getString(R.string.drawer_timer), "",
                 TimerFragment.class.getName(), false);
@@ -154,8 +160,8 @@ public class NavigationController {
         mDrawerAdapter.addItem(context.getString(R.string.drawer_feedback), version,
                 FeedbackDialog.class.getName(), true);
 
-        mDrawerList.setAdapter(mDrawerAdapter);
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        mRecyclerView.setAdapter(mDrawerAdapter);
+        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(mRecyclerView.getContext(), this, null));
 
 
         if (mDrawerLayout != null) {
@@ -166,14 +172,15 @@ public class NavigationController {
             // Restore the last visited screen
             Bundle extra = SharedPrefs.getInstance().getFirstTabExtra();
             String className = SharedPrefs.getInstance().getFirstTab();
-            int pos = mDrawerAdapter.indexOf(className);
+            int pos = SharedPrefs.getInstance().getFirstTabPosition();
 
             if (className == null || className.isEmpty() || pos == -1) {
                 className = OutletsFragment.class.getName();
+                pos = mDrawerAdapter.indexOf(className);
                 extra = null;
             }
             //backstack.add(new BackStackEntry(className, null));
-            changeToFragment(className, extra, false);
+            changeToFragment(className, extra, false, pos);
         } else if (restore == RestorePositionEnum.RestoreAfterConfigurationChanged && currentFragmentClass != null) {
             context.getFragmentManager().beginTransaction().attach(currentFragment).commitAllowingStateLoss();
         }
@@ -191,7 +198,6 @@ public class NavigationController {
         mDrawerToggle = new ActionBarDrawerToggle(
                 context,                  /* host Activity */
                 mDrawerLayout,         /* DrawerLayout object */
-                R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
                 R.string.drawer_open,  /* "open drawer" description for accessibility */
                 R.string.drawer_close  /* "close drawer" description for accessibility */
         ) {
@@ -214,7 +220,7 @@ public class NavigationController {
             return;
 
         // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mRecyclerView);
         drawerControllableByMenuKey = menu.size() <= 2;
         if (drawerOpen)
             for (int i = 0; i < menu.size(); i++) {
@@ -229,10 +235,10 @@ public class NavigationController {
             return;
 
         if (drawerControllableByMenuKey) {
-            if (mDrawerLayout.isDrawerOpen(mDrawerList))
-                mDrawerLayout.closeDrawer(mDrawerList);
+            if (mDrawerLayout.isDrawerOpen(mRecyclerView))
+                mDrawerLayout.closeDrawer(mRecyclerView);
             else
-                mDrawerLayout.openDrawer(mDrawerList);
+                mDrawerLayout.openDrawer(mRecyclerView);
         }
     }
 
@@ -240,12 +246,12 @@ public class NavigationController {
         if (isLoading())
             return;
 
-        final int currentPosition = mDrawerList.getCheckedItemPosition();
-        if (currentPosition != -1 && currentPosition < mDrawerAdapter.getCount() &&
-                mDrawerAdapter.getItemViewType(currentPosition) != 0) {
-            DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(currentPosition);
-            if (!item.fragmentClassName.isEmpty() && !item.fragmentClassName.contains("Dialog"))
-                SharedPrefs.getInstance().setFirstTab(item.fragmentClassName, currentExtra);
+        if (drawerLastItemPosition != -1 && drawerLastItemPosition < mDrawerAdapter.getItemCount() &&
+                mDrawerAdapter.getItemViewType(drawerLastItemPosition) != 0) {
+            DrawerAdapter.DrawerItem item = mDrawerAdapter.getItem(drawerLastItemPosition);
+            if (!item.fragmentClassName.isEmpty() && !item.fragmentClassName.contains("Dialog")) {
+                SharedPrefs.getInstance().setFirstTab(item.fragmentClassName, currentExtra, drawerLastItemPosition);
+            }
         }
     }
 
@@ -262,17 +268,21 @@ public class NavigationController {
         if (backstack.size() > 0) {
             BackStackEntry entry = backstack.get(backstack.size() - 1);
             backstack.remove(backstack.size() - 1);
-            changeToFragment(entry.fragmentClass, entry.extra, false);
+            changeToFragment(entry.fragmentClass, entry.extra, false, entry.position);
             return true;
         }
         return false;
     }
 
     public void changeToFragment(String fragmentClassName) {
-        changeToFragment(fragmentClassName, null, true);
+        changeToFragment(fragmentClassName, null, true, mDrawerAdapter.indexOf(fragmentClassName));
     }
 
-    public void changeToFragment(String fragmentClassName, final Bundle extra, boolean addToBackstack) {
+    public void changeToFragment(String fragmentClassName, final Bundle extra) {
+        changeToFragment(fragmentClassName, extra, true, mDrawerAdapter.indexOf(fragmentClassName));
+    }
+
+    private void changeToFragment(String fragmentClassName, final Bundle extra, boolean addToBackstack, int position) {
         final Activity context = mDrawerActivity.get();
         if (context == null || fragmentClassName == null) // should never happen
             return;
@@ -281,20 +291,18 @@ public class NavigationController {
             int index = backstack.indexOf(fragmentClassName);
             if (index != -1)
                 backstack.remove(index);
-            backstack.add(new BackStackEntry(currentFragmentClass, currentExtra));
+            backstack.add(new BackStackEntry(currentFragmentClass, currentExtra, position));
             if (backstack.size() > 3)
                 backstack.remove(0);
         }
 
         boolean fragmentClassNameEquals = fragmentClassName.equals(currentFragmentClass);
 
-        int pos = mDrawerAdapter.indexOf(fragmentClassName);
-        if (pos != -1) {
-            DrawerAdapter.DrawerItem item = (DrawerAdapter.DrawerItem) mDrawerAdapter.getItem(pos);
+        if (position != -1 && position != drawerLastItemPosition) {
+            drawerLastItemPosition = position;
             // update selected item and title
-            mDrawerList.setItemChecked(pos, true);
-            setTitle(item.mTitle);
-            drawerLastItemPosition = pos;
+            mDrawerAdapter.setSelectedItem(drawerLastItemPosition);
+            setTitle(mDrawerAdapter.getItem(drawerLastItemPosition).mTitle);
         }
 
         if (!fragmentClassNameEquals) {
@@ -351,14 +359,6 @@ public class NavigationController {
         }
         ft.addToBackStack(null);
         ((DialogFragment) Fragment.instantiate(context, fragmentClassName)).show(ft, "dialog");
-
-        // Reset focus to last item
-        mDrawerList.post(new Runnable() {
-            @Override
-            public void run() {
-                mDrawerList.setItemChecked(drawerLastItemPosition, true);
-            }
-        });
     }
 
     public void changeToDialog(Activity context, DialogFragment fragment) {
@@ -370,22 +370,54 @@ public class NavigationController {
         }
         ft.addToBackStack(null);
         fragment.show(ft, "dialog");
-
-        // Reset focus to last item
-        mDrawerList.post(new Runnable() {
-            @Override
-            public void run() {
-                mDrawerList.setItemChecked(drawerLastItemPosition, true);
-            }
-        });
     }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        if (mDrawerAdapter.getItemViewType(position) == 0)
+            return;
+
+        Activity context = mDrawerActivity.get();
+        if (context == null) // should never happen
+            return;
+
+        DrawerAdapter.DrawerItem item = mDrawerAdapter.get(position);
+
+        // close the drawer
+        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mRecyclerView)) {
+            Handler mHandler = new Handler();
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mDrawerLayout.closeDrawer(mRecyclerView);
+                }
+            }, 150);
+        }
+
+        // First look at a click handler for that specific item
+        if (item.clickHandler != null) {
+            item.clickHandler.onClick(null);
+            return;
+        }
+
+        // No click handler: Should be a fragment change request
+        if (item.fragmentClassName == null || item.fragmentClassName.isEmpty())
+            return;
+
+        if (item.mDialog) {
+            changeToDialog(context, item.fragmentClassName);
+            return;
+        }
+
+        changeToFragment(item.fragmentClassName, item.mExtra, true, position);
+    }
+
 
     public enum RestorePositionEnum {
         NoRestore,
         RestoreLastSaved,
         RestoreAfterConfigurationChanged
     }
-
 
     public interface DrawerStateChanged {
         void drawerState(boolean open);
@@ -394,10 +426,12 @@ public class NavigationController {
     private static class BackStackEntry {
         final String fragmentClass;
         final Bundle extra;
+        public int position;
 
-        public BackStackEntry(String fragmentClassName, Bundle extra) {
+        public BackStackEntry(String fragmentClassName, Bundle extra, int position) {
             this.fragmentClass = fragmentClassName;
             this.extra = extra;
+            this.position = position;
         }
 
         @Override
@@ -412,57 +446,4 @@ public class NavigationController {
             return false;
         }
     }
-
-    /* The click listener for ListView in the navigation drawer */
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            if (mDrawerAdapter.getItemViewType(position) == 0)
-                return;
-
-            Activity context = mDrawerActivity.get();
-            if (context == null) // should never happen
-                return;
-
-            DrawerAdapter.DrawerItem item = mDrawerAdapter.get(position);
-
-            // close the drawer
-            if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mDrawerList)) {
-                Handler mHandler = new Handler();
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDrawerLayout.closeDrawer(mDrawerList);
-                    }
-                }, 150);
-            }
-
-            // First look at a click handler for that specific item
-            if (item.clickHandler != null) {
-                item.clickHandler.onClick(null);
-                if (drawerLastItemPosition == -1)
-                    return;
-                // Reset focus to last item
-                mDrawerList.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDrawerList.setItemChecked(drawerLastItemPosition, true);
-                    }
-                });
-                return;
-            }
-
-            // No click handler: Should be a fragment change request
-            if (item.fragmentClassName == null || item.fragmentClassName.isEmpty())
-                return;
-
-            if (item.mDialog) {
-                changeToDialog(context, item.fragmentClassName);
-                return;
-            }
-
-            changeToFragment(item.fragmentClassName, item.mExtra, true);
-        }
-    }
-
 }

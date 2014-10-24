@@ -24,4 +24,6 @@ public interface DevicePortSourceInterface {
     void setTargetAdapter(DevicePortsBaseAdapter adapter);
 
     boolean isAutomaticUpdateEnabled();
+
+    void addChainItem(DevicePortSourceInterface item);
 }

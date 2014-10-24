@@ -12,7 +12,7 @@
         android:contentDescription="@string/app_name"
         android:paddingBottom="16dp"
         android:scaleType="centerInside"
-        android:src="@drawable/stateunknown" />
+        android:src="@drawable/netpowerctrl" />
 
     <TextView
         android:id="@+id/widget_status"

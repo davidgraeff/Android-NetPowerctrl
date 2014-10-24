@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_removeGroup"
         android:icon="@drawable/ic_menu_delete"
-        android:showAsAction="collapseActionView|withText"
-        android:title="@string/menu_remove_group" />
+        android:title="@string/menu_remove_group"
+        app:showAsAction="collapseActionView|withText" />
 
     <item
         android:id="@+id/menu_renameGroup"
         android:icon="@drawable/ic_menu_edit"
-        android:showAsAction="collapseActionView|withText"
-        android:title="@string/menu_rename_group" />
+        android:title="@string/menu_rename_group"
+        app:showAsAction="collapseActionView|withText" />
 
 </menu>

@@ -45,6 +45,7 @@ public class LoadStoreIconData {
 
     private static final int PICK_IMAGE_BEFORE_KITKAT = 10;
     private static final int PICK_IMAGE_KITKAT = 11;
+    public static String defaultFallbackIconSet = "";
     private static WeakReference<Object> icon_callback_context_object;
 
     /**
@@ -65,30 +66,16 @@ public class LoadStoreIconData {
         return new BitmapDrawable(context.getResources(), image);
     }
 
-    public static UUID uuidForBackground() {
-        return new UUID(0xABCD, 0xABCD);
+    public static String uuidForBackground() {
+        return new UUID(0xABCD, 0xABCD).toString();
     }
 
-    public static UUID uuidFromWidgetID(int widgetId) {
-        return new UUID(0xABCD, (long) widgetId);
+    public static String uuidFromWidgetID(int widgetId) {
+        return new UUID(0xABCD, (long) widgetId).toString();
     }
 
-    public static UUID uuidFromDefaultWidget() {
-        return new UUID(0xABCE, 0);
-    }
-
-    public static int getResIdForState(IconState state) {
-        switch (state) {
-            case StateOff:
-                return R.drawable.stateoff;
-            case StateOn:
-                return R.drawable.stateon;
-            case StateUnknown:
-                return R.drawable.stateunknown;
-            case StateToggle:
-                return R.drawable.netpowerctrl;
-        }
-        return 0;
+    public static String uuidFromDefaultWidget() {
+        return new UUID(0xABCE, 0).toString();
     }
 
     public static File getImageDirectory(Context context, IconType iconType, IconState state) {
@@ -96,22 +83,22 @@ public class LoadStoreIconData {
         return new File(dir, iconType.name() + state.name());
     }
 
-    public static void init() {
+    public static void init(Context context) {
         { // Legacy dir support
             File dir = new File(App.instance.getFilesDir(), "images");
             File old_dir = App.instance.getDir("images", 0);
             if (old_dir.exists())
                 old_dir.renameTo(dir);
         }
+        defaultFallbackIconSet = SharedPrefs.getDefaultFallbackIconSet(context);
     }
 
-
-    public static void saveIcon(Context context, Bitmap bitmap, UUID uuid, IconType iconType, IconState state) {
+    public static void saveIcon(Context context, Bitmap bitmap, String uuid, IconType iconType, IconState state) {
         File myDir = getImageDirectory(context, iconType, state);
         //noinspection ResultOfMethodCallIgnored
         myDir.mkdirs();
 
-        String fileName = uuid.toString();
+        String fileName = uuid;
         File file;
 
         file = new File(myDir, fileName + ".jpg");
@@ -174,21 +161,35 @@ public class LoadStoreIconData {
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
     }
 
-    public static Drawable loadDrawable(Context context, UUID uuid, IconType iconType, IconState state, int default_resource) {
-        Bitmap b = loadIcon(context, uuid, iconType, state, default_resource);
+    public static Drawable loadDrawable(Context context, String uniqueID, IconType iconType, IconState state) {
+        Bitmap b = loadIcon(context, uniqueID, iconType, state);
+        if (b == null)
+            return null;
         return new BitmapDrawable(context.getResources(), b);
     }
 
-    public static Bitmap loadIcon(Context context, UUID uuid, IconType iconType, IconState state, int default_resource) {
+    public static Bitmap loadIcon(Context context, String uniqueID, IconType iconType, IconState state) {
         File myDir = getImageDirectory(context, iconType, state);
 
-        File file = new File(myDir, uuid.toString() + ".png");
+        File file = new File(myDir, uniqueID + ".png");
         if (!file.exists())
-            file = new File(myDir, uuid.toString() + ".jpg");
+            file = new File(myDir, uniqueID + ".jpg");
         if (!file.exists()) {
-            if (default_resource == 0)
-                return null;
-            return BitmapFactory.decodeResource(context.getResources(), default_resource);
+            try {
+                switch (state) {
+                    case StateOff:
+                        return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/off_" + defaultFallbackIconSet + ".png"));
+                    case OnlyOneState:
+                        return BitmapFactory.decodeResource(context.getResources(), R.drawable.netpowerctrl);
+                    case StateOn:
+                        return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/on_" + defaultFallbackIconSet + ".png"));
+                    case StateUnknown:
+                        return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/unknown_" + defaultFallbackIconSet + ".png"));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
         return BitmapFactory.decodeFile(file.getAbsolutePath());
     }
@@ -264,8 +265,8 @@ public class LoadStoreIconData {
         select_icon_dialog.setTitle(context.getString(R.string.dialog_icon_title));
         if (callback_context_object instanceof DevicePort) {
             DevicePort oi = (DevicePort) callback_context_object;
-            Drawable icon = LoadStoreIconData.loadDrawable(context, oi.uuid,
-                    LoadStoreIconData.IconType.DevicePortIcon, oi.getIconState(), 0);
+            Drawable icon = LoadStoreIconData.loadDrawable(context, oi.getUid(),
+                    LoadStoreIconData.IconType.DevicePortIcon, oi.getIconState());
             select_icon_dialog.setIcon(icon);
         }
         select_icon_dialog.setAdapter(adapter, new DialogInterface.OnClickListener() {
@@ -336,7 +337,9 @@ public class LoadStoreIconData {
     public static enum IconState {
         StateOn,
         StateOff,
-        StateUnknown, StateToggle
+        StateUnknown,
+        OnlyOneState,
+        StateNotApplicable // State does not apply e.g. for a background
     }
 
     public static interface IconSelected {

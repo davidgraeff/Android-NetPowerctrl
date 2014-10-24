@@ -14,7 +14,7 @@
 
     <Button
         android:id="@+id/action_mode_close_button"
-        style="?android:attr/actionModeCloseButtonStyle"
+        style="?android:attr/actionModeBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -26,19 +26,8 @@
         android:textColor="?android:attr/actionMenuTextColor" />
 
     <Button
-        android:id="@+id/action_mode_test_button"
-        style="?android:attr/actionModeCloseButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:scaleType="fitCenter"
-        android:text="@string/device_test"
-        android:textAppearance="?android:attr/actionMenuTextAppearance"
-        android:textColor="?android:attr/actionMenuTextColor" />
-
-    <Button
         android:id="@+id/action_mode_save_button"
-        style="?android:attr/actionModeCloseButtonStyle"
+        style="?android:attr/actionModeBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

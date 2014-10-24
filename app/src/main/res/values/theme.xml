@@ -1,41 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CustomLightTheme" parent="android:Theme.Holo.Light">
-        <item name="drawer_item_background">#F3F3F4</item>
-        <item name="list_item_background">@android:color/darker_gray</item>
+    <style name="Theme.CustomLightTheme" parent="Theme.AppCompat.Light">
+        <item name="drawer_item_background">@color/drawer</item>
+        <item name="activity_background">@android:color/background_light</item>
         <item name="preferences_title_light">#66000000</item>
         <item name="android:windowIsTranslucent">false</item>
         <item name="text_transparent_background">@drawable/transparent_text_light</item>
         <item name="item_selector">@drawable/item_selector_light</item>
         <item name="segment_button">@drawable/segment_button_light</item>
+        <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="segment_radio_left">@drawable/segment_radio_left_light</item>
         <item name="segment_radio_middle">@drawable/segment_radio_middle_light</item>
         <item name="segment_radio_right">@drawable/segment_radio_right_light</item>
         <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
-        <item name="android:actionBarItemBackground">
-            @drawable/selectable_background_customlighttheme
-        </item>
-        <item name="android:popupMenuStyle">@style/PopupMenu.Customlighttheme</item>
-        <item name="android:dropDownListViewStyle">@style/DropDownListView.Customlighttheme</item>
-        <item name="android:actionBarTabStyle">@style/ActionBarTabStyle.Customlighttheme</item>
-        <item name="android:actionDropDownStyle">@style/DropDownNav.Customlighttheme</item>
-        <item name="android:actionBarStyle">@style/ActionBar.Solid.Customlighttheme</item>
-        <item name="android:actionModeBackground">@drawable/cab_background_top_customlighttheme
-        </item>
-        <item name="android:actionModeSplitBackground">
-            @drawable/cab_background_bottom_customlighttheme
-        </item>
-        <item name="android:actionModeCloseButtonStyle">
-            @style/ActionButton.CloseMode.Customlighttheme
-        </item>
         <item name="colored_button">@style/Colored_Button.Customlighttheme</item>
+
+        <item name="colorPrimary">@color/colorPrimaryLight</item>
+        <item name="colorPrimaryDark">@color/colorSecondaryLight</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:alertDialogStyle">@style/CustomDialogTheme</item>
     </style>
 
-    <style name="Theme.CustomDarkTheme" parent="android:Theme.Holo">
+    <style name="Theme.CustomDarkTheme" parent="Theme.AppCompat">
         <item name="drawer_item_background">#323232</item>
-        <item name="list_item_background">#323232</item>
+        <item name="activity_background">@color/colorBackgroundDark</item>
+        <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>
         <item name="text_transparent_background">@drawable/transparent_text_dark</item>
         <item name="item_selector">@drawable/item_selector_dark</item>
@@ -45,18 +37,40 @@
         <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
         <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list_dark</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_dark</item>
-        <item name="android:actionBarStyle">@style/CustomDarkThemeActionBar</item>
         <item name="colored_button">@android:style/Widget.Holo.Button</item>
+
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/colorSecondaryDark</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:alertDialogStyle">@style/CustomDialogTheme</item>
     </style>
 
-
-    <style name="ActionBar.Solid.Customlighttheme" parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
-        <item name="android:background">@drawable/ab_background_textured_customlighttheme</item>
-        <item name="android:backgroundStacked">@drawable/ab_stacked_solid_customlighttheme</item>
-        <item name="android:backgroundSplit">@drawable/ab_background_textured_customlighttheme
-        </item>
-        <item name="android:progressBarStyle">@style/ProgressBar.Customlighttheme</item>
+    <style name="CustomDialogTheme" parent="@android:style/Theme.Dialog">
+        <item name="android:bottomBright">?attr/colorPrimary</item>
+        <!--<item name="android:bottomDark">?attr/colorPrimary</item>-->
+        <item name="android:bottomMedium">?attr/colorPrimary</item>
+        <item name="android:centerBright">?attr/colorPrimary</item>
+        <!--<item name="android:centerDark">?attr/colorPrimary</item>-->
+        <item name="android:centerMedium">?attr/colorPrimary</item>
+        <item name="android:fullBright">@android:color/holo_orange_light</item>
+        <item name="android:fullDark">@android:color/holo_orange_light</item>
+        <item name="android:topBright">@android:color/holo_blue_bright</item>
+        <item name="android:topDark">@android:color/holo_blue_bright</item>
     </style>
+
+    <style name="ToolBarStyle" parent="@style/Base.Widget.AppCompat.ActionBar">
+        <item name="android:background">?attr/colorPrimaryDark</item>
+        <item name="titleTextAppearance">@android:style/TextAppearance</item>
+    </style>
+
+    <!--<style name="ActionBar.Solid.Customlighttheme" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">-->
+    <!--<item name="android:background">@drawable/ab_background_textured_customlighttheme</item>-->
+    <!--<item name="android:backgroundStacked">@drawable/ab_stacked_solid_customlighttheme</item>-->
+    <!--<item name="android:backgroundSplit">@drawable/ab_background_textured_customlighttheme-->
+    <!--</item>-->
+    <!--<item name="android:progressBarStyle">@style/ProgressBar.Customlighttheme</item>-->
+    <!--</style>-->
 
     <style name="Colored_Button.Customlighttheme" parent="android:Widget.Holo.Light.Button">
         <item name="android:background">@drawable/colored_button</item>
@@ -68,54 +82,25 @@
         <item name="android:shadowColor">@android:color/black</item>
     </style>
 
-    <style name="ActionButton.CloseMode.Customlighttheme" parent="@android:style/Widget.Holo.Light.ActionButton.CloseMode">
-        <item name="android:background">@drawable/btn_cab_done_customlighttheme</item>
-    </style>
-
-    <style name="DropDownListView.Customlighttheme" parent="@android:style/Widget.Holo.Light.ListView.DropDown">
-        <item name="android:listSelector">@drawable/selectable_background_customlighttheme</item>
-    </style>
-
-    <style name="PopupMenu.Customlighttheme" parent="@android:style/Widget.Holo.Light.ListPopupWindow">
-        <item name="android:popupBackground">@drawable/menu_dropdown_panel_customlighttheme</item>
-    </style>
-
-    <style name="DropDownNav.Customlighttheme" parent="@android:style/Widget.Holo.Light.Spinner">
-        <item name="android:background">@drawable/spinner_background_ab_customlighttheme</item>
-        <item name="android:popupBackground">@drawable/menu_dropdown_panel_customlighttheme</item>
-        <item name="android:dropDownSelector">@drawable/selectable_background_customlighttheme
-        </item>
-    </style>
-
-    <style name="ProgressBar.Customlighttheme" parent="@android:style/Widget.Holo.Light.ProgressBar.Horizontal">
-        <item name="android:progressDrawable">@drawable/progress_horizontal_customlighttheme</item>
-    </style>
-
-    <style name="ActionBarTabStyle.Customlighttheme" parent="@android:style/Widget.Holo.Light.ActionBar.TabView">
-        <item name="android:background">@drawable/tab_indicator_ab_customlighttheme</item>
-    </style>
-
-
-    <style name="Theme.Transparent" parent="android:Theme.Translucent.NoTitleBar">
+    <style name="Theme.AppCompat.Translucent">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
-    <style name="Theme.StartTheme" parent="android:Theme.Holo">
+    <style name="Theme.StartTheme" parent="Theme.AppCompat">
+        <item name="windowActionBar">false</item>
+        <item name="windowActionModeOverlay">true</item>
+        action
+        <item name="toolbar_style">@style/Base.Widget.AppCompat.ActionBar</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
-    </style>
-
-    <!-- ActionBar styles -->
-    <style name="CustomLightThemeActionBar" parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
-        <item name="android:background">@drawable/actionbar_background_textured</item>
-    </style>
-
-    <style name="CustomDarkThemeActionBar" parent="@android:style/Widget.Holo.ActionBar.Solid">
-        <item name="android:background">@drawable/actionbar_background_textured_dark</item>
     </style>
 
     <style name="Drawer" parent="@android:style/Widget.TextView" />

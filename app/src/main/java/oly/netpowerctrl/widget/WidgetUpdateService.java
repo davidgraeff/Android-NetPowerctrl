@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -30,6 +29,7 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.device_ports.ExecutableType;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.listen_service.ListenService;
@@ -170,8 +170,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
                 String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
                 DevicePort port = null;
                 if (port_uuid != null)
-                    port = AppData.getInstance().findDevicePort(
-                            UUID.fromString(port_uuid));
+                    port = AppData.getInstance().findDevicePort(port_uuid);
 
                 if (port == null) {
                     Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId));
@@ -202,7 +201,9 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     private void setWidgetStateBroken(int appWidgetId) {
         @SuppressWarnings("ConstantConditions")
         RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget);
-        views.setImageViewResource(R.id.widget_image, R.drawable.stateunknown);
+        views.setImageViewBitmap(R.id.widget_image,
+                LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromDefaultWidget(),
+                        LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown));
         views.setTextViewText(R.id.widget_name, getString(R.string.error_widget_device_removed));
         views.setViewVisibility(R.id.widget_status, View.GONE);
         views.setViewVisibility(R.id.widget_inProgress, View.GONE);
@@ -223,8 +224,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     private void executeSingleAction(String port_uuid_string, final int command) {
-        final UUID port_uuid = UUID.fromString(port_uuid_string);
-        final DevicePort port = AppData.getInstance().findDevicePort(port_uuid);
+        final DevicePort port = AppData.getInstance().findDevicePort(port_uuid_string);
         if (port == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             return;
@@ -274,7 +274,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         Intent clickIntent = new Intent(this, WidgetUpdateService.class);
-        clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, oi.uuid.toString());
+        clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, oi.getUid());
         clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, DevicePort.TOGGLE);
         clickIntent.putExtra(DeviceWidgetProvider.EXTRA_WIDGET_COMMAND, CLICK_WIDGET);
         PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), clickIntent, 0);
@@ -298,7 +298,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         // Do not show a status text line ("on"/"off") for a simple trigger
-        if (oi.getType() == DevicePort.DevicePortType.TypeButton)
+        if (oi.getType() == ExecutableType.TypeButton)
             widget_show_status = false;
 
         // Manipulate view
@@ -327,7 +327,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             string_res = R.string.widget_inProgress;
         }
 
-        views.setTextViewText(R.id.widget_name, oi.getDescription());
+        views.setTextViewText(R.id.widget_name, oi.getTitle());
         views.setTextViewText(R.id.widget_status, this.getString(string_res));
 
         // If the device is not reachable there is no sense in assigning a click event pointing to
@@ -341,12 +341,10 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         Bitmap bitmap;
         if (widget_use_default)
             bitmap = LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromDefaultWidget(),
-                    LoadStoreIconData.IconType.WidgetIcon, iconState,
-                    LoadStoreIconData.getResIdForState(iconState));
+                    LoadStoreIconData.IconType.WidgetIcon, iconState);
         else
             bitmap = LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
-                    LoadStoreIconData.IconType.WidgetIcon, iconState,
-                    LoadStoreIconData.getResIdForState(iconState));
+                    LoadStoreIconData.IconType.WidgetIcon, iconState);
         views.setImageViewBitmap(R.id.widget_image, bitmap);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -359,13 +357,13 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     @Override
     public void onObserverDeviceUpdated(Device device) {
-        updated(null, device, ObserverUpdateActions.UpdateAction);
+        updated(null, device, ObserverUpdateActions.UpdateAction, -1);
     }
 
     @Override
     public void onObserverJobFinished(List<Device> timeout_devices) {
         for (Device device : timeout_devices) {
-            updated(null, device, ObserverUpdateActions.UpdateAction);
+            updated(null, device, ObserverUpdateActions.UpdateAction, -1);
         }
     }
 
@@ -414,7 +412,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     @Override
-    public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action) {
+    public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action, int position) {
         //Log.w("widget", di != null ? di.DeviceName : "empty di");
         if (device == null)
             return true;

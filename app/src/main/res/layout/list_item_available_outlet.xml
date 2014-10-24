@@ -15,7 +15,7 @@
     android:paddingRight="@dimen/list_inner_padding">
 
     <TextView
-        android:id="@+id/text1"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -29,8 +29,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@id/text1"
-        android:layout_toRightOf="@id/text1"
+        android:layout_toEndOf="@id/title"
+        android:layout_toRightOf="@id/title"
         android:singleLine="true"
         android:textAppearance="@android:style/TextAppearance.Small" />
 

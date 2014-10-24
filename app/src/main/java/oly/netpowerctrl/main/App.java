@@ -13,6 +13,7 @@ import org.acra.sender.HttpSender;
 
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.utils.AndroidStatusBarNotification;
 
 /**
@@ -77,8 +78,8 @@ public class App extends Application {
         super.onCreate();
         ACRA.init(this);
         setErrorReportContentCrash();
+        LoadStoreIconData.init(this);
         AndroidStatusBarNotification.init(this);
-
     }
 
 }

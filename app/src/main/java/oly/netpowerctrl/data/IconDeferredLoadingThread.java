@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import java.lang.ref.WeakReference;
-import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.main.App;
@@ -29,7 +28,7 @@ public class IconDeferredLoadingThread extends Thread {
             try {
                 IconItem j = q.take();
                 j.setFinalBitmap(LoadStoreIconData.loadDrawable(j.context, j.uuid,
-                        j.iconType, j.state, j.default_resource));
+                        j.iconType, j.state));
             } catch (InterruptedException e) {
                 q.clear();
                 return;
@@ -46,21 +45,19 @@ public class IconDeferredLoadingThread extends Thread {
      * ViewHolder and the bitmap index.
      */
     public static class IconItem {
-        private final UUID uuid;
+        private final String uuid;
         private final LoadStoreIconData.IconType iconType;
         private final LoadStoreIconData.IconState state;
-        private final int default_resource;
         private final WeakReference<IconLoaded> target;
         private final int position;
         private final Context context;
 
-        public IconItem(Context context, UUID uuid, LoadStoreIconData.IconType iconType, LoadStoreIconData.IconState state,
-                        int default_resource, IconLoaded target, int position) {
+        public IconItem(Context context, String uuid, LoadStoreIconData.IconType iconType, LoadStoreIconData.IconState state,
+                        IconLoaded target, int position) {
             this.context = context;
             this.uuid = uuid;
             this.iconType = iconType;
             this.state = state;
-            this.default_resource = default_resource;
             this.target = new WeakReference<>(target);
             this.position = position;
         }

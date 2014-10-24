@@ -45,11 +45,11 @@ public class BasicTests extends AndroidTestCase {
         c.onDeviceUpdated(TestObjects.createDevice());
 
         assertEquals(c.deviceCollection.size(), 0);
-        assertEquals(c.newDevices.size(), 1);
+        assertEquals(c.unconfiguredDeviceCollection.size(), 1);
 
-        c.addToConfiguredDevices(getContext(), c.newDevices.get(0));
+        c.addToConfiguredDevices(getContext(), c.unconfiguredDeviceCollection.get(0));
 
-        assertEquals(c.newDevices.size(), 0);
+        assertEquals(c.unconfiguredDeviceCollection.size(), 0);
         assertEquals(c.deviceCollection.size(), 1);
     }
 }

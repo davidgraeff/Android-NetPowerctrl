@@ -1,19 +1,17 @@
 package oly.netpowerctrl.scenes;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -25,10 +23,12 @@ import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_ports.DevicePort;
 import oly.netpowerctrl.device_ports.DevicePortSourceConfigured;
-import oly.netpowerctrl.device_ports.DevicePortsCreateSceneAdapter;
+import oly.netpowerctrl.device_ports.DevicePortsBaseAdapter;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
+import oly.netpowerctrl.device_ports.ExecutableAdapterItem;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.AndroidShortcuts;
+import oly.netpowerctrl.utils.RecyclerItemClickListener;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
@@ -36,7 +36,8 @@ import oly.netpowerctrl.utils.controls.onListItemElementClicked;
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditSceneActivity extends Activity implements onListItemElementClicked, ActivityWithIconCache, onEditSceneBasicsChanged {
+public class EditSceneActivity extends ActionBarActivity
+        implements onListItemElementClicked, ActivityWithIconCache, onEditSceneBasicsChanged {
 
     /**
      * We pass arguments to this activity via the intent extra bundle.
@@ -52,7 +53,7 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
     boolean reInitUIDone = false;
     private View btnDone;
     private DevicePortsListAdapter adapter_available;
-    private DevicePortsCreateSceneAdapter adapter_included;
+    private SceneElementsAdapter adapter_included;
     // Scene and flag variables
     private Scene scene;
     private boolean isLoaded = false;
@@ -80,14 +81,6 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         mIconCache.start();
         reInitUI();
 
-        //set the actionbar to use the custom view (can also be done with a style)
-        ActionBar bar = getActionBar();
-        assert bar != null;
-        bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
-                ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
-        bar.setHomeButtonEnabled(true);
-        bar.setCustomView(R.layout.actionbar_create_scene_done);
-
         btnDone = findViewById(R.id.action_mode_save_button);
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,6 +104,11 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
 
         // set content view, get references to widgets
         setContentView(R.layout.activity_create_scene);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
 
         // Show the included and available list for the scene. Both are fragments. Either in a
         // viewPager (small width) or both visible at the same time.
@@ -169,8 +167,8 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
 
     private void loadContent() {
         DevicePortSourceConfigured s = new DevicePortSourceConfigured();
-        adapter_available = new DevicePortsListAdapter(this, false, s, mIconCache, true);
-        adapter_included = new DevicePortsCreateSceneAdapter(this, mIconCache);
+        adapter_available = new DevicePortsListAdapter(false, s, mIconCache, true);
+        adapter_included = new SceneElementsAdapter(this);
 
         Intent it = getIntent();
         if (it != null) {
@@ -198,7 +196,7 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         }
 
         // Load current set of available outlets
-        adapter_available.removeAll(adapter_included, true);
+        removeIncludedFromAvailable(adapter_available, adapter_included);
 
         if (scene == null) {
             scene = new Scene();
@@ -207,29 +205,22 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         // Add click listener for the remove button on each included action
         adapter_included.setListItemElementClickedListener(this);
 
-        // Add click listener to available gridGrid to move the clicked action
-        // to the included gridView.
-        fragment_available.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        // Add click listener to available list to move the clicked action
+        // to the included list.
+        fragment_available.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                DevicePort oi = adapter_available.getDevicePort(position);
+            public void onItemClick(View view, int position) {
+                DevicePort oi = (DevicePort) adapter_available.getItem(position).getExecutable();
                 if (oi == null)
                     return;
-                fragment_available.dismissItem(position);
-                adapter_included.addItem(oi, DevicePort.TOGGLE, true);
-                fragment_included.notifyDataSetChanged();
-                invalidateOptionsMenu();
+                adapter_available.removeAt(position);
+                adapter_included.addItem(oi, DevicePort.TOGGLE);
+                onNameChanged();
             }
-        });
+        }, null));
 
-        if (isSceneNotShortcut) {
-            if (isLoaded) {
-                setTitle(R.string.title_scene_edit);
-                onIconChanged(LoadStoreIconData.loadIcon(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown, 0));
-            } else
-                setTitle(R.string.title_scene);
-        } else {
-            setTitle(R.string.title_shortcut);
+        if (isSceneNotShortcut && isLoaded) {
+            onIconChanged(LoadStoreIconData.loadIcon(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState));
         }
 
         onNameChanged();
@@ -242,9 +233,27 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         fragment_basics.setOnBasicsChangedListener(this);
     }
 
+    private void removeIncludedFromAvailable(DevicePortsBaseAdapter available, SceneElementsAdapter included) {
+        // ToBeRemoved will be an ordered list of indecies to be removed
+        int[] toBeRemoved = new int[available.mItems.size()];
+        int lenToBeRemoved = 0;
+        for (int index = 0; index < available.mItems.size(); ++index) {
+            for (ExecutableAdapterItem adapter_list_item : included.mItems) {
+                if (adapter_list_item.getExecutable() != null &&
+                        adapter_list_item.getExecutableUid().equals(available.mItems.get(index).getExecutableUid())) {
+                    toBeRemoved[lenToBeRemoved] = index;
+                    lenToBeRemoved++;
+                }
+            }
+        }
+        // Remove now
+        for (int i = lenToBeRemoved - 1; i >= 0; --i)
+            available.removeAt(toBeRemoved[i]);
+    }
+
     private void save_and_close() {
         // Generate list of checked items
-        scene.sceneItems = adapter_included.getScene();
+        scene.sceneItems = SceneFactory.scenesFromList(adapter_included);
         scene.setMaster(adapter_included.getMaster());
         if (scene.sceneName.isEmpty() || scene.length() == 0)
             return;
@@ -276,10 +285,8 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
      */
     @Override
     public void onListItemElementClicked(View v, int position) {
-        adapter_available.addItem(adapter_included.getDevicePort(position), DevicePort.TOGGLE, true);
-        fragment_available.notifyDataSetChanged();
-        fragment_included.dismissItem(position);
-        invalidateOptionsMenu();
+        adapter_available.addItem(adapter_included.take(position).getExecutable(), DevicePort.TOGGLE);
+        onNameChanged();
     }
 
     /* Called whenever we call invalidateOptionsMenu(). Enables or disables the
@@ -289,15 +296,8 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
         if (scene == null)
             return super.onPrepareOptionsMenu(menu);
 
-        boolean en = (adapter_included.getCount() != 0) && scene.sceneName.length() > 0;
+        boolean en = (adapter_included.getItemCount() != 0) && scene.sceneName.length() > 0;
         btnDone.setVisibility(en ? View.VISIBLE : View.GONE);
-        TextView text = (TextView) findViewById(R.id.hintText);
-        if (scene.sceneName.length() == 0) {
-            text.setText(getString(R.string.error_scene_no_name));
-        } else if (adapter_included.getCount() == 0)
-            text.setText(getString(R.string.error_scene_no_actions));
-
-        text.setVisibility(en ? View.GONE : View.VISIBLE);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -314,8 +314,30 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
      */
     @Override
     public void onNameChanged() {
+        String sceneName = scene.sceneName;
+
+        if (sceneName.length() == 0)
+            sceneName = getString(R.string.title_scene_no_name);
+
+        if (isSceneNotShortcut) {
+            if (isLoaded) {
+                setTitle(getString(R.string.title_scene_edit, sceneName));
+            } else
+                setTitle(getString(R.string.title_scene_create, sceneName));
+        } else {
+            setTitle(getString(R.string.title_shortcut, sceneName));
+        }
+
         //noinspection ConstantConditions
-        getActionBar().setSubtitle(scene.sceneName.length() == 0 ? getString(R.string.scene_no_name) : scene.sceneName);
+        ActionBar actionBar = getSupportActionBar();
+
+        if (adapter_included.getItemCount() == 0)
+            actionBar.setSubtitle(getString(R.string.error_scene_no_actions));
+        else if (scene.sceneName.length() == 0)
+            actionBar.setSubtitle(getString(R.string.error_scene_no_name));
+        else
+            actionBar.setSubtitle("");
+
         invalidateOptionsMenu();
     }
 
@@ -323,11 +345,11 @@ public class EditSceneActivity extends Activity implements onListItemElementClic
     @Override
     public void onIconChanged(Bitmap icon) {
         scene_icon = icon;
-        if (icon == null) {
-            getActionBar().setIcon(getApplicationInfo().icon);
-        } else
-            getActionBar().setIcon(new BitmapDrawable(getResources(), icon));
-
+//        ActionBar actionBar = getSupportActionBar();
+//        if (icon == null) {
+//            actionBar.setIcon(getApplicationInfo().icon);
+//        } else
+//            actionBar.setIcon(new BitmapDrawable(getResources(), icon));
     }
 
     @Override

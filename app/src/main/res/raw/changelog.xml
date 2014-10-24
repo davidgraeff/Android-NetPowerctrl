@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion changeDate="21. Oktober 2014" versionName="6.4">
+        <changelogimprovement>Hintergrund nur für Android 4.4+ aktivierbar</changelogimprovement>
+    </changelogversion>
+
     <changelogversion changeDate="12. Oktober 2014" versionName="6.3">
         <changelogimprovement>Fullscreen Modus</changelogimprovement>
         <changelogimprovement>Hintergrundbild wählbar</changelogimprovement>
@@ -29,7 +33,7 @@
     </changelogversion>
 
     <changelogversion changeDate="22. September 2014" versionName="5.10">
-    <changelogimprovement>Verbesserte Datenverarbeitung</changelogimprovement>
+        <changelogimprovement>Verbesserte Datenverarbeitung</changelogimprovement>
         <changelogimprovement>Nachrichten wie die Aktualisierungsbenachrichtigung werden
             unauffälliger dargestellt
         </changelogimprovement>
@@ -92,7 +96,7 @@
     </changelogversion>
 
     <changelogversion changeDate="22. August 2014" versionName="5.7">
-    <changelogbug>Absturz bei Start behoben (IllegalStateException)</changelogbug>
+        <changelogbug>Absturz bei Start behoben (IllegalStateException)</changelogbug>
         <changelogbug>Auflösen von nicht numerischen Hostnamen zu IP-Adressen wird jetzt an der
             richtigen Stelle durchgeführt (NetworkOnMainThreadException)
         </changelogbug>
@@ -106,7 +110,7 @@
     </changelogversion>
 
     <changelogversion changeDate="20. August 2014" versionName="5.6">
-    <changelogbug>Deutlicher Hinweis in der Übersicht, wenn sich der Hintergrunddienst im
+        <changelogbug>Deutlicher Hinweis in der Übersicht, wenn sich der Hintergrunddienst im
             Energiesparmodus befindet
         </changelogbug>
         <changelogbug>Geräte können wieder manuell erstellt werden</changelogbug>

@@ -59,13 +59,13 @@ public class GroupsAdapter extends BaseAdapter implements onCollectionUpdated<Gr
         Group data = groupCollection.get(position);
 
         assert convertView != null;
-        TextView tvName = (TextView) convertView.findViewById(R.id.text1);
+        TextView tvName = (TextView) convertView.findViewById(R.id.title);
         tvName.setText(data.name);
 
         ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
         if (data.bitmap == null) {
-            data.bitmap = LoadStoreIconData.loadIcon(context, data.uuid,
-                    LoadStoreIconData.IconType.GroupIcon, LoadStoreIconData.IconState.StateUnknown, R.drawable.stateon);
+            data.bitmap = LoadStoreIconData.loadIcon(context, data.uuid.toString(),
+                    LoadStoreIconData.IconType.GroupIcon, LoadStoreIconData.IconState.OnlyOneState);
         }
 
         image.setImageBitmap(data.bitmap);
@@ -73,7 +73,7 @@ public class GroupsAdapter extends BaseAdapter implements onCollectionUpdated<Gr
     }
 
     @Override
-    public boolean updated(GroupCollection groupCollection, Group group, ObserverUpdateActions action) {
+    public boolean updated(GroupCollection groupCollection, Group group, ObserverUpdateActions action, int position) {
         notifyDataSetChanged();
         return true;
     }

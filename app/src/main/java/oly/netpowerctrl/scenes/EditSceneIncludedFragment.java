@@ -5,16 +5,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_ports.DevicePortsCreateSceneAdapter;
+import oly.netpowerctrl.device_ports.AdapterFragment;
 import oly.netpowerctrl.device_ports.DevicePortsListAdapter;
-import oly.netpowerctrl.device_ports.DevicePortsListFragment;
 
 /**
  */
-public class EditSceneIncludedFragment extends DevicePortsListFragment {
+public class EditSceneIncludedFragment extends AdapterFragment<SceneElementsAdapter> {
     private boolean isTwoPaneFragment;
     private DevicePortsListAdapter adapter_available;
 
@@ -29,7 +27,7 @@ public class EditSceneIncludedFragment extends DevicePortsListFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if (mAdapter != null && mAdapter.getCount() > 0)
+        if (mAdapter != null && mAdapter.getItemCount() > 0)
             inflater.inflate(R.menu.scene_included_actions, menu);
     }
 
@@ -45,20 +43,21 @@ public class EditSceneIncludedFragment extends DevicePortsListFragment {
         final View view = getView();
         assert view != null;
 
-        mListView.setEmptyView(view.findViewById(R.id.empty));
-        TextView textView = (TextView) view.findViewById(R.id.empty_text);
-        if (isTwoPaneFragment)
-            textView.setText(R.string.scene_create_include_twopane);
-        else
-            textView.setText(R.string.scene_create_include_onepane);
-        textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_media_ff, 0);
+        //TODO checkEmpty
+//        mRecyclerView.setEmptyView(view.findViewById(R.id.empty));
+//        TextView textView = (TextView) view.findViewById(R.id.empty_text);
+//        if (isTwoPaneFragment)
+//            textView.setText(R.string.scene_create_include_twopane);
+//        else
+//            textView.setText(R.string.scene_create_include_onepane);
+//        textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_media_ff, 0);
     }
 
     /*
  * ActionBar icon clicked
  */
     public boolean onOptionsItemSelected(MenuItem item) {
-        DevicePortsCreateSceneAdapter adapter_included = (DevicePortsCreateSceneAdapter) mAdapter;
+        SceneElementsAdapter adapter_included = mAdapter;
         switch (item.getItemId()) {
             case R.id.menu_switch_all_on:
                 adapter_included.switchAllOn();

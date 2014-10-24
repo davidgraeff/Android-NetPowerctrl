@@ -2,17 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/activity_background"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/hintText"
+    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/toolbar_actionbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?drawer_item_background"
-        android:gravity="start"
-        android:padding="5dp"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:visibility="gone" />
+        android:minHeight="?attr/actionBarSize"
+        app:theme="?attr/toolbar_style">
+
+        <include layout="@layout/actionbar_save_done_icon" />
+
+    </android.support.v7.widget.Toolbar>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
@@ -25,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
-            android:background="#33b5e5"
+            android:background="?attr/colorPrimaryDark"
             android:paddingBottom="4dp"
             android:paddingTop="4dp"
             android:textColor="#fff" />

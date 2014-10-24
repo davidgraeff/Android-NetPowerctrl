@@ -19,9 +19,9 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
         if (item == null)
             return;
         item.bitmap = bitmap;
-        LoadStoreIconData.saveIcon(context, bitmap, item.uuid,
+        LoadStoreIconData.saveIcon(context, bitmap, item.uuid.toString(),
                 LoadStoreIconData.IconType.GroupIcon, LoadStoreIconData.IconState.StateUnknown);
-        notifyObservers(item, ObserverUpdateActions.UpdateAction);
+        notifyObservers(item, ObserverUpdateActions.UpdateAction, -1);
     }
 
     /**
@@ -41,7 +41,7 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
         items.add(group);
         if (storage != null)
             storage.save(this, group);
-        notifyObservers(group, ObserverUpdateActions.AddAction);
+        notifyObservers(group, ObserverUpdateActions.AddAction, items.size() - 1);
         return group_uuid;
     }
 
@@ -68,16 +68,20 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
         Group group;
         if (index == -1) {
             group = new Group(group_uuid, name);
+            index = items.size();
             items.add(group);
+
+            notifyObservers(group, ObserverUpdateActions.AddAction, index);
+
         } else {
             group = items.get(index);
             group.name = name;
+
+            notifyObservers(group, ObserverUpdateActions.UpdateAction, index);
         }
 
         if (storage != null)
             storage.save(this, group);
-
-        notifyObservers(group, ObserverUpdateActions.UpdateAction);
     }
 
     public boolean remove(UUID group_uuid) {
@@ -90,7 +94,7 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
         if (storage != null)
             storage.remove(this, group);
 
-        notifyObservers(group, ObserverUpdateActions.RemoveAction);
+        notifyObservers(group, ObserverUpdateActions.RemoveAction, index);
         return true;
     }
 

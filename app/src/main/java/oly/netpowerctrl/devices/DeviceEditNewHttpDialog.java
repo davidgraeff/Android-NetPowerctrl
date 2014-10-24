@@ -40,7 +40,7 @@ public class DeviceEditNewHttpDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle(getString(R.string.outlet_edit_title, device.DeviceName));
-        //builder.setMessage(getString(R.string.outlet_rename_message, device.getDescription()));
+        //builder.setMessage(getString(R.string.outlet_rename_message, device.getTitle()));
 
         progressBar = (ProgressBar) rootView.findViewById(R.id.connection_progressbar);
         newHost = (EditText) rootView.findViewById(R.id.device_host);

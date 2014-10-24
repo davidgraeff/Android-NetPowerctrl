@@ -33,10 +33,11 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     public final static String PREF_background = "show_background";
     public final static String PREF_fullscreen = "fullscreen";
     public final static String PREF_show_persistent_notification = "show_persistent_notification";
+    public final static String PREF_default_fallback_icon_set = "default_fallback_icon_set";
+
     private final static int PREF_CURRENT_VERSION = 4;
     private final static String firstTabExtraFilename = "firstTabExtra";
     private final Context context;
-    private final WeakHashMap<IShowBackground, Boolean> observers_showBackground = new WeakHashMap<>();
     private final WeakHashMap<IHideNotReachable, Boolean> observers_HideNotReachable = new WeakHashMap<>();
     private final WeakHashMap<IShowPersistentNotification, Boolean> observers_ShowPersistentNotification = new WeakHashMap<>();
 
@@ -53,9 +54,9 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         try {
             Class cls = App.class;
             ComponentName comp = new ComponentName(context, cls);
-            PackageInfo pinfo = context.getPackageManager().getPackageInfo(
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
                     comp.getPackageName(), 0);
-            return pinfo.versionName;
+            return packageInfo.versionName;
         } catch (android.content.pm.PackageManager.NameNotFoundException e) {
             return "";
         }
@@ -68,6 +69,12 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         } catch (PackageManager.NameNotFoundException e) {
             return 0;
         }
+    }
+
+    public static String getDefaultFallbackIconSet(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String value = context.getResources().getString(R.string.default_fallback_icon_set);
+        return prefs.getString(PREF_default_fallback_icon_set, value);
     }
 
     public int getLastPreferenceVersion() {
@@ -96,6 +103,15 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return "";
     }
 
+    public int getFirstTabPosition() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        try {
+            return prefs.getInt("FIRST_TAB_POSITION", -1);
+        } catch (Exception ignored) {
+        }
+        return -1;
+    }
+
     public Bundle getFirstTabExtra() {
         File file = context.getFileStreamPath(firstTabExtraFilename);
         if (!file.exists())
@@ -120,11 +136,12 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return null;
     }
 
-    public void setFirstTab(String fragmentClassName, Bundle extra) {
+    public void setFirstTab(String fragmentClassName, Bundle extra, int position) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefEditor = prefs.edit();
         prefEditor.putString("FIRST_TAB", fragmentClassName);
+        prefEditor.putInt("FIRST_TAB_POSITION", position);
         prefEditor.apply();
         if (extra != null) {
             Parcel parcel = Parcel.obtain(); //creating empty parcel object
@@ -142,23 +159,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         } else {
             context.deleteFile(firstTabExtraFilename);
         }
-    }
-
-    public boolean getShowHiddenOutlets() {
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean ShowHiddenOutlets = context.getResources().getBoolean(R.bool.showHiddenOutlets);
-        try {
-            ShowHiddenOutlets = prefs.getBoolean("showHiddenOutlets", ShowHiddenOutlets);
-        } catch (Exception ignored) {
-        }
-        return ShowHiddenOutlets;
-    }
-
-    public void setShowHiddenOutlets(boolean showHiddenOutlets) {
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("showHiddenOutlets", showHiddenOutlets).apply();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -249,26 +249,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         prefs.edit().putInt("OutletsViewType", type).apply();
     }
 
-    public int getNextOutletsViewType() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return (prefs.getInt("OutletsViewType", 0) + 1) % 3;
-    }
-
-    public int getScenesViewType() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getInt("ScenesViewType", 0);
-    }
-
-    public void setScenesViewType(int type) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("ScenesViewType", type).apply();
-    }
-
-    public int getNextScenesViewType() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return (prefs.getInt("ScenesViewType", 0) + 1) % 3;
-    }
-
     public boolean logEnergySaveMode() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean("use_log_energy_saving_mode", false);
@@ -306,7 +286,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public boolean isNotification() {
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.show_persistent_notification);
         return prefs.getBoolean(PREF_show_persistent_notification, value);
@@ -380,10 +359,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         prefs.edit().putInt("open_issues", value).putLong("open_issues_last_access", last_access).apply();
     }
 
-    public void registerShowBackground(IShowBackground observer) {
-        observers_showBackground.put(observer, true);
-    }
-
     public void registerHideNotReachable(IHideNotReachable observer) {
         observers_HideNotReachable.put(observer, true);
     }
@@ -392,14 +367,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         boolean value;
         switch (s) {
-            case "show_background": {
-                value = isBackground();
-                Set<IShowBackground> observers = observers_showBackground.keySet();
-                for (IShowBackground observer : observers) {
-                    observer.backgroundChanged(value);
-                }
-                break;
-            }
             case SharedPrefs.hide_not_reachable: {
                 value = isHideNotReachable();
                 Set<IHideNotReachable> observers = observers_HideNotReachable.keySet();

@@ -456,7 +456,7 @@ public class ListenService extends Service {
                             Toast.makeText(ListenService.this,
                                     ListenService.this.getString(R.string.devices_refreshed,
                                             AppData.getInstance().getReachableConfiguredDevices(),
-                                            AppData.getInstance().newDevices.size()),
+                                            AppData.getInstance().unconfiguredDeviceCollection.size()),
                                     Toast.LENGTH_SHORT
                             ).show();
                         }

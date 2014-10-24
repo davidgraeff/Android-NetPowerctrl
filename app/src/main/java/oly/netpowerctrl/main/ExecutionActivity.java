@@ -161,8 +161,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
     }
 
     void executeSingleAction(String port_uuid_string, final int command) {
-        final UUID port_uuid = UUID.fromString(port_uuid_string);
-        final DevicePort port = AppData.getInstance().findDevicePort(port_uuid);
+        final DevicePort port = AppData.getInstance().findDevicePort(port_uuid_string);
         if (port == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();

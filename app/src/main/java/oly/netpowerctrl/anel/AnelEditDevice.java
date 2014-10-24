@@ -51,7 +51,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
     @Override
     public void onObserverDeviceUpdated(Device di) {
-        updated(null, di, ObserverUpdateActions.UpdateAction);
+        updated(null, di, ObserverUpdateActions.UpdateAction, -1);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
     }
 
     @Override
-    public boolean updated(DeviceCollection deviceCollection, Device updated_device, ObserverUpdateActions action) {
+    public boolean updated(DeviceCollection deviceCollection, Device updated_device, ObserverUpdateActions action, int position) {
         if (updated_device.UniqueDeviceID == null || !updated_device.equalsByUniqueID(device))
             return true;
 

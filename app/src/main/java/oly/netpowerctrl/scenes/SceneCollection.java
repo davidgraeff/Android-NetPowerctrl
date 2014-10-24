@@ -38,7 +38,7 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
             return;
         LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, scene_icon, 128, 128), scene.uuid,
                 LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown);
-        notifyObservers(scene, ObserverUpdateActions.UpdateAction);
+        notifyObservers(scene, ObserverUpdateActions.UpdateAction, items.indexOf(scene));
     }
 
 
@@ -48,7 +48,7 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         scene.favourite = favourite;
         if (storage != null)
             storage.save(this, scene);
-        notifyObservers(scene, ObserverUpdateActions.UpdateAction);
+        notifyObservers(scene, ObserverUpdateActions.UpdateAction, items.indexOf(scene));
     }
 
     public void executeScene(int position) {
@@ -70,13 +70,14 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         // Replace existing item
         if (position != -1) {
             items.set(position, scene);
+            notifyObservers(scene, ObserverUpdateActions.UpdateAction, position);
         } else { // Add new item
             items.add(scene);
+            notifyObservers(scene, ObserverUpdateActions.AddAction, items.size() - 1);
         }
 
         if (storage != null)
             storage.save(this, scene);
-        notifyObservers(scene, ObserverUpdateActions.AddAction);
     }
 
     public void removeScene(int position) {
@@ -85,14 +86,15 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         items.remove(position);
         if (storage != null)
             storage.remove(this, scene);
-        notifyObservers(scene, ObserverUpdateActions.RemoveAction);
+        notifyObservers(scene, ObserverUpdateActions.RemoveAction, position);
     }
 
     public void removeAll() {
+        int all = items.size();
         items.clear();
         if (storage != null)
             storage.clear(this);
-        notifyObservers(null, ObserverUpdateActions.RemoveAction);
+        notifyObservers(null, ObserverUpdateActions.RemoveAllAction, all - 1);
     }
 
 
@@ -134,7 +136,7 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         });
 
         saveAll();
-        notifyObservers(null, ObserverUpdateActions.UpdateAction);
+        notifyObservers(null, ObserverUpdateActions.ClearAndNewAction, -1);
     }
 
     @Override
@@ -158,7 +160,7 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         }
 
         saveAll();
-        notifyObservers(null, ObserverUpdateActions.UpdateAction);
+        notifyObservers(null, ObserverUpdateActions.ClearAndNewAction, -1);
     }
 
     @Override

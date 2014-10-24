@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <attr name="activity_background" format="color" />
     <attr name="drawer_item_background" format="color" />
-    <attr name="list_item_background" format="color" />
+    <attr name="toolbar_style" format="reference" />
     <attr name="preferences_title_light" format="color" />
     <attr name="text_transparent_background" format="reference" />
     <attr name="item_selector" format="reference" />
@@ -18,7 +19,7 @@
 
     <declare-styleable name="FloatingActionButton">
         <attr name="drawable" format="integer" />
-        <attr name="color" format="color" />
+        <attr name="mainColor" format="color" />
         <attr name="shadowRadius" format="float" />
         <attr name="shadowDx" format="float" />
         <attr name="shadowDy" format="float" />

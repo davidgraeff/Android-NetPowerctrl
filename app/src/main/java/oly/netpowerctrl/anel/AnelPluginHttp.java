@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_ports.DevicePort;
+import oly.netpowerctrl.device_ports.ExecutableType;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DeviceConnection;
 import oly.netpowerctrl.devices.DeviceConnectionHTTP;
@@ -62,9 +63,9 @@ public class AnelPluginHttp {
                     // on the existing device.
                     Map<Integer, DevicePort> ports = new TreeMap<>();
                     for (int i = 0; i < 8; ++i) {
-                        DevicePort port = new DevicePort(device, DevicePort.DevicePortType.TypeToggle);
+                        DevicePort port = new DevicePort(device, ExecutableType.TypeToggle);
                         port.id = i + 1; // 1-based
-                        port.setDescription(data[10 + i].trim());
+                        port.setTitle(data[10 + i].trim());
                         port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
                         port.Disabled = data[30 + i].equals("1");
                         ports.put(port.id, port);

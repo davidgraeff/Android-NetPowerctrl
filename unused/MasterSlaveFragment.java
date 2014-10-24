@@ -39,7 +39,7 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
                     getString(R.string.outlet_master_slave_title, master.getDescription()));
         else
             actionBarDoneCancel.setTitle(getActivity(), R.string.master_slave);
-        actionBarDoneCancel.addCancelDone(getActivity(), R.layout.actionbar_device_done);
+        actionBarDoneCancel.addCancelDone(getActivity(), R.layout.actionbar_save_done_text);
 
         Activity a = getActivity();
         View btnDone = a.findViewById(R.id.action_mode_save_button);
@@ -49,8 +49,7 @@ public class MasterSlaveFragment extends ListFragment implements AdapterView.OnI
                 save();
             }
         });
-        View btnTest = a.findViewById(R.id.action_mode_test_button);
-        btnTest.setVisibility(View.GONE);
+
         View btnCancel = a.findViewById(R.id.action_mode_close_button);
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override

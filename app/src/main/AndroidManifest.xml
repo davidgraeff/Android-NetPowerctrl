@@ -80,7 +80,7 @@
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:noHistory="true"
-            android:theme="@style/Theme.Transparent">
+            android:theme="@style/Theme.AppCompat.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
@@ -98,7 +98,7 @@
             android:icon="@drawable/netpowerctrl"
             android:label="@string/app_name"
             android:noHistory="true"
-            android:theme="@style/Theme.Transparent">
+            android:theme="@style/Theme.AppCompat.Translucent">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -110,7 +110,7 @@
             android:description="@string/app_name_widget"
             android:icon="@drawable/netpowerctrl"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Transparent" />
+            android:theme="@style/Theme.AppCompat.Translucent" />
 
         <activity
             android:name=".scenes.EditSceneActivity"

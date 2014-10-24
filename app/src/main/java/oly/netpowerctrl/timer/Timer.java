@@ -12,7 +12,6 @@ import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -34,7 +33,7 @@ public class Timer implements StorableInterface {
     public final boolean[] weekdays = new boolean[7];
     // Unique ID
     public long id = -1;
-    public UUID port_id;
+    public String port_id;
     // Temporary
     public DevicePort port;
     /**
@@ -112,7 +111,7 @@ public class Timer implements StorableInterface {
     public String toString(Context context) {
         String pre = "";
         if (port != null)
-            pre = port.device.DeviceName + ": " + port.getDescription() + " - ";
+            pre = port.device.DeviceName + ": " + port.getTitle() + " - ";
 
         switch (type) {
             case TYPE_RANGE_ON_WEEKDAYS:
@@ -129,7 +128,7 @@ public class Timer implements StorableInterface {
 
     public String getTargetName() {
         if (port != null)
-            return port.device.DeviceName + ": " + port.getDescription();
+            return port.device.DeviceName + ": " + port.getTitle();
         else
             return "";
     }
@@ -198,7 +197,7 @@ public class Timer implements StorableInterface {
                     timer.id = reader.nextLong();
                     break;
                 case "port_id":
-                    timer.port_id = UUID.fromString(reader.nextString());
+                    timer.port_id = reader.nextString();
                     break;
                 case "deviceAlarm":
                     timer.deviceAlarm = reader.nextBoolean();

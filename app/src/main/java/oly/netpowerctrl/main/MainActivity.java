@@ -16,24 +16,28 @@
 
 package oly.netpowerctrl.main;
 
-import android.app.ActionBar;
-import android.app.Activity;
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.sufficientlysecure.donations.DonationsFragment;
 
-import java.lang.reflect.Field;
+import java.io.IOException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -47,7 +51,7 @@ import oly.netpowerctrl.utils.notifications.ChangeLogNotification;
 import oly.netpowerctrl.utils.notifications.InAppNotifications;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
-public class MainActivity extends Activity implements ActivityWithIconCache {
+public class MainActivity extends ActionBarActivity implements ActivityWithIconCache {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
     private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
@@ -75,11 +79,19 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
             navigationController.getCurrentFragment().onActivityResult(requestCode, resultCode, data);
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         instance = this;
+        //Remove title bar
+        this.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        if (SharedPrefs.getInstance().isFullscreen()) {
+            //Remove notification bar
+            this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
         super.onCreate(savedInstanceState);
+
         // Set theme, call super onCreate and set content view
         if (SharedPrefs.getInstance().isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
@@ -87,30 +99,7 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
             setTheme(R.style.Theme_CustomLightTheme);
         }
 
-        if (SharedPrefs.getInstance().isFullscreen()) {
-            //getActionBar().hide();
-
-            //Remove title bar
-            this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-            //Remove notification bar
-            this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
-
         assignContentView();
-
-        // Hack to always show the overflow of the actionbar instead of
-        // relying on the menu button that is only present on some devices
-        // and may cause confusion.
-        try {
-            Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
-            if (menuKeyField != null) {
-                menuKeyField.setAccessible(true);
-                menuKeyField.setBoolean(ViewConfiguration.get(this), false);
-            }
-        } catch (Exception ex) {
-            // Ignore
-        }
 
         checkUseHomeButton();
 
@@ -135,16 +124,25 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
         navigationController.createDrawer(MainActivity.this, NavigationController.RestorePositionEnum.RestoreLastSaved);
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void assignContentView() {
         setContentView(R.layout.activity_main);
-        if (SharedPrefs.getInstance().isBackground()) {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+        setSupportActionBar(toolbar);
+        //getSupportActionBar().setCustomView(R.layout.notification_container);
+
+        if (SharedPrefs.getInstance().isBackground() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             View v = findViewById(R.id.content_frame);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                v.setBackground(LoadStoreIconData.loadDrawable(this, LoadStoreIconData.uuidForBackground(),
-                        LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateUnknown, R.drawable.bg));
-            } else {
-                v.setBackgroundResource(R.drawable.bg);
-            }
+            Drawable d = LoadStoreIconData.loadDrawable(this, LoadStoreIconData.uuidForBackground(),
+                    LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateNotApplicable);
+            if (d == null)
+                try {
+                    d = new BitmapDrawable(getResources(), BitmapFactory.decodeStream(getAssets().open("backgrounds/bg.jpg")));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            v.setBackground(d);
         }
     }
 
@@ -213,7 +211,7 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
     private void checkUseHomeButton() {
         // enable ActionBar app icon to behave as action to toggle nav drawer
         boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(!has_two_panes);
             actionBar.setHomeButtonEnabled(!has_two_panes);
@@ -223,7 +221,7 @@ public class MainActivity extends Activity implements ActivityWithIconCache {
     @Override
     public void setTitle(CharSequence title) {
         navigationController.setTitle(title);
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle(title);
         }

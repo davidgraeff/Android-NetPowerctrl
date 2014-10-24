@@ -161,7 +161,7 @@ public class Device implements Comparable<Device>, StorableInterface {
     public boolean copyValuesFromUpdated(Device other) {
         if (other != this) {
             // If no plugin object reference is known, we abort here. DeviceConnections
-            // are not of any use if we have no known plugin to execute actions on.
+            // are not of any use if we have no known plugin to executeToggle actions on.
             if (pluginInterface == null) {
                 if (other.pluginInterface == null) {
                     setNotReachableAll(App.getAppString(R.string.error_plugin_not_installed));
@@ -284,6 +284,13 @@ public class Device implements Comparable<Device>, StorableInterface {
     @SuppressWarnings("unused")
     public boolean equalsByUniqueID(Device other) {
         return UniqueDeviceID != null && UniqueDeviceID.equals(other.UniqueDeviceID);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Device)
+            return UniqueDeviceID != null && UniqueDeviceID.equals(((Device) other).UniqueDeviceID);
+        return false;
     }
 
     /**

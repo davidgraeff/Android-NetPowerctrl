@@ -8,7 +8,6 @@ import android.preference.Preference;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
@@ -40,7 +39,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
                     return true;
                 }
             };
-    private UUID widget_uuid;
+    private String widget_uuid;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,8 +67,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateOn);
         preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
-                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn,
-                LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOn)));
+                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_off");
@@ -78,8 +76,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateOff);
         preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
-                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOff,
-                LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateOff)));
+                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOff));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_not_reachable");
@@ -88,8 +85,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateUnknown);
         preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
-                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown,
-                LoadStoreIconData.getResIdForState(LoadStoreIconData.IconState.StateUnknown)));
+                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_show_title");
@@ -115,7 +111,8 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
 
         LoadStoreIconData.saveIcon(getActivity(), bitmap, widget_uuid, LoadStoreIconData.IconType.WidgetIcon, state);
         if (bitmap == null) {
-            current.setIcon(LoadStoreIconData.getResIdForState(state));
+            current.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
+                    LoadStoreIconData.IconType.WidgetIcon, state));
         } else {
             current.setIcon(new BitmapDrawable(getResources(), bitmap));
         }

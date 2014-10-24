@@ -20,7 +20,7 @@ public interface PluginInterface {
 
     void onStart(ListenService service);
 
-    ////////////// Request data and execute //////////////
+    ////////////// Request data and executeToggle //////////////
     void requestData();
 
     void requestData(DeviceConnection ci);
