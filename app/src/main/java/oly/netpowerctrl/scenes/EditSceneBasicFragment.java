@@ -11,12 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 
@@ -28,6 +30,7 @@ public class EditSceneBasicFragment extends Fragment implements LoadStoreIconDat
     Switch show_mainWindow;
     Switch enable_feedback;
     Scene scene;
+    boolean[] checked;
 
     private onEditSceneBasicsChanged listener;
     private boolean isSceneNotShortcut;
@@ -35,6 +38,7 @@ public class EditSceneBasicFragment extends Fragment implements LoadStoreIconDat
     private Button btnSceneFav;
     private View btnSceneAddHomescreen;
     private View btnNFC;
+    private LinearLayout groups_layout;
 
     public EditSceneBasicFragment() {
     }
@@ -51,6 +55,7 @@ public class EditSceneBasicFragment extends Fragment implements LoadStoreIconDat
         assert view != null;
         show_mainWindow = (Switch) view.findViewById(R.id.shortcut_show_mainwindow);
         enable_feedback = (Switch) view.findViewById(R.id.shortcut_enable_feedback);
+        groups_layout = (LinearLayout) view.findViewById(R.id.groups_layout);
 
         view.findViewById(R.id.btnName).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,6 +159,8 @@ public class EditSceneBasicFragment extends Fragment implements LoadStoreIconDat
             enable_feedback.setVisibility(View.VISIBLE);
             isLoaded = false;
         }
+
+        checked = GroupUtilities.addGroupCheckBoxesToLayout(getActivity(), groups_layout, scene.groups);
 
         btnSceneAddHomescreen.setVisibility(isLoaded ? View.VISIBLE : View.GONE);
         btnSceneFav.setVisibility(isLoaded ? View.VISIBLE : View.GONE);

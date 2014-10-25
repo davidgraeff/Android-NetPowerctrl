@@ -11,12 +11,9 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
@@ -26,6 +23,7 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.executables.ExecutableViewHolder;
 import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onHttpRequestResult;
@@ -80,32 +78,7 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
         loadImages();
 
         LinearLayout layout = (LinearLayout) rootView.findViewById(R.id.layout);
-
-        final GroupCollection groupCollection = AppData.getInstance().groupCollection;
-
-        CharSequence[] items = groupCollection.getGroupsArray();
-        checked = new boolean[items.length];
-
-        // Sync checked array with items array
-        for (int i = 0; i < checked.length; ++i) {
-            if (groupCollection.equalsAtIndex(i, devicePort.groups))
-                checked[i] = true;
-
-            CheckBox p = new CheckBox(getActivity());
-            p.setChecked(checked[i]);
-            // The first entry of weekDays_Strings is an empty string
-            p.setText(items[i]);
-            final int index = i;
-            p.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    checked[index] = b;
-                }
-            });
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            layout.addView(p, lp);
-        }
+        checked = GroupUtilities.addGroupCheckBoxesToLayout(getActivity(), layout, devicePort.groups);
 
         builder.setView(rootView);
         builder.setPositiveButton(getString(R.string.save), new DialogInterface.OnClickListener() {

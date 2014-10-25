@@ -3,8 +3,13 @@ package oly.netpowerctrl.groups;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
+import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
@@ -15,6 +20,38 @@ import oly.netpowerctrl.devices.DevicePort;
  * Utility methods for groups
  */
 public class GroupUtilities {
+
+    public static boolean[] addGroupCheckBoxesToLayout(Context context, LinearLayout layout, List<UUID> listOfGroupsPreChecked) {
+
+        final GroupCollection groupCollection = AppData.getInstance().groupCollection;
+
+        CharSequence[] items = groupCollection.getGroupsArray();
+        final boolean checked[] = new boolean[items.length];
+
+        // Sync checked array with items array
+        for (int i = 0; i < checked.length; ++i) {
+            if (groupCollection.equalsAtIndex(i, listOfGroupsPreChecked))
+                checked[i] = true;
+
+            CheckBox p = new CheckBox(context);
+            p.setChecked(checked[i]);
+            // The first entry of weekDays_Strings is an empty string
+            p.setText(items[i]);
+            final int index = i;
+            p.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    checked[index] = b;
+                }
+            });
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            layout.addView(p, lp);
+        }
+
+        return checked;
+    }
+
     /**
      * Create a new group and optionally add the given device port to it.
      *
@@ -38,9 +75,10 @@ public class GroupUtilities {
                 if (name.isEmpty())
                     return;
                 UUID group_uuid = AppData.getInstance().groupCollection.add(name);
-                if (port != null)
+                if (port != null) {
                     port.addToGroup(group_uuid);
-                AppData.getInstance().deviceCollection.save(port.device);
+                    AppData.getInstance().deviceCollection.save(port.device);
+                }
             }
         });
 

@@ -171,7 +171,7 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
 
     @Override
     public void changeArguments(Bundle mExtra) {
-        if (mExtra != null && mExtra.containsKey("viewtype")) {
+        if (mExtra != null && mExtra.containsKey("viewtype") && pager != null) {
             setViewType(mExtra.getInt("viewtype"));
             OutletsViewFragment fragment = (OutletsViewFragment) groupPagerAdapter.instantiateItem(pager, pager.getCurrentItem());
             if (fragment != null)

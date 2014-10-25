@@ -25,6 +25,7 @@ import oly.netpowerctrl.executables.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
 import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
+import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
@@ -264,8 +265,19 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
             return;
 
         if (isSceneNotShortcut) {
-            AppData.getInstance().sceneCollection.setBitmap(this, scene, scene_icon);
-            AppData.getInstance().sceneCollection.add(scene);
+            SceneCollection sceneCollection = AppData.getInstance().sceneCollection;
+            sceneCollection.setBitmap(this, scene, scene_icon);
+
+            GroupCollection groupCollection = AppData.getInstance().groupCollection;
+            scene.groups.clear();
+            for (int i = 0; i < fragment_basics.checked.length; ++i) {
+                if (!fragment_basics.checked[i]) {
+                    continue;
+                }
+                scene.groups.add(groupCollection.get(i).uuid);
+            }
+            // TODO if groups are changed, we need a full update
+            sceneCollection.add(scene);
         } else {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
                     scene, fragment_basics.show_mainWindow.isChecked(), fragment_basics.enable_feedback.isChecked());
