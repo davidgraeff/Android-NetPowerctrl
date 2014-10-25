@@ -71,6 +71,7 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     public static final int VIEW_AS_LIST = 0;
     public static final int VIEW_AS_GRID = 1;
     public static final int VIEW_AS_COMPACT = 2;
+    private static OutletsViewContainerFragment instance;
     ExecutablesSourceBase adapterSource;
     // Column computations
     int requestedColumnWidth;
@@ -127,6 +128,10 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
         return bundle;
     }
 
+    public static OutletsViewContainerFragment getInstance() {
+        return instance;
+    }
+
     public ExecuteAdapter getAdapter() {
         return adapter;
     }
@@ -134,6 +139,7 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
         groupPagerAdapter = new GroupPagerAdapter(getFragmentManager(), this);
         SharedPrefs.getInstance().registerHideNotReachable(this);
         setHasOptionsMenu(true);
@@ -142,6 +148,7 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     @Override
     public void onDestroy() {
         super.onDestroy();
+        instance = null;
         groupPagerAdapter.onDestroy();
     }
 

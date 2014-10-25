@@ -44,8 +44,7 @@ public class GroupPagerAdapter extends FragmentStatePagerAdapter implements onCo
 
     @Override
     public Fragment getItem(int position) {
-        return new OutletsViewFragment(container,
-                position == 0 ? null : AppData.getInstance().groupCollection.get(position - 1));
+        return new OutletsViewFragment();
     }
 
     @Override

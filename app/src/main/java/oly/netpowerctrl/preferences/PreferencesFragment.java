@@ -2,7 +2,9 @@ package oly.netpowerctrl.preferences;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.FragmentManager;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -47,7 +49,19 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             LoadStoreIconData.iconCache.evictAll();
             //noinspection ConstantConditions
-            getActivity().recreate();
+            //getActivity().recreate();
+            App.getMainThreadHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent mStartActivity = new Intent(getActivity(), MainActivity.class);
+                    int mPendingIntentId = 123456;
+                    PendingIntent mPendingIntent = PendingIntent.getActivity(getActivity(), mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                    AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+                    mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+                    System.exit(0);
+                }
+            }, 50);
+
             return true;
         }
     };

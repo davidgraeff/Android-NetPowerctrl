@@ -1,6 +1,5 @@
 package oly.netpowerctrl.outletsview;
 
-import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.res.Configuration;
 import android.graphics.Rect;
@@ -17,27 +16,19 @@ import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.groups.Group;
 
 /**
  */
 public class OutletsViewFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
-    private final OutletsViewContainerFragment container;
+    private OutletsViewContainerFragment container;
     private RecyclerView mRecyclerView;
     private TextView placeHolderText;
     private SwipeRefreshLayout mPullToRefreshLayout;
-    private Group group;
     private View placeHolderLayout;
     private int resIdWhileNotAdded = -1;
 
     public OutletsViewFragment() {
         container = null;
-    }
-
-    @SuppressLint("ValidFragment")
-    public OutletsViewFragment(OutletsViewContainerFragment container, Group group) {
-        this.container = container;
-        this.group = group;
     }
 
     @Override
@@ -48,29 +39,6 @@ public class OutletsViewFragment extends Fragment implements SwipeRefreshLayout.
             mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
         }
     }
-
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-
-                    //getActivity().findViewById(R.id.content_frame).getWidth();
-                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
-                    int i = mRecyclerView.getWidth() / container.requestedColumnWidth;
-                    container.getAdapter().setItemsInRow(i);
-//                    SpannableGridLayoutManager spannableGridLayoutManager = new SpannableGridLayoutManager(getActivity());
-//                    spannableGridLayoutManager.setNumColumns(i);
-//                    spannableGridLayoutManager.setNumRows(1);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(container.getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(container.getAdapter());
-
-                }
-            };
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup viewGroup,
@@ -116,6 +84,29 @@ public class OutletsViewFragment extends Fragment implements SwipeRefreshLayout.
         return view;
     }
 
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+
+                    //getActivity().findViewById(R.id.content_frame).getWidth();
+                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
+                    int i = mRecyclerView.getWidth() / container.requestedColumnWidth;
+                    container.getAdapter().setItemsInRow(i);
+//                    SpannableGridLayoutManager spannableGridLayoutManager = new SpannableGridLayoutManager(getActivity());
+//                    spannableGridLayoutManager.setNumColumns(i);
+//                    spannableGridLayoutManager.setNumRows(1);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(container.getAdapter().getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(container.getAdapter());
+
+                }
+            };
+
     public void onRefreshStateChanged(boolean isRefreshing) {
         mPullToRefreshLayout.setRefreshing(isRefreshing);
     }
@@ -123,6 +114,12 @@ public class OutletsViewFragment extends Fragment implements SwipeRefreshLayout.
     @Override
     public void onRefresh() {
         container.refreshNow();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        container = OutletsViewContainerFragment.getInstance();
     }
 
     @Override
