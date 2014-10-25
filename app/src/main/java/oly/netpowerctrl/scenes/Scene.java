@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -30,6 +31,7 @@ public class Scene implements StorableInterface, Executable {
     public List<SceneItem> sceneItems = new ArrayList<>();
     boolean favourite;
     private String uuid_master = null;
+    private WeakReference<DevicePort> cached_master;
 
     public Scene() {
         uuid = UUID.randomUUID().toString();
@@ -261,7 +263,7 @@ public class Scene implements StorableInterface, Executable {
 
     @Override
     public String getUid() {
-        return uuid.toString();
+        return uuid;
     }
 
     @Override
@@ -287,6 +289,20 @@ public class Scene implements StorableInterface, Executable {
     @Override
     public boolean isReachable() {
         return true;
+    }
+
+    public DevicePort getMasterCached() {
+        DevicePort devicePort = null;
+        if (cached_master != null) {
+            devicePort = cached_master.get();
+        }
+
+        if (devicePort == null) {
+            devicePort = AppData.getInstance().findDevicePort(uuid_master);
+            cached_master = new WeakReference<>(devicePort);
+        }
+
+        return devicePort;
     }
 
     public static class PortAndCommand {

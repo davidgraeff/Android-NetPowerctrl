@@ -335,7 +335,7 @@ public class DeviceEditFragmentDialog extends DialogFragment implements onCreate
         if (!success) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
-                    getString(R.string.error_device_not_reachable) + ": " + editDevice.getDevice().DeviceName + ":"
+                    getString(R.string.device_test_not_reachable) + ": " + editDevice.getDevice().DeviceName + ":"
                             + Integer.valueOf(0).toString(),
                     Toast.LENGTH_SHORT
             ).show();

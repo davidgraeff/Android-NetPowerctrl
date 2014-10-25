@@ -14,13 +14,18 @@ public abstract class DeviceConnection {
     public final Device device;
     public String mHostName;
     public String not_reachable_reason;
-    public boolean updatedFlag;
     protected boolean mIsAssignedByDevice = false;
     // Cache
     protected InetAddress[] cached_addresses;
+    private int receivedPackets = 0;
 
     public DeviceConnection(Device device) {
         this.device = device;
+    }
+
+    public void setReceiveAddress(InetAddress inetAddress) {
+        cached_addresses = new InetAddress[1];
+        cached_addresses[0] = inetAddress;
     }
 
     public String getDestinationHost() {
@@ -31,8 +36,12 @@ public abstract class DeviceConnection {
         return device;
     }
 
+    public void connectionUsed() {
+        ++receivedPackets;
+    }
+
     public boolean isReachable() {
-        return not_reachable_reason == null;
+        return receivedPackets > 0;
     }
 
     public String getNotReachableReason() {
@@ -41,6 +50,8 @@ public abstract class DeviceConnection {
 
     public void setNotReachable(String not_reachable_reason) {
         this.not_reachable_reason = not_reachable_reason;
+        if (not_reachable_reason != null)
+            receivedPackets = 0;
     }
 
     public void setReachable() {
@@ -57,6 +68,7 @@ public abstract class DeviceConnection {
 
     public void lookupIPs() throws UnknownHostException {
         cached_addresses = InetAddress.getAllByName(mHostName);
+        receivedPackets = 0;
     }
 
     // This has to be executed in another thread not the gui thread!
@@ -98,13 +110,6 @@ public abstract class DeviceConnection {
     public abstract int getDestinationPort();
 
     public abstract String getProtocol();
-
-    public boolean needsUpdate(DeviceConnection otherConnection) {
-        if (not_reachable_reason == null) {
-            return otherConnection.not_reachable_reason != null;
-        } else
-            return not_reachable_reason.equals(otherConnection.not_reachable_reason);
-    }
 
     public abstract boolean equals(DeviceConnection deviceConnection);
 

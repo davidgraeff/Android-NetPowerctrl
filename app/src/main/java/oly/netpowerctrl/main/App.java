@@ -28,6 +28,7 @@ import oly.netpowerctrl.utils.AndroidStatusBarNotification;
 public class App extends Application {
     static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     public static App instance;
+
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
     public App() {

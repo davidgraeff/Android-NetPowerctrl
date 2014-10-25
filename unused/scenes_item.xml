@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!--<item android:id="@+id/menu_backup_scene" android:title="@string/menu_backup_scene"></item>-->
-    <item
-        android:id="@+id/menu_edit_scene"
-        android:title="@string/menu_edit" />
-    <item
-        android:id="@+id/menu_remove_scene"
-        android:title="@string/menu_remove" />
+    <item android:id="@+id/menu_edit_scene" android:title="@string/menu_edit" />
+    <item android:id="@+id/menu_remove_scene" android:title="@string/menu_remove" />
 </menu>

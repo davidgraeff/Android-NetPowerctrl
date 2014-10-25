@@ -11,7 +11,6 @@ import java.io.IOException;
 public class DeviceConnectionHTTP extends DeviceConnection {
     public static final String ID = "HTTP";
     // Device
-    public boolean DefaultPorts = true;
     public int PortHttp = -1;
 
     public DeviceConnectionHTTP(Device device) {
@@ -29,13 +28,11 @@ public class DeviceConnectionHTTP extends DeviceConnection {
         super(device);
         this.mHostName = hostName;
         this.PortHttp = httpPort;
-        DefaultPorts = false;
     }
 
     public void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("connection_type").value(ID);
-        writer.name("DefaultPorts").value(DefaultPorts);
         writer.name("HttpPort").value(PortHttp);
         writer.name("HostName").value(mHostName);
         writer.name("AllowHostnameUpdates").value(mIsAssignedByDevice);
@@ -56,10 +53,6 @@ public class DeviceConnectionHTTP extends DeviceConnection {
                     mHostName = reader.nextString();
                     ++members;
                     break;
-                case "DefaultPorts":
-                    DefaultPorts = reader.nextBoolean();
-                    ++members;
-                    break;
                 case "AllowHostnameUpdates":
                     mIsAssignedByDevice = reader.nextBoolean();
                     ++members;
@@ -76,17 +69,11 @@ public class DeviceConnectionHTTP extends DeviceConnection {
 
         reader.endObject();
 
-        if (members == 3) {
-            mIsAssignedByDevice = mHostName.startsWith("192.") || mHostName.startsWith("10.");
-        }
-
-        return members >= 4;
+        return members >= 3;
     }
 
     @Override
     public int getDestinationPort() {
-        if (DefaultPorts)
-            return 80;
         return PortHttp;
     }
 

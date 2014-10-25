@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.util.DisplayMetrics;
 import android.util.JsonReader;
+import android.util.LruCache;
 import android.util.TypedValue;
 import android.widget.Toast;
 
@@ -45,7 +46,10 @@ public class LoadStoreIconData {
 
     private static final int PICK_IMAGE_BEFORE_KITKAT = 10;
     private static final int PICK_IMAGE_KITKAT = 11;
+    private static final int INITIAL_ICON_CACHE_CAPACITY = 12;
+    public static LruCache<String, Bitmap> iconCache = new LruCache<>(INITIAL_ICON_CACHE_CAPACITY);
     public static String defaultFallbackIconSet = "";
+    public static IconDeferredLoadingThread iconLoadingThread;
     private static WeakReference<Object> icon_callback_context_object;
 
     /**
@@ -91,6 +95,8 @@ public class LoadStoreIconData {
                 old_dir.renameTo(dir);
         }
         defaultFallbackIconSet = SharedPrefs.getDefaultFallbackIconSet(context);
+        iconLoadingThread = new IconDeferredLoadingThread();
+        iconLoadingThread.start();
     }
 
     public static void saveIcon(Context context, Bitmap bitmap, String uuid, IconType iconType, IconState state) {
@@ -162,36 +168,55 @@ public class LoadStoreIconData {
     }
 
     public static Drawable loadDrawable(Context context, String uniqueID, IconType iconType, IconState state) {
-        Bitmap b = loadIcon(context, uniqueID, iconType, state);
+        Bitmap b = loadBitmap(context, uniqueID, iconType, state);
         if (b == null)
             return null;
         return new BitmapDrawable(context.getResources(), b);
     }
 
-    public static Bitmap loadIcon(Context context, String uniqueID, IconType iconType, IconState state) {
+    public static Bitmap loadBitmap(Context context, String uniqueID, IconType iconType, IconState state) {
+        String hashKey = uniqueID + String.valueOf(iconType.ordinal() + 100 * state.ordinal());
+        Bitmap c = iconCache.get(hashKey);
+        if (c != null)
+            return c;
+
         File myDir = getImageDirectory(context, iconType, state);
 
         File file = new File(myDir, uniqueID + ".png");
         if (!file.exists())
             file = new File(myDir, uniqueID + ".jpg");
-        if (!file.exists()) {
+        if (file.exists())
+            c = BitmapFactory.decodeFile(file.getAbsolutePath());
+        else {
             try {
+                hashKey = String.valueOf(iconType.ordinal() + 100 * state.ordinal());
+                c = iconCache.get(hashKey);
+                if (c != null)
+                    return c;
+
                 switch (state) {
                     case StateOff:
-                        return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/off_" + defaultFallbackIconSet + ".png"));
+                        c = BitmapFactory.decodeStream(context.getAssets().open("widget_icons/off_" + defaultFallbackIconSet + ".png"));
+                        break;
                     case OnlyOneState:
-                        return BitmapFactory.decodeResource(context.getResources(), R.drawable.netpowerctrl);
+                        c = BitmapFactory.decodeResource(context.getResources(), R.drawable.netpowerctrl);
+                        break;
                     case StateOn:
-                        return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/on_" + defaultFallbackIconSet + ".png"));
+                        c = BitmapFactory.decodeStream(context.getAssets().open("widget_icons/on_" + defaultFallbackIconSet + ".png"));
+                        break;
                     case StateUnknown:
-                        return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/unknown_" + defaultFallbackIconSet + ".png"));
+                        c = BitmapFactory.decodeStream(context.getAssets().open("widget_icons/unknown_" + defaultFallbackIconSet + ".png"));
+                        break;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return null;
+
         }
-        return BitmapFactory.decodeFile(file.getAbsolutePath());
+
+        if (c != null)
+            iconCache.put(hashKey, c);
+        return c;
     }
 
     public static IconFile[] getAllIcons(Context context) {

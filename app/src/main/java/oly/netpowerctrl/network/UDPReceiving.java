@@ -5,7 +5,7 @@ import android.content.Context;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.NetworkInterface;
+import java.net.InetAddress;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.listen_service.ListenService;
@@ -37,8 +37,8 @@ abstract public class UDPReceiving extends Thread {
                 socket.setReuseAddress(true);
                 while (keep_running) {
                     socket.receive(receivedDatagram);
-                    parsePacket(message, receivedDatagram.getLength(), receive_port,
-                            NetworkInterface.getByInetAddress(socket.getLocalAddress()));
+                    parsePacket(message, receivedDatagram.getLength(), receive_port, socket.getLocalAddress(), receivedDatagram.getAddress());
+                    //NetworkInterface.getByInetAddress(socket.getLocalAddress()));
                 }
                 socket.close();
             } catch (final IOException e) {
@@ -64,7 +64,7 @@ abstract public class UDPReceiving extends Thread {
     }
 
     protected abstract void parsePacket(final byte[] message, int length,
-                                        int receive_port, NetworkInterface localInterface);
+                                        int receive_port, InetAddress local, InetAddress peer);
 
     /**
      * @return Return the receive port of this thread

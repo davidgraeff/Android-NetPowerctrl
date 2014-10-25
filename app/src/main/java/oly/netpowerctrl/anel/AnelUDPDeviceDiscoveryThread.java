@@ -1,7 +1,7 @@
 package oly.netpowerctrl.anel;
 
 import java.io.UnsupportedEncodingException;
-import java.net.NetworkInterface;
+import java.net.InetAddress;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -38,7 +38,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     }
 
     @Override
-    public void parsePacket(final byte[] message, int length, int receive_port, NetworkInterface localInterface) {
+    public void parsePacket(final byte[] message, int length, int receive_port, InetAddress local, InetAddress peer) {
         final String msg[];
         try {
             msg = new String(message, 0, length, "iso8859-1").split(":");
@@ -72,7 +72,9 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         final String HostName = msg[2];
         final Device di = createReceivedAnelDevice(msg[1].trim(), msg[5]);
         DeviceConnection deviceConnection = new DeviceConnectionUDP(di, HostName, receive_port, SharedPrefs.getInstance().getDefaultSendPort());
+        deviceConnection.setReceiveAddress(peer);
         deviceConnection.setIsAssignedByDevice(true);
+        deviceConnection.connectionUsed();
         di.addConnection(deviceConnection);
 
         int disabledOutlets = 0;
@@ -88,14 +90,14 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         if (msg.length > 15) {
             int httpPort;
             try {
-                httpPort = Integer.parseInt(msg[15]);
+                httpPort = Integer.parseInt(msg[15].trim());
+                deviceConnection = new DeviceConnectionHTTP(di, HostName, httpPort);
+                deviceConnection.setIsAssignedByDevice(true);
+                deviceConnection.setReceiveAddress(peer);
+                deviceConnection.connectionUsed();
+                di.addConnection(deviceConnection);
             } catch (NumberFormatException ignored) {
-                httpPort = -1;
             }
-
-            deviceConnection = new DeviceConnectionHTTP(di, HostName, httpPort);
-            deviceConnection.setIsAssignedByDevice(true);
-            di.addConnection(deviceConnection);
         }
         // IO ports
         if (msg.length > 25) {

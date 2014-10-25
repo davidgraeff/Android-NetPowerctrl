@@ -98,7 +98,7 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
         });
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.menu_add_device)
+        builder.setTitle(R.string.device_add)
                 .setView(view)
                 .setPositiveButton(android.R.string.ok, null);
         return builder.create();
@@ -198,7 +198,7 @@ public class DevicesWizardNewFragment extends DialogFragment implements onCreate
             });
             dismiss();
         } else {
-            Toast.makeText(getActivity(), R.string.error_device_not_reachable, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.device_test_not_reachable, Toast.LENGTH_SHORT).show();
         }
     }
 

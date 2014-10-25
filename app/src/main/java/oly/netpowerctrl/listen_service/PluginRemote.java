@@ -75,6 +75,7 @@ public class PluginRemote implements PluginInterface {
             }
             device.setPluginInterface(PluginRemote.this);
             device.configured = false;
+            device.DeviceConnections.get(0).connectionUsed();
             device.setReachable(0);
             device.setUpdatedNow();
             App.getMainThreadHandler().post(new Runnable() {

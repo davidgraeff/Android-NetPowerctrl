@@ -17,6 +17,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
     private OnItemFlingListener mListenerFling;
     private RecyclerView view;
 
+
     public RecyclerItemClickListener(Context context, OnItemClickListener listener, OnItemFlingListener listenerFling) {
         mListenerClick = listener;
         mListenerFling = listenerFling;
@@ -37,14 +38,12 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                         Rect _bounds = new Rect();
                         _child.getHitRect(_bounds);
                         if (_bounds.contains((int) (e.getX() - cView.getX()), (int) (e.getY() - cView.getY()))) {
-                            mListenerClick.onItemClick(_child, view.getChildPosition(cView));
-                            return true;
+                            return mListenerClick.onItemClick(_child, view.getChildPosition(cView));
                         }
                     }
 
                     // If no child found, we return the element view.
-                    mListenerClick.onItemClick(cView, view.getChildPosition(cView));
-                    return true;
+                    return mListenerClick.onItemClick(cView, view.getChildPosition(cView));
                 }
                 return false;
             }
@@ -64,6 +63,10 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
         });
     }
 
+    public RecyclerView getRecyclerView() {
+        return view;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(RecyclerView view, MotionEvent e) {
         if (mListenerClick == null && mListenerFling == null)
@@ -78,7 +81,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
     }
 
     public interface OnItemClickListener {
-        public void onItemClick(View view, int position);
+        public boolean onItemClick(View view, int position);
     }
 
     public interface OnItemFlingListener {

@@ -99,7 +99,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
      * return that {@link oly.netpowerctrl.devices.Device}, null otherwise.
      */
     public Device update(Device newValues_device) {
-        // If a device has now unique id, we do not have to care
+        // If a device has no unique id, we do not have to care
         if (newValues_device.UniqueDeviceID == null)
             return null;
 
@@ -110,7 +110,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
             if (!newValues_device.equalsByUniqueID(existing_device))
                 continue;
 
-            if (existing_device.updateConnection(newValues_device.DeviceConnections)) {
+            if (existing_device.replaceDeviceAssignedConnections(newValues_device.DeviceConnections)) {
                 if (storage != null)
                     storage.save(this, existing_device);
             }

@@ -2,6 +2,8 @@ package oly.netpowerctrl.executables;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +30,8 @@ public class AdapterFragment<ADAPTER extends RecyclerView.Adapter> extends Fragm
         final View view = inflater.inflate(R.layout.fragment_with_list, container, false);
         assert view != null;
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         if (onItemClickListener != null)
             mRecyclerView.addOnItemTouchListener(onItemClickListener);
 

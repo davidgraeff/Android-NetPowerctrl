@@ -29,14 +29,10 @@
     <string name="device_username">Username</string>
     <string name="device_password">Password</string>
 
-    <string name="menu_add_device">Add device</string>
-    <string name="menu_add_scene">Add scene</string>
-    <string name="menu_remove">Delete</string>
-    <string name="menu_remove_all">Delete all</string>
-    <string name="menu_edit">Edit</string>
-    <string name="menu_cancel">Cancel</string>
-    <string name="menu_delete_all">Delete all</string>
-    <string name="menu_refresh">Refresh</string>
+    <string name="device_add">Add device</string>
+    <string name="scene_add">Add scene</string>
+    <string name="remove_all">Delete all</string>
+    <string name="refresh">Refresh</string>
 
     <string name="default_device_name">New device</string>
 
@@ -62,6 +58,7 @@
         <item>Change log</item>
     </string-array>
 
+    <string name="drawer_overview">Overview</string>
     <string name="drawer_switch_title">Trigger actions</string>
     <string name="drawer_overview_list">View as list</string>
     <string name="drawer_overview_grid">View as grid</string>
@@ -90,7 +87,7 @@
     <string name="title_scene_edit">Edit scene: %1$s</string>
     <string name="scene_add_homescreen">Add to homescreen</string>
     <string name="error_reading_scenes">Error reading scenes</string>
-    <string name="error_device_not_reachable">Test reachable failed</string>
+    <string name="device_test_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
     <string name="device_test_ok">Test OK</string>
     <string name="menu_switch_all_on">All on</string>
@@ -99,7 +96,7 @@
     <string name="menu_switch_all_ignore">Remove all from scene</string>
     <string name="menu_help">Help</string>
     <string name="menu_device_configuration_page">Open configuration page</string>
-    <string name="error_not_reachable">Devices %1$s not reachable</string>
+    <string name="devices_not_reachable">Devices %1$s not reachable</string>
     <string name="empty_no_scenes">No scene found.\n\n
 A scene combines multiple actions and execute them at once.</string>
     <string name="empty_no_outlets">No outlets to display.\n\n
@@ -149,10 +146,10 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_createGroup">Create group with device outlets</string>
     <string name="menu_outlet_createGroup">Groups</string>
     <string name="confirmation_device_createGroup">Create a group for all actions of this device? If a group has been created before for this device, that group will be replaced.</string>
-    <string name="createGroup">Create group…</string>
+    <string name="group_add">Create group…</string>
     <string name="outlet_added_to_groups">Belong to %1$d groups</string>
     <string name="outlet_to_group_title">Groups of %1$s</string>
-    <string name="group_create">Create a new group. Enter a name please.</string>
+    <string name="group_create_dialog_title">Create a new group. Enter a name please.</string>
     <string name="empty_group">This group is empty. Either no items belong to this group anymore or relevant devices are not in range at the moment.</string>
     <string name="menu_remove_group">Remove group</string>
     <string name="menu_rename_group">Rename group</string>
@@ -341,6 +338,11 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="title_scene_no_name">No Name!</string>
     <string name="device_new">New: %1$s</string>
     <string name="preference_default_fallback_icon_set_names">Standard Icon Set</string>
+    <string name="device_reachable">Reachable</string>
+    <string name="device_connection_notTested">Connection not tested</string>
+    <string name="device_connection_testing">Testing connection…</string>
+    <string name="device_timeout">Not reachable. Timeout.</string>
+    <string name="jump_to_group">Springe zu Gruppe</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

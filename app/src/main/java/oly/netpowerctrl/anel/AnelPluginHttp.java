@@ -34,6 +34,8 @@ public class AnelPluginHttp {
             if (response_message == null)
                 response_message = "";
 
+            ci.connectionUsed();
+
             //Log.w("AnelPluginHttp", "http receive" + response_message);
             final Device device = ci.getDevice();
             if (!callback_success) {
@@ -90,6 +92,7 @@ public class AnelPluginHttp {
             new HttpThreadPool.HTTPCallback<DeviceConnectionHTTP>() {
                 @Override
                 public void httpResponse(DeviceConnectionHTTP ci, boolean callback_success, String response_message) {
+                    ci.connectionUsed();
                     final Device device = ci.getDevice();
                     if (!callback_success) {
                         ci.setNotReachable(response_message);

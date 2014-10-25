@@ -202,7 +202,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         @SuppressWarnings("ConstantConditions")
         RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget);
         views.setImageViewBitmap(R.id.widget_image,
-                LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromDefaultWidget(),
+                LoadStoreIconData.loadBitmap(this, LoadStoreIconData.uuidFromDefaultWidget(),
                         LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown));
         views.setTextViewText(R.id.widget_name, getString(R.string.error_widget_device_removed));
         views.setViewVisibility(R.id.widget_status, View.GONE);
@@ -340,10 +340,10 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
         Bitmap bitmap;
         if (widget_use_default)
-            bitmap = LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromDefaultWidget(),
+            bitmap = LoadStoreIconData.loadBitmap(this, LoadStoreIconData.uuidFromDefaultWidget(),
                     LoadStoreIconData.IconType.WidgetIcon, iconState);
         else
-            bitmap = LoadStoreIconData.loadIcon(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
+            bitmap = LoadStoreIconData.loadBitmap(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
                     LoadStoreIconData.IconType.WidgetIcon, iconState);
         views.setImageViewBitmap(R.id.widget_image, bitmap);
 

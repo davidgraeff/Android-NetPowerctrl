@@ -25,7 +25,7 @@ public class GroupUtilities {
         //noinspection ConstantConditions
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
-        alert.setMessage(R.string.group_create);
+        alert.setMessage(R.string.group_create_dialog_title);
 
         final EditText input = new EditText(alert.getContext());
         if (port != null)

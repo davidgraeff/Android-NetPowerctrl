@@ -694,7 +694,7 @@ final public class AnelPlugin implements PluginInterface {
     public void openConfigurationPage(Device device, Context context) {
         final DeviceConnection ci = device.getFirstReachableConnection();
         if (ci == null) {
-            Toast.makeText(context, R.string.error_device_not_reachable, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.device_test_not_reachable, Toast.LENGTH_SHORT).show();
             return;
         }
 

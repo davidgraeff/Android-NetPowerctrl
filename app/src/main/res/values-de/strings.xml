@@ -32,14 +32,10 @@
     <string name="device_password">Passwort</string>
     <string name="device_save_without_test">Das Gerät ist mit diesen Einstellungen noch nicht getestet worden. Dennoch speichern?</string>
 
-    <string name="menu_add_device">Neues Gerät</string>
-    <string name="menu_add_scene">Neue Szene</string>
-    <string name="menu_remove">Entfernen</string>
-    <string name="menu_remove_all">Entferne alle Einträge</string>
-    <string name="menu_edit">Bearbeiten</string>
-    <string name="menu_cancel">Abbruch</string>
-    <string name="menu_delete_all">Alle löschen</string>
-    <string name="menu_refresh">Aktualisieren</string>
+    <string name="device_add">Neues Gerät</string>
+    <string name="scene_add">Neue Szene</string>
+    <string name="remove_all">Entferne alle Einträge</string>
+    <string name="refresh">Aktualisieren</string>
 
     <string name="default_device_name">Neues Gerät</string>
 
@@ -65,8 +61,8 @@
         <item>Change log</item>
     </string-array>
 
-    <string name="drawer_switch_title">Schalten</string>
     <string name="drawer_overview">Übersicht</string>
+    <string name="drawer_switch_title">Schalten</string>
     <string name="drawer_overview_list">Listenansicht</string>
     <string name="drawer_overview_grid">Rasteransicht</string>
     <string name="drawer_overview_compact">Kompakte Ansicht</string>
@@ -91,7 +87,7 @@
     <string name="Version">Version</string>
     <string name="title_scene_edit">Bearbeite Szene: %1$s</string>
     <string name="scene_add_homescreen">Zum Startbildschirm hinzufügen</string>
-    <string name="error_device_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
+    <string name="device_test_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
     <string name="menu_switch_all_on">Alle auf Einschalten</string>
@@ -100,7 +96,7 @@
     <string name="menu_switch_all_ignore">Alle von Szene entfernen</string>
     <string name="menu_help">Hilfe</string>
     <string name="menu_device_configuration_page">Konfigurationsseite öffnen</string>
-    <string name="error_not_reachable">Gerät %1$s nicht erreichbar</string>
+    <string name="devices_not_reachable">Gerät %1$s nicht erreichbar</string>
     <string name="empty_no_scenes">Keine Szenen gefunden.\n\nMit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
 Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</string>
@@ -149,10 +145,10 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_createGroup">Erstelle Gruppe für Gerät</string>
     <string name="menu_outlet_createGroup">In Gruppen…</string>
     <string name="confirmation_device_createGroup">Soll eine Gruppe mit allen Aktionen dieses Gerätes erstellt werden? Wurde dies vorher bereits einmal getan, so wird die alte Gruppe ersetzt.</string>
-    <string name="createGroup">Gruppe erstellen…</string>
+    <string name="group_add">Gruppe erstellen…</string>
     <string name="outlet_added_to_groups">Gehört zu %1$d Gruppen</string>
     <string name="outlet_to_group_title">%1$s in Gruppen…</string>
-    <string name="group_create">Erstelle eine neue Gruppe. Bitte den Namen eingeben.</string>
+    <string name="group_create_dialog_title">Erstelle eine neue Gruppe. Bitte den Namen eingeben.</string>
     <string name="empty_group">Diese Gruppe ist leer! Entweder enthält die Gruppe keine Einträge mehr oder es sind nicht alle relevanten Geräte in Reichweite</string>
     <string name="menu_remove_group">Gruppe entfernen</string>
     <string name="menu_rename_group">Gruppe umbenennen</string>
@@ -345,6 +341,11 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="title_scene_no_name">Kein Name!</string>
     <string name="device_new">Neu: %1$s</string>
     <string name="preference_default_fallback_icon_set_names">Standard Icon Set</string>
+    <string name="device_reachable">Erreichbar</string>
+    <string name="device_connection_notTested">Verbindung nicht getestet</string>
+    <string name="device_connection_testing">Teste Verbindung…</string>
+    <string name="device_timeout">Verbindungszeit überschritten, abgebrochen</string>
+    <string name="jump_to_group">Springe zu Gruppe</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

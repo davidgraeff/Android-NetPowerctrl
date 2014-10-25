@@ -19,16 +19,10 @@ import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.executables.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.utils.controls.SegmentedRadioGroup;
-import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdapter.ViewHolder> {
     public final List<ExecutableAdapterItem> mItems = new ArrayList<>();
-    private final View.OnClickListener clickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            mListContextMenu.onListItemElementClicked(view, (Integer) view.getTag());
-        }
-    };
+
     private final SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -46,7 +40,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
             mItems.get(position).setCommand_value(seekBar.getProgress());
         }
     };
-    private onListItemElementClicked mListContextMenu;
+
     private int mNextId = 0; // we need stable IDs
     private ExecutableAdapterItem master = null;
     private final RadioGroup.OnCheckedChangeListener switchClickListener = new RadioGroup.OnCheckedChangeListener() {
@@ -85,14 +79,6 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
         }
     };
 
-    public SceneElementsAdapter(onListItemElementClicked listContextMenu) {
-        this.mListContextMenu = listContextMenu;
-    }
-
-    public void setListItemElementClickedListener(onListItemElementClicked listItemMenu) {
-        this.mListContextMenu = listItemMenu;
-    }
-
     @Override
     public int getItemViewType(int position) {
         final ExecutableAdapterItem item = mItems.get(position);
@@ -123,7 +109,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
                 break;
         }
 
-        return new ViewHolder(view, mListContextMenu, type);
+        return new ViewHolder(view, type);
     }
 
     @Override
@@ -140,7 +126,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
 
         ExecutableType type = port.getType();
         if (type == ExecutableType.TypeToggle) {
-            viewHolder.rGroup.setOnCheckedChangeListener(switchClickListener);
+            viewHolder.rGroup.setOnCheckedChangeListener(null);
             viewHolder.rGroup.setTag(position);
 
             if (master == null || item.equals(master)) {
@@ -164,16 +150,12 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
                     break;
             }
 
+            viewHolder.rGroup.setOnCheckedChangeListener(switchClickListener);
         } else if (type == ExecutableType.TypeRangedValue) {
             viewHolder.seekBar.setTag(position);
             viewHolder.seekBar.setMax(port.max_value);
             viewHolder.seekBar.setProgress(item.getCommand_value());
             viewHolder.seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
-        }
-
-        if (viewHolder.close != null) {
-            viewHolder.close.setTag(position);
-            viewHolder.close.setOnClickListener(clickListener);
         }
     }
 
@@ -262,7 +244,10 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
     }
 
     public ExecutableAdapterItem take(int position) {
-        return null;
+        ExecutableAdapterItem item = mItems.get(position);
+        mItems.remove(position);
+        notifyItemRemoved(position);
+        return item;
     }
 
     public void addItem(Executable executable, int command) {
@@ -293,24 +278,13 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
 
         SeekBar seekBar;
 
-        private onListItemElementClicked mListContextMenu = null;
-
-        ViewHolder(View convertView, onListItemElementClicked listContextMenu, ExecutableType type) {
+        ViewHolder(View convertView, ExecutableType type) {
             super(convertView);
-
-            mListContextMenu = listContextMenu;
 
             entry = convertView.findViewById(R.id.item_layout);
             title = (TextView) convertView.findViewById(R.id.title);
             subtitle = (TextView) convertView.findViewById(R.id.subtitle);
             close = convertView.findViewById(R.id.outlet_list_close);
-            if (close != null) {
-                if (mListContextMenu != null) {
-                    close.setVisibility(View.VISIBLE);
-                } else {
-                    close.setVisibility(View.GONE);
-                }
-            }
 
             switch (type) {
                 case TypeToggle:

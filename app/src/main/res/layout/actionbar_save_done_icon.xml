@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:clickable="true"
-        android:contentDescription="@string/menu_cancel"
+        android:contentDescription="@android:string/cancel"
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_menu_close_clear_cancel" />

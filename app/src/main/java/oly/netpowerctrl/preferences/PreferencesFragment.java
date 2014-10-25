@@ -38,13 +38,14 @@ import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.utils.Github;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
-public class PreferencesFragment extends PreferencesWithValuesFragment implements Github.IGithubOpenIssues {
+public class PreferencesFragment extends PreferencesWithValuesFragment implements Github.IGithubOpenIssues, LoadStoreIconData.IconSelected {
     private static final int REQUEST_CODE_IMPORT = 100;
     private static final int REQUEST_CODE_EXPORT = 101;
 
     private final Preference.OnPreferenceChangeListener reloadActivity = new Preference.OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            LoadStoreIconData.iconCache.evictAll();
             //noinspection ConstantConditions
             getActivity().recreate();
             return true;
@@ -68,6 +69,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
         findPreference(SharedPrefs.PREF_fullscreen).setOnPreferenceChangeListener(reloadActivity);
         findPreference(SharedPrefs.PREF_background).setOnPreferenceChangeListener(reloadActivity);
+        findPreference(SharedPrefs.PREF_default_fallback_icon_set).setOnPreferenceChangeListener(reloadActivity);
 
         //noinspection ConstantConditions
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -131,11 +133,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                     LoadStoreIconData.show_select_icon_dialog(getActivity(), "backgrounds", new LoadStoreIconData.IconSelected() {
                         @Override
                         public void setIcon(Object context_object, Bitmap bitmap) {
-                            LoadStoreIconData.saveIcon(getActivity(), bitmap, LoadStoreIconData.uuidForBackground(),
-                                    LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateUnknown);
-
-                            if (SharedPrefs.getInstance().isBackground())
-                                reloadActivity.onPreferenceChange(null, null);
+                            PreferencesFragment.this.setIcon(context_object, bitmap);
                         }
 
                         @Override
@@ -285,7 +283,8 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 ImportExport.importData(getActivity(), intent.getData());
             } else if (requestCode == REQUEST_CODE_EXPORT) {
                 ImportExport.exportData(getActivity(), intent.getData());
-            }
+            } else
+                LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, intent);
         }
     }
 
@@ -302,6 +301,15 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         }
         final String date = DateFormat.getInstance().format(last_access);
         findPreference("issues").setSummary(context.getString(R.string.issues_last_access, date));
+    }
+
+    @Override
+    public void setIcon(Object context_object, Bitmap bitmap) {
+        LoadStoreIconData.saveIcon(getActivity(), bitmap, LoadStoreIconData.uuidForBackground(),
+                LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateNotApplicable);
+
+        if (SharedPrefs.getInstance().isBackground())
+            reloadActivity.onPreferenceChange(null, null);
     }
 
     private static class WidgetData {

@@ -320,13 +320,13 @@ public class AppData {
         for (SceneItem item : scene.sceneItems) {
             DevicePort p = getInstance().findDevicePort(item.uuid);
             if (p == null) {
-                Log.e(TAG, "Execute scene, DevicePort not found " + item.uuid.toString());
+                Log.e(TAG, "Execute scene, DevicePort not found " + item.uuid);
                 continue;
             }
 
             PluginInterface remote = p.device.getPluginInterface();
             if (remote == null) {
-                Log.e(TAG, "Execute scene, PluginInterface not found " + item.uuid.toString());
+                Log.e(TAG, "Execute scene, PluginInterface not found " + item.uuid);
                 continue;
             }
 

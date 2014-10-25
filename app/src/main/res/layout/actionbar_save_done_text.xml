@@ -21,7 +21,7 @@
         android:drawableLeft="?android:attr/actionModeCloseDrawable"
         android:drawableStart="?android:attr/actionModeCloseDrawable"
         android:scaleType="fitCenter"
-        android:text="@string/menu_cancel"
+        android:text="@android:string/cancel"
         android:textAppearance="?android:attr/actionMenuTextAppearance"
         android:textColor="?android:attr/actionMenuTextColor" />
 

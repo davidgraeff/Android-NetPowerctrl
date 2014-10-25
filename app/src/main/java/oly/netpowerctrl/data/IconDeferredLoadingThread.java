@@ -27,8 +27,7 @@ public class IconDeferredLoadingThread extends Thread {
         while (true) {
             try {
                 IconItem j = q.take();
-                j.setFinalBitmap(LoadStoreIconData.loadDrawable(j.context, j.uuid,
-                        j.iconType, j.state));
+                j.setFinalBitmap(LoadStoreIconData.loadDrawable(j.context, j.uuid, j.iconType, j.state));
             } catch (InterruptedException e) {
                 q.clear();
                 return;
@@ -41,7 +40,7 @@ public class IconDeferredLoadingThread extends Thread {
     }
 
     /**
-     * An IconItem consists of all parameters necessary to call "Icons.loadIcon", the target
+     * An IconItem consists of all parameters necessary to call "Icons.loadBitmap", the target
      * ViewHolder and the bitmap index.
      */
     public static class IconItem {

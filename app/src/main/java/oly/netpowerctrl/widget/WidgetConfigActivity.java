@@ -8,7 +8,7 @@ import android.view.View;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.executables.AdapterFragment;
 import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
@@ -16,10 +16,8 @@ import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
-import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 
-public class WidgetConfigActivity extends Activity implements ActivityWithIconCache {
-    private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
+public class WidgetConfigActivity extends Activity {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private RecyclerItemClickListener selectedOutletListener;
     private ExecutablesBaseAdapter adapter;
@@ -52,11 +50,9 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
         //noinspection ConstantConditions
         getActionBar().setHomeButtonEnabled(false);
 
-        mIconCache.start();
-
         ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
         s.setAutomaticUpdate(true);
-        this.adapter = new ExecutablesListAdapter(false, s, mIconCache, true);
+        this.adapter = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
 
         AdapterFragment f = new AdapterFragment();
         f.setAdapter(this.adapter);
@@ -74,12 +70,12 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
 
         selectedOutletListener = new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, int position) {
+            public boolean onItemClick(View view, int position) {
                 if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
-                    return;
+                    return false;
                 String uid = adapter.getItem(position).getExecutableUid();
                 if (uid == null)
-                    return;
+                    return false;
 
                 SharedPrefs.getInstance().SaveWidget(widgetId, uid);
 
@@ -89,12 +85,8 @@ public class WidgetConfigActivity extends Activity implements ActivityWithIconCa
                 finish();
 
                 WidgetUpdateService.ForceUpdate(WidgetConfigActivity.this, widgetId);
+                return true;
             }
         }, null);
-    }
-
-    @Override
-    public IconDeferredLoadingThread getIconCache() {
-        return mIconCache;
     }
 }

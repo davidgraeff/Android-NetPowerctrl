@@ -3,6 +3,7 @@ package oly.netpowerctrl.devices;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.main.MainActivity;
 
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.
@@ -29,7 +31,6 @@ public class DevicesAutomaticFragment extends DialogFragment implements onCreate
     public DevicesAutomaticFragment() {
     }
 
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         textView = new TextView(getActivity());
@@ -37,7 +38,13 @@ public class DevicesAutomaticFragment extends DialogFragment implements onCreate
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.automaticConfiguration)
                 .setView(textView)
-                .setPositiveButton(android.R.string.ok, null);
+                .setPositiveButton(android.R.string.ok, null)
+                .setNeutralButton(R.string.devices, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
+                    }
+                });
         return builder.create();
     }
 

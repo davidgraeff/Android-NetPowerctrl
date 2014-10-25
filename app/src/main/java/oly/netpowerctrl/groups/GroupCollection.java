@@ -14,7 +14,7 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
     static long nextStableID = 0;
     private final Group groupIndexOfHelper = new Group(null, null);
 
-    //bitmap = Icons.loadIcon(NetpowerctrlApplication.instance,uuid, Icons.IconType.GroupIcon);
+    //bitmap = Icons.loadBitmap(NetpowerctrlApplication.instance,uuid, Icons.IconType.GroupIcon);
     public void setBitmap(Context context, Group item, Bitmap bitmap) {
         if (item == null)
             return;

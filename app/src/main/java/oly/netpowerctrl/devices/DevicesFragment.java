@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.PopupMenu;
 
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.DividerItemDecoration;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
 import oly.netpowerctrl.utils.controls.FloatingActionButton;
 import oly.netpowerctrl.utils.notifications.InAppNotifications;
@@ -40,7 +42,7 @@ public class DevicesFragment extends Fragment
     private DevicesAdapter adapter;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private RecyclerView mRecyclerView;
-    private int clickedPosition = -1;
+    private WeakReference<Device> deviceWeakReference = null;
 
     public DevicesFragment() {
     }
@@ -115,12 +117,15 @@ public class DevicesFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new DevicesAdapter(true);
+        adapter = new DevicesAdapter(true, true);
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
                 super.onChanged();
-                View emptyView = getView().findViewById(android.R.id.empty);
+                View emptyView = getView();
+                if (emptyView == null)
+                    return;
+                emptyView = emptyView.findViewById(android.R.id.empty);
                 if (emptyView == null)
                     return;
 
@@ -146,12 +151,39 @@ public class DevicesFragment extends Fragment
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.HORIZONTAL_LIST) {
+            @Override
+            public boolean dividerForPosition(int position) {
+                return true;
+            }
+        });
+
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, int position) {
-                Device device = adapter.getDevice(position);
-                clickedPosition = position;
+            public boolean onItemClick(View view, int position) {
+                DevicesAdapter.DeviceAdapterItem item = adapter.getItem(position);
+                Device device = AppData.getInstance().findDeviceByUniqueID(item.UniqueDeviceID);
+                if (device == null) {
+                    for (Device di : AppData.getInstance().unconfiguredDeviceCollection.getItems()) {
+                        if (di.UniqueDeviceID.equals(item.UniqueDeviceID)) {
+                            device = di;
+                            break;
+                        }
+                    }
+                }
+                if (device == null)
+                    return true;
+
+                if (!item.isDeviceHeader) {
+                    item.subtitle = getString(R.string.device_connection_testing);
+                    PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
+                    if (pluginInterface != null)
+                        pluginInterface.requestData(device.DeviceConnections.get(item.connectionID));
+                    return true;
+                }
+
                 if (device.configured) {
+                    deviceWeakReference = new WeakReference<>(device);
                     @SuppressWarnings("ConstantConditions")
                     PopupMenu popup = new PopupMenu(getActivity(), view);
                     MenuInflater inflater = popup.getMenuInflater();
@@ -163,6 +195,7 @@ public class DevicesFragment extends Fragment
                     // Set default values for anel devices
                     show_configure_device_dialog(device);
                 }
+                return true;
             }
         }, null));
         assignAdapter();
@@ -194,7 +227,7 @@ public class DevicesFragment extends Fragment
 
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
-        final Device current_device = adapter.getDevice(clickedPosition);
+        final Device current_device = deviceWeakReference.get();
 
         switch (menuItem.getItemId()) {
             case R.id.menu_device_configure: {

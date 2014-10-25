@@ -50,7 +50,7 @@ public class Group implements StorableInterface {
 
     public Bitmap getBitmap(Context context) {
         if (bitmap == null) {
-            bitmap = LoadStoreIconData.loadIcon(context, uuid.toString(),
+            bitmap = LoadStoreIconData.loadBitmap(context, uuid.toString(),
                     LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateNotApplicable);
         }
         return bitmap;

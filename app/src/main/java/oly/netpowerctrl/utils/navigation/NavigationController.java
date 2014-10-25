@@ -32,7 +32,7 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.FeedbackDialog;
-import oly.netpowerctrl.outletsview.OutletsFragment;
+import oly.netpowerctrl.outletsview.OutletsViewContainerFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.timer.TimerFragment;
 import oly.netpowerctrl.utils.DonateData;
@@ -126,11 +126,11 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         mDrawerAdapter = new DrawerAdapter();
         mDrawerAdapter.addHeader(context.getString(R.string.drawer_switch_title));
         mDrawerAdapter.addItem(context.getString(R.string.drawer_overview_list), "",
-                OutletsFragment.class.getName(), false).mExtra = OutletsFragment.createBundleForView(OutletsFragment.VIEW_AS_LIST);
+                OutletsViewContainerFragment.class.getName(), false).mExtra = OutletsViewContainerFragment.createBundleForView(OutletsViewContainerFragment.VIEW_AS_LIST);
         mDrawerAdapter.addItem(context.getString(R.string.drawer_overview_grid), "",
-                OutletsFragment.class.getName(), false).mExtra = OutletsFragment.createBundleForView(OutletsFragment.VIEW_AS_GRID);
+                OutletsViewContainerFragment.class.getName(), false).mExtra = OutletsViewContainerFragment.createBundleForView(OutletsViewContainerFragment.VIEW_AS_GRID);
         mDrawerAdapter.addItem(context.getString(R.string.drawer_overview_compact), "",
-                OutletsFragment.class.getName(), false).mExtra = OutletsFragment.createBundleForView(OutletsFragment.VIEW_AS_COMPACT);
+                OutletsViewContainerFragment.class.getName(), false).mExtra = OutletsViewContainerFragment.createBundleForView(OutletsViewContainerFragment.VIEW_AS_COMPACT);
 
         mDrawerAdapter.addItem(context.getString(R.string.drawer_timer), "",
                 TimerFragment.class.getName(), false);
@@ -175,7 +175,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             int pos = SharedPrefs.getInstance().getFirstTabPosition();
 
             if (className == null || className.isEmpty() || pos == -1) {
-                className = OutletsFragment.class.getName();
+                className = OutletsViewContainerFragment.class.getName();
                 pos = mDrawerAdapter.indexOf(className);
                 extra = null;
             }
@@ -373,13 +373,13 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
     }
 
     @Override
-    public void onItemClick(View view, int position) {
+    public boolean onItemClick(View view, int position) {
         if (mDrawerAdapter.getItemViewType(position) == 0)
-            return;
+            return false;
 
         Activity context = mDrawerActivity.get();
         if (context == null) // should never happen
-            return;
+            return false;
 
         DrawerAdapter.DrawerItem item = mDrawerAdapter.get(position);
 
@@ -397,19 +397,20 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         // First look at a click handler for that specific item
         if (item.clickHandler != null) {
             item.clickHandler.onClick(null);
-            return;
+            return true;
         }
 
         // No click handler: Should be a fragment change request
         if (item.fragmentClassName == null || item.fragmentClassName.isEmpty())
-            return;
+            return false;
 
         if (item.mDialog) {
             changeToDialog(context, item.fragmentClassName);
-            return;
+            return true;
         }
 
         changeToFragment(item.fragmentClassName, item.mExtra, true, position);
+        return true;
     }
 
 

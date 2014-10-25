@@ -13,7 +13,9 @@
     <color name="colorBackgroundLight">#a0cdff</color>
     <!--#0099cc-->
     <color name="colorBackgroundDark">#0a2b36</color>
-    <!--#0099cc-->
+    <color name="floating_button_colorDark">#0099cc</color>
+    <color name="floating_button_colorLight">#0099cc</color>
+    <!-- FFDF4D38 -->
     <color name="NiceButtonStartColor">#0099cc</color>
     <color name="NiceButtonEndColor">#33b5e5</color>
     <color name="NiceButtonDisabledStartColor">#565051</color>

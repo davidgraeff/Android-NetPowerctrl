@@ -192,34 +192,14 @@ public class Device implements Comparable<Device>, StorableInterface {
      * @param other_deviceConnections Updated device connections
      * @return Return true if one or more of the connections are new to this device
      */
-    public boolean updateConnection(List<DeviceConnection> other_deviceConnections) {
+    public boolean replaceDeviceAssignedConnections(List<DeviceConnection> other_deviceConnections) {
         if (other_deviceConnections == DeviceConnections)
             return false;
 
-        for (DeviceConnection di : DeviceConnections) {
-            di.updatedFlag = false;
-        }
-
-        // update each of the existing connections
-        for (DeviceConnection di : DeviceConnections) {
-            Iterator<DeviceConnection> it = other_deviceConnections.iterator();
-            while (it.hasNext()) {
-                DeviceConnection otherConnection = it.next();
-                if (di.equals(otherConnection)) {
-                    di.updatedFlag = di.needsUpdate(otherConnection);
-                    if (di.updatedFlag)
-                        setHasChanged();
-                    di.setNotReachable(otherConnection.getNotReachableReason());
-                    it.remove();
-                }
-            }
-        }
-
         // Remove non used assigned-by-device connections
-        Iterator<DeviceConnection> it = other_deviceConnections.iterator();
+        Iterator<DeviceConnection> it = DeviceConnections.iterator();
         while (it.hasNext()) {
-            DeviceConnection deviceConnection = it.next();
-            if (!deviceConnection.updatedFlag && deviceConnection.isAssignedByDevice())
+            if (it.next().isAssignedByDevice())
                 it.remove();
         }
 

@@ -124,7 +124,7 @@ public class HttpThreadPool {
                         result_message = "code " + String.valueOf(con.getResponseCode());
                 }
             } catch (SocketTimeoutException e) {
-                result_message = e.getMessage();
+                result_message = context.getString(R.string.device_timeout);
             } catch (MalformedURLException e) {
                 result_message = e.getMessage();
             } catch (ProtocolException e) {

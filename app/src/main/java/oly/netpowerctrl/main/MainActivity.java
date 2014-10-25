@@ -41,29 +41,22 @@ import java.io.IOException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.navigation.NavigationController;
 import oly.netpowerctrl.utils.notifications.ChangeLogNotification;
 import oly.netpowerctrl.utils.notifications.InAppNotifications;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
-public class MainActivity extends ActionBarActivity implements ActivityWithIconCache {
+public class MainActivity extends ActionBarActivity {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
-    private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     private final NavigationController navigationController = new NavigationController();
     private long mBackPressed;
 
     public static NavigationController getNavigationController() {
         return instance.navigationController;
-    }
-
-    public IconDeferredLoadingThread getIconCache() {
-        return mIconCache;
     }
 
     @Override
@@ -104,8 +97,6 @@ public class MainActivity extends ActionBarActivity implements ActivityWithIconC
         checkUseHomeButton();
 
         WidgetUpdateService.ForceUpdateAll(this);
-
-        mIconCache.start();
 
         App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override

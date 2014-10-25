@@ -2,19 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_log_send_mail"
-        android:title="@string/menu_log_send_mail"
+        android:icon="@android:drawable/ic_dialog_email"
         android:showAsAction="ifRoom"
-        android:icon="@android:drawable/ic_dialog_email" />
+        android:title="@string/menu_log_send_mail" />
 
     <item
         android:id="@+id/menu_remove_log"
-        android:title="@string/menu_remove_all"
+        android:icon="@android:drawable/ic_menu_delete"
         android:showAsAction="ifRoom"
-        android:icon="@android:drawable/ic_menu_delete" />
+        android:title="@string/remove_all" />
 
     <item
         android:id="@+id/menu_help"
-        android:title="@string/menu_help"
+        android:icon="@android:drawable/ic_menu_help"
         android:showAsAction="ifRoom"
-        android:icon="@android:drawable/ic_menu_help" />
+        android:title="@string/menu_help" />
 </menu>

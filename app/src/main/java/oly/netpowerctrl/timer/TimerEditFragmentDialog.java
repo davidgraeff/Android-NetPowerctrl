@@ -47,7 +47,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         // Port selection
         {
             final ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
-            s.updateNow();
+            s.fullUpdate(null);
 
             Spinner spinner = ((Spinner) rootView.findViewById(R.id.alarm_port));
 
@@ -65,7 +65,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
                 }
             });
 
-            ArrayAdapter<String> array_adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_available_outlet);
+            ArrayAdapter<String> array_adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1);
             for (int i = 0; i < s.getDevicePortList().size(); ++i)
                 if (s.getDevicePortList().get(i) != null)
                     array_adapter.add(s.getDevicePortList().get(i).getTitle());

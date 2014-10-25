@@ -17,7 +17,6 @@ import java.io.IOException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
@@ -29,15 +28,12 @@ import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
-import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
-import oly.netpowerctrl.utils.controls.onListItemElementClicked;
 
 /**
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditSceneActivity extends ActionBarActivity
-        implements onListItemElementClicked, ActivityWithIconCache, onEditSceneBasicsChanged {
+public class EditSceneActivity extends ActionBarActivity implements onEditSceneBasicsChanged {
 
     /**
      * We pass arguments to this activity via the intent extra bundle.
@@ -49,7 +45,6 @@ public class EditSceneActivity extends ActionBarActivity
     public static final String RESULT_SCENE_UUID = "scene_uuid";
     public static final String RESULT_ACTION_UUID = "action_uuid";
     public static final String RESULT_ACTION_COMMAND = "action_command";
-    private final IconDeferredLoadingThread mIconCache = new IconDeferredLoadingThread();
     boolean reInitUIDone = false;
     private View btnDone;
     private ExecutablesListAdapter adapter_available;
@@ -78,7 +73,6 @@ public class EditSceneActivity extends ActionBarActivity
         // Default result
         setResult(RESULT_CANCELED, null);
 
-        mIconCache.start();
         reInitUI();
 
         btnDone = findViewById(R.id.action_mode_save_button);
@@ -167,8 +161,8 @@ public class EditSceneActivity extends ActionBarActivity
 
     private void loadContent() {
         ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
-        adapter_available = new ExecutablesListAdapter(false, s, mIconCache, true);
-        adapter_included = new SceneElementsAdapter(this);
+        adapter_available = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
+        adapter_included = new SceneElementsAdapter();
 
         Intent it = getIntent();
         if (it != null) {
@@ -203,24 +197,35 @@ public class EditSceneActivity extends ActionBarActivity
         }
 
         // Add click listener for the remove button on each included action
-        adapter_included.setListItemElementClickedListener(this);
+        fragment_included.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public boolean onItemClick(View view, int position) {
+                if (view.getId() != R.id.outlet_list_close)
+                    return false;
+                adapter_available.addItem(adapter_included.take(position).getExecutable(), DevicePort.TOGGLE);
+                onNameChanged();
+                return true;
+            }
+        }, null));
+
 
         // Add click listener to available list to move the clicked action
         // to the included list.
         fragment_available.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, int position) {
+            public boolean onItemClick(View view, int position) {
                 DevicePort oi = (DevicePort) adapter_available.getItem(position).getExecutable();
                 if (oi == null)
-                    return;
+                    return false;
                 adapter_available.removeAt(position);
                 adapter_included.addItem(oi, DevicePort.TOGGLE);
                 onNameChanged();
+                return true;
             }
         }, null));
 
         if (isSceneNotShortcut && isLoaded) {
-            onIconChanged(LoadStoreIconData.loadIcon(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState));
+            onIconChanged(LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState));
         }
 
         onNameChanged();
@@ -277,18 +282,6 @@ public class EditSceneActivity extends ActionBarActivity
         finish();
     }
 
-    /**
-     * This is called when the user clicks on remove-action on an included action of a scene.
-     *
-     * @param v
-     * @param position
-     */
-    @Override
-    public void onListItemElementClicked(View v, int position) {
-        adapter_available.addItem(adapter_included.take(position).getExecutable(), DevicePort.TOGGLE);
-        onNameChanged();
-    }
-
     /* Called whenever we call invalidateOptionsMenu(). Enables or disables the
      * "done" action bar button. */
     @Override
@@ -301,12 +294,6 @@ public class EditSceneActivity extends ActionBarActivity
 
         return super.onPrepareOptionsMenu(menu);
     }
-
-    @Override
-    public IconDeferredLoadingThread getIconCache() {
-        return mIconCache;
-    }
-
 
     /**
      * Called by the widget/object/dialog that is responsible for asking the
