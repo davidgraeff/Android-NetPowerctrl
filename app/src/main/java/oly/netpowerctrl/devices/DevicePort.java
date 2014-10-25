@@ -207,6 +207,16 @@ public final class DevicePort implements Comparable, Executable {
         return device.getFirstReachableConnection() != null;
     }
 
+    @Override
+    public int getCurrentValue() {
+        return current_value;
+    }
+
+    @Override
+    public int getMaximumValue() {
+        return max_value;
+    }
+
     /**
      * Please be aware that if you do not request the description
      * change directly on the device, the change you make here will

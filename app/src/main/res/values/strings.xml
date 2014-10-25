@@ -220,7 +220,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="alarm_start_time_summary">The switch on time is optional if a switch off time is given.</string>
     <string name="alarm_stop_time_summary">The switch off time is optional if a switch on time is given.</string>
     <string name="alarm_date">Alarm date</string>
-    <string name="master_slave">Choose Slaves</string>
+    <string name="master_slave">Master/Slave</string>
     <string name="alarm_no_device_alarm">No free alarm available on the target device!</string>
     <string name="remove">Remove</string>
     <string name="alarm_toggle_random">Toggle randomly: <b>%1$s</b></string>
@@ -342,7 +342,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_connection_notTested">Connection not tested</string>
     <string name="device_connection_testing">Testing connection…</string>
     <string name="device_timeout">Not reachable. Timeout.</string>
-    <string name="jump_to_group">Springe zu Gruppe</string>
+    <string name="jump_to_group">Jump to group</string>
+    <string name="scene">Scene</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

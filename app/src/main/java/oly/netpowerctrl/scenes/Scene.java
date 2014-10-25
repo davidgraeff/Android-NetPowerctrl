@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.JSONHelper;
@@ -20,6 +20,7 @@ import oly.netpowerctrl.data.StorableInterface;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.executables.ExecutableType;
+import oly.netpowerctrl.main.App;
 
 public class Scene implements StorableInterface, Executable {
     private static long nextStableID = 0;
@@ -31,7 +32,8 @@ public class Scene implements StorableInterface, Executable {
     public List<SceneItem> sceneItems = new ArrayList<>();
     boolean favourite;
     private String uuid_master = null;
-    private WeakReference<DevicePort> cached_master;
+    private int currentValue = 0;
+    private int maximumValue = 0;
 
     public Scene() {
         uuid = UUID.randomUUID().toString();
@@ -273,7 +275,7 @@ public class Scene implements StorableInterface, Executable {
 
     @Override
     public ExecutableType getType() {
-        return ExecutableType.TypeScene;
+        return isMasterSlave() ? ExecutableType.TypeToggle : ExecutableType.TypeButton;
     }
 
     @Override
@@ -283,7 +285,7 @@ public class Scene implements StorableInterface, Executable {
 
     @Override
     public String getDescription() {
-        return "";
+        return isMasterSlave() ? App.getAppString(R.string.master_slave) : App.getAppString(R.string.scene);
     }
 
     @Override
@@ -291,18 +293,21 @@ public class Scene implements StorableInterface, Executable {
         return true;
     }
 
-    public DevicePort getMasterCached() {
-        DevicePort devicePort = null;
-        if (cached_master != null) {
-            devicePort = cached_master.get();
-        }
+    public int getCurrentValue() {
+        return currentValue;
+    }
 
-        if (devicePort == null) {
-            devicePort = AppData.getInstance().findDevicePort(uuid_master);
-            cached_master = new WeakReference<>(devicePort);
-        }
+    public void setCurrentValue(int currentValue) {
+        this.currentValue = currentValue;
+    }
 
-        return devicePort;
+    @Override
+    public int getMaximumValue() {
+        return maximumValue;
+    }
+
+    public void setMaximumValue(int maximumValue) {
+        this.maximumValue = maximumValue;
     }
 
     public static class PortAndCommand {

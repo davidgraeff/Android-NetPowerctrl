@@ -223,7 +223,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_start_time_summary">Die Angabe der Einschaltzeit ist optional, sofern eine Ausschaltzeit angegeben wurde.</string>
     <string name="alarm_stop_time_summary">Die Angabe der Ausschaltzeit ist optional, sofern eine Einschaltzeit angegeben wurde.</string>
     <string name="alarm_date">Alarm Datum</string>
-    <string name="master_slave">Wähle Slaves</string>
+    <string name="master_slave">Master/Slave</string>
     <string name="alarm_no_device_alarm">Kein freier Gerätealarm für diesen Typ verfügbar. App Alarm noch nicht unterstützt.</string>
     <string name="remove">Löschen</string>
     <string name="alarm_toggle_random">Zufällig umschalten: &lt;b>%1$s&lt;/b></string>
@@ -346,6 +346,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_connection_testing">Teste Verbindung…</string>
     <string name="device_timeout">Verbindungszeit überschritten, abgebrochen</string>
     <string name="jump_to_group">Springe zu Gruppe</string>
+    <string name="scene">Szene</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

@@ -22,4 +22,10 @@ public interface Executable {
     String getDescription();
 
     boolean isReachable();
+
+    ;
+
+    int getCurrentValue();
+
+    int getMaximumValue();
 }

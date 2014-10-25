@@ -9,7 +9,6 @@ import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.scenes.Scene;
 
 public class ExecuteAdapter extends ExecutablesBaseAdapter implements
         SeekBar.OnSeekBarChangeListener {
@@ -51,16 +50,6 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
 
             //current_viewHolder.mainTextView.setTag(position);
             switch (executable.getType()) {
-                case TypeScene: {
-                    Scene scene = (Scene) executable;
-                    if (!scene.isMasterSlave()) {
-                        executableViewHolder.loadIcon(mIconCache, executable.getUid(),
-                                LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.OnlyOneState, 0);
-                        executableViewHolder.seekBar.setVisibility(View.GONE);
-                        executableViewHolder.setBitmapOff();
-                        break;
-                    } // else: run into TypeToggle
-                }
                 case TypeToggle: {
                     executableViewHolder.seekBar.setVisibility(View.GONE);
                     executableViewHolder.loadIcon(mIconCache, executable.getUid(),
@@ -96,20 +85,8 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
             case TypeButton: {
                 break;
             }
-            case TypeScene: {
-                Scene scene = (Scene) executable;
-                if (scene.isMasterSlave()) {
-                    DevicePort devicePort = scene.getMasterCached();
-                    if (devicePort.current_value >= devicePort.max_value)
-                        executableViewHolder.setBitmapOn();
-                    else
-                        executableViewHolder.setBitmapOff();
-                }
-                break;
-            }
             case TypeToggle: {
-                DevicePort devicePort = (DevicePort) executable;
-                if (devicePort.current_value >= devicePort.max_value)
+                if (executable.getCurrentValue() >= executable.getMaximumValue())
                     executableViewHolder.setBitmapOn();
                 else
                     executableViewHolder.setBitmapOff();

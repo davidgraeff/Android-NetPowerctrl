@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +13,12 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.data.onStorageUpdate;
+import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.utils.SortCriteriaInterface;
 import oly.netpowerctrl.utils.Sorting;
 
@@ -20,6 +26,40 @@ import oly.netpowerctrl.utils.Sorting;
  * List of scenes
  */
 public class SceneCollection extends CollectionWithStorableItems<SceneCollection, Scene> implements SortCriteriaInterface {
+    private onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
+        @Override
+        public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action, int position) {
+            device.lockDevicePorts();
+            Iterator<DevicePort> iterator = device.getDevicePortIterator();
+            while (iterator.hasNext()) {
+                DevicePort devicePort = iterator.next();
+                int index = -1;
+                for (Scene scene : items) {
+                    ++index;
+                    if (scene.getMasterUUid() == null)
+                        continue;
+                    if (scene.getMasterUUid().equals(devicePort.getUid())) {
+                        scene.setCurrentValue(devicePort.getCurrentValue());
+                        scene.setMaximumValue(devicePort.getMaximumValue());
+                        notifyObservers(scene, ObserverUpdateActions.UpdateAction, index);
+                    }
+                }
+            }
+            device.releaseDevicePorts();
+            return true;
+        }
+    };
+
+    public SceneCollection() {
+        AppData.observersOnDataLoaded.register(new onDataLoaded() {
+            @Override
+            public boolean onDataLoaded() {
+                AppData.getInstance().deviceCollection.registerObserver(deviceObserver);
+                return false;
+            }
+        });
+    }
+
     public static SceneCollection fromScenes(List<Scene> scenes, onStorageUpdate storage) {
         SceneCollection dc = new SceneCollection();
         dc.storage = storage;
