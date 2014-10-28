@@ -54,6 +54,8 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
     }
 
     public int indexOf(UUID group_uuid) {
+        if (group_uuid == null)
+            return -1;
         return items.indexOf(groupIndexOfHelper.setUUID(group_uuid));
     }
 

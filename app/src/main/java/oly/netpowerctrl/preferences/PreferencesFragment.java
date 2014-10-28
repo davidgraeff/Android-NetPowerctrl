@@ -47,9 +47,14 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     private final Preference.OnPreferenceChangeListener reloadActivity = new Preference.OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            LoadStoreIconData.iconCache.evictAll();
+            LoadStoreIconData.clearIconCache();
             //noinspection ConstantConditions
-            //getActivity().recreate();
+            getActivity().recreate();
+            return true;
+        }
+    };
+    private final Preference.OnPreferenceChangeListener reloadProcess = new Preference.OnPreferenceChangeListener() {
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
             App.getMainThreadHandler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -83,7 +88,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
         findPreference(SharedPrefs.PREF_fullscreen).setOnPreferenceChangeListener(reloadActivity);
         findPreference(SharedPrefs.PREF_background).setOnPreferenceChangeListener(reloadActivity);
-        findPreference(SharedPrefs.PREF_default_fallback_icon_set).setOnPreferenceChangeListener(reloadActivity);
+        findPreference(SharedPrefs.PREF_default_fallback_icon_set).setOnPreferenceChangeListener(reloadProcess);
 
         //noinspection ConstantConditions
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

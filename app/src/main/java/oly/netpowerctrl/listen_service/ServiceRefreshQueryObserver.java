@@ -8,7 +8,7 @@ import oly.netpowerctrl.utils.Observer;
 public class ServiceRefreshQueryObserver extends Observer<onServiceRefreshQuery> implements onServiceRefreshQuery {
     @Override
     public void onRefreshStateChanged(boolean isRefreshing) {
-        for (onServiceRefreshQuery listener : listeners) {
+        for (onServiceRefreshQuery listener : listeners.keySet()) {
             listener.onRefreshStateChanged(isRefreshing);
         }
     }

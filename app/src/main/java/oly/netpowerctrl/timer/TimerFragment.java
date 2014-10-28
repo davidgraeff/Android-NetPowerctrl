@@ -126,7 +126,8 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                 MainActivity.getNavigationController().changeToDialog(getActivity(), TimerEditFragmentDialog.class.getName());
             }
         });
-        AnimationController.animateFloatingButton(fab);
+        fab.setVisibility(View.INVISIBLE);
+        AnimationController.animateBottomViewIn(fab);
 
         return view;
     }

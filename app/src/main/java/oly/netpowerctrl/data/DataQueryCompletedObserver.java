@@ -32,7 +32,7 @@ public class DataQueryCompletedObserver extends Observer<onDataQueryCompleted> i
     @Override
     public boolean onDataQueryFinished() {
         initialDataQueryCompleted = true;
-        Iterator<onDataQueryCompleted> iterator = listeners.iterator();
+        Iterator<onDataQueryCompleted> iterator = listeners.keySet().iterator();
         while (iterator.hasNext()) {
             if (!iterator.next().onDataQueryFinished())
                 iterator.remove();

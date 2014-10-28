@@ -86,12 +86,12 @@ public class DeviceConnectionHTTP extends DeviceConnection {
     public boolean equals(DeviceConnection deviceConnection) {
         return this == deviceConnection ||
                 deviceConnection instanceof DeviceConnectionHTTP &&
-                        equalsByDestinationAddress(deviceConnection) &&
+                        equalsByDestinationAddress(deviceConnection, false) &&
                         PortHttp == ((DeviceConnectionHTTP) deviceConnection).PortHttp;
     }
 
     @Override
-    public boolean equalsByDestinationAddress(DeviceConnection otherConnection) {
-        return cached_addresses == null ? mHostName.equals(otherConnection.mHostName) : hasAddress(otherConnection.getHostnameIPs());
+    public boolean equalsByDestinationAddress(DeviceConnection otherConnection, boolean lookupDNSName) {
+        return cached_addresses == null ? mHostName.equals(otherConnection.mHostName) : hasAddress(otherConnection.getHostnameIPs(lookupDNSName), lookupDNSName);
     }
 }

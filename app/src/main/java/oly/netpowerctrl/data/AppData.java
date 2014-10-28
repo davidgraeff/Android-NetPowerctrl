@@ -359,6 +359,8 @@ public class AppData {
             DevicePort devicePort = (DevicePort) executable;
             PluginInterface remote = devicePort.device.getPluginInterface();
             if (remote != null) {
+                if (remote.isNetworkReducedState())
+                    remote.enterFullNetworkState(App.instance, devicePort.device);
                 remote.execute(devicePort, DevicePort.TOGGLE, callback);
             }
 
@@ -374,14 +376,16 @@ public class AppData {
     /**
      * Notice: Only call this method if the NetpowerctrlService service is running!
      *
-     * @param port     The device port
-     * @param command  The command to executeToggle
-     * @param callback The callback for the execution-done messages
+     * @param devicePort The device port
+     * @param command    The command to executeToggle
+     * @param callback   The callback for the execution-done messages
      */
-    public void execute(final DevicePort port, final int command, final onExecutionFinished callback) {
-        PluginInterface remote = port.device.getPluginInterface();
+    public void execute(final DevicePort devicePort, final int command, final onExecutionFinished callback) {
+        PluginInterface remote = devicePort.device.getPluginInterface();
         if (remote != null) {
-            remote.execute(port, command, callback);
+            if (remote.isNetworkReducedState())
+                remote.enterFullNetworkState(App.instance, devicePort.device);
+            remote.execute(devicePort, command, callback);
             return;
         }
 

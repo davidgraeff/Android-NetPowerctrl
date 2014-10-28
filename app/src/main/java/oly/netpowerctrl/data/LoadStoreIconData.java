@@ -50,6 +50,7 @@ public class LoadStoreIconData {
     public static LruCache<String, Bitmap> iconCache = new LruCache<>(INITIAL_ICON_CACHE_CAPACITY);
     public static String defaultFallbackIconSet = "";
     public static IconDeferredLoadingThread iconLoadingThread;
+    public static IconCacheClearedObserver iconCacheClearedObserver = new IconCacheClearedObserver();
     private static WeakReference<Object> icon_callback_context_object;
 
     /**
@@ -219,22 +220,6 @@ public class LoadStoreIconData {
         return c;
     }
 
-    public static IconFile[] getAllIcons(Context context) {
-
-        List<IconFile> list = new ArrayList<>();
-        for (LoadStoreIconData.IconType iconType : LoadStoreIconData.IconType.values()) {
-            for (LoadStoreIconData.IconState state : LoadStoreIconData.IconState.values()) {
-                //noinspection ConstantConditions
-                File myDir = getImageDirectory(context, iconType, state);
-                for (File file : myDir.listFiles()) {
-                    list.add(new IconFile(file, state, iconType));
-                }
-            }
-        }
-
-        return list.toArray(new IconFile[list.size()]);
-    }
-
 //    public static void saveIcon(Context context, String fileName, IconType iconType, IconState state, InputStream input) {
 //        @SuppressWarnings("ConstantConditions")
 //        File myDir = getImageDirectory(context, iconType, state);
@@ -253,6 +238,22 @@ public class LoadStoreIconData {
 //            e.printStackTrace();
 //        }
 //    }
+
+    public static IconFile[] getAllIcons(Context context) {
+
+        List<IconFile> list = new ArrayList<>();
+        for (LoadStoreIconData.IconType iconType : LoadStoreIconData.IconType.values()) {
+            for (LoadStoreIconData.IconState state : LoadStoreIconData.IconState.values()) {
+                //noinspection ConstantConditions
+                File myDir = getImageDirectory(context, iconType, state);
+                for (File file : myDir.listFiles()) {
+                    list.add(new IconFile(file, state, iconType));
+                }
+            }
+        }
+
+        return list.toArray(new IconFile[list.size()]);
+    }
 
     public static void show_select_icon_dialog(final Context context, String assetSet,
                                                final IconSelected callback, final Object callback_context_object) {
@@ -347,6 +348,11 @@ public class LoadStoreIconData {
                         Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public static void clearIconCache() {
+        iconCache.evictAll();
+        iconCacheClearedObserver.onIconCacheCleared();
     }
 
 

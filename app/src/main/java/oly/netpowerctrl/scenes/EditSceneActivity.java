@@ -200,7 +200,7 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
         // Add click listener for the remove button on each included action
         fragment_included.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public boolean onItemClick(View view, int position) {
+            public boolean onItemClick(View view, int position, boolean isLongClick) {
                 if (view.getId() != R.id.outlet_list_close)
                     return false;
                 adapter_available.addItem(adapter_included.take(position).getExecutable(), DevicePort.TOGGLE);
@@ -214,7 +214,7 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
         // to the included list.
         fragment_available.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public boolean onItemClick(View view, int position) {
+            public boolean onItemClick(View view, int position, boolean isLongClick) {
                 DevicePort oi = (DevicePort) adapter_available.getItem(position).getExecutable();
                 if (oi == null)
                     return false;

@@ -1,7 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion changeDate="21. Oktober 2014" versionName="6.4">
-        <changelogimprovement>Hintergrund nur für Android 4.4+ aktivierbar</changelogimprovement>
+    <changelogversion changeDate="28. Oktober 2014" versionName="6.4-6.4.6">
+        <changelogimprovement>Android 5 Design</changelogimprovement>
+        <changelogimprovement>Verstecken von Steckdosen entfernt. Eine Ansichtsgruppe mit den
+            gewünschten Einträgen kann stattdessen angelegt werden.
+        </changelogimprovement>
+        <changelogimprovement>Master/Slave Steckdosenfunktion entfernt. Szenen ersetzten diese
+            Funktionalität.
+        </changelogimprovement>
+        <changelogimprovement>Szenen werden zusammen mit Steckdoseneinträgen in einer Übersicht
+            angezeigt. Master/Slave Szenen zeigen jetzt den Status der Master Steckdose als Symbol
+            in der Übersicht an.
+        </changelogimprovement>
+        <changelogimprovement>Überarbeitete Geräteübersicht mit der Anzeige aller Verbindungen.
+            Gezieltes Testen einer Verbindung durch einen Klick auf Diese.
+        </changelogimprovement>
+        <changelogimprovement>Gruppen sind nun einfacher zugänglich. Ein Wechsel erfolgt durch eine
+            Wischbewegung. Mit einem langem Klick auf den (+)-Knopf kann zu einer Gruppe gesprungen
+            werden.
+        </changelogimprovement>
+        <changelogimprovement>Das Icon-Set für die Übersichtsseite kann in den Einstellungen nun
+            ausgewählt werden.
+        </changelogimprovement>
+        <changelogbug>Einige Fehler mit Http Verbindungen behoben.</changelogbug>
+        <changelogbug>Schnellere, verbesserte Darstellung der Übersicht.</changelogbug>
+        <changelogbug>Absturz bei Erstellen einer Gruppe (unter bestimmten Umständen) behoben
+        </changelogbug>
+        <changelogbug>Wenn der Hintergrundservice im Energiesparmodus war, hatten Widget Clicks
+            diesen nicht wieder korrekt aufgeweckt.
+        </changelogbug>
+        <changelogbug>Falls die Übersichtsseite-Spaltenberechnung 0 Spalten ergeben sollte (Bug in
+            einigen Android Versionen), dann nutze eine Spalte stattdessen.
+        </changelogbug>
     </changelogversion>
 
     <changelogversion changeDate="12. Oktober 2014" versionName="6.3">

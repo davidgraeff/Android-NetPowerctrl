@@ -108,13 +108,13 @@ public class DeviceConnectionUDP extends DeviceConnection {
     public boolean equals(DeviceConnection deviceConnection) {
         return this == deviceConnection ||
                 deviceConnection instanceof DeviceConnectionUDP &&
-                        equalsByDestinationAddress(deviceConnection) &&
+                        equalsByDestinationAddress(deviceConnection, false) &&
                         PortUDPReceive == ((DeviceConnectionUDP) deviceConnection).PortUDPReceive &&
                         PortUDPSend == ((DeviceConnectionUDP) deviceConnection).PortUDPSend;
     }
 
     @Override
-    public boolean equalsByDestinationAddress(DeviceConnection otherConnection) {
-        return cached_addresses == null ? mHostName.equals(otherConnection.mHostName) : hasAddress(otherConnection.getHostnameIPs());
+    public boolean equalsByDestinationAddress(DeviceConnection otherConnection, boolean lookupDNSName) {
+        return cached_addresses == null ? mHostName.equals(otherConnection.mHostName) : hasAddress(otherConnection.getHostnameIPs(lookupDNSName), lookupDNSName);
     }
 }

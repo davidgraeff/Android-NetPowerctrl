@@ -21,13 +21,13 @@ import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.utils.ActionBarTitle;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;
 import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 public class EnergySaveLogFragment extends ListFragment {
     private final ArrayList<String> listItems = new ArrayList<>();
-    private final ActionBarDoneCancel actionBarDoneCancel = new ActionBarDoneCancel();
+    private final ActionBarTitle actionBarTitle = new ActionBarTitle();
     private ArrayAdapter<String> arrayAdapter;
 
     public EnergySaveLogFragment() {
@@ -46,7 +46,8 @@ public class EnergySaveLogFragment extends ListFragment {
         super.onStart();
 
         //noinspection ConstantConditions
-        actionBarDoneCancel.setTitle(getActivity(), R.string.log_screen);
+        actionBarTitle.setTitle(getActivity(), R.string.log_screen);
+
         setListAdapter(arrayAdapter);
         setEmptyText(getString(R.string.log_no_records));
     }
@@ -68,7 +69,7 @@ public class EnergySaveLogFragment extends ListFragment {
 
     @Override
     public void onDestroy() {
-        actionBarDoneCancel.restoreTitle(getActivity());
+        actionBarTitle.restoreTitle(getActivity());
         super.onDestroy();
     }
 
@@ -118,6 +119,8 @@ public class EnergySaveLogFragment extends ListFragment {
                 return true;
             }
             case R.id.menu_log_send_mail: {
+                if (Logging.logFile == null)
+                    Logging.logFile = Logging.getLogFile(getActivity());
                 App.setErrorReportContentLogFile(Logging.logFile.getAbsolutePath());
                 InAppNotifications.silentException(null);
                 App.setErrorReportContentCrash();

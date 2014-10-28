@@ -77,7 +77,7 @@ public class DeviceConnectionAPI extends DeviceConnection {
     }
 
     @Override
-    public boolean equalsByDestinationAddress(DeviceConnection otherConnection) {
+    public boolean equalsByDestinationAddress(DeviceConnection otherConnection, boolean lookupDNSName) {
         return mHostName.equals(otherConnection.mHostName);
     }
 }

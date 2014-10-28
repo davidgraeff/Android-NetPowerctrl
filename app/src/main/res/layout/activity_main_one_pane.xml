@@ -17,16 +17,6 @@
             android:minHeight="?attr/actionBarSize"
             app:theme="?attr/toolbar_style">
 
-            <LinearLayout
-                android:id="@+id/notifications"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:gravity="start"
-                android:orientation="vertical"
-                android:padding="5dp"
-                android:visibility="gone" />
-
         </android.support.v7.widget.Toolbar>
 
         <FrameLayout
@@ -34,6 +24,17 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
+
+        <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/toolbar_bottom_actionbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:visibility="gone"
+            app:theme="?attr/toolbar_style">
+
+        </android.support.v7.widget.Toolbar>
 
     </LinearLayout>
 

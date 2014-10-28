@@ -8,7 +8,7 @@ import oly.netpowerctrl.utils.Observer;
 public class ServiceModeChangedObserver extends Observer<onServiceModeChanged> implements onServiceModeChanged {
     @Override
     public void onServiceModeChanged(boolean isNetworkDown) {
-        for (onServiceModeChanged listener : listeners) {
+        for (onServiceModeChanged listener : listeners.keySet()) {
             listener.onServiceModeChanged(isNetworkDown);
         }
     }

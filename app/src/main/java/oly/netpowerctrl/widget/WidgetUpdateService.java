@@ -80,8 +80,8 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     @Override
     public void onCreate() {
-        super.onCreate();
         appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
+        super.onCreate();
     }
 
     @Override
@@ -140,19 +140,15 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             return START_NOT_STICKY;
         }
 
-        firstTimeInit();
-        preCheckUpdate();
-
-        return START_STICKY;
-    }
-
-    private void firstTimeInit() {
         if (!initDone) {
             initDone = true;
             AppData.useAppData();
             ListenService.useService(getApplicationContext(), false, false);
             ListenService.observersServiceReady.register(this);
-        }
+        } else
+            preCheckUpdate();
+
+        return START_STICKY;
     }
 
     private void preCheckUpdate() {
@@ -239,7 +235,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         setWidgetState(widgetID, port, true);
 
-        if (!port.device.isReachable()) {
+        if (!port.device.isReachable() && port.device.getPluginInterface().isNetworkReducedState()) {
             ListenService.getService().findDevices(true, null);
             return;
         }

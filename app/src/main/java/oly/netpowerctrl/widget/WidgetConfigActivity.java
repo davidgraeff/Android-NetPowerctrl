@@ -15,11 +15,11 @@ import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
 import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
 
 public class WidgetConfigActivity extends Activity {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    private RecyclerItemClickListener selectedOutletListener;
     private ExecutablesBaseAdapter adapter;
 
     @Override
@@ -47,16 +47,39 @@ public class WidgetConfigActivity extends Activity {
         }
         setContentView(R.layout.activity_main_one_pane);
         findViewById(R.id.left_drawer_list).setVisibility(View.GONE);
-        //noinspection ConstantConditions
-        getActionBar().setHomeButtonEnabled(false);
+        findViewById(R.id.toolbar_actionbar).setVisibility(View.GONE);
 
         ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
         s.setAutomaticUpdate(true);
         this.adapter = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
 
-        AdapterFragment f = new AdapterFragment();
+        AdapterFragment<ExecutablesBaseAdapter> f = new AdapterFragment<>();
         f.setAdapter(this.adapter);
-        f.setOnItemClickListener(selectedOutletListener);
+
+        f.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public boolean onItemClick(View view, int position, boolean isLongClick) {
+                if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
+                    return false;
+                String uid = adapter.getItem(position).getExecutableUid();
+                if (uid == null)
+                    return false;
+
+                SharedPrefs.getInstance().SaveWidget(widgetId, uid);
+
+                App.getMainThreadHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent resultValue = new Intent();
+                        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+                        setResult(RESULT_OK, resultValue);
+                        finish();
+                        WidgetUpdateService.ForceUpdate(WidgetConfigActivity.this, widgetId);
+                    }
+                });
+                return true;
+            }
+        }, null));
 
         getFragmentManager().beginTransaction().replace(R.id.content_frame, f).commit();
 
@@ -67,26 +90,5 @@ public class WidgetConfigActivity extends Activity {
                     AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-
-        selectedOutletListener = new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public boolean onItemClick(View view, int position) {
-                if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
-                    return false;
-                String uid = adapter.getItem(position).getExecutableUid();
-                if (uid == null)
-                    return false;
-
-                SharedPrefs.getInstance().SaveWidget(widgetId, uid);
-
-                Intent resultValue = new Intent();
-                resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-                setResult(RESULT_OK, resultValue);
-                finish();
-
-                WidgetUpdateService.ForceUpdate(WidgetConfigActivity.this, widgetId);
-                return true;
-            }
-        }, null);
     }
 }

@@ -34,7 +34,7 @@ public class TextNotification extends PermanentNotification {
             @Override
             public void onClick(View view) {
                 SharedPrefs.getInstance().acceptUpdatedVersion();
-                InAppNotifications.removePermanentNotification(context, getID());
+                InAppNotifications.closePermanentNotification(context, getID());
             }
         });
 

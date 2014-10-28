@@ -22,6 +22,18 @@ import oly.netpowerctrl.scenes.SceneCollection;
 public class AndroidStatusBarNotification {
     private static onCollectionUpdated<SceneCollection, Scene> collectionUpdateListener = null;
 
+    public AndroidStatusBarNotification(final Context context) {
+        SharedPrefs.getInstance().registerShowPersistentNotification(new SharedPrefs.IShowPersistentNotification() {
+            @Override
+            public void showPersistentNotificationChanged(boolean enabled) {
+                setEnabled(context, enabled);
+            }
+        });
+
+        if (SharedPrefs.getInstance().isNotification())
+            setEnabled(context, true);
+    }
+
     private static Notification createNotification(Context context) {
         Intent startMainIntent = new Intent(context, MainActivity.class);
         startMainIntent.setAction(Intent.ACTION_MAIN);

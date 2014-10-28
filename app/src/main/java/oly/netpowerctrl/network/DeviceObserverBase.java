@@ -71,7 +71,7 @@ public abstract class DeviceObserverBase {
             // Special case: No unique id. IPs are compared instead
             // and the unique id is copied from the network device.
             if (device_to_observe.UniqueDeviceID == null) {
-                if (device_to_observe.hasAddress(device.getHostnameIPs())) {
+                if (device_to_observe.hasAddress(device.getHostnameIPs(false), false)) {
                     device_to_observe.UniqueDeviceID = device.UniqueDeviceID;
                     device_to_observe.setNotReachableAll(null);
                     it.remove();
@@ -120,6 +120,9 @@ public abstract class DeviceObserverBase {
                 target.onObserverJobFinished(timeout_devices);
             return;
         }
+
+        if (service.isNetworkReducedMode())
+            service.enterFullNetworkMode(false, false);
 
         // Register on main application object to receive device updates
         AppData.getInstance().addUpdateDeviceState(this);

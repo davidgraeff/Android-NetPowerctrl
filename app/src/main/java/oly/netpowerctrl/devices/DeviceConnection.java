@@ -67,25 +67,30 @@ public abstract class DeviceConnection {
     }
 
     public void lookupIPs() throws UnknownHostException {
-        cached_addresses = InetAddress.getAllByName(mHostName);
         receivedPackets = 0;
+        // do the lookup (exception may occur)
+        cached_addresses = InetAddress.getAllByName(mHostName);
     }
 
-    // This has to be executed in another thread not the gui thread!
-    public InetAddress[] getHostnameIPs() {
+    // This has to be executed in another thread not the gui thread if lookupDNSName is set.
+    public InetAddress[] getHostnameIPs(boolean lookupDNSName) {
         if (cached_addresses == null || cached_addresses.length == 0) {
-            try {
-                cached_addresses = InetAddress.getAllByName(mHostName);
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
+            if (lookupDNSName)
+                try {
+                    cached_addresses = InetAddress.getAllByName(mHostName);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                    cached_addresses = new InetAddress[0];
+                }
+            else
                 cached_addresses = new InetAddress[0];
-            }
         }
         return cached_addresses;
     }
 
-    public boolean hasAddress(InetAddress[] addresses) {
-        getHostnameIPs();
+    // This has to be executed in another thread not the gui thread if lookupDNSName is set.
+    public boolean hasAddress(InetAddress[] addresses, boolean lookupDNSName) {
+        getHostnameIPs(lookupDNSName);
         if (cached_addresses != null) {
             for (InetAddress local_address : cached_addresses)
                 for (InetAddress other_address : addresses)
@@ -113,5 +118,5 @@ public abstract class DeviceConnection {
 
     public abstract boolean equals(DeviceConnection deviceConnection);
 
-    public abstract boolean equalsByDestinationAddress(DeviceConnection otherConnection);
+    public abstract boolean equalsByDestinationAddress(DeviceConnection otherConnection, boolean lookupDNSName);
 }

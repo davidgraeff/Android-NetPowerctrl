@@ -30,6 +30,7 @@ public class App extends Application {
     public static App instance;
 
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+    private AndroidStatusBarNotification androidStatusBarNotification;
 
     public App() {
         App.instance = this;
@@ -80,7 +81,7 @@ public class App extends Application {
         ACRA.init(this);
         setErrorReportContentCrash();
         LoadStoreIconData.init(this);
-        AndroidStatusBarNotification.init(this);
+        androidStatusBarNotification = new AndroidStatusBarNotification(this);
     }
 
 }

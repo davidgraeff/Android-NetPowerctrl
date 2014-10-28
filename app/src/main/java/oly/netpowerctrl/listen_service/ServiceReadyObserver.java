@@ -18,7 +18,7 @@ public class ServiceReadyObserver extends Observer<onServiceReady> implements on
 
     @Override
     public boolean onServiceReady(ListenService service) {
-        Iterator<onServiceReady> iterator = listeners.iterator();
+        Iterator<onServiceReady> iterator = listeners.keySet().iterator();
         while (iterator.hasNext()) {
             if (!iterator.next().onServiceReady(service))
                 iterator.remove();
@@ -28,7 +28,7 @@ public class ServiceReadyObserver extends Observer<onServiceReady> implements on
 
     @Override
     public void onServiceFinished() {
-        for (onServiceReady listener : listeners) {
+        for (onServiceReady listener : listeners.keySet()) {
             listener.onServiceFinished();
         }
     }

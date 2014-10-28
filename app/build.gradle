@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 96
-        versionName "6.3"
+        versionCode 104
+        versionName "6.4.6"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -62,13 +62,13 @@ android {
         }
     }
 
-    splits {
-        density {
-            enable true
-            //exclude "ldpi", "tvdpi", "xxxhdpi"
-            //compatibleScreens 'small', 'normal', 'large', 'xlarge'
-        }
-    }
+//    splits {
+//        density {
+//            enable true
+//            //exclude "ldpi", "tvdpi", "xxxhdpi"
+//            //compatibleScreens 'small', 'normal', 'large', 'xlarge'
+//        }
+//    }
 
     sourceSets { main { java.srcDirs = ['src/main/java', 'src/tests/java'] } }
 

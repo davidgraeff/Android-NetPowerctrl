@@ -394,10 +394,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         void showPersistentNotificationChanged(boolean enabled);
     }
 
-    public interface IShowBackground {
-        void backgroundChanged(boolean showBackground);
-    }
-
     public interface IHideNotReachable {
         void hideNotReachable(boolean hideNotReachable);
     }

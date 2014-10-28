@@ -463,10 +463,10 @@ public class Device implements Comparable<Device>, StorableInterface {
         }
     }
 
-    public InetAddress[] getHostnameIPs() {
+    public InetAddress[] getHostnameIPs(boolean lookupDNSName) {
         List<InetAddress> addresses = new ArrayList<>();
         for (DeviceConnection connection : DeviceConnections) {
-            Collections.addAll(addresses, connection.getHostnameIPs());
+            Collections.addAll(addresses, connection.getHostnameIPs(lookupDNSName));
         }
 
         InetAddress[] a = new InetAddress[addresses.size()];
@@ -474,12 +474,13 @@ public class Device implements Comparable<Device>, StorableInterface {
         return a;
     }
 
-    public boolean hasAddress(InetAddress[] hostnameIPs) {
+    // This has to be executed in another thread not the gui thread if lookupDNSName is set.
+    public boolean hasAddress(InetAddress[] hostnameIPs, boolean lookupDNSName) {
         if (hostnameIPs == null || hostnameIPs.length == 0)
             return false;
 
         for (DeviceConnection connection : DeviceConnections) {
-            if (connection.hasAddress(hostnameIPs))
+            if (connection.hasAddress(hostnameIPs, lookupDNSName))
                 return true;
         }
 

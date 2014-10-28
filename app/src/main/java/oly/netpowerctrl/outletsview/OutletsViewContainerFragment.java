@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,6 +22,7 @@ import android.view.animation.ScaleAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.PopupMenu;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,14 +30,10 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.devices.Device;
 import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.DevicesAutomaticFragment;
-import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.executables.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.ExecutableViewHolder;
 import oly.netpowerctrl.executables.ExecutablesSourceBase;
@@ -53,7 +52,6 @@ import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.RecyclerItemClickListener;
-import oly.netpowerctrl.utils.actionbar.GroupPagerAdapter;
 import oly.netpowerctrl.utils.controls.FloatingActionButton;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 import oly.netpowerctrl.utils.notifications.InAppNotifications;
@@ -65,13 +63,11 @@ import oly.netpowerctrl.utils.notifications.TextNotification;
  */
 public class OutletsViewContainerFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         onNotReachableUpdate, onFragmentChangeArguments,
-        onServiceRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged,
-        ExecutablesSourceDevicePorts.onChange, onDataQueryCompleted, onCollectionUpdated<UnconfiguredDeviceCollection, Device> {
+        onServiceRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged {
 
     public static final int VIEW_AS_LIST = 0;
     public static final int VIEW_AS_GRID = 1;
     public static final int VIEW_AS_COMPACT = 2;
-    private static OutletsViewContainerFragment instance;
     ExecutablesSourceBase adapterSource;
     // Column computations
     int requestedColumnWidth;
@@ -83,7 +79,7 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     private int clickedPosition;
     public RecyclerItemClickListener onItemTouchListener = new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
         @Override
-        public boolean onItemClick(View view, int position) {
+        public boolean onItemClick(View view, int position, boolean isLongClick) {
             ExecutableAdapterItem item = adapter.getItem(position);
             if (!(item.groupType() == ExecutableAdapterItem.groupTypeEnum.NOGROUP_TYPE)) {
                 clickedPosition = position;
@@ -116,8 +112,8 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     }, null);
     private FloatingActionButton btnWireless;
     private ViewPager pager;
-    private int emptyInit = 0;
-    private checkEmptyState lastState = checkEmptyState.UNKNOWN;
+    private WeakReference<OutletsViewFragment> lastFragment = null;
+    private Bundle mExtra = null;
 
     public OutletsViewContainerFragment() {
     }
@@ -128,10 +124,6 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
         return bundle;
     }
 
-    public static OutletsViewContainerFragment getInstance() {
-        return instance;
-    }
-
     public ExecuteAdapter getAdapter() {
         return adapter;
     }
@@ -139,8 +131,7 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        instance = this;
-        groupPagerAdapter = new GroupPagerAdapter(getFragmentManager(), this);
+        groupPagerAdapter = new GroupPagerAdapter(getFragmentManager());
         SharedPrefs.getInstance().registerHideNotReachable(this);
         setHasOptionsMenu(true);
     }
@@ -148,7 +139,6 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     @Override
     public void onDestroy() {
         super.onDestroy();
-        instance = null;
         groupPagerAdapter.onDestroy();
     }
 
@@ -156,7 +146,6 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     public void onPause() {
         ListenService.observersStartStopRefresh.unregister(this);
         ListenService.observersServiceModeChanged.unregister(this);
-        AppData.getInstance().unconfiguredDeviceCollection.unregisterObserver(this);
         super.onPause();
         if (adapterSource != null)
             adapterSource.onPause();
@@ -166,37 +155,40 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     public void onResume() {
         ListenService.observersStartStopRefresh.register(this);
         ListenService.observersServiceModeChanged.register(this);
-        AppData.getInstance().unconfiguredDeviceCollection.registerObserver(this);
 
         if (adapterSource != null)
             adapterSource.onResume();
 
-        InAppNotifications.showPermanentNotifications(getActivity());
-
         super.onResume();
     }
 
-    @Override
-    public void changeArguments(Bundle mExtra) {
-        if (mExtra != null && mExtra.containsKey("viewtype") && pager != null) {
-            setViewType(mExtra.getInt("viewtype"));
-            OutletsViewFragment fragment = (OutletsViewFragment) groupPagerAdapter.instantiateItem(pager, pager.getCurrentItem());
-            if (fragment != null)
-                fragment.viewTypeChanged();
+    public void changeArguments(Bundle extra) {
+        if (pager == null) {
+            mExtra = extra;
             return;
         }
 
         UUID newGroupFilter;
 
-        if (mExtra != null && mExtra.containsKey("filter"))
-            newGroupFilter = UUID.fromString(mExtra.getString("filter"));
+        if (extra != null && extra.containsKey("filter"))
+            newGroupFilter = UUID.fromString(extra.getString("filter"));
         else
             newGroupFilter = null;
 
-        int pos = AppData.getInstance().groupCollection.indexOf(newGroupFilter) + 1;
-        pager.setCurrentItem(pos);
+        int temp = AppData.getInstance().groupCollection.indexOf(newGroupFilter) + 1;
+        pager.setCurrentItem(temp);
 
-        checkEmptyChanged(checkEmptyAction.ADDREMOVE);
+        OutletsViewFragment fragment = getCurrentOutletsViewFragmentFromPager();
+
+        // Set view type
+        if (extra != null && extra.containsKey("viewtype")) {
+            temp = extra.getInt("viewtype");
+            fragment.viewTypeChanged(this);
+        } else
+            temp = (SharedPrefs.getInstance().getOutletsViewType());
+        setViewType(temp);
+
+        checkEmpty(fragment);
     }
 
     private void setViewType(int viewType) {
@@ -243,6 +235,19 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
         return false;
     }
 
+    @Nullable
+    private OutletsViewFragment getCurrentOutletViewFragment() {
+        if (lastFragment != null)
+            return lastFragment.get();
+        else
+            return null;
+    }
+
+    @NonNull
+    private OutletsViewFragment getCurrentOutletsViewFragmentFromPager() {
+        return (OutletsViewFragment) groupPagerAdapter.instantiateItem(pager, pager.getCurrentItem());
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
@@ -253,7 +258,6 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
         { // Add scene floating button
             final GroupCollection groupCollection = AppData.getInstance().groupCollection;
             final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.btnAdd);
-            fab.setVisibility(View.VISIBLE);
             fab.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
@@ -292,7 +296,7 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
                         public boolean onMenuItemClick(MenuItem menuItem) {
                             switch (menuItem.getItemId()) {
                                 case R.id.menu_add_group:
-                                    GroupUtilities.createGroupForDevicePort(getActivity(), null);
+                                    GroupUtilities.createGroup(getActivity());
                                     return true;
                                 case R.id.menu_add_scene:
                                     Intent it = new Intent(getActivity(), EditSceneActivity.class);
@@ -306,7 +310,12 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
                     popup.show();
                 }
             });
-            AnimationController.animateFloatingButton(fab);
+            if (SharedPrefs.getInstance().isFullscreen())
+                fab.setVisibility(View.GONE);
+            else {
+                fab.setVisibility(View.INVISIBLE);
+                AnimationController.animateBottomViewIn(fab);
+            }
             spaceBottomForFloatingButtons = fab.getHeight();
         }
 
@@ -331,14 +340,23 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
             }
 
             @Override
-            public void onPageScrollStateChanged(int i) {
+            public void onPageScrollStateChanged(int state) {
+                if (state == ViewPager.SCROLL_STATE_IDLE) {
+                    OutletsViewFragment last_fragment = lastFragment != null ? lastFragment.get() : null;
+                    OutletsViewFragment fragment = getCurrentOutletsViewFragmentFromPager();
+                    if (fragment == last_fragment)
+                        return;
 
+                    if (last_fragment != null)
+                        last_fragment.setEmptyText(OutletsViewContainerFragment.this, R.string.empty_no_outlets);
+                    lastFragment = new WeakReference<>(fragment);
+                }
             }
         });
 
         btnWireless = (FloatingActionButton) view.findViewById(R.id.btnWirelessSettings);
         if (!ListenService.isWirelessLanConnected(getActivity()))
-            AnimationController.animateFloatingButton(btnWireless);
+            AnimationController.animateBottomViewIn(btnWireless);
         btnWireless.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -352,7 +370,6 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
         adapterSource = new ExecutablesSourceDevicePorts();
         adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
         adapterSource.setAutomaticUpdate(true);
-        adapterSource.setOnChangeListener(this);
 
         ExecutablesSourceGroups groupSource = new ExecutablesSourceGroups();
         groupSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
@@ -362,73 +379,29 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
 
         ExecutablesSourceScenes sceneSource = new ExecutablesSourceScenes();
         sceneSource.setAutomaticUpdate(true);
-        sceneSource.setOnChangeListener(this);
 
         groupSource.addChainItem(sceneSource);
 
         adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                checkEmpty(getCurrentOutletViewFragment());
+            }
+        });
         if (groupFilter != null) {
             if (adapter.setGroupFilter(groupFilter))
                 adapterSource.updateNow();
         }
 
-        checkEmptyChanged(checkEmptyAction.INIT_AFTER_VIEW);
         return view;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        lastState = checkEmptyState.UNKNOWN;
-
-        setViewType(SharedPrefs.getInstance().getOutletsViewType());
-
-        AppData.observersDataQueryCompleted.register(this);
+        changeArguments(mExtra);
 
         super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public boolean onDataQueryFinished() {
-        checkEmptyChanged(checkEmptyAction.FIRSTDATA);
-        return false;
-    }
-
-    @Override
-    public boolean updated(UnconfiguredDeviceCollection unconfiguredDeviceCollection, Device device, ObserverUpdateActions action, int position) {
-        checkEmptyChanged(checkEmptyAction.NEWDEVICE);
-        return true;
-    }
-
-    private void checkEmptyChanged(checkEmptyAction newState) {
-        if (newState == checkEmptyAction.INIT_AFTER_VIEW)
-            emptyInit = 1;
-
-        if (emptyInit == 0)
-            return;
-
-        OutletsViewFragment fragment = (OutletsViewFragment) groupPagerAdapter.instantiateItem(pager, pager.getCurrentItem());
-
-        switch (newState) {
-            case ADDREMOVE:
-                if (emptyInit == 2 && lastState == checkEmptyState.EMPTY)
-                    checkEmpty(fragment);
-                break;
-            case FIRSTDATA:
-                emptyInit = 2;
-                checkEmpty(fragment);
-                checkService();
-                break;
-            case NEWDEVICE:
-                if (lastState == checkEmptyState.EMPTY)
-                    checkEmpty(fragment);
-                break;
-            case SERVICE:
-                if (emptyInit == 2) {
-                    checkEmpty(fragment);
-                    checkService();
-                }
-                break;
-        }
     }
 
     public void refreshNow() {
@@ -444,34 +417,22 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
      * Do not call this directly! Use checkEmptyChanged instead.
      */
     public void checkEmpty(OutletsViewFragment fragment) {
-        lastState = checkEmptyState.UNKNOWN;
-
         if (!isAdded() || fragment == null)
             return;
 
         if (adapter.getItemCount() == 0) {
-            lastState = checkEmptyState.EMPTY;
 
             boolean hasDevices = AppData.getInstance().deviceCollection.hasDevices();
             if (!hasDevices) {
-                fragment.setEmptyText(R.string.empty_no_outlets_no_devices);
+                fragment.setEmptyText(this, R.string.empty_no_outlets_no_devices);
             } else if (groupFilter != null) {
-                fragment.setEmptyText(R.string.empty_group);
+                fragment.setEmptyText(this, R.string.empty_group);
             } else {
-                fragment.setEmptyText(R.string.empty_no_outlets);
+                fragment.setEmptyText(this, R.string.empty_no_outlets);
             }
         } else {
-            lastState = checkEmptyState.FILLED;
-            fragment.setEmptyText(0);
+            fragment.setEmptyText(this, 0);
         }
-    }
-
-    void checkService() {
-        boolean en = (!ListenService.isServiceReady() || ListenService.getService().isNetworkReducedMode());
-        if (en)
-            InAppNotifications.addPermanentNotification(getActivity(), new TextNotification("energy", getString(R.string.device_energysave_mode), false));
-        else
-            InAppNotifications.removePermanentNotification(getActivity(), "energy");
     }
 
     @Override
@@ -506,10 +467,10 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
             for (Device di : not_reachable) {
                 devices += di.DeviceName + " ";
             }
-            InAppNotifications.addPermanentNotification(getActivity(), new TextNotification("not_reachable",
+            InAppNotifications.updatePermanentNotification(getActivity(), new TextNotification("not_reachable",
                     getString(R.string.devices_not_reachable, devices), true));
         } else {
-            InAppNotifications.removePermanentNotification(getActivity(), "not_reachable");
+            InAppNotifications.closePermanentNotification(getActivity(), "not_reachable");
         }
     }
 
@@ -545,31 +506,20 @@ public class OutletsViewContainerFragment extends Fragment implements PopupMenu.
     @Override
     public void onServiceModeChanged(boolean isNetworkDown) {
         if (!ListenService.isWirelessLanConnected(getActivity()))
-            AnimationController.animateFloatingButton(btnWireless);
+            AnimationController.animateBottomViewIn(btnWireless);
         else
-            AnimationController.animateFloatingButtonOut(btnWireless);
+            AnimationController.animateBottomViewOut(btnWireless);
 
-        if (!isNetworkDown)
-            checkService();
+        if (isNetworkDown)
+            InAppNotifications.updatePermanentNotification(getActivity(), new TextNotification("energy", getString(R.string.device_energysave_mode), false));
         else
-            checkEmptyChanged(checkEmptyAction.SERVICE);
-    }
-
-    @Override
-    public void sourceChanged() {
-        checkEmptyChanged(checkEmptyAction.ADDREMOVE);
+            InAppNotifications.closePermanentNotification(getActivity(), "energy");
     }
 
     @Override
     public void onRefreshStateChanged(boolean isRefreshing) {
-        OutletsViewFragment view = (OutletsViewFragment) groupPagerAdapter.instantiateItem(pager, pager.getCurrentItem());
+        OutletsViewFragment view = getCurrentOutletViewFragment();
         if (view != null)
             view.onRefreshStateChanged(isRefreshing);
     }
-
-    private enum checkEmptyState {UNKNOWN, EMPTY, FILLED}
-
-    private enum checkEmptyAction {SERVICE, FIRSTDATA, NEWDEVICE, INIT_AFTER_VIEW, ADDREMOVE}
-
-
 }

@@ -3,8 +3,8 @@ package oly.netpowerctrl.utils.notifications;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -18,6 +18,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.utils.AnimationController;
 
 /**
  * Show a toast message, especially if not within the main thread
@@ -77,13 +78,38 @@ public class InAppNotifications {
         ACRA.getErrorReporter().handleSilentException(exception);
     }
 
-    public static void addPermanentNotification(Activity activity, PermanentNotification permanentNotification) {
-        permanentNotifications.add(permanentNotification);
+    public static void updatePermanentNotification(Activity activity, PermanentNotification newPermanentNotification) {
+        Toolbar toolbar = (Toolbar) activity.findViewById(R.id.toolbar_bottom_actionbar);
+        if (toolbar == null) {
+            return;
+        }
 
-        showPermanentNotifications(activity);
+        // If toolbar is visible -> there is still a notification shown. Add this new one to a backlog list.
+        if (toolbar.getVisibility() == View.VISIBLE) {
+            if (newPermanentNotification != null)
+                permanentNotifications.add(newPermanentNotification);
+            return;
+        } else if (permanentNotifications.size() == 0 && newPermanentNotification == null)
+            return;
+
+        AnimationController.animateBottomViewIn(toolbar);
+
+        doUpdatePermanentNotification(activity, toolbar, newPermanentNotification);
     }
 
-    public static void removePermanentNotification(Activity activity, String id) {
+    private static void doUpdatePermanentNotification(Activity activity, Toolbar toolbar, PermanentNotification newPermanentNotification) {
+        View v = toolbar.findViewWithTag(newPermanentNotification.getID());
+        if (v != null) {
+            toolbar.removeView(v);
+        }
+        v = newPermanentNotification.getView(activity, toolbar);
+        v.setTag(newPermanentNotification.getID());
+        Toolbar.LayoutParams lp = new Toolbar.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        toolbar.addView(v, lp);
+    }
+
+    public static void closePermanentNotification(Activity activity, String id) {
         Iterator<PermanentNotification> it = permanentNotifications.iterator();
         while (it.hasNext())
             if (it.next().getID().equals(id))
@@ -92,34 +118,21 @@ public class InAppNotifications {
         if (activity == null)
             return;
 
-        LinearLayout layout = (LinearLayout) activity.findViewById(R.id.notifications);
-        if (layout == null) {
+        Toolbar toolbar = (Toolbar) activity.findViewById(R.id.toolbar_bottom_actionbar);
+        if (toolbar == null) {
             return;
         }
 
-        View v = layout.findViewWithTag(id);
+        AnimationController.animateBottomViewOut(toolbar);
+
+        View v = toolbar.findViewWithTag(id);
         if (v != null) {
-            layout.removeView(v);
-        }
-    }
-
-    public static void showPermanentNotifications(Activity activity) {
-        LinearLayout layout = (LinearLayout) activity.findViewById(R.id.notifications);
-        if (layout == null) {
-            return;
-        }
-
-        for (PermanentNotification permanentNotification : permanentNotifications) {
-            View v = layout.findViewWithTag(permanentNotification.getID());
-            if (v != null) {
-                layout.removeView(v);
+            toolbar.removeView(v);
+            if (permanentNotifications.size() > 0) {
+                it = permanentNotifications.iterator();
+                doUpdatePermanentNotification(activity, toolbar, it.next());
+                it.remove();
             }
-            v = permanentNotification.getView(activity, layout);
-            v.setTag(permanentNotification.getID());
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            layout.addView(v, lp);
-
         }
     }
 }

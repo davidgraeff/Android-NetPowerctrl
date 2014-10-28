@@ -26,6 +26,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.utils.AnimationController;
@@ -151,17 +152,20 @@ public class DevicesFragment extends Fragment
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.HORIZONTAL_LIST) {
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST) {
             @Override
             public boolean dividerForPosition(int position) {
-                return true;
+                return position < adapter.getItemCount() - 1 && adapter.getItem(position + 1).isDeviceHeader;
             }
         });
 
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
-            public boolean onItemClick(View view, int position) {
-                DevicesAdapter.DeviceAdapterItem item = adapter.getItem(position);
+            public boolean onItemClick(View view, int position, boolean isLongClick) {
+                final DevicesAdapter.DeviceAdapterItem item = adapter.getItem(position);
+                if (!item.enabled)
+                    return true;
+
                 Device device = AppData.getInstance().findDeviceByUniqueID(item.UniqueDeviceID);
                 if (device == null) {
                     for (Device di : AppData.getInstance().unconfiguredDeviceCollection.getItems()) {
@@ -175,10 +179,22 @@ public class DevicesFragment extends Fragment
                     return true;
 
                 if (!item.isDeviceHeader) {
-                    item.subtitle = getString(R.string.device_connection_testing);
-                    PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
-                    if (pluginInterface != null)
-                        pluginInterface.requestData(device.DeviceConnections.get(item.connectionID));
+                    final DeviceConnection deviceConnection = device.DeviceConnections.get(item.connectionID);
+                    final PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
+                    if (pluginInterface != null) {
+                        item.tested = false;
+                        item.reachable = false;
+                        item.subtitle = getString(R.string.device_connection_testing);
+                        adapter.notifyItemChanged(position);
+                        item.enabled = false;
+                        App.getMainThreadHandler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                item.enabled = true;
+                                pluginInterface.requestData(deviceConnection);
+                            }
+                        }, 1000);
+                    }
                     return true;
                 }
 
@@ -220,7 +236,8 @@ public class DevicesFragment extends Fragment
                 show_configure_device_dialog(null);
             }
         });
-        AnimationController.animateFloatingButton(fab);
+        fab.setVisibility(View.INVISIBLE);
+        AnimationController.animateBottomViewIn(fab);
 
         return view;
     }

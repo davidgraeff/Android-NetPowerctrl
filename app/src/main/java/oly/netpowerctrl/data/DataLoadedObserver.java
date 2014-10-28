@@ -25,7 +25,7 @@ public class DataLoadedObserver extends Observer<onDataLoaded> implements onData
     @Override
     public boolean onDataLoaded() {
         dataLoaded = true;
-        Iterator<onDataLoaded> iterator = listeners.iterator();
+        Iterator<onDataLoaded> iterator = listeners.keySet().iterator();
         while (iterator.hasNext()) {
             if (!iterator.next().onDataLoaded())
                 iterator.remove();

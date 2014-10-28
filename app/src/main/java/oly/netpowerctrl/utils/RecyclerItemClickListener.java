@@ -4,7 +4,9 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -26,7 +28,16 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
 
         mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
             @Override
+            public void onLongPress(MotionEvent e) {
+                clickExecution(e, true);
+            }
+
+            @Override
             public boolean onSingleTapUp(MotionEvent e) {
+                return clickExecution(e, false);
+            }
+
+            private boolean clickExecution(MotionEvent e, boolean isLongClick) {
                 if (mListenerClick != null) {
                     // Get element of the RecyclerView that was clicked
                     ViewGroup cView = (ViewGroup) view.findChildViewUnder(e.getX(), e.getY());
@@ -38,12 +49,20 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                         Rect _bounds = new Rect();
                         _child.getHitRect(_bounds);
                         if (_bounds.contains((int) (e.getX() - cView.getX()), (int) (e.getY() - cView.getY()))) {
-                            return mListenerClick.onItemClick(_child, view.getChildPosition(cView));
+                            if (isLongClick)
+                                _child.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                            else
+                                _child.playSoundEffect(SoundEffectConstants.CLICK);
+                            return mListenerClick.onItemClick(_child, view.getChildPosition(cView), isLongClick);
                         }
                     }
 
                     // If no child found, we return the element view.
-                    return mListenerClick.onItemClick(cView, view.getChildPosition(cView));
+                    if (isLongClick)
+                        cView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                    else
+                        cView.playSoundEffect(SoundEffectConstants.CLICK);
+                    return mListenerClick.onItemClick(cView, view.getChildPosition(cView), isLongClick);
                 }
                 return false;
             }
@@ -73,6 +92,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
             return false;
 
         this.view = view;
+
         return mGestureDetector.onTouchEvent(e);
     }
 
@@ -81,7 +101,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
     }
 
     public interface OnItemClickListener {
-        public boolean onItemClick(View view, int position);
+        public boolean onItemClick(View view, int position, boolean isLongClick);
     }
 
     public interface OnItemFlingListener {

@@ -666,13 +666,13 @@ final public class AnelPlugin implements PluginInterface {
         if (SharedPrefs.getInstance().logEnergySaveMode())
             Logging.appendLog(context, "Anel: enterNetworkReducedState");
 
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<AnelPlugin, Void, Void>() {
             @Override
-            protected Void doInBackground(Void... voids) {
-                stopNetwork();
+            protected Void doInBackground(AnelPlugin... plugin) {
+                plugin[0].stopNetwork();
                 return null;
             }
-        }.execute();
+        }.execute(this);
 
         AppData d = AppData.getInstance();
         for (Device di : d.deviceCollection.getItems()) {

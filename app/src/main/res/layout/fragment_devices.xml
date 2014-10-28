@@ -55,5 +55,5 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         app:drawable="@android:drawable/ic_menu_add"
-        app:mainColor="#FFDF4D38" />
+        app:mainColor="?attr/floating_button_color" />
 </RelativeLayout>

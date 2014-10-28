@@ -1,16 +1,16 @@
 package oly.netpowerctrl.utils;
 
-import java.util.ArrayList;
+import java.util.WeakHashMap;
 
 /**
  * Created by david on 19.08.14.
  */
 public class Observer<T> {
-    protected final ArrayList<T> listeners = new ArrayList<>();
+    protected final WeakHashMap<T, Boolean> listeners = new WeakHashMap<>();
 
     public void register(T o) {
-        if (!listeners.contains(o)) {
-            listeners.add(o);
+        if (!listeners.containsKey(o)) {
+            listeners.put(o, true);
         }
     }
 

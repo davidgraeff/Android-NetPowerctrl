@@ -30,7 +30,7 @@ public class ChangeLogNotification extends PermanentNotification {
             @Override
             public void onClick(View view) {
                 SharedPrefs.getInstance().acceptUpdatedVersion();
-                InAppNotifications.removePermanentNotification(context, getID());
+                InAppNotifications.closePermanentNotification(context, getID());
             }
         });
 
@@ -39,7 +39,7 @@ public class ChangeLogNotification extends PermanentNotification {
             @Override
             public void onClick(View view) {
                 SharedPrefs.getInstance().acceptUpdatedVersion();
-                InAppNotifications.removePermanentNotification(context, getID());
+                InAppNotifications.closePermanentNotification(context, getID());
                 ChangeLogUtil.showChangeLog(context);
             }
         });

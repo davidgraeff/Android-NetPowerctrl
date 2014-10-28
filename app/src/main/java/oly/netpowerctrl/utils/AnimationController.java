@@ -11,23 +11,21 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 
-import oly.netpowerctrl.utils.controls.FloatingActionButton;
-
 /**
  * Created by david on 08.07.14.
  */
 public class AnimationController {
-    public static void animateFloatingButton(final FloatingActionButton button) {
-        if (button.getVisibility() == View.VISIBLE) // Do nothing if already visible
+    public static void animateBottomViewIn(final View view) {
+        if (view.getVisibility() == View.VISIBLE) // Do nothing if already visible
             return;
 
-        button.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                button.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                button.setVisibility(View.VISIBLE);
-                button.setTranslationY(button.getHeight() * 2);
-                final ObjectAnimator o = ObjectAnimator.ofFloat(button, "translationY", 0f);
+                view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                view.setVisibility(View.VISIBLE);
+                view.setTranslationY(view.getHeight() * 2);
+                final ObjectAnimator o = ObjectAnimator.ofFloat(view, "translationY", 0f);
                 o.setDuration(500);
                 o.setInterpolator(new OvershootInterpolator());
                 o.start();
@@ -35,18 +33,18 @@ public class AnimationController {
         });
     }
 
-    public static void animateFloatingButtonOut(final FloatingActionButton button) {
-        if (button.getTranslationY() != 0) // Do nothing if already out of view
+    public static void animateBottomViewOut(final View view) {
+        if (view.getTranslationY() != 0) // Do nothing if already out of view
             return;
 
-        final ObjectAnimator o = ObjectAnimator.ofFloat(button, "translationY", button.getHeight() * 2);
+        final ObjectAnimator o = ObjectAnimator.ofFloat(view, "translationY", view.getHeight() * 2);
         o.setDuration(500);
         o.setInterpolator(new LinearInterpolator());
         o.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                button.setVisibility(View.GONE);
+                view.setVisibility(View.GONE);
             }
         });
         o.start();

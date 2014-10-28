@@ -3,9 +3,9 @@
     <item name="default_send_port" format="integer" type="integer">1075</item>
     <item name="default_receive_port" format="integer" type="integer">1077</item>
 
-    <item name="default_fallback_icon_set" format="string" type="string">power</item>
+    <item name="default_fallback_icon_set" format="string" type="string">default</item>
 
-    <string-array name="default_fallback_icon_set_keys">
+    <string-array name="default_fallback_icon_set_keys" translatable="false">
         <item>power</item>
         <item>default</item>
         <item>circle</item>

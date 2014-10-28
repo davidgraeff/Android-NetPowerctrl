@@ -102,11 +102,10 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void run() {
                 if (SharedPrefs.getInstance().hasBeenUpdated()) {
-                    InAppNotifications.addPermanentNotification(MainActivity.this, new ChangeLogNotification());
+                    InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
                 }
-
             }
-        }, 150);
+        }, 1500);
     }
 
     @Override
@@ -120,7 +119,9 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(toolbar);
-        //getSupportActionBar().setCustomView(R.layout.notification_container);
+        if (SharedPrefs.getInstance().isFullscreen()) {
+            getSupportActionBar().hide();
+        }
 
         if (SharedPrefs.getInstance().isBackground() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             View v = findViewById(R.id.content_frame);

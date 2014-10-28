@@ -14,7 +14,6 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.devices.DevicePort;
 
 /**
  * Utility methods for groups
@@ -56,17 +55,14 @@ public class GroupUtilities {
      * Create a new group and optionally add the given device port to it.
      *
      * @param context The context
-     * @param port    The device port that is added to the newly created group. May be null.
      */
-    public static void createGroupForDevicePort(Context context, final DevicePort port) {
+    public static void createGroup(Context context) {
         //noinspection ConstantConditions
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
         alert.setMessage(R.string.group_create_dialog_title);
 
         final EditText input = new EditText(alert.getContext());
-        if (port != null)
-            input.setText(port.getTitle());
         alert.setView(input);
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -74,11 +70,7 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                UUID group_uuid = AppData.getInstance().groupCollection.add(name);
-                if (port != null) {
-                    port.addToGroup(group_uuid);
-                    AppData.getInstance().deviceCollection.save(port.device);
-                }
+                AppData.getInstance().groupCollection.add(name);
             }
         });
 

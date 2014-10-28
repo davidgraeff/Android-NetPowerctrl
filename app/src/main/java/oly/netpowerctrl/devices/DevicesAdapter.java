@@ -198,6 +198,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         public int connectionID;
         public boolean reachable;
         public boolean tested;
+        public boolean enabled = true;
 
         /**
          * Create an entry for a device
