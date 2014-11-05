@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -24,7 +23,7 @@ import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onDataLoaded;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
@@ -43,11 +42,6 @@ public class ListenService extends Service {
     private static final String TAG = "NetpowerctrlService";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private static final String PAYLOAD_SERVICE_NAME = "SERVICE_NAME";
-    private static final String PAYLOAD_SERVICE_VERSION = "SERVICE_VERSION";
-    private static final String PAYLOAD_PACKAGE_NAME = "PACKAGE_NAME";
-    private static final String PAYLOAD_LOCALIZED_NAME = "LOCALIZED_NAME";
-    private static final String RESULT_CODE = "RESULT_CODE";
-    private static final int INITIAL_VALUES = 1337;
     public static String service_shutdown_reason = "";
     static int findDevicesRun = 0;
     ///////////////// Service start/stop listener /////////////////
@@ -90,6 +84,8 @@ public class ListenService extends Service {
         public boolean onDataLoaded() {
             for (PluginInterface pluginInterface : plugins)
                 updatePluginReferencesInDevices(pluginInterface);
+
+            enterFullNetworkMode(true, false);
 
             return false;
         }
@@ -188,8 +184,8 @@ public class ListenService extends Service {
         else {
             AppData c = AppData.getInstance();
             for (Device d : c.deviceCollection.getItems()) {
-                d.setNotReachableAll("Debug force off");
-                c.onDeviceUpdated(d);
+                d.setStatusMessageAllConnections("Debug force off");
+                c.updateDevice(d);
             }
             mDiscoverService.enterNetworkReducedMode();
         }
@@ -210,30 +206,15 @@ public class ListenService extends Service {
         mWaitForService = false;
         mDiscoverService = this;
 
-        // Add anel plugin
-        {
-            PluginInterface pluginInterface = new AnelPlugin();
-            plugins.add(pluginInterface);
-            updatePluginReferencesInDevices(pluginInterface);
-        }
+        plugins.add(new AnelPlugin());
 
         // We may be in the situation that the service and plugins are ready before
-        // all devices are loaded. Therefore update plugin references after load.
-        if (!AppData.observersOnDataLoaded.dataLoaded) {
-            AppData.observersOnDataLoaded.register(onDataLoadedListener);
-        }
+        // all devices are loaded. Therefore create anel plugin and update plugin references after load.
+        AppData.observersOnDataLoaded.register(onDataLoadedListener);
 
         // Listen to preferences changes
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
-
-        Bundle b = (intent != null) ? intent.getExtras() : null;
-
-        // Service start code
-        if (b != null)
-            enterFullNetworkMode(b.getBoolean("refreshDevices"), b.getBoolean("showNotification"));
-        else
-            enterFullNetworkMode(true, false);
 
         observersServiceReady.onServiceReady(ListenService.this);
 
@@ -263,10 +244,10 @@ public class ListenService extends Service {
         observersServiceReady.onServiceFinished();
 
         // Clean up
+        removePluginReferencesInDevices(null);
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.onDestroy();
         plugins.clear();
-        removePluginReferencesInDevices(null);
 
         mDiscoverServiceRefCount = 0;
         mDiscoverService = null;
@@ -356,7 +337,7 @@ public class ListenService extends Service {
             if (device.pluginID.equals(plugin.getPluginID()) && device.getPluginInterface() != plugin) {
                 device.setPluginInterface(plugin);
                 device.setHasChanged();
-                deviceCollection.updateExisting(device);
+                AppData.getInstance().updateExistingDevice(device);
             }
         }
     }
@@ -379,8 +360,9 @@ public class ListenService extends Service {
         for (Device device : deviceCollection.getItems()) {
             if (plugin == null || device.getPluginInterface() == plugin) {
                 device.setPluginInterface(null);
+                device.setStatusMessageAllConnections(getString(R.string.error_plugin_not_installed));
                 device.setHasChanged();
-                deviceCollection.updateExisting(device);
+                AppData.getInstance().updateExistingDevice(device);
             }
         }
     }

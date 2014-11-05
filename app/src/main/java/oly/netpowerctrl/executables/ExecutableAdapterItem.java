@@ -2,7 +2,7 @@ package oly.netpowerctrl.executables;
 
 import java.util.UUID;
 
-import oly.netpowerctrl.data.Executable;
+import oly.netpowerctrl.device_base.executables.Executable;
 
 /**
  * Created by david on 07.07.14.

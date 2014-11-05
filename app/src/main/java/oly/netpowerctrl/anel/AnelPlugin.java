@@ -28,12 +28,12 @@ import java.util.TreeSet;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.devices.DeviceConnectionHTTP;
-import oly.netpowerctrl.devices.DeviceConnectionUDP;
-import oly.netpowerctrl.devices.DeviceEditFragmentDialog;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
+import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.devices.DeviceEditDialog;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
@@ -46,8 +46,8 @@ import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
@@ -431,7 +431,7 @@ final public class AnelPlugin implements PluginInterface {
     // We assume the MainActivity exist!
     @Override
     public void showConfigureDeviceScreen(Device device) {
-        DeviceEditFragmentDialog f = (DeviceEditFragmentDialog) Fragment.instantiate(MainActivity.instance, DeviceEditFragmentDialog.class.getName());
+        DeviceEditDialog f = (DeviceEditDialog) Fragment.instantiate(MainActivity.instance, DeviceEditDialog.class.getName());
         f.setDevice(device);
         MainActivity.getNavigationController().changeToDialog(MainActivity.instance, f);
     }
@@ -679,8 +679,8 @@ final public class AnelPlugin implements PluginInterface {
             // Mark all devices as changed: If network reduced mode ends all
             // devices propagate changes then.
             if (this.equals(di.getPluginInterface())) {
-                di.setNotReachable("UDP", App.getAppString(R.string.device_energysave_mode));
-                d.onDeviceUpdated(di);
+                di.setStatusMessage("UDP", App.getAppString(R.string.device_energysave_mode), true);
+                d.updateExistingDevice(di);
             }
         }
     }
@@ -698,9 +698,16 @@ final public class AnelPlugin implements PluginInterface {
             return;
         }
 
-        // TODO http port in openConfigurationPage
+        int http_port = 80;
+        for (DeviceConnection deviceConnection : device.DeviceConnections) {
+            if (deviceConnection instanceof DeviceConnectionHTTP) {
+                http_port = deviceConnection.getDestinationPort();
+                break;
+            }
+        }
+
         Intent browse = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://" + ci.getDestinationHost() + ":" + Integer.valueOf(80).toString()));
+                Uri.parse("http://" + ci.getDestinationHost() + ":" + Integer.valueOf(http_port).toString()));
         context.startActivity(browse);
     }
 

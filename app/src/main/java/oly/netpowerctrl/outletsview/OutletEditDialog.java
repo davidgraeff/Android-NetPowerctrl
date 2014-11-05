@@ -1,5 +1,6 @@
 package oly.netpowerctrl.outletsview;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -19,8 +20,8 @@ import android.widget.Toast;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.executables.ExecutableViewHolder;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.groups.GroupUtilities;
@@ -45,17 +46,18 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        @SuppressLint("InflateParams")
         View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_outlet_edit, null);
 
 
         //noinspection ConstantConditions
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setTitle(getString(R.string.outlet_edit_title, devicePort.getTitle()));
+        builder.setTitle(getString(R.string.outlet_edit_title, devicePort.getTitle(getActivity())));
         //builder.setMessage(getString(R.string.outlet_rename_message, devicePort.getTitle()));
 
         editName = (EditText) rootView.findViewById(R.id.outlet_name);
-        editName.setText(devicePort.getTitle());
+        editName.setText(devicePort.getTitle(getActivity()));
 
         btnOff = (ImageButton) rootView.findViewById(R.id.outlet_icon_off);
         btnOff.setOnClickListener(new View.OnClickListener() {
@@ -77,6 +79,7 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
 
         loadImages();
 
+        @SuppressLint("WrongViewCast")
         LinearLayout layout = (LinearLayout) rootView.findViewById(R.id.layout);
         checked = GroupUtilities.addGroupCheckBoxesToLayout(getActivity(), layout, devicePort.groups);
 
@@ -108,7 +111,7 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
             @Override
             public void onClick(View v) {
                 String newName = editName.getText().toString().trim();
-                if (!newName.isEmpty() && !devicePort.getTitle().equals(newName))
+                if (!newName.isEmpty() && !devicePort.getTitle(getActivity()).equals(newName))
                     //noinspection ConstantConditions
                     AppData.getInstance().rename(devicePort, newName, OutletEditDialog.this);
 

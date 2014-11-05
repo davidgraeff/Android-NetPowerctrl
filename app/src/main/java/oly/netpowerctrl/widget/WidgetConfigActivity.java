@@ -16,7 +16,7 @@ import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.utils.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
 public class WidgetConfigActivity extends Activity {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
@@ -49,7 +49,7 @@ public class WidgetConfigActivity extends Activity {
         findViewById(R.id.left_drawer_list).setVisibility(View.GONE);
         findViewById(R.id.toolbar_actionbar).setVisibility(View.GONE);
 
-        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
+        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
         s.setAutomaticUpdate(true);
         this.adapter = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
 

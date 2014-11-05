@@ -14,15 +14,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.data.onDataQueryCompleted;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.data.JSONHelper;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.network.DeviceQuery;
@@ -30,7 +29,8 @@ import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.scenes.SceneItem;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 public class ExecutionActivity extends NfcReaderActivity implements onDeviceObserverResult, onExecutionFinished {
     private Scene scene = null;
@@ -140,8 +140,8 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
             executeSingleAction(action_uuid, action_command);
         } else {
             if (scene_uuid != null) {
-                Log.e("serviceAndDataReady", UUID.fromString(scene_uuid).toString());
-                scene = AppData.getInstance().sceneCollection.get(UUID.fromString(scene_uuid));
+                Log.e("serviceAndDataReady", scene_uuid);
+                scene = AppData.getInstance().sceneCollection.get(scene_uuid);
             } else if (scene_json != null) {
                 // Extract scene from extra bundle
                 try {
@@ -179,7 +179,15 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
 
         // DeviceQuery for scene devices
         TreeSet<Device> devices = new TreeSet<>();
-        scene_commands = scene.getDevices(devices);
+        scene_commands = 0;
+        for (SceneItem c : scene.sceneItems) {
+            DevicePort port = AppData.getInstance().findDevicePort(c.uuid);
+            if (port != null) {
+                devices.add(port.device);
+                ++scene_commands;
+            }
+        }
+
         new DeviceQuery(this, ExecutionActivity.this, devices.iterator());
 
     }

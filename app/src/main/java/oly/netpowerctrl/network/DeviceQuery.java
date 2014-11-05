@@ -8,8 +8,8 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 
@@ -69,15 +69,15 @@ public class DeviceQuery extends DeviceObserverBase {
         if (repeated)
             Log.w(TAG, "redo: " + device.DeviceName);
 
-        PluginInterface pluginInterface = device.getPluginInterface();
+        PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
         if (pluginInterface == null) {
-            device.setNotReachableAll(App.getAppString(R.string.error_plugin_not_installed));
+            device.setStatusMessageAllConnections(App.getAppString(R.string.error_plugin_not_installed));
             // remove from list of devices to observe and notify observers
             notifyObservers(device);
             return;
         }
         if (pluginInterface.isNetworkReducedState()) {
-            device.setNotReachableAll(App.getAppString(R.string.device_energysave_mode));
+            device.setStatusMessageAllConnections(App.getAppString(R.string.device_energysave_mode));
             // remove from list of devices to observe and notify observers
             notifyObservers(device);
             return;

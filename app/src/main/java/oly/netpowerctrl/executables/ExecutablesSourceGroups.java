@@ -10,9 +10,12 @@ import oly.netpowerctrl.groups.Group;
  * Created by david on 07.07.14.
  */
 public class ExecutablesSourceGroups extends ExecutablesSourceBase implements onCollectionUpdated<Object, Object>, onDataLoaded {
+    public ExecutablesSourceGroups(ExecutablesSourceChain executablesSourceChain) {
+        super(executablesSourceChain);
+    }
+
     @Override
     public void fullUpdate(ExecutablesBaseAdapter adapter) {
-        super.fullUpdate(adapter);
         // Nothing to do here. Groups are automatically set up by the
         // oly.netpowerctrl.executables.ExecutablesSourceDevicePorts class.
     }
@@ -26,7 +29,7 @@ public class ExecutablesSourceGroups extends ExecutablesSourceBase implements on
     protected void automaticUpdatesEnable() {
         // If no data has been loaded so far, wait for load action to be completed before
         // registering to deviceCollection changes.
-        if (!AppData.observersOnDataLoaded.dataLoaded)
+        if (!AppData.isDataLoaded())
             AppData.observersOnDataLoaded.register(this);
         else {
             AppData.getInstance().groupCollection.registerObserver(this);

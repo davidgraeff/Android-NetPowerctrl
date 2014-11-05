@@ -1,8 +1,7 @@
 package oly.netpowerctrl.outletsview;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.view.View;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -15,12 +14,10 @@ import oly.netpowerctrl.main.App;
 /**
  *
  */
-public class GroupPagerAdapter extends FragmentStatePagerAdapter implements onCollectionUpdated<GroupCollection, Group> {
+public class GroupPagerAdapter extends PagerAdapter implements onCollectionUpdated<GroupCollection, Group> {
     private int count;
 
-    public GroupPagerAdapter(FragmentManager fm) {
-        super(fm);
-
+    public GroupPagerAdapter() {
         count = AppData.getInstance().groupCollection.size() + 1;
         AppData.getInstance().groupCollection.registerObserver(this);
     }
@@ -42,8 +39,8 @@ public class GroupPagerAdapter extends FragmentStatePagerAdapter implements onCo
     }
 
     @Override
-    public Fragment getItem(int position) {
-        return new OutletsViewFragment();
+    public boolean isViewFromObject(View view, Object o) {
+        return false;
     }
 
     @Override

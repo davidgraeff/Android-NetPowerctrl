@@ -1,5 +1,7 @@
 package oly.netpowerctrl.executables;
 
+import android.support.annotation.Nullable;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -12,13 +14,19 @@ public abstract class ExecutablesSourceBase {
 
     protected boolean hideNotReachable = false;
     protected onChange onChangeListener = null;
-    private ExecutablesSourceBase chained = null;
+    private ExecutablesSourceChain chained = null;
 
-    public void setOnChangeListener(onChange onChangeListener) {
+    public ExecutablesSourceBase(@Nullable ExecutablesSourceChain executablesSourceChain) {
+        this.chained = executablesSourceChain;
+        if (chained != null)
+            chained.add(this);
+    }
+
+    final public void setOnChangeListener(onChange onChangeListener) {
         this.onChangeListener = onChangeListener;
     }
 
-    public void setHideNotReachable(boolean hideNotReachable) {
+    final public void setHideNotReachable(boolean hideNotReachable) {
         this.hideNotReachable = hideNotReachable;
     }
 
@@ -29,7 +37,7 @@ public abstract class ExecutablesSourceBase {
      *
      * @see #setAutomaticUpdate(boolean)
      */
-    public final void updateNow() {
+    final public void updateNow() {
         if (adapterWeakReference == null)
             return;
 
@@ -40,19 +48,17 @@ public abstract class ExecutablesSourceBase {
 
         if (chained != null) {
             chained.fullUpdate(adapter);
-            adapter.removeAllMarked();
         } else {
-            adapter.removeAllMarked();
-            adapter.notifyDataSetChanged();
-            if (onChangeListener != null)
-                onChangeListener.sourceChanged();
+            fullUpdate(adapter);
         }
+
+        adapter.removeAllMarked();
+        adapter.notifyDataSetChanged();
+        if (onChangeListener != null)
+            onChangeListener.sourceChanged();
     }
 
-    protected void fullUpdate(ExecutablesBaseAdapter adapter) {
-        if (chained != null)
-            chained.fullUpdate(adapter);
-    }
+    abstract protected void fullUpdate(ExecutablesBaseAdapter adapter);
 
     /**
      * If automatic updates are enabled, new values are automatically
@@ -60,46 +66,40 @@ public abstract class ExecutablesSourceBase {
      *
      * @param enabled
      */
-    public final void setAutomaticUpdate(boolean enabled) {
+    final public void setAutomaticUpdate(boolean enabled) {
+        if (chained != null)
+            chained.setAutomaticUpdate(enabled);
+        else
+            applyAutomaticUpdate(enabled);
+    }
+
+    final public void applyAutomaticUpdate(boolean enabled) {
         automaticUpdatesEnabled = enabled;
         if (enabled)
             automaticUpdatesEnable();
         else
             automaticUpdatesDisable();
 
-        if (chained != null) {
-            chained.setAutomaticUpdate(enabled);
-        }
     }
 
-    public final void setTargetAdapter(ExecutablesBaseAdapter adapter) {
+    final public void setTargetAdapter(ExecutablesBaseAdapter adapter) {
         adapterWeakReference = new WeakReference<>(adapter);
-        if (chained != null)
-            chained.setTargetAdapter(adapter);
     }
 
     protected abstract void automaticUpdatesEnable();
 
     protected abstract void automaticUpdatesDisable();
 
-    public final boolean isAutomaticUpdateEnabled() {
+    final public boolean isAutomaticUpdateEnabled() {
         return automaticUpdatesEnabled;
     }
 
-    public void onPause() {
+    final public void onPause() {
         automaticUpdatesDisable();
-        if (chained != null)
-            chained.onPause();
     }
 
-    public void onResume() {
+    final public void onResume() {
         automaticUpdatesEnable();
-        if (chained != null)
-            chained.onResume();
-    }
-
-    public final void addChainItem(ExecutablesSourceBase item) {
-        chained = item;
     }
 
     public interface onChange {

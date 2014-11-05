@@ -1,5 +1,7 @@
 package oly.netpowerctrl.data;
 
+import oly.netpowerctrl.device_base.data.StorableInterface;
+
 /**
  * Created by david on 01.09.14.
  */

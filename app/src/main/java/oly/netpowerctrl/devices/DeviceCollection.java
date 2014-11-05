@@ -7,12 +7,14 @@ import android.widget.Toast;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onStorageUpdate;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.listen_service.PluginInterface;
 
 /**
  * Contains DeviceInfos. Used for NFC and backup transfers
@@ -25,6 +27,11 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         dc.storage = storage;
         dc.items = devices;
         return dc;
+    }
+
+    static public boolean isNetworkDevice(Device device) {
+        PluginInterface pi = (PluginInterface) device.getPluginInterface();
+        return pi != null && pi.isNetworkPlugin();
     }
 
     /**
@@ -90,51 +97,15 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         }
     }
 
-    /**
-     * Do not call this directly! This is called by {@link oly.netpowerctrl.data.AppData}
-     *
-     * @param newValues_device Incoming device with new updated values. You may use a reference to a configured device
-     *                         here
-     * @return If a matching device has been found and updated
-     * return that {@link oly.netpowerctrl.devices.Device}, null otherwise.
-     */
-    public Device update(Device newValues_device) {
-        // If a device has no unique id, we do not have to care
-        if (newValues_device.UniqueDeviceID == null)
-            return null;
-
+    public int getPosition(Device newValues_device) {
         int position = -1;
         for (Device existing_device : items) {
             ++position;
 
-            if (!newValues_device.equalsByUniqueID(existing_device))
-                continue;
-
-            if (existing_device.replaceDeviceAssignedConnections(newValues_device.DeviceConnections)) {
-                if (storage != null)
-                    storage.save(this, existing_device);
-            }
-
-            if (existing_device.copyValuesFromUpdated(newValues_device)) {
-                //Log.w(TAG, "-- update: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
-                notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
-            }
-
-            return existing_device;
+            if (newValues_device.equalsByUniqueID(existing_device))
+                return position;
         }
-        return null;
-    }
-
-    /**
-     * Call this if you have made your changes to the given device and want to propagate those now.
-     *
-     * @param existing_device
-     */
-    public void updateExisting(Device existing_device) {
-        if (AppData.observersOnDataLoaded.dataLoaded && existing_device.copyValuesFromUpdated(existing_device)) {
-            //Log.w(TAG, "-- updateExisting: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
-            notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, items.indexOf(existing_device));
-        }
+        return -1;
     }
 
     public boolean hasDevices() {

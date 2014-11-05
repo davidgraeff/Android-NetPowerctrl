@@ -2,7 +2,7 @@ package oly.netpowerctrl.network;
 
 import java.util.List;
 
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.device.Device;
 
 /**
  * Inform of not reachable devices

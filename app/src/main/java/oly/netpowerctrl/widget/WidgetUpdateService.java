@@ -28,18 +28,19 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataLoaded;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
  * Widget Update Service
@@ -155,7 +156,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         if (!ListenService.isServiceReady())
             return;
 
-        if (!AppData.observersOnDataLoaded.dataLoaded) {
+        if (!AppData.isDataLoaded()) {
             AppData.observersOnDataLoaded.register(this);
             return;
         }
@@ -235,7 +236,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         setWidgetState(widgetID, port, true);
 
-        if (!port.device.isReachable() && port.device.getPluginInterface().isNetworkReducedState()) {
+        if (!port.device.isReachable() && ((PluginInterface) port.device.getPluginInterface()).isNetworkReducedState()) {
             ListenService.getService().findDevices(true, null);
             return;
         }
@@ -323,7 +324,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             string_res = R.string.widget_inProgress;
         }
 
-        views.setTextViewText(R.id.widget_name, oi.getTitle());
+        views.setTextViewText(R.id.widget_name, oi.getTitle(this));
         views.setTextViewText(R.id.widget_status, this.getString(string_res));
 
         // If the device is not reachable there is no sense in assigning a click event pointing to

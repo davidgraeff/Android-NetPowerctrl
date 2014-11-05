@@ -2,6 +2,7 @@ package oly.netpowerctrl.groups;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -11,9 +12,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.StorableInterface;
+import oly.netpowerctrl.device_base.data.JSONHelper;
+import oly.netpowerctrl.device_base.data.StorableInterface;
 
 /**
  * Created by david on 31.08.14.
@@ -67,7 +68,7 @@ public class Group implements StorableInterface {
     }
 
     @Override
-    public void load(JsonReader reader) throws IOException, ClassNotFoundException {
+    public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
         while (reader.hasNext()) {
             String name = reader.nextName();
@@ -91,12 +92,12 @@ public class Group implements StorableInterface {
     }
 
     @Override
-    public void load(InputStream input) throws IOException, ClassNotFoundException {
+    public void load(@NonNull InputStream input) throws IOException, ClassNotFoundException {
         load(new JsonReader(new InputStreamReader(input)));
     }
 
     @Override
-    public void save(OutputStream output) throws IOException {
+    public void save(@NonNull OutputStream output) throws IOException {
         toJSON(JSONHelper.createWriter(output));
     }
 

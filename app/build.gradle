@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.0.1"
+    buildToolsVersion "21.0.2"
 
 //    productFlavors {
 //        //noinspection GroovyMissingReturnStatement
@@ -29,8 +29,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 
     def getRevision = { ->
@@ -80,6 +80,7 @@ android {
 
 dependencies {
     compile project(':libraries:Donations')
+    compile project(':libraries:device_base')
     //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08 5.0.89
     //compile 'com.google.android.gms:play-services:5.2.08'
     compile 'com.github.gabrielemariotti.changeloglib:library:1.5.1'

@@ -17,18 +17,18 @@ import java.io.IOException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.data.JSONHelper;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.executables.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
 import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.utils.AndroidShortcuts;
-import oly.netpowerctrl.utils.RecyclerItemClickListener;
 
 /**
  * This activity is responsible for creating a "scene" either for the scene list
@@ -161,7 +161,7 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
     }
 
     private void loadContent() {
-        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
+        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
         adapter_available = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
         adapter_included = new SceneElementsAdapter();
 
@@ -266,7 +266,8 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
 
         if (isSceneNotShortcut) {
             SceneCollection sceneCollection = AppData.getInstance().sceneCollection;
-            sceneCollection.setBitmap(this, scene, scene_icon);
+            LoadStoreIconData.saveIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon, 128, 128), scene.uuid,
+                    LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown);
 
             GroupCollection groupCollection = AppData.getInstance().groupCollection;
             scene.groups.clear();
@@ -276,8 +277,8 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
                 }
                 scene.groups.add(groupCollection.get(i).uuid);
             }
-            // TODO if groups are changed, we need a full update
-            sceneCollection.add(scene);
+
+            sceneCollection.changed(sceneCollection.add(scene, false));
         } else {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
                     scene, fragment_basics.show_mainWindow.isChecked(), fragment_basics.enable_feedback.isChecked());

@@ -60,7 +60,7 @@
         android:paddingRight="@dimen/list_outer_padding"
         android:textAppearance="@android:style/TextAppearance.Medium" />
 
-    <oly.netpowerctrl.utils.controls.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+    <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/btnAdd"
         android:layout_width="72dp"
         android:layout_height="72dp"

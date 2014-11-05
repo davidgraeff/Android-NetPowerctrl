@@ -14,11 +14,11 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.devices.DeviceConnectionHTTP;
-import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.executables.ExecutableType;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
@@ -39,7 +39,7 @@ public class AnelPluginHttp {
             //Log.w("AnelPluginHttp", "http receive" + response_message);
             final Device device = ci.getDevice();
             if (!callback_success) {
-                ci.setNotReachable(response_message);
+                ci.device.setStatusMessage(ci, response_message, true);
                 // Call onConfiguredDeviceUpdated to update device info.
                 App.getMainThreadHandler().post(new Runnable() {
                     @Override
@@ -50,7 +50,7 @@ public class AnelPluginHttp {
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
-                    ci.setNotReachable(ListenService.getService().getString(R.string.error_packet_received));
+                    ci.device.setStatusMessage(ci, ListenService.getService().getString(R.string.error_packet_received), true);
                     // Call onConfiguredDeviceUpdated to update device info.
                     App.getMainThreadHandler().post(new Runnable() {
                         @Override
@@ -79,7 +79,7 @@ public class AnelPluginHttp {
                         // we have to set the changed flag.
                         device.setHasChanged();
                     }
-                    AppData.getInstance().onDeviceUpdatedOtherThread(device);
+                    AppData.getInstance().updateExistingDeviceFromOtherThread(device);
                 }
 
             }
@@ -95,8 +95,8 @@ public class AnelPluginHttp {
                     ci.connectionUsed();
                     final Device device = ci.getDevice();
                     if (!callback_success) {
-                        ci.setNotReachable(response_message);
-                        AppData.getInstance().onDeviceUpdatedOtherThread(device);
+                        ci.device.setStatusMessage(ci, response_message, true);
+                        AppData.getInstance().updateExistingDeviceFromOtherThread(device);
                     } else
                         HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
                 }

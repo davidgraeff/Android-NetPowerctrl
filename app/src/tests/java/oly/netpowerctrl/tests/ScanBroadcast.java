@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.onDataQueryCompleted;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;

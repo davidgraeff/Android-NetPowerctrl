@@ -10,10 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.utils.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
 /**
- * Created by david on 06.09.14.
+ * A fragment with a recyclerview that has uses the given adapter
  */
 public class AdapterFragment<ADAPTER extends RecyclerView.Adapter> extends Fragment {
     protected ADAPTER mAdapter;

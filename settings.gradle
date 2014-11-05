@@ -1,1 +1,1 @@
-include ':app', ':libraries:Donations'
+include ':app', ':libraries:Donations', ':libraries:device_base'

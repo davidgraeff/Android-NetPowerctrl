@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
 
@@ -70,10 +70,10 @@ public abstract class DeviceObserverBase {
             Device device_to_observe = it.next();
             // Special case: No unique id. IPs are compared instead
             // and the unique id is copied from the network device.
-            if (device_to_observe.UniqueDeviceID == null) {
+            if (device_to_observe.getUniqueDeviceID() == null) {
                 if (device_to_observe.hasAddress(device.getHostnameIPs(false), false)) {
-                    device_to_observe.UniqueDeviceID = device.UniqueDeviceID;
-                    device_to_observe.setNotReachableAll(null);
+                    device_to_observe.setUniqueDeviceID(device.getUniqueDeviceID());
+                    device_to_observe.setStatusMessageAllConnections(null);
                     it.remove();
                     if (target != null)
                         target.onObserverDeviceUpdated(device);
@@ -153,7 +153,7 @@ public abstract class DeviceObserverBase {
     public int addDevice(final Device device, boolean resetTimeout) {
 
         if (!device.isEnabled()) {
-            device.setNotReachableAll(context.getString(R.string.error_device_disabled));
+            device.setStatusMessageAllConnections(context.getString(R.string.error_device_disabled));
             timeout_devices.add(device);
             AppData.getInstance().deviceCollection.updateNotReachable(context, device);
             return countWait.get();
@@ -163,8 +163,8 @@ public abstract class DeviceObserverBase {
         // may be added later by a broadcast response. Out of the same reason we allow
         // devices without a unique id (MAC address) if only the hostname is known.
         // But we do not allow a device without a unique id and without a hostname.
-        if (device.UniqueDeviceID == null && device.DeviceConnections.isEmpty()) {
-            device.setNotReachableAll(context.getString(R.string.error_device_incomplete));
+        if (device.getUniqueDeviceID() == null && device.DeviceConnections.isEmpty()) {
+            device.setStatusMessageAllConnections(context.getString(R.string.error_device_incomplete));
             timeout_devices.add(device);
             AppData.getInstance().deviceCollection.updateNotReachable(context, device);
             return countWait.get();
@@ -211,7 +211,7 @@ public abstract class DeviceObserverBase {
 
         for (Device device : devices_to_observe) {
             if (device.getFirstReachableConnection() != null)
-                device.setNotReachableAll(context.getString(R.string.error_timeout_device, ""));
+                device.setStatusMessageAllConnections(context.getString(R.string.error_timeout_device, ""));
             // Call onConfiguredDeviceUpdated to update device info.
             AppData.getInstance().deviceCollection.updateNotReachable(context, device);
             timeout_devices.add(device);
@@ -239,7 +239,7 @@ public abstract class DeviceObserverBase {
                     try {
                         connection.lookupIPs();
                     } catch (UnknownHostException e) {
-                        connection.setNotReachable(e.getLocalizedMessage());
+                        connection.device.setStatusMessage(connection, e.getLocalizedMessage(), true);
                     }
                 }
             }

@@ -10,16 +10,16 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.JSONHelper;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.data.JSONHelper;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.device.DeviceConnectionFabric;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.onExecutionFinished;
@@ -28,39 +28,90 @@ import oly.netpowerctrl.plugins.INetPwrCtrlPlugin;
 import oly.netpowerctrl.plugins.INetPwrCtrlPluginResult;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerController;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  * Establish connection to plugin service, contains adapter with
  * plugin service values.
  */
 public class PluginRemote implements PluginInterface {
+    private static final int api_version = 1;
     private final Context context;
     private final String localized_name;
     private final String packageName;
     public String serviceName;
+    // TAG is a class member variable, because we want to append the remote service name for debug output.
+    private String TAG = "PluginRemote";
     private final INetPwrCtrlPluginResult.Stub callback = new INetPwrCtrlPluginResult.Stub() {
         @Override
         public void finished() {
             DeviceCollection deviceConnection = AppData.getInstance().deviceCollection;
             for (Device device : deviceConnection.getItems()) {
                 if (device.getPluginInterface() == PluginRemote.this) {
-                    device.setNotReachableAll(context.getString(R.string.error_plugin_no_service_connection));
+                    device.setStatusMessageAllConnections(context.getString(R.string.error_plugin_no_service_connection));
                 }
             }
         }
 
         @Override
-        public void stateChanged(String state, boolean isError) throws RemoteException {
-            if (SharedPrefs.getInstance().logExtensions()) {
-                Logging.appendLog(context, "Extension " + serviceName + " state: " + state);
+        public void deviceConnectionChanged(String device_unique_id, String device_connection_json) throws RemoteException {
+            final Device device = AppData.getInstance().findDeviceByUniqueID(device_unique_id);
+            if (device == null) {
+                if (SharedPrefs.getInstance().logExtensions()) {
+                    Logging.appendLog(context, "Extension " + serviceName + " stateChanged: no device found!");
+                }
+                Log.w(TAG, "devicePortsChanged, no device found for " + device_unique_id);
+                return;
             }
+
+            DeviceConnection deviceConnection = null;
+            try {
+                deviceConnection = DeviceConnectionFabric.fromJSON(JSONHelper.getReader(device_connection_json), device);
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            if (deviceConnection == null) {
+                if (SharedPrefs.getInstance().logExtensions()) {
+                    Logging.appendLog(context, "Extension " + serviceName + " stateChanged: no deviceConnection found!");
+                }
+                Log.w(TAG, "stateChanged, no deviceConnection found for " + device_connection_json);
+                return;
+            }
+
+            deviceConnection.connectionUsed();
+            device.setUpdatedNow();
+            device.compute_first_reachable();
+            AppData.getInstance().updateExistingDevice(device);
         }
 
         @Override
-        public void devicePortsChanged(List<String> devicePorts_json) throws RemoteException {
-
+        public void devicePortChanged(String device_unique_id, String device_port_json) throws RemoteException {
+            Device device = AppData.getInstance().findDeviceByUniqueID(device_unique_id);
+            if (device == null) {
+                if (SharedPrefs.getInstance().logExtensions()) {
+                    Logging.appendLog(context, "Extension " + serviceName + " devicePortsChanged: no device found!");
+                }
+                Log.w(TAG, "devicePortsChanged, no device found for " + device_unique_id);
+                return;
+            }
+            DevicePort devicePort = null;
+            try {
+                devicePort = DevicePort.fromJSON(JSONHelper.getReader(device_port_json), device);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (devicePort == null) {
+                if (SharedPrefs.getInstance().logExtensions()) {
+                    Logging.appendLog(context, "Extension " + serviceName + " devicePortsChanged: no device found!");
+                }
+                Log.w(TAG, "devicePortsChanged, no device found for " + device_port_json);
+                return;
+            }
+            device.putPort(devicePort);
+            device.setUpdatedNow();
+            AppData.getInstance().updateExistingDevice(device);
         }
 
         @Override
@@ -70,22 +121,18 @@ public class PluginRemote implements PluginInterface {
                 device.load(JSONHelper.getReader(device_json));
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
-                //TODO
                 return;
             }
-            device.setPluginInterface(PluginRemote.this);
             device.configured = false;
-            device.DeviceConnections.get(0).connectionUsed();
-            device.setReachable(0);
+            device.setPluginInterface(PluginRemote.this);
             device.setUpdatedNow();
             App.getMainThreadHandler().post(new Runnable() {
                 public void run() {
-                    AppData.getInstance().onDeviceUpdated(device);
+                    AppData.getInstance().updateDevice(device);
                 }
             });
         }
     };
-    private String TAG = "PluginRemote";
     private boolean isInitialized = false;
     private INetPwrCtrlPlugin service = null;
     private final ServiceConnection svcConn = new ServiceConnection() {
@@ -102,6 +149,7 @@ public class PluginRemote implements PluginInterface {
             if (c != null)
                 c.removeExtension(PluginRemote.this);
 
+            context.unbindService(this);
             // Set non reachable and notify
             if (SharedPrefs.getInstance().logExtensions()) {
                 Logging.appendLog(context, "Extension " + serviceName + " disconnected");
@@ -133,7 +181,7 @@ public class PluginRemote implements PluginInterface {
         Intent in = new Intent();
         in.setClassName(packageName, serviceName);
         if (!context.bindService(in, r.svcConn, Context.BIND_AUTO_CREATE)) {
-            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " BIND");
             return null;
         } else {
             //ShowToast.FromOtherThread(context, context.getString(R.string.plugin_loaded, localized_name));
@@ -158,14 +206,14 @@ public class PluginRemote implements PluginInterface {
         try {
             if (service != null) {
                 Log.w(TAG, "init");
-                service.init(callback);
+                service.init(callback, api_version);
                 isInitialized = true;
             } else
-                InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name));
+                svcConn.onServiceDisconnected(null);
         } catch (RemoteException e) {
-            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " INIT " + e.getMessage());
         } catch (Exception e) {
-            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " INIT " + e.getMessage());
             Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
             e.printStackTrace();
         }
@@ -183,13 +231,13 @@ public class PluginRemote implements PluginInterface {
         try {
             if (service != null) {
                 Log.w(TAG, "refresh");
-                service.requestDevices(0);
+                service.requestData();
             } else
                 InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_no_service_connection, localized_name));
         } catch (RemoteException e) {
-            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " REQUEST " + e.getMessage());
         } catch (Exception e) {
-            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + "(g) " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " REQUEST " + e.getMessage());
             Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
             e.printStackTrace();
         }
@@ -197,7 +245,23 @@ public class PluginRemote implements PluginInterface {
 
     @Override
     public void requestData(DeviceConnection ci) {
-        requestData();
+        if (!isInitialized) {
+            init();
+            return;
+        }
+        try {
+            if (service != null) {
+                Log.w(TAG, "refresh");
+                service.requestDataByConnection(ci.toString());
+            } else
+                InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_no_service_connection, localized_name));
+        } catch (RemoteException e) {
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " REQUEST " + e.getMessage());
+        } catch (Exception e) {
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " REQUEST " + e.getMessage());
+            Log.e(TAG, e.getMessage() == null ? "" : e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -207,7 +271,7 @@ public class PluginRemote implements PluginInterface {
                 try {
                     JSONHelper h = new JSONHelper();
                     port.toJSON(h.createWriter(), true);
-                    service.rename(h.getString(), new_name);
+                    service.rename(port.device.getUniqueDeviceID(), h.getString(), new_name);
                 } catch (IOException ignored) {
                 }
             } else
@@ -237,7 +301,7 @@ public class PluginRemote implements PluginInterface {
 
     @Override
     public String getPluginID() {
-        return serviceName;
+        return packageName;
     }
 
     @Override
@@ -302,9 +366,9 @@ public class PluginRemote implements PluginInterface {
         try {
             JSONHelper h = new JSONHelper();
             port.toJSON(h.createWriter(), true);
-            service.execute(h.getString(), command);
+            service.execute(port.device.getUniqueDeviceID(), h.getString(), command);
         } catch (NullPointerException | RemoteException | IOException e) {
-            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " " + e.getMessage());
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " EXECUTE " + e.getClass().getName() + " " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -324,8 +388,6 @@ public class PluginRemote implements PluginInterface {
 
     @Override
     public EditDeviceInterface openEditDevice(Device device) {
-        //TODO
         return null;
     }
-
 }

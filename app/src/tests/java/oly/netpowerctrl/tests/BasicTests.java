@@ -42,7 +42,7 @@ public class BasicTests extends AndroidTestCase {
 
         assertNull(ListenService.getService());
 
-        c.onDeviceUpdated(TestObjects.createDevice());
+        c.updateDevice(TestObjects.createDevice());
 
         assertEquals(c.deviceCollection.size(), 0);
         assertEquals(c.unconfiguredDeviceCollection.size(), 1);

@@ -21,9 +21,9 @@ import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.ActionBarTitle;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 public class EnergySaveLogFragment extends ListFragment {
     private final ArrayList<String> listItems = new ArrayList<>();

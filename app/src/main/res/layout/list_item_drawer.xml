@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:attr/activatedBackgroundIndicator"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall"
     android:orientation="horizontal"
     android:paddingBottom="8dp"
     android:paddingLeft="16dp"
@@ -15,29 +14,17 @@
         android:id="@+id/drawer_icon_bitmap"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:paddingRight="5dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginRight="15dp"
         android:visibility="gone"
         tools:ignore="ContentDescription" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:orientation="vertical">
+        android:singleLine="true"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:singleLine="true"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/summary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    </LinearLayout>
 </LinearLayout>

@@ -14,12 +14,14 @@ import java.io.IOException;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.data.JSONHelper;
+import oly.netpowerctrl.device_base.data.StorableInterface;
+import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 
 /**
@@ -98,6 +100,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
             @Override
             protected void onPostExecute(Boolean success) {
                 SharedPrefs.getInstance().setCurrentPreferenceVersion();
+
                 AppData.observersOnDataLoaded.dataLoaded = true;
                 AppData.observersOnDataLoaded.onDataLoaded();
             }

@@ -1,5 +1,7 @@
 package oly.netpowerctrl.scenes;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -9,18 +11,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.Executable;
-import oly.netpowerctrl.data.JSONHelper;
-import oly.netpowerctrl.data.StorableInterface;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.executables.ExecutableType;
-import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.device_base.data.JSONHelper;
+import oly.netpowerctrl.device_base.data.StorableInterface;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.device_base.executables.ExecutableType;
 
 public class Scene implements StorableInterface, Executable {
     private static long nextStableID = 0;
@@ -34,6 +32,8 @@ public class Scene implements StorableInterface, Executable {
     private String uuid_master = null;
     private int currentValue = 0;
     private int maximumValue = 0;
+
+    private boolean reachable = false;
 
     public Scene() {
         uuid = UUID.randomUUID().toString();
@@ -79,32 +79,15 @@ public class Scene implements StorableInterface, Executable {
         return uuid_master;
     }
 
-    /**
-     * Return INVALID if no master is set, otherwise return
-     * the final command. Final means: If the actual scene command
-     * of the master is toggle, we first have to figure out the state
-     * after toggling is applied.
-     *
-     * @return
-     */
-    public int getMasterCommand() {
+    public SceneItem getMasterSceneItem() {
         if (uuid_master == null)
-            return DevicePort.INVALID;
+            return null;
 
         for (SceneItem item : sceneItems)
             if (item.uuid.equals(uuid_master)) {
-                // If the command is not toggle, we return it now. It can be applied to slaves
-                // directly.
-                if (item.command != DevicePort.TOGGLE)
-                    return item.command;
-                // If the command is toggle, we have to find out the final command.
-                DevicePort port = AppData.getInstance().findDevicePort(item.uuid);
-                if (port == null)
-                    return DevicePort.INVALID;
-
-                return port.getCurrentValueToggled();
+                return item;
             }
-        return DevicePort.INVALID;
+        return null;
     }
 
     public boolean isMasterSlave() {
@@ -127,18 +110,6 @@ public class Scene implements StorableInterface, Executable {
 
     public int length() {
         return sceneItems.size();
-    }
-
-    public int getDevices(TreeSet<Device> devices) {
-        int valid_commands = 0;
-        for (SceneItem c : sceneItems) {
-            DevicePort port = AppData.getInstance().findDevicePort(c.uuid);
-            if (port != null) {
-                devices.add(port.device);
-                ++valid_commands;
-            }
-        }
-        return valid_commands;
     }
 
     /**
@@ -195,17 +166,17 @@ public class Scene implements StorableInterface, Executable {
     }
 
     @Override
-    public StorableDataType getDataType() {
+    public StorableInterface.StorableDataType getDataType() {
         return StorableDataType.JSON;
     }
 
     @Override
     public String getStorableName() {
-        return uuid.toString();
+        return uuid;
     }
 
     @Override
-    public void load(JsonReader reader) throws IOException, ClassNotFoundException {
+    public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
         Scene scene = this;
 
         reader.beginObject();
@@ -249,12 +220,12 @@ public class Scene implements StorableInterface, Executable {
     }
 
     @Override
-    public void load(InputStream input) throws IOException, ClassNotFoundException {
+    public void load(@NonNull InputStream input) throws IOException, ClassNotFoundException {
         load(new JsonReader(new InputStreamReader(input)));
     }
 
     @Override
-    public void save(OutputStream output) throws IOException {
+    public void save(@NonNull OutputStream output) throws IOException {
         toJSON(JSONHelper.createWriter(output));
     }
 
@@ -279,18 +250,22 @@ public class Scene implements StorableInterface, Executable {
     }
 
     @Override
-    public String getTitle() {
+    public String getTitle(Context context) {
         return sceneName;
     }
 
     @Override
-    public String getDescription() {
-        return isMasterSlave() ? App.getAppString(R.string.master_slave) : App.getAppString(R.string.scene);
+    public String getDescription(Context context) {
+        return isMasterSlave() ? context.getString(R.string.master_slave) : context.getString(R.string.scene);
     }
 
     @Override
     public boolean isReachable() {
-        return true;
+        return !isMasterSlave() || reachable;
+    }
+
+    public void setReachable(boolean reachable) {
+        this.reachable = reachable;
     }
 
     public int getCurrentValue() {

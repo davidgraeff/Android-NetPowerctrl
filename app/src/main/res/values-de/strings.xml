@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Power Control</string>
+    <string name="app_name_desc">Steuern Sie Netzwerkfähige Steckdosenleisten bequem per App. Bisher werden die folgenden Geräte der ANEL-Elektronik AG (www.anel-elektronik.de) unterstützt: NET-PwrCtrl HUT, NET-PwrCtrl IO, NET-PwrCtrl ADV, NET-PwrCtrl PRO, NET-PwrCtrl HOME</string>
     <string name="app_name_shortcut">Power-Control Szene</string>
     <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
     <string name="app_name_widget">Power-Control Steckdosenzustand</string>
@@ -155,10 +156,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="drawer_feedback">Feedback</string>
     <string name="scene_make_favourite">Mache zu Favorit</string>
     <string name="scene_remove_favourite">Kein Favorit mehr</string>
-    <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
-    Lege die Kopie einer Szene auf deinem Homescreen ab und führe diese von dort direkt aus.\nMache eine Szene zu einem Favoriten, so wird sie im Navigationsmenü aufgelistet. Wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
-    \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
-    </string>
     <string name="error_plugin_not_installed">Plugin nicht installiert!</string>
     <string name="renameInProgress">Benenne um…</string>
     <string name="renameFailed">Umbenennung fehlgeschlagen: %1$s</string>
@@ -347,6 +344,24 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_timeout">Verbindungszeit überschritten, abgebrochen</string>
     <string name="jump_to_group">Springe zu Gruppe</string>
     <string name="scene">Szene</string>
+    <string name="help_overview_and_groups">Auf diesem Bildschirm siehst du im ersten Moment alle Steckdosen aufgelistet. Klicke einen Eintrag an, um einen Zustandswechsel herbeizuführen. Berühre das Schraubenschlüssel-Symbol um den Namen, das Icon, oder die Gruppenzugehörigkeit zu ändern. Einträge können in Ansichtsgruppen zusammengefasst werden, wobei ein Eintrag auch mehreren Gruppen zugewiesen sein kann. Durch die Gruppen wechselst du durch Wischbewegungen. Der (+)-Knopf unten rechts erlaubt dir das Erstellen von neuen Gruppen und Szenen. Eine Szene kombiniert mehrere Aktionen, weitere Hilfe zu Szenen findest du im Szene-Erstellen Bildschirm.</string>
+    <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
+    Lege die Kopie einer Szene auf deinem Homescreen ab und führe diese von dort direkt aus.\nMache eine Szene zu einem Favoriten, so wird sie im Navigationsmenü aufgelistet. Wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
+    \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
+    </string>
+    <string name="open_google_market">Google Play</string>
+    <string name="feedback_add_title">Überschrift</string>
+    <string name="feedback_add_text">Wunsch, Verbesserungsvorschlag oder Anregung</string>
+    <string name="feedback_add_disclaimer">If you submit this entry, it will be visible to all users of the app!</string>
+    <string name="app_name_disclaimer">Dies ist eine Quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
+    <string name="feedback_contact_me">Kontaktieren Sie mich um Probleme mit der App oder Fragen schnell zu klären. Möchten Sie ein allgemein einsehbares Feedback hinterlassen, benutzen Sie bitte Google Play.</string>
+    <string name="feedback_add_description">Sie haben hier die Möglichkeit Verbesserungsvorschläge und Wünsche zu äußern. Diese sind für alle Nutzer und den Entwickler der Anwendung sichtbar. Wünsche können nachträglich von jedem bearbeitet werden (auf Vertrauensbasis!).</string>
+    <string name="feedback_btn_add">Anregung hinzufügen</string>
+    <string name="feedback_btn_edit">Anregung editieren</string>
+    <string name="feedback_add_failed">Hinzufügen nicht erfolgreich!</string>
+    <string name="drawer_change_view_type">Ansichtsmodus</string>
+    <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
+    <string name="outlets_view_type_list">Als Liste</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

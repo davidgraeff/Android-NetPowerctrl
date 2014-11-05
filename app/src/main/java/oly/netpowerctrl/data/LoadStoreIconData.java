@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.util.JsonReader;
 import android.util.LruCache;
@@ -35,7 +36,9 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.data.StorableInterface;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Streams;
 
@@ -255,6 +258,15 @@ public class LoadStoreIconData {
         return list.toArray(new IconFile[list.size()]);
     }
 
+    public static LoadStoreIconData.IconState getIconState(DevicePort devicePort) {
+        LoadStoreIconData.IconState t = LoadStoreIconData.IconState.StateOff;
+        if (devicePort.getCurrentValue() != devicePort.min_value &&
+                (devicePort.getType() == ExecutableType.TypeToggle ||
+                        devicePort.getType() == ExecutableType.TypeRangedValue))
+            t = LoadStoreIconData.IconState.StateOn;
+        return t;
+    }
+
     public static void show_select_icon_dialog(final Context context, String assetSet,
                                                final IconSelected callback, final Object callback_context_object) {
         AssetManager assetMgr = context.getAssets();
@@ -292,7 +304,7 @@ public class LoadStoreIconData {
         if (callback_context_object instanceof DevicePort) {
             DevicePort oi = (DevicePort) callback_context_object;
             Drawable icon = LoadStoreIconData.loadDrawable(context, oi.getUid(),
-                    LoadStoreIconData.IconType.DevicePortIcon, oi.getIconState());
+                    LoadStoreIconData.IconType.DevicePortIcon, getIconState(oi));
             select_icon_dialog.setIcon(icon);
         }
         select_icon_dialog.setAdapter(adapter, new DialogInterface.OnClickListener() {
@@ -402,17 +414,17 @@ public class LoadStoreIconData {
         }
 
         @Override
-        public void load(JsonReader reader) throws IOException, ClassNotFoundException {
+        public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
 
         }
 
         @Override
-        public void load(InputStream input) {
+        public void load(@NonNull InputStream input) {
 
         }
 
         @Override
-        public void save(OutputStream output) throws IOException {
+        public void save(@NonNull OutputStream output) throws IOException {
             FileInputStream f = new FileInputStream(file);
             Streams.copy(f, output);
         }

@@ -16,6 +16,8 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataLoaded;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.main.App;
 
 /**
@@ -117,7 +119,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
     @Override
     public boolean updated(Object deviceCollection, Device device, ObserverUpdateActions action, int position) {
-        if (device != null && device.UniqueDeviceID == null)
+        if (device != null && device.getUniqueDeviceID() == null)
             return true;
 
         switch (action) {
@@ -128,7 +130,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
                 for (int i = mList.size() - 1; i >= 0; --i) {
                     DeviceAdapterItem item = mList.get(i);
                     assert device != null;
-                    if (item.UniqueDeviceID.equals(device.UniqueDeviceID)) {
+                    if (item.UniqueDeviceID.equals(device.getUniqueDeviceID())) {
                         mList.remove(i);
                         start = i;
                         ++range;
@@ -165,7 +167,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
                 for (int i = mList.size() - 1; i >= 0; --i) {
                     DeviceAdapterItem item = mList.get(i);
                     assert device != null;
-                    if (item.UniqueDeviceID.equals(device.UniqueDeviceID)) {
+                    if (item.UniqueDeviceID.equals(device.getUniqueDeviceID())) {
                         mList.remove(i);
                         notifyItemRemoved(position);
                     }
@@ -215,7 +217,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
             this.isDeviceHeader = true;
             this.reachable = device.isReachable();
             this.tested = true;
-            this.UniqueDeviceID = device.UniqueDeviceID;
+            this.UniqueDeviceID = device.getUniqueDeviceID();
         }
 
         /**
@@ -247,7 +249,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
             this.isDeviceHeader = false;
             this.connectionID = connectionID;
-            this.UniqueDeviceID = deviceConnection.device.UniqueDeviceID;
+            this.UniqueDeviceID = deviceConnection.device.getUniqueDeviceID();
         }
     }
 

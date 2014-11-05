@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
     <string name="app_name">Smart Power Control</string>
+    <string name="app_name_desc">Have full control over your switchable network outlets. At the moment switchable network outlets from ANEL-Elektronik AG (www.anel-elektronik.de) are supported: NET-PwrCtrl HUT, NET-PwrCtrl IO, NET-PwrCtrl ADV, NET-PwrCtrl PRO, NET-PwrCtrl HOME</string>
     <string name="app_name_shortcut">Power-Control Scene</string>
     <string name="app_name_shortcut_desc">Start a scene from your home screen</string>
     <string name="app_name_widget">Power-Control Outlet State</string>
@@ -344,6 +345,20 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_timeout">Not reachable. Timeout.</string>
     <string name="jump_to_group">Jump to group</string>
     <string name="scene">Scene</string>
+    <string name="help_overview_and_groups">Auf diesem Bildschirm siehst du im ersten Moment alle Steckdosen aufgelistet. Klicke einen Eintrag um einen Zustandswechsel herbeizuführen. Berühre das Schraubenschlüssel-Symbol um den Namen, das Icon, oder die Gruppenzugehörigkeit eines Eintrags zu ändern. Einträge können in Ansichtsgruppen zusammengefasst werden, wobei ein Eintrag auch mehreren Gruppen zugewiesen werden kann. Durch die Gruppen wechselst du durch Wischbewegungen. Der (+)-Knopf unten links erlaubt das Erstellen von neuen Gruppen und Szenen.</string>
+    <string name="open_google_market">Google Play</string>
+    <string name="feedback_add_title">Title</string>
+    <string name="feedback_add_text">Wunsch, Verbesserungsvorschlag oder Anregung</string>
+    <string name="feedback_add_disclaimer">If you submit this entry, it will be visible to all users of the app!</string>
+    <string name="app_name_disclaimer">Dies ist eine Quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
+    <string name="feedback_contact_me">Kontaktieren Sie mich um Probleme mit der App oder Fragen schnell zu klären. Möchten Sie ein allgemein einsehbares Feedback hinterlassen, benutzen Sie bitte Google Play.</string>
+    <string name="feedback_add_description">Sie haben hier die Möglichkeit Verbesserungsvorschläge und Wünsche zu äußern. Diese sind für alle Nutzer und den Entwickler der Anwendung sichtbar. Wünsche können nachträglich von jedem bearbeitet werden (auf Vertrauensbasis!).</string>
+    <string name="feedback_btn_add">Anregung hinzufügen</string>
+    <string name="feedback_btn_edit">Anregung editieren</string>
+    <string name="feedback_add_failed">Hinzufügen nicht erfolgreich!</string>
+    <string name="drawer_change_view_type">Ansichtsmodus</string>
+    <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
+    <string name="outlets_view_type_list">Als Liste</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

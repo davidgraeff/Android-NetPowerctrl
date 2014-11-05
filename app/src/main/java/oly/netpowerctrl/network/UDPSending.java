@@ -15,11 +15,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceConnection;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
  * udpSending spawns a separate thread for UDP sending and enqueues all send jobs.

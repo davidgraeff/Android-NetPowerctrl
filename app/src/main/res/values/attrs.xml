@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="floating_button_color" format="color" />
+    <attr name="section_background" format="reference" />
     <attr name="activity_background" format="color" />
+    <attr name="cards_background" format="color" />
     <attr name="drawer_item_background" format="color" />
     <attr name="toolbar_style" format="reference" />
     <attr name="preferences_title_light" format="color" />

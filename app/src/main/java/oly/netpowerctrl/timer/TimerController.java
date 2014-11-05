@@ -10,9 +10,9 @@ import java.util.List;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
@@ -104,7 +104,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
     }
 
     void removeAlarm(Timer timer, onHttpRequestResult callback) {
-        PluginInterface p = timer.port.device.getPluginInterface();
+        PluginInterface p = (PluginInterface) timer.port.device.getPluginInterface();
         p.removeAlarm(timer, callback);
     }
 
@@ -145,7 +145,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         // to refresh that port first.
         for (Device di : c.getItems()) {
             // Request all alarm_uuids may be called before all plugins responded
-            PluginInterface i = di.getPluginInterface();
+            PluginInterface i = (PluginInterface) di.getPluginInterface();
             if (i == null || !di.isEnabled())
                 continue;
 
@@ -166,7 +166,7 @@ public class TimerController extends CollectionWithStorableItems<TimerController
         }
 
         for (DevicePort port : alarm_ports) {
-            PluginInterface i = port.device.getPluginInterface();
+            PluginInterface i = (PluginInterface) port.device.getPluginInterface();
             i.requestAlarms(port, this);
         }
 

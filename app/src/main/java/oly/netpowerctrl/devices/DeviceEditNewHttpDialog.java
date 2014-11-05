@@ -16,6 +16,8 @@ import android.widget.Toast;
 import java.net.UnknownHostException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.main.App;
 
 public class DeviceEditNewHttpDialog extends DialogFragment {

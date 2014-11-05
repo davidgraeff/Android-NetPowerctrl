@@ -54,7 +54,7 @@
                 android:textAppearance="@android:style/TextAppearance.Small" />
         </LinearLayout>
 
-        <oly.netpowerctrl.utils.controls.SegmentedRadioGroup
+        <oly.netpowerctrl.ui.widgets.SegmentedRadioGroup
             android:id="@+id/radioGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -97,7 +97,7 @@
                 android:padding="20dp"
                 android:text="@string/toggleMaster"
                 android:textAppearance="@android:style/TextAppearance.Small" />
-        </oly.netpowerctrl.utils.controls.SegmentedRadioGroup>
+        </oly.netpowerctrl.ui.widgets.SegmentedRadioGroup>
 
     </LinearLayout>
 

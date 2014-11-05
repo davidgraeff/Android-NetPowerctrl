@@ -10,11 +10,12 @@ import java.util.List;
 import java.util.Set;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.devices.DeviceConnectionUDP;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.listen_service.PluginInterface;
@@ -27,7 +28,7 @@ import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
 import oly.netpowerctrl.timer.TimerController;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
  * Device Updates go into this object and are propagated to all observers and the device collection.
@@ -187,7 +188,7 @@ public class AppData {
     }
 
     public void addToConfiguredDevices(Context context, Device device) {
-        if (device.UniqueDeviceID == null) {
+        if (device.getUniqueDeviceID() == null) {
             InAppNotifications.showException(context, null, "addToConfiguredDevices. Failed to add device: no unique id!");
             return;
         }
@@ -211,10 +212,18 @@ public class AppData {
      *
      * @param device_info The changed device
      */
-    public void onDeviceUpdatedOtherThread(final Device device_info) {
+    public void updateDeviceFromOtherThread(final Device device_info) {
         App.getMainThreadHandler().post(new Runnable() {
             public void run() {
-                onDeviceUpdated(device_info);
+                updateDevice(device_info);
+            }
+        });
+    }
+
+    public void updateExistingDeviceFromOtherThread(final Device device_info) {
+        App.getMainThreadHandler().post(new Runnable() {
+            public void run() {
+                updateExistingDevice(device_info);
             }
         });
     }
@@ -225,13 +234,26 @@ public class AppData {
      *
      * @param device_info The changed device
      */
-    public void onDeviceUpdated(Device device_info) {
+    public void updateDevice(Device device_info) {
         // if it matches a configured device, update it's outlet states and exit the method.
-        Device existing_device = deviceCollection.update(device_info);
+        int position = deviceCollection.getPosition(device_info);
 
-        if (existing_device != null) {
+        if (position != -1) {
+            Device existing_device = deviceCollection.items.get(position);
+            if (existing_device == device_info) {
+                throw new RuntimeException("Same object not allowed here: " + device_info.DeviceName);
+            }
+
+            existing_device.replaceAutomaticAssignedConnections(device_info.DeviceConnections);
+            existing_device.copyValuesFromUpdated(device_info);
+
             // notify observers who are using the DeviceQuery class (existing device)
             notifyDeviceQueries(existing_device);
+            if (existing_device.isHasChanged()) {
+                deviceCollection.save(existing_device);
+                //Log.w(TAG, "-- update: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
+                deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
+            }
             return;
         }
 
@@ -239,6 +261,19 @@ public class AppData {
         notifyDeviceQueries(device_info);
 
         unconfiguredDeviceCollection.add(device_info);
+    }
+
+    /**
+     * Call this if you have made your changes to the given device and want to propagate those now.
+     *
+     * @param existing_device
+     */
+    public void updateExistingDevice(Device existing_device) {
+        notifyDeviceQueries(existing_device);
+        if (existing_device.isHasChanged()) {
+            deviceCollection.save(existing_device);
+            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, deviceCollection.getPosition(existing_device));
+        }
     }
 
     public void onDeviceErrorByName(Context context, String name, String errMessage) {
@@ -287,7 +322,7 @@ public class AppData {
 
     public Device findDeviceByUniqueID(String uniqueID) {
         for (Device di : deviceCollection.items) {
-            if (di.UniqueDeviceID.equals(uniqueID)) {
+            if (di.getUniqueDeviceID().equals(uniqueID)) {
                 return di;
             }
         }
@@ -298,7 +333,7 @@ public class AppData {
         if (callback != null)
             callback.httpRequestStart(port);
 
-        PluginInterface remote = port.device.getPluginInterface();
+        PluginInterface remote = (PluginInterface) port.device.getPluginInterface();
         if (remote != null) {
             remote.rename(port, new_name, callback);
         } else if (callback != null)
@@ -315,7 +350,22 @@ public class AppData {
         List<PluginInterface> pluginInterfaces = new ArrayList<>();
 
         // Master/Slave
-        int master_command = scene.getMasterCommand();
+        SceneItem masterItem = scene.getMasterSceneItem();
+        int master_command = DevicePort.INVALID;
+        if (masterItem != null) {
+            // If the command is not toggle, we return it now. It can be applied to slaves
+            // directly.
+            if (masterItem.command != DevicePort.TOGGLE) {
+                master_command = masterItem.command;
+            } else {
+                // If the command is toggle, we have to find out the final command.
+                DevicePort port = AppData.getInstance().findDevicePort(masterItem.uuid);
+                if (port == null)
+                    master_command = DevicePort.INVALID;
+                else
+                    master_command = port.getCurrentValueToggled();
+            }
+        }
 
         for (SceneItem item : scene.sceneItems) {
             DevicePort p = getInstance().findDevicePort(item.uuid);
@@ -324,7 +374,7 @@ public class AppData {
                 continue;
             }
 
-            PluginInterface remote = p.device.getPluginInterface();
+            PluginInterface remote = (PluginInterface) p.device.getPluginInterface();
             if (remote == null) {
                 Log.e(TAG, "Execute scene, PluginInterface not found " + item.uuid);
                 continue;
@@ -357,7 +407,7 @@ public class AppData {
             return;
         } else if (executable instanceof DevicePort) {
             DevicePort devicePort = (DevicePort) executable;
-            PluginInterface remote = devicePort.device.getPluginInterface();
+            PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
             if (remote != null) {
                 if (remote.isNetworkReducedState())
                     remote.enterFullNetworkState(App.instance, devicePort.device);
@@ -381,7 +431,7 @@ public class AppData {
      * @param callback   The callback for the execution-done messages
      */
     public void execute(final DevicePort devicePort, final int command, final onExecutionFinished callback) {
-        PluginInterface remote = devicePort.device.getPluginInterface();
+        PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
         if (remote != null) {
             if (remote.isNetworkReducedState())
                 remote.enterFullNetworkState(App.instance, devicePort.device);
@@ -398,7 +448,7 @@ public class AppData {
     public int countNetworkDevices() {
         int i = 0;
         for (Device di : deviceCollection.items)
-            if (di.isNetworkDevice()) ++i;
+            if (DeviceCollection.isNetworkDevice(di)) ++i;
         return i;
     }
 

@@ -3,7 +3,9 @@
 
     <style name="Theme.CustomLightTheme" parent="Theme.AppCompat.Light">
         <item name="drawer_item_background">@color/drawer</item>
+        <item name="section_background">@drawable/actionbar_background_textured</item>
         <item name="activity_background">@android:color/background_light</item>
+        <item name="cards_background">@android:color/background_light</item>
         <item name="floating_button_color">@color/floating_button_colorLight</item>
         <item name="preferences_title_light">#66000000</item>
         <item name="android:windowIsTranslucent">false</item>
@@ -27,7 +29,9 @@
 
     <style name="Theme.CustomDarkTheme" parent="Theme.AppCompat">
         <item name="drawer_item_background">#323232</item>
+        <item name="section_background">@drawable/actionbar_background_textured_dark</item>
         <item name="activity_background">@color/colorBackgroundDark</item>
+        <item name="cards_background">@android:color/background_dark</item>
         <item name="floating_button_color">@color/floating_button_colorDark</item>
         <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>
@@ -63,7 +67,9 @@
 
     <style name="ToolBarStyle" parent="@style/Base.Widget.AppCompat.ActionBar">
         <item name="android:background">?attr/colorPrimaryDark</item>
-        <item name="titleTextAppearance">@android:style/TextAppearance</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <!--<item name="android:textColorPrimaryInverse">@android:color/white</item>-->
+
     </style>
 
     <!--<style name="ActionBar.Solid.Customlighttheme" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">-->

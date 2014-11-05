@@ -44,9 +44,9 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.utils.navigation.NavigationController;
-import oly.netpowerctrl.utils.notifications.ChangeLogNotification;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.navigation.NavigationController;
+import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
 public class MainActivity extends ActionBarActivity {

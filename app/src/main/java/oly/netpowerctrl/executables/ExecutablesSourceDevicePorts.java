@@ -8,8 +8,8 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataLoaded;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DevicePort;
 
 /**
  * Created by david on 07.07.14.
@@ -17,9 +17,12 @@ import oly.netpowerctrl.devices.DevicePort;
 public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implements onCollectionUpdated<Object, Device>, onDataLoaded {
     private List<DevicePort> mList = new ArrayList<>();
 
+    public ExecutablesSourceDevicePorts(ExecutablesSourceChain executablesSourceChain) {
+        super(executablesSourceChain);
+    }
+
     @Override
     public void fullUpdate(ExecutablesBaseAdapter adapter) {
-        super.fullUpdate(adapter);
 
         mList.clear();
         for (Device device : AppData.getInstance().deviceCollection.getItems()) {
@@ -54,7 +57,7 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
     protected void automaticUpdatesEnable() {
         // If no data has been loaded so far, wait for load action to be completed before
         // registering to deviceCollection changes.
-        if (!AppData.observersOnDataLoaded.dataLoaded)
+        if (!AppData.isDataLoaded())
             AppData.observersOnDataLoaded.register(this);
         else {
             AppData.getInstance().deviceCollection.registerObserver(this);

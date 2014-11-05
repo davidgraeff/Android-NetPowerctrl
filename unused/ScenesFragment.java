@@ -36,7 +36,7 @@ import oly.netpowerctrl.utils.SortCriteriaDialog;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;
 import oly.netpowerctrl.utils.controls.FloatingActionButton;
 import oly.netpowerctrl.utils.controls.onListItemElementClicked;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
  */

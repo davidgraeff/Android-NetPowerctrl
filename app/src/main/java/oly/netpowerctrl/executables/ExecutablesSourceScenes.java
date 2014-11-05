@@ -6,23 +6,26 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataLoaded;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.scenes.Scene;
 
 /**
  * Created by david on 07.07.14.
  */
 public class ExecutablesSourceScenes extends ExecutablesSourceBase implements onCollectionUpdated<Object, Scene>, onDataLoaded {
+    public ExecutablesSourceScenes(ExecutablesSourceChain executablesSourceChain) {
+        super(executablesSourceChain);
+    }
+
     @Override
     public void fullUpdate(ExecutablesBaseAdapter adapter) {
-        super.fullUpdate(adapter);
-
         if (adapter == null) {
             automaticUpdatesDisable();
         } else {
             List<Scene> scenes = AppData.getInstance().sceneCollection.getItems();
             for (Scene scene : scenes)
-                adapter.addItem(scene, DevicePort.TOGGLE);
+                if (scene.isReachable())
+                    adapter.addItem(scene, DevicePort.TOGGLE);
         }
     }
 
@@ -35,7 +38,7 @@ public class ExecutablesSourceScenes extends ExecutablesSourceBase implements on
     protected void automaticUpdatesEnable() {
         // If no data has been loaded so far, wait for load action to be completed before
         // registering to deviceCollection changes.
-        if (!AppData.observersOnDataLoaded.dataLoaded)
+        if (!AppData.isDataLoaded())
             AppData.observersOnDataLoaded.register(this);
         else {
             AppData.getInstance().sceneCollection.registerObserver(this);
@@ -62,7 +65,10 @@ public class ExecutablesSourceScenes extends ExecutablesSourceBase implements on
         if (action == ObserverUpdateActions.RemoveAction) {
             adapter.removeAt(findPositionByUUid(adapter, scene.getUid()));
         } else if (action == ObserverUpdateActions.AddAction || action == ObserverUpdateActions.UpdateAction) {
-            adapter.addItem(scene, DevicePort.TOGGLE);
+            if (scene.isReachable())
+                adapter.addItem(scene, DevicePort.TOGGLE);
+            else
+                adapter.removeAt(findPositionByUUid(adapter, scene.getUid()));
         } else if (action == ObserverUpdateActions.ClearAndNewAction || action == ObserverUpdateActions.RemoveAllAction) {
             updateNow();
             return true;

@@ -14,11 +14,12 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.Executable;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.executables.ExecutableAdapterItem;
-import oly.netpowerctrl.executables.ExecutableType;
-import oly.netpowerctrl.utils.controls.SegmentedRadioGroup;
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.ui.widgets.SegmentedRadioGroup;
 
 public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdapter.ViewHolder> {
     public final List<ExecutableAdapterItem> mItems = new ArrayList<>();
@@ -117,7 +118,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
         ExecutableAdapterItem item = mItems.get(position);
         DevicePort port = (DevicePort) item.getExecutable();
 
-        viewHolder.title.setText(port.getTitle());
+        viewHolder.title.setText(port.getTitle(App.instance));
         viewHolder.title.setEnabled(port.isEnabled());
 
         if (viewHolder.subtitle != null) {

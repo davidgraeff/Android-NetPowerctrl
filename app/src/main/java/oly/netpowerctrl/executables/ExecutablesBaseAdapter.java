@@ -13,9 +13,10 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.groups.Group;
+import oly.netpowerctrl.main.App;
 
 public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewHolder> {
 
@@ -115,10 +116,10 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
 //                    port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
 
             if (executableViewHolder.subtitle != null) {
-                executableViewHolder.subtitle.setText(executable.getDescription());
+                executableViewHolder.subtitle.setText(executable.getDescription(App.instance));
             }
 
-            executableViewHolder.title.setText(executable.getTitle());
+            executableViewHolder.title.setText(executable.getTitle(App.instance));
             executableViewHolder.title.setEnabled(executable.isEnabled());
 
             if (executable.isReachable())
@@ -211,7 +212,7 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
                 break;
             }
 
-            // TODO Find the right position for the DevicePort.
+            // TODO Find the right position for the item in BaseAdapter.
             boolean behind_current = false; // sortOrder.length > i ? l.port.positionRequest > devicePort.positionRequest : false;
             if (!found && behind_current) {
                 destination_index = i;

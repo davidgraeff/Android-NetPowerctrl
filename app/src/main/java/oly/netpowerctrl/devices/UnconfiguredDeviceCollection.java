@@ -2,6 +2,7 @@ package oly.netpowerctrl.devices;
 
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.device_base.device.Device;
 
 /**
  * Contains DeviceInfos. Used for NFC and backup transfers

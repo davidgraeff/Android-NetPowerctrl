@@ -32,7 +32,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ImportExport;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
@@ -228,7 +228,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 continue;
             }
             widgetDataList.add(new WidgetData(
-                    port.device.DeviceName + ", " + port.getTitle(),
+                    port.device.DeviceName + ", " + port.getTitle(getActivity()),
                     prefName, appWidgetId));
         }
 
@@ -275,7 +275,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference("issues").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Github.getOpenIssues(PreferencesFragment.this, true);
+                Github.getOpenIssues(PreferencesFragment.this, true, null);
                 return false;
             }
         });
@@ -284,7 +284,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Github.getOpenIssues(this, false);
+        Github.getOpenIssues(this, false, null);
         final ListView lv = (ListView) getActivity().findViewById(android.R.id.list);
         if (lv != null)
             App.getMainThreadHandler().post(new Runnable() {
@@ -305,6 +305,11 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             } else
                 LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, intent);
         }
+    }
+
+    @Override
+    public void gitHubIssue(int number, String title, String body) {
+
     }
 
     @Override

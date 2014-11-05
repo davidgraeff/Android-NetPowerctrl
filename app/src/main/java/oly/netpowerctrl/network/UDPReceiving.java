@@ -9,7 +9,7 @@ import java.net.InetAddress;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 abstract public class UDPReceiving extends Thread {
     private final int receive_port;

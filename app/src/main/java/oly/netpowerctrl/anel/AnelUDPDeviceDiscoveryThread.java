@@ -6,13 +6,13 @@ import java.net.InetAddress;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.devices.Device;
-import oly.netpowerctrl.devices.DeviceConnection;
-import oly.netpowerctrl.devices.DeviceConnectionHTTP;
-import oly.netpowerctrl.devices.DeviceConnectionUDP;
-import oly.netpowerctrl.devices.DeviceFeatureTemperature;
-import oly.netpowerctrl.devices.DevicePort;
-import oly.netpowerctrl.executables.ExecutableType;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
+import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
+import oly.netpowerctrl.device_base.device.DeviceFeatureTemperature;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPReceiving;
@@ -29,7 +29,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         Device di = new Device(anelPlugin.getPluginID());
         di.setPluginInterface(anelPlugin);
         di.DeviceName = DeviceName;
-        di.UniqueDeviceID = MacAddress;
+        di.setUniqueDeviceID(MacAddress);
         // Default values for user and password
         di.UserName = "admin";
         di.Password = "anel";
@@ -142,6 +142,6 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             di.putPort(oi);
         }
 
-        AppData.getInstance().onDeviceUpdatedOtherThread(di);
+        AppData.getInstance().updateDeviceFromOtherThread(di);
     }
 }

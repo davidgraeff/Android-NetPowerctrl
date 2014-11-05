@@ -20,7 +20,7 @@ import android.widget.Toast;
 import java.text.DateFormatSymbols;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.onHttpRequestResult;
@@ -46,7 +46,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         // Port selection
         {
-            final ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts();
+            final ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
             s.fullUpdate(null);
 
             Spinner spinner = ((Spinner) rootView.findViewById(R.id.alarm_port));
@@ -68,7 +68,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             ArrayAdapter<String> array_adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1);
             for (int i = 0; i < s.getDevicePortList().size(); ++i)
                 if (s.getDevicePortList().get(i) != null)
-                    array_adapter.add(s.getDevicePortList().get(i).getTitle());
+                    array_adapter.add(s.getDevicePortList().get(i).getTitle(getActivity()));
 
             spinner.setAdapter(array_adapter);
             spinner.setSelection(s.indexOf(timer.port));
@@ -204,7 +204,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
 
     private void removeAlarm() {
-        PluginInterface plugin = timer.port.device.getPluginInterface();
+        PluginInterface plugin = (PluginInterface) timer.port.device.getPluginInterface();
         plugin.removeAlarm(timer, this);
     }
 
@@ -239,7 +239,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             return;
         }
 
-        PluginInterface plugin = timer.port.device.getPluginInterface();
+        PluginInterface plugin = (PluginInterface) timer.port.device.getPluginInterface();
         // Find free device alarm, if not already assigned
         if (timer.id == -1) {
             Timer found_timer;

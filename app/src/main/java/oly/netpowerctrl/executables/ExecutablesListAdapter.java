@@ -4,8 +4,8 @@ import android.util.SparseBooleanArray;
 import android.widget.CheckedTextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
+import oly.netpowerctrl.device_base.executables.Executable;
 
 public class ExecutablesListAdapter extends ExecutablesBaseAdapter {
     private final SparseBooleanArray checked = new SparseBooleanArray();

@@ -2,6 +2,8 @@ package oly.netpowerctrl.devices;
 
 import android.content.Context;
 
+import oly.netpowerctrl.device_base.device.Device;
+
 /**
  * Created by david on 05.09.14.
  */

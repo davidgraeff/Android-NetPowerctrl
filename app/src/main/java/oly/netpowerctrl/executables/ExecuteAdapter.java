@@ -5,10 +5,10 @@ import android.widget.SeekBar;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.Executable;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 
 public class ExecuteAdapter extends ExecutablesBaseAdapter implements
         SeekBar.OnSeekBarChangeListener {

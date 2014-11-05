@@ -7,12 +7,11 @@ import java.util.List;
 
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.devices.DevicePort;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
 
@@ -40,7 +39,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
     @Override
     public boolean wakeupPlugin(Context context) {
-        PluginInterface pluginInterface = device.getPluginInterface();
+        AnelPlugin pluginInterface = (AnelPlugin) device.getPluginInterface();
         if (pluginInterface != null) {
             pluginInterface.enterFullNetworkState(context, device);
             return true;
@@ -95,7 +94,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
     @Override
     public boolean updated(DeviceCollection deviceCollection, Device updated_device, ObserverUpdateActions action, int position) {
-        if (updated_device.UniqueDeviceID == null || !updated_device.equalsByUniqueID(device))
+        if (updated_device.getUniqueDeviceID() == null || !updated_device.equalsByUniqueID(device))
             return true;
 
         if (!updated_device.isReachable()) {
@@ -106,14 +105,14 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
         if (test_state == TestStates.TEST_REACHABLE) {
             // Update stored device with received values
-            device.UniqueDeviceID = updated_device.UniqueDeviceID;
+            device.setUniqueDeviceID(updated_device.getUniqueDeviceID());
             // do not copy the deviceName here, just the other values
             device.copyValuesFromUpdated(updated_device);
             // Test user+password by setting a device port.
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            PluginInterface pi = device.getPluginInterface();
+            AnelPlugin pi = (AnelPlugin) device.getPluginInterface();
             assert pi != null;
             if (deviceQuery != null) {
                 deviceQuery.addDevice(device, false);

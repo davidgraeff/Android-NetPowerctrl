@@ -81,20 +81,23 @@ public class AnimationController {
         view.startAnimation(animation1);
     }
 
-
-    public static void animateViewInOut(final View view, final boolean in, final boolean makeGone) {
+    public static Animation animateViewInOut(final View view, final boolean in, final boolean makeGone) {
         float c = view.getAlpha();
-        if (c >= 1.0f && in || c == 0.0f && !in) {
-            return;
+        boolean isNotVisible = view.getVisibility() != View.VISIBLE;
+        if (in ? (!isNotVisible && c >= 1.0f) : (isNotVisible || c == 0.0f)) {
+            return null;
         }
-
         view.clearAnimation();
 
-        AlphaAnimation animation1 = new AlphaAnimation(c, in ? 1.0f : 0.0f);
+        return animateViewInOutWithoutCheck(view, in, makeGone);
+    }
+
+    public static Animation animateViewInOutWithoutCheck(final View view, final boolean in, final boolean makeGone) {
+        final AlphaAnimation animation1 = new AlphaAnimation(view.getAlpha(), in ? 1.0f : 0.0f);
         animation1.setInterpolator(new AccelerateInterpolator());
         animation1.setDuration(1000);
         animation1.setStartOffset(0);
-        animation1.setFillEnabled(true);
+        //animation1.setFillEnabled(true);
         animation1.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -114,5 +117,6 @@ public class AnimationController {
             }
         });
         view.startAnimation(animation1);
+        return animation1;
     }
 }

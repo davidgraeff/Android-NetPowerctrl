@@ -1,10 +1,12 @@
 package oly.netpowerctrl.scenes;
 
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.executables.AdapterFragment;
@@ -14,6 +16,29 @@ import oly.netpowerctrl.executables.ExecutablesListAdapter;
  */
 public class EditSceneIncludedFragment extends AdapterFragment<SceneElementsAdapter> {
     private boolean isTwoPaneFragment;
+    private RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+        @Override
+        public void onChanged() {
+            super.onChanged();
+            View view = getView();
+            if (view == null)
+                return;
+            view = view.findViewById(R.id.empty);
+            if (mAdapter.getItemCount() != 0) {
+                view.setVisibility(View.GONE);
+                return;
+            }
+
+            view.setVisibility(View.VISIBLE);
+            TextView textView = (TextView) view.findViewById(R.id.empty_text);
+            if (isTwoPaneFragment)
+                textView.setText(R.string.scene_create_include_twopane);
+            else {
+                textView.setText(R.string.scene_create_include_onepane);
+                textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_media_ff, 0);
+            }
+        }
+    };
     private ExecutablesListAdapter adapter_available;
 
     public EditSceneIncludedFragment() {
@@ -23,6 +48,21 @@ public class EditSceneIncludedFragment extends AdapterFragment<SceneElementsAdap
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mAdapter != null)
+            mAdapter.unregisterAdapterDataObserver(adapterDataObserver);
+    }
+
+    public void setAdapter(SceneElementsAdapter adapter) {
+        if (mAdapter != null)
+            mAdapter.unregisterAdapterDataObserver(adapterDataObserver);
+
+        super.setAdapter(adapter);
+        mAdapter.registerAdapterDataObserver(adapterDataObserver);
     }
 
     @Override
@@ -39,23 +79,9 @@ public class EditSceneIncludedFragment extends AdapterFragment<SceneElementsAdap
         this.adapter_available = adapter_available;
     }
 
-    public void checkEmpty() {
-        final View view = getView();
-        assert view != null;
-
-        //TODO checkEmpty
-//        mRecyclerView.setEmptyView(view.findViewById(R.id.empty));
-//        TextView textView = (TextView) view.findViewById(R.id.empty_text);
-//        if (isTwoPaneFragment)
-//            textView.setText(R.string.scene_create_include_twopane);
-//        else
-//            textView.setText(R.string.scene_create_include_onepane);
-//        textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_media_ff, 0);
-    }
-
     /*
- * ActionBar icon clicked
- */
+     * ActionBar icon clicked
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         SceneElementsAdapter adapter_included = mAdapter;
         switch (item.getItemId()) {

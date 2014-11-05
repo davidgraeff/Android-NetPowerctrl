@@ -23,17 +23,20 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
+import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
+import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.DividerItemDecoration;
-import oly.netpowerctrl.utils.RecyclerItemClickListener;
-import oly.netpowerctrl.utils.controls.FloatingActionButton;
-import oly.netpowerctrl.utils.notifications.InAppNotifications;
 
 /**
  */
@@ -169,7 +172,7 @@ public class DevicesFragment extends Fragment
                 Device device = AppData.getInstance().findDeviceByUniqueID(item.UniqueDeviceID);
                 if (device == null) {
                     for (Device di : AppData.getInstance().unconfiguredDeviceCollection.getItems()) {
-                        if (di.UniqueDeviceID.equals(item.UniqueDeviceID)) {
+                        if (di.getUniqueDeviceID().equals(item.UniqueDeviceID)) {
                             device = di;
                             break;
                         }
@@ -263,7 +266,7 @@ public class DevicesFragment extends Fragment
                                 assert current_device != null;
                                 current_device.lockDevicePorts();
                                 Iterator<DevicePort> it = current_device.getDevicePortIterator();
-                                UUID uuidOfDevice = UUID.nameUUIDFromBytes(current_device.UniqueDeviceID.getBytes());
+                                UUID uuidOfDevice = UUID.nameUUIDFromBytes(current_device.getUniqueDeviceID().getBytes());
                                 while (it.hasNext()) {
                                     it.next().addToGroup(uuidOfDevice);
                                 }
@@ -293,7 +296,7 @@ public class DevicesFragment extends Fragment
             }
 
             case R.id.menu_device_configuration_page:
-                PluginInterface pluginInterface = current_device.getPluginInterface();
+                PluginInterface pluginInterface = (PluginInterface) current_device.getPluginInterface();
                 if (pluginInterface != null)
                     pluginInterface.openConfigurationPage(current_device, getActivity());
             default:
@@ -304,21 +307,14 @@ public class DevicesFragment extends Fragment
     private void show_configure_device_dialog(Device device) {
         if (device == null) {
             // new device
-            int selected = -1;
+            int selected = 0;
             String[] plugins = ListenService.getService().pluginIDs();
-//            if (plugins.length == 1)
 
-            //TODO: if more than one plugin
-            selected = 0;
-
-            if (selected == -1)
-                return; // no plugin id selected
-
-            DevicesWizardNewFragment newFragment = (DevicesWizardNewFragment) Fragment.instantiate(getActivity(), DevicesWizardNewFragment.class.getName());
+            DevicesWizardNewDialog newFragment = (DevicesWizardNewDialog) Fragment.instantiate(getActivity(), DevicesWizardNewDialog.class.getName());
             newFragment.setPlugin(ListenService.getService().getPluginByID(plugins[selected]));
             MainActivity.getNavigationController().changeToDialog(getActivity(), newFragment);
         } else {
-            PluginInterface pluginInterface = device.getPluginInterface();
+            PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
             if (pluginInterface == null) {
                 InAppNotifications.showException(getActivity(), null, "show_configure_device_dialog: Plugin not known!");
                 return;

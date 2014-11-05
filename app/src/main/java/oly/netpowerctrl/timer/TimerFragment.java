@@ -22,18 +22,16 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onHttpRequestResult;
+import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
-import oly.netpowerctrl.utils.controls.FloatingActionButton;
-import oly.netpowerctrl.utils.controls.SwipeDismissListViewTouchListener;
 
-public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, SwipeDismissListViewTouchListener.DismissCallbacks, onHttpRequestResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
+public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, onHttpRequestResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private SwipeRefreshLayout mPullToRefreshLayout;
@@ -90,14 +88,6 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         mListView.setOnItemClickListener(this);
         mListView.setEmptyView(empty);
         mListView.setAdapter(timerAdapter);
-
-        ///// For swiping elements out (hiding)
-        SwipeDismissListViewTouchListener touchListener =
-                new SwipeDismissListViewTouchListener(
-                        mListView, this);
-        mListView.setOnTouchListener(touchListener);
-        mListView.setOnScrollListener(touchListener.makeScrollListener());
-        ///// END: For swiping elements out (hiding)
 
         ///// For pull to refresh
         mPullToRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
@@ -180,26 +170,18 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
         TimerEditFragmentDialog fragment = (TimerEditFragmentDialog)
                 Fragment.instantiate(getActivity(), TimerEditFragmentDialog.class.getName());
-        fragment.setParameter(timerAdapter.getAlarm(i));
+        fragment.setParameter(timerAdapter.getAlarm(position));
+
+//        Timer timer = timerAdapter.getAlarm(position);
+//        timerAdapter.remove(position);
+//        timerAdapter.notifyDataSetChanged();
+//        PluginInterface plugin = (PluginInterface)timer.port.device.getPluginInterface();
+//        plugin.removeAlarm(timer, this);
 
         MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
-    }
-
-    @Override
-    public boolean canDismiss(int position) {
-        return true;
-    }
-
-    @Override
-    public void onDismiss(int dismissedPosition) {
-        Timer timer = timerAdapter.getAlarm(dismissedPosition);
-        timerAdapter.remove(dismissedPosition);
-        timerAdapter.notifyDataSetChanged();
-        PluginInterface plugin = timer.port.device.getPluginInterface();
-        plugin.removeAlarm(timer, this);
     }
 
     @Override

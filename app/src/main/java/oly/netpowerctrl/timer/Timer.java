@@ -1,6 +1,7 @@
 package oly.netpowerctrl.timer;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -15,9 +16,9 @@ import java.util.Date;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.JSONHelper;
-import oly.netpowerctrl.data.StorableInterface;
-import oly.netpowerctrl.devices.DevicePort;
+import oly.netpowerctrl.device_base.data.JSONHelper;
+import oly.netpowerctrl.device_base.data.StorableInterface;
+import oly.netpowerctrl.device_base.device.DevicePort;
 
 /**
  * Created by david on 19.05.14.
@@ -111,7 +112,7 @@ public class Timer implements StorableInterface {
     public String toString(Context context) {
         String pre = "";
         if (port != null)
-            pre = port.device.DeviceName + ": " + port.getTitle() + " - ";
+            pre = port.device.DeviceName + ": " + port.getTitle(context) + " - ";
 
         switch (type) {
             case TYPE_RANGE_ON_WEEKDAYS:
@@ -128,7 +129,7 @@ public class Timer implements StorableInterface {
 
     public String getTargetName() {
         if (port != null)
-            return port.device.DeviceName + ": " + port.getTitle();
+            return port.device.DeviceName + ": " + port.getTitle(null);
         else
             return "";
     }
@@ -185,7 +186,7 @@ public class Timer implements StorableInterface {
     }
 
     @Override
-    public void load(JsonReader reader) throws IOException, ClassNotFoundException {
+    public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
         Timer timer = this;
         timer.fromCache = true;
@@ -252,12 +253,12 @@ public class Timer implements StorableInterface {
     }
 
     @Override
-    public void load(InputStream input) throws IOException, ClassNotFoundException {
+    public void load(@NonNull InputStream input) throws IOException, ClassNotFoundException {
         load(new JsonReader(new InputStreamReader(input)));
     }
 
     @Override
-    public void save(OutputStream output) throws IOException {
+    public void save(@NonNull OutputStream output) throws IOException {
         toJSON(JSONHelper.createWriter(output));
     }
 }
