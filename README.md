@@ -45,6 +45,8 @@ and [Android Studio](http://developer.android.com/sdk/installing/studio.html).
 This project is not for the (old) eclipse based SDK! It depends on the
 support libraries (v13) and need at least android 4.0 (sdk version 14, released 19. Oct 2011).
 
+This repository uses git submodules. Use git clone -r to recursivly checkout.
+
 ### Authors
 * david.graeff(at)web_de
 * Some icons from http://www.clker.com/
