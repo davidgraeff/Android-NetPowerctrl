@@ -12,6 +12,8 @@ app/app.apk
 # generated files
 bin/
 gen/
+build/
+app/build/
 
 # Local configuration file (sdk path, etc)
 local.properties
