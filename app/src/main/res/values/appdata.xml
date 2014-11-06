@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_authors_copyright">Copyright (c) 2013-2014 David Gräff</string>
+    <string name="acralyzer_http_login">wherentritstallevencendo</string>
+    <string name="acralyzer_http_pwd">Ap1xIKwclTDDcU3BiNDtjl5Q</string>
+    <string name="github_issues">https://api.github.com/repos/davidgraeff/Android-NetPowerctrl/issues</string>
+    <string name="github_access_token">5cb89af92fa58959dcb8672c688f422c0ae8fd6b</string>
+    <string name="cloudant_bugs">https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_view/bugs</string>
+</resources>

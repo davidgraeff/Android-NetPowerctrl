@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:padding="@dimen/list_outer_padding"
-    card_view:cardBackgroundColor="?activity_background"
+    card_view:cardBackgroundColor="?cards_background"
     card_view:cardCornerRadius="4dp"
     card_view:cardElevation="5dp">
 

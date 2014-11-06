@@ -85,7 +85,7 @@
     <string name="menu_rename_outlet">Umbenennen</string>
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
     <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
-    <string name="Version">Version</string>
+    <string name="Version">Version:</string>
     <string name="title_scene_edit">Bearbeite Szene: %1$s</string>
     <string name="scene_add_homescreen">Zum Startbildschirm hinzufügen</string>
     <string name="device_test_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>

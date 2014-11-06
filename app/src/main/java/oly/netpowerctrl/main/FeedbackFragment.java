@@ -23,9 +23,9 @@ import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.ui.ChangeLogUtil;
-import oly.netpowerctrl.utils.Github;
+import oly.netpowerctrl.utils.GithubAndCloudant;
 
-public class FeedbackFragment extends Fragment implements Github.IGithubNewIssue {
+public class FeedbackFragment extends Fragment implements GithubAndCloudant.IGithubNewIssue {
     private LinearLayout wishes_layout;
     private Map<Integer, View> number_to_view = new TreeMap<>();
 
@@ -38,7 +38,7 @@ public class FeedbackFragment extends Fragment implements Github.IGithubNewIssue
         final View view = inflater.inflate(R.layout.fragment_feedback, container, false);
         assert view != null;
 
-        String version = getString(R.string.Version) + " ";
+        String version = "";
         try {
             //noinspection ConstantConditions
             version += getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0).versionName;
@@ -54,6 +54,19 @@ public class FeedbackFragment extends Fragment implements Github.IGithubNewIssue
                 ChangeLogUtil.showChangeLog(getActivity());
             }
         });
+
+        ((TextView) view.findViewById(R.id.bugs)).setText(R.string.issues_wait);
+        GithubAndCloudant.getOpenAutomaticIssues(new GithubAndCloudant.IGithubOpenIssues() {
+            @Override
+            public void gitHubOpenIssuesUpdated(int count, long last_access) {
+                ((TextView) view.findViewById(R.id.bugs)).setText(String.valueOf(count));
+            }
+
+            @Override
+            public void gitHubIssue(int number, String title, String body) {
+
+            }
+        }, false);
 
         view.findViewById(R.id.mail).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,7 +120,7 @@ public class FeedbackFragment extends Fragment implements Github.IGithubNewIssue
                         "    \"enhancement\"\n" +
                         "  ]\n" +
                         "}";
-                Github.newIssues(t, FeedbackFragment.this);
+                GithubAndCloudant.newIssues(t, FeedbackFragment.this);
             }
         });
         return view;
@@ -116,7 +129,7 @@ public class FeedbackFragment extends Fragment implements Github.IGithubNewIssue
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Github.getOpenIssues(this, true, "enhancement");
+        GithubAndCloudant.getOpenIssues(this, true, "enhancement");
     }
 
     @Override

@@ -324,15 +324,23 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public int getOpenIssues() {
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getInt("open_issues", -1);
     }
 
-    public long getLastTimeOpenIssuesRequested() {
+    public int getOpenAutoIssues() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt("open_auto_issues", -1);
+    }
 
+    public long getLastTimeOpenIssuesRequested() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getLong("open_issues_last_access", -1);
+    }
+
+    public long getLastTimeOpenAutoIssuesRequested() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getLong("open_auto_issues_last_access", -1);
     }
 
     public boolean getSmallerClickExecuteArea() {
@@ -354,9 +362,13 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public void setOpenIssues(int value, long last_access) {
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("open_issues", value).putLong("open_issues_last_access", last_access).apply();
+    }
+
+    public void setOpenAutoIssues(int value, long last_access) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putInt("open_auto_issues", value).putLong("open_auto_issues_last_access", last_access).apply();
     }
 
     public void registerHideNotReachable(IHideNotReachable observer) {

@@ -84,7 +84,7 @@
     <string name="outlet_rename_message">Rename this outlet. The new name will be stored on the anel device.</string>
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
-    <string name="Version">Version</string>
+    <string name="Version">Version:</string>
     <string name="title_scene_edit">Edit scene: %1$s</string>
     <string name="scene_add_homescreen">Add to homescreen</string>
     <string name="error_reading_scenes">Error reading scenes</string>

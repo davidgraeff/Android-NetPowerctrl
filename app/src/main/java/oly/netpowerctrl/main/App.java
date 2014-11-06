@@ -23,8 +23,7 @@ import oly.netpowerctrl.utils.AndroidStatusBarNotification;
  */
 @ReportsCrashes(formKey = "", formUri = "https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_update/report",
         mode = ReportingInteractionMode.TOAST, reportType = HttpSender.Type.JSON,
-        resToastText = R.string.crash_toast_text, formUriBasicAuthLogin = "wherentritstallevencendo",
-        formUriBasicAuthPassword = "Ap1xIKwclTDDcU3BiNDtjl5Q")
+        resToastText = R.string.crash_toast_text)
 public class App extends Application {
     static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     public static App instance;
@@ -79,6 +78,11 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         ACRA.init(this);
+        ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
+        config.setFormUriBasicAuthLogin(getString(R.string.acralyzer_http_login));
+        config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));
+        ACRA.setConfig(config);
+
         setErrorReportContentCrash();
         LoadStoreIconData.init(this);
         androidStatusBarNotification = new AndroidStatusBarNotification(this);

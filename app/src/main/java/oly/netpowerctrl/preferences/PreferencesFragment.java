@@ -37,10 +37,10 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.utils.Github;
+import oly.netpowerctrl.utils.GithubAndCloudant;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
-public class PreferencesFragment extends PreferencesWithValuesFragment implements Github.IGithubOpenIssues, LoadStoreIconData.IconSelected {
+public class PreferencesFragment extends PreferencesWithValuesFragment implements GithubAndCloudant.IGithubOpenIssues, LoadStoreIconData.IconSelected {
     private static final int REQUEST_CODE_IMPORT = 100;
     private static final int REQUEST_CODE_EXPORT = 101;
 
@@ -275,7 +275,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference("issues").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Github.getOpenIssues(PreferencesFragment.this, true, null);
+                GithubAndCloudant.getOpenIssues(PreferencesFragment.this, true, null);
                 return false;
             }
         });
@@ -284,7 +284,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Github.getOpenIssues(this, false, null);
+        GithubAndCloudant.getOpenIssues(this, false, null);
         final ListView lv = (ListView) getActivity().findViewById(android.R.id.list);
         if (lv != null)
             App.getMainThreadHandler().post(new Runnable() {

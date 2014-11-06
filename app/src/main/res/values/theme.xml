@@ -31,7 +31,7 @@
         <item name="drawer_item_background">#323232</item>
         <item name="section_background">@drawable/actionbar_background_textured_dark</item>
         <item name="activity_background">@color/colorBackgroundDark</item>
-        <item name="cards_background">@android:color/background_dark</item>
+        <item name="cards_background">@color/colorBackgroundCardsDark</item>
         <item name="floating_button_color">@color/floating_button_colorDark</item>
         <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>

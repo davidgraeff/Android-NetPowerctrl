@@ -11,14 +11,22 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="40dp"
+            android:scaleType="center"
+            android:src="@drawable/store_feature_new" />
+
+
         <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
             android:id="@+id/about_app"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="?section_background"
             android:padding="@dimen/list_outer_padding"
-            card_view:cardBackgroundColor="?activity_background"
+            card_view:cardBackgroundColor="?cards_background"
             card_view:cardCornerRadius="4dp"
             card_view:cardElevation="5dp">
 
@@ -28,19 +36,10 @@
                 android:orientation="vertical"
                 android:padding="@dimen/list_inner_padding">
 
-                <ImageView
-                    android:id="@+id/logo"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxHeight="40dp"
-                    android:scaleType="center"
-                    android:src="@drawable/store_feature_new" />
-
                 <TextView
                     android:id="@+id/name"
                     android:layout_width="fill_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:layout_below="@id/logo"
                     android:ellipsize="end"
                     android:gravity="center"
                     android:singleLine="true"
@@ -48,10 +47,41 @@
                     android:textAppearance="@android:style/TextAppearance.Large" />
 
                 <TextView
+                    android:id="@+id/version_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/name"
+                    android:singleLine="true"
+                    android:text="@string/Version" />
+
+                <TextView
                     android:id="@+id/version"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/name"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@id/version_label"
+                    android:clickable="true"
+                    android:ellipsize="end"
+                    android:singleLine="true" />
+
+                <TextView
+                    android:id="@+id/bugs_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/version"
+                    android:clickable="true"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Automatisch erfasste Fehler:" />
+
+                <TextView
+                    android:id="@+id/bugs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/version"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@id/bugs_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -60,22 +90,44 @@
                     android:id="@+id/desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/version"
+                    android:layout_below="@id/bugs_label"
                     android:layout_marginTop="10dp"
                     android:autoLink="web"
                     android:text="@string/app_name_desc" />
 
                 <TextView
-                    android:id="@+id/source"
+                    android:id="@+id/copyright"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/desc"
-                    android:autoLink="web"
-                    android:linksClickable="false"
-                    android:text="@string/app_name_disclaimer"
-                    android:textAppearance="@android:style/TextAppearance.Medium" />
+                    android:layout_marginTop="10dp"
+                    android:clickable="true"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="@string/app_authors_copyright" />
 
             </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/about_source"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="@dimen/list_outer_padding"
+            card_view:cardBackgroundColor="?cards_background"
+            card_view:cardCornerRadius="4dp"
+            card_view:cardElevation="5dp">
+
+            <TextView
+                android:id="@+id/source"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:autoLink="web"
+                android:linksClickable="false"
+                android:text="@string/app_name_disclaimer"
+                android:textAppearance="@android:style/TextAppearance.Medium" />
 
         </android.support.v7.widget.CardView>
 
@@ -85,7 +137,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="@dimen/list_outer_padding"
-            card_view:cardBackgroundColor="?activity_background"
+            card_view:cardBackgroundColor="?cards_background"
             card_view:cardCornerRadius="4dp"
             card_view:cardElevation="5dp">
 
@@ -169,8 +221,7 @@
             android:autoLink="web"
             android:linksClickable="false"
             android:padding="@dimen/list_inner_padding"
-            android:text="@string/feedback_add_description"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:text="@string/feedback_add_description" />
 
         <include
             android:id="@+id/issue_add_card"
