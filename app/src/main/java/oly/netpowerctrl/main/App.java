@@ -21,8 +21,7 @@ import oly.netpowerctrl.utils.AndroidStatusBarNotification;
  * We keep track of Anel device states via the listener service.
  * Crash management
  */
-@ReportsCrashes(formKey = "", formUri = "https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_update/report",
-        mode = ReportingInteractionMode.TOAST, reportType = HttpSender.Type.JSON,
+@ReportsCrashes(formKey = "", mode = ReportingInteractionMode.TOAST, reportType = HttpSender.Type.JSON,
         resToastText = R.string.crash_toast_text)
 public class App extends Application {
     static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
@@ -78,7 +77,9 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         ACRA.init(this);
-        ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
+        ACRAConfiguration config = ACRA.getConfig();
+        //ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
+        config.setFormUri("https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_update/report");
         config.setFormUriBasicAuthLogin(getString(R.string.acralyzer_http_login));
         config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));
         ACRA.setConfig(config);

@@ -116,6 +116,18 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
     }
 
     @SuppressWarnings("unused")
+    public void removeScene(Scene scene) {
+        for (int i = 0; i < items.size(); ++i)
+            if (items.get(i).equals(scene)) {
+                items.remove(i);
+                if (storage != null)
+                    storage.remove(this, scene);
+                notifyObservers(scene, ObserverUpdateActions.RemoveAction, i);
+                break;
+            }
+    }
+
+    @SuppressWarnings("unused")
     public void removeAll() {
         int all = items.size();
         items.clear();
@@ -124,12 +136,11 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         notifyObservers(null, ObserverUpdateActions.RemoveAllAction, all - 1);
     }
 
-
-    public boolean contains(Scene scene) {
-        for (Scene s : items)
-            if (s.equals(scene))
-                return true;
-        return false;
+    public int indexOf(Scene scene) {
+        for (int i = 0; i < items.size(); ++i)
+            if (items.get(i).equals(scene))
+                return i;
+        return -1;
     }
 
     @Override

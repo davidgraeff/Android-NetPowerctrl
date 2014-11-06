@@ -40,8 +40,9 @@
     <string name="confirmation_delete_device">Delete all devices?</string>
     <string name="confirmation_delete_all_devices">Are you sure you want to delete all devices?</string>
 
-    <string name="title_shortcut">Create Shortcut: %1$s</string>
-    <string name="title_scene_create">Create scene: %1$s</string>
+    <string name="title_shortcut">Create Shortcut</string>
+    <string name="title_scene_create">Create scene</string>
+    <string name="title_scene_edit">Edit scene</string>
 
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
     <string name="delete_all_groups">Delete all scenes?</string>
@@ -85,7 +86,6 @@
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
     <string name="Version">Version:</string>
-    <string name="title_scene_edit">Edit scene: %1$s</string>
     <string name="scene_add_homescreen">Add to homescreen</string>
     <string name="error_reading_scenes">Error reading scenes</string>
     <string name="device_test_not_reachable">Test reachable failed</string>

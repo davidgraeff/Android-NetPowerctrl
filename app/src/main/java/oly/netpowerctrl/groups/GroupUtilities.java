@@ -6,8 +6,9 @@ import android.content.DialogInterface;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import com.wefika.flowlayout.FlowLayout;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +21,7 @@ import oly.netpowerctrl.data.AppData;
  */
 public class GroupUtilities {
 
-    public static boolean[] addGroupCheckBoxesToLayout(Context context, LinearLayout layout, List<UUID> listOfGroupsPreChecked) {
+    public static boolean[] addGroupCheckBoxesToLayout(Context context, FlowLayout layout, List<UUID> listOfGroupsPreChecked) {
 
         final GroupCollection groupCollection = AppData.getInstance().groupCollection;
 
@@ -43,8 +44,8 @@ public class GroupUtilities {
                     checked[index] = b;
                 }
             });
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            FlowLayout.LayoutParams lp = new FlowLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             layout.addView(p, lp);
         }
 

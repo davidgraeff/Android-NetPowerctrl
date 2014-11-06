@@ -70,7 +70,11 @@ android {
 //        }
 //    }
 
-    sourceSets { main { java.srcDirs = ['src/main/java', 'src/tests/java'] } }
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java', 'src/tests/java']
+        }
+    }
 
     aaptOptions {
         //noCompress 'txt'
@@ -83,6 +87,7 @@ dependencies {
     compile project(':libraries:device_base')
     //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08 5.0.89
     //compile 'com.google.android.gms:play-services:5.2.08'
+    compile 'com.wefika:flowlayout:0.3.4'
     compile 'com.github.gabrielemariotti.changeloglib:library:1.5.1'
     compile 'ch.acra:acra:4.5.0'
     compile 'com.android.support:support-v13:21.0.0'

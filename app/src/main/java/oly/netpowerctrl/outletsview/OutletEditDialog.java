@@ -14,8 +14,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.wefika.flowlayout.FlowLayout;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -80,7 +81,7 @@ public class OutletEditDialog extends DialogFragment implements onHttpRequestRes
         loadImages();
 
         @SuppressLint("WrongViewCast")
-        LinearLayout layout = (LinearLayout) rootView.findViewById(R.id.layout);
+        FlowLayout layout = (FlowLayout) rootView.findViewById(R.id.groups_layout);
         checked = GroupUtilities.addGroupCheckBoxesToLayout(getActivity(), layout, devicePort.groups);
 
         builder.setView(rootView);

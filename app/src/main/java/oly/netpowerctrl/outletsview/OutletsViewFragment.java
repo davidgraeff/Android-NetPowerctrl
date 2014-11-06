@@ -1,5 +1,6 @@
 package oly.netpowerctrl.outletsview;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -109,6 +110,15 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         return bundle;
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (mRecyclerView != null) {
+            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
+        }
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -132,15 +142,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
                 }
             };
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        if (mRecyclerView != null) {
-            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
-        }
-    }
 
     @Override
     public void onRefresh() {
@@ -298,7 +299,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     case R.id.menu_add_scene:
                         Intent it = new Intent(getActivity(), EditSceneActivity.class);
                         it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                        startActivity(it);
+                        startActivityForResult(it, EditSceneActivity.REQUEST_CODE);
                         return true;
                 }
                 return false;
@@ -462,6 +463,10 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         sceneSource.setAutomaticUpdate(true);
 
         adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
+        groupSource.setTargetAdapter(adapter);
+        sceneSource.setTargetAdapter(adapter);
+        adapterSource.setTargetAdapter(adapter);
+
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -618,7 +623,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             } else if (executable instanceof Scene) {
                 Intent it = new Intent(getActivity(), EditSceneActivity.class);
                 it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                it.putExtra(EditSceneActivity.LOAD_SCENE, (executable).toString());
+                it.putExtra(EditSceneActivity.LOAD_SCENE, ((Scene) executable).toString());
                 startActivity(it);
             }
             return true;
@@ -661,6 +666,15 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     public void onRefreshStateChanged(boolean isRefreshing) {
         if (mPullToRefreshLayout != null)
             mPullToRefreshLayout.setRefreshing(isRefreshing);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == EditSceneActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (EditSceneActivity.lastScenePosition != -1)
+                AppData.getInstance().sceneCollection.changed(EditSceneActivity.lastScenePosition);
+        } else
+            super.onActivityResult(requestCode, resultCode, data);
     }
 
 

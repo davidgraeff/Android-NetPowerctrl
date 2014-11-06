@@ -12,6 +12,7 @@
         <item name="text_transparent_background">@drawable/transparent_text_light</item>
         <item name="item_selector">@drawable/item_selector_light</item>
         <item name="segment_button">@drawable/segment_button_light</item>
+        <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
         <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="segment_radio_left">@drawable/segment_radio_left_light</item>
         <item name="segment_radio_middle">@drawable/segment_radio_middle_light</item>
@@ -33,6 +34,7 @@
         <item name="activity_background">@color/colorBackgroundDark</item>
         <item name="cards_background">@color/colorBackgroundCardsDark</item>
         <item name="floating_button_color">@color/floating_button_colorDark</item>
+        <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
         <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="preferences_title_light">@android:color/secondary_text_dark</item>
         <item name="text_transparent_background">@drawable/transparent_text_dark</item>
@@ -63,6 +65,13 @@
         <item name="android:fullDark">@android:color/holo_orange_light</item>
         <item name="android:topBright">@android:color/holo_blue_bright</item>
         <item name="android:topDark">@android:color/holo_blue_bright</item>
+    </style>
+
+    <style name="ToolBarStyleTransparent" parent="@style/Base.Widget.AppCompat.ActionBar">
+        <item name="android:background">#66000000</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <!--<item name="android:textColorPrimaryInverse">@android:color/white</item>-->
+
     </style>
 
     <style name="ToolBarStyle" parent="@style/Base.Widget.AppCompat.ActionBar">

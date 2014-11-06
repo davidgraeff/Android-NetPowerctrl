@@ -5,6 +5,7 @@
     <attr name="activity_background" format="color" />
     <attr name="cards_background" format="color" />
     <attr name="drawer_item_background" format="color" />
+    <attr name="toolbar_style_transparent" format="reference" />
     <attr name="toolbar_style" format="reference" />
     <attr name="preferences_title_light" format="color" />
     <attr name="text_transparent_background" format="reference" />

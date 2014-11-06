@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView android:id="@+id/hintText" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_margin="5dp"
+        android:background="?drawer_item_background" android:gravity="start" android:padding="5dp"
+        android:textAppearance="@android:style/TextAppearance.Medium" android:visibility="gone" />
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView android:id="@+id/scene_edit_fragment0_text" android:layout_width="fill_parent"
+            android:layout_height="wrap_content" android:layout_toLeftOf="@+id/view0"
+            android:layout_toStartOf="@+id/view0" android:gravity="center_horizontal"
+            android:text="@string/scene_create_added" />
+
+        <fragment android:id="@+id/scene_edit_fragment0"
+            class="oly.netpowerctrl.scenes.EditSceneFragment" android:layout_width="fill_parent"
+            android:layout_height="fill_parent" android:layout_below="@id/scene_edit_fragment0_text"
+            android:layout_toLeftOf="@+id/view0" android:layout_toStartOf="@+id/view0" />
+
+        <View android:id="@+id/view0" android:layout_width="1dp" android:layout_height="1dp"
+            android:layout_centerHorizontal="true" android:visibility="invisible" />
+
+        <TextView android:id="@+id/scene_edit_fragment1_text" android:layout_width="fill_parent"
+            android:layout_height="wrap_content" android:layout_toEndOf="@+id/view0"
+            android:layout_toLeftOf="@+id/view1" android:layout_toRightOf="@+id/view0"
+            android:layout_toStartOf="@+id/view1" android:gravity="center_horizontal"
+            android:text="@string/scene_create_added" />
+
+        <fragment android:id="@+id/scene_edit_fragment1"
+            class="oly.netpowerctrl.scenes.EditSceneIncludedFragment"
+            android:layout_width="fill_parent" android:layout_height="fill_parent"
+            android:layout_below="@id/scene_edit_fragment1_text" android:layout_toEndOf="@+id/view0"
+            android:layout_toLeftOf="@+id/view1" android:layout_toRightOf="@+id/view0"
+            android:layout_toStartOf="@+id/view1" />
+
+        <View android:id="@+id/view1" android:layout_width="1dp" android:layout_height="1dp"
+            android:layout_centerHorizontal="true" android:visibility="invisible" />
+
+        <TextView android:id="@+id/scene_edit_fragment2_text" android:layout_width="fill_parent"
+            android:layout_height="wrap_content" android:layout_toEndOf="@+id/view1"
+            android:layout_toRightOf="@+id/view1" android:gravity="center_horizontal"
+            android:text="@string/scene_create_available" />
+
+        <fragment android:id="@+id/scene_edit_fragment2"
+            class="oly.netpowerctrl.scenes.EditSceneAvailableFragment"
+            android:layout_width="fill_parent" android:layout_height="match_parent"
+            android:layout_below="@id/scene_edit_fragment2_text" android:layout_toEndOf="@+id/view1"
+            android:layout_toRightOf="@+id/view1" />
+
+    </RelativeLayout>
+</LinearLayout>

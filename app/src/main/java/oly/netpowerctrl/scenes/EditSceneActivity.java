@@ -1,19 +1,27 @@
 package oly.netpowerctrl.scenes;
 
-import android.app.FragmentManager;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.wefika.flowlayout.FlowLayout;
 
 import java.io.IOException;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -26,16 +34,18 @@ import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
 import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 
 /**
  * This activity is responsible for creating a "scene" either for the scene list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditSceneActivity extends ActionBarActivity implements onEditSceneBasicsChanged {
-
+public class EditSceneActivity extends ActionBarActivity implements LoadStoreIconData.IconSelected {
     /**
      * We pass arguments to this activity via the intent extra bundle.
      * Define some constants here.
@@ -46,8 +56,15 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
     public static final String RESULT_SCENE_UUID = "scene_uuid";
     public static final String RESULT_ACTION_UUID = "action_uuid";
     public static final String RESULT_ACTION_COMMAND = "action_command";
-    boolean reInitUIDone = false;
-    private View btnDone;
+    public static final int REQUEST_CODE = 123123;
+    public static int lastScenePosition = -1;
+    // UI widgets
+    Switch show_mainWindow;
+    Switch enable_feedback;
+    boolean[] checked;
+    RecyclerViewWithAdapter<ExecutablesListAdapter> availableElements;
+    RecyclerViewWithAdapter<SceneElementsAdapter> sceneElements;
+    private FloatingActionButton btnOk;
     private ExecutablesListAdapter adapter_available;
     private SceneElementsAdapter adapter_included;
     // Scene and flag variables
@@ -56,10 +73,34 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
     private boolean isSceneNotShortcut = false;
     // Scene Icon
     private Bitmap scene_icon;
-    private EditSceneBasicFragment fragment_basics;
-    private EditSceneIncludedFragment fragment_included;
-    private EditSceneAvailableFragment fragment_available;
-    private boolean twoPane = false;
+    private ImageView btnSceneFav;
+    private Button btnSceneAddHomescreen;
+    private Button btnNFC;
+    private FlowLayout groups_layout;
+
+    /*
+ * ActionBar icon clicked
+ */
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        SceneElementsAdapter adapter_included = mAdapter;
+//        switch (item.getItemId()) {
+//            case R.id.menu_switch_all_on:
+//                adapter_included.switchAllOn();
+//                return true;
+//            case R.id.menu_switch_all_off:
+//                adapter_included.switchAllOff();
+//                return true;
+//            case R.id.menu_switch_all_toogle:
+//                adapter_included.toggleAll();
+//                return true;
+//            case R.id.menu_switch_all_ignore:
+//                adapter_included.clear();
+//                adapter_available.getSource().updateNow();
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -74,58 +115,83 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
         // Default result
         setResult(RESULT_CANCELED, null);
 
-        reInitUI();
+        // set content view, get references to widgets
+        setContentView(R.layout.activity_create_scene);
 
-        btnDone = findViewById(R.id.action_mode_save_button);
-        btnDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                save_and_close();
-            }
-        });
-        View btnCancel = findViewById(R.id.action_mode_close_button);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finish();
             }
         });
-    }
 
-    private void reInitUI() {
-        FragmentManager m = getFragmentManager();
-        if (fragment_available != null && fragment_included != null)
-            m.beginTransaction().remove(fragment_available).remove(fragment_included).commit();
+        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
+        adapter_available = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
+        adapter_included = new SceneElementsAdapter();
 
-        // set content view, get references to widgets
-        setContentView(R.layout.activity_create_scene);
+        sceneElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+                findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
+        availableElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+                findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-        }
+        btnOk = (FloatingActionButton) findViewById(R.id.btnOk);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                save_and_close();
+            }
+        });
 
-        // Show the included and available list for the scene. Both are fragments. Either in a
-        // viewPager (small width) or both visible at the same time.
-        // If there is a viewPager, use that. Otherwise we show both fragments next to each other.
-        ViewPager pager = (ViewPager) findViewById(R.id.pager);
-        if (pager != null) {
-            twoPane = false;
-            EditScenePagerAdapter pagerAdapter = new EditScenePagerAdapter(this, m);
-            fragment_basics = pagerAdapter.getFragmentBasic();
-            fragment_included = pagerAdapter.getFragmentIncluded();
-            fragment_available = pagerAdapter.getFragmentAvailable();
-            pager.setAdapter(pagerAdapter);
-        } else {
-            twoPane = true;
-            fragment_basics = (EditSceneBasicFragment) m.findFragmentById(R.id.scene_edit_fragment0);
-            fragment_included = (EditSceneIncludedFragment) m.findFragmentById(R.id.scene_edit_fragment1);
-            fragment_available = (EditSceneAvailableFragment) m.findFragmentById(R.id.scene_edit_fragment2);
-        }
+        show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
+        enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
+        groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
 
-        if (reInitUIDone)
-            return;
-        reInitUIDone = true;
+        findViewById(R.id.scene_name).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                requestName(scene);
+            }
+        });
+
+        findViewById(R.id.scene_image).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LoadStoreIconData.show_select_icon_dialog(EditSceneActivity.this, "scene_icons", EditSceneActivity.this, null);
+            }
+        });
+
+        btnNFC = (Button) findViewById(R.id.btnNFC);
+        btnNFC.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(EditSceneActivity.this, NfcTagWriterActivity.class);
+                intent.putExtra("uuid", scene.uuid);
+                intent.putExtra("name", scene.sceneName);
+                startActivity(intent);
+            }
+        });
+
+        btnSceneFav = (ImageView) findViewById(R.id.btnSceneFavourite);
+        btnSceneFav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AppData.getInstance().sceneCollection.setFavourite(scene, !scene.isFavourite());
+                updateFavButton();
+            }
+        });
+
+        btnSceneAddHomescreen = (Button) findViewById(R.id.btnSceneAddHomescreen);
+        btnSceneAddHomescreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //noinspection ConstantConditions
+                AndroidShortcuts.createHomeIcon(EditSceneActivity.this, scene);
+                Toast.makeText(EditSceneActivity.this, R.string.scene_add_homescreen_success, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         Handler h = new Handler();
         h.postDelayed(new Runnable() {
@@ -136,15 +202,48 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
         }, 50);
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+    private void updateFavButton() {
+        boolean isFav = scene.isFavourite();
+        Resources r = getResources();
+        btnSceneFav.setImageDrawable(isFav ? r.getDrawable(android.R.drawable.btn_star_big_on)
+                : r.getDrawable(android.R.drawable.btn_star_big_off));
+    }
 
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            reInitUI();
-        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            reInitUI();
-        }
+    private void requestName(final Scene scene) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle(this.getString(R.string.scene_rename));
+
+        final EditText input = new EditText(alert.getContext());
+        input.setText(scene.sceneName);
+        alert.setView(input);
+
+        alert.setPositiveButton(this.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                @SuppressWarnings("ConstantConditions")
+                String name = input.getText().toString();
+                if (name.trim().isEmpty())
+                    return;
+                scene.sceneName = name;
+                onNameChanged();
+            }
+        });
+
+        alert.setNegativeButton(this.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+
+        alert.show();
+    }
+
+    @Override
+    public void setIcon(Object context_object, Bitmap icon) {
+        scene_icon = icon;
+        if (icon == null) {
+            ((ImageView) findViewById(R.id.scene_image)).setImageResource(getApplicationInfo().icon);
+        } else
+            ((ImageView) findViewById(R.id.scene_image)).setImageBitmap(icon);
     }
 
     @Override
@@ -161,10 +260,7 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
     }
 
     private void loadContent() {
-        ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
-        adapter_available = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
-        adapter_included = new SceneElementsAdapter();
-
+        lastScenePosition = -1;
         Intent it = getIntent();
         if (it != null) {
             Bundle extra = it.getExtras();
@@ -176,6 +272,7 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
                     try {
                         scene = new Scene();
                         scene.load(JSONHelper.getReader(scene_string));
+                        lastScenePosition = AppData.getInstance().sceneCollection.indexOf(scene);
                     } catch (IOException | ClassNotFoundException ignored) {
                         scene = null;
                         finish();
@@ -190,6 +287,20 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
             }
         }
 
+        FloatingActionButton btnRemove = (FloatingActionButton) findViewById(R.id.btnRemove);
+        if (scene == null)
+            btnRemove.hide(true);
+        else
+            btnRemove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AppData.getInstance().sceneCollection.removeScene(scene);
+                    setResult(RESULT_OK, null);
+                    finish();
+                }
+            });
+
+
         // Load current set of available outlets
         removeIncludedFromAvailable(adapter_available, adapter_included);
 
@@ -198,7 +309,7 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
         }
 
         // Add click listener for the remove button on each included action
-        fragment_included.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+        sceneElements.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
                 if (view.getId() != R.id.outlet_list_close)
@@ -209,10 +320,9 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
             }
         }, null));
 
-
         // Add click listener to available list to move the clicked action
         // to the included list.
-        fragment_available.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+        availableElements.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
                 DevicePort oi = (DevicePort) adapter_available.getItem(position).getExecutable();
@@ -226,17 +336,25 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
         }, null));
 
         if (isSceneNotShortcut && isLoaded) {
-            onIconChanged(LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState));
+            setIcon(this, LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState));
         }
 
         onNameChanged();
 
-        fragment_included.setTwoPaneFragment(twoPane);
-        fragment_included.setAdapter(adapter_included);
-        fragment_included.setAdapterAvailable(adapter_available);
-        fragment_available.setAdapter(adapter_available);
-        fragment_basics.setScene(scene, isSceneNotShortcut, isLoaded);
-        fragment_basics.setOnBasicsChangedListener(this);
+        if (show_mainWindow == null || scene == null)
+            return;
+
+        if (!isSceneNotShortcut) {
+            show_mainWindow.setVisibility(View.VISIBLE);
+            enable_feedback.setVisibility(View.VISIBLE);
+            isLoaded = false;
+        }
+
+        checked = GroupUtilities.addGroupCheckBoxesToLayout(this, groups_layout, scene.groups);
+
+        btnSceneAddHomescreen.setVisibility(isLoaded ? View.VISIBLE : View.GONE);
+        btnNFC.setVisibility(isLoaded ? View.VISIBLE : View.GONE);
+        updateFavButton();
     }
 
     private void removeIncludedFromAvailable(ExecutablesBaseAdapter available, SceneElementsAdapter included) {
@@ -259,10 +377,19 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
 
     private void save_and_close() {
         // Generate list of checked items
-        scene.sceneItems = SceneFactory.scenesFromList(adapter_included);
-        scene.setMaster(adapter_included.getMaster());
-        if (scene.sceneName.isEmpty() || scene.length() == 0)
+        List<SceneItem> sceneItems = SceneFactory.scenesFromList(adapter_included);
+        if (scene.sceneName.isEmpty()) {
+            Toast.makeText(this, R.string.error_scene_no_name, Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        if (sceneItems.size() == 0) {
+            Toast.makeText(this, R.string.error_scene_no_actions, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        scene.sceneItems = sceneItems;
+        scene.setMaster(adapter_included.getMaster());
 
         if (isSceneNotShortcut) {
             SceneCollection sceneCollection = AppData.getInstance().sceneCollection;
@@ -271,17 +398,18 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
 
             GroupCollection groupCollection = AppData.getInstance().groupCollection;
             scene.groups.clear();
-            for (int i = 0; i < fragment_basics.checked.length; ++i) {
-                if (!fragment_basics.checked[i]) {
+            for (int i = 0; i < checked.length; ++i) {
+                if (!checked[i]) {
                     continue;
                 }
                 scene.groups.add(groupCollection.get(i).uuid);
             }
 
-            sceneCollection.changed(sceneCollection.add(scene, false));
+            lastScenePosition = sceneCollection.add(scene, false);
+            setResult(RESULT_OK, null);
         } else {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
-                    scene, fragment_basics.show_mainWindow.isChecked(), fragment_basics.enable_feedback.isChecked());
+                    scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
             // Return result
             Intent shortcut;
             if (scene_icon != null) {
@@ -295,66 +423,51 @@ public class EditSceneActivity extends ActionBarActivity implements onEditSceneB
         finish();
     }
 
-    /* Called whenever we call invalidateOptionsMenu(). Enables or disables the
-     * "done" action bar button. */
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        if (scene == null)
-            return super.onPrepareOptionsMenu(menu);
-
+    private void updateSaveButton() {
         boolean en = (adapter_included.getItemCount() != 0) && scene.sceneName.length() > 0;
-        btnDone.setVisibility(en ? View.VISIBLE : View.GONE);
-
-        return super.onPrepareOptionsMenu(menu);
+        Resources r = getResources();
+        btnOk.setDrawable(en ? r.getDrawable(android.R.drawable.ic_menu_save) :
+                r.getDrawable(R.drawable.btn_save_disabled));
     }
 
     /**
      * Called by the widget/object/dialog that is responsible for asking the
      * user for a new scene name after a name has been chosen.
      */
-    @Override
     public void onNameChanged() {
         String sceneName = scene.sceneName;
 
         if (sceneName.length() == 0)
             sceneName = getString(R.string.title_scene_no_name);
 
+        TextView textView = (TextView) findViewById(R.id.scene_name);
+        textView.setText(sceneName);
+
         if (isSceneNotShortcut) {
             if (isLoaded) {
-                setTitle(getString(R.string.title_scene_edit, sceneName));
+                setTitle(R.string.title_scene_edit);
             } else
-                setTitle(getString(R.string.title_scene_create, sceneName));
+                setTitle(R.string.title_scene_create);
         } else {
-            setTitle(getString(R.string.title_shortcut, sceneName));
+            setTitle(R.string.title_shortcut);
         }
 
         //noinspection ConstantConditions
-        ActionBar actionBar = getSupportActionBar();
-
-        if (adapter_included.getItemCount() == 0)
-            actionBar.setSubtitle(getString(R.string.error_scene_no_actions));
-        else if (scene.sceneName.length() == 0)
-            actionBar.setSubtitle(getString(R.string.error_scene_no_name));
-        else
-            actionBar.setSubtitle("");
-
-        invalidateOptionsMenu();
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Override
-    public void onIconChanged(Bitmap icon) {
-        scene_icon = icon;
 //        ActionBar actionBar = getSupportActionBar();
-//        if (icon == null) {
-//            actionBar.setIcon(getApplicationInfo().icon);
-//        } else
-//            actionBar.setIcon(new BitmapDrawable(getResources(), icon));
+//
+//        if (adapter_included.getItemCount() == 0)
+//            actionBar.setSubtitle(getString(R.string.error_scene_no_actions));
+//        else if (scene.sceneName.length() == 0)
+//            actionBar.setSubtitle(getString(R.string.error_scene_no_name));
+//        else
+//            actionBar.setSubtitle("");
+
+        updateSaveButton();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        LoadStoreIconData.activityCheckForPickedImage(this, fragment_basics, requestCode, resultCode, imageReturnedIntent);
+        LoadStoreIconData.activityCheckForPickedImage(this, this, requestCode, resultCode, imageReturnedIntent);
     }
 }

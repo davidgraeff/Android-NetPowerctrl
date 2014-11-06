@@ -43,8 +43,9 @@
     <string name="confirmation_delete_device">Sind Sie sicher, dass Sie dieses Gerät löschen wollen?</string>
     <string name="confirmation_delete_all_devices">Sind Sie sicher, dass Sie alle Geräte löschen wollen?</string>
 
-    <string name="title_shortcut">Erstelle Shortcut: %1$s</string>
-    <string name="title_scene_create">Erstelle Szene: %1$s</string>
+    <string name="title_shortcut">Erstelle Shortcut</string>
+    <string name="title_scene_create">Erstelle Szene</string>
+    <string name="title_scene_edit">Bearbeite Szene</string>
 
     <string name="shortcut_show_mainwindow">Öffne App beim Ausführen</string>
     <string name="delete_all_groups">Alle Szenen löschen?</string>
@@ -86,7 +87,6 @@
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
     <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
     <string name="Version">Version:</string>
-    <string name="title_scene_edit">Bearbeite Szene: %1$s</string>
     <string name="scene_add_homescreen">Zum Startbildschirm hinzufügen</string>
     <string name="device_test_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>

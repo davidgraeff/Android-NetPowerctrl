@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="match_parent"
+    android:layout_gravity="end" android:layout_marginEnd="5dip" android:layout_marginRight="5dip"
+    android:layout_weight="1" android:gravity="end" android:orientation="horizontal"
+    android:paddingEnd="8dip" android:paddingStart="8dip">
+
+    <Button android:id="@+id/action_mode_close_button" style="?android:attr/actionModeBackground"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="center" android:drawableLeft="?android:attr/actionModeCloseDrawable"
+        android:drawableStart="?android:attr/actionModeCloseDrawable" android:scaleType="fitCenter"
+        android:text="@android:string/cancel"
+        android:textAppearance="?android:attr/actionMenuTextAppearance"
+        android:textColor="?android:attr/actionMenuTextColor" />
+
+    <Button android:id="@+id/action_mode_save_button" style="?android:attr/actionModeBackground"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="center" android:drawableLeft="@android:drawable/ic_menu_save"
+        android:drawableStart="@android:drawable/ic_menu_save" android:scaleType="fitCenter"
+        android:text="@string/save" android:textAppearance="?android:attr/actionMenuTextAppearance"
+        android:textColor="?android:attr/actionMenuTextColor" />
+</LinearLayout>

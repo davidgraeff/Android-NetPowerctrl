@@ -93,7 +93,13 @@ public class FloatingActionButton extends View {
     }
 
     public void setDrawable(Drawable drawable) {
-        mBitmap = ((BitmapDrawable) drawable).getBitmap();
+        if (!(drawable instanceof BitmapDrawable)) {
+            mBitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(mBitmap);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+        } else
+            mBitmap = ((BitmapDrawable) drawable).getBitmap();
         invalidate();
     }
 
