@@ -3,6 +3,7 @@ package oly.netpowerctrl.executables;
 import android.support.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.UUID;
 
 /**
  * Created by david on 07.07.14.
@@ -29,6 +30,15 @@ public abstract class ExecutablesSourceBase {
     final public void setHideNotReachable(boolean hideNotReachable) {
         this.hideNotReachable = hideNotReachable;
     }
+
+    final public int countIfGroup(UUID uuid) {
+        if (chained != null)
+            return chained.doCountIfGroup(uuid);
+        else
+            return doCountIfGroup(uuid);
+    }
+
+    public abstract int doCountIfGroup(UUID uuid);
 
     /**
      * Update the target adapter with new values immediately.

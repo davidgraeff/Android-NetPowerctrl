@@ -57,8 +57,8 @@ android {
             resValue "string", "authority", appID + ".utils.AssetDocumentProvider.Debug"
             //buildConfigField "String", "AUTHORITY", appID + ".utils.AssetDocumentProvider.Debug"
             zipAlign true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-            runProguard false
+            proguardFiles 'proguard-rules-debug.txt'
+            runProguard true
         }
     }
 

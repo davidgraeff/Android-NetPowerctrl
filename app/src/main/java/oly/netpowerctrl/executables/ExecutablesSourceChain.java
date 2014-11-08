@@ -2,6 +2,7 @@ package oly.netpowerctrl.executables;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by david on 04.11.14.
@@ -21,5 +22,12 @@ public class ExecutablesSourceChain {
 
     public void add(ExecutablesSourceBase executablesSourceBase) {
         list.add(executablesSourceBase);
+    }
+
+    public int doCountIfGroup(UUID uuid) {
+        int count = 0;
+        for (ExecutablesSourceBase base : list)
+            count += base.doCountIfGroup(uuid);
+        return count;
     }
 }

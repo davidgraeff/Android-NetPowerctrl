@@ -1,5 +1,7 @@
 package oly.netpowerctrl.executables;
 
+import java.util.UUID;
+
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
@@ -18,6 +20,11 @@ public class ExecutablesSourceGroups extends ExecutablesSourceBase implements on
     public void fullUpdate(ExecutablesBaseAdapter adapter) {
         // Nothing to do here. Groups are automatically set up by the
         // oly.netpowerctrl.executables.ExecutablesSourceDevicePorts class.
+    }
+
+    @Override
+    public int doCountIfGroup(UUID uuid) {
+        return 0;
     }
 
     @Override

@@ -2,8 +2,11 @@ package oly.netpowerctrl.ui.notifications;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Handler;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -134,5 +137,16 @@ public class InAppNotifications {
                 it.remove();
             }
         }
+    }
+
+    public static void moveToastNextToView(Toast toast, Resources resources, View view, boolean anchorRightOnView) {
+        // measure toast to center it relatively to the anchor view
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(metrics.widthPixels, View.MeasureSpec.UNSPECIFIED);
+        int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(metrics.heightPixels, View.MeasureSpec.UNSPECIFIED);
+        toast.getView().measure(widthMeasureSpec, heightMeasureSpec);
+        int toastWidth = toast.getView().getMeasuredWidth();
+
+        toast.setGravity(Gravity.LEFT | Gravity.TOP, (int) view.getX() - toastWidth, (int) view.getY());
     }
 }

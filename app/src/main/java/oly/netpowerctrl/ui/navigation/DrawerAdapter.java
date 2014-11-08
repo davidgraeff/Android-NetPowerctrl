@@ -95,6 +95,10 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.ViewHolder
         return mItems.get(position).type.ordinal();
     }
 
+    public boolean isClickableType(int position) {
+        return mItems.get(position).type.ordinal() == 2;
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         View v;

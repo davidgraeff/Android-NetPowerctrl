@@ -85,6 +85,7 @@ public class ListenService extends Service {
             for (PluginInterface pluginInterface : plugins)
                 updatePluginReferencesInDevices(pluginInterface);
 
+            // Delay plugin activation (we wait for extensions)
             enterFullNetworkMode(true, false);
 
             return false;
@@ -334,7 +335,7 @@ public class ListenService extends Service {
     private void updatePluginReferencesInDevices(PluginInterface plugin) {
         DeviceCollection deviceCollection = AppData.getInstance().deviceCollection;
         for (Device device : deviceCollection.getItems()) {
-            if (device.pluginID.equals(plugin.getPluginID()) && device.getPluginInterface() != plugin) {
+            if (device.getPluginInterface() != plugin && device.pluginID.equals(plugin.getPluginID())) {
                 device.setPluginInterface(plugin);
                 device.setHasChanged();
                 AppData.getInstance().updateExistingDevice(device);
@@ -376,7 +377,7 @@ public class ListenService extends Service {
             Intent i = new Intent(PLUGIN_QUERY_ACTION);
             i.addFlags(Intent.FLAG_FROM_BACKGROUND);
             i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            i.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
+            //i.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
             i.putExtra(PAYLOAD_SERVICE_NAME, MainActivity.class.getCanonicalName());
             List<ResolveInfo> list = getPackageManager().queryIntentServices(i, 0);
             for (ResolveInfo resolveInfo : list) {

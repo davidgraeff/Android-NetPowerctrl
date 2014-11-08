@@ -15,7 +15,6 @@ import java.net.URL;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.main.App;
 
 /**
@@ -134,13 +133,7 @@ public class GithubAndCloudant {
 
     private static int parseAutoIssues(HttpURLConnection con, final IGithubOpenIssues callback, final Handler handler) throws IOException {
         int open_issues = 0;
-        BufferedReader rd = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        JsonReader reader = JSONHelper.getReader(sb.toString());
+        JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream()));
         if (!reader.hasNext()) return -1;
         reader.beginObject();
         if (!reader.hasNext()) return -1;
@@ -180,13 +173,7 @@ public class GithubAndCloudant {
 
     private static int parseIssues(HttpURLConnection con, final IGithubOpenIssues callback, final Handler handler) throws IOException {
         int open_issues = 0;
-        BufferedReader rd = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        JsonReader reader = JSONHelper.getReader(sb.toString());
+        JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream()));
         reader.beginArray();
         while (reader.hasNext()) {
             open_issues++;

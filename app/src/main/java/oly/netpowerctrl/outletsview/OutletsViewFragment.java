@@ -102,7 +102,8 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
      */
     private int lastResID = 0;
 
-    public OutletsViewFragment() { }
+    public OutletsViewFragment() {
+    }
 
     public static Bundle createBundleForView(int viewType) {
         Bundle bundle = new Bundle();
@@ -119,6 +120,11 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         }
     }
 
+    @Override
+    public void onRefresh() {
+        this.refreshNow();
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -126,27 +132,16 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     //noinspection deprecation
                     mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
 
-                    //getActivity().findViewById(R.id.content_frame).getWidth();
-                    //Log.w("width", String.valueOf(mListView.getMeasuredWidth()));
                     int i = mRecyclerView.getWidth() / requestedColumnWidth;
                     if (i < 1) i = 1;
-                    getAdapter().setItemsInRow(i);
-//                    SpannableGridLayoutManager spannableGridLayoutManager = new SpannableGridLayoutManager(getActivity());
-//                    spannableGridLayoutManager.setNumColumns(i);
-//                    spannableGridLayoutManager.setNumRows(1);
+                    adapter.setItemsInRow(i);
                     GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
                     gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
                     mRecyclerView.setHasFixedSize(false);
                     mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.invalidate();
-
+                    mRecyclerView.setAdapter(adapter);
                 }
             };
-
-    @Override
-    public void onRefresh() {
-        this.refreshNow();
-    }
 
     @Override
     public void onIconCacheCleared() {
@@ -240,7 +235,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         adapter.setEnableEditing(SharedPrefs.getInstance().isOutletEditingEnabled());
         mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
-
+        mRecyclerView.requestLayout();
     }
 
     @Override
@@ -350,6 +345,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                 fab.setVisibility(View.INVISIBLE);
                 AnimationController.animateBottomViewIn(fab);
             }
+            fab.setHideOnLongClick(2000);
         }
 
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
@@ -389,7 +385,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                         // Only hide the group title if there is content
                         if (adapter.getItemCount() > 0)
                             animation = AnimationController.animateViewInOutWithoutCheck(groupTitle, false, true);
-                        checkEmpty();
+                        //checkEmpty();
                     } else {
                         slidingTabLayout.onPageResetScrolled();
                         animation = AnimationController.animateViewInOutWithoutCheck(groupTitle, false, true);
@@ -412,9 +408,13 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     if (allowSwipe) {
                         // group title position
                         groupTitle.setTranslationX(fromLeftToRight ? -groupTitle.getX() - groupTitle.getWidth() : main_layout.getWidth() - groupTitle.getX());
+                        emptyText.setTranslationX(fromLeftToRight ? -emptyText.getX() - emptyText.getWidth() : main_layout.getWidth() - emptyText.getX());
                         swipeMoveAnimator.setOffsetX(groupTitle.getTranslationX());
                         groupTitle.setVisibility(View.VISIBLE);
-                        groupTitle.setText(groupPagerAdapter.getPageTitle(getNextGroup(fromLeftToRight)));
+                        int nextGroupIndex = getNextGroup(fromLeftToRight);
+                        UUID next_groupFilter = nextGroupIndex == 0 ? null : AppData.getInstance().groupCollection.get(nextGroupIndex - 1).uuid;
+                        checkEmpty(adapterSource.countIfGroup(next_groupFilter), next_groupFilter);
+                        groupTitle.setText(groupPagerAdapter.getPageTitle(nextGroupIndex));
                     }
 
                     return allowSwipe;
@@ -429,10 +429,9 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             };
 
             swipeMoveAnimator = new SwipeMoveAnimator(getActivity(), dismissCallbacks);
-            swipeMoveAnimator.setSwipeView(groupTitle);
+            swipeMoveAnimator.setSwipeView(groupTitle, emptyText);
             mRecyclerView.setOnScrollListener(swipeMoveAnimator.makeScrollListener());
             mRecyclerView.setOnTouchListener(swipeMoveAnimator);
-            //main_layout.setOnTouchListener(swipeMoveAnimator);
 
         }
 
@@ -470,13 +469,12 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
-                checkEmpty();
+                checkEmpty(adapter.getItemCount(), groupFilter);
             }
         });
-        if (groupFilter != null) {
-            if (adapter.setGroupFilter(groupFilter))
-                adapterSource.updateNow();
-        }
+
+        adapter.setGroupFilter(groupFilter);
+        adapterSource.updateNow();
 
         ///// For pull to refresh
         mPullToRefreshLayout = (EnhancedSwipeRefreshLayout) view.findViewById(R.id.list_layout);
@@ -488,7 +486,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         ///// END: For pull to refresh
 
         mRecyclerView.setAdapter(adapter);
-        checkEmpty();
 
         return view;
     }
@@ -509,11 +506,8 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         }
     }
 
-    public void checkEmpty() {
-        if (!isAdded())
-            return;
-
-        if (adapter.getItemCount() == 0) {
+    public void checkEmpty(int count, UUID groupFilter) {
+        if (count == 0) {
             int resID;
             boolean hasDevices = AppData.getInstance().deviceCollection.hasDevices();
             if (!hasDevices) {
@@ -529,10 +523,10 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
             lastResID = resID;
             emptyText.setText(resID);
-            AnimationController.animateViewInOut(emptyText, true, false);
+            emptyText.setVisibility(View.VISIBLE);
         } else if (lastResID != 0) {
             lastResID = 0;
-            AnimationController.animateViewInOut(emptyText, false, false);
+            emptyText.setVisibility(View.GONE);
         }
     }
 
@@ -586,7 +580,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
-    public boolean onItemClick(View view, int position, boolean isLongClick) {
+    public boolean onItemClick(View view, final int position, boolean isLongClick) {
         if (disableClicks)
             return false;
 
@@ -613,19 +607,36 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             a.setDuration(300);
             view.startAnimation(a);
 
-            Executable executable = adapter.getItem(position).getExecutable();
-            if (executable instanceof DevicePort) {
-                DevicePort devicePort = (DevicePort) executable;
+            final Executable executable = adapter.getItem(position).getExecutable();
+            a.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
 
-                OutletEditDialog dialog = (OutletEditDialog) Fragment.instantiate(getActivity(), OutletEditDialog.class.getName());
-                dialog.setDevicePort(devicePort, (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position), adapter);
-                MainActivity.getNavigationController().changeToDialog(getActivity(), dialog);
-            } else if (executable instanceof Scene) {
-                Intent it = new Intent(getActivity(), EditSceneActivity.class);
-                it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                it.putExtra(EditSceneActivity.LOAD_SCENE, ((Scene) executable).toString());
-                startActivity(it);
-            }
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    if (executable instanceof DevicePort) {
+                        DevicePort devicePort = (DevicePort) executable;
+
+                        OutletEditDialog dialog = (OutletEditDialog) Fragment.instantiate(getActivity(), OutletEditDialog.class.getName());
+                        dialog.setDevicePort(devicePort, (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position), adapter);
+                        MainActivity.getNavigationController().changeToDialog(getActivity(), dialog);
+                    } else if (executable instanceof Scene) {
+                        Scene scene = ((Scene) executable);
+                        Intent it = new Intent(getActivity(), EditSceneActivity.class);
+                        it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
+                        it.putExtra(EditSceneActivity.LOAD_SCENE, scene.toString());
+                        startActivity(it);
+                    }
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+
             return true;
         }
 

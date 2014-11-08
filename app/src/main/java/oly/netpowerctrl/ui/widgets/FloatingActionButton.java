@@ -11,6 +11,8 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -37,15 +39,29 @@ public class FloatingActionButton extends View {
      * The FAB button's Y position when it is hidden.
      */
     private float mYHidden = -1;
+    private int hideOnLongClick = 0;
+    private OnLongClickListener onLongClickListener = new OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View view) {
+            hide(true);
+            (new Handler(Looper.getMainLooper())).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hide(false);
+                }
+            }, hideOnLongClick);
+            return false;
+        }
+    };
 
     public FloatingActionButton(Context context) {
         this(context, null);
     }
 
+
     public FloatingActionButton(Context context, AttributeSet attributeSet) {
         this(context, attributeSet, 0);
     }
-
 
     public FloatingActionButton(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -149,5 +165,17 @@ public class FloatingActionButton extends View {
             animator.setInterpolator(mInterpolator);
             animator.start();
         }
+    }
+
+    public int getHideOnLongClick() {
+        return hideOnLongClick;
+    }
+
+    public void setHideOnLongClick(int hideOnLongClick) {
+        this.hideOnLongClick = hideOnLongClick;
+        if (hideOnLongClick != 0)
+            setOnLongClickListener(onLongClickListener);
+        else
+            setOnLongClickListener(null);
     }
 }

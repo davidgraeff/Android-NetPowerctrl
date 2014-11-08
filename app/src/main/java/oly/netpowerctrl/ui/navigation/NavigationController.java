@@ -370,7 +370,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
 
     @Override
     public boolean onItemClick(View view, int position, boolean isLongClick) {
-        if (mDrawerAdapter.getItemViewType(position) == 0)
+        if (!mDrawerAdapter.isClickableType(position))
             return false;
 
         Activity context = mDrawerActivity.get();

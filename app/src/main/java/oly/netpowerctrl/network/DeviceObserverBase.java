@@ -155,7 +155,7 @@ public abstract class DeviceObserverBase {
         if (!device.isEnabled()) {
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_disabled));
             timeout_devices.add(device);
-            AppData.getInstance().deviceCollection.updateNotReachable(context, device);
+            AppData.getInstance().updateExistingDevice(device);
             return countWait.get();
         }
 
@@ -166,7 +166,7 @@ public abstract class DeviceObserverBase {
         if (device.getUniqueDeviceID() == null && device.DeviceConnections.isEmpty()) {
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_incomplete));
             timeout_devices.add(device);
-            AppData.getInstance().deviceCollection.updateNotReachable(context, device);
+            AppData.getInstance().updateExistingDevice(device);
             return countWait.get();
         }
 
@@ -213,7 +213,7 @@ public abstract class DeviceObserverBase {
             if (device.getFirstReachableConnection() != null)
                 device.setStatusMessageAllConnections(context.getString(R.string.error_timeout_device, ""));
             // Call onConfiguredDeviceUpdated to update device info.
-            AppData.getInstance().deviceCollection.updateNotReachable(context, device);
+            AppData.getInstance().updateExistingDevice(device);
             timeout_devices.add(device);
         }
         devices_to_observe.clear();

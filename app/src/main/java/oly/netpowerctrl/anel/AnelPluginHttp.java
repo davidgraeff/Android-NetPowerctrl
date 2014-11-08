@@ -20,7 +20,6 @@ import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.timer.Timer;
 
@@ -34,31 +33,16 @@ public class AnelPluginHttp {
             if (response_message == null)
                 response_message = "";
 
-            ci.connectionUsed();
-
             //Log.w("AnelPluginHttp", "http receive" + response_message);
             final Device device = ci.getDevice();
             if (!callback_success) {
                 ci.device.setStatusMessage(ci, response_message, true);
-                // Call onConfiguredDeviceUpdated to update device info.
-                App.getMainThreadHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        AppData.getInstance().deviceCollection.updateNotReachable(App.instance, device);
-                    }
-                });
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
                     ci.device.setStatusMessage(ci, ListenService.getService().getString(R.string.error_packet_received), true);
-                    // Call onConfiguredDeviceUpdated to update device info.
-                    App.getMainThreadHandler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            AppData.getInstance().deviceCollection.updateNotReachable(App.instance, device);
-                        }
-                    });
                 } else {
+
                     // The name is the second ";" separated entry of the response_message.
                     device.DeviceName = data[1].trim();
                     // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
@@ -74,17 +58,15 @@ public class AnelPluginHttp {
                     }
 
                     // If values have changed, update now
-                    if (device.copyFreshDevicePorts(ports)) {
-                        // To propagate this device although it is already the the configured list
-                        // we have to set the changed flag.
-                        device.setHasChanged();
-                    }
-                    AppData.getInstance().updateExistingDeviceFromOtherThread(device);
+                    ci.connectionUsed();
+                    device.copyFreshDevicePorts(ports);
+                    device.setHasChanged();
                 }
-
             }
+            AppData.getInstance().updateExistingDeviceFromOtherThread(device);
         }
     };
+
     /**
      * If we receive a response from a switch action (via http) we request updated data immediately.
      */

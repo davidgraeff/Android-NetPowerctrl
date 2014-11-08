@@ -25,6 +25,7 @@ import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.Utils;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
  * Create new device. This dialog is different to the device edit dialog. One HTTP/UDP connection data-set
@@ -34,6 +35,7 @@ import oly.netpowerctrl.network.Utils;
 public class DevicesWizardNewDialog extends DialogFragment implements onCreateDeviceResult {
     private EditDeviceInterface editDevice = null;
     private ArrayAdapter<String> ip_autocomplete;
+    private Toast toast;
 
     public DevicesWizardNewDialog() {
     }
@@ -82,22 +84,30 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
         textView = (EditText) view.findViewById(R.id.device_password);
         textView.setText(device.Password);
 
+        toast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
+
         view.findViewById(R.id.device_ip_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), R.string.device_ip_summary, Toast.LENGTH_LONG).show();
+                toast.setText(R.string.device_ip_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
         view.findViewById(R.id.device_username_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), R.string.device_username_summary, Toast.LENGTH_LONG).show();
+                toast.setText(R.string.device_username_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
         view.findViewById(R.id.device_password_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), R.string.device_password_summary, Toast.LENGTH_LONG).show();
+                toast.setText(R.string.device_password_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
 

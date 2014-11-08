@@ -40,29 +40,32 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
             private boolean clickExecution(MotionEvent e, boolean isLongClick) {
                 if (mListenerClick != null) {
                     // Get element of the RecyclerView that was clicked
-                    ViewGroup cView = (ViewGroup) view.findChildViewUnder(e.getX(), e.getY());
-                    if (cView == null) return false;
+                    View childView = view.findChildViewUnder(e.getX(), e.getY());
 
-                    // We return the clicked child instead of the entire clicked element view.
-                    for (int numChildren = cView.getChildCount() - 1; numChildren >= 0; --numChildren) {
-                        View _child = cView.getChildAt(numChildren);
-                        Rect _bounds = new Rect();
-                        _child.getHitRect(_bounds);
-                        if (_bounds.contains((int) (e.getX() - cView.getX()), (int) (e.getY() - cView.getY()))) {
-                            if (isLongClick)
-                                _child.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                            else
-                                _child.playSoundEffect(SoundEffectConstants.CLICK);
-                            return mListenerClick.onItemClick(_child, view.getChildPosition(cView), isLongClick);
+                    if (childView == null) return false;
+                    if (childView instanceof ViewGroup) {
+                        ViewGroup cView = (ViewGroup) childView;
+                        // We return the clicked child instead of the entire clicked element view.
+                        for (int numChildren = cView.getChildCount() - 1; numChildren >= 0; --numChildren) {
+                            View _child = cView.getChildAt(numChildren);
+                            Rect _bounds = new Rect();
+                            _child.getHitRect(_bounds);
+                            if (_bounds.contains((int) (e.getX() - cView.getX()), (int) (e.getY() - cView.getY()))) {
+                                if (isLongClick)
+                                    _child.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                                else
+                                    _child.playSoundEffect(SoundEffectConstants.CLICK);
+                                return mListenerClick.onItemClick(_child, view.getChildPosition(cView), isLongClick);
+                            }
                         }
                     }
 
                     // If no child found, we return the element view.
                     if (isLongClick)
-                        cView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                        childView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                     else
-                        cView.playSoundEffect(SoundEffectConstants.CLICK);
-                    return mListenerClick.onItemClick(cView, view.getChildPosition(cView), isLongClick);
+                        childView.playSoundEffect(SoundEffectConstants.CLICK);
+                    return mListenerClick.onItemClick(childView, view.getChildPosition(childView), isLongClick);
                 }
                 return false;
             }

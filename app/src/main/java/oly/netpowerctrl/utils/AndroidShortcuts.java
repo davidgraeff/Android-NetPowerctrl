@@ -3,6 +3,7 @@ package oly.netpowerctrl.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
@@ -15,6 +16,7 @@ import oly.netpowerctrl.scenes.SceneItem;
  * Shortcut Utility class
  */
 public class AndroidShortcuts {
+    @Nullable
     static public Intent createShortcutExecutionIntent(Context context,
                                                        Scene og,
                                                        boolean show_mainWindow,

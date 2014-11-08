@@ -3,6 +3,7 @@ package oly.netpowerctrl.executables;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
@@ -19,6 +20,25 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
 
     public ExecutablesSourceDevicePorts(ExecutablesSourceChain executablesSourceChain) {
         super(executablesSourceChain);
+    }
+
+    @Override
+    public int doCountIfGroup(UUID uuid) {
+        int c = 0;
+        for (Device device : AppData.getInstance().deviceCollection.getItems()) {
+            if (hideNotReachable && device.getFirstReachableConnection() == null)
+                continue;
+
+            device.lockDevicePorts();
+            Iterator<DevicePort> iterator = device.getDevicePortIterator();
+            while (iterator.hasNext()) {
+                DevicePort devicePort = iterator.next();
+                if (!devicePort.Disabled && (uuid == null && devicePort.groups.size() == 0 || devicePort.groups.contains(uuid)))
+                    ++c;
+            }
+            device.releaseDevicePorts();
+        }
+        return c;
     }
 
     @Override

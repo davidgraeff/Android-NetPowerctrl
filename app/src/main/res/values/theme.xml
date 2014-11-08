@@ -70,6 +70,8 @@
     <style name="ToolBarStyleTransparent" parent="@style/Base.Widget.AppCompat.ActionBar">
         <item name="android:background">#66000000</item>
         <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorPrimaryInverse">@android:color/white</item>
+        <item name="android:textSize">40sp</item>
         <!--<item name="android:textColorPrimaryInverse">@android:color/white</item>-->
 
     </style>
@@ -120,19 +122,4 @@
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
     </style>
 
-    <style name="Drawer" parent="@android:style/Widget.TextView" />
-
-    <style name="Drawer.Category" parent="@android:style/Widget.TextView">
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textAllCaps">true</item>
-
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
-        <!--<item name="android:background">@drawable/md__category_background</item>-->
-
-        <item name="android:singleLine">true</item>
-        <item name="android:ellipsize">end</item>
-    </style>
 </resources>

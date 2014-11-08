@@ -1,6 +1,7 @@
 package oly.netpowerctrl.executables;
 
 import java.util.List;
+import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
@@ -15,6 +16,16 @@ import oly.netpowerctrl.scenes.Scene;
 public class ExecutablesSourceScenes extends ExecutablesSourceBase implements onCollectionUpdated<Object, Scene>, onDataLoaded {
     public ExecutablesSourceScenes(ExecutablesSourceChain executablesSourceChain) {
         super(executablesSourceChain);
+    }
+
+    @Override
+    public int doCountIfGroup(UUID uuid) {
+        int c = 0;
+        List<Scene> scenes = AppData.getInstance().sceneCollection.getItems();
+        for (Scene scene : scenes)
+            if ((!hideNotReachable || scene.isReachable()) && (uuid == null && scene.groups.size() == 0 || scene.groups.contains(uuid)))
+                ++c;
+        return c;
     }
 
     @Override

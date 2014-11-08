@@ -201,7 +201,7 @@ public class DevicesFragment extends Fragment
                     return true;
                 }
 
-                if (device.configured) {
+                if (device.isConfigured()) {
                     deviceWeakReference = new WeakReference<>(device);
                     @SuppressWarnings("ConstantConditions")
                     PopupMenu popup = new PopupMenu(getActivity(), view);

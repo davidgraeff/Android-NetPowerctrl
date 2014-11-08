@@ -208,7 +208,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
          * @param device The device to get data from.
          */
         public DeviceAdapterItem(Device device) {
-            if (!device.configured)
+            if (!device.isConfigured())
                 this.title = App.getAppString(R.string.device_new, device.DeviceName);
             else
                 this.title = device.DeviceName;

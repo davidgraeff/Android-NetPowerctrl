@@ -7,7 +7,7 @@
     public static int e(...);
 }
 
--keep class android.support.v4.** { *; }
+# -keep class android.support.v4.** { *; }
 -keepattributes *Annotation*
 -keep public class * extends android.view.View
 -keep public class * extends android.view.ViewGroup
@@ -25,6 +25,8 @@
 -keep class org.acra.ReportingInteractionMode {
     *;
 }
+
+-assumenosideeffects class oly.netpowerctrl.plugin.** { *; }
 
 -keepnames class org.acra.sender.HttpSender$** {
     *;

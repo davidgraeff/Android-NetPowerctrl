@@ -2,6 +2,7 @@ package oly.netpowerctrl.data;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -192,13 +193,12 @@ public class AppData {
             InAppNotifications.showException(context, null, "addToConfiguredDevices. Failed to add device: no unique id!");
             return;
         }
+
+        // This will also safe the new device!
         if (deviceCollection.add(device)) {
             // An existing device has been replaced. Do nothing else here.
             return;
         }
-
-        // This device is now configured
-        device.configured = true;
 
         unconfiguredDeviceCollection.remove(device);
 
@@ -266,13 +266,22 @@ public class AppData {
     /**
      * Call this if you have made your changes to the given device and want to propagate those now.
      *
-     * @param existing_device
+     * @param existing_device The existing device (Device has to be an object within deviceCollection!)
      */
     public void updateExistingDevice(Device existing_device) {
         notifyDeviceQueries(existing_device);
         if (existing_device.isHasChanged()) {
             deviceCollection.save(existing_device);
             deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, deviceCollection.getPosition(existing_device));
+
+            if (!existing_device.isReachable() && SharedPrefs.getInstance().notifyDeviceNotReachable()) {
+                long current_time = System.currentTimeMillis();
+                Toast.makeText(App.instance,
+                        App.getAppString(R.string.error_setting_outlet, existing_device.DeviceName,
+                                (int) ((current_time - existing_device.getUpdatedTime()) / 1000)),
+                        Toast.LENGTH_LONG
+                ).show();
+            }
         }
     }
 
@@ -431,6 +440,7 @@ public class AppData {
      * @param callback   The callback for the execution-done messages
      */
     public void execute(final DevicePort devicePort, final int command, final onExecutionFinished callback) {
+        assert devicePort.device != null;
         PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
         if (remote != null) {
             if (remote.isNetworkReducedState())

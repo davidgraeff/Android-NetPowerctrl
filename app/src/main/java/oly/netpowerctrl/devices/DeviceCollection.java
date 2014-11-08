@@ -2,15 +2,12 @@ package oly.netpowerctrl.devices;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.widget.Toast;
 
 import java.util.List;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
-import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onStorageUpdate;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
@@ -46,8 +43,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         for (int i = items.size() - 1; i >= 0; --i) {
             if (device.equalsByUniqueID(items.get(i))) {
                 items.set(i, device);
-                if (storage != null)
-                    storage.save(this, device);
+                save(device);
                 notifyObservers(device, ObserverUpdateActions.UpdateAction, i);
                 return true;
             }
@@ -55,8 +51,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
 
         items.add(device);
         notifyObservers(device, ObserverUpdateActions.AddAction, items.size() - 1);
-        if (storage != null)
-            storage.save(this, device);
+        save(device);
         return false;
     }
 
@@ -69,6 +64,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
     }
 
     public void save(Device device) {
+        device.setConfigured(true);
         if (storage != null)
             storage.save(this, device);
     }
@@ -77,24 +73,11 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         int position = items.indexOf(device);
         if (position == -1)
             return;
-        device.configured = false;
+        device.setConfigured(false);
         items.remove(position);
         notifyObservers(device, ObserverUpdateActions.RemoveAction, position);
         if (storage != null)
             storage.remove(this, device);
-    }
-
-    public void updateNotReachable(Context context, Device device) {
-        notifyObservers(device, ObserverUpdateActions.UpdateAction, items.indexOf(device));
-
-        if (SharedPrefs.getInstance().notifyDeviceNotReachable()) {
-            long current_time = System.currentTimeMillis();
-            Toast.makeText(context,
-                    context.getString(R.string.error_setting_outlet, device.DeviceName,
-                            (int) ((current_time - device.getUpdatedTime()) / 1000)),
-                    Toast.LENGTH_LONG
-            ).show();
-        }
     }
 
     public int getPosition(Device newValues_device) {

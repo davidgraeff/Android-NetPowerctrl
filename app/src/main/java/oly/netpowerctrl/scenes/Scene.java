@@ -71,6 +71,20 @@ public class Scene implements StorableInterface, Executable {
         return favourite;
     }
 
+    /**
+     * Updates the favourite flag of this scene. A favourite is shown in the android
+     * system bar (if enabled) and can be executed from there directly.
+     * <p/>
+     * Use this method for not-stored scenes. Stored scenes should be updated
+     * by calling SceneCollection.setFavourite(scene, flag) to also update the android
+     * status bar if necessary.
+     *
+     * @param newFavStatus The new favourite status.
+     */
+    public void setFavourite(boolean newFavStatus) {
+        favourite = newFavStatus;
+    }
+
     public void setMaster(DevicePort master) {
         uuid_master = (master != null) ? master.getUid() : null;
     }

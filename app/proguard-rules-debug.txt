@@ -1,0 +1,7 @@
+-dontshrink
+-dontoptimize
+-dontpreverify
+-dontobfuscate
+-verbose
+
+-assumenosideeffects class oly.netpowerctrl.plugin.** { *; }

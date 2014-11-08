@@ -7,6 +7,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.main.App;
@@ -18,7 +19,15 @@ public class GroupPagerAdapter extends PagerAdapter implements onCollectionUpdat
     private int count;
 
     public GroupPagerAdapter() {
-        count = AppData.getInstance().groupCollection.size() + 1;
+        count = 0;
+        AppData.observersOnDataLoaded.register(new onDataLoaded() {
+            @Override
+            public boolean onDataLoaded() {
+                count = AppData.getInstance().groupCollection.size() + 1;
+                notifyDataSetChanged();
+                return false;
+            }
+        });
         AppData.getInstance().groupCollection.registerObserver(this);
     }
 

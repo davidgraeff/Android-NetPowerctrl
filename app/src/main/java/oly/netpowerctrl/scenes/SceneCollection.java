@@ -68,12 +68,13 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
     }
 
     public void setFavourite(Scene scene, boolean favourite) {
-        if (scene == null)
+        int index = indexOf(scene);
+        if (scene == null || index == -1)
             return;
         scene.favourite = favourite;
         if (storage != null)
             storage.save(this, scene);
-        notifyObservers(scene, ObserverUpdateActions.UpdateAction, items.indexOf(scene));
+        notifyObservers(scene, ObserverUpdateActions.UpdateAction, index);
     }
 
     public int add(Scene scene, boolean notifyObservers) {

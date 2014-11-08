@@ -81,7 +81,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
     private boolean mPaused;
     private boolean mLastDirectionRight = false;
     private boolean mDismissAllowed = false;
-    private View swipeView = null;
+    private View[] swipeViews = null;
     private float offsetX;
 
     /**
@@ -135,10 +135,24 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
         };
     }
 
+    void swipeCancel(boolean swipeRight) {
+        // cancel
+        for (View view : swipeViews)
+            view.animate()
+                    .translationX(offsetX)
+                    .alpha(1)
+                    .setDuration(mAnimationTime)
+                    .setListener(null);
+        mCallbacks.onSwipeComplete(swipeRight, false);
+
+    }
+
     @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        final View mView = swipeView == null ? view : swipeView;
-        int mViewWidth = mView.getWidth();
+    public boolean onTouch(View touchedView, MotionEvent motionEvent) {
+        if (swipeViews[0] == null)
+            swipeViews = new View[]{touchedView};
+
+        int mViewWidth = swipeViews[0].getWidth();
 
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
@@ -159,12 +173,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                 }
 
                 if (mSwiping) {
-                    // cancel
-                    mView.animate()
-                            .translationX(0)
-                            .alpha(1)
-                            .setDuration(mAnimationTime)
-                            .setListener(null);
+                    swipeCancel(false);
                 }
                 mVelocityTracker.recycle();
                 mVelocityTracker = null;
@@ -200,25 +209,21 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                 }
                 if (swipeComplete) {
                     final boolean fromLeftToRight = swipeRight;
-                    mView.animate()
-                            .translationX(0)
-                            .alpha(1)
-                            .setDuration(mAnimationTime).setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            mView.setAlpha(1);
-                            mView.setTranslationX(0);
-                            mCallbacks.onSwipeComplete(fromLeftToRight, true);
-                        }
-                    });
+                    for (final View view : swipeViews)
+                        view.animate()
+                                .translationX(0)
+                                .alpha(1)
+                                .setDuration(mAnimationTime).setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                view.setAlpha(1);
+                                view.setTranslationX(0);
+                                mCallbacks.onSwipeComplete(fromLeftToRight, true);
+                            }
+                        });
                 } else {
                     // cancel
-                    mView.animate()
-                            .translationX(offsetX)
-                            .alpha(0)
-                            .setDuration(mAnimationTime)
-                            .setListener(null);
-                    mCallbacks.onSwipeComplete(swipeRight, false);
+                    swipeCancel(swipeRight);
                 }
                 mVelocityTracker.recycle();
                 mVelocityTracker = null;
@@ -246,12 +251,12 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                     //((ViewParent)mView).requestDisallowInterceptTouchEvent(true);
 
                     // Cancel AbsListView's touch (un-highlighting the item)
-                    MotionEvent cancelEvent = MotionEvent.obtain(motionEvent);
-                    cancelEvent.setAction(MotionEvent.ACTION_CANCEL |
-                            (motionEvent.getActionIndex()
-                                    << MotionEvent.ACTION_POINTER_INDEX_SHIFT));
-                    mView.onTouchEvent(cancelEvent);
-                    cancelEvent.recycle();
+//                    MotionEvent cancelEvent = MotionEvent.obtain(motionEvent);
+//                    cancelEvent.setAction(MotionEvent.ACTION_CANCEL |
+//                            (motionEvent.getActionIndex()
+//                                    << MotionEvent.ACTION_POINTER_INDEX_SHIFT));
+//                    mView.onTouchEvent(cancelEvent);
+//                    cancelEvent.recycle();
                 }
 
                 if (mSwiping) {
@@ -260,13 +265,16 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
 
                     mCallbacks.onSwipeProgress(dismissRight, alpha);
 
-                    if (dismissRight)
-                        mView.setTranslationX(offsetX + deltaX + mSlop);
-                    else
-                        mView.setTranslationX(offsetX + deltaX - mSlop);
-                    //Log.w("SW", String.valueOf(alpha)+ " "+ String.valueOf(offsetX + deltaX));
-                    if (mDismissAllowed)
-                        mView.setAlpha(alpha);
+                    for (View view : swipeViews) {
+                        if (dismissRight)
+                            view.setTranslationX(offsetX + deltaX + mSlop);
+                        else
+                            view.setTranslationX(offsetX + deltaX - mSlop);
+                        //Log.w("SW", String.valueOf(alpha)+ " "+ String.valueOf(offsetX + deltaX));
+                        if (mDismissAllowed)
+                            view.setAlpha(alpha);
+                    }
+
                     return true;
                 }
                 break;
@@ -275,8 +283,8 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
         return false;
     }
 
-    public void setSwipeView(View view) {
-        swipeView = view;
+    public void setSwipeView(View... view) {
+        swipeViews = view;
     }
 
     public void setOffsetX(float offsetX) {

@@ -123,7 +123,6 @@ public class PluginRemote implements PluginInterface {
                 e.printStackTrace();
                 return;
             }
-            device.configured = false;
             device.setPluginInterface(PluginRemote.this);
             device.setUpdatedNow();
             App.getMainThreadHandler().post(new Runnable() {
@@ -141,6 +140,7 @@ public class PluginRemote implements PluginInterface {
             serviceName = className.getClassName();
             service = INetPwrCtrlPlugin.Stub.asInterface(binder);
             init();
+            enterFullNetworkState(ListenService.getService(), null);
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -202,14 +202,15 @@ public class PluginRemote implements PluginInterface {
     /**
      * init
      */
-    void init() {
+    private void init() {
         try {
             if (service != null) {
                 Log.w(TAG, "init");
                 service.init(callback, api_version);
                 isInitialized = true;
-            } else
-                svcConn.onServiceDisconnected(null);
+            } else {
+                Log.w(TAG, "init failed: service connection not established!");
+            }
         } catch (RemoteException e) {
             InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " INIT " + e.getMessage());
         } catch (Exception e) {
@@ -225,7 +226,6 @@ public class PluginRemote implements PluginInterface {
     @Override
     public void requestData() {
         if (!isInitialized) {
-            init();
             return;
         }
         try {
@@ -246,7 +246,6 @@ public class PluginRemote implements PluginInterface {
     @Override
     public void requestData(DeviceConnection ci) {
         if (!isInitialized) {
-            init();
             return;
         }
         try {
@@ -306,7 +305,7 @@ public class PluginRemote implements PluginInterface {
 
     @Override
     public void enterFullNetworkState(Context context, Device device) {
-
+        requestData();
     }
 
     @Override

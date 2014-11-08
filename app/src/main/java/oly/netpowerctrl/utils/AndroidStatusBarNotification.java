@@ -58,6 +58,8 @@ public class AndroidStatusBarNotification {
 
                 // This intent will be executed by a click on the widget
                 Intent clickIntent = AndroidShortcuts.createShortcutExecutionIntent(context, scene, false, true);
+                if (clickIntent == null)
+                    continue;
                 clickIntent.setAction(Intent.ACTION_MAIN);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 

@@ -1,10 +1,18 @@
 package oly.netpowerctrl.scenes;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
@@ -15,7 +23,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wefika.flowlayout.FlowLayout;
@@ -38,6 +45,7 @@ import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 
@@ -77,6 +85,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     private Button btnSceneAddHomescreen;
     private Button btnNFC;
     private FlowLayout groups_layout;
+    private Toast toast;
 
     /*
  * ActionBar icon clicked
@@ -102,6 +111,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 //        }
 //    }
 
+    @SuppressLint("ShowToast")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,7 +128,9 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         // set content view, get references to widgets
         setContentView(R.layout.activity_create_scene);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+        toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -149,7 +161,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
         groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
 
-        findViewById(R.id.scene_name).setOnClickListener(new View.OnClickListener() {
+        toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 requestName(scene);
@@ -178,8 +190,15 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         btnSceneFav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AppData.getInstance().sceneCollection.setFavourite(scene, !scene.isFavourite());
+                boolean newFavStatus = !scene.isFavourite();
+                if (isLoaded)
+                    AppData.getInstance().sceneCollection.setFavourite(scene, newFavStatus);
+                else
+                    scene.setFavourite(newFavStatus);
                 updateFavButton();
+                toast.setText(newFavStatus ? R.string.scene_make_favourite : R.string.scene_remove_favourite);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
 
@@ -241,9 +260,39 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     public void setIcon(Object context_object, Bitmap icon) {
         scene_icon = icon;
         if (icon == null) {
-            ((ImageView) findViewById(R.id.scene_image)).setImageResource(getApplicationInfo().icon);
-        } else
-            ((ImageView) findViewById(R.id.scene_image)).setImageBitmap(icon);
+            icon = BitmapFactory.decodeResource(getResources(), getApplicationInfo().icon);
+        }
+        Bitmap result = Bitmap.createBitmap(icon.getWidth(), icon.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap rounder = Bitmap.createBitmap(icon.getWidth(), icon.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas resultCanvas = new Canvas(result);
+        Canvas canvas = new Canvas(rounder);
+
+        RectF rect = new RectF(0.0f, 0.0f, icon.getWidth(), icon.getHeight());
+
+        // We're going to apply this paint eventually using a porter-duff xfer mode.
+        // This will allow us to only overwrite certain pixels. RED is arbitrary. This
+        // could be any color that was fully opaque (alpha = 255)
+        Paint xferPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        xferPaint.setColor(Color.RED);
+
+        // We're just reusing xferPaint to paint a normal looking rounded box, the 20.f
+        // is the amount we're rounding by.
+        float min = Math.min(icon.getWidth() / 2, icon.getHeight() / 2);
+        canvas.drawCircle(min, min, min, xferPaint);
+        xferPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+        min -= 10;
+
+        Paint mButtonPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mButtonPaint.setStyle(Paint.Style.FILL);
+        mButtonPaint.setColor(Color.WHITE);
+        mButtonPaint.setShadowLayer(10f, 5f, 5f, Color.GRAY);
+
+        resultCanvas.drawCircle(min, min, min, mButtonPaint);
+        resultCanvas.drawBitmap(icon, 0, 0, null);
+        resultCanvas.drawBitmap(rounder, 0, 0, xferPaint);
+
+        ((ImageView) findViewById(R.id.scene_image)).setImageBitmap(result);
+
     }
 
     @Override
@@ -335,8 +384,11 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             }
         }, null));
 
-        if (isSceneNotShortcut && isLoaded) {
-            setIcon(this, LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState));
+        if (isSceneNotShortcut) {
+            Bitmap bitmap = null;
+            if (isLoaded)
+                bitmap = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState);
+            setIcon(this, bitmap);
         }
 
         onNameChanged();
@@ -440,8 +492,9 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         if (sceneName.length() == 0)
             sceneName = getString(R.string.title_scene_no_name);
 
-        TextView textView = (TextView) findViewById(R.id.scene_name);
-        textView.setText(sceneName);
+        //TextView textView = (TextView) findViewById(R.id.scene_name);
+        //textView.setText(sceneName);
+        getSupportActionBar().setTitle(sceneName);
 
         if (isSceneNotShortcut) {
             if (isLoaded) {
