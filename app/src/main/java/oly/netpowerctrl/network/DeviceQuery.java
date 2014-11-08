@@ -87,21 +87,24 @@ public class DeviceQuery extends DeviceObserverBase {
         if (!repeated) {
             // if this is the first request, we only use the first available connection.
             // If there are no available, we use all.
+            int i = 0;
             for (DeviceConnection ci : device.DeviceConnections) {
                 if (ci.isReachable()) {
                     requestAll = false;
-                    pluginInterface.requestData(ci);
+                    pluginInterface.requestData(device, i);
                     break;
                 }
+                ++i;
             }
         }
 
         // If this is a repeated request or if no single device connections
         // was available before, we use all device connections.
-        if (requestAll)
-            for (DeviceConnection ci : device.DeviceConnections) {
-                pluginInterface.requestData(ci);
+        if (requestAll) {
+            for (int i = 0; i < device.DeviceConnections.size(); ++i) {
+                pluginInterface.requestData(device, i);
             }
+        }
 
     }
 }

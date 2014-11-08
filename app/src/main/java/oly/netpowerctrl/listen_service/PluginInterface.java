@@ -3,7 +3,6 @@ package oly.netpowerctrl.listen_service;
 import android.content.Context;
 
 import oly.netpowerctrl.device_base.device.Device;
-import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.network.onExecutionFinished;
@@ -23,7 +22,7 @@ public interface PluginInterface {
     ////////////// Request data and executeToggle //////////////
     void requestData();
 
-    void requestData(DeviceConnection ci);
+    void requestData(Device device, int device_connection_id);
 
     void execute(DevicePort port, final int command, onExecutionFinished callback);
 

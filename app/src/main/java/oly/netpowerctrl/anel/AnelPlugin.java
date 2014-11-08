@@ -378,16 +378,16 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void requestData(DeviceConnection ci) {
+    public void requestData(Device device, int device_connection_id) {
         // Get necessary objects
         ListenService service = ListenService.getService();
         if (service == null)
             return;
 
-        final Device device = ci.getDevice();
         if (!device.isEnabled())
             return;
 
+        DeviceConnection ci = device.getConnectionByID(device_connection_id);
         if (ci instanceof DeviceConnectionHTTP) {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci,
                     "strg.cfg", "", ci, false, AnelPluginHttp.receiveCtrlHtml));

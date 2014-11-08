@@ -24,7 +24,6 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
-import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
@@ -182,7 +181,6 @@ public class DevicesFragment extends Fragment
                     return true;
 
                 if (!item.isDeviceHeader) {
-                    final DeviceConnection deviceConnection = device.DeviceConnections.get(item.connectionID);
                     final PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
                     if (pluginInterface != null) {
                         item.tested = false;
@@ -190,11 +188,12 @@ public class DevicesFragment extends Fragment
                         item.subtitle = getString(R.string.device_connection_testing);
                         adapter.notifyItemChanged(position);
                         item.enabled = false;
+                        final Device finalDevice = device;
                         App.getMainThreadHandler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 item.enabled = true;
-                                pluginInterface.requestData(deviceConnection);
+                                pluginInterface.requestData(finalDevice, item.connectionID);
                             }
                         }, 1000);
                     }

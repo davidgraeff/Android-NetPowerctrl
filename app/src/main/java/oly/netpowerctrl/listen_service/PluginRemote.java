@@ -244,14 +244,14 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void requestData(DeviceConnection ci) {
+    public void requestData(Device device, int device_connection_id) {
         if (!isInitialized) {
             return;
         }
         try {
             if (service != null) {
                 Log.w(TAG, "refresh");
-                service.requestDataByConnection(ci.toString());
+                service.requestDataByConnection(device.getUniqueDeviceID(), device_connection_id);
             } else
                 InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_no_service_connection, localized_name));
         } catch (RemoteException e) {
