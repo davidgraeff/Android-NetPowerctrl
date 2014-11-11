@@ -80,7 +80,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
     private VelocityTracker mVelocityTracker;
     private boolean mPaused;
     private boolean mLastDirectionRight = false;
-    private boolean mDismissAllowed = false;
+    private boolean mSwipingAllowed = false;
     private View[] swipeViews = null;
     private float offsetX;
 
@@ -196,7 +196,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                 float absVelocityY = Math.abs(mVelocityTracker.getYVelocity());
                 boolean swipeComplete = false;
                 boolean swipeRight = false;
-                if (mDismissAllowed) {
+                if (mSwipingAllowed) {
                     if (Math.abs(deltaX) > mViewWidth / 3 && mSwiping) {
                         swipeComplete = true;
                         swipeRight = deltaX > 0;
@@ -245,7 +245,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                 if (Math.abs(deltaX) > mSlop && Math.abs(deltaY) < Math.abs(deltaX) / 2) {
                     if (!mSwiping || mLastDirectionRight != dismissRight) {
                         mLastDirectionRight = dismissRight;
-                        mDismissAllowed = mCallbacks.onSwipeStarted(dismissRight);
+                        mSwipingAllowed = mCallbacks.onSwipeStarted(dismissRight);
                     }
                     mSwiping = true;
                     //((ViewParent)mView).requestDisallowInterceptTouchEvent(true);
@@ -259,7 +259,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
 //                    cancelEvent.recycle();
                 }
 
-                if (mSwiping) {
+                if (mSwiping && mSwipingAllowed) {
                     float alpha = 1f - Math.max(0f, Math.min(1f,
                             1f - 2f * Math.abs(deltaX) / mViewWidth));
 
@@ -271,8 +271,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                         else
                             view.setTranslationX(offsetX + deltaX - mSlop);
                         //Log.w("SW", String.valueOf(alpha)+ " "+ String.valueOf(offsetX + deltaX));
-                        if (mDismissAllowed)
-                            view.setAlpha(alpha);
+                        view.setAlpha(alpha);
                     }
 
                     return true;

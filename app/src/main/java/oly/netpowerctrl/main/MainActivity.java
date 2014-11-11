@@ -123,7 +123,7 @@ public class MainActivity extends ActionBarActivity {
             getSupportActionBar().hide();
         }
 
-        if (SharedPrefs.getInstance().isBackground() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
             Drawable d = LoadStoreIconData.loadDrawable(this, LoadStoreIconData.uuidForBackground(),
                     LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateNotApplicable);
@@ -134,7 +134,10 @@ public class MainActivity extends ActionBarActivity {
                     e.printStackTrace();
                     return;
                 }
-            v.setBackground(d);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                v.setBackground(d);
+            else
+                v.setBackgroundDrawable(d);
         }
     }
 

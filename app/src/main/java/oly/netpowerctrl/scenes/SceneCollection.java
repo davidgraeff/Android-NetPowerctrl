@@ -1,5 +1,7 @@
 package oly.netpowerctrl.scenes;
 
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -8,7 +10,6 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.data.onStorageUpdate;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
@@ -18,23 +19,19 @@ import oly.netpowerctrl.devices.DeviceCollection;
  * List of scenes
  */
 public class SceneCollection extends CollectionWithStorableItems<SceneCollection, Scene> {
-    private onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
+
+    public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
         @Override
         public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action, int position) {
             device.lockDevicePorts();
             Iterator<DevicePort> iterator = device.getDevicePortIterator();
             while (iterator.hasNext()) {
                 DevicePort devicePort = iterator.next();
-                int index = -1;
-                for (Scene scene : items) {
-                    ++index;
-                    if (scene.getMasterUUid() == null)
-                        continue;
-                    if (scene.getMasterUUid().equals(devicePort.getUid())) {
-                        scene.setCurrentValue(devicePort.getCurrentValue());
-                        scene.setMaximumValue(devicePort.getMaximumValue());
-                        scene.setReachable(devicePort.isReachable());
-                        notifyObservers(scene, ObserverUpdateActions.UpdateAction, index);
+                for (int index = 0; index < items.size(); ++index) {
+                    Scene scene = items.get(index);
+                    if (scene.isMasterSlave() && scene.getMasterUUid().equals(devicePort.getUid())) {
+                        if (updateSceneValue(scene, devicePort))
+                            notifyObservers(scene, ObserverUpdateActions.UpdateAction, index);
                     }
                 }
             }
@@ -42,16 +39,6 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
             return true;
         }
     };
-
-    public SceneCollection() {
-        AppData.observersOnDataLoaded.register(new onDataLoaded() {
-            @Override
-            public boolean onDataLoaded() {
-                AppData.getInstance().deviceCollection.registerObserver(deviceObserver);
-                return false;
-            }
-        });
-    }
 
     @SuppressWarnings("unused")
     public static SceneCollection fromScenes(List<Scene> scenes, onStorageUpdate storage) {
@@ -61,6 +48,27 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         if (dc.items == null)
             dc.items = new ArrayList<>();
         return dc;
+    }
+
+    private boolean updateSceneValue(Scene scene, DevicePort devicePort) {
+        if (scene.getMasterUUid() == null)
+            return false;
+
+        boolean changed = false;
+        if (scene.getCurrentValue() != devicePort.getCurrentValue()) {
+            scene.setCurrentValue(devicePort.getCurrentValue());
+            changed = true;
+        }
+        if (scene.getMaximumValue() != devicePort.getMaximumValue()) {
+            scene.setMaximumValue(devicePort.getMaximumValue());
+            changed = true;
+        }
+        if (scene.isReachable() != devicePort.isReachable()) {
+            scene.setReachable(devicePort.isReachable());
+            changed = true;
+        }
+
+        return changed;
     }
 
     public int length() {
@@ -77,6 +85,14 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         notifyObservers(scene, ObserverUpdateActions.UpdateAction, index);
     }
 
+    /**
+     * Add/replace scene with same id
+     *
+     * @param scene           The new or updated scene object. If it is an updated scene object it has not be
+     *                        the same object as before, the unique id just have to be equal.
+     * @param notifyObservers Set to true to notify observers.
+     * @return Return the new position of the added/updated scene.
+     */
     public int add(Scene scene, boolean notifyObservers) {
         if (scene == null)
             return -1;
@@ -88,6 +104,11 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
                 position = i;
                 break;
             }
+
+        // Get status of master
+        DevicePort devicePort = AppData.getInstance().findDevicePort(scene.getMasterUUid());
+        if (devicePort != null)
+            updateSceneValue(scene, devicePort);
 
         // Replace existing item
         if (position != -1) {
@@ -117,15 +138,17 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
     }
 
     @SuppressWarnings("unused")
-    public void removeScene(Scene scene) {
-        for (int i = 0; i < items.size(); ++i)
-            if (items.get(i).equals(scene)) {
+    public void removeScene(String scene_uid) {
+        for (int i = 0; i < items.size(); ++i) {
+            Scene scene = items.get(i);
+            if (scene.getUid().equals(scene_uid)) {
                 items.remove(i);
                 if (storage != null)
                     storage.remove(this, scene);
                 notifyObservers(scene, ObserverUpdateActions.RemoveAction, i);
                 break;
             }
+        }
     }
 
     @SuppressWarnings("unused")
@@ -149,7 +172,8 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         return "scenes";
     }
 
-    public Scene get(String sceneId) {
+    @Nullable
+    public Scene findScene(String sceneId) {
         for (Scene s : items)
             if (s.uuid.equals(sceneId))
                 return s;

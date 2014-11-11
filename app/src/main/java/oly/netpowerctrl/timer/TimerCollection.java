@@ -21,13 +21,14 @@ import oly.netpowerctrl.network.onHttpRequestResult;
 /**
  * Control all configured alarms
  */
-public class TimerController extends CollectionWithStorableItems<TimerController, Timer> {
+public class TimerCollection extends CollectionWithStorableItems<TimerCollection, Timer> {
     private final List<Timer> available_timers = new ArrayList<>();
     private boolean requestActive = false;
     private final Runnable notifyRunnable = new Runnable() {
         @Override
         public void run() {
             requestActive = false;
+            notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
             saveAll();
         }
     };
@@ -59,21 +60,6 @@ public class TimerController extends CollectionWithStorableItems<TimerController
             }
         }
         return true;
-    }
-
-    @Override
-    public void saveAll() {
-        if (storage == null)
-            return;
-
-        Iterator<Timer> it = items.iterator();
-
-        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
-
-        it = items.iterator();
-        while (it.hasNext()) {
-            storage.save(this, it.next());
-        }
     }
 
     /**

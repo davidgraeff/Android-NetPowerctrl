@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -120,14 +119,31 @@
             card_view:cardCornerRadius="4dp"
             card_view:cardElevation="5dp">
 
-            <TextView
-                android:id="@+id/source"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autoLink="web"
-                android:linksClickable="false"
-                android:text="@string/app_name_disclaimer"
-                android:textAppearance="@android:style/TextAppearance.Medium" />
+                android:orientation="vertical"
+                android:padding="@dimen/list_inner_padding">
+
+                <TextView
+                    android:id="@+id/source"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:autoLink="web"
+                    android:linksClickable="false"
+                    android:text="@string/app_name_disclaimer"
+                    android:textAppearance="@android:style/TextAppearance.Medium" />
+
+                <Button
+                    android:id="@+id/open_source_license"
+                    style="?colored_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/open_source_licenses" />
+
+            </LinearLayout>
 
         </android.support.v7.widget.CardView>
 
@@ -196,36 +212,72 @@
 
         </android.support.v7.widget.CardView>
 
-        <android.support.v7.widget.Toolbar
+        <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/feedback_card"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:minHeight="?attr/actionBarSize"
-            app:theme="?attr/toolbar_style">
+            android:layout_gravity="center"
+            android:padding="@dimen/list_outer_padding"
+            card_view:cardBackgroundColor="?cards_background"
+            card_view:cardCornerRadius="4dp"
+            card_view:cardElevation="5dp">
 
-            <TextView
-                android:id="@+id/wishes"
-                android:layout_width="fill_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:ellipsize="end"
-                android:gravity="center"
-                android:singleLine="true"
-                android:text="Wünsche und Anregungen"
-                android:textAppearance="@android:style/TextAppearance.Large.Inverse" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/list_inner_padding">
 
-        </android.support.v7.widget.Toolbar>
+                <ImageView
+                    android:id="@+id/feedbackme"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="20dp"
+                    android:scaleType="center"
+                    android:src="@drawable/google_plus" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:autoLink="web"
-            android:linksClickable="false"
-            android:padding="@dimen/list_inner_padding"
-            android:text="@string/feedback_add_description" />
+                <TextView
+                    android:id="@+id/feedback_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/feedbackme"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/feedback_add_description" />
 
-        <include
-            android:id="@+id/issue_add_card"
-            layout="@layout/fragment_feedback_add" />
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/feedback_desc"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/feedback_google_plus"
+                        style="?colored_button"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="1"
+                        android:text="@string/feedback_google_plus" />
+
+                    <Button
+                        android:id="@+id/beta"
+                        style="?colored_button"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_toRightOf="@id/feedback_google_plus"
+                        android:layout_weight="1"
+                        android:text="@string/enter_beta" />
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
 
     </LinearLayout>
+
 </ScrollView>

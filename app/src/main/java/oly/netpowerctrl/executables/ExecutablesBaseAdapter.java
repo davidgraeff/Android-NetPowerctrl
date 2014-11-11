@@ -212,8 +212,7 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
                 break;
             }
 
-            // TODO Find the right position for the item in BaseAdapter.
-            boolean behind_current = false; // sortOrder.length > i ? l.port.positionRequest > devicePort.positionRequest : false;
+            boolean behind_current = l.getExecutable().getTitle(App.instance).compareToIgnoreCase(executable.getTitle(App.instance)) >= 0;
             if (!found && behind_current) {
                 destination_index = i;
                 found = true;

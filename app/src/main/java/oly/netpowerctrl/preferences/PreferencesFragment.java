@@ -228,7 +228,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 continue;
             }
             widgetDataList.add(new WidgetData(
-                    port.device.DeviceName + ", " + port.getTitle(getActivity()),
+                    port.device.getDeviceName() + ", " + port.getTitle(getActivity()),
                     prefName, appWidgetId));
         }
 

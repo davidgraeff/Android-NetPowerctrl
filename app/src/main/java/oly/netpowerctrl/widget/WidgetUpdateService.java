@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -30,28 +31,29 @@ import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
+import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
  * Widget Update Service
  */
-public class WidgetUpdateService extends Service implements onDeviceObserverResult, onCollectionUpdated<DeviceCollection, Device>, onServiceReady, onDataLoaded {
+public class WidgetUpdateService extends Service implements onDeviceObserverResult,
+        onCollectionUpdated, onServiceReady, onDataLoaded {
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     public static final int CLICK_WIDGET = 2;
     private static final String TAG = "WidgetUpdateService";
-    //    private final List<Integer> widgetUpdateRequests = new ArrayList<>();
-    private final Map<Integer, DevicePort> allWidgets = new TreeMap<>();
+    private final Map<Integer, WidgetExecutable> allWidgets = new TreeMap<>();
     private final Set<Integer> widgetsExecuting = new TreeSet<>();
     private final List<WidgetClick> widgetClicks = new ArrayList<>();
     private AppWidgetManager appWidgetManager;
@@ -96,6 +98,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
          * changed signal.
          */
         AppData.getInstance().deviceCollection.unregisterObserver(this);
+        AppData.getInstance().sceneCollection.unregisterObserver(this);
         ListenService.observersServiceReady.unregister(this);
         ListenService.stopUseService();
     }
@@ -163,19 +166,33 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         // Filter: Only those widgets ids with linked preferences are valid
         if (updateWidgetIDs != null) {
+            AppData appData = AppData.getInstance();
             for (int appWidgetId : updateWidgetIDs) {
-                String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
-                DevicePort port = null;
-                if (port_uuid != null)
-                    port = AppData.getInstance().findDevicePort(port_uuid);
+                String executable_uid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
+                Executable executable = null;
+                Device device = null;
+                if (executable_uid != null) {
+                    executable = appData.findDevicePort(executable_uid);
+                }
+                if (executable != null)
+                    device = ((DevicePort) executable).device;
+                else {
+                    executable = appData.sceneCollection.findScene(executable_uid);
+                    DevicePort master = null;
+                    if (executable != null)
+                        master = appData.findDevicePort(((Scene) executable).getMasterUUid());
+                    if (master != null)
+                        device = master.device;
+                }
 
-                if (port == null) {
+
+                if (executable == null) {
                     Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId));
                     setWidgetStateBroken(appWidgetId);
                     continue;
                 }
 
-                allWidgets.put(appWidgetId, port);
+                allWidgets.put(appWidgetId, new WidgetExecutable(executable, device, appWidgetId));
             }
 
             // Exit if no widgets
@@ -210,68 +227,74 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    private int getWidgetIDByPort(DevicePort port) {
-        for (Map.Entry<Integer, DevicePort> entry : allWidgets.entrySet()) {
-            DevicePort devicePort = entry.getValue();
-            if (devicePort == port) {
-                return entry.getKey();
+    private WidgetExecutable getWidgetEntryByExecutable(Executable executable) {
+        for (Map.Entry<Integer, WidgetExecutable> entry : allWidgets.entrySet()) {
+            WidgetExecutable widgetExecutable = entry.getValue();
+            if (widgetExecutable.executable == executable) {
+                return widgetExecutable;
             }
         }
-        return -1;
+        return null;
     }
 
-    private void executeSingleAction(String port_uuid_string, final int command) {
-        final DevicePort port = AppData.getInstance().findDevicePort(port_uuid_string);
-        if (port == null) {
+    private void executeSingleAction(String executable_uid, final int command) {
+        Executable executable = AppData.getInstance().findDevicePort(executable_uid);
+        if (executable == null) {
+            executable = AppData.getInstance().sceneCollection.findScene(executable_uid);
+        }
+        if (executable == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        final int widgetID = getWidgetIDByPort(port);
+        final WidgetExecutable widgetEntry = getWidgetEntryByExecutable(executable);
 
-        if (widgetID == -1) {
+        if (widgetEntry == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        setWidgetState(widgetID, port, true);
+        if (widgetEntry.device != null) {
+            setWidgetState(widgetEntry.widgetID, executable, true);
 
-        if (!port.device.isReachable() && ((PluginInterface) port.device.getPluginInterface()).isNetworkReducedState()) {
-            ListenService.getService().findDevices(true, null);
-            return;
+            if (!executable.isReachable()) {
+                ListenService.getService().findDevices(true, null);
+                return;
+            }
         }
 
         final long currentTime = System.currentTimeMillis();
-        AppData.getInstance().execute(port, command, new onExecutionFinished() {
+        AppData.getInstance().executeToggle(executable, new onExecutionFinished() {
             @Override
             public void onExecutionFinished(int commands) {
                 // Fail safe: If no response from the device, we set the widget to broken state
-                App.getMainThreadHandler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (port.device.getUpdatedTime() < currentTime)
-                            setWidgetState(widgetID, port, false);
-                    }
-                }, 1200);
+                if (widgetEntry.device != null)
+                    App.getMainThreadHandler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (widgetEntry.device.getUpdatedTime() < currentTime)
+                                setWidgetState(widgetEntry.widgetID, widgetEntry.executable, false);
+                        }
+                    }, 1200);
             }
         });
     }
 
-    private void setWidgetState(final int appWidgetId, final DevicePort oi, final boolean inProgress) {
+    private void setWidgetState(final int appWidgetId, final Executable executable, final boolean inProgress) {
         // Delay new data to show inProgress state for at least 500ms.
         if (widgetsExecuting.contains(appWidgetId) && !inProgress) {
             widgetsExecuting.remove(appWidgetId);
             App.getMainThreadHandler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    setWidgetState(appWidgetId, oi, false);
+                    setWidgetState(appWidgetId, executable, false);
                 }
             }, 500);
             return;
         }
 
         Intent clickIntent = new Intent(this, WidgetUpdateService.class);
-        clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, oi.getUid());
+        clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, executable.getUid());
         clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, DevicePort.TOGGLE);
         clickIntent.putExtra(DeviceWidgetProvider.EXTRA_WIDGET_COMMAND, CLICK_WIDGET);
         PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), clickIntent, 0);
@@ -295,7 +318,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         // Do not show a status text line ("on"/"off") for a simple trigger
-        if (oi.getType() == ExecutableType.TypeButton)
+        if (executable.getType() == ExecutableType.TypeStateless)
             widget_show_status = false;
 
         // Manipulate view
@@ -308,10 +331,10 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         LoadStoreIconData.IconState iconState;
         int string_res;
-        if (oi.device.getFirstReachableConnection() == null) { // unreachable
+        if (!executable.isReachable()) { // unreachable
             string_res = R.string.widget_outlet_not_reachable;
             iconState = LoadStoreIconData.IconState.StateUnknown;
-        } else if (oi.current_value > 0) { // On
+        } else if (executable.getCurrentValue() > 0) { // On
             string_res = R.string.widget_on;
             iconState = LoadStoreIconData.IconState.StateOn;
         } else {
@@ -324,7 +347,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             string_res = R.string.widget_inProgress;
         }
 
-        views.setTextViewText(R.id.widget_name, oi.getTitle(this));
+        views.setTextViewText(R.id.widget_name, executable.getTitle(this));
         views.setTextViewText(R.id.widget_status, this.getString(string_res));
 
         // If the device is not reachable there is no sense in assigning a click event pointing to
@@ -367,6 +390,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     @Override
     public boolean onServiceReady(ListenService service) {
         AppData.getInstance().deviceCollection.registerObserver(this);
+        AppData.getInstance().sceneCollection.registerObserver(this);
         preCheckUpdate();
         return true;
     }
@@ -392,13 +416,13 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
      */
     private void updateDevices() {
         List<Device> devicesToUpdate = new ArrayList<>();
-        for (Map.Entry<Integer, DevicePort> entry : allWidgets.entrySet()) {
-            DevicePort devicePort = entry.getValue();
-            if (devicePort.device.getUpdatedTime() > 0)
-                setWidgetState(entry.getKey(), devicePort, false);
-            else {
-                setWidgetState(entry.getKey(), devicePort, true);
-                devicesToUpdate.add(devicePort.device);
+        for (Map.Entry<Integer, WidgetExecutable> entry : allWidgets.entrySet()) {
+            WidgetExecutable widgetExecutable = entry.getValue();
+            if (widgetExecutable.executable.isReachable())
+                setWidgetState(entry.getKey(), widgetExecutable.executable, false);
+            else if (widgetExecutable.device != null) {
+                setWidgetState(entry.getKey(), widgetExecutable.executable, true);
+                devicesToUpdate.add(widgetExecutable.device);
             }
         }
 
@@ -409,16 +433,21 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     @Override
-    public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action, int position) {
+    public boolean updated(Object collection, Object item, ObserverUpdateActions action, int position) {
         //Log.w("widget", di != null ? di.DeviceName : "empty di");
-        if (device == null)
+        if (item == null)
             return true;
 
-        for (Map.Entry<Integer, DevicePort> entry : allWidgets.entrySet()) {
-            DevicePort devicePort = entry.getValue();
-            if (devicePort.device.equalsByUniqueID(device)) {
-                setWidgetState(entry.getKey(), devicePort, false);
-            }
+        for (Map.Entry<Integer, WidgetExecutable> entry : allWidgets.entrySet()) {
+            WidgetExecutable widgetExecutable = entry.getValue();
+            if (collection instanceof DeviceCollection) {
+                if (widgetExecutable.device != null && widgetExecutable.device.equalsByUniqueID((Device) item)) {
+                    setWidgetState(entry.getKey(), widgetExecutable.executable, false);
+                }
+            } else // scenes
+                if (widgetExecutable.executable == item) {
+                    setWidgetState(entry.getKey(), widgetExecutable.executable, false);
+                }
         }
 
         finishServiceIfDone();
@@ -439,6 +468,18 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         private WidgetClick(String uuid, int command) {
             this.command = command;
             this.uuid = uuid;
+        }
+    }
+
+    private class WidgetExecutable {
+        Executable executable;
+        Device device;
+        int widgetID;
+
+        private WidgetExecutable(Executable executable, @Nullable Device device, int widgetID) {
+            this.executable = executable;
+            this.device = device;
+            this.widgetID = widgetID;
         }
     }
 }

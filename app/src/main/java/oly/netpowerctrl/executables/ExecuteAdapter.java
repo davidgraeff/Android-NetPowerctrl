@@ -21,8 +21,6 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
                           IconDeferredLoadingThread iconCache) {
         super(source, iconCache, true);
         setLayoutRes(R.layout.list_item_icon);
-        if (source != null)
-            source.updateNow();
     }
 
     @Override
@@ -58,7 +56,7 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn, 1);
                     break;
                 }
-                case TypeButton: {
+                case TypeStateless: {
                     executableViewHolder.loadIcon(mIconCache, executable.getUid(),
                             LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.OnlyOneState, 0);
                     executableViewHolder.seekBar.setVisibility(View.GONE);
@@ -82,7 +80,7 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
 
         // This has to be done more often
         switch (executable.getType()) {
-            case TypeButton: {
+            case TypeStateless: {
                 break;
             }
             case TypeToggle: {

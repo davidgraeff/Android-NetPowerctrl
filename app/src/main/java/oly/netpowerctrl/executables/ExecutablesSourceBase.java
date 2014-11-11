@@ -28,6 +28,13 @@ public abstract class ExecutablesSourceBase {
     }
 
     final public void setHideNotReachable(boolean hideNotReachable) {
+        if (chained != null)
+            chained.setHideNotReachable(hideNotReachable);
+        else
+            doSetHideNotReachable(hideNotReachable);
+    }
+
+    final public void doSetHideNotReachable(boolean hideNotReachable) {
         this.hideNotReachable = hideNotReachable;
     }
 
@@ -54,7 +61,6 @@ public abstract class ExecutablesSourceBase {
         ExecutablesBaseAdapter adapter = adapterWeakReference.get();
 
         adapter.markAllRemoved();
-        fullUpdate(adapter);
 
         if (chained != null) {
             chained.fullUpdate(adapter);
@@ -63,7 +69,10 @@ public abstract class ExecutablesSourceBase {
         }
 
         adapter.removeAllMarked();
-        adapter.notifyDataSetChanged();
+
+        if (adapter.getItemCount() == 0)
+            adapter.notifyDataSetChanged();
+
         if (onChangeListener != null)
             onChangeListener.sourceChanged();
     }

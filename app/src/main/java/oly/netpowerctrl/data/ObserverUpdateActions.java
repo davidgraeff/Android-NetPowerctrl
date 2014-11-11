@@ -5,7 +5,8 @@ package oly.netpowerctrl.data;
  */
 public enum ObserverUpdateActions {
     AddAction, // Elements have been added
-    UpdateAction, // Amount of entries stay the same
+    UpdateAction, // Amount of entries stay the same. Reachability could have been changed
+    ConnectionUpdateAction, // Amount of entries stay the same. Connections have updated
     RemoveAction, // Elements have been removed
     RemoveAllAction, // Elements have been removed
     ClearAndNewAction // Complex changes

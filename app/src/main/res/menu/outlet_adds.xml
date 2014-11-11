@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/menu_add_items_to_group"
+        android:title="@string/group_add_items" />
+
+    <item
         android:id="@+id/menu_add_scene"
         android:title="@string/scene_add" />
 

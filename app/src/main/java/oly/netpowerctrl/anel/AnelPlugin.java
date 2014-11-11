@@ -45,7 +45,7 @@ import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
-import oly.netpowerctrl.timer.TimerController;
+import oly.netpowerctrl.timer.TimerCollection;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.Logging;
 
@@ -184,7 +184,7 @@ final public class AnelPlugin implements PluginInterface {
         }
 
         // Third step: Send data
-        String access = device.UserName + device.Password;
+        String access = device.getUserName() + device.getPassword();
         byte[] data = new byte[3 + access.length()];
         System.arraycopy(access.getBytes(), 0, data, 3, access.length());
 
@@ -324,12 +324,12 @@ final public class AnelPlugin implements PluginInterface {
             if (port.id >= 10 && port.id < 20) {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
-                        port.id - 10, device.UserName, device.Password).getBytes();
+                        port.id - 10, device.getUserName(), device.getPassword()).getBytes();
                 j = new UDPSending.SendAndObserveJob(udpSending, service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             } else if (port.id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
-                        port.id, device.UserName, device.Password).getBytes();
+                        port.id, device.getUserName(), device.getPassword()).getBytes();
                 j = new UDPSending.SendAndObserveJob(udpSending, service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
             }
 
@@ -387,7 +387,9 @@ final public class AnelPlugin implements PluginInterface {
         if (!device.isEnabled())
             return;
 
+        device.lockDevice();
         DeviceConnection ci = device.getConnectionByID(device_connection_id);
+        device.releaseDevice();
         if (ci instanceof DeviceConnectionHTTP) {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci,
                     "strg.cfg", "", ci, false, AnelPluginHttp.receiveCtrlHtml));
@@ -400,7 +402,7 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void requestAlarms(final DevicePort port, final TimerController timerController) {
+    public void requestAlarms(final DevicePort port, final TimerCollection timerCollection) {
         final String getData = "dd.htm?DD" + String.valueOf(port.id);
         final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) port.device.getFirstReachableConnection("HTTP");
         if (ci == null)
@@ -414,7 +416,7 @@ final public class AnelPlugin implements PluginInterface {
                     return;
                 }
                 try {
-                    timerController.alarmsFromPlugin(extractAlarms(port, response_message));
+                    timerCollection.alarmsFromPlugin(extractAlarms(port, response_message));
                 } catch (SAXException | IOException e) {
                     e.printStackTrace();
                 }
@@ -653,10 +655,12 @@ final public class AnelPlugin implements PluginInterface {
         } else {
             // start socket listener on all udp listener ports for the given device
             Set<Integer> ports = new TreeSet<>();
-            for (DeviceConnection ci : device.DeviceConnections) {
+            device.lockDevice();
+            for (DeviceConnection ci : device.getDeviceConnections()) {
                 if (ci instanceof DeviceConnectionUDP)
                     ports.add(((DeviceConnectionUDP) ci).getListenPort());
             }
+            device.releaseDevice();
             startUDPDiscoveryThreads(ports);
         }
     }
@@ -699,12 +703,14 @@ final public class AnelPlugin implements PluginInterface {
         }
 
         int http_port = 80;
-        for (DeviceConnection deviceConnection : device.DeviceConnections) {
+        device.lockDevice();
+        for (DeviceConnection deviceConnection : device.getDeviceConnections()) {
             if (deviceConnection instanceof DeviceConnectionHTTP) {
                 http_port = deviceConnection.getDestinationPort();
                 break;
             }
         }
+        device.releaseDevice();
 
         Intent browse = new Intent(Intent.ACTION_VIEW,
                 Uri.parse("http://" + ci.getDestinationHost() + ":" + Integer.valueOf(http_port).toString()));
@@ -722,7 +728,7 @@ final public class AnelPlugin implements PluginInterface {
         if (type != Timer.TYPE_RANGE_ON_WEEKDAYS && type != Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS)
             return null;
 
-        TimerController c = AppData.getInstance().timerController;
+        TimerCollection c = AppData.getInstance().timerCollection;
         List<Timer> available_timers = c.getAvailableDeviceAlarms();
         for (Timer available : available_timers) {
             // Find alarm for the selected port
@@ -743,7 +749,7 @@ final public class AnelPlugin implements PluginInterface {
         final String getData = "dd.htm?DD" + String.valueOf(timer.port.id);
         final int timerNumber = (int) (timer.id >> 8) & 255;
         // Get the timerController object. We will add received alarms to that instance.
-        final TimerController timerController = AppData.getInstance().timerController;
+        final TimerCollection timerCollection = AppData.getInstance().timerCollection;
         final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) timer.port.device.getFirstReachableConnection("HTTP");
         if (ci == null)
             return;
@@ -791,7 +797,7 @@ final public class AnelPlugin implements PluginInterface {
                             callback.httpRequestResult(port, callback_success, response_message);
 
                         try {
-                            timerController.alarmsFromPlugin(extractAlarms(port, response_message));
+                            timerCollection.alarmsFromPlugin(extractAlarms(port, response_message));
                         } catch (SAXException | IOException e) {
                             e.printStackTrace();
                         }

@@ -33,8 +33,8 @@
     <string name="device_password">Passwort</string>
     <string name="device_save_without_test">Das Gerät ist mit diesen Einstellungen noch nicht getestet worden. Dennoch speichern?</string>
 
-    <string name="device_add">Neues Gerät</string>
-    <string name="scene_add">Neue Szene</string>
+    <string name="device_add">Neues Gerät…</string>
+    <string name="scene_add">Neue Szene…</string>
     <string name="remove_all">Entferne alle Einträge</string>
     <string name="refresh">Aktualisieren</string>
 
@@ -317,10 +317,9 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_nfc_bind_summary">Öffnet diese App bei Kontakt mit dem beschriebenem NFC Tag</string>
     <string name="outlet_edit_title">Bearbeite %1$s</string>
     <string name="outlet_name_label">Name</string>
-    <string name="outlet_icons_label">Zustandsgrafiken</string>
     <string name="outlet_groups_label">Gruppen</string>
-    <string name="outlet_icon_off_label">Aus:</string>
-    <string name="outlet_icon_on_label">An:</string>
+    <string name="outlet_icon_off_label">Zustandsgrafik Aus</string>
+    <string name="outlet_icon_on_label">Zustandsgrafik An</string>
     <string name="error_rename_only_with_http_connection">Umbenennen nur mit HTTP Verbindung möglich</string>
     <string name="notification_title_changelog">App aktualisiert auf Version %1$s</string>
     <string name="widget_inProgress">Warte</string>
@@ -355,13 +354,25 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="feedback_add_disclaimer">If you submit this entry, it will be visible to all users of the app!</string>
     <string name="app_name_disclaimer">Dies ist eine Quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
     <string name="feedback_contact_me">Kontaktieren Sie mich um Probleme mit der App oder Fragen schnell zu klären. Möchten Sie ein allgemein einsehbares Feedback hinterlassen, benutzen Sie bitte Google Play.</string>
-    <string name="feedback_add_description">Sie haben hier die Möglichkeit Verbesserungsvorschläge und Wünsche zu äußern. Diese sind für alle Nutzer und den Entwickler der Anwendung sichtbar. Wünsche können nachträglich von jedem bearbeitet werden (auf Vertrauensbasis!).</string>
+    <string name="feedback_add_description">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger. Ihr Feedback ist dann ausdrücklich erwünscht, damit die normale Version möglichst stabil erscheinen kann.</string>
     <string name="feedback_btn_add">Anregung hinzufügen</string>
     <string name="feedback_btn_edit">Anregung editieren</string>
     <string name="feedback_add_failed">Hinzufügen nicht erfolgreich!</string>
     <string name="drawer_change_view_type">Ansichtsmodus</string>
     <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
     <string name="outlets_view_type_list">Als Liste</string>
+    <string name="error_plugin_api_version_missmatch">Plugin to old. Version missmatch!</string>
+    <string name="error_scene_save_failed">Failed to save scene!</string>
+    <string name="error_scene_icon_save_failed">Scene icon save failed!</string>
+    <string name="open_source_licenses">Verwendete Open Source Software</string>
+    <string name="outlets_view_type_compact">Kompakte Ansicht</string>
+    <string name="outlets_view_type_extended">Erweiterte Ansicht</string>
+    <string name="feedback_google_plus">Google Plus Gruppe</string>
+    <string name="enter_beta">BETA Version</string>
+    <string name="group_add_items">Gruppe füllen…</string>
+    <string name="help_groups">Um Elemente einer Gruppe hinzuzufügen, wechsel in die Übersicht und berühre das Werkzeug Symbol. Im folgendem Dialog kannst du dem Element Gruppen zuweisen.</string>
+    <string name="label_title"><u>Titel</u></string>
+    <string name="groups_assigned">Ansichtsgruppen</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

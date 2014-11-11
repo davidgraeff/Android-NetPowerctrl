@@ -103,7 +103,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
             case TypeToggle:
                 view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_edit_scene_switch, viewGroup, false);
                 break;
-            case TypeButton:
+            case TypeStateless:
             case TypeUnknown:
             default:
                 view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_edit_scene, viewGroup, false);
@@ -122,7 +122,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
         viewHolder.title.setEnabled(port.isEnabled());
 
         if (viewHolder.subtitle != null) {
-            viewHolder.subtitle.setText(port.device.DeviceName);
+            viewHolder.subtitle.setText(port.device.getDeviceName());
         }
 
         ExecutableType type = port.getType();

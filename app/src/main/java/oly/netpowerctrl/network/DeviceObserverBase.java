@@ -73,7 +73,7 @@ public abstract class DeviceObserverBase {
             if (device_to_observe.getUniqueDeviceID() == null) {
                 if (device_to_observe.hasAddress(device.getHostnameIPs(false), false)) {
                     device_to_observe.setUniqueDeviceID(device.getUniqueDeviceID());
-                    device_to_observe.setStatusMessageAllConnections(null);
+                    device_to_observe.clearStatusMessageAllConnections();
                     it.remove();
                     if (target != null)
                         target.onObserverDeviceUpdated(device);
@@ -93,7 +93,7 @@ public abstract class DeviceObserverBase {
         Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
             Device device = it.next();
-            boolean eq = device_name.equals(device.DeviceName);
+            boolean eq = device_name.equals(device.getDeviceName());
             if (eq) {
                 it.remove();
                 if (target != null)
@@ -163,8 +163,10 @@ public abstract class DeviceObserverBase {
         // may be added later by a broadcast response. Out of the same reason we allow
         // devices without a unique id (MAC address) if only the hostname is known.
         // But we do not allow a device without a unique id and without a hostname.
-        if (device.getUniqueDeviceID() == null && device.DeviceConnections.isEmpty()) {
+        if (device.getUniqueDeviceID() == null && device.hasNoConnections()) {
+            device.lockDevice();
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_incomplete));
+            device.releaseDevice();
             timeout_devices.add(device);
             AppData.getInstance().updateExistingDevice(device);
             return countWait.get();
@@ -173,13 +175,15 @@ public abstract class DeviceObserverBase {
         // If the device has connections we have to check now for hostname->ip resolving.
         // This can only be done in another thread.
         boolean needResolve = false;
-        for (final DeviceConnection connection : device.DeviceConnections) {
+        device.lockDevice();
+        for (final DeviceConnection connection : device.getDeviceConnections()) {
             if (connection.needResolveName()) {
                 resetTimeout = true; // we need more time
                 needResolve = true;
                 break;
             }
         }
+        device.releaseDevice();
 
         if (resetTimeout) {
             mainLoopHandler.removeCallbacks(timeoutRunnable);
@@ -233,7 +237,9 @@ public abstract class DeviceObserverBase {
 
         @Override
         public void run() {
-            List<DeviceConnection> connections = new ArrayList<>(device.DeviceConnections);
+            device.lockDevice();
+            List<DeviceConnection> connections = new ArrayList<>(device.getDeviceConnections());
+            device.releaseDevice();
             for (final DeviceConnection connection : connections) {
                 if (connection.needResolveName()) {
                     try {

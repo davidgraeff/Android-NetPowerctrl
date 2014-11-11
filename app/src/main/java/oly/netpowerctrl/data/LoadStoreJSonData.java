@@ -72,7 +72,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
         appData.deviceCollection.setStorage(this);
         appData.sceneCollection.setStorage(this);
         appData.groupCollection.setStorage(this);
-        appData.timerController.setStorage(this);
+        appData.timerCollection.setStorage(this);
 
         new AsyncTask<Void, Void, Boolean>() {
 
@@ -112,7 +112,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
         appData.deviceCollection.setStorage(null);
         appData.sceneCollection.setStorage(null);
         appData.groupCollection.setStorage(null);
-        appData.timerController.setStorage(null);
+        appData.timerCollection.setStorage(null);
     }
 
     private <COLLECTION, ITEM extends StorableInterface>
@@ -138,13 +138,21 @@ public class LoadStoreJSonData implements onStorageUpdate {
                 collection.getItems().add(item);
             } catch (IOException e) {
                 e.printStackTrace();
+                failedToRead(e, file, item);
             } catch (ClassNotFoundException e) {
                 if (keepOnFailure)
                     e.printStackTrace();
-                else if (!file.delete())
-                    Log.e("readOtherThreadCollection", "Failed to delete " + file.getAbsolutePath());
+                else
+                    failedToRead(e, file, item);
             }
         }
+    }
+
+    private <ITEM> void failedToRead(Exception e, File file, ITEM item) {
+        InAppNotifications.silentException(e);
+        InAppNotifications.FromOtherThread(App.instance, "Failed to read " + item.getClass().getSimpleName());
+        if (!file.delete())
+            Log.e("readOtherThreadCollection", "Failed to delete " + file.getAbsolutePath());
     }
 
     private void readOtherThread(final AppData appData) {
@@ -167,7 +175,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
         }
 
         try {
-            readOtherThreadCollection(appData.timerController, Timer.class, false);
+            readOtherThreadCollection(appData.timerCollection, Timer.class, false);
         } catch (IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }
@@ -233,9 +241,9 @@ public class LoadStoreJSonData implements onStorageUpdate {
                 InAppNotifications.FromOtherThread(context, R.string.error_reading_groups);
             }
             try {
-                fromJSON(appData.timerController.getItems(), JSONHelper.getReader(prefs.getString("alarms", null)), Timer.class);
-                if (appData.timerController.getItems().size() > 0)
-                    appData.timerController.saveAll();
+                fromJSON(appData.timerCollection.getItems(), JSONHelper.getReader(prefs.getString("alarms", null)), Timer.class);
+                if (appData.timerCollection.getItems().size() > 0)
+                    appData.timerCollection.saveAll();
             } catch (IOException | InstantiationException | IllegalAccessException ignored) {
                 InAppNotifications.FromOtherThread(context, R.string.error_reading_alarms);
             }

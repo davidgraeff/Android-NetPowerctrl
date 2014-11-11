@@ -65,7 +65,7 @@ public class DevicesAutomaticDialog extends DialogFragment implements onCreateDe
         Device device = deviceList.get(current);
 
         ++current;
-        textView.append("Check " + device.DeviceName + "...\n");
+        textView.append("Check " + device.getDeviceName() + "...\n");
 
         PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
         if (pluginInterface == null) {
@@ -105,7 +105,7 @@ public class DevicesAutomaticDialog extends DialogFragment implements onCreateDe
                 public void run() {
                     AppData d = AppData.getInstance();
                     // Add to group with name DeviceName
-                    UUID group = d.groupCollection.add(deviceToAdd.DeviceName);
+                    UUID group = d.groupCollection.add(deviceToAdd.getDeviceName());
                     Iterator<DevicePort> devicePortIterator = deviceToAdd.getDevicePortIterator();
                     while (devicePortIterator.hasNext())
                         devicePortIterator.next().groups.add(group);

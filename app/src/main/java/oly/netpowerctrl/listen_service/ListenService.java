@@ -263,6 +263,8 @@ public class ListenService extends Service {
 
         observersServiceModeChanged.onServiceModeChanged(true);
 
+        AppData.observersDataQueryCompleted.resetDataQueryCompleted();
+
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterNetworkReducedState(this);
 
@@ -286,7 +288,7 @@ public class ListenService extends Service {
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterFullNetworkState(this, null);
 
-        AppData.getInstance().deviceCollection.setHasChangedAll();
+        //AppData.getInstance().deviceCollection.setHasChangedAll();
 
         if (!isNetworkChangedListener) {
             if (SharedPrefs.getInstance().logEnergySaveMode())
@@ -337,7 +339,7 @@ public class ListenService extends Service {
         for (Device device : deviceCollection.getItems()) {
             if (device.getPluginInterface() != plugin && device.pluginID.equals(plugin.getPluginID())) {
                 device.setPluginInterface(plugin);
-                device.setHasChanged();
+                device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
                 AppData.getInstance().updateExistingDevice(device);
             }
         }
@@ -362,7 +364,7 @@ public class ListenService extends Service {
             if (plugin == null || device.getPluginInterface() == plugin) {
                 device.setPluginInterface(null);
                 device.setStatusMessageAllConnections(getString(R.string.error_plugin_not_installed));
-                device.setHasChanged();
+                device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
                 AppData.getInstance().updateExistingDevice(device);
             }
         }

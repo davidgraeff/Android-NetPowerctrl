@@ -124,6 +124,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
         switch (action) {
             case AddAction:
+            case ConnectionUpdateAction:
             case UpdateAction:
                 // First remove all device connections and the device
                 int start = -1, range = 0;
@@ -180,10 +181,13 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
     private int addDeviceToList(Device device, int startIndex) {
         mList.add(startIndex++, new DeviceAdapterItem(device));
         if (showConnections) {
-            for (int i = 0; i < device.DeviceConnections.size(); ++i) {
-                mList.add(startIndex++, new DeviceAdapterItem(device.DeviceConnections.get(i), i));
+            device.lockDevice();
+            int s = device.getDeviceConnections().size();
+            for (int i = 0; i < s; ++i) {
+                mList.add(startIndex++, new DeviceAdapterItem(device.getConnectionByID(i), i));
             }
-            return 1 + device.DeviceConnections.size(); // amount of connections plus the device itself
+            device.releaseDevice();
+            return 1 + s; // amount of connections plus the device itself
         } else
             return 1;
     }
@@ -209,9 +213,9 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
          */
         public DeviceAdapterItem(Device device) {
             if (!device.isConfigured())
-                this.title = App.getAppString(R.string.device_new, device.DeviceName);
+                this.title = App.getAppString(R.string.device_new, device.getDeviceName());
             else
-                this.title = device.DeviceName;
+                this.title = device.getDeviceName();
 
             this.subtitle = device.getFeatureString();
             this.isDeviceHeader = true;

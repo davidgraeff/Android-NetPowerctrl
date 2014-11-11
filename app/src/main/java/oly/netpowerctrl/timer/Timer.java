@@ -112,7 +112,7 @@ public class Timer implements StorableInterface {
     public String toString(Context context) {
         String pre = "";
         if (port != null)
-            pre = port.device.DeviceName + ": " + port.getTitle(context) + " - ";
+            pre = port.device.getDeviceName() + ": " + port.getTitle(context) + " - ";
 
         switch (type) {
             case TYPE_RANGE_ON_WEEKDAYS:
@@ -129,7 +129,7 @@ public class Timer implements StorableInterface {
 
     public String getTargetName() {
         if (port != null)
-            return port.device.DeviceName + ": " + port.getTitle(null);
+            return port.device.getDeviceName() + ": " + port.getTitle(null);
         else
             return "";
     }
@@ -153,7 +153,7 @@ public class Timer implements StorableInterface {
     private void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("id").value(id);
-        writer.name("port_id").value(port_id.toString());
+        writer.name("port_id").value(port_id);
         writer.name("deviceAlarm").value(deviceAlarm);
         writer.name("freeDeviceAlarm").value(freeDeviceAlarm);
         writer.name("enabled").value(enabled);
@@ -249,7 +249,7 @@ public class Timer implements StorableInterface {
 
         timer.port = AppData.getInstance().findDevicePort(timer.port_id);
         if (timer.port == null)
-            throw new ClassNotFoundException();
+            throw new ClassNotFoundException(timer.toString());
     }
 
     @Override

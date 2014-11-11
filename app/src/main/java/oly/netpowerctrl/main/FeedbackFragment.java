@@ -9,26 +9,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.ui.ChangeLogUtil;
 import oly.netpowerctrl.utils.GithubAndCloudant;
 
-public class FeedbackFragment extends Fragment implements GithubAndCloudant.IGithubNewIssue {
-    private LinearLayout wishes_layout;
-    private Map<Integer, View> number_to_view = new TreeMap<>();
-
+public class FeedbackFragment extends Fragment {
     public FeedbackFragment() {
     }
 
@@ -108,19 +98,30 @@ public class FeedbackFragment extends Fragment implements GithubAndCloudant.IGit
             }
         });
 
-        wishes_layout = (LinearLayout) view.findViewById(R.id.layout);
-
-        view.findViewById(R.id.issue_add).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.open_source_license).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String t = "{\n" +
-                        "  \"title\": \"Found a bug\",\n" +
-                        "  \"body\": \"I'm having a problem with this.\",\n" +
-                        "  \"labels\": [\n" +
-                        "    \"enhancement\"\n" +
-                        "  ]\n" +
-                        "}";
-                GithubAndCloudant.newIssues(t, FeedbackFragment.this);
+                @SuppressWarnings("ConstantConditions")
+                Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/davidgraeff/Android-NetPowerctrl/wiki/used_software"));
+                getActivity().startActivity(browse);
+            }
+        });
+
+        view.findViewById(R.id.feedback_google_plus).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                @SuppressWarnings("ConstantConditions")
+                Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse("https://plus.google.com/communities/100828661972389152711"));
+                getActivity().startActivity(browse);
+            }
+        });
+
+        view.findViewById(R.id.beta).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                @SuppressWarnings("ConstantConditions")
+                Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/apps/testing/oly.netpowerctrl"));
+                getActivity().startActivity(browse);
             }
         });
         return view;
@@ -129,31 +130,6 @@ public class FeedbackFragment extends Fragment implements GithubAndCloudant.IGit
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        GithubAndCloudant.getOpenIssues(this, true, "enhancement");
     }
 
-    @Override
-    public void gitHubOpenIssuesUpdated(int count, long last_access) {
-
-    }
-
-    @Override
-    public void gitHubIssue(int number, String title, String body) {
-        CardView.LayoutParams l = new CardView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        @SuppressWarnings("ConstantConditions")
-        LayoutInflater li = LayoutInflater.from(getView().getContext());
-        View v = li.inflate(R.layout.fragment_feedback_add, wishes_layout, false);
-        ((TextView) v.findViewById(R.id.title)).setText(title);
-        ((TextView) v.findViewById(R.id.text)).setText(body);
-        ((Button) v.findViewById(R.id.issue_add)).setText(R.string.feedback_btn_edit);
-        number_to_view.put(number, v);
-
-        wishes_layout.addView(v, l);
-    }
-
-    @Override
-    public void newIssueResponse(boolean success) {
-        if (!success)
-            Toast.makeText(getActivity(), R.string.feedback_add_failed, Toast.LENGTH_SHORT).show();
-    }
 }

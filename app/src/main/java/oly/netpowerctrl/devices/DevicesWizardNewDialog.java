@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -59,11 +60,15 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
         EditText textView;
 
         List<Device> devices = AppData.getInstance().deviceCollection.getItems();
-        for (Device device : devices)
-            for (DeviceConnection deviceConnection : device.DeviceConnections) {
+        for (Device device : devices) {
+            device.lockDevice();
+            for (DeviceConnection deviceConnection : device.getDeviceConnections()) {
                 ip_autocomplete.remove(deviceConnection.mHostName);
                 ip_autocomplete.add(deviceConnection.mHostName);
             }
+            device.releaseDevice();
+        }
+
         AutoCompleteTextView iptext = (AutoCompleteTextView) view.findViewById(R.id.device_host);
         iptext.setAdapter(ip_autocomplete);
 
@@ -79,10 +84,10 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
         Device device = editDevice.getDevice();
 
         textView = (EditText) view.findViewById(R.id.device_username);
-        textView.setText(device.UserName);
+        textView.setText(device.getUserName());
 
         textView = (EditText) view.findViewById(R.id.device_password);
-        textView.setText(device.Password);
+        textView.setText(device.getPassword());
 
         toast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
 
@@ -175,25 +180,32 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
         }
 
         Device device = editDevice.getDevice();
+        device.lockDevice();
 
         device.makeTemporaryDevice();
-        device.DeviceConnections.clear();
+        device.getDeviceConnections().clear();
+
+        List<DeviceConnection> deviceConnectionList = new ArrayList<>();
 
         DeviceConnection deviceConnection = new DeviceConnectionHTTP(device, hostname, httpPort);
-        deviceConnection.setIsAssignedByDevice(true);
-        device.addConnection(deviceConnection);
+        deviceConnection.makeAssignedByDevice();
+        deviceConnectionList.add(deviceConnection);
 
         deviceConnection = new DeviceConnectionUDP(device, hostname, udpReceive, udpSend);
-        deviceConnection.setIsAssignedByDevice(true);
-        device.addConnection(deviceConnection);
+        deviceConnection.makeAssignedByDevice();
+        deviceConnectionList.add(deviceConnection);
+
+        device.replaceAutomaticAssignedConnections(deviceConnectionList);
 
         textView = (TextView) getDialog().findViewById(R.id.device_username);
-        device.UserName = textView.getText().toString();
+        device.setUserName(textView.getText().toString());
 
         textView = (TextView) getDialog().findViewById(R.id.device_password);
-        device.Password = textView.getText().toString();
+        device.setPassword(textView.getText().toString());
 
-        if (ip_autocomplete.getPosition(device.DeviceConnections.get(0).mHostName) != -1) {
+        device.releaseDevice();
+
+        if (ip_autocomplete.getPosition(hostname) != -1) {
             Toast.makeText(getActivity(), R.string.device_already_exist, Toast.LENGTH_SHORT).show();
             return;
         }

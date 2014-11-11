@@ -141,7 +141,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
         } else {
             if (scene_uuid != null) {
                 Log.e("serviceAndDataReady", scene_uuid);
-                scene = AppData.getInstance().sceneCollection.get(scene_uuid);
+                scene = AppData.getInstance().sceneCollection.findScene(scene_uuid);
             } else if (scene_json != null) {
                 // Extract scene from extra bundle
                 try {
@@ -206,7 +206,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
     @Override
     public void onObserverJobFinished(List<Device> timeout_devices) {
         for (Device di : timeout_devices) {
-            Toast.makeText(this, getString(R.string.error_timeout_device, di.DeviceName), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.error_timeout_device, di.getDeviceName()), Toast.LENGTH_SHORT).show();
         }
 
         if (enable_feedback) {

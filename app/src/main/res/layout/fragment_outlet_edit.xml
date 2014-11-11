@@ -1,82 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:animateLayoutChanges="true"
-        android:orientation="vertical"
-        android:padding="@dimen/list_inner_padding">
+        android:background="?attr/activity_background">
 
-        <!--  alarm_device_port -->
-        <TextView
-            android:id="@+id/outlet_name_label"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/outlet_name_label" />
-
-        <EditText
-            android:id="@+id/outlet_name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:text="@string/alarm_type_weekdays" />
-
-        <TextView
-            android:id="@+id/outlet_icons_label"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/outlet_icons_label" />
-
-        <LinearLayout
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:animateLayoutChanges="true"
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/outlet_icon_off_label" />
+            <include
+                layout="@layout/executable_edit_top"
+                android:layout_width="match_parent"
+                android:layout_height="100dp" />
 
-            <ImageButton
-                android:id="@+id/outlet_icon_off"
-                style="?colored_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:contentDescription="@string/menu_help" />
+            <include layout="@layout/executable_groups" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/groups_container"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/outlet_icon_on_label" />
+                android:layout_gravity="center"
+                android:padding="@dimen/list_outer_padding"
+                card_view:cardBackgroundColor="?cards_background"
+                card_view:cardCornerRadius="4dp"
+                card_view:cardElevation="5dp">
 
-            <ImageButton
-                android:id="@+id/outlet_icon_on"
-                style="?colored_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:contentDescription="@string/menu_help" />
+                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="vertical"
+                    android:padding="@dimen/list_inner_padding">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/outlet_icon_off_label"
+                        android:textAppearance="@android:style/TextAppearance.Large" />
+
+                    <ImageButton
+                        android:id="@+id/outlet_icon_off"
+                        style="?colored_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:contentDescription="@string/menu_help" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/outlet_icon_on_label"
+                        android:textAppearance="@android:style/TextAppearance.Large" />
+
+                    <ImageButton
+                        android:id="@+id/outlet_icon_on"
+                        style="?colored_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:contentDescription="@string/menu_help" />
+
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
 
         </LinearLayout>
+    </ScrollView>
 
-        <TextView
-            android:id="@+id/outlet_groups_label"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/outlet_groups_label" />
+    <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/btnOk"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        app:mainColor="?attr/floating_button_color" />
 
-        <com.wefika.flowlayout.FlowLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/groups_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start|top">
-
-        </com.wefika.flowlayout.FlowLayout>
-
-    </LinearLayout>
-</ScrollView>
+</RelativeLayout>

@@ -115,6 +115,6 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
 
     public void setHasChangedAll() {
         for (Device existing_device : items)
-            existing_device.setHasChanged();
+            existing_device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY | Device.CHANGE_DEVICE | Device.CHANGE_DEVICE_REACHABILITY);
     }
 }

@@ -34,8 +34,9 @@ public class ExecutablesSourceScenes extends ExecutablesSourceBase implements on
             automaticUpdatesDisable();
         } else {
             List<Scene> scenes = AppData.getInstance().sceneCollection.getItems();
+            hideNotReachable = false;
             for (Scene scene : scenes)
-                if (scene.isReachable())
+                if (!hideNotReachable || scene.isReachable())
                     adapter.addItem(scene, DevicePort.TOGGLE);
         }
     }
@@ -76,7 +77,8 @@ public class ExecutablesSourceScenes extends ExecutablesSourceBase implements on
         if (action == ObserverUpdateActions.RemoveAction) {
             adapter.removeAt(findPositionByUUid(adapter, scene.getUid()));
         } else if (action == ObserverUpdateActions.AddAction || action == ObserverUpdateActions.UpdateAction) {
-            if (scene.isReachable())
+            hideNotReachable = false;
+            if (!hideNotReachable || scene.isReachable())
                 adapter.addItem(scene, DevicePort.TOGGLE);
             else
                 adapter.removeAt(findPositionByUUid(adapter, scene.getUid()));

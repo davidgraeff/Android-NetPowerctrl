@@ -14,7 +14,7 @@ public class SceneFactory {
      *
      * @return List of scene items.
      */
-    public static List<SceneItem> scenesFromList(SceneElementsAdapter adapter) {
+    public static List<SceneItem> sceneItemsFromList(SceneElementsAdapter adapter) {
         List<SceneItem> list_of_scene_items = new ArrayList<>();
         for (ExecutableAdapterItem info : adapter.mItems) {
             if (info.getExecutable() == null) // skip header items

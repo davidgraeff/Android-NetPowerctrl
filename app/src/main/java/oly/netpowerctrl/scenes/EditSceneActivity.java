@@ -1,8 +1,6 @@
 package oly.netpowerctrl.scenes;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -17,16 +15,21 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wefika.flowlayout.FlowLayout;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -43,6 +46,7 @@ import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -61,14 +65,16 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     public static final String EDIT_SCENE_NOT_SHORTCUT = "scenes";
     public static final String LOAD_SCENE = "load";
     public static final String RESULT_SCENE_JSON = "scene";
+    public static final String RESULT_SCENE_BITMAP_TEMP = "scene_bitmap_file_temp";
+    public static final String RESULT_SCENE_BITMAP_FILE_DEST = "scene_bitmap_file_dest";
+    public static final String RESULT_SCENE_REMOVE_UID = "scene_remove_uuid";
     public static final String RESULT_SCENE_UUID = "scene_uuid";
     public static final String RESULT_ACTION_UUID = "action_uuid";
     public static final String RESULT_ACTION_COMMAND = "action_command";
     public static final int REQUEST_CODE = 123123;
-    public static int lastScenePosition = -1;
     // UI widgets
-    Switch show_mainWindow;
-    Switch enable_feedback;
+    CheckBox show_mainWindow;
+    CheckBox enable_feedback;
     boolean[] checked;
     RecyclerViewWithAdapter<ExecutablesListAdapter> availableElements;
     RecyclerViewWithAdapter<SceneElementsAdapter> sceneElements;
@@ -127,6 +133,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 
         // set content view, get references to widgets
         setContentView(R.layout.activity_create_scene);
+        setTitle("");
 
         toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
 
@@ -157,16 +164,16 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             }
         });
 
-        show_mainWindow = (Switch) findViewById(R.id.shortcut_show_mainwindow);
-        enable_feedback = (Switch) findViewById(R.id.shortcut_enable_feedback);
+        show_mainWindow = (CheckBox) findViewById(R.id.shortcut_show_mainwindow);
+        enable_feedback = (CheckBox) findViewById(R.id.shortcut_enable_feedback);
         groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
 
-        toolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestName(scene);
-            }
-        });
+//        toolbar.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                requestName(scene);
+//            }
+//        });
 
         findViewById(R.id.scene_image).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -212,6 +219,21 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             }
         });
 
+        EditText nameEdit = (EditText) findViewById(R.id.scene_name);
+        nameEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                scene.sceneName = s.toString().trim();
+                updateSaveButton();
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
         Handler h = new Handler();
         h.postDelayed(new Runnable() {
             @Override
@@ -221,6 +243,11 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         }, 50);
     }
 
+    @Override
+    public void onBackPressed() {
+        MainActivity.getNavigationController().onBackPressed();
+    }
+
     private void updateFavButton() {
         boolean isFav = scene.isFavourite();
         Resources r = getResources();
@@ -228,33 +255,33 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 : r.getDrawable(android.R.drawable.btn_star_big_off));
     }
 
-    private void requestName(final Scene scene) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-        alert.setTitle(this.getString(R.string.scene_rename));
-
-        final EditText input = new EditText(alert.getContext());
-        input.setText(scene.sceneName);
-        alert.setView(input);
-
-        alert.setPositiveButton(this.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                @SuppressWarnings("ConstantConditions")
-                String name = input.getText().toString();
-                if (name.trim().isEmpty())
-                    return;
-                scene.sceneName = name;
-                onNameChanged();
-            }
-        });
-
-        alert.setNegativeButton(this.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
-
-        alert.show();
-    }
+//    private void requestName(final Scene scene) {
+//        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+//
+//        alert.setTitle(this.getString(R.string.scene_rename));
+//
+//        final EditText input = new EditText(alert.getContext());
+//        input.setText(scene.sceneName);
+//        alert.setView(input);
+//
+//        alert.setPositiveButton(this.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//                @SuppressWarnings("ConstantConditions")
+//                String name = input.getText().toString();
+//                if (name.trim().isEmpty())
+//                    return;
+//                scene.sceneName = name;
+//                onNameChanged();
+//            }
+//        });
+//
+//        alert.setNegativeButton(this.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//            }
+//        });
+//
+//        alert.show();
+//    }
 
     @Override
     public void setIcon(Object context_object, Bitmap icon) {
@@ -282,9 +309,15 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         xferPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
         min -= 10;
 
+        int backColor;
+        if (SharedPrefs.getInstance().isDarkTheme())
+            backColor = Palette.generate(icon).getDarkVibrantColor(getResources().getColor(R.color.colorBackgroundDark));
+        else
+            backColor = Palette.generate(icon).getVibrantColor(getResources().getColor(R.color.colorBackgroundLight));
+
         Paint mButtonPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mButtonPaint.setStyle(Paint.Style.FILL);
-        mButtonPaint.setColor(Color.WHITE);
+        mButtonPaint.setColor(backColor);
         mButtonPaint.setShadowLayer(10f, 5f, 5f, Color.GRAY);
 
         resultCanvas.drawCircle(min, min, min, mButtonPaint);
@@ -309,7 +342,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     }
 
     private void loadContent() {
-        lastScenePosition = -1;
         Intent it = getIntent();
         if (it != null) {
             Bundle extra = it.getExtras();
@@ -321,7 +353,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                     try {
                         scene = new Scene();
                         scene.load(JSONHelper.getReader(scene_string));
-                        lastScenePosition = AppData.getInstance().sceneCollection.indexOf(scene);
                     } catch (IOException | ClassNotFoundException ignored) {
                         scene = null;
                         finish();
@@ -343,8 +374,9 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             btnRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    AppData.getInstance().sceneCollection.removeScene(scene);
-                    setResult(RESULT_OK, null);
+                    Intent intent = new Intent();
+                    intent.putExtra(RESULT_SCENE_REMOVE_UID, scene.getUid());
+                    setResult(RESULT_OK, intent);
                     finish();
                 }
             });
@@ -364,7 +396,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 if (view.getId() != R.id.outlet_list_close)
                     return false;
                 adapter_available.addItem(adapter_included.take(position).getExecutable(), DevicePort.TOGGLE);
-                onNameChanged();
+                updateSaveButton();
                 return true;
             }
         }, null));
@@ -374,12 +406,15 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         availableElements.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
-                DevicePort oi = (DevicePort) adapter_available.getItem(position).getExecutable();
-                if (oi == null)
+                DevicePort devicePort = (DevicePort) adapter_available.getItem(position).getExecutable();
+                if (devicePort == null)
                     return false;
+                if (AppData.getInstance().findDevicePort(devicePort.getUid()) != devicePort) {
+                    throw new RuntimeException("DevicePort not equal!");
+                }
                 adapter_available.removeAt(position);
-                adapter_included.addItem(oi, DevicePort.TOGGLE);
-                onNameChanged();
+                adapter_included.addItem(devicePort, DevicePort.TOGGLE);
+                updateSaveButton();
                 return true;
             }
         }, null));
@@ -429,7 +464,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 
     private void save_and_close() {
         // Generate list of checked items
-        List<SceneItem> sceneItems = SceneFactory.scenesFromList(adapter_included);
+        List<SceneItem> sceneItems = SceneFactory.sceneItemsFromList(adapter_included);
         if (scene.sceneName.isEmpty()) {
             Toast.makeText(this, R.string.error_scene_no_name, Toast.LENGTH_SHORT).show();
             return;
@@ -444,9 +479,8 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         scene.setMaster(adapter_included.getMaster());
 
         if (isSceneNotShortcut) {
-            SceneCollection sceneCollection = AppData.getInstance().sceneCollection;
-            LoadStoreIconData.saveIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon, 128, 128), scene.uuid,
-                    LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown);
+
+            File tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon, 128, 128));
 
             GroupCollection groupCollection = AppData.getInstance().groupCollection;
             scene.groups.clear();
@@ -457,8 +491,16 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 scene.groups.add(groupCollection.get(i).uuid);
             }
 
-            lastScenePosition = sceneCollection.add(scene, false);
-            setResult(RESULT_OK, null);
+            Intent intent = new Intent();
+            intent.putExtra(RESULT_SCENE_JSON, scene.toString());
+            if (tempFilename != null) {
+                File bitmapFileName = LoadStoreIconData.getFilename(this, scene.uuid,
+                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown);
+
+                intent.putExtra(RESULT_SCENE_BITMAP_TEMP, tempFilename.toString());
+                intent.putExtra(RESULT_SCENE_BITMAP_FILE_DEST, bitmapFileName.toString());
+            }
+            setResult(RESULT_OK, intent);
         } else {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
                     scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
@@ -489,20 +531,21 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     public void onNameChanged() {
         String sceneName = scene.sceneName;
 
-        if (sceneName.length() == 0)
-            sceneName = getString(R.string.title_scene_no_name);
+//        if (sceneName.length() == 0)
+//            sceneName = getString(R.string.title_scene_no_name);
 
-        //TextView textView = (TextView) findViewById(R.id.scene_name);
-        //textView.setText(sceneName);
-        getSupportActionBar().setTitle(sceneName);
+        TextView textView = (TextView) findViewById(R.id.scene_name);
+        textView.setText(sceneName);
+        //getSupportActionBar().setTitle(sceneName);
 
+        ActionBar actionBar = getSupportActionBar();
         if (isSceneNotShortcut) {
             if (isLoaded) {
-                setTitle(R.string.title_scene_edit);
+                actionBar.setSubtitle(R.string.title_scene_edit);
             } else
-                setTitle(R.string.title_scene_create);
+                actionBar.setSubtitle(R.string.title_scene_create);
         } else {
-            setTitle(R.string.title_shortcut);
+            actionBar.setSubtitle(R.string.title_shortcut);
         }
 
         //noinspection ConstantConditions

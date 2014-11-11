@@ -9,8 +9,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URLEncoder;
-import java.util.Map;
-import java.util.TreeMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -42,25 +40,34 @@ public class AnelPluginHttp {
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
                     ci.device.setStatusMessage(ci, ListenService.getService().getString(R.string.error_packet_received), true);
                 } else {
+                    { // Device Lock
+                        device.lockDevice();
 
-                    // The name is the second ";" separated entry of the response_message.
-                    device.DeviceName = data[1].trim();
-                    // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
-                    // on the existing device.
-                    Map<Integer, DevicePort> ports = new TreeMap<>();
-                    for (int i = 0; i < 8; ++i) {
-                        DevicePort port = new DevicePort(device, ExecutableType.TypeToggle);
-                        port.id = i + 1; // 1-based
-                        port.setTitle(data[10 + i].trim());
-                        port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
-                        port.Disabled = data[30 + i].equals("1");
-                        ports.put(port.id, port);
+                        // The name is the second ";" separated entry of the response_message.
+                        device.setDeviceName(data[1].trim());
+                        ci.device.connectionUsed(ci);
+
+                        device.releaseDevice();
+                    }
+                    { // DevicePorts Lock
+                        device.lockDevicePorts();
+                        device.makeAllDevicePortsInvalid();
+
+                        // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
+                        // on the existing device.
+                        for (int i = 0; i < 8; ++i) {
+                            DevicePort port = new DevicePort(device, ExecutableType.TypeToggle);
+                            port.id = i + 1; // 1-based
+                            port.setTitle(data[10 + i].trim());
+                            port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
+                            port.Disabled = data[30 + i].equals("1");
+                            device.updatePort(port);
+                        }
+
+                        device.removeInvalidDevicePorts();
+                        device.releaseDevicePorts();
                     }
 
-                    // If values have changed, update now
-                    ci.connectionUsed();
-                    device.copyFreshDevicePorts(ports);
-                    device.setHasChanged();
                 }
             }
             AppData.getInstance().updateExistingDeviceFromOtherThread(device);
@@ -74,8 +81,8 @@ public class AnelPluginHttp {
             new HttpThreadPool.HTTPCallback<DeviceConnectionHTTP>() {
                 @Override
                 public void httpResponse(DeviceConnectionHTTP ci, boolean callback_success, String response_message) {
-                    ci.connectionUsed();
                     final Device device = ci.getDevice();
+                    device.connectionUsed(ci);
                     if (!callback_success) {
                         ci.device.setStatusMessage(ci, response_message, true);
                         AppData.getInstance().updateExistingDeviceFromOtherThread(device);

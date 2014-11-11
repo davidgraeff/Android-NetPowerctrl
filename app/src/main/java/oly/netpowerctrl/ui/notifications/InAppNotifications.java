@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -81,19 +82,17 @@ public class InAppNotifications {
         ACRA.getErrorReporter().handleSilentException(exception);
     }
 
-    public static void updatePermanentNotification(Activity activity, PermanentNotification newPermanentNotification) {
+    public static void updatePermanentNotification(@NonNull Activity activity, @NonNull PermanentNotification newPermanentNotification) {
         Toolbar toolbar = (Toolbar) activity.findViewById(R.id.toolbar_bottom_actionbar);
         if (toolbar == null) {
-            return;
+            throw new RuntimeException("No toolbar for notifications found!");
         }
 
         // If toolbar is visible -> there is still a notification shown. Add this new one to a backlog list.
         if (toolbar.getVisibility() == View.VISIBLE) {
-            if (newPermanentNotification != null)
-                permanentNotifications.add(newPermanentNotification);
+            permanentNotifications.add(newPermanentNotification);
             return;
-        } else if (permanentNotifications.size() == 0 && newPermanentNotification == null)
-            return;
+        }
 
         AnimationController.animateBottomViewIn(toolbar);
 

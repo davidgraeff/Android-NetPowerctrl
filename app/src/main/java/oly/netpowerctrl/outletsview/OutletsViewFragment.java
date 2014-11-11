@@ -26,7 +26,12 @@ import android.view.animation.ScaleAnimation;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +40,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconCacheCleared;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
@@ -63,6 +69,7 @@ import oly.netpowerctrl.ui.widgets.EnhancedSwipeRefreshLayout;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.ui.widgets.SlidingTabLayout;
 import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.Streams;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 
 /**
@@ -125,6 +132,12 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         this.refreshNow();
     }
 
+    @Override
+    public void onIconCacheCleared() {
+        if (mRecyclerView != null)
+            mRecyclerView.setAdapter(getAdapter());
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -142,12 +155,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     mRecyclerView.setAdapter(adapter);
                 }
             };
-
-    @Override
-    public void onIconCacheCleared() {
-        if (mRecyclerView != null)
-            mRecyclerView.setAdapter(getAdapter());
-    }
 
     public ExecuteAdapter getAdapter() {
         return adapter;
@@ -284,10 +291,18 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         PopupMenu popup = new PopupMenu(getActivity(), clickedView);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.outlet_adds, popup.getMenu());
+        popup.getMenu().findItem(R.id.menu_add_items_to_group).setVisible(groupFilter != null);
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
+                    case R.id.menu_add_items_to_group:
+                        //noinspection ConstantConditions
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle(R.string.menu_help)
+                                .setMessage(R.string.help_groups)
+                                .setIcon(android.R.drawable.ic_menu_help).show();
+                        return true;
                     case R.id.menu_add_group:
                         GroupUtilities.createGroup(getActivity());
                         return true;
@@ -374,6 +389,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         { // Swiping
             final SwipeMoveAnimator.DismissCallbacks dismissCallbacks = new SwipeMoveAnimator.DismissCallbacks() {
                 private Animation animation = null;
+                private boolean allowSwipe;
 
                 @Override
                 public void onSwipeComplete(boolean fromLeftToRight, boolean finished) {
@@ -399,7 +415,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     disableClicks = true;
                     int pos = slidingTabLayout.getCurrentPosition();
 
-                    boolean allowSwipe = !(fromLeftToRight && pos == 0 || !fromLeftToRight && pos == slidingTabLayout.getCount() - 1);
+                    allowSwipe = !(fromLeftToRight && pos == 0 || !fromLeftToRight && pos == slidingTabLayout.getCount() - 1);
 
                     if (animation != null)
                         animation.cancel();
@@ -451,29 +467,30 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         ExecutablesSourceChain executablesSourceChain = new ExecutablesSourceChain();
 
         adapterSource = new ExecutablesSourceDevicePorts(executablesSourceChain);
-        adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
-        adapterSource.setAutomaticUpdate(true);
-
         ExecutablesSourceGroups groupSource = new ExecutablesSourceGroups(executablesSourceChain);
-        groupSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
-        groupSource.setAutomaticUpdate(true);
-
         ExecutablesSourceScenes sceneSource = new ExecutablesSourceScenes(executablesSourceChain);
-        sceneSource.setAutomaticUpdate(true);
 
         adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
+        adapter.setGroupFilter(groupFilter);
+
         groupSource.setTargetAdapter(adapter);
         sceneSource.setTargetAdapter(adapter);
+        adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
         adapterSource.setTargetAdapter(adapter);
+        adapterSource.setAutomaticUpdate(true);
 
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
                 checkEmpty(adapter.getItemCount(), groupFilter);
             }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                checkEmpty(adapter.getItemCount(), groupFilter);
+            }
         });
 
-        adapter.setGroupFilter(groupFilter);
         adapterSource.updateNow();
 
         ///// For pull to refresh
@@ -570,7 +587,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         if (not_reachable.size() > 0) {
             String devices = "";
             for (Device di : not_reachable) {
-                devices += di.DeviceName + " ";
+                devices += di.getDeviceName() + " ";
             }
             InAppNotifications.updatePermanentNotification(getActivity(), new TextNotification("not_reachable",
                     getString(R.string.devices_not_reachable, devices), true));
@@ -619,15 +636,19 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     if (executable instanceof DevicePort) {
                         DevicePort devicePort = (DevicePort) executable;
 
-                        OutletEditDialog dialog = (OutletEditDialog) Fragment.instantiate(getActivity(), OutletEditDialog.class.getName());
+                        OutletEditFragment dialog = (OutletEditFragment) Fragment.instantiate(getActivity(), OutletEditFragment.class.getName());
                         dialog.setDevicePort(devicePort, (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position), adapter);
-                        MainActivity.getNavigationController().changeToDialog(getActivity(), dialog);
+                        MainActivity.getNavigationController().changeToFragment(dialog, OutletEditFragment.class.getName());
                     } else if (executable instanceof Scene) {
                         Scene scene = ((Scene) executable);
+                        if (!AppData.getInstance().sceneCollection.getItems().contains(scene)) {
+                            throw new RuntimeException("Scene not in sceneCollection!");
+                        }
+
                         Intent it = new Intent(getActivity(), EditSceneActivity.class);
                         it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
                         it.putExtra(EditSceneActivity.LOAD_SCENE, scene.toString());
-                        startActivity(it);
+                        startActivityForResult(it, EditSceneActivity.REQUEST_CODE);
                     }
                 }
 
@@ -681,9 +702,42 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Receive added/updated/deleted scene from scene activity
         if (requestCode == EditSceneActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            if (EditSceneActivity.lastScenePosition != -1)
-                AppData.getInstance().sceneCollection.changed(EditSceneActivity.lastScenePosition);
+            String tempBitmapFile = data.getStringExtra(EditSceneActivity.RESULT_SCENE_BITMAP_TEMP);
+            String realBitmapFile = data.getStringExtra(EditSceneActivity.RESULT_SCENE_BITMAP_FILE_DEST);
+            String scene_json = data.getStringExtra(EditSceneActivity.RESULT_SCENE_JSON);
+            String scene_remove_uuid = data.getStringExtra(EditSceneActivity.RESULT_SCENE_REMOVE_UID);
+
+            if (scene_remove_uuid != null) {
+                AppData.getInstance().sceneCollection.removeScene(scene_remove_uuid);
+                return;
+            }
+
+            if (scene_json == null) return;
+            Scene scene = new Scene();
+            try {
+                scene.load(JSONHelper.getReader(scene_json));
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+                Toast.makeText(getActivity(), R.string.error_scene_save_failed, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (tempBitmapFile != null && realBitmapFile != null) {
+                try {
+                    File tempFile = new File(tempBitmapFile);
+                    Streams.copy(new FileInputStream(tempFile), new FileOutputStream(new File(realBitmapFile)));
+                    //noinspection ResultOfMethodCallIgnored
+                    tempFile.delete();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), R.string.error_scene_icon_save_failed, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            AppData appData = AppData.getInstance();
+            appData.sceneCollection.add(scene, true);
         } else
             super.onActivityResult(requestCode, resultCode, data);
     }

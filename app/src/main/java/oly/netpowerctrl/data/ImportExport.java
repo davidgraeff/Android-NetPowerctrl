@@ -32,7 +32,7 @@ public class ImportExport {
         loadStoreJSonData.clear(appData.groupCollection);
         loadStoreJSonData.clear(appData.sceneCollection);
         loadStoreJSonData.clear(appData.deviceCollection);
-        loadStoreJSonData.clear(appData.timerController);
+        loadStoreJSonData.clear(appData.timerCollection);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

@@ -30,4 +30,9 @@ public class ExecutablesSourceChain {
             count += base.doCountIfGroup(uuid);
         return count;
     }
+
+    public void setHideNotReachable(boolean hideNotReachable) {
+        for (ExecutablesSourceBase base : list)
+            base.doSetHideNotReachable(hideNotReachable);
+    }
 }

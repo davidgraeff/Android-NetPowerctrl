@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/top_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?colorPrimaryDark" />
+
+    <EditText
+        android:id="@+id/scene_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="50dp"
+        android:hint="@string/title_scene_no_name"
+        android:minWidth="120dp"
+        android:shadowColor="?attr/colorPrimary"
+        android:singleLine="true"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:textColor="?attr/textColorPrimary"
+        android:textColorHighlight="?attr/colorPrimary"
+        android:textColorHint="?attr/colorPrimary"
+        android:textColorLink="?attr/colorPrimary" />
+
+    <TextView
+        android:id="@+id/label_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/scene_name"
+        android:layout_alignLeft="@id/scene_name"
+        android:singleLine="true"
+        android:text="@string/label_title"
+        android:textAppearance="@android:style/TextAppearance.Small"
+        android:textColor="?attr/colorPrimary" />
+
+
+    <ImageView
+        android:id="@+id/btnSceneFavourite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="5dp" />
+
+</RelativeLayout>

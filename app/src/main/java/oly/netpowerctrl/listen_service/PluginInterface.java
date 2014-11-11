@@ -8,7 +8,7 @@ import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.timer.Timer;
-import oly.netpowerctrl.timer.TimerController;
+import oly.netpowerctrl.timer.TimerCollection;
 
 /**
  * This interface defines a plugin
@@ -65,5 +65,5 @@ public interface PluginInterface {
 
     void removeAlarm(Timer timer, final onHttpRequestResult callback);
 
-    void requestAlarms(DevicePort port, TimerController timerController);
+    void requestAlarms(DevicePort port, TimerCollection timerCollection);
 }

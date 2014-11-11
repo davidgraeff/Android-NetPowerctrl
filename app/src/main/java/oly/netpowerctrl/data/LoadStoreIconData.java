@@ -88,7 +88,10 @@ public class LoadStoreIconData {
 
     public static File getImageDirectory(Context context, IconType iconType, IconState state) {
         File dir = new File(context.getFilesDir(), "images");
-        return new File(dir, iconType.name() + state.name());
+        dir = new File(dir, iconType.name() + state.name());
+        if (!dir.mkdirs() && !dir.isDirectory())
+            throw new RuntimeException("Could not create image dir!");
+        return dir;
     }
 
     public static void init(Context context) {
@@ -103,40 +106,44 @@ public class LoadStoreIconData {
         iconLoadingThread.start();
     }
 
-    public static void saveIcon(Context context, Bitmap bitmap, String uuid, IconType iconType, IconState state) {
-        File myDir = getImageDirectory(context, iconType, state);
-        //noinspection ResultOfMethodCallIgnored
-        myDir.mkdirs();
+    @NonNull
+    public static File getFilename(@NonNull Context context,
+                                   @NonNull String uuid, IconType iconType, IconState state) {
+        return new File(getImageDirectory(context, iconType, state), uuid + ".webp");
+    }
 
-        String fileName = uuid;
+    public static File saveTempIcon(Context context, Bitmap bitmap) {
         File file;
-
-        file = new File(myDir, fileName + ".jpg");
-        if (file.exists()) //noinspection ResultOfMethodCallIgnored
-            file.delete();
-        file = new File(myDir, fileName + ".png");
-        if (file.exists()) //noinspection ResultOfMethodCallIgnored
-            file.delete();
-
-        if (bitmap == null) {
-            return;
-
-        }
-        if (bitmap.hasAlpha()) {
-            fileName += ".png";
-        } else {
-            fileName += ".jpg";
+        try {
+            file = File.createTempFile("scene_image", "bitmap", context.getCacheDir());
+            file.deleteOnExit();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Could not create temp file!");
         }
 
         try {
-            FileOutputStream out = new FileOutputStream(new File(myDir, fileName));
-            if (bitmap.hasAlpha())
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            else
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.WEBP, 100, out);
             out.flush();
             out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+        return file;
+    }
+
+    public static void saveIcon(Context context, Bitmap bitmap, String uuid, IconType iconType, IconState state) {
+        File file = getFilename(context, uuid, iconType, state);
+        if (file.exists()) //noinspection ResultOfMethodCallIgnored
+            file.delete();
+
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.WEBP, 100, out);
+            out.flush();
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -184,11 +191,7 @@ public class LoadStoreIconData {
         if (c != null)
             return c;
 
-        File myDir = getImageDirectory(context, iconType, state);
-
-        File file = new File(myDir, uniqueID + ".png");
-        if (!file.exists())
-            file = new File(myDir, uniqueID + ".jpg");
+        File file = getFilename(context, uniqueID, iconType, state);
         if (file.exists())
             c = BitmapFactory.decodeFile(file.getAbsolutePath());
         else {
@@ -222,25 +225,6 @@ public class LoadStoreIconData {
             iconCache.put(hashKey, c);
         return c;
     }
-
-//    public static void saveIcon(Context context, String fileName, IconType iconType, IconState state, InputStream input) {
-//        @SuppressWarnings("ConstantConditions")
-//        File myDir = getImageDirectory(context, iconType, state);
-//
-//        try {
-//            byte[] buffer = new byte[4096]; // To hold file contents
-//            int bytes_read; // How many bytes in buffer
-//            FileOutputStream out = new FileOutputStream(new File(myDir, fileName));
-//            while ((bytes_read = input.read(buffer)) != -1)
-//                // Read until EOF
-//                out.write(buffer, 0, bytes_read); // write
-//            out.flush();
-//            out.close();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public static IconFile[] getAllIcons(Context context) {
 

@@ -16,15 +16,15 @@ import oly.netpowerctrl.data.onCollectionUpdated;
 /**
  * List all alarms of the timer controller
  */
-public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<TimerController, Timer> {
-    private final TimerController controller;
+public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<TimerCollection, Timer> {
+    private final TimerCollection controller;
     private final LayoutInflater inflater;
     private final Context context;
 
-    public TimerAdapter(Context context, TimerController timerController) {
+    public TimerAdapter(Context context, TimerCollection timerCollection) {
         this.context = context;
         inflater = LayoutInflater.from(context);
-        this.controller = timerController;
+        this.controller = timerCollection;
     }
 
     public void remove(int position) {
@@ -149,7 +149,7 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
 
 
     @Override
-    public boolean updated(TimerController timerController, Timer timer, ObserverUpdateActions action, int position) {
+    public boolean updated(TimerCollection timerCollection, Timer timer, ObserverUpdateActions action, int position) {
         notifyDataSetChanged();
         return true;
     }

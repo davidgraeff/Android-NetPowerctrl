@@ -12,13 +12,12 @@ import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
  */
 public class TestObjects {
     static Device createDevice() {
-        Device di = new Device(AnelPlugin.PLUGIN_ID);
-        di.DeviceName = "TestDevice";
+        Device di = new Device(AnelPlugin.PLUGIN_ID, true);
+        di.setDeviceName("TestDevice");
         di.setUniqueDeviceID("aa:bb:cc:dd:ee:ff");
-        di.UserName = "admin";
-        di.Password = "anel";
+        di.setUserName("admin");
+        di.setPassword("anel");
         di.addConnection(new DeviceConnectionUDP(di, "192.168.1.101", 1077, SharedPrefs.getInstance().getDefaultSendPort()));
-        di.setUpdatedNow();
         return di;
     }
 

@@ -28,7 +28,7 @@ import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
-import oly.netpowerctrl.timer.TimerController;
+import oly.netpowerctrl.timer.TimerCollection;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
@@ -47,11 +47,12 @@ public class AppData {
     final public UnconfiguredDeviceCollection unconfiguredDeviceCollection = new UnconfiguredDeviceCollection();
     final public GroupCollection groupCollection = new GroupCollection();
     final public SceneCollection sceneCollection = new SceneCollection();
-    final public TimerController timerController = new TimerController();
+    final public TimerCollection timerCollection = new TimerCollection();
     private final List<DeviceObserverBase> updateDeviceStateList = new ArrayList<>();
     private LoadStoreJSonData loadStoreJSonData = null;
 
     private AppData() {
+        deviceCollection.registerObserver(sceneCollection.deviceObserver);
     }
 
     public static AppData getInstance() {
@@ -99,11 +100,13 @@ public class AppData {
         HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getInstance().getDefaultSendPort());
 
-        for (Device di : deviceCollection.items)
-            for (DeviceConnection ci : di.DeviceConnections)
+        for (Device di : deviceCollection.items) {
+            di.lockDevice();
+            for (DeviceConnection ci : di.getDeviceConnections())
                 if (ci instanceof DeviceConnectionUDP)
                     ports.add(ci.getDestinationPort());
-
+            di.releaseDevice();
+        }
         return ports;
     }
 
@@ -112,11 +115,13 @@ public class AppData {
         HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getInstance().getDefaultReceivePort());
 
-        for (Device di : deviceCollection.items)
-            for (DeviceConnection ci : di.DeviceConnections)
+        for (Device di : deviceCollection.items) {
+            di.lockDevice();
+            for (DeviceConnection ci : di.getDeviceConnections())
                 if (ci instanceof DeviceConnectionUDP)
                     ports.add(((DeviceConnectionUDP) ci).getListenPort());
-
+            di.releaseDevice();
+        }
         return ports;
     }
 
@@ -180,7 +185,7 @@ public class AppData {
         deviceCollection.getItems().clear();
         sceneCollection.getItems().clear();
         groupCollection.getItems().clear();
-        timerController.getItems().clear();
+        timerCollection.getItems().clear();
         observersOnDataLoaded.dataLoaded = false;
     }
 
@@ -232,35 +237,34 @@ public class AppData {
      * Call this by your plugin if a device changed. This method is also called
      * by the DeviceQuery class if devices are not reachable anymore.
      *
-     * @param device_info The changed device
+     * @param updated_device_info The changed device
      */
-    public void updateDevice(Device device_info) {
+    public void updateDevice(Device updated_device_info) {
         // if it matches a configured device, update it's outlet states and exit the method.
-        int position = deviceCollection.getPosition(device_info);
+        int position = deviceCollection.getPosition(updated_device_info);
 
-        if (position != -1) {
-            Device existing_device = deviceCollection.items.get(position);
-            if (existing_device == device_info) {
-                throw new RuntimeException("Same object not allowed here: " + device_info.DeviceName);
-            }
-
-            existing_device.replaceAutomaticAssignedConnections(device_info.DeviceConnections);
-            existing_device.copyValuesFromUpdated(device_info);
-
-            // notify observers who are using the DeviceQuery class (existing device)
-            notifyDeviceQueries(existing_device);
-            if (existing_device.isHasChanged()) {
-                deviceCollection.save(existing_device);
-                //Log.w(TAG, "-- update: " + existing_device.DeviceName + " " + String.valueOf(System.identityHashCode(existing_device)));
-                deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
-            }
+        if (position == -1) {
+            // notify observers who are using the DeviceQuery class (new device)
+            notifyDeviceQueries(updated_device_info);
+            unconfiguredDeviceCollection.add(updated_device_info);
             return;
         }
 
-        // notify observers who are using the DeviceQuery class (new device)
-        notifyDeviceQueries(device_info);
+        Device existing_device = deviceCollection.items.get(position);
+        if (existing_device == updated_device_info) {
+            throw new RuntimeException("Same object not allowed here: " + updated_device_info.getDeviceName());
+        }
 
-        unconfiguredDeviceCollection.add(device_info);
+        existing_device.lockDevice();
+        existing_device.replaceAutomaticAssignedConnections(updated_device_info.getDeviceConnections());
+        existing_device.copyValuesFromUpdated(updated_device_info);
+        existing_device.releaseDevice();
+
+        // notify observers who are using the DeviceQuery class (existing device)
+        notifyDeviceQueries(existing_device);
+
+        int flag = existing_device.getAndClearChangedFlag();
+        if (flag != 0) notifyAfterUpdate(existing_device, position, flag);
     }
 
     /**
@@ -270,18 +274,31 @@ public class AppData {
      */
     public void updateExistingDevice(Device existing_device) {
         notifyDeviceQueries(existing_device);
-        if (existing_device.isHasChanged()) {
-            deviceCollection.save(existing_device);
-            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, deviceCollection.getPosition(existing_device));
 
-            if (!existing_device.isReachable() && SharedPrefs.getInstance().notifyDeviceNotReachable()) {
-                long current_time = System.currentTimeMillis();
-                Toast.makeText(App.instance,
-                        App.getAppString(R.string.error_setting_outlet, existing_device.DeviceName,
-                                (int) ((current_time - existing_device.getUpdatedTime()) / 1000)),
-                        Toast.LENGTH_LONG
-                ).show();
-            }
+        int flag = existing_device.getAndClearChangedFlag();
+        if (flag != 0)
+            notifyAfterUpdate(existing_device, deviceCollection.getPosition(existing_device), flag);
+    }
+
+    private void notifyAfterUpdate(Device existing_device, int position, int flag) {
+        Log.w(TAG, "device " + existing_device.getDeviceName() + " " + String.valueOf(flag));
+
+        if ((flag & Device.CHANGE_DEVICE) != 0) {
+            deviceCollection.save(existing_device);
+            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
+        } else if ((flag & Device.CHANGE_DEVICE_REACHABILITY) != 0) {
+            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
+        } else if ((flag & Device.CHANGE_CONNECTION_REACHABILITY) != 0) {
+            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.ConnectionUpdateAction, position);
+        }
+
+        if (!existing_device.isReachable() && SharedPrefs.getInstance().notifyDeviceNotReachable()) {
+            long current_time = System.currentTimeMillis();
+            Toast.makeText(App.instance,
+                    App.getAppString(R.string.error_setting_outlet, existing_device.getDeviceName(),
+                            (int) ((current_time - existing_device.getUpdatedTime()) / 1000)),
+                    Toast.LENGTH_LONG
+            ).show();
         }
     }
 
@@ -368,7 +385,7 @@ public class AppData {
                 master_command = masterItem.command;
             } else {
                 // If the command is toggle, we have to find out the final command.
-                DevicePort port = AppData.getInstance().findDevicePort(masterItem.uuid);
+                DevicePort port = findDevicePort(masterItem.uuid);
                 if (port == null)
                     master_command = DevicePort.INVALID;
                 else
@@ -377,7 +394,7 @@ public class AppData {
         }
 
         for (SceneItem item : scene.sceneItems) {
-            DevicePort p = getInstance().findDevicePort(item.uuid);
+            DevicePort p = findDevicePort(item.uuid);
             if (p == null) {
                 Log.e(TAG, "Execute scene, DevicePort not found " + item.uuid);
                 continue;

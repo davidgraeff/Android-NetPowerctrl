@@ -44,6 +44,7 @@ public class OutletsViewTypeDialog extends DialogFragment {
 
         rows = 1;
         adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
+        adapterSource.updateNow();
         adapter.setLayoutRes(R.layout.list_item_icon);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list1);
@@ -64,6 +65,7 @@ public class OutletsViewTypeDialog extends DialogFragment {
 
         rows = 2;
         adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
+        adapterSource.updateNow();
         adapter.setLayoutRes(R.layout.grid_item_icon);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list2);
@@ -83,6 +85,7 @@ public class OutletsViewTypeDialog extends DialogFragment {
         });
 
         adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
+        adapterSource.updateNow();
         adapter.setLayoutRes(R.layout.grid_item_icon_center);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list3);
@@ -100,6 +103,7 @@ public class OutletsViewTypeDialog extends DialogFragment {
                 return true;
             }
         });
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.outlet_choose_view_type)

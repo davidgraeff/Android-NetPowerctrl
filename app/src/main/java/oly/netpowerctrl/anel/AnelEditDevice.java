@@ -26,12 +26,12 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
     public AnelEditDevice(String defaultDeviceName, Device di) {
         if (di == null) {
-            device = new Device(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID());
-            device.DeviceName = defaultDeviceName;
+            device = new Device(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID(), true);
+            device.setDeviceName(defaultDeviceName);
             device.setPluginInterface(AnelUDPDeviceDiscoveryThread.anelPlugin);
             // Default values for user and password
-            device.UserName = "admin";
-            device.Password = "anel";
+            device.setUserName("admin");
+            device.setPassword("anel");
         } else {
             device = di;
         }
@@ -104,6 +104,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
         }
 
         if (test_state == TestStates.TEST_REACHABLE) {
+            device.lockDevice();
             // Update stored device with received values
             device.setUniqueDeviceID(updated_device.getUniqueDeviceID());
             // do not copy the deviceName here, just the other values
@@ -113,6 +114,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
             AnelPlugin pi = (AnelPlugin) device.getPluginInterface();
+            device.releaseDevice();
             assert pi != null;
             if (deviceQuery != null) {
                 deviceQuery.addDevice(device, false);
@@ -135,7 +137,9 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
         } else if (test_state == TestStates.TEST_ACCESS) {
             if (listener != null)
                 listener.testFinished(true);
+            device.lockDevice();
             device.copyValuesFromUpdated(updated_device);
+            device.releaseDevice();
             test_state = TestStates.TEST_OK;
         }
 

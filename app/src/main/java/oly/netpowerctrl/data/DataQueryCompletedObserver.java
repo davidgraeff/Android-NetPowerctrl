@@ -10,6 +10,10 @@ import oly.netpowerctrl.utils.Observer;
 public class DataQueryCompletedObserver extends Observer<onDataQueryCompleted> implements onDataQueryCompleted {
     private boolean initialDataQueryCompleted = false;
 
+    public void resetDataQueryCompleted() {
+        initialDataQueryCompleted = false;
+    }
+
     /**
      * @param o The callback object
      *          If the initial data query already finished, you will be

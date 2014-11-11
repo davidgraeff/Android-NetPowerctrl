@@ -124,22 +124,40 @@ public class DevicesFragment extends Fragment
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
-                super.onChanged();
-                View emptyView = getView();
-                if (emptyView == null)
-                    return;
-                emptyView = emptyView.findViewById(android.R.id.empty);
-                if (emptyView == null)
-                    return;
+                checkChanged();
+            }
 
-                if (adapter.getItemCount() == 0) {
-                    emptyView.setVisibility(View.VISIBLE);
-                } else {
-                    emptyView.setVisibility(View.GONE);
-                }
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                checkChanged();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                checkChanged();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                checkChanged();
             }
         });
         setHasOptionsMenu(true);
+    }
+
+    private void checkChanged() {
+        View emptyView = getView();
+        if (emptyView == null)
+            return;
+        emptyView = emptyView.findViewById(android.R.id.empty);
+        if (emptyView == null)
+            return;
+
+        if (adapter.getItemCount() == 0) {
+            emptyView.setVisibility(View.VISIBLE);
+        } else {
+            emptyView.setVisibility(View.GONE);
+        }
     }
 
     private void assignAdapter() {
@@ -188,6 +206,7 @@ public class DevicesFragment extends Fragment
                         item.subtitle = getString(R.string.device_connection_testing);
                         adapter.notifyItemChanged(position);
                         item.enabled = false;
+                        device.setChangesFlag(Device.CHANGE_DEVICE_REACHABILITY);
                         final Device finalDevice = device;
                         App.getMainThreadHandler().postDelayed(new Runnable() {
                             @Override
@@ -271,7 +290,7 @@ public class DevicesFragment extends Fragment
                                 }
                                 current_device.releaseDevicePorts();
                                 AppData.getInstance().deviceCollection.save(current_device);
-                                AppData.getInstance().groupCollection.edit(uuidOfDevice, current_device.DeviceName);
+                                AppData.getInstance().groupCollection.edit(uuidOfDevice, current_device.getDeviceName());
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();

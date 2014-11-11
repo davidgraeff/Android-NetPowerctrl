@@ -104,7 +104,10 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
                         device.setStatusMessageAllConnections(App.getAppString(R.string.error_plugin_not_installed));
                         continue;
                     }
-                    for (int i = 0; i < device.DeviceConnections.size(); ++i) {
+                    device.lockDevice();
+                    int s = device.getDeviceConnections().size();
+                    device.releaseDevice();
+                    for (int i = 0; i < s; ++i) {
                         pluginInterface.requestData(device, i);
                     }
                 }

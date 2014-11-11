@@ -2,6 +2,8 @@ package oly.netpowerctrl.anel;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -25,15 +27,13 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         AnelUDPDeviceDiscoveryThread.anelPlugin = anelPlugin;
     }
 
-    private static Device createReceivedAnelDevice(String DeviceName, String MacAddress) {
-        Device di = new Device(anelPlugin.getPluginID());
+    private static Device createReceivedAnelDevice(String MacAddress) {
+        Device di = new Device(anelPlugin.getPluginID(), true);
         di.setPluginInterface(anelPlugin);
-        di.DeviceName = DeviceName;
         di.setUniqueDeviceID(MacAddress);
         // Default values for user and password
-        di.UserName = "admin";
-        di.Password = "anel";
-        di.setUpdatedNow();
+        di.setUserName("admin");
+        di.setPassword("anel");
         return di;
     }
 
@@ -70,35 +70,58 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         }
 
         final String HostName = msg[2];
-        final Device di = createReceivedAnelDevice(msg[1].trim(), msg[5]);
-        DeviceConnection deviceConnection = new DeviceConnectionUDP(di, HostName, receive_port, SharedPrefs.getInstance().getDefaultSendPort());
-        deviceConnection.setReceiveAddress(peer);
-        deviceConnection.setIsAssignedByDevice(true);
-        deviceConnection.connectionUsed();
-        di.addConnection(deviceConnection);
+        final String DeviceName = msg[1].trim();
+        final String MacAddress = msg[5].trim();
+
+        boolean isNewDevice = false;
+        Device device = AppData.getInstance().findDeviceByUniqueID(MacAddress);
+        if (device == null) {
+            device = createReceivedAnelDevice(MacAddress);
+            isNewDevice = true;
+        } else
+            device.lockDevice();
 
         int disabledOutlets = 0;
         int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
 
-        // Current firmware v4
-        if (msg.length > 14) {
-            try {
-                disabledOutlets = Integer.parseInt(msg[14]);
-            } catch (NumberFormatException ignored) {
+        device.setDeviceName(DeviceName);
+
+        List<DeviceConnection> deviceConnectionList = new ArrayList<>();
+
+        DeviceConnection deviceConnection = new DeviceConnectionUDP(device, HostName, receive_port, SharedPrefs.getInstance().getDefaultSendPort());
+        deviceConnection.setReceiveAddress(peer);
+        deviceConnection.makeAssignedByDevice();
+        deviceConnectionList.add(deviceConnection);
+
+        // For old firmwares
+        if (msg.length < 14) {
+            numOutlets = msg.length - 6;
+            deviceConnection = new DeviceConnectionHTTP(device, HostName, 80);
+            deviceConnection.makeAssignedByDevice();
+            deviceConnection.setReceiveAddress(peer);
+            deviceConnectionList.add(deviceConnection);
+        } else
+            // Current firmware v4
+            if (msg.length > 14) {
+                try {
+                    disabledOutlets = Integer.parseInt(msg[14]);
+                } catch (NumberFormatException ignored) {
+                }
             }
-        }
         if (msg.length > 15) {
             int httpPort;
             try {
                 httpPort = Integer.parseInt(msg[15].trim());
-                deviceConnection = new DeviceConnectionHTTP(di, HostName, httpPort);
-                deviceConnection.setIsAssignedByDevice(true);
+                deviceConnection = new DeviceConnectionHTTP(device, HostName, httpPort);
+                deviceConnection.makeAssignedByDevice();
                 deviceConnection.setReceiveAddress(peer);
-                deviceConnection.connectionUsed();
-                di.addConnection(deviceConnection);
+                deviceConnectionList.add(deviceConnection);
+
             } catch (NumberFormatException ignored) {
             }
         }
+
+        device.lockDevicePorts();
         // IO ports
         if (msg.length > 25) {
             // 1-based id. IO output range: 11..19, IO input range is 21..29
@@ -108,40 +131,42 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
                 String io_port[] = msg[i].split(",");
                 if (io_port.length != 3) continue;
 
-                DevicePort oi = new DevicePort(di, ExecutableType.TypeToggle);
+                DevicePort devicePort = new DevicePort(device, ExecutableType.TypeToggle);
 
                 if (io_port[1].equals("1")) // input
-                    oi.id = io_id + 10;
+                    devicePort.id = io_id + 10;
                 else
-                    oi.id = io_id;
+                    devicePort.id = io_id;
 
-                oi.setTitle(io_port[0]);
-                oi.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
-                di.putPort(oi);
+                devicePort.setTitle(io_port[0]);
+                devicePort.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
+                device.updatePort(devicePort);
             }
-            di.Features.add(new DeviceFeatureTemperature(msg[24]));
-            di.Version = msg[25].trim();
-        }
-        // For old firmwares
-        else if (msg.length < 14) {
-            numOutlets = msg.length - 6;
-            di.addConnection(new DeviceConnectionHTTP(di, HostName, -1));
+            device.addFeatures(new DeviceFeatureTemperature(msg[24]));
+            device.setVersion(msg[25].trim());
         }
 
         for (int i = 0; i < numOutlets; i++) {
             String outlet[] = msg[6 + i].split(",");
             if (outlet.length < 1)
                 continue;
-            DevicePort oi = new DevicePort(di, ExecutableType.TypeToggle);
-            oi.id = i + 1; // 1-based
-            oi.setTitle(outlet[0]);
+            DevicePort devicePort = new DevicePort(device, ExecutableType.TypeToggle);
+            devicePort.id = i + 1; // 1-based
+            devicePort.setTitle(outlet[0]);
             if (outlet.length > 1)
-                oi.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;
-            oi.Disabled = (disabledOutlets & (1 << i)) != 0;
+                devicePort.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;
+            devicePort.Disabled = (disabledOutlets & (1 << i)) != 0;
 
-            di.putPort(oi);
+            device.updatePort(devicePort);
         }
+        device.releaseDevicePorts();
 
-        AppData.getInstance().updateDeviceFromOtherThread(di);
+        device.replaceAutomaticAssignedConnections(deviceConnectionList);
+        device.releaseDevice();
+
+        if (isNewDevice)
+            AppData.getInstance().updateDeviceFromOtherThread(device);
+        else
+            AppData.getInstance().updateExistingDeviceFromOtherThread(device);
     }
 }

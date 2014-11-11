@@ -51,15 +51,16 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
     private RecyclerView mRecyclerView;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerAdapter mDrawerAdapter;
-    //private CharSequence mTitle;
-    private boolean drawerControllableByMenuKey = false;
     private WeakReference<ActionBarActivity> mDrawerActivity;
-
     // Current
     private int drawerLastItemPosition = -1;
     private Fragment currentFragment;
     private String currentFragmentClass;
     private Bundle currentExtra;
+
+    public DrawerLayout getDrawerLayout() {
+        return mDrawerLayout;
+    }
 
     public Fragment getCurrentFragment() {
         return currentFragment;
@@ -160,11 +161,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         mRecyclerView.setAdapter(mDrawerAdapter);
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(mRecyclerView.getContext(), this, null));
 
-
-        if (mDrawerLayout != null) {
-            createDrawerToggle(context);
-        }
-
         if (restore == RestorePositionEnum.RestoreLastSaved) {
             // Restore the last visited screen
             Bundle extra = SharedPrefs.getInstance().getFirstTabExtra();
@@ -182,14 +178,28 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             context.getFragmentManager().beginTransaction().attach(currentFragment).commitAllowingStateLoss();
         }
 
-
         if (mDrawerLayout != null) {
-            // Sync the toggle state after onRestoreInstanceState has occurred.
-            mDrawerToggle.syncState();
+            createDrawerToggle();
         }
     }
 
-    public void createDrawerToggle(final Activity context) {
+    public void createBackButton() {
+        ActionBarActivity context = mDrawerActivity.get();
+        if (context == null) // should never happen
+            return;
+        mDrawerToggle = null;
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE);
+        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
+    }
+
+    public void createDrawerToggle() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        ActionBarActivity context = mDrawerActivity.get();
+        if (context == null) // should never happen
+            return;
+        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
         mDrawerToggle = new ActionBarDrawerToggle(
@@ -205,6 +215,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
     }
 
     public void onPrepareOptionsMenu(Menu menu) {
@@ -222,6 +233,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         if (isLoading() || mDrawerLayout == null)
             return;
 
+        boolean drawerControllableByMenuKey = false;
         if (drawerControllableByMenuKey) {
             if (mDrawerLayout.isDrawerOpen(mRecyclerView))
                 mDrawerLayout.closeDrawer(mRecyclerView);
@@ -268,6 +280,21 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
 
     public void changeToFragment(String fragmentClassName, final Bundle extra) {
         changeToFragment(fragmentClassName, extra, true, mDrawerAdapter.indexOf(fragmentClassName));
+    }
+
+    public void changeToFragment(Fragment fragment, String fragmentClassName) {
+        final Activity context = mDrawerActivity.get();
+        if (context == null || fragmentClassName == null) // should never happen
+            return;
+        currentFragmentClass = fragmentClassName;
+        currentFragment = fragment;
+        FragmentTransaction ft = context.getFragmentManager().beginTransaction();
+        ft.replace(R.id.content_frame, currentFragment);
+        try {
+            ft.commit();
+        } catch (IllegalStateException exception) {
+            ft.commitAllowingStateLoss();
+        }
     }
 
     private void changeToFragment(String fragmentClassName, Bundle extra, boolean addToBackstack, int position) {

@@ -12,7 +12,7 @@ import oly.netpowerctrl.device_base.data.StorableInterface;
  */
 abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends StorableInterface> implements CollectionWithType {
 
-    private final WeakHashMap<onCollectionUpdated, Boolean> observers = new WeakHashMap<>();
+    private final WeakHashMap<onCollectionUpdated<COLLECTION, ITEM>, Boolean> observers = new WeakHashMap<>();
 
     protected List<ITEM> items = new ArrayList<>();
     protected onStorageUpdate storage;
@@ -30,9 +30,9 @@ abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends Stora
     }
 
     final protected void notifyObservers(ITEM item, ObserverUpdateActions actions, int position) {
-        Iterator<onCollectionUpdated> it = observers.keySet().iterator();
+        Iterator<onCollectionUpdated<COLLECTION, ITEM>> it = observers.keySet().iterator();
         while (it.hasNext())
-            if (!it.next().updated(this, item, actions, position))
+            if (!it.next().updated((COLLECTION) this, item, actions, position))
                 it.remove();
     }
 

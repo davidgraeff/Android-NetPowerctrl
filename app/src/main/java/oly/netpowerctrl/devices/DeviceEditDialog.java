@@ -68,18 +68,18 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
         checkBox.setText(R.string.device_enabled);
         checkBox.setChecked(device.isEnabled());
 
-        ((TextView) titleView.findViewById(R.id.device_name)).setText(device.DeviceName);
+        ((TextView) titleView.findViewById(R.id.device_name)).setText(device.getDeviceName());
 
         TextView textView;
 
         textView = (TextView) rootView.findViewById(R.id.device_name);
-        textView.setText(device.DeviceName);
+        textView.setText(device.getDeviceName());
 
         textView = (TextView) rootView.findViewById(R.id.device_username);
-        textView.setText(device.UserName);
+        textView.setText(device.getUserName());
 
         textView = (TextView) rootView.findViewById(R.id.device_password);
-        textView.setText(device.Password);
+        textView.setText(device.getPassword());
 
         textView = (TextView) rootView.findViewById(R.id.device_unique_id);
         textView.setText(device.getUniqueDeviceID());
@@ -113,10 +113,12 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
         rootView.findViewById(R.id.connection_delete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Iterator<DeviceConnection> deviceConnectionIterator = device.DeviceConnections.iterator();
+                device.lockDevice();
+                Iterator<DeviceConnection> deviceConnectionIterator = device.getDeviceConnections().iterator();
                 while (deviceConnectionIterator.hasNext())
                     if (deviceConnectionIterator.next().isAssignedByDevice())
                         deviceConnectionIterator.remove();
+                device.releaseDevice();
                 updateConnections();
             }
         });
@@ -175,20 +177,23 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
         int lastID = R.id.device_add_http;
 
         final Device device = editDevice.getDevice();
-        List<DeviceConnection> connections = device.DeviceConnections;
+        device.lockDevice();
+        List<DeviceConnection> connections = new ArrayList<>(device.getDeviceConnections());
+        device.releaseDevice();
 
         int assignedConnections = 0;
 
-        for (DeviceConnection connection1 : connections) {
-            if (connection1.isAssignedByDevice()) {
+        for (int connection_id = 0; connection_id < connections.size(); ++connection_id) {
+            DeviceConnection deviceConnection = connections.get(connection_id);
+            if (deviceConnection.isAssignedByDevice()) {
                 ++assignedConnections;
                 continue;
             }
 
-            if (!(connection1 instanceof DeviceConnectionHTTP))
+            if (!(deviceConnection instanceof DeviceConnectionHTTP))
                 continue;
 
-            final DeviceConnectionHTTP connection = (DeviceConnectionHTTP) connection1;
+            final DeviceConnectionHTTP connection = (DeviceConnectionHTTP) deviceConnection;
 
             View p = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_list_connection_http, layout, false);
             ((EditText) p.findViewById(R.id.device_host)).setText(connection.mHostName);
@@ -199,10 +204,11 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
                 imageView.setImageResource(android.R.drawable.presence_online);
             else
                 imageView.setImageResource(android.R.drawable.presence_offline);
+            final int finalConnection_id = connection_id;
             p.findViewById(R.id.connection_delete).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    device.removeConnection(connection);
+                    device.removeConnection(finalConnection_id);
                     updateConnections();
                 }
             });
@@ -258,17 +264,19 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
         TextView textView;
 
         Device device = editDevice.getDevice();
+        device.lockDevice();
 
         textView = (TextView) getDialog().findViewById(R.id.device_name);
-        device.DeviceName = textView.getText().toString();
+        device.setDeviceName(textView.getText().toString());
 
         textView = (TextView) getDialog().findViewById(R.id.device_username);
-        device.UserName = textView.getText().toString();
+        device.setUserName(textView.getText().toString());
 
         textView = (TextView) getDialog().findViewById(R.id.device_password);
-        device.Password = textView.getText().toString();
+        device.setPassword(textView.getText().toString());
 
         device.setEnabled(((CheckBox) getDialog().findViewById(android.R.id.title)).isChecked());
+        device.releaseDevice();
     }
 
     private void testDevice() {
@@ -278,12 +286,12 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
 
         Device device = editDevice.getDevice();
 
-        if (device.UserName.isEmpty() || device.Password.isEmpty()) {
+        if (device.getUserName().isEmpty() || device.getPassword().isEmpty()) {
             Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (device.DeviceConnections.isEmpty()) {
+        if (device.hasNoConnections()) {
             Toast.makeText(getActivity(), R.string.error_device_no_network_connections, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -298,12 +306,12 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
 
         Device device = editDevice.getDevice();
 
-        if (device.UserName.isEmpty() || device.Password.isEmpty()) {
+        if (device.getUserName().isEmpty() || device.getPassword().isEmpty()) {
             Toast.makeText(getActivity(), R.string.create_device_not_all_data_set, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (device.DeviceConnections.isEmpty()) {
+        if (device.hasNoConnections()) {
             Toast.makeText(getActivity(), R.string.error_device_no_network_connections, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -338,7 +346,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
         if (!success) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
-                    getString(R.string.device_test_not_reachable) + ": " + editDevice.getDevice().DeviceName + ":"
+                    getString(R.string.device_test_not_reachable) + ": " + editDevice.getDevice().getDeviceName() + ":"
                             + Integer.valueOf(0).toString(),
                     Toast.LENGTH_SHORT
             ).show();
@@ -354,7 +362,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     public void testDeviceNotReachable() {
         //noinspection ConstantConditions
         Toast.makeText(getActivity(),
-                getString(R.string.error_device_no_access) + ": " + editDevice.getDevice().UserName + " " + editDevice.getDevice().Password,
+                getString(R.string.error_device_no_access) + ": " + editDevice.getDevice().getUserName() + " " + editDevice.getDevice().getPassword(),
                 Toast.LENGTH_SHORT).show();
     }
 }

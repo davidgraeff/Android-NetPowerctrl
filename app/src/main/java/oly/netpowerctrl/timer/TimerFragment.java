@@ -31,7 +31,7 @@ import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
 
-public class TimerFragment extends Fragment implements onCollectionUpdated<TimerController, Timer>, AdapterView.OnItemClickListener, onHttpRequestResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
+public class TimerFragment extends Fragment implements onCollectionUpdated<TimerCollection, Timer>, AdapterView.OnItemClickListener, onHttpRequestResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private SwipeRefreshLayout mPullToRefreshLayout;
@@ -43,7 +43,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         if (service == null)
             return;
 
-        TimerController c = AppData.getInstance().timerController;
+        TimerCollection c = AppData.getInstance().timerCollection;
         if (c.refresh(service))
             AnimationController.animateViewInOut(progressText, true, false);
     }
@@ -63,7 +63,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     public void onPause() {
         ListenService.observersServiceReady.unregister(this);
         AnimationController.animateViewInOut(progressText, false, false);
-        TimerController c = AppData.getInstance().timerController;
+        TimerCollection c = AppData.getInstance().timerCollection;
         c.unregisterObserver(this);
         if (timerAdapter != null)
             timerAdapter.finish();
@@ -77,7 +77,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         final View view = inflater.inflate(R.layout.fragment_alarms, container, false);
         progressText = (TextView) view.findViewById(R.id.progressText);
 
-        TimerController c = AppData.getInstance().timerController;
+        TimerCollection c = AppData.getInstance().timerCollection;
         timerAdapter = new TimerAdapter(getActivity(), c);
         timerAdapter.start();
 
@@ -145,7 +145,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                TimerController c = AppData.getInstance().timerController;
+                                TimerCollection c = AppData.getInstance().timerCollection;
                                 c.clear();
                             }
                         })
@@ -206,10 +206,10 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
-    public boolean updated(TimerController timerController, Timer timer, ObserverUpdateActions action, int position) {
-        boolean inProgress = timerController.isRequestActive();
+    public boolean updated(TimerCollection timerCollection, Timer timer, ObserverUpdateActions action, int position) {
+        boolean inProgress = timerCollection.isRequestActive();
         if (inProgress) {
-            progressText.setText(getString(R.string.alarm_receiving, timerController.countAllDeviceAlarms()));
+            progressText.setText(getString(R.string.alarm_receiving, timerCollection.countAllDeviceAlarms()));
             AnimationController.animateViewInOut(progressText, true, false);
         } else {
             Activity a = getActivity();

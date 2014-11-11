@@ -95,7 +95,7 @@ public class HttpThreadPool {
             String result_message;
             final Device device = deviceConnection.getDevice();
             try {
-                String cred = device.UserName + ":" + device.Password;
+                String cred = device.getUserName() + ":" + device.getPassword();
                 url = new URL("http://" + deviceConnection.getDestinationHost()
                         + ":" + deviceConnection.getDestinationPort() + "/" + getData);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();

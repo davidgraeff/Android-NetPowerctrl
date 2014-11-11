@@ -67,7 +67,7 @@ public class DeviceQuery extends DeviceObserverBase {
     @Override
     protected void doAction(Device device, boolean repeated) {
         if (repeated)
-            Log.w(TAG, "redo: " + device.DeviceName);
+            Log.w(TAG, "redo: " + device.getDeviceName());
 
         PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
         if (pluginInterface == null) {
@@ -88,7 +88,8 @@ public class DeviceQuery extends DeviceObserverBase {
             // if this is the first request, we only use the first available connection.
             // If there are no available, we use all.
             int i = 0;
-            for (DeviceConnection ci : device.DeviceConnections) {
+            device.lockDevice();
+            for (DeviceConnection ci : device.getDeviceConnections()) {
                 if (ci.isReachable()) {
                     requestAll = false;
                     pluginInterface.requestData(device, i);
@@ -96,12 +97,16 @@ public class DeviceQuery extends DeviceObserverBase {
                 }
                 ++i;
             }
+            device.releaseDevice();
         }
 
         // If this is a repeated request or if no single device connections
         // was available before, we use all device connections.
         if (requestAll) {
-            for (int i = 0; i < device.DeviceConnections.size(); ++i) {
+            device.lockDevice();
+            int s = device.getDeviceConnections().size();
+            device.releaseDevice();
+            for (int i = 0; i < s; ++i) {
                 pluginInterface.requestData(device, i);
             }
         }

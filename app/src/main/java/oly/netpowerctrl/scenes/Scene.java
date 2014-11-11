@@ -58,7 +58,8 @@ public class Scene implements StorableInterface, Executable {
             }
         }
         reader.endObject();
-        scene.sceneItems.add(item);
+        if (item.uuid != null)
+            scene.sceneItems.add(item);
     }
 
     /**
@@ -260,7 +261,7 @@ public class Scene implements StorableInterface, Executable {
 
     @Override
     public ExecutableType getType() {
-        return isMasterSlave() ? ExecutableType.TypeToggle : ExecutableType.TypeButton;
+        return isMasterSlave() ? ExecutableType.TypeToggle : ExecutableType.TypeStateless;
     }
 
     @Override
