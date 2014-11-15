@@ -22,6 +22,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -43,22 +45,22 @@ import java.util.List;
  * It provides synchronous (blocking) and asynchronous (non-blocking) methods for
  * many common in-app billing operations, as well as automatic signature
  * verification.
- * <p/>
+ *
  * After instantiating, you must perform setup in order to start using the object.
  * To perform setup, call the {@link #startSetup} method and provide a listener;
  * that listener will be notified when setup is complete, after which (and not before)
  * you may call other methods.
- * <p/>
+ *
  * After setup is complete, you will typically want to request an inventory of owned
  * items and subscriptions. See {@link #queryInventory}, {@link #queryInventoryAsync}
  * and related methods.
- * <p/>
+ *
  * When you are done with this object, don't forget to call {@link #dispose}
  * to ensure proper cleanup. This object holds a binding to the in-app billing
  * service, which will leak unless you dispose of it correctly. If you created
  * the object on an Activity's onCreate method, then the recommended
  * place to dispose of it is the Activity's onDestroy method.
- * <p/>
+ *
  * A note about threading: When using this object from a background thread, you may
  * call the blocking versions of methods; when using from a UI thread, call
  * only the asynchronous versions and handle the results via callbacks.
@@ -67,6 +69,7 @@ import java.util.List;
  * has not yet completed will result in an exception being thrown.
  *
  * @author Bruno Oliveira (Google)
+ *
  */
 public class IabHelper {
     // Billing response codes
@@ -141,11 +144,11 @@ public class IabHelper {
      * setup by calling {@link #startSetup} and wait for setup to complete. This constructor does not
      * block and is safe to call from a UI thread.
      *
-     * @param ctx             Your application or Activity context. Needed to bind to the in-app billing service.
+     * @param ctx Your application or Activity context. Needed to bind to the in-app billing service.
      * @param base64PublicKey Your application's public key, encoded in base64.
-     *                        This is used for verification of purchase signatures. You can find your app's base64-encoded
-     *                        public key in your application's page on Google Play Developer Console. Note that this
-     *                        is NOT your "developer public key".
+     *     This is used for verification of purchase signatures. You can find your app's base64-encoded
+     *     public key in your application's page on Google Play Developer Console. Note that this
+     *     is NOT your "developer public key".
      */
     public IabHelper(Context ctx, String base64PublicKey) {
         mContext = ctx.getApplicationContext();
@@ -267,7 +270,7 @@ public class IabHelper {
             }
         };
 
-        Intent serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+        Intent serviceIntent = getExplicitIapIntent();
         if (!mContext.getPackageManager().queryIntentServices(serviceIntent, 0).isEmpty()) {
             // service available to handle that Intent
             mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
@@ -279,6 +282,25 @@ public class IabHelper {
                                 "Billing service unavailable on device."));
             }
         }
+    }
+
+    private Intent getExplicitIapIntent() {
+        PackageManager pm = mContext.getPackageManager();
+        Intent implicitIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
+        List<ResolveInfo> resolveInfos = pm.queryIntentServices(implicitIntent, 0);
+
+        // Is somebody else trying to intercept our IAP call?
+        if (resolveInfos == null || resolveInfos.size() != 1) {
+            return null;
+        }
+
+        ResolveInfo serviceInfo = resolveInfos.get(0);
+        String packageName = serviceInfo.serviceInfo.packageName;
+        String className = serviceInfo.serviceInfo.name;
+        ComponentName component = new ComponentName(packageName, className);
+        Intent iapIntent = new Intent();
+        iapIntent.setComponent(component);
+        return iapIntent;
     }
 
     /**
@@ -411,11 +433,11 @@ public class IabHelper {
      * MUST be called from the UI thread of the Activity.
      *
      * @param requestCode The requestCode as you received it.
-     * @param resultCode  The resultCode as you received it.
-     * @param data        The data (Intent) as you received it.
+     * @param resultCode The resultCode as you received it.
+     * @param data The data (Intent) as you received it.
      * @return Returns true if the result was related to a purchase flow and was handled;
-     * false if the result was not related to a purchase, in which case you should
-     * handle it normally.
+     *     false if the result was not related to a purchase, in which case you should
+     *     handle it normally.
      */
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
         IabResult result;
@@ -507,7 +529,7 @@ public class IabHelper {
     /**
      * Queries the inventory. This will query all owned items from the server, as well as
      * information on additional skus, if specified. This method may block or take long to execute.
-     * Do not call from a UI thread. For that, use the non-blocking version {@link #refreshInventoryAsync}.
+     * Do not call from a UI thread. For that, use the non-blocking version.
      *
      * @param querySkuDetails if true, SKU details (price, description, etc) will be queried as well
      *                        as purchase information.
@@ -565,8 +587,8 @@ public class IabHelper {
      * call from a UI thread.
      *
      * @param querySkuDetails as in {@link #queryInventory}
-     * @param moreSkus        as in {@link #queryInventory}
-     * @param listener        The listener to notify when the refresh operation completes.
+     * @param moreSkus as in {@link #queryInventory}
+     * @param listener The listener to notify when the refresh operation completes.
      */
     public void queryInventoryAsync(final boolean querySkuDetails,
                                     final List<String> moreSkus,
@@ -666,9 +688,8 @@ public class IabHelper {
 
     /**
      * Same as {@link consumeAsync}, but for multiple items at once.
-     *
      * @param purchases The list of PurchaseInfo objects representing the purchases to consume.
-     * @param listener  The listener to notify when the consumption operation finishes.
+     * @param listener The listener to notify when the consumption operation finishes.
      */
     public void consumeAsync(List<Purchase> purchases, OnConsumeMultiFinishedListener listener) {
         checkNotDisposed();
@@ -808,30 +829,53 @@ public class IabHelper {
             return BILLING_RESPONSE_RESULT_OK;
         }
 
-        Bundle querySkus = new Bundle();
-        querySkus.putStringArrayList(GET_SKU_DETAILS_ITEM_LIST, skuList);
-        Bundle skuDetails = mService.getSkuDetails(3, mContext.getPackageName(),
-                itemType, querySkus);
+        // Split the sku list in blocks of no more than 20 elements.
+        ArrayList<ArrayList<String>> packs = new ArrayList<ArrayList<String>>();
+        ArrayList<String> tempList;
+        int n = skuList.size() / 20;
+        int mod = skuList.size() % 20;
+        for (int i = 0; i < n; i++) {
+            tempList = new ArrayList<String>();
+            for (String s : skuList.subList(i * 20, i * 20 + 20)) {
+                tempList.add(s);
+            }
+            packs.add(tempList);
+        }
+        if (mod != 0) {
+            tempList = new ArrayList<String>();
+            for (String s : skuList.subList(n * 20, n * 20 + mod)) {
+                tempList.add(s);
+            }
+            packs.add(tempList);
+        }
 
-        if (!skuDetails.containsKey(RESPONSE_GET_SKU_DETAILS_LIST)) {
-            int response = getResponseCodeFromBundle(skuDetails);
-            if (response != BILLING_RESPONSE_RESULT_OK) {
-                logDebug("getSkuDetails() failed: " + getResponseDesc(response));
-                return response;
-            } else {
-                logError("getSkuDetails() returned a bundle with neither an error nor a detail list.");
-                return IABHELPER_BAD_RESPONSE;
+        for (ArrayList<String> skuPartList : packs) {
+            Bundle querySkus = new Bundle();
+            querySkus.putStringArrayList(GET_SKU_DETAILS_ITEM_LIST, skuPartList);
+            Bundle skuDetails = mService.getSkuDetails(3, mContext.getPackageName(),
+                    itemType, querySkus);
+
+            if (!skuDetails.containsKey(RESPONSE_GET_SKU_DETAILS_LIST)) {
+                int response = getResponseCodeFromBundle(skuDetails);
+                if (response != BILLING_RESPONSE_RESULT_OK) {
+                    logDebug("getSkuDetails() failed: " + getResponseDesc(response));
+                    return response;
+                } else {
+                    logError("getSkuDetails() returned a bundle with neither an error nor a detail list.");
+                    return IABHELPER_BAD_RESPONSE;
+                }
+            }
+
+            ArrayList<String> responseList = skuDetails.getStringArrayList(
+                    RESPONSE_GET_SKU_DETAILS_LIST);
+
+            for (String thisResponse : responseList) {
+                SkuDetails d = new SkuDetails(itemType, thisResponse);
+                logDebug("Got sku details: " + d);
+                inv.addSkuDetails(d);
             }
         }
 
-        ArrayList<String> responseList = skuDetails.getStringArrayList(
-                RESPONSE_GET_SKU_DETAILS_LIST);
-
-        for (String thisResponse : responseList) {
-            SkuDetails d = new SkuDetails(itemType, thisResponse);
-            logDebug("Got sku details: " + d);
-            inv.addSkuDetails(d);
-        }
         return BILLING_RESPONSE_RESULT_OK;
     }
 
@@ -896,7 +940,6 @@ public class IabHelper {
         public void onIabSetupFinished(IabResult result);
     }
 
-
     /**
      * Callback that notifies when a purchase is finished.
      */
@@ -908,7 +951,7 @@ public class IabHelper {
          * process went.
          *
          * @param result The result of the purchase.
-         * @param info   The purchase information (null if purchase failed)
+         * @param info The purchase information (null if purchase failed)
          */
         public void onIabPurchaseFinished(IabResult result, Purchase info);
     }
@@ -921,7 +964,7 @@ public class IabHelper {
          * Called to notify that an inventory query operation completed.
          *
          * @param result The result of the operation.
-         * @param inv    The inventory.
+         * @param inv The inventory.
          */
         public void onQueryInventoryFinished(IabResult result, Inventory inv);
     }
@@ -934,7 +977,7 @@ public class IabHelper {
          * Called to notify that a consumption has finished.
          *
          * @param purchase The purchase that was (or was to be) consumed.
-         * @param result   The result of the consumption operation.
+         * @param result The result of the consumption operation.
          */
         public void onConsumeFinished(Purchase purchase, IabResult result);
     }
@@ -947,8 +990,8 @@ public class IabHelper {
          * Called to notify that a consumption of multiple items has finished.
          *
          * @param purchases The purchases that were (or were to be) consumed.
-         * @param results   The results of each consumption operation, corresponding to each
-         *                  sku.
+         * @param results The results of each consumption operation, corresponding to each
+         *     sku.
          */
         public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results);
     }
