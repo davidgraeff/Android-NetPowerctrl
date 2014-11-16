@@ -1,6 +1,8 @@
 package oly.netpowerctrl.data;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -9,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
@@ -19,6 +22,7 @@ import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceObserverBase;
@@ -47,12 +51,14 @@ public class AppData {
     final public UnconfiguredDeviceCollection unconfiguredDeviceCollection = new UnconfiguredDeviceCollection();
     final public GroupCollection groupCollection = new GroupCollection();
     final public SceneCollection sceneCollection = new SceneCollection();
+    final public FavCollection favCollection = new FavCollection();
     final public TimerCollection timerCollection = new TimerCollection();
     private final List<DeviceObserverBase> updateDeviceStateList = new ArrayList<>();
     private LoadStoreJSonData loadStoreJSonData = null;
 
     private AppData() {
         deviceCollection.registerObserver(sceneCollection.deviceObserver);
+        deviceCollection.registerObserver(timerCollection.deviceObserver);
     }
 
     public static AppData getInstance() {
@@ -74,6 +80,11 @@ public class AppData {
 
     public static boolean isDataLoaded() {
         return observersOnDataLoaded.dataLoaded;
+    }
+
+    static public boolean isNetworkDevice(Device device) {
+        PluginInterface pi = (PluginInterface) device.getPluginInterface();
+        return pi != null && pi.isNetworkPlugin();
     }
 
     public LoadStoreJSonData getLoadStoreJSonData() {
@@ -100,7 +111,8 @@ public class AppData {
         HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getInstance().getDefaultSendPort());
 
-        for (Device di : deviceCollection.items) {
+        List<Device> backup_list = new ArrayList<>(deviceCollection.items);
+        for (Device di : backup_list) {
             di.lockDevice();
             for (DeviceConnection ci : di.getDeviceConnections())
                 if (ci instanceof DeviceConnectionUDP)
@@ -115,7 +127,8 @@ public class AppData {
         HashSet<Integer> ports = new HashSet<>();
         ports.add(SharedPrefs.getInstance().getDefaultReceivePort());
 
-        for (Device di : deviceCollection.items) {
+        List<Device> backup_list = new ArrayList<>(deviceCollection.items);
+        for (Device di : backup_list) {
             di.lockDevice();
             for (DeviceConnection ci : di.getDeviceConnections())
                 if (ci instanceof DeviceConnectionUDP)
@@ -199,13 +212,14 @@ public class AppData {
             return;
         }
 
+        unconfiguredDeviceCollection.remove(device);
+
+        device.setConfigured(true);
         // This will also safe the new device!
         if (deviceCollection.add(device)) {
             // An existing device has been replaced. Do nothing else here.
             return;
         }
-
-        unconfiguredDeviceCollection.remove(device);
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
         if (device.getFirstReachableConnection() == null)
@@ -244,6 +258,7 @@ public class AppData {
         int position = deviceCollection.getPosition(updated_device_info);
 
         if (position == -1) {
+            updated_device_info.setConfigured(false);
             // notify observers who are using the DeviceQuery class (new device)
             notifyDeviceQueries(updated_device_info);
             unconfiguredDeviceCollection.add(updated_device_info);
@@ -327,7 +342,25 @@ public class AppData {
         return r;
     }
 
-    public DevicePort findDevicePort(String uuid) {
+    /**
+     * Search for an executable that may be a scene or a devicePort. This is an expensive operation!
+     *
+     * @param executable_uid The uid
+     * @return Return a scene, a devicePort or null.
+     */
+    public Executable findExecutable(String executable_uid) {
+        Executable executable = findDevicePort(executable_uid);
+
+        if (executable == null) {
+            if (executable_uid == null)
+                return null;
+            return sceneCollection.findScene(executable_uid);
+        } else
+            return executable;
+    }
+
+    @Nullable
+    public DevicePort findDevicePort(@Nullable String uuid) {
         if (uuid == null)
             return null;
 
@@ -346,7 +379,8 @@ public class AppData {
         return null;
     }
 
-    public Device findDeviceByUniqueID(String uniqueID) {
+    @Nullable
+    public Device findDevice(@NonNull String uniqueID) {
         for (Device di : deviceCollection.items) {
             if (di.getUniqueDeviceID().equals(uniqueID)) {
                 return di;
@@ -355,9 +389,21 @@ public class AppData {
         return null;
     }
 
-    public void rename(DevicePort port, String new_name, onHttpRequestResult callback) {
+    @Nullable
+    public Device findDeviceUnconfigured(@NonNull String uniqueID) {
+        for (Device di : unconfiguredDeviceCollection.items) {
+            if (di.getUniqueDeviceID().equals(uniqueID)) {
+                return di;
+            }
+        }
+        return null;
+    }
+
+    public void rename(@NonNull DevicePort port, String new_name, onHttpRequestResult callback) {
         if (callback != null)
             callback.httpRequestStart(port);
+
+        ListenService.getService().wakeupPlugin(port.device);
 
         PluginInterface remote = (PluginInterface) port.device.getPluginInterface();
         if (remote != null) {
@@ -372,8 +418,9 @@ public class AppData {
      * @param scene    The scene to executeToggle
      * @param callback The callback for the execution-done messages
      */
-    public void execute(Scene scene, onExecutionFinished callback) {
+    public void execute(@NonNull Scene scene, onExecutionFinished callback) {
         List<PluginInterface> pluginInterfaces = new ArrayList<>();
+        Set<Device> deviceSet = new TreeSet<>();
 
         // Master/Slave
         SceneItem masterItem = scene.getMasterSceneItem();
@@ -400,6 +447,8 @@ public class AppData {
                 continue;
             }
 
+            deviceSet.add(p.device);
+
             PluginInterface remote = (PluginInterface) p.device.getPluginInterface();
             if (remote == null) {
                 Log.e(TAG, "Execute scene, PluginInterface not found " + item.uuid);
@@ -416,6 +465,10 @@ public class AppData {
                 pluginInterfaces.add(remote);
         }
 
+        for (Device device : deviceSet) {
+            ListenService.getService().wakeupPlugin(device);
+        }
+
         for (PluginInterface p : pluginInterfaces) {
             p.executeTransaction(callback);
         }
@@ -427,7 +480,7 @@ public class AppData {
      * @param executable A scene or a device port
      * @param callback   The callback for the execution-done messages
      */
-    public void executeToggle(final Executable executable, final onExecutionFinished callback) {
+    public void executeToggle(@NonNull final Executable executable, final onExecutionFinished callback) {
         if (executable instanceof Scene) {
             execute(((Scene) executable), callback);
             return;
@@ -435,8 +488,7 @@ public class AppData {
             DevicePort devicePort = (DevicePort) executable;
             PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
             if (remote != null) {
-                if (remote.isNetworkReducedState())
-                    remote.enterFullNetworkState(App.instance, devicePort.device);
+                ListenService.getService().wakeupPlugin(devicePort.device);
                 remote.execute(devicePort, DevicePort.TOGGLE, callback);
             }
 
@@ -456,12 +508,11 @@ public class AppData {
      * @param command    The command to executeToggle
      * @param callback   The callback for the execution-done messages
      */
-    public void execute(final DevicePort devicePort, final int command, final onExecutionFinished callback) {
+    public void execute(@NonNull final DevicePort devicePort, final int command, final onExecutionFinished callback) {
         assert devicePort.device != null;
         PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
         if (remote != null) {
-            if (remote.isNetworkReducedState())
-                remote.enterFullNetworkState(App.instance, devicePort.device);
+            ListenService.getService().wakeupPlugin(devicePort.device);
             remote.execute(devicePort, command, callback);
             return;
         }
@@ -475,8 +526,20 @@ public class AppData {
     public int countNetworkDevices() {
         int i = 0;
         for (Device di : deviceCollection.items)
-            if (DeviceCollection.isNetworkDevice(di)) ++i;
+            if (isNetworkDevice(di)) ++i;
         return i;
+    }
+
+    public List<Device> findDevices(PluginInterface pluginInterface) {
+        List<Device> list = new ArrayList<>();
+        for (Device di : deviceCollection.items) {
+            // Mark all devices as changed: If network reduced mode ends all
+            // devices propagate changes then.
+            if (pluginInterface.equals(di.getPluginInterface())) {
+                list.add(di);
+            }
+        }
+        return list;
     }
 
     private static class SingletonHolder {

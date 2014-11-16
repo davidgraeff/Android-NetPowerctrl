@@ -58,6 +58,19 @@ public class FeedbackFragment extends Fragment {
             }
         }, false);
 
+        ((TextView) view.findViewById(R.id.bugs2)).setText(R.string.issues_wait);
+        GithubAndCloudant.getOpenIssues(new GithubAndCloudant.IGithubOpenIssues() {
+            @Override
+            public void gitHubOpenIssuesUpdated(int count, long last_access) {
+                ((TextView) view.findViewById(R.id.bugs2)).setText(String.valueOf(count));
+            }
+
+            @Override
+            public void gitHubIssue(int number, String title, String body) {
+
+            }
+        }, false, null);
+
         view.findViewById(R.id.mail).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

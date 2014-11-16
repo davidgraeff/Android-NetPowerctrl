@@ -17,8 +17,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
-import android.util.JsonReader;
 import android.util.LruCache;
 import android.util.TypedValue;
 import android.widget.Toast;
@@ -109,10 +109,13 @@ public class LoadStoreIconData {
     @NonNull
     public static File getFilename(@NonNull Context context,
                                    @NonNull String uuid, IconType iconType, IconState state) {
-        return new File(getImageDirectory(context, iconType, state), uuid + ".webp");
+        return new File(getImageDirectory(context, iconType, state), uuid + ".png");
     }
 
-    public static File saveTempIcon(Context context, Bitmap bitmap) {
+    public static File saveTempIcon(Context context, @Nullable Bitmap bitmap) {
+        if (bitmap == null)
+            return null;
+
         File file;
         try {
             file = File.createTempFile("scene_image", "bitmap", context.getCacheDir());
@@ -124,7 +127,7 @@ public class LoadStoreIconData {
 
         try {
             FileOutputStream out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.WEBP, 100, out);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.flush();
             out.close();
         } catch (Exception e) {
@@ -134,14 +137,22 @@ public class LoadStoreIconData {
         return file;
     }
 
-    public static void saveIcon(Context context, Bitmap bitmap, String uuid, IconType iconType, IconState state) {
+    public static void saveIcon(@NonNull Context context, @Nullable Bitmap bitmap,
+                                @NonNull String uuid, IconType iconType, IconState state) {
         File file = getFilename(context, uuid, iconType, state);
         if (file.exists()) //noinspection ResultOfMethodCallIgnored
             file.delete();
 
+        String hashKey = uuid + String.valueOf(iconType.ordinal() + 100 * state.ordinal());
+        iconCache.remove(hashKey);
+
+        if (bitmap == null) {
+            return;
+        }
+
         try {
             FileOutputStream out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.WEBP, 100, out);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.flush();
             out.close();
         } catch (Exception e) {
@@ -192,9 +203,13 @@ public class LoadStoreIconData {
             return c;
 
         File file = getFilename(context, uniqueID, iconType, state);
-        if (file.exists())
+        if (file.exists()) {
             c = BitmapFactory.decodeFile(file.getAbsolutePath());
-        else {
+            if (c == null)
+                file.delete();
+        }
+
+        if (c == null) {
             try {
                 hashKey = String.valueOf(iconType.ordinal() + 100 * state.ordinal());
                 c = iconCache.get(hashKey);
@@ -398,11 +413,6 @@ public class LoadStoreIconData {
         }
 
         @Override
-        public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
-
-        }
-
-        @Override
         public void load(@NonNull InputStream input) {
 
         }
@@ -413,9 +423,5 @@ public class LoadStoreIconData {
             Streams.copy(f, output);
         }
 
-        @Override
-        public StorableDataType getDataType() {
-            return StorableDataType.BINARY;
-        }
     }
 }

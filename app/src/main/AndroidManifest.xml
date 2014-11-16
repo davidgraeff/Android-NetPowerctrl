@@ -147,7 +147,7 @@
         <service
             android:name=".listen_service.ListenService"
             android:exported="true"
-            android:permission="oly.netpowerctrl.permission.PLUGINS"></service>
+            android:permission="oly.netpowerctrl.permission.PLUGINS" />
 
         <service
             android:name="oly.netpowerctrl.widget.WidgetUpdateService"

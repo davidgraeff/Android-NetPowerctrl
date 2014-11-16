@@ -74,7 +74,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         final String MacAddress = msg[5].trim();
 
         boolean isNewDevice = false;
-        Device device = AppData.getInstance().findDeviceByUniqueID(MacAddress);
+        Device device = AppData.getInstance().findDevice(MacAddress);
         if (device == null) {
             device = createReceivedAnelDevice(MacAddress);
             isNewDevice = true;

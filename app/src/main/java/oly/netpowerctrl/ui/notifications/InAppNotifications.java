@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.AnimationController;
@@ -66,7 +65,7 @@ public class InAppNotifications {
         boolean serviceRunning = ListenService.getService() != null;
         ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
         if (serviceRunning) {
-            ACRA.getErrorReporter().putCustomData("plugin_anel_state", ListenService.getService().getPluginByID(AnelPlugin.PLUGIN_ID).isNetworkReducedState() ? "down" : "running");
+            ACRA.getErrorReporter().putCustomData("plugin_anel_state", ListenService.getService().getPlugin(0).isNetworkReducedState() ? "down" : "running");
         } else {
             ACRA.getErrorReporter().putCustomData("service_shutdown_reason", ListenService.service_shutdown_reason);
         }
@@ -125,8 +124,6 @@ public class InAppNotifications {
             return;
         }
 
-        AnimationController.animateBottomViewOut(toolbar);
-
         View v = toolbar.findViewWithTag(id);
         if (v != null) {
             toolbar.removeView(v);
@@ -135,6 +132,7 @@ public class InAppNotifications {
                 doUpdatePermanentNotification(activity, toolbar, it.next());
                 it.remove();
             }
+            AnimationController.animateBottomViewOut(toolbar);
         }
     }
 
@@ -146,6 +144,8 @@ public class InAppNotifications {
         toast.getView().measure(widthMeasureSpec, heightMeasureSpec);
         int toastWidth = toast.getView().getMeasuredWidth();
 
-        toast.setGravity(Gravity.LEFT | Gravity.TOP, (int) view.getX() - toastWidth, (int) view.getY());
+        int coordinates[] = new int[2];
+        view.getLocationInWindow(coordinates);
+        toast.setGravity(Gravity.LEFT | Gravity.TOP | Gravity.CENTER_VERTICAL, (int) view.getX() - toastWidth, coordinates[1]);
     }
 }

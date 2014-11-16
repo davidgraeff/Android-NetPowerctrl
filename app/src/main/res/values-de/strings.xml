@@ -48,23 +48,13 @@
     <string name="title_scene_edit">Bearbeite Szene</string>
 
     <string name="shortcut_show_mainwindow">Öffne App beim Ausführen</string>
-    <string name="delete_all_groups">Alle Szenen löschen?</string>
     <string name="confirmation_delete_all_scenes">Sind Sie sicher, dass Sie alle Szenen löschen wollen?</string>
 
     <string name="off">Aus</string>
     <string name="on">Ein</string>
     <string name="toggle">Umschalten</string>
 
-    <string-array name="feedbackOptions">
-        <item>Kontakt zu Entwickler</item>
-        <item>Fehler melden (Ticket System)</item>
-        <item>Zum Quellcode</item>
-        <item>In Google Play bewerten</item>
-        <item>Change log</item>
-    </string-array>
-
     <string name="drawer_overview">Übersicht</string>
-    <string name="drawer_switch_title">Schalten</string>
     <string name="drawer_overview_list">Listenansicht</string>
     <string name="drawer_overview_grid">Rasteransicht</string>
     <string name="drawer_overview_compact">Kompakte Ansicht</string>
@@ -72,10 +62,7 @@
     <string name="drawer_app_title">App und Geräte</string>
     <string name="drawer_devices">Geräte</string>
     <string name="drawer_preferences">Einstellungen</string>
-    <string name="drawer_devices_detail">Neue/eingerichte Geräte</string>
-    <string name="drawer_preferences_detail">Ports, Widgets, Theme, …</string>
     <string name="drawer_donate">Spenden</string>
-    <string name="drawer_donate_detail">Google, Paypal, Flattr</string>
 
     <string name="drawer_open">Öffne Navigationsleiste</string>
     <string name="drawer_close">Schließe Navigationsleiste</string>
@@ -122,7 +109,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="crash_toast_text">Ich bin leider abgestürzt :( Ein Absturzbericht wird automatisch gesendet</string>
     <string name="scene_rename">Szenenname</string>
     <string name="new_devices">Unbekannte Geräte</string>
-    <string name="configured_devices">Konfigurierte Geräte</string>
     <string name="devices">Zum Gerätebildschirm</string>
     <string name="preferences">Zu den Einstellungen</string>
     <string name="scene_set_name">Szenenname</string>
@@ -179,10 +165,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
     <string name="scene_remove_item">Entferne von Szene</string>
     <string name="outlet_set_icon">Zustandsbild…</string>
-    <string name="sort_title">Anders anordnen</string>
-    <string name="sort_custom">Eigene Reihenfolge</string>
-    <string name="list_sorted">Neue Reihenfolge</string>
-    <string name="help_sorting">Klicke alle Elemente der linken Liste in deiner gewünschten Reihenfolge an. Am Ende sollten alle Elemente auf der rechten Seite in deiner gewünschten Reihenfolge vorliegen.</string>
     <string name="create_device_not_all_data_set">Bitte erstmal alle Daten ausfüllen!</string>
 
     <string-array name="donation_google_catalog_values">
@@ -203,7 +185,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_username_summary">Der Benutzername für das Gerät. Auf der Webseite des Geräts können bis zu acht Benutzer mit unterschiedlichen Zugriffsrechten eingerichtet werden.</string>
     <string name="device_password_summary">Das Gerätepasswort. Das Passwort wird unverschlüsselt über das Netzwerk geschickt!</string>
     <string name="device_ip_summary">Die IP-Adresse oder der DNS-Hostname des Geräts.</string>
-    <string name="device_http_port_summary">Der HTTP Port des Geräts. Das ist derselbe, welcher auch für den Webzugriff genutzt wird.</string>
     <string name="alarm_weekdays_range">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s</string>
     <string name="alarm_weekdays_range_alarm">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s, Zufälliges Umschaltinterval: %4$s</string>
     <string name="alarm_once">Einmalig ausführen: $s</string>
@@ -351,13 +332,10 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="open_google_market">Google Play</string>
     <string name="feedback_add_title">Überschrift</string>
     <string name="feedback_add_text">Wunsch, Verbesserungsvorschlag oder Anregung</string>
-    <string name="feedback_add_disclaimer">If you submit this entry, it will be visible to all users of the app!</string>
     <string name="app_name_disclaimer">Dies ist eine Quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
     <string name="feedback_contact_me">Kontaktieren Sie mich um Probleme mit der App oder Fragen schnell zu klären. Möchten Sie ein allgemein einsehbares Feedback hinterlassen, benutzen Sie bitte Google Play.</string>
     <string name="feedback_add_description">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger. Ihr Feedback ist dann ausdrücklich erwünscht, damit die normale Version möglichst stabil erscheinen kann.</string>
     <string name="feedback_btn_add">Anregung hinzufügen</string>
-    <string name="feedback_btn_edit">Anregung editieren</string>
-    <string name="feedback_add_failed">Hinzufügen nicht erfolgreich!</string>
     <string name="drawer_change_view_type">Ansichtsmodus</string>
     <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
     <string name="outlets_view_type_list">Als Liste</string>
@@ -373,6 +351,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="help_groups">Um Elemente einer Gruppe hinzuzufügen, wechsel in die Übersicht und berühre das Werkzeug Symbol. Im folgendem Dialog kannst du dem Element Gruppen zuweisen.</string>
     <string name="label_title"><u>Titel</u></string>
     <string name="groups_assigned">Ansichtsgruppen</string>
+    <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

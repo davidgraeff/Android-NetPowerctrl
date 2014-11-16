@@ -64,7 +64,7 @@ import android.widget.AbsListView;
  * <p/>
  */
 public class SwipeMoveAnimator implements View.OnTouchListener {
-    private static final int DENSITY_INDEPENDENT_THRESHOLD = 200;
+    private static final int DENSITY_INDEPENDENT_THRESHOLD = 1000;
     // Cached ViewConfiguration and system-wide constant values
     private final int mSlop;
     private final int mMinFlingVelocity;
@@ -137,12 +137,13 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
 
     void swipeCancel(boolean swipeRight) {
         // cancel
-        for (View view : swipeViews)
-            view.animate()
-                    .translationX(offsetX)
-                    .alpha(1)
-                    .setDuration(mAnimationTime)
-                    .setListener(null);
+        if (mSwipingAllowed)
+            for (View view : swipeViews)
+                view.animate()
+                        .translationX(offsetX)
+                        .alpha(1)
+                        .setDuration(mAnimationTime)
+                        .setListener(null);
         mCallbacks.onSwipeComplete(swipeRight, false);
 
     }
@@ -160,6 +161,8 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                     return false;
                 }
 
+                mSwiping = false;
+                mSwipingAllowed = false;
                 mDownX = motionEvent.getRawX();
                 mDownY = motionEvent.getRawY();
                 mVelocityTracker = VelocityTracker.obtain();
@@ -200,7 +203,7 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                     if (Math.abs(deltaX) > mViewWidth / 3 && mSwiping) {
                         swipeComplete = true;
                         swipeRight = deltaX > 0;
-                    } else if (SWIPE_THRESHOLD_VELOCITY > absVelocityX   //mMinFlingVelocity <= absVelocityX && absVelocityX <= mMaxFlingVelocity
+                    } else if (mMinFlingVelocity <= absVelocityX && absVelocityX <= mMaxFlingVelocity
                             && absVelocityY < absVelocityX && mSwiping) {
                         // swipeComplete only if flinging in the same direction as dragging
                         swipeComplete = (velocityX < 0) == (deltaX < 0);
@@ -242,7 +245,9 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
                 float deltaX = motionEvent.getRawX() - mDownX;
                 float deltaY = motionEvent.getRawY() - mDownY;
                 boolean dismissRight = deltaX > 0;
-                if (Math.abs(deltaX) > mSlop && Math.abs(deltaY) < Math.abs(deltaX) / 2) {
+                float velocityX = mVelocityTracker.getXVelocity();
+                float absVelocityX = Math.abs(velocityX);
+                if (SWIPE_THRESHOLD_VELOCITY > absVelocityX && Math.abs(deltaX) > mSlop && Math.abs(deltaY) < Math.abs(deltaX) / 2) {
                     if (!mSwiping || mLastDirectionRight != dismissRight) {
                         mLastDirectionRight = dismissRight;
                         mSwipingAllowed = mCallbacks.onSwipeStarted(dismissRight);
@@ -261,15 +266,15 @@ public class SwipeMoveAnimator implements View.OnTouchListener {
 
                 if (mSwiping && mSwipingAllowed) {
                     float alpha = 1f - Math.max(0f, Math.min(1f,
-                            1f - 2f * Math.abs(deltaX) / mViewWidth));
+                            1f - Math.abs(deltaX) / mViewWidth));
 
                     mCallbacks.onSwipeProgress(dismissRight, alpha);
 
                     for (View view : swipeViews) {
                         if (dismissRight)
-                            view.setTranslationX(offsetX + deltaX + mSlop);
+                            view.setTranslationX(offsetX * (1f - alpha));
                         else
-                            view.setTranslationX(offsetX + deltaX - mSlop);
+                            view.setTranslationX(offsetX * (1f - alpha));
                         //Log.w("SW", String.valueOf(alpha)+ " "+ String.valueOf(offsetX + deltaX));
                         view.setAlpha(alpha);
                     }

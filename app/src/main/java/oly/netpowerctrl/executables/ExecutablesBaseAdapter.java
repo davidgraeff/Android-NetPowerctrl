@@ -119,7 +119,7 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
                 executableViewHolder.subtitle.setText(executable.getDescription(App.instance));
             }
 
-            executableViewHolder.title.setText(executable.getTitle(App.instance));
+            executableViewHolder.title.setText(executable.getTitle());
             executableViewHolder.title.setEnabled(executable.isEnabled());
 
             if (executable.isReachable())
@@ -202,30 +202,30 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
      * If it is only an update of an item false is returned.
      */
     private boolean addItemToGroup(Executable executable, int command_value, int start_position) {
-        boolean found = false;
+        boolean positionFound = false;
 
         int destination_index = mItems.size();
         for (int i = start_position; i < mItems.size(); ++i) {
-            ExecutableAdapterItem l = mItems.get(i);
-            if (l.getExecutable() == null) { // stop on header
+            ExecutableAdapterItem executableAdapterItem = mItems.get(i);
+            if (executableAdapterItem.getExecutable() == null) { // stop on header
                 destination_index = i;
                 break;
             }
 
-            boolean behind_current = l.getExecutable().getTitle(App.instance).compareToIgnoreCase(executable.getTitle(App.instance)) >= 0;
-            if (!found && behind_current) {
-                destination_index = i;
-                found = true;
-            }
-
             // If the same DevicePort already exists in this adapter, we will update that instead
-            if (l.getExecutableUid().equals(executable.getUid())) {
+            if (executableAdapterItem.getExecutableUid().equals(executable.getUid())) {
                 // Apply new values to existing item
-                l.command_value = command_value;
-                l.setExecutable(executable);
-                l.clearMarkRemoved();
+                executableAdapterItem.command_value = command_value;
+                executableAdapterItem.setExecutable(executable);
+                executableAdapterItem.clearMarkRemoved();
                 notifyItemChanged(i);
                 return false;
+            }
+
+            if (!positionFound &&
+                    executableAdapterItem.getExecutable().getTitle().compareTo(executable.getTitle()) >= 0) {
+                destination_index = i;
+                positionFound = true;
             }
         }
 

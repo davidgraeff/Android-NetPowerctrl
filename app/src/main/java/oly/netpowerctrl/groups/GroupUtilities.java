@@ -57,7 +57,7 @@ public class GroupUtilities {
      *
      * @param context The context
      */
-    public static void createGroup(Context context) {
+    public static void createGroup(Context context, final GroupCreatedCallback groupCreatedCallback) {
         //noinspection ConstantConditions
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
@@ -71,7 +71,9 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                AppData.getInstance().groupCollection.add(name);
+                int index = AppData.getInstance().groupCollection.add(name);
+                if (groupCreatedCallback != null)
+                    groupCreatedCallback.onGroupCreated(index);
             }
         });
 
@@ -104,5 +106,9 @@ public class GroupUtilities {
 
         alert.setNegativeButton(android.R.string.cancel, null);
         alert.show();
+    }
+
+    public interface GroupCreatedCallback {
+        void onGroupCreated(int group_index);
     }
 }

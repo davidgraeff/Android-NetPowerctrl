@@ -23,7 +23,6 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,10 +36,9 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.utils.GithubAndCloudant;
 import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
-public class PreferencesFragment extends PreferencesWithValuesFragment implements GithubAndCloudant.IGithubOpenIssues, LoadStoreIconData.IconSelected {
+public class PreferencesFragment extends PreferencesWithValuesFragment implements LoadStoreIconData.IconSelected {
     private static final int REQUEST_CODE_IMPORT = 100;
     private static final int REQUEST_CODE_EXPORT = 101;
 
@@ -142,31 +140,24 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             }
         });
 
-        //getPreferenceScreen().removePreference(findPreference("extensions"));
+        //noinspection ConstantConditions
+        findPreference("select_background_image").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                LoadStoreIconData.show_select_icon_dialog(getActivity(), "backgrounds", new LoadStoreIconData.IconSelected() {
+                    @Override
+                    public void setIcon(Object context_object, Bitmap bitmap) {
+                        PreferencesFragment.this.setIcon(context_object, bitmap);
+                    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            //noinspection ConstantConditions
-            findPreference("select_background_image").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    LoadStoreIconData.show_select_icon_dialog(getActivity(), "backgrounds", new LoadStoreIconData.IconSelected() {
-                        @Override
-                        public void setIcon(Object context_object, Bitmap bitmap) {
-                            PreferencesFragment.this.setIcon(context_object, bitmap);
-                        }
-
-                        @Override
-                        public void startActivityForResult(Intent intent, int requestCode) {
-                            PreferencesFragment.this.startActivityForResult(intent, requestCode);
-                        }
-                    }, null);
-                    return false;
-                }
-            });
-        } else {
-            getPreferenceScreen().removePreference(findPreference("select_background_image"));
-            getPreferenceScreen().removePreference(findPreference("show_background"));
-        }
+                    @Override
+                    public void startActivityForResult(Intent intent, int requestCode) {
+                        PreferencesFragment.this.startActivityForResult(intent, requestCode);
+                    }
+                }, null);
+                return false;
+            }
+        });
 
         //noinspection ConstantConditions
         findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -228,7 +219,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 continue;
             }
             widgetDataList.add(new WidgetData(
-                    port.device.getDeviceName() + ", " + port.getTitle(getActivity()),
+                    port.device.getDeviceName() + ", " + port.getTitle(),
                     prefName, appWidgetId));
         }
 
@@ -270,21 +261,11 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 }
             });
         }
-
-        //noinspection ConstantConditions
-        findPreference("issues").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                GithubAndCloudant.getOpenIssues(PreferencesFragment.this, true, null);
-                return false;
-            }
-        });
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        GithubAndCloudant.getOpenIssues(this, false, null);
         final ListView lv = (ListView) getActivity().findViewById(android.R.id.list);
         if (lv != null)
             App.getMainThreadHandler().post(new Runnable() {
@@ -305,26 +286,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             } else
                 LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, intent);
         }
-    }
-
-    @Override
-    public void gitHubIssue(int number, String title, String body) {
-
-    }
-
-    @Override
-    public void gitHubOpenIssuesUpdated(int count, long last_access) {
-        Context context = getActivity();
-        if (context == null)
-            return;
-
-        findPreference("issues").setTitle(context.getString(R.string.issues_open, count));
-        if (count < 0) {
-            findPreference("issues").setSummary(context.getString(R.string.issues_error));
-            return;
-        }
-        final String date = DateFormat.getInstance().format(last_access);
-        findPreference("issues").setSummary(context.getString(R.string.issues_last_access, date));
     }
 
     @Override

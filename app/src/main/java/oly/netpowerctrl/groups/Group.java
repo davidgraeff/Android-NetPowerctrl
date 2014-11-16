@@ -1,6 +1,5 @@
 package oly.netpowerctrl.groups;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.util.JsonReader;
@@ -12,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.data.StorableInterface;
 
@@ -49,25 +47,11 @@ public class Group implements StorableInterface {
         return false;
     }
 
-    public Bitmap getBitmap(Context context) {
-        if (bitmap == null) {
-            bitmap = LoadStoreIconData.loadBitmap(context, uuid.toString(),
-                    LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateNotApplicable);
-        }
-        return bitmap;
-    }
-
-    @Override
-    public StorableDataType getDataType() {
-        return StorableDataType.JSON;
-    }
-
     @Override
     public String getStorableName() {
         return uuid.toString();
     }
 
-    @Override
     public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
         while (reader.hasNext()) {

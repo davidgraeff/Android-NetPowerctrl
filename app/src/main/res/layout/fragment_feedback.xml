@@ -86,10 +86,31 @@
                     android:singleLine="true" />
 
                 <TextView
+                    android:id="@+id/bugs2_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/bugs"
+                    android:clickable="true"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Gemeldete Wünsche/Anregungen:" />
+
+                <TextView
+                    android:id="@+id/bugs2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/bugs"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toRightOf="@id/bugs2_label"
+                    android:clickable="true"
+                    android:ellipsize="end"
+                    android:singleLine="true" />
+
+                <TextView
                     android:id="@+id/desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/bugs_label"
+                    android:layout_below="@id/bugs2_label"
                     android:layout_marginTop="10dp"
                     android:autoLink="web"
                     android:text="@string/app_name_desc" />
@@ -202,7 +223,6 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_toRightOf="@id/mail"
                         android:layout_weight="1"
                         android:text="@string/open_google_market" />
 
@@ -268,7 +288,6 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_toRightOf="@id/feedback_google_plus"
                         android:layout_weight="1"
                         android:text="@string/enter_beta" />
 

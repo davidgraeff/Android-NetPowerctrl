@@ -2,6 +2,7 @@ package oly.netpowerctrl.network;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.net.UnknownHostException;
@@ -32,24 +33,29 @@ public abstract class DeviceObserverBase {
             finishWithTimeouts();
         }
     };
-    private final List<Device> devices_to_observe = new ArrayList<>();
     final Runnable redoRunnable = new Runnable() {
         @Override
         public void run() {
-            List<Device> deviceList = new ArrayList<>(devices_to_observe);
-            for (Device device : deviceList) {
-                doAction(device, true);
-            }
+            retryRemainingDevices();
         }
     };
+    private final List<Device> devices_to_observe = new ArrayList<>();
     private final List<Device> timeout_devices = new ArrayList<>();
     protected boolean broadcast = false;
+    private boolean timeoutRepeat = false;
     private onDeviceObserverResult target;
 
     DeviceObserverBase(Context context, onDeviceObserverResult target) {
         this.context = context;
         mainLoopHandler = new Handler(context.getMainLooper());
         setDeviceQueryResult(target);
+    }
+
+    private void retryRemainingDevices() {
+        List<Device> deviceList = new ArrayList<>(devices_to_observe);
+        for (Device device : deviceList) {
+            doAction(device, true);
+        }
     }
 
     public void setDeviceQueryResult(onDeviceObserverResult target) {
@@ -72,7 +78,9 @@ public abstract class DeviceObserverBase {
             // and the unique id is copied from the network device.
             if (device_to_observe.getUniqueDeviceID() == null) {
                 if (device_to_observe.hasAddress(device.getHostnameIPs(false), false)) {
+                    device_to_observe.lockDevice();
                     device_to_observe.setUniqueDeviceID(device.getUniqueDeviceID());
+                    device_to_observe.releaseDevice();
                     device_to_observe.clearStatusMessageAllConnections();
                     it.remove();
                     if (target != null)
@@ -121,13 +129,10 @@ public abstract class DeviceObserverBase {
             return;
         }
 
-        if (service.isNetworkReducedMode())
-            service.enterFullNetworkMode(false, false);
-
         // Register on main application object to receive device updates
         AppData.getInstance().addUpdateDeviceState(this);
 
-        // We do not repeat the broadcast as much as individual requests
+        // We do not repeat the broadcast as often as individual requests
         if (!broadcast) {
             mainLoopHandler.postDelayed(redoRunnable, 300);
             mainLoopHandler.postDelayed(redoRunnable, 1200);
@@ -136,11 +141,13 @@ public abstract class DeviceObserverBase {
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
 
         if (broadcast) {
+            service.wakeupAllDevices(false);
             service.sendBroadcastQuery();
         } else {
             // Send out broadcast
             List<Device> deviceList = new ArrayList<>(devices_to_observe);
             for (Device device : deviceList) {
+                service.wakeupPlugin(device);
                 doAction(device, true);
             }
         }
@@ -186,17 +193,29 @@ public abstract class DeviceObserverBase {
         device.releaseDevice();
 
         if (resetTimeout) {
-            mainLoopHandler.removeCallbacks(timeoutRunnable);
-            mainLoopHandler.postDelayed(timeoutRunnable, 1500);
+            repeatTimeout(1500);
         }
 
         if (!needResolve) {
             devices_to_observe.add(device);
             return countWait.get();
         } else {
+            timeoutRepeat = true;
             new Thread(new ResolveHostnameRunnable(device, this)).start();
             return countWait.incrementAndGet();
         }
+    }
+
+    private void finishedLookup(Device device) {
+        devices_to_observe.add(device);
+        if (countWait.decrementAndGet() == 0) {
+            startQuery();
+        }
+    }
+
+    private void repeatTimeout(int time_in_ms) {
+        mainLoopHandler.removeCallbacks(timeoutRunnable);
+        mainLoopHandler.postDelayed(timeoutRunnable, time_in_ms);
     }
 
     /**
@@ -213,7 +232,21 @@ public abstract class DeviceObserverBase {
         // onObserverJobFinished to not get into an endless loop!
         AppData.getInstance().removeUpdateDeviceState(DeviceObserverBase.this);
 
-        for (Device device : devices_to_observe) {
+        // Wait for all ResolveHostnameRunnable threads, max 200ms (we already waited 1,5sec longer)
+        if (countWait.get() != 0) {
+            if (timeoutRepeat) {
+                timeoutRepeat = false;
+                repeatTimeout(200);
+                return;
+            } else {
+                Log.w("finishWithTimeouts", "DNS resolve to long: " + String.valueOf(countWait.get()));
+            }
+        }
+
+        // We have to work with a copy of devices_to_observe here, because ResolveHostnameRunnable may
+        // return while we are in this list!
+        List<Device> deviceList = new ArrayList<>(devices_to_observe);
+        for (Device device : deviceList) {
             if (device.getFirstReachableConnection() != null)
                 device.setStatusMessageAllConnections(context.getString(R.string.error_timeout_device, ""));
             // Call onConfiguredDeviceUpdated to update device info.
@@ -254,15 +287,12 @@ public abstract class DeviceObserverBase {
             if (deviceObserverBase == null)
                 return;
 
-            deviceObserverBase.devices_to_observe.add(device);
-            if (deviceObserverBase.countWait.decrementAndGet() == 0) {
-                App.getMainThreadHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        deviceObserverBase.startQuery();
-                    }
-                });
-            }
+            App.getMainThreadHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    deviceObserverBase.finishedLookup(device);
+                }
+            });
         }
     }
 }

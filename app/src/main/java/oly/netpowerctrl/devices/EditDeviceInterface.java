@@ -18,8 +18,6 @@ public interface EditDeviceInterface {
 
     boolean startTest(Context context);
 
-    boolean wakeupPlugin(Context context);
-
     boolean isTestOK();
 
     enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}

@@ -61,7 +61,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
     private int currentPosition = 0;
 
     private PagerAdapter mPageAdapter;
-    private SparseArray<String> mContentDescriptions = new SparseArray<String>();
+    private SparseArray<String> mContentDescriptions = new SparseArray<>();
     private DataSetObserver dataSetObserver = new DataSetObserver() {
         @Override
         public void onInvalidated() {
@@ -182,7 +182,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
     }
 
     private void populateTabStrip() {
-        final OnClickListener tabClickListener = new TabClickListener();
+        final TabClickListener tabClickListener = new TabClickListener();
 
         for (int i = 0; i < mPageAdapter.getCount(); i++) {
             View tabView = null;
@@ -211,6 +211,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
             tabTitleView.setText(mPageAdapter.getPageTitle(i));
             tabView.setOnClickListener(tabClickListener);
+            tabView.setOnLongClickListener(tabClickListener);
             String desc = mContentDescriptions.get(i, null);
             if (desc != null) {
                 tabView.setContentDescription(desc);
@@ -309,19 +310,34 @@ public class SlidingTabLayout extends HorizontalScrollView {
 
     public interface onTabClickedListener {
         void onTabClicked(int position);
+
+        void onTabLongClicked(View view, int position);
     }
 
-    private class TabClickListener implements OnClickListener {
+    private class TabClickListener implements OnClickListener, OnLongClickListener {
         @Override
-        public void onClick(View v) {
+        public void onClick(View view) {
             for (int i = 0; i < mTabStrip.getChildCount(); i++) {
-                if (v == mTabStrip.getChildAt(i)) {
+                if (view == mTabStrip.getChildAt(i)) {
                     currentPosition = i;
                     if (tabClickedListener != null)
                         tabClickedListener.onTabClicked(currentPosition);
                     return;
                 }
             }
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            for (int i = 0; i < mTabStrip.getChildCount(); i++) {
+                if (view == mTabStrip.getChildAt(i)) {
+                    currentPosition = i;
+                    if (tabClickedListener != null)
+                        tabClickedListener.onTabLongClicked(view, currentPosition);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

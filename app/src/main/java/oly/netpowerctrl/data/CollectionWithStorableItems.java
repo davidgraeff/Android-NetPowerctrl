@@ -53,6 +53,16 @@ abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends Stora
             storage.save(this, item);
     }
 
+    protected void save(ITEM item) {
+        if (storage != null)
+            storage.save(this, item);
+    }
+
+    protected void remove(ITEM item) {
+        if (storage != null)
+            storage.remove(this, item);
+    }
+
     public onStorageUpdate getStorage() {
         return storage;
     }

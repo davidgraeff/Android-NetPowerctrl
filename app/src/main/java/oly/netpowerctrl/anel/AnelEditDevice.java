@@ -2,9 +2,11 @@ package oly.netpowerctrl.anel;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
@@ -16,7 +18,8 @@ import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
 
 /**
- * Created by david on 20.08.14.
+ * Use this class for testing device settings. Results are propagated via the onCreateDeviceResult interface.
+ * The EditDeviceInterface is also implemented so this can be returned by the anel plugin for editing devices.
  */
 public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdated<DeviceCollection, Device>, EditDeviceInterface {
     TestStates test_state = TestStates.TEST_INIT;
@@ -24,33 +27,21 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
     private onCreateDeviceResult listener = null;
     private DeviceQuery deviceQuery;
 
-    public AnelEditDevice(String defaultDeviceName, Device di) {
-        if (di == null) {
+    public AnelEditDevice(String defaultDeviceName, @Nullable Device edit_device) {
+        if (edit_device == null) {
             device = new Device(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID(), true);
             device.setDeviceName(defaultDeviceName);
-            device.setPluginInterface(AnelUDPDeviceDiscoveryThread.anelPlugin);
             // Default values for user and password
             device.setUserName("admin");
             device.setPassword("anel");
         } else {
-            device = di;
+            device = edit_device;
         }
     }
 
     @Override
-    public boolean wakeupPlugin(Context context) {
-        AnelPlugin pluginInterface = (AnelPlugin) device.getPluginInterface();
-        if (pluginInterface != null) {
-            pluginInterface.enterFullNetworkState(context, device);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public void onObserverDeviceUpdated(Device di) {
-        updated(null, di, ObserverUpdateActions.UpdateAction, -1);
+    public void onObserverDeviceUpdated(Device updated_device) {
+        updated(null, updated_device, ObserverUpdateActions.UpdateAction, -1);
     }
 
     @Override
@@ -60,8 +51,8 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
         // The device may not have a unique id and may be returned as timeout device.
         // Be careful with equalsByUniqueID which will crash on a device without an id!
-        for (Device di : timeout_devices) {
-            if (di != device || !di.equalsByUniqueID(device))
+        for (Device timeout_device : timeout_devices) {
+            if (timeout_device != device || !timeout_device.equalsByUniqueID(device))
                 continue;
             test_state = TestStates.TEST_INIT;
             if (listener != null)
@@ -77,7 +68,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
         test_state = TestStates.TEST_REACHABLE;
 
-        if (wakeupPlugin(context))
+        if (device.getPluginInterface() != null)
             deviceQuery = new DeviceQuery(context, this, device);
         else
             return false;
@@ -113,18 +104,16 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            AnelPlugin pi = (AnelPlugin) device.getPluginInterface();
             device.releaseDevice();
-            assert pi != null;
             if (deviceQuery != null) {
                 deviceQuery.addDevice(device, false);
             }
             DevicePort oi = device.getFirst();
             if (oi != null)
-                pi.execute(oi, oi.current_value, null);
-            Handler handler = new Handler();
+                AppData.getInstance().execute(oi, oi.current_value, null);
+
             // Timeout is 1,1s
-            handler.postDelayed(new Runnable() {
+            new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     if (test_state == TestStates.TEST_ACCESS || test_state == TestStates.TEST_INIT) {

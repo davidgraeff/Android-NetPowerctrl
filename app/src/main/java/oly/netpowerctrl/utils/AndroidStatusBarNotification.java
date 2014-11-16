@@ -7,20 +7,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.FavCollection;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.scenes.SceneCollection;
 
 /**
- * Created by david on 08.07.14.
+ * Show a permanent notification in the android statusbar and add favourite scenes and devicePorts as actions.
  */
 public class AndroidStatusBarNotification {
-    private static onCollectionUpdated<SceneCollection, Scene> collectionUpdateListener = null;
+    private static onCollectionUpdated<FavCollection, FavCollection.FavItem> collectionUpdateListener = null;
 
     public AndroidStatusBarNotification(final Context context) {
         SharedPrefs.getInstance().registerShowPersistentNotification(new SharedPrefs.IShowPersistentNotification() {
@@ -48,22 +51,30 @@ public class AndroidStatusBarNotification {
                 .setOngoing(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            SceneCollection g = AppData.getInstance().sceneCollection;
+            AppData appData = AppData.getInstance();
+            FavCollection g = appData.favCollection;
             int maxLength = 0;
-            for (Scene scene : g.getItems()) {
-                if (!scene.isFavourite())
+            List<FavCollection.FavItem> items = new ArrayList<>(g.getItems());
+            for (FavCollection.FavItem favItem : items) {
+                Executable executable = appData.findExecutable(favItem.executable_uid);
+
+                if (executable == null) {
+                    // No executable found for the given uid. We remove the item from the favCollection now.
+                    g.setFavourite(favItem.executable_uid, false);
                     continue;
+                }
+
                 if (maxLength > 3) break;
                 ++maxLength;
 
                 // This intent will be executed by a click on the widget
-                Intent clickIntent = AndroidShortcuts.createShortcutExecutionIntent(context, scene, false, true);
+                Intent clickIntent = AndroidShortcuts.createShortcutExecutionIntent(context, favItem.executable_uid, false, true);
                 if (clickIntent == null)
                     continue;
                 clickIntent.setAction(Intent.ACTION_MAIN);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
-                b.addAction(0, scene.sceneName, pendingIntent);
+                b.addAction(0, executable.getTitle(), pendingIntent);
             }
         }
 
@@ -80,35 +91,24 @@ public class AndroidStatusBarNotification {
 
         if (enabled) {
             if (collectionUpdateListener == null) {
-                collectionUpdateListener = new onCollectionUpdated<SceneCollection, Scene>() {
+                collectionUpdateListener = new onCollectionUpdated<FavCollection, FavCollection.FavItem>() {
                     @Override
-                    public boolean updated(SceneCollection sceneCollection, Scene scene, ObserverUpdateActions action, int position) {
+                    public boolean updated(FavCollection collection, FavCollection.FavItem item, ObserverUpdateActions action, int position) {
                         setEnabled(context, true);
                         return true;
                     }
                 };
-                AppData.getInstance().sceneCollection.registerObserver(collectionUpdateListener);
+                AppData.getInstance().favCollection.registerObserver(collectionUpdateListener);
             }
 
+            mNotificationManager.cancel(1);
             mNotificationManager.notify(1, createNotification(context));
         } else { // disabled
             if (collectionUpdateListener != null) {
-                AppData.getInstance().sceneCollection.unregisterObserver(collectionUpdateListener);
+                AppData.getInstance().favCollection.unregisterObserver(collectionUpdateListener);
                 collectionUpdateListener = null;
             }
             mNotificationManager.cancel(1);
         }
-    }
-
-    public static void init(final Context context) {
-        SharedPrefs.getInstance().registerShowPersistentNotification(new SharedPrefs.IShowPersistentNotification() {
-            @Override
-            public void showPersistentNotificationChanged(boolean enabled) {
-                setEnabled(context, enabled);
-            }
-        });
-
-        if (SharedPrefs.getInstance().isNotification())
-            setEnabled(context, true);
     }
 }

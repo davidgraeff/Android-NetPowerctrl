@@ -25,7 +25,7 @@ public class ExecutablesSourceDemo extends ExecutablesSourceBase {
     }
 
     private Scene createScene(String name, boolean isReachable, boolean isOn) {
-        Scene scene = new Scene();
+        Scene scene = Scene.createNewSzene();
         scene.sceneName = name;
         scene.setMaximumValue(1);
         scene.setCurrentValue(isOn ? 1 : 0);

@@ -46,19 +46,10 @@
 
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
     <string name="delete_all_groups">Delete all scenes?</string>
-    <string name="confirmation_delete_all_scenes">Are you sure you want to delete all scenes?</string>
 
     <string name="off">Off</string>
     <string name="on">On</string>
     <string name="toggle">Toggle</string>
-
-    <string-array name="feedbackOptions">
-        <item>Contact developer</item>
-        <item>Report a bug (Ticket system)</item>
-        <item>Go to source code</item>
-        <item>Rate in Google Play</item>
-        <item>Change log</item>
-    </string-array>
 
     <string name="drawer_overview">Overview</string>
     <string name="drawer_switch_title">Trigger actions</string>
@@ -181,10 +172,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_wakeup_energy_saving_mode_summary">Usually the energy saving mode will not be left automatically (except if you reopen the app). If you activate this option, part of the app will remain active and search for devices after a network change.</string>
     <string name="scene_remove_item">Remove item from scene</string>
     <string name="outlet_set_icon">Icon for state…</string>
-    <string name="sort_title">Reorder</string>
-    <string name="sort_custom">Custom sort</string>
-    <string name="list_sorted">New order</string>
-    <string name="help_sorting">Click an element on the left side to move it to the end of the list on the right side. After you have reordered all elements you may click ok to save.</string>
     <string name="create_device_not_all_data_set">Please fill in all data first!</string>
     <string-array name="donation_google_catalog_values">
         <item>Donate 1 beer</item>
@@ -318,10 +305,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_nfc_bind_summary">Open this app on contact with the written NFC tag</string>
     <string name="outlet_edit_title">Edit %1$s</string>
     <string name="outlet_name_label">Name</string>
-    <string name="outlet_icons_label">State icons</string>
     <string name="outlet_groups_label">Assigned groups</string>
-    <string name="outlet_icon_off_label">State icon OFF</string>
-    <string name="outlet_icon_on_label">State icon ON</string>
     <string name="error_rename_only_with_http_connection">Renaming only possible with http connection</string>
     <string name="notification_title_changelog">The app has been updated to version %1$s</string>
     <string name="widget_inProgress">Waiting</string>
@@ -371,6 +355,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="help_groups">Um Elemente einer Gruppe hinzuzufügen, wechsel in die Übersicht und berühre das Werkzeug Symbol. Im folgendem Dialog kannst du dem Element Gruppen zuweisen.</string>
     <string name="label_title"><u>Titel</u></string>
     <string name="groups_assigned">Ansichtsgruppen</string>
+    <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

@@ -22,6 +22,7 @@ import java.text.DateFormatSymbols;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
+import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.onHttpRequestResult;
 
@@ -65,10 +66,10 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
                 }
             });
 
-            ArrayAdapter<String> array_adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1);
+            ArrayAdapter<String> array_adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
             for (int i = 0; i < s.getDevicePortList().size(); ++i)
                 if (s.getDevicePortList().get(i) != null)
-                    array_adapter.add(s.getDevicePortList().get(i).getTitle(getActivity()));
+                    array_adapter.add(s.getDevicePortList().get(i).getTitle());
 
             spinner.setAdapter(array_adapter);
             spinner.setSelection(s.indexOf(timer.port));
@@ -204,6 +205,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
 
     private void removeAlarm() {
+        ListenService.getService().wakeupPlugin(timer.port.device);
         PluginInterface plugin = (PluginInterface) timer.port.device.getPluginInterface();
         plugin.removeAlarm(timer, this);
     }
@@ -239,7 +241,9 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             return;
         }
 
+        ListenService.getService().wakeupPlugin(timer.port.device);
         PluginInterface plugin = (PluginInterface) timer.port.device.getPluginInterface();
+
         // Find free device alarm, if not already assigned
         if (timer.id == -1) {
             Timer found_timer;

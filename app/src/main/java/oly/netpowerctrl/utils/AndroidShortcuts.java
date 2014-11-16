@@ -7,10 +7,10 @@ import android.support.annotation.Nullable;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.scenes.SceneItem;
 
 /**
  * Shortcut Utility class
@@ -42,13 +42,13 @@ public class AndroidShortcuts {
 
 
     public static Intent createShortcutExecutionIntent(Context context,
-                                                       SceneItem item,
+                                                       String executable_uid,
                                                        boolean show_mainWindow,
                                                        boolean enable_feedback) {
         // Create shortcut intent
         Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
-        shortcutIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, item.uuid.toString());
-        shortcutIntent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, item.command);
+        shortcutIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, executable_uid);
+        shortcutIntent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, DevicePort.TOGGLE);
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);

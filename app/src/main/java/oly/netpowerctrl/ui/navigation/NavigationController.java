@@ -47,6 +47,7 @@ import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 public class NavigationController implements RecyclerItemClickListener.OnItemClickListener {
     private final ArrayList<DrawerStateChanged> observers = new ArrayList<>();
     private final List<BackStackEntry> backstack = new ArrayList<>();
+    OnNavigationBackButtonPressed onNavigationBackButtonPressed;
     private DrawerLayout mDrawerLayout;
     private RecyclerView mRecyclerView;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -183,22 +184,27 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         }
     }
 
-    public void createBackButton() {
+    public void createBackButton(OnNavigationBackButtonPressed onNavigationBackButtonPressed) {
         ActionBarActivity context = mDrawerActivity.get();
         if (context == null) // should never happen
             return;
+        this.onNavigationBackButtonPressed = onNavigationBackButtonPressed;
         mDrawerToggle = null;
         mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE);
-        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
+        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_USE_LOGO |
+                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
     }
 
     public void createDrawerToggle() {
+        onNavigationBackButtonPressed = null;
         mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
         ActionBarActivity context = mDrawerActivity.get();
         if (context == null) // should never happen
             return;
-        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE);
+        context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_USE_LOGO |
+                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
 
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
@@ -222,7 +228,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         if (mDrawerLayout == null)
             return;
 
-        // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mRecyclerView);
         for (DrawerStateChanged drawerStateChanged : observers) {
             drawerStateChanged.drawerState(drawerOpen);
@@ -256,8 +261,11 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        return mDrawerLayout != null && mDrawerToggle.onOptionsItemSelected(item);
-
+        if (mDrawerToggle == null) {
+            onNavigationBackButtonPressed.onNavigationBackButtonPressed();
+            return true;
+        } else
+            return mDrawerToggle.onOptionsItemSelected(item);
     }
 
     public boolean onBackPressed() {
@@ -431,11 +439,15 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         return true;
     }
 
-
     public enum RestorePositionEnum {
         NoRestore,
         RestoreLastSaved,
         RestoreAfterConfigurationChanged
+    }
+
+
+    public interface OnNavigationBackButtonPressed {
+        void onNavigationBackButtonPressed();
     }
 
     public interface DrawerStateChanged {

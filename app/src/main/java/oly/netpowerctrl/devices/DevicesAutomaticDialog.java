@@ -16,7 +16,6 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
@@ -67,8 +66,7 @@ public class DevicesAutomaticDialog extends DialogFragment implements onCreateDe
         ++current;
         textView.append("Check " + device.getDeviceName() + "...\n");
 
-        PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
-        if (pluginInterface == null) {
+        if (device.getPluginInterface() == null) {
             textView.append("\tPlugin not found\n");
             editDevice = null;
             App.getMainThreadHandler().post(new Runnable() {
@@ -80,7 +78,22 @@ public class DevicesAutomaticDialog extends DialogFragment implements onCreateDe
             return;
         }
 
-        editDevice = pluginInterface.openEditDevice(device);
+        editDevice = ((PluginInterface) device.getPluginInterface()).openEditDevice(device);
+
+        // If no edit device -> there is no configuration necessary
+        if (editDevice == null) {
+            textView.append("\tOK\n");
+            AppData.getInstance().addToConfiguredDevices(getActivity(), device);
+            editDevice = null;
+            App.getMainThreadHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    takeNext();
+                }
+            });
+            return;
+        }
+
         editDevice.setResultListener(this);
 
         if (!editDevice.startTest(getActivity())) {
@@ -105,10 +118,13 @@ public class DevicesAutomaticDialog extends DialogFragment implements onCreateDe
                 public void run() {
                     AppData d = AppData.getInstance();
                     // Add to group with name DeviceName
-                    UUID group = d.groupCollection.add(deviceToAdd.getDeviceName());
+                    int index = d.groupCollection.add(deviceToAdd.getDeviceName());
+                    UUID group = d.groupCollection.get(index).uuid;
+                    deviceToAdd.lockDevicePorts();
                     Iterator<DevicePort> devicePortIterator = deviceToAdd.getDevicePortIterator();
                     while (devicePortIterator.hasNext())
                         devicePortIterator.next().groups.add(group);
+                    deviceToAdd.releaseDevicePorts();
                     // Add device to configured devices
                     d.addToConfiguredDevices(getActivity(), deviceToAdd);
                 }

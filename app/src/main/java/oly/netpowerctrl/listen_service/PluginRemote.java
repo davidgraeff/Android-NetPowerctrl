@@ -19,7 +19,6 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionFabric;
 import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.onExecutionFinished;
@@ -46,20 +45,17 @@ public class PluginRemote implements PluginInterface {
     private final INetPwrCtrlPluginResult.Stub callback = new INetPwrCtrlPluginResult.Stub() {
         @Override
         public void finished(boolean api_version_missmatch) {
-            DeviceCollection deviceConnection = AppData.getInstance().deviceCollection;
-            for (Device device : deviceConnection.getItems()) {
-                if (device.getPluginInterface() == PluginRemote.this) {
-                    if (api_version_missmatch)
-                        device.setStatusMessageAllConnections(context.getString(R.string.error_plugin_api_version_missmatch));
-                    else
-                        device.setStatusMessageAllConnections(context.getString(R.string.error_plugin_no_service_connection));
-                }
+            for (Device device : AppData.getInstance().findDevices(PluginRemote.this)) {
+                if (api_version_missmatch)
+                    device.setStatusMessageAllConnections(context.getString(R.string.error_plugin_api_version_missmatch));
+                else
+                    device.setStatusMessageAllConnections(context.getString(R.string.error_plugin_no_service_connection));
             }
         }
 
         @Override
         public void deviceConnectionChanged(String device_unique_id, int connection_id, String connection_json) throws RemoteException {
-            final Device device = AppData.getInstance().findDeviceByUniqueID(device_unique_id);
+            final Device device = AppData.getInstance().findDevice(device_unique_id);
             if (device == null) {
                 if (SharedPrefs.getInstance().logExtensions()) {
                     Logging.appendLog(context, "Extension " + serviceName + " stateChanged: no device found!");
@@ -88,7 +84,7 @@ public class PluginRemote implements PluginInterface {
 
         @Override
         public void devicePortChanged(String device_unique_id, String device_port_json) throws RemoteException {
-            Device device = AppData.getInstance().findDeviceByUniqueID(device_unique_id);
+            Device device = AppData.getInstance().findDevice(device_unique_id);
             if (device == null) {
                 if (SharedPrefs.getInstance().logExtensions()) {
                     Logging.appendLog(context, "Extension " + serviceName + " devicePortsChanged: no device found!");

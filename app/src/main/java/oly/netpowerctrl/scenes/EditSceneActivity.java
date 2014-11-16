@@ -4,13 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
@@ -31,6 +29,7 @@ import com.wefika.flowlayout.FlowLayout;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -52,6 +51,7 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
+import oly.netpowerctrl.utils.AnimationController;
 
 /**
  * This activity is responsible for creating a "scene" either for the scene list
@@ -65,9 +65,11 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     public static final String EDIT_SCENE_NOT_SHORTCUT = "scenes";
     public static final String LOAD_SCENE = "load";
     public static final String RESULT_SCENE_JSON = "scene";
-    public static final String RESULT_SCENE_BITMAP_TEMP = "scene_bitmap_file_temp";
-    public static final String RESULT_SCENE_BITMAP_FILE_DEST = "scene_bitmap_file_dest";
+    public static final String RESULT_SCENE_BITMAP_FILES_TEMP = "scene_bitmap_file_temps";
+    public static final String RESULT_SCENE_BITMAP_FILES_DEST = "scene_bitmap_file_dests";
+    public static final String RESULT_SCENE_BITMAP_STATES = "scene_bitmap_states";
     public static final String RESULT_SCENE_REMOVE_UID = "scene_remove_uuid";
+    public static final String RESULT_SCENE_IS_FAVOURITE = "scene_is_favourite";
     public static final String RESULT_SCENE_UUID = "scene_uuid";
     public static final String RESULT_ACTION_UUID = "action_uuid";
     public static final String RESULT_ACTION_COMMAND = "action_command";
@@ -86,12 +88,16 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     private boolean isLoaded = false;
     private boolean isSceneNotShortcut = false;
     // Scene Icon
-    private Bitmap scene_icon;
+    private Bitmap scene_icon_nostate;
+    private Bitmap scene_icon_off;
+    private Bitmap scene_icon_on;
     private ImageView btnSceneFav;
     private Button btnSceneAddHomescreen;
     private Button btnNFC;
     private FlowLayout groups_layout;
     private Toast toast;
+    private boolean iconMenuVisible = false;
+    private boolean isFavourite;
 
     /*
  * ActionBar icon clicked
@@ -168,17 +174,29 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         enable_feedback = (CheckBox) findViewById(R.id.shortcut_enable_feedback);
         groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
 
-//        toolbar.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                requestName(scene);
-//            }
-//        });
+        View.OnClickListener iconClick = new View.OnClickListener() {
+            @Override
+            public void onClick(final View view) {
+                if (!isSceneNotShortcut || iconMenuVisible) {
+                    AnimationController.animatePress(view);
+                    LoadStoreIconData.show_select_icon_dialog(EditSceneActivity.this, "scene_icons", EditSceneActivity.this, view);
+                    return;
+                }
 
-        findViewById(R.id.scene_image).setOnClickListener(new View.OnClickListener() {
+                iconMenuVisible = true;
+                AnimationController.animateViewInOut(findViewById(R.id.executable_icons), true, false);
+            }
+        };
+
+        findViewById(R.id.scene_image).setOnClickListener(iconClick);
+        findViewById(R.id.scene_image_on).setOnClickListener(iconClick);
+        findViewById(R.id.scene_image_off).setOnClickListener(iconClick);
+
+        findViewById(R.id.close_icons).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LoadStoreIconData.show_select_icon_dialog(EditSceneActivity.this, "scene_icons", EditSceneActivity.this, null);
+                iconMenuVisible = false;
+                AnimationController.animateViewInOut(findViewById(R.id.executable_icons), false, false);
             }
         });
 
@@ -197,13 +215,9 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         btnSceneFav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean newFavStatus = !scene.isFavourite();
-                if (isLoaded)
-                    AppData.getInstance().sceneCollection.setFavourite(scene, newFavStatus);
-                else
-                    scene.setFavourite(newFavStatus);
+                isFavourite = !isFavourite;
                 updateFavButton();
-                toast.setText(newFavStatus ? R.string.scene_make_favourite : R.string.scene_remove_favourite);
+                toast.setText(isFavourite ? R.string.scene_make_favourite : R.string.scene_remove_favourite);
                 InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
                 toast.show();
             }
@@ -249,52 +263,37 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     }
 
     private void updateFavButton() {
-        boolean isFav = scene.isFavourite();
         Resources r = getResources();
-        btnSceneFav.setImageDrawable(isFav ? r.getDrawable(android.R.drawable.btn_star_big_on)
+        btnSceneFav.setImageDrawable(isFavourite ? r.getDrawable(android.R.drawable.btn_star_big_on)
                 : r.getDrawable(android.R.drawable.btn_star_big_off));
     }
 
-//    private void requestName(final Scene scene) {
-//        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-//
-//        alert.setTitle(this.getString(R.string.scene_rename));
-//
-//        final EditText input = new EditText(alert.getContext());
-//        input.setText(scene.sceneName);
-//        alert.setView(input);
-//
-//        alert.setPositiveButton(this.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//                @SuppressWarnings("ConstantConditions")
-//                String name = input.getText().toString();
-//                if (name.trim().isEmpty())
-//                    return;
-//                scene.sceneName = name;
-//                onNameChanged();
-//            }
-//        });
-//
-//        alert.setNegativeButton(this.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//            }
-//        });
-//
-//        alert.show();
-//    }
-
     @Override
     public void setIcon(Object context_object, Bitmap icon) {
-        scene_icon = icon;
-        if (icon == null) {
-            icon = BitmapFactory.decodeResource(getResources(), getApplicationInfo().icon);
+        switch (((View) context_object).getId()) {
+            case R.id.scene_image:
+                if (icon == null)
+                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState);
+                scene_icon_nostate = icon;
+                break;
+            case R.id.scene_image_off:
+                if (icon == null)
+                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOff);
+                scene_icon_off = icon;
+                break;
+            case R.id.scene_image_on:
+                if (icon == null)
+                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOn);
+                scene_icon_on = icon;
+                break;
         }
+
         Bitmap result = Bitmap.createBitmap(icon.getWidth(), icon.getHeight(), Bitmap.Config.ARGB_8888);
         Bitmap rounder = Bitmap.createBitmap(icon.getWidth(), icon.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas resultCanvas = new Canvas(result);
         Canvas canvas = new Canvas(rounder);
 
-        RectF rect = new RectF(0.0f, 0.0f, icon.getWidth(), icon.getHeight());
+        //RectF rect = new RectF(0.0f, 0.0f, icon.getWidth(), icon.getHeight());
 
         // We're going to apply this paint eventually using a porter-duff xfer mode.
         // This will allow us to only overwrite certain pixels. RED is arbitrary. This
@@ -324,8 +323,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         resultCanvas.drawBitmap(icon, 0, 0, null);
         resultCanvas.drawBitmap(rounder, 0, 0, xferPaint);
 
-        ((ImageView) findViewById(R.id.scene_image)).setImageBitmap(result);
-
+        ((ImageView) context_object).setImageBitmap(result);
     }
 
     @Override
@@ -341,6 +339,13 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         ListenService.stopUseService();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        sceneElements.onDestroy();
+        availableElements.onDestroy();
+    }
+
     private void loadContent() {
         Intent it = getIntent();
         if (it != null) {
@@ -351,8 +356,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 String scene_string = extra.getString(LOAD_SCENE, null);
                 if (scene_string != null) {
                     try {
-                        scene = new Scene();
-                        scene.load(JSONHelper.getReader(scene_string));
+                        scene = Scene.loadFromJson(JSONHelper.getReader(scene_string));
                     } catch (IOException | ClassNotFoundException ignored) {
                         scene = null;
                         finish();
@@ -386,8 +390,10 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         removeIncludedFromAvailable(adapter_available, adapter_included);
 
         if (scene == null) {
-            scene = new Scene();
+            scene = Scene.createNewSzene();
         }
+
+        isFavourite = AppData.getInstance().favCollection.isFavourite(scene.getUid());
 
         // Add click listener for the remove button on each included action
         sceneElements.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
@@ -420,10 +426,9 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         }, null));
 
         if (isSceneNotShortcut) {
-            Bitmap bitmap = null;
-            if (isLoaded)
-                bitmap = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState);
-            setIcon(this, bitmap);
+            setIcon(findViewById(R.id.scene_image), null);
+            setIcon(findViewById(R.id.scene_image_off), null);
+            setIcon(findViewById(R.id.scene_image_on), null);
         }
 
         onNameChanged();
@@ -480,8 +485,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 
         if (isSceneNotShortcut) {
 
-            File tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon, 128, 128));
-
             GroupCollection groupCollection = AppData.getInstance().groupCollection;
             scene.groups.clear();
             for (int i = 0; i < checked.length; ++i) {
@@ -493,22 +496,49 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 
             Intent intent = new Intent();
             intent.putExtra(RESULT_SCENE_JSON, scene.toString());
-            if (tempFilename != null) {
-                File bitmapFileName = LoadStoreIconData.getFilename(this, scene.uuid,
-                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown);
+            intent.putExtra(RESULT_SCENE_IS_FAVOURITE, isFavourite);
 
-                intent.putExtra(RESULT_SCENE_BITMAP_TEMP, tempFilename.toString());
-                intent.putExtra(RESULT_SCENE_BITMAP_FILE_DEST, bitmapFileName.toString());
+            List<String> tempFilenames = new ArrayList<>();
+            List<String> tempFilenameStates = new ArrayList<>();
+            List<String> bitmapFileNames = new ArrayList<>();
+
+            // Save all icons that are setup.
+            File tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_nostate, 128, 128));
+            if (tempFilename != null) {
+                tempFilenames.add(tempFilename.toString());
+                tempFilenameStates.add(LoadStoreIconData.IconState.StateUnknown.name());
+                bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
+                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown).toString());
             }
+
+            tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_off, 128, 128));
+            if (tempFilename != null) {
+                tempFilenames.add(tempFilename.toString());
+                tempFilenameStates.add(LoadStoreIconData.IconState.StateOff.name());
+                bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
+                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOff).toString());
+            }
+
+            tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_on, 128, 128));
+            if (tempFilename != null) {
+                tempFilenames.add(tempFilename.toString());
+                tempFilenameStates.add(LoadStoreIconData.IconState.StateOn.name());
+                bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
+                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOn).toString());
+            }
+
+            intent.putExtra(RESULT_SCENE_BITMAP_FILES_TEMP, tempFilenames.toArray());
+            intent.putExtra(RESULT_SCENE_BITMAP_FILES_DEST, bitmapFileNames.toArray());
+            intent.putExtra(RESULT_SCENE_BITMAP_STATES, tempFilenameStates.toArray());
             setResult(RESULT_OK, intent);
         } else {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
                     scene, show_mainWindow.isChecked(), enable_feedback.isChecked());
             // Return result
             Intent shortcut;
-            if (scene_icon != null) {
+            if (scene_icon_nostate != null) {
                 shortcut = AndroidShortcuts.createShortcut(extra, scene.sceneName,
-                        LoadStoreIconData.resizeBitmap(this, scene_icon));
+                        LoadStoreIconData.resizeBitmap(this, scene_icon_nostate));
             } else
                 shortcut = AndroidShortcuts.createShortcut(extra, scene.sceneName,
                         EditSceneActivity.this);

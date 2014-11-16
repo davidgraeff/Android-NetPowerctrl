@@ -11,7 +11,6 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onStorageUpdate;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.listen_service.PluginInterface;
 
 /**
  * Contains DeviceInfos. Used for NFC and backup transfers
@@ -24,11 +23,6 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         dc.storage = storage;
         dc.items = devices;
         return dc;
-    }
-
-    static public boolean isNetworkDevice(Device device) {
-        PluginInterface pi = (PluginInterface) device.getPluginInterface();
-        return pi != null && pi.isNetworkPlugin();
     }
 
     /**
@@ -63,21 +57,18 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
             storage.clear(this);
     }
 
+    @Override
     public void save(Device device) {
-        device.setConfigured(true);
-        if (storage != null)
-            storage.save(this, device);
+        super.save(device);
     }
 
     public void remove(Device device) {
         int position = items.indexOf(device);
         if (position == -1)
             return;
-        device.setConfigured(false);
         items.remove(position);
+        remove(device);
         notifyObservers(device, ObserverUpdateActions.RemoveAction, position);
-        if (storage != null)
-            storage.remove(this, device);
     }
 
     public int getPosition(Device newValues_device) {

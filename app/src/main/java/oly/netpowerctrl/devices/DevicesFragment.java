@@ -101,6 +101,7 @@ public class DevicesFragment extends Fragment
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
                                 AppData.getInstance().deviceCollection.removeAll();
+                                refresh();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -186,20 +187,15 @@ public class DevicesFragment extends Fragment
                 if (!item.enabled)
                     return true;
 
-                Device device = AppData.getInstance().findDeviceByUniqueID(item.UniqueDeviceID);
-                if (device == null) {
-                    for (Device di : AppData.getInstance().unconfiguredDeviceCollection.getItems()) {
-                        if (di.getUniqueDeviceID().equals(item.UniqueDeviceID)) {
-                            device = di;
-                            break;
-                        }
-                    }
-                }
+                Device device = item.isConfigured ?
+                        AppData.getInstance().findDevice(item.getUid()) :
+                        AppData.getInstance().findDeviceUnconfigured(item.getUid());
+
                 if (device == null)
                     return true;
 
                 if (!item.isDeviceHeader) {
-                    final PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
+                    final PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
                     if (pluginInterface != null) {
                         item.tested = false;
                         item.reachable = false;
@@ -326,10 +322,11 @@ public class DevicesFragment extends Fragment
         if (device == null) {
             // new device
             int selected = 0;
-            String[] plugins = ListenService.getService().pluginIDs();
+            //String[] plugins = ListenService.getService().pluginIDs();
 
             DevicesWizardNewDialog newFragment = (DevicesWizardNewDialog) Fragment.instantiate(getActivity(), DevicesWizardNewDialog.class.getName());
-            newFragment.setPlugin(ListenService.getService().getPluginByID(plugins[selected]));
+            //newFragment.setPlugin(ListenService.getService().getPluginByID(plugins[selected]));
+            newFragment.setPlugin(ListenService.getService().getPlugin(selected));
             MainActivity.getNavigationController().changeToDialog(getActivity(), newFragment);
         } else {
             PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();

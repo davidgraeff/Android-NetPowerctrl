@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -23,6 +24,7 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
+import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.Utils;
@@ -43,16 +45,34 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
 
     public void setPlugin(PluginInterface pluginInterface) {
         editDevice = pluginInterface.openEditDevice(null);
+        if (editDevice == null)
+            throw new RuntimeException("DevicesWizardNewDialog only for configurable devices!");
         editDevice.setResultListener(this);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString("pluginInterface", editDevice.getDevice().pluginID);
+        super.onSaveInstanceState(outState);
     }
 
     @SuppressLint("InflateParams")
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        if (editDevice == null)
-            throw new RuntimeException("DevicesWizardNewFragment: editDevice not set");
-        if (editDevice.getDevice() == null)
-            throw new RuntimeException("DevicesWizardNewFragment: editDevice.getDevice not set");
+        // This should not happen, but could if activity is restored (low_mem etc)
+        if (editDevice == null) {
+            // Try to recover:
+            String pluginID = savedInstanceState.getString("pluginInterface");
+            PluginInterface pluginInterface = ListenService.getService().getPlugin(pluginID);
+            // Recover failed
+            if (pluginInterface == null) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(R.string.device_add)
+                        .setPositiveButton(android.R.string.ok, null);
+                return builder.create();
+            }
+            setPlugin(pluginInterface);
+        }
 
         final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_new, null);
 
@@ -80,6 +100,10 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
 
         textView = (EditText) view.findViewById(R.id.device_udp_receive);
         textView.setText(String.valueOf(SharedPrefs.getInstance().getDefaultReceivePort()));
+
+        if (editDevice.getDevice() == null)
+            throw new RuntimeException("DevicesWizardNewFragment: editDevice.getDevice not set");
+
 
         Device device = editDevice.getDevice();
 

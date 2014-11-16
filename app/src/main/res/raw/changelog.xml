@@ -1,5 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion changeDate="15. November 2014" versionName="6.7.2">
+        <changelogbug>Absturz bei Speicherung von Szenen behoben</changelogbug>
+        <changelogbug>Absturz bei Erstellen von Geräten behoben</changelogbug>
+        <changelogbug>Absturz bei Öffnen der Spendenseite unter Android 5 behoben</changelogbug>
+        <changelogimprovement>Gruppen können durch langes klicken auf den Gruppentitel in der
+            Navigationsleiste gelöscht werden
+        </changelogimprovement>
+        <changelogimprovement>Nicht nur Szenen, sondern auch Steckdosen können nun als Favourit
+            markiert werden und tauchen dann in der Android Statusbar, wenn gewünscht, auf
+        </changelogimprovement>
+    </changelogversion>
+
+    <changelogversion changeDate="14. November 2014" versionName="6.7.1">
+        <changelogbug>Absturz bei automatischer Einrichtung behoben</changelogbug>
+        <changelogbug>Geräteübersicht verhält sich jetzt wieder wie gewünscht</changelogbug>
+        <changelogbug>Netzwerk: "udpSending null" Fehler an vielen Stellen behoben</changelogbug>
+        <changelogbug>Weiterer Paralleler Zugriff auf Datenstrukturen behoben. Führte zu kaputten
+            gespeicherten Geräten
+        </changelogbug>
+        <changelogbug>Einige kleine Fehler, gemeldet durch die automatischen Bug-Reports, behoben
+        </changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="11. November 2014" versionName="6.7">
+        <changelogimprovement>Design: An vielen Stellen verfeinert. Insbesondere das Szenenfenster
+            wurde überarbeitet. Verbesserungsvorschläge und Konzeptzeichnungen gerne gesehen.
+        </changelogimprovement>
+        <changelogimprovement>Design: Ansichtsmodus mit Vorschau wechselbar</changelogimprovement>
+        <changelogimprovement>Design: Weniger vertikaler Platzverbrauch für das Anzeigen von
+            Gruppen.
+        </changelogimprovement>
+        <changelogimprovement>Design: Feedback Bildschirm neu gestaltet. Google+ Gruppe und
+            BETA-Channel verlinkt.
+        </changelogimprovement>
+        <changelogimprovement>Kern: Daten werden effizienter verarbeitet, Arbeitsspeicherverbrauch
+            gesenkt.
+        </changelogimprovement>
+        <changelogimprovement>Widgets: Es können jetzt auch Szenen als Widgets abgelegt werden.
+            Handelt es sich um eine Master/Slave Szene, wird auch der aktuelle Zustand des Masters
+            angezeigt.
+        </changelogimprovement>
+        <changelogimprovement>Kern: Erweiterungen sind jetzt stabil. Dokumentation und Beispielcode
+            veröffentlicht. Zwei Erweiterungen werden in Kürze veröffentlicht: Wakeup-On-Lan
+            (Computer von dieser App aus aufwecken), Yamaha (Yamaha Netwerkfähige Receiver steuern).
+        </changelogimprovement>
+        <changelogbug>Widgets: Absturz im Widget Dialog behoben</changelogbug>
+        <changelogbug>Netzwerk: Viele Verbindungsfehler behoben</changelogbug>
+        <changelogbug>Paralleler Zugriff auf Datenstrukturen behoben. Führte zu Abstürzen (>50) und
+            kaputten gespeicherten Geräten
+        </changelogbug>
+    </changelogversion>
+
     <changelogversion changeDate="28. Oktober 2014" versionName="6.4-6.4.6">
         <changelogimprovement>Android 5 Design</changelogimprovement>
         <changelogimprovement>Verstecken von Steckdosen entfernt. Eine Ansichtsgruppe mit den

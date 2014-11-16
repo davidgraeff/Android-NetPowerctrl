@@ -145,8 +145,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
             } else if (scene_json != null) {
                 // Extract scene from extra bundle
                 try {
-                    scene = new Scene();
-                    scene.load(JSONHelper.getReader(scene_json));
+                    scene = Scene.loadFromJson(JSONHelper.getReader(scene_json));
                 } catch (IOException | ClassNotFoundException ignored) {
                     scene = null;
                 }

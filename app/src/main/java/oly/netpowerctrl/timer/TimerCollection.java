@@ -10,6 +10,7 @@ import java.util.List;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DeviceCollection;
@@ -23,6 +24,32 @@ import oly.netpowerctrl.network.onHttpRequestResult;
  */
 public class TimerCollection extends CollectionWithStorableItems<TimerCollection, Timer> {
     private final List<Timer> available_timers = new ArrayList<>();
+    public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
+        @Override
+        public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action, int position) {
+            if (action != ObserverUpdateActions.RemoveAllAction && action != ObserverUpdateActions.RemoveAction)
+                return true;
+
+            if (device == null) {
+                clear();
+                return true;
+            }
+
+            device.lockDevicePorts();
+            Iterator<DevicePort> iterator = device.getDevicePortIterator();
+            while (iterator.hasNext()) {
+                DevicePort devicePort = iterator.next();
+                for (int index = items.size() - 1; index >= 0; --index) {
+                    Timer timer = items.get(index);
+                    if (timer.port_id.equals(devicePort.getUid())) {
+                        removeFromCache(index);
+                    }
+                }
+            }
+            device.releaseDevicePorts();
+            return true;
+        }
+    };
     private boolean requestActive = false;
     private final Runnable notifyRunnable = new Runnable() {
         @Override
@@ -90,13 +117,16 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     }
 
     void removeAlarm(Timer timer, onHttpRequestResult callback) {
+        ListenService.getService().wakeupPlugin(timer.port.device);
         PluginInterface p = (PluginInterface) timer.port.device.getPluginInterface();
         p.removeAlarm(timer, callback);
     }
 
     public void removeFromCache(int position) {
-        if (position != -1)
+        if (position != -1) {
+            remove(items.get(position));
             items.remove(position);
+        }
     }
 
 
@@ -117,27 +147,24 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
 
-        if (service.isNetworkReducedMode() || requestActive) {
-            return requestActive;
-        }
-
         requestActive = true;
 
         List<DevicePort> alarm_ports = new ArrayList<>();
+
+        service.wakeupAllDevices(false);
 
         DeviceCollection c = AppData.getInstance().deviceCollection;
         // Put all ports of all devices into the list alarm_ports.
         // If a port is referenced by the alarm_uuids hashSet, it will be put in front of the list
         // to refresh that port first.
-        for (Device di : c.getItems()) {
+        for (Device device : c.getItems()) {
             // Request all alarm_uuids may be called before all plugins responded
-            PluginInterface i = (PluginInterface) di.getPluginInterface();
-            if (i == null || !di.isEnabled())
+            if (!device.isEnabled())
                 continue;
 
             // Request alarm_uuids for every port
-            di.lockDevicePorts();
-            Iterator<DevicePort> it = di.getDevicePortIterator();
+            device.lockDevicePorts();
+            Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
                 final DevicePort port = it.next();
                 if (port.Disabled)
@@ -148,7 +175,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 else
                     alarm_ports.add(port);
             }
-            di.releaseDevicePorts();
+            device.releaseDevicePorts();
         }
 
         for (DevicePort port : alarm_ports) {

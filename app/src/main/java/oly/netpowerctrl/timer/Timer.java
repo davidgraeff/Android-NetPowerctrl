@@ -21,7 +21,7 @@ import oly.netpowerctrl.device_base.data.StorableInterface;
 import oly.netpowerctrl.device_base.device.DevicePort;
 
 /**
- * Created by david on 19.05.14.
+ * Represents an alarm and is used by TimerCollection.
  */
 public class Timer implements StorableInterface {
     // Alarm type
@@ -112,7 +112,7 @@ public class Timer implements StorableInterface {
     public String toString(Context context) {
         String pre = "";
         if (port != null)
-            pre = port.device.getDeviceName() + ": " + port.getTitle(context) + " - ";
+            pre = port.device.getDeviceName() + ": " + port.getTitle() + " - ";
 
         switch (type) {
             case TYPE_RANGE_ON_WEEKDAYS:
@@ -129,7 +129,7 @@ public class Timer implements StorableInterface {
 
     public String getTargetName() {
         if (port != null)
-            return port.device.getDeviceName() + ": " + port.getTitle(null);
+            return port.device.getDeviceName() + ": " + port.getTitle();
         else
             return "";
     }
@@ -176,16 +176,10 @@ public class Timer implements StorableInterface {
     }
 
     @Override
-    public StorableDataType getDataType() {
-        return StorableDataType.JSON;
-    }
-
-    @Override
     public String getStorableName() {
         return String.valueOf(id);
     }
 
-    @Override
     public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
         Timer timer = this;

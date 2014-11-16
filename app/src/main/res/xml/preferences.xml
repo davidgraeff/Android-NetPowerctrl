@@ -92,10 +92,9 @@
 
         <PreferenceScreen
             android:key="issues"
-            android:summary="@string/issues_wait"
+            android:summary="@string/issues_see_at_feedback"
             android:title="@string/issues" />
     </PreferenceCategory>
-
 
     <PreferenceCategory
         android:key="extensions"

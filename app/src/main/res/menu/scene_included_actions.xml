@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_switch_all_off"
         android:icon="@android:drawable/button_onoff_indicator_off"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_switch_all_off" />
+        android:title="@string/menu_switch_all_off"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menu_switch_all_on"
         android:icon="@android:drawable/button_onoff_indicator_on"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_switch_all_on" />
+        android:title="@string/menu_switch_all_on"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menu_switch_all_toogle"
         android:icon="@android:drawable/ic_menu_rotate"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_switch_all_toogle" />
+        android:title="@string/menu_switch_all_toogle"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menu_switch_all_ignore"
         android:icon="@android:drawable/ic_menu_delete"
-        android:showAsAction="ifRoom"
-        android:title="@string/menu_switch_all_ignore" />
+        android:title="@string/menu_switch_all_ignore"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -1,6 +1,7 @@
 package oly.netpowerctrl.listen_service;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
@@ -39,6 +40,7 @@ public interface PluginInterface {
 
     void showConfigureDeviceScreen(Device device);
 
+    @Nullable
     EditDeviceInterface openEditDevice(Device device);
 
     ////////////// Reduce power consumption //////////////

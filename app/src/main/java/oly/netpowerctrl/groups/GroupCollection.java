@@ -28,21 +28,25 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
      * Add a group with the given name. If a group with this name already exist,
      * that group id will be returned and no new group will be added.
      *
-     * @param name
-     * @return
+     * @param name The name of the new group.
+     * @return Return the group_index of the new group or the existing one.
+     * Call {@link #get(int)} to get the group uid.
      */
-    public UUID add(String name) {
-        for (Group group : items)
+    public int add(String name) {
+        int index = 0;
+        for (Group group : items) {
             if (group.name.equals(name))
-                return group.uuid;
+                return index;
+            ++index;
+        }
 
         UUID group_uuid = UUID.randomUUID();
         Group group = new Group(group_uuid, name);
         items.add(group);
-        if (storage != null)
-            storage.save(this, group);
-        notifyObservers(group, ObserverUpdateActions.AddAction, items.size() - 1);
-        return group_uuid;
+        index = items.size() - 1;
+        save(group);
+        notifyObservers(group, ObserverUpdateActions.AddAction, index);
+        return index;
     }
 
     public Group get(UUID group_uuid) {
@@ -82,8 +86,7 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
             notifyObservers(group, ObserverUpdateActions.UpdateAction, index);
         }
 
-        if (storage != null)
-            storage.save(this, group);
+        save(group);
     }
 
     public boolean remove(UUID group_uuid) {
@@ -116,7 +119,7 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
      *
      * @param index
      * @param groupUUids
-     * @return
+     * @return Return true if the group at the given index equals with one of the given uids.
      */
     public boolean equalsAtIndex(int index, List<UUID> groupUUids) {
         Group g = items.get(index);

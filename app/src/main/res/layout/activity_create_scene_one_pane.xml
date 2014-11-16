@@ -17,7 +17,7 @@
             <include
                 layout="@layout/executable_edit_top"
                 android:layout_width="match_parent"
-                android:layout_height="180dp" />
+                android:layout_height="150dp" />
 
             <include layout="@layout/executable_groups" />
 
@@ -136,6 +136,10 @@
 
             </android.support.v7.widget.CardView>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp" />
+
         </LinearLayout>
 
     </ScrollView>
@@ -146,16 +150,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="?attr/actionBarSize"
-        app:theme="?attr/toolbar_style"></android.support.v7.widget.Toolbar>
+        app:theme="?attr/toolbar_style" />
 
-    <ImageView
-        android:id="@+id/scene_image"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp" />
+    <include layout="@layout/executable_icons" />
 
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/btnOk"

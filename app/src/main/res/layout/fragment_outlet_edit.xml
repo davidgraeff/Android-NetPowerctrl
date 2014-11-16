@@ -22,60 +22,6 @@
 
             <include layout="@layout/executable_groups" />
 
-            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/groups_container"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="@dimen/list_outer_padding"
-                card_view:cardBackgroundColor="?cards_background"
-                card_view:cardCornerRadius="4dp"
-                card_view:cardElevation="5dp">
-
-                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-
-                    android:orientation="vertical"
-                    android:padding="@dimen/list_inner_padding">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="@string/outlet_icon_off_label"
-                        android:textAppearance="@android:style/TextAppearance.Large" />
-
-                    <ImageButton
-                        android:id="@+id/outlet_icon_off"
-                        style="?colored_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:contentDescription="@string/menu_help" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="@string/outlet_icon_on_label"
-                        android:textAppearance="@android:style/TextAppearance.Large" />
-
-                    <ImageButton
-                        android:id="@+id/outlet_icon_on"
-                        style="?colored_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:contentDescription="@string/menu_help" />
-
-
-                </LinearLayout>
-
-            </android.support.v7.widget.CardView>
-
-
         </LinearLayout>
     </ScrollView>
 

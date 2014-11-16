@@ -137,6 +137,7 @@ public class MainActivity extends ActionBarActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
                 v.setBackground(d);
             else
+                //noinspection deprecation
                 v.setBackgroundDrawable(d);
         }
     }

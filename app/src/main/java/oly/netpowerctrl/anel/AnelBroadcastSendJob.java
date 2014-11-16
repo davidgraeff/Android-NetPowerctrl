@@ -11,14 +11,10 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Set;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPSending;
 
 /**
@@ -55,7 +51,6 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
             return;
 
         Set<Integer> ports = AppData.getInstance().getAllSendPorts();
-        boolean foundBroadcastAddresses = false;
 
         UDPSending udpSending = udpSendingReference.get();
         if (udpSending == null)
@@ -79,39 +74,12 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
                         if (broadcast == null) continue;
                         for (int port : ports)
                             sendPacket(context, datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
-                        foundBroadcastAddresses = true;
                     }
                 }
             }
         } catch (SocketException ex) {
             Log.w("sendBroadcastQuery", "Error while getting network interfaces");
             ex.printStackTrace();
-        }
-
-        if (!foundBroadcastAddresses) {
-            // Broadcast not allowed on this network. Show hint to user
-//                Toast.makeText(NetpowerctrlApplication.instance,
-//                        NetpowerctrlApplication.getAppString(R.string.devices_no_new_on_network),
-//                        Toast.LENGTH_SHORT).show();
-
-            // Query all existing anel devices directly
-
-            List<Device> devices = AppData.getInstance().deviceCollection.getItems();
-            for (Device device : devices) {
-                if (device.pluginID.equals(AnelPlugin.PLUGIN_ID)) {
-                    AnelPlugin pluginInterface = (AnelPlugin) device.getPluginInterface();
-                    if (pluginInterface == null) {
-                        device.setStatusMessageAllConnections(App.getAppString(R.string.error_plugin_not_installed));
-                        continue;
-                    }
-                    device.lockDevice();
-                    int s = device.getDeviceConnections().size();
-                    device.releaseDevice();
-                    for (int i = 0; i < s; ++i) {
-                        pluginInterface.requestData(device, i);
-                    }
-                }
-            }
         }
     }
 }

@@ -25,6 +25,7 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceQuery;
@@ -69,7 +70,7 @@ public class ListenService extends Service {
             if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
                 if (SharedPrefs.getInstance().logEnergySaveMode())
                     Logging.appendLog(ListenService.this, "Energiesparen aus: Netzwechsel erkannt");
-                enterFullNetworkMode(true, false);
+                wakeupAllDevices(true);
             } else {
                 if (SharedPrefs.getInstance().logEnergySaveMode())
                     Logging.appendLog(ListenService.this, "Energiesparen an: Kein Netzwerk");
@@ -86,28 +87,28 @@ public class ListenService extends Service {
                 updatePluginReferencesInDevices(pluginInterface);
 
             // Delay plugin activation (we wait for extensions)
-            enterFullNetworkMode(true, false);
+            wakeupAllDevices(true);
 
             return false;
         }
     };
-    // Debug
-    long startTime;
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
      */
-    private boolean mNetworkReducedMode;
+
     private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-            if (SharedPrefs.getInstance().isPreferenceNameLogEnergySaveMode(s) && mNetworkReducedMode) {
+            if (SharedPrefs.getInstance().isPreferenceNameLogEnergySaveMode(s)) {
                 if (SharedPrefs.getInstance().logEnergySaveMode())
                     Logging.appendLog(ListenService.this, "Energiesparen abgeschaltet");
-                enterFullNetworkMode(true, false);
+                wakeupAllDevices(true);
             }
         }
     };
+    // Debug
+    long startTime;
     private boolean isNetworkChangedListener = false;
     /**
      * Detect new devices and check reach-ability of configured devices.
@@ -172,24 +173,6 @@ public class ListenService extends Service {
 
     public static ListenService getService() {
         return mDiscoverService;
-    }
-
-    public static void debug_toggle_network_reduced() {
-        if (mDiscoverService == null) {
-            Toast.makeText(App.instance, "Unexpected state: Listen Service not running", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (mDiscoverService.isNetworkReducedMode())
-            mDiscoverService.enterFullNetworkMode(true, true);
-        else {
-            AppData c = AppData.getInstance();
-            for (Device d : c.deviceCollection.getItems()) {
-                d.setStatusMessageAllConnections("Debug force off");
-                c.updateDevice(d);
-            }
-            mDiscoverService.enterNetworkReducedMode();
-        }
     }
 
     @Override
@@ -259,14 +242,14 @@ public class ListenService extends Service {
     ///////////////// Service start/stop /////////////////
     private void enterNetworkReducedMode() {
         Log.w(TAG, "findDevices:enterNetworkReducedMode " + String.valueOf((System.nanoTime() - startTime) / 1000000.0));
-        mNetworkReducedMode = true;
 
         observersServiceModeChanged.onServiceModeChanged(true);
 
         AppData.observersDataQueryCompleted.resetDataQueryCompleted();
 
         for (PluginInterface pluginInterface : plugins)
-            pluginInterface.enterNetworkReducedState(this);
+            if (pluginInterface.isNetworkPlugin())
+                pluginInterface.enterNetworkReducedState(this);
 
         // Stop listening for network changes
         if (isNetworkChangedListener && !SharedPrefs.getInstance().isWakeUpFromEnergySaving()) {
@@ -277,18 +260,15 @@ public class ListenService extends Service {
         }
     }
 
-    public void enterFullNetworkMode(boolean refreshDevices, boolean showNotification) {
-        mNetworkReducedMode = false;
+    public void wakeupAllDevices(boolean refreshDevices) {
 
         observersServiceModeChanged.onServiceModeChanged(false);
 
         if (SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(this, "Hintergrunddienst gestartet");
+            Logging.appendLog(this, "Alle Geräte aufgeweckt");
 
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterFullNetworkState(this, null);
-
-        //AppData.getInstance().deviceCollection.setHasChangedAll();
 
         if (!isNetworkChangedListener) {
             if (SharedPrefs.getInstance().logEnergySaveMode())
@@ -301,7 +281,7 @@ public class ListenService extends Service {
 
         // refresh devices after service start
         if (refreshDevices)
-            findDevices(showNotification, null);
+            findDevices(false, null);
     }
 
     private void extensionDiscovered(String serviceName, String localized_name, String packageName) {
@@ -345,7 +325,7 @@ public class ListenService extends Service {
         }
     }
 
-    public PluginInterface getPluginByID(String pluginID) {
+    private PluginInterface getPluginByID(String pluginID) {
         for (PluginInterface pluginInterface : plugins)
             if (pluginInterface.getPluginID().equals(pluginID))
                 return pluginInterface;
@@ -407,12 +387,8 @@ public class ListenService extends Service {
             }
         }, 1000);
 
-        if (mNetworkReducedMode) {
-            if (SharedPrefs.getInstance().logEnergySaveMode())
-                Logging.appendLog(this, "Energiesparen aus: Suche Geräte");
-
-            enterFullNetworkMode(false, false);
-        }
+        if (SharedPrefs.getInstance().logEnergySaveMode())
+            Logging.appendLog(this, "Energiesparen aus: Suche Geräte");
 
         observersStartStopRefresh.onRefreshStateChanged(true);
 
@@ -462,8 +438,22 @@ public class ListenService extends Service {
         });
     }
 
-    public boolean isNetworkReducedMode() {
-        return mNetworkReducedMode;
+    /**
+     * This does nothing if a plugin is already awake.
+     * Wake up a plugin, but will send it to sleep again if the given device didn't get updated within 3s
+     *
+     * @param device
+     * @return
+     */
+    public boolean wakeupPlugin(Device device) {
+        PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
+        if (pluginInterface != null) {
+            if (pluginInterface.isNetworkReducedState())
+                pluginInterface.enterFullNetworkState(this, device);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public String[] pluginIDs() {
@@ -471,5 +461,22 @@ public class ListenService extends Service {
         for (int i = 0; i < plugins.size(); ++i)
             ids[i] = plugins.get(i).getPluginID();
         return ids;
+    }
+
+    public EditDeviceInterface openEditDevice(Device device) {
+        return getPluginByID(device.pluginID).openEditDevice(device);
+    }
+
+    public PluginInterface getPlugin(int selected) {
+        return plugins.get(selected);
+    }
+
+    public PluginInterface getPlugin(String plugin_id) {
+        if (plugin_id == null)
+            return null;
+        for (PluginInterface plugin : plugins)
+            if (plugin.getPluginID().equals(plugin_id))
+                return plugin;
+        return null;
     }
 }

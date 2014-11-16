@@ -20,18 +20,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
-import android.view.animation.ScaleAnimation;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +35,6 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconCacheCleared;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
@@ -61,6 +55,7 @@ import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onNotReachableUpdate;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.scenes.SceneFactory;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.SwipeMoveAnimator;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -69,7 +64,6 @@ import oly.netpowerctrl.ui.widgets.EnhancedSwipeRefreshLayout;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.ui.widgets.SlidingTabLayout;
 import oly.netpowerctrl.utils.AnimationController;
-import oly.netpowerctrl.utils.Streams;
 import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 
 /**
@@ -102,7 +96,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     // Groups
     private GroupPagerAdapter groupPagerAdapter;
     private UUID groupFilter = null;
-    private int clickedPosition;
+    private UUID clicked_group_uid;
     private boolean disableClicks = false;
     /**
      * Called by the model data listener
@@ -138,6 +132,10 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             mRecyclerView.setAdapter(getAdapter());
     }
 
+    public ExecuteAdapter getAdapter() {
+        return adapter;
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -155,10 +153,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     mRecyclerView.setAdapter(adapter);
                 }
             };
-
-    public ExecuteAdapter getAdapter() {
-        return adapter;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -281,6 +275,11 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         return pos;
     }
 
+    /**
+     * Handles clicks on the plus floating button
+     *
+     * @param clickedView
+     */
     private void onPlusClicked(View clickedView) {
         if (!AppData.getInstance().deviceCollection.hasDevices()) {
             MainActivity.getNavigationController().changeToDialog(getActivity(), DevicesAutomaticDialog.class.getName());
@@ -304,7 +303,12 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                                 .setIcon(android.R.drawable.ic_menu_help).show();
                         return true;
                     case R.id.menu_add_group:
-                        GroupUtilities.createGroup(getActivity());
+                        GroupUtilities.createGroup(getActivity(), new GroupUtilities.GroupCreatedCallback() {
+                            @Override
+                            public void onGroupCreated(int group_index) {
+                                setCurrentGroupByIndex(group_index + 1);
+                            }
+                        });
                         return true;
                     case R.id.menu_add_scene:
                         Intent it = new Intent(getActivity(), EditSceneActivity.class);
@@ -383,29 +387,34 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             public void onTabClicked(int position) {
                 setCurrentGroupByIndex(position);
             }
+
+            @Override
+            public void onTabLongClicked(View view, int position) {
+                if (position == 0) return;
+                showGroupPopupMenu(view, AppData.getInstance().groupCollection.get(position - 1).uuid);
+            }
         });
         //slidingTabLayout.setId(View.generateViewId());
 
         { // Swiping
             final SwipeMoveAnimator.DismissCallbacks dismissCallbacks = new SwipeMoveAnimator.DismissCallbacks() {
-                private Animation animation = null;
+                private ViewPropertyAnimator animation = null;
                 private boolean allowSwipe;
+                private int targetPosition;
 
                 @Override
                 public void onSwipeComplete(boolean fromLeftToRight, boolean finished) {
                     mPullToRefreshLayout.setEnabled(true);
                     disableClicks = false;
                     if (finished) {
-                        int position = getNextGroup(fromLeftToRight);
-                        setCurrentGroupByIndex(position);
+                        setCurrentGroupByIndex(targetPosition);
                         // Only hide the group title if there is content
-                        if (adapter.getItemCount() > 0)
-                            animation = AnimationController.animateViewInOutWithoutCheck(groupTitle, false, true);
                         //checkEmpty();
                     } else {
                         slidingTabLayout.onPageResetScrolled();
-                        animation = AnimationController.animateViewInOutWithoutCheck(groupTitle, false, true);
                     }
+                    if (adapter.getItemCount() > 0)
+                        animation = AnimationController.animateViewInOutWithoutCheck(groupTitle, false, true, 1200);
                 }
 
                 @Override
@@ -427,10 +436,10 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                         emptyText.setTranslationX(fromLeftToRight ? -emptyText.getX() - emptyText.getWidth() : main_layout.getWidth() - emptyText.getX());
                         swipeMoveAnimator.setOffsetX(groupTitle.getTranslationX());
                         groupTitle.setVisibility(View.VISIBLE);
-                        int nextGroupIndex = getNextGroup(fromLeftToRight);
-                        UUID next_groupFilter = nextGroupIndex == 0 ? null : AppData.getInstance().groupCollection.get(nextGroupIndex - 1).uuid;
+                        targetPosition = getNextGroup(fromLeftToRight);
+                        UUID next_groupFilter = targetPosition == 0 ? null : AppData.getInstance().groupCollection.get(targetPosition - 1).uuid;
                         checkEmpty(adapterSource.countIfGroup(next_groupFilter), next_groupFilter);
-                        groupTitle.setText(groupPagerAdapter.getPageTitle(nextGroupIndex));
+                        groupTitle.setText(groupPagerAdapter.getPageTitle(targetPosition));
                     }
 
                     return allowSwipe;
@@ -547,27 +556,40 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         }
     }
 
+    /**
+     * Handles the group menu popup clicks (remove, rename)
+     *
+     * @param menuItem The clicked menu item
+     * @return Return true if handled.
+     */
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
+        if (clicked_group_uid == null) return false;
+
         switch (menuItem.getItemId()) {
             case R.id.menu_removeGroup: {
-                UUID uuid = adapter.getItem(clickedPosition).groupID();
-                if (!AppData.getInstance().groupCollection.remove(uuid)) {
+                if (!AppData.getInstance().groupCollection.remove(clicked_group_uid)) {
                     return true;
                 }
                 // change to overview if the removed group is the current group
-                if (uuid.equals(groupFilter))
+                if (clicked_group_uid.equals(groupFilter))
                     setCurrentGroupByIndex(0);
                 return true;
             }
             case R.id.menu_renameGroup: {
-                GroupUtilities.renameGroup(getActivity(), adapter.getItem(clickedPosition).groupID());
+                GroupUtilities.renameGroup(getActivity(), clicked_group_uid);
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Change to the given group by position. Position 0 is reserved for the overview
+     * so add 1 to a group_index to get the position.
+     *
+     * @param position The group_index+1 or 0 for the overview.
+     */
     private void setCurrentGroupByIndex(int position) {
         slidingTabLayout.changeToPosition(position);
 
@@ -605,30 +627,23 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         //////////////// GROUP ////////////////
         if (!(item.groupType() == ExecutableAdapterItem.groupTypeEnum.NOGROUP_TYPE)) {
-            clickedPosition = position;
-            //noinspection ConstantConditions
-            PopupMenu popup = new PopupMenu(getActivity(), view);
-            MenuInflater inflater = popup.getMenuInflater();
-            inflater.inflate(R.menu.group, popup.getMenu());
-            popup.setOnMenuItemClickListener(OutletsViewFragment.this);
-            popup.show();
+            showGroupPopupMenu(view, item.groupID());
             return true;
         }
 
         //////////////// EDIT ITEM ////////////////
         if (view.getId() == R.id.icon_edit) {
             // Animate press
-            Animation a = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f, view.getWidth() / 2, view.getHeight() / 2);
-            a.setRepeatMode(Animation.REVERSE);
-            a.setRepeatCount(1);
-            a.setDuration(300);
-            view.startAnimation(a);
+            Animation a = AnimationController.animatePress(view);
 
             final Executable executable = adapter.getItem(position).getExecutable();
             a.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
+                }
 
+                @Override
+                public void onAnimationRepeat(Animation animation) {
                 }
 
                 @Override
@@ -651,11 +666,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                         startActivityForResult(it, EditSceneActivity.REQUEST_CODE);
                     }
                 }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-
-                }
             });
 
             return true;
@@ -673,6 +683,16 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         AppData.getInstance().executeToggle(item.getExecutable(), null);
         return true;
+    }
+
+    private void showGroupPopupMenu(View view, UUID group_uid) {
+        this.clicked_group_uid = group_uid;
+        //noinspection ConstantConditions
+        PopupMenu popup = new PopupMenu(getActivity(), view);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.group, popup.getMenu());
+        popup.setOnMenuItemClickListener(this);
+        popup.show();
     }
 
     @Override
@@ -704,40 +724,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Receive added/updated/deleted scene from scene activity
         if (requestCode == EditSceneActivity.REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            String tempBitmapFile = data.getStringExtra(EditSceneActivity.RESULT_SCENE_BITMAP_TEMP);
-            String realBitmapFile = data.getStringExtra(EditSceneActivity.RESULT_SCENE_BITMAP_FILE_DEST);
-            String scene_json = data.getStringExtra(EditSceneActivity.RESULT_SCENE_JSON);
-            String scene_remove_uuid = data.getStringExtra(EditSceneActivity.RESULT_SCENE_REMOVE_UID);
-
-            if (scene_remove_uuid != null) {
-                AppData.getInstance().sceneCollection.removeScene(scene_remove_uuid);
-                return;
-            }
-
-            if (scene_json == null) return;
-            Scene scene = new Scene();
-            try {
-                scene.load(JSONHelper.getReader(scene_json));
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-                Toast.makeText(getActivity(), R.string.error_scene_save_failed, Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (tempBitmapFile != null && realBitmapFile != null) {
-                try {
-                    File tempFile = new File(tempBitmapFile);
-                    Streams.copy(new FileInputStream(tempFile), new FileOutputStream(new File(realBitmapFile)));
-                    //noinspection ResultOfMethodCallIgnored
-                    tempFile.delete();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getActivity(), R.string.error_scene_icon_save_failed, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            AppData appData = AppData.getInstance();
-            appData.sceneCollection.add(scene, true);
+            SceneFactory.createSceneFromActivityIntent(getActivity(), data);
         } else
             super.onActivityResult(requestCode, resultCode, data);
     }

@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -141,7 +142,7 @@ public class FloatingActionButton extends View {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(@NonNull MotionEvent event) {
         int color;
         if (event.getAction() == MotionEvent.ACTION_UP) {
             color = mColor;

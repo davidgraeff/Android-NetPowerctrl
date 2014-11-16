@@ -26,9 +26,7 @@ public class RecyclerViewWithAdapter<ADAPTER extends RecyclerView.Adapter> {
     protected int mEmptyResText;
 
     private RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver() {
-        @Override
-        public void onChanged() {
-            super.onChanged();
+        private void changed() {
             if (mAdapter.getItemCount() != 0) {
                 mEmptyView.setVisibility(View.GONE);
                 return;
@@ -37,6 +35,24 @@ public class RecyclerViewWithAdapter<ADAPTER extends RecyclerView.Adapter> {
             mEmptyView.setVisibility(View.VISIBLE);
             TextView textView = (TextView) mEmptyView.findViewById(R.id.empty_text);
             textView.setText(mEmptyResText);
+        }
+
+        @Override
+        public void onChanged() {
+            super.onChanged();
+            changed();
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount) {
+            super.onItemRangeChanged(positionStart, itemCount);
+            changed();
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            super.onItemRangeRemoved(positionStart, itemCount);
+            changed();
         }
     };
 
@@ -55,6 +71,8 @@ public class RecyclerViewWithAdapter<ADAPTER extends RecyclerView.Adapter> {
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.registerAdapterDataObserver(adapterDataObserver);
         this.mEmptyResText = emptyResText;
+
+        adapterDataObserver.onChanged();
 
         mRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override

@@ -3,6 +3,7 @@ package oly.netpowerctrl.preferences;
 import android.app.AlertDialog;
 import android.app.ListFragment;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -69,7 +70,7 @@ public class EnergySaveLogFragment extends ListFragment {
 
     @Override
     public void onDestroy() {
-        actionBarTitle.restoreTitle(getActivity());
+        actionBarTitle.restoreTitle((ActionBarActivity) getActivity());
         super.onDestroy();
     }
 

@@ -7,6 +7,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -28,7 +29,6 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.MainActivity;
 
 public class DeviceEditDialog extends DialogFragment implements onCreateDeviceResult {
@@ -42,12 +42,8 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     public DeviceEditDialog() {
     }
 
-    public void setDevice(Device device) {
-        PluginInterface pluginInterface = ListenService.getService().getPluginByID(device.pluginID);
-        if (pluginInterface == null)
-            return;
-
-        editDevice = pluginInterface.openEditDevice(device);
+    public void setDevice(@NonNull Device device) {
+        editDevice = ListenService.getService().openEditDevice(device);
         editDevice.setResultListener(this);
     }
 
@@ -335,7 +331,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     }
 
     private void saveAndFinish() {
-        editDevice.wakeupPlugin(getActivity());
+        ListenService.getService().wakeupPlugin(editDevice.getDevice());
 
         AppData.getInstance().addToConfiguredDevices(getActivity(), editDevice.getDevice());
         dismiss();

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -116,7 +117,7 @@ final public class AnelPlugin implements PluginInterface {
             return;
         }
 
-        if (warnUDPSending()) {
+        if (checkAndStartUDP()) {
             if (callback != null)
                 callback.onExecutionFinished(command_list.size());
             return;
@@ -315,7 +316,7 @@ final public class AnelPlugin implements PluginInterface {
                 HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci, "ctrl.htm",
                         "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
         } else if (ci instanceof DeviceConnectionUDP) {
-            if (warnUDPSending()) {
+            if (checkAndStartUDP()) {
                 return;
             }
 
@@ -346,7 +347,7 @@ final public class AnelPlugin implements PluginInterface {
     /**
      * @return Return true if no udp sending thread is running
      */
-    private boolean warnUDPSending() {
+    private boolean checkAndStartUDP() {
         if (udpSending == null) {
             InAppNotifications.showException(ListenService.getService(), new Exception(), "udpSending null");
             return true;
@@ -370,7 +371,7 @@ final public class AnelPlugin implements PluginInterface {
         ListenService service = ListenService.getService();
         if (service == null)
             return;
-        if (warnUDPSending()) {
+        if (checkAndStartUDP()) {
             return;
         }
 
@@ -394,7 +395,7 @@ final public class AnelPlugin implements PluginInterface {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci,
                     "strg.cfg", "", ci, false, AnelPluginHttp.receiveCtrlHtml));
         } else {
-            if (warnUDPSending()) {
+            if (checkAndStartUDP()) {
                 return;
             }
             udpSending.addJob(new UDPSending.SendAndObserveJob(udpSending, service, ci, requestMessage, UDPSending.INQUERY_REQUEST));
@@ -426,13 +427,16 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public EditDeviceInterface openEditDevice(Device device) {
-        return new AnelEditDevice(MainActivity.instance.getString(R.string.default_device_name), device);
+    public EditDeviceInterface openEditDevice(@Nullable Device device) {
+        EditDeviceInterface editDeviceInterface = new AnelEditDevice(MainActivity.instance.getString(R.string.default_device_name), device);
+        editDeviceInterface.getDevice().setPluginInterface(this);
+        return editDeviceInterface;
     }
 
     // We assume the MainActivity exist!
     @Override
     public void showConfigureDeviceScreen(Device device) {
+        device.setPluginInterface(this);
         DeviceEditDialog f = (DeviceEditDialog) Fragment.instantiate(MainActivity.instance, DeviceEditDialog.class.getName());
         f.setDevice(device);
         MainActivity.getNavigationController().changeToDialog(MainActivity.instance, f);
@@ -679,13 +683,11 @@ final public class AnelPlugin implements PluginInterface {
         }.execute(this);
 
         AppData d = AppData.getInstance();
-        for (Device di : d.deviceCollection.getItems()) {
+        for (Device di : d.findDevices(this)) {
             // Mark all devices as changed: If network reduced mode ends all
             // devices propagate changes then.
-            if (this.equals(di.getPluginInterface())) {
-                di.setStatusMessage("UDP", App.getAppString(R.string.device_energysave_mode), true);
-                d.updateExistingDevice(di);
-            }
+            di.setStatusMessage("UDP", App.getAppString(R.string.device_energysave_mode), true);
+            d.updateExistingDevice(di);
         }
     }
 

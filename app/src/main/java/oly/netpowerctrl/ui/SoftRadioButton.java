@@ -9,7 +9,7 @@ import java.util.Random;
 
 public class SoftRadioButton extends RadioButton {
 
-    private static HashMap<String, SoftRadioGroup> GROUP_MAPPINGS = new HashMap<String, SoftRadioGroup>();
+    private static HashMap<String, SoftRadioGroup> GROUP_MAPPINGS = new HashMap<>();
     private String mGroupName;
 
     public SoftRadioButton(Context context, AttributeSet attrs) {

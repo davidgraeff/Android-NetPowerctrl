@@ -23,6 +23,9 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
     public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
         @Override
         public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action, int position) {
+            if (device == null || (action != ObserverUpdateActions.UpdateAction && action != ObserverUpdateActions.ConnectionUpdateAction))
+                return true;
+
             device.lockDevicePorts();
             Iterator<DevicePort> iterator = device.getDevicePortIterator();
             while (iterator.hasNext()) {
@@ -75,16 +78,6 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         return items.size();
     }
 
-    public void setFavourite(Scene scene, boolean favourite) {
-        int index = indexOf(scene);
-        if (scene == null || index == -1)
-            return;
-        scene.favourite = favourite;
-        if (storage != null)
-            storage.save(this, scene);
-        notifyObservers(scene, ObserverUpdateActions.UpdateAction, index);
-    }
-
     /**
      * Add/replace scene with same id
      *
@@ -121,8 +114,7 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
                 notifyObservers(scene, ObserverUpdateActions.AddAction, items.size() - 1);
         }
 
-        if (storage != null)
-            storage.save(this, scene);
+        save(scene);
 
         return position;
     }

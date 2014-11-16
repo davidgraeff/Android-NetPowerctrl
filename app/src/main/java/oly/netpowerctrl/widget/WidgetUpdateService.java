@@ -347,7 +347,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             string_res = R.string.widget_inProgress;
         }
 
-        views.setTextViewText(R.id.widget_name, executable.getTitle(this));
+        views.setTextViewText(R.id.widget_name, executable.getTitle());
         views.setTextViewText(R.id.widget_status, this.getString(string_res));
 
         // If the device is not reachable there is no sense in assigning a click event pointing to

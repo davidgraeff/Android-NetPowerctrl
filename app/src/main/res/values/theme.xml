@@ -24,6 +24,12 @@
         <item name="textColorPrimary">@android:color/white</item>
         <item name="colorPrimary">@color/colorPrimaryLight</item>
         <item name="colorPrimaryDark">@color/colorSecondaryLight</item>
+
+        <!--<item name="background">@android:color/background_light</item>
+        <item name="android:background">@android:color/background_light</item>
+        <item name="android:windowBackground">@android:color/background_light</item>
+        <item name="android:colorBackground">@android:color/background_light</item>-->
+
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:alertDialogStyle">@style/CustomDialogTheme</item>
@@ -51,6 +57,7 @@
         <item name="textColorPrimary">@android:color/white</item>
         <item name="colorPrimary">@color/colorPrimaryDark</item>
         <item name="colorPrimaryDark">@color/colorSecondaryDark</item>
+
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:alertDialogStyle">@style/CustomDialogTheme</item>

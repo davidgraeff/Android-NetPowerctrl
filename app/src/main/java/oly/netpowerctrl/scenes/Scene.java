@@ -28,15 +28,28 @@ public class Scene implements StorableInterface, Executable {
     public String sceneName = "";
     public String uuid;
     public List<SceneItem> sceneItems = new ArrayList<>();
-    boolean favourite;
     private String uuid_master = null;
     private int currentValue = 0;
     private int maximumValue = 0;
 
     private boolean reachable = false;
 
+    /**
+     * Create an invalid scene. Do not use that constructor, it is for instantiating per reflection only!
+     */
     public Scene() {
-        uuid = UUID.randomUUID().toString();
+    }
+
+    public static Scene createNewSzene() {
+        Scene scene = new Scene();
+        scene.uuid = UUID.randomUUID().toString();
+        return scene;
+    }
+
+    public static Scene loadFromJson(JsonReader reader) throws IOException, ClassNotFoundException {
+        Scene scene = new Scene();
+        scene.load(reader);
+        return scene;
     }
 
     private static void readSceneItem(JsonReader reader, Scene scene) throws IOException {
@@ -60,30 +73,6 @@ public class Scene implements StorableInterface, Executable {
         reader.endObject();
         if (item.uuid != null)
             scene.sceneItems.add(item);
-    }
-
-    /**
-     * Return true if this scene is a favourite. If you want to set the favourite
-     * flag use AppData.getInstance().sceneCollection.setFavaourite(scene, boolean);
-     *
-     * @return Return true if this scene is a favourite.
-     */
-    public boolean isFavourite() {
-        return favourite;
-    }
-
-    /**
-     * Updates the favourite flag of this scene. A favourite is shown in the android
-     * system bar (if enabled) and can be executed from there directly.
-     * <p/>
-     * Use this method for not-stored scenes. Stored scenes should be updated
-     * by calling SceneCollection.setFavourite(scene, flag) to also update the android
-     * status bar if necessary.
-     *
-     * @param newFavStatus The new favourite status.
-     */
-    public void setFavourite(boolean newFavStatus) {
-        favourite = newFavStatus;
     }
 
     public void setMaster(DevicePort master) {
@@ -149,7 +138,6 @@ public class Scene implements StorableInterface, Executable {
         writer.name("uuid").value(uuid);
         if (getSceneItem(uuid_master) != null)
             writer.name("uuid_master").value(uuid_master);
-        writer.name("favourite").value(favourite);
 
         writer.name("groupItems").beginArray();
         for (SceneItem c : sceneItems) {
@@ -181,17 +169,11 @@ public class Scene implements StorableInterface, Executable {
     }
 
     @Override
-    public StorableInterface.StorableDataType getDataType() {
-        return StorableDataType.JSON;
-    }
-
-    @Override
     public String getStorableName() {
         return uuid;
     }
 
-    @Override
-    public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
+    public void load(@NonNull JsonReader reader) throws IOException {
         Scene scene = this;
 
         reader.beginObject();
@@ -207,9 +189,6 @@ public class Scene implements StorableInterface, Executable {
                     break;
                 case "uuid_master":
                     scene.uuid_master = reader.nextString();
-                    break;
-                case "favourite":
-                    scene.favourite = reader.nextBoolean();
                     break;
                 case "groups":
                     scene.groups.clear();
@@ -265,7 +244,7 @@ public class Scene implements StorableInterface, Executable {
     }
 
     @Override
-    public String getTitle(Context context) {
+    public String getTitle() {
         return sceneName;
     }
 

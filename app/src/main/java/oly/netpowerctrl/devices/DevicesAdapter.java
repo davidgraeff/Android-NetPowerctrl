@@ -96,7 +96,9 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
     private void fullUpdate() {
         mList.clear();
 
-        List<Device> deviceList = AppData.getInstance().deviceCollection.getItems();
+        List<Device> deviceList = new ArrayList<>(AppData.getInstance().deviceCollection.getItems());
+        if (showNewDevices)
+            deviceList.addAll(AppData.getInstance().unconfiguredDeviceCollection.getItems());
 
         for (Device device : deviceList)
             addDeviceToList(device, mList.size());
@@ -126,12 +128,12 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
             case AddAction:
             case ConnectionUpdateAction:
             case UpdateAction:
+                assert device != null;
                 // First remove all device connections and the device
                 int start = -1, range = 0;
                 for (int i = mList.size() - 1; i >= 0; --i) {
                     DeviceAdapterItem item = mList.get(i);
-                    assert device != null;
-                    if (item.UniqueDeviceID.equals(device.getUniqueDeviceID())) {
+                    if (item.matches(device)) {
                         mList.remove(i);
                         start = i;
                         ++range;
@@ -168,7 +170,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
                 for (int i = mList.size() - 1; i >= 0; --i) {
                     DeviceAdapterItem item = mList.get(i);
                     assert device != null;
-                    if (item.UniqueDeviceID.equals(device.getUniqueDeviceID())) {
+                    if (item.matches(device)) {
                         mList.remove(i);
                         notifyItemRemoved(position);
                     }
@@ -200,11 +202,12 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         public String title;
         public String subtitle;
         public boolean isDeviceHeader;
-        public String UniqueDeviceID;
         public int connectionID;
         public boolean reachable;
         public boolean tested;
         public boolean enabled = true;
+        public boolean isConfigured;
+        private String uid;
 
         /**
          * Create an entry for a device
@@ -221,7 +224,8 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
             this.isDeviceHeader = true;
             this.reachable = device.isReachable();
             this.tested = true;
-            this.UniqueDeviceID = device.getUniqueDeviceID();
+            this.isConfigured = device.isConfigured();
+            this.uid = device.getUniqueDeviceID();
         }
 
         /**
@@ -253,7 +257,16 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
             this.isDeviceHeader = false;
             this.connectionID = connectionID;
-            this.UniqueDeviceID = deviceConnection.device.getUniqueDeviceID();
+            this.uid = deviceConnection.device.getUniqueDeviceID();
+            this.isConfigured = deviceConnection.device.isConfigured();
+        }
+
+        public String getUid() {
+            return uid;
+        }
+
+        public boolean matches(Device device) {
+            return isConfigured == device.isConfigured() && uid.equals(device.getUniqueDeviceID());
         }
     }
 
