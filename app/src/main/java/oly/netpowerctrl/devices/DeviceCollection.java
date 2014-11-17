@@ -90,8 +90,7 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
         if (port == null)
             return;
 
-        LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, bitmap, 128, 128), port.getUid(),
-                LoadStoreIconData.IconType.DevicePortIcon, state);
+        LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, bitmap, 128, 128), port.getUid(), state);
         notifyObservers(port.device, ObserverUpdateActions.UpdateAction, items.indexOf(port.device));
     }
 

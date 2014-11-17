@@ -51,14 +51,14 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
                 case TypeToggle: {
                     executableViewHolder.seekBar.setVisibility(View.GONE);
                     executableViewHolder.loadIcon(mIconCache, executable.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff, 0);
+                            LoadStoreIconData.IconState.StateOff, 0);
                     executableViewHolder.loadIcon(mIconCache, executable.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn, 1);
+                            LoadStoreIconData.IconState.StateOn, 1);
                     break;
                 }
                 case TypeStateless: {
                     executableViewHolder.loadIcon(mIconCache, executable.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.OnlyOneState, 0);
+                            LoadStoreIconData.IconState.OnlyOneState, 0);
                     executableViewHolder.seekBar.setVisibility(View.GONE);
                     executableViewHolder.setBitmapOff();
                     break;
@@ -66,9 +66,9 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
                 case TypeRangedValue:
                     DevicePort devicePort = (DevicePort) executable;
                     executableViewHolder.loadIcon(mIconCache, executable.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff, 0);
+                            LoadStoreIconData.IconState.StateOff, 0);
                     executableViewHolder.loadIcon(mIconCache, executable.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn, 1);
+                            LoadStoreIconData.IconState.StateOn, 1);
                     executableViewHolder.seekBar.setVisibility(View.VISIBLE);
                     executableViewHolder.seekBar.setOnSeekBarChangeListener(this);
                     executableViewHolder.seekBar.setTag(-1);

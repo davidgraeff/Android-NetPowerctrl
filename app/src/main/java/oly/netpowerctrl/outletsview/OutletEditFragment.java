@@ -45,6 +45,7 @@ import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.ActionBarTitle;
 import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.MutableBoolean;
 import oly.netpowerctrl.utils.fragments.onFragmentBackButton;
 
 public class OutletEditFragment extends Fragment implements onHttpRequestResult,
@@ -64,6 +65,7 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
     private View execute_icons_container;
     private View executable_icons;
     private View scene_image;
+    private boolean loadingDoNotSaveIcon = false;
 
     public OutletEditFragment() {
     }
@@ -168,9 +170,11 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
         execute_icons_container.findViewById(R.id.scene_image_on).setOnClickListener(iconClick);
         execute_icons_container.findViewById(R.id.scene_image_off).setOnClickListener(iconClick);
 
+        loadingDoNotSaveIcon = true;
         setIcon(execute_icons_container.findViewById(R.id.scene_image), null);
         setIcon(execute_icons_container.findViewById(R.id.scene_image_off), null);
         setIcon(execute_icons_container.findViewById(R.id.scene_image_on), null);
+        loadingDoNotSaveIcon = false;
 
         execute_icons_container.findViewById(R.id.close_icons).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,27 +208,31 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
 
     @Override
     public void setIcon(Object context_object, Bitmap icon) {
+        MutableBoolean isDefault = new MutableBoolean();
         switch (((View) context_object).getId()) {
             case R.id.scene_image:
-                AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
-                        devicePort, icon, LoadStoreIconData.IconState.OnlyOneState);
                 if (icon == null)
                     icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.OnlyOneState);
+                            LoadStoreIconData.IconState.OnlyOneState, isDefault);
+                if (!loadingDoNotSaveIcon)
+                    AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
+                            devicePort, icon, LoadStoreIconData.IconState.OnlyOneState);
                 break;
             case R.id.scene_image_off:
-                AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
-                        devicePort, icon, LoadStoreIconData.IconState.StateOff);
                 if (icon == null)
                     icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOff);
+                            LoadStoreIconData.IconState.StateOff, isDefault);
+                if (!loadingDoNotSaveIcon)
+                    AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
+                            devicePort, icon, LoadStoreIconData.IconState.StateOff);
                 break;
             case R.id.scene_image_on:
-                AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
-                        devicePort, icon, LoadStoreIconData.IconState.StateOn);
                 if (icon == null)
                     icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
-                            LoadStoreIconData.IconType.DevicePortIcon, LoadStoreIconData.IconState.StateOn);
+                            LoadStoreIconData.IconState.StateOn, isDefault);
+                if (!loadingDoNotSaveIcon)
+                    AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
+                            devicePort, icon, LoadStoreIconData.IconState.StateOn);
                 break;
             default:
                 throw new RuntimeException("Image id not known!");

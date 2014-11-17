@@ -97,16 +97,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         }
     }
 
-    @SuppressWarnings("unused")
-    public void unregisterOpenStateChanged(DrawerStateChanged o) {
-        observers.remove(o);
-    }
-
-    public void createDrawer(final ActionBarActivity context, RestorePositionEnum restore) {
-        // Do restore only once
-        if (restore == RestorePositionEnum.RestoreLastSaved && mDrawerLayout != null)
-            return;
-
+    public void setActivity(final ActionBarActivity context) {
         mDrawerActivity = new WeakReference<>(context);
         // References for the drawer
         mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);
@@ -114,12 +105,19 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(false);
-
         // set a custom shadow that overlays the main content when the drawer opens
         if (mDrawerLayout != null)
             mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
+        mRecyclerView.setAdapter(mDrawerAdapter);
+        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(mRecyclerView.getContext(), this, null));
 
+        if (mDrawerLayout != null) {
+            createDrawerToggle();
+        }
+    }
+
+    public void createDrawerAdapter(final Activity context) {
         mDrawerAdapter = new DrawerAdapter(context);
         mDrawerAdapter.addItem(context.getString(R.string.drawer_overview),
                 OutletsViewFragment.class.getName(), 0, true).bitmap = BitmapFactory.decodeResource(context.getResources(), android.R.drawable.ic_menu_send);
@@ -159,9 +157,14 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         mDrawerAdapter.addItem(context.getString(R.string.drawer_feedback),
                 FeedbackFragment.class.getName(), 0, false);
 
-        mRecyclerView.setAdapter(mDrawerAdapter);
-        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(mRecyclerView.getContext(), this, null));
+    }
 
+    @SuppressWarnings("unused")
+    public void unregisterOpenStateChanged(DrawerStateChanged o) {
+        observers.remove(o);
+    }
+
+    public void restoreLastOpenedFragment(RestorePositionEnum restore) {
         if (restore == RestorePositionEnum.RestoreLastSaved) {
             // Restore the last visited screen
             Bundle extra = SharedPrefs.getInstance().getFirstTabExtra();
@@ -176,11 +179,8 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             //backstack.add(new BackStackEntry(className, null));
             changeToFragment(className, extra, false, pos);
         } else if (restore == RestorePositionEnum.RestoreAfterConfigurationChanged && currentFragmentClass != null) {
+            ActionBarActivity context = mDrawerActivity.get();
             context.getFragmentManager().beginTransaction().attach(currentFragment).commitAllowingStateLoss();
-        }
-
-        if (mDrawerLayout != null) {
-            createDrawerToggle();
         }
     }
 
@@ -283,11 +283,11 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
     }
 
     public void changeToFragment(String fragmentClassName) {
-        changeToFragment(fragmentClassName, null, true, mDrawerAdapter.indexOf(fragmentClassName));
+        changeToFragment(fragmentClassName, null, true, mDrawerAdapter == null ? -1 : mDrawerAdapter.indexOf(fragmentClassName));
     }
 
     public void changeToFragment(String fragmentClassName, final Bundle extra) {
-        changeToFragment(fragmentClassName, extra, true, mDrawerAdapter.indexOf(fragmentClassName));
+        changeToFragment(fragmentClassName, extra, true, mDrawerAdapter == null ? -1 : mDrawerAdapter.indexOf(fragmentClassName));
     }
 
     public void changeToFragment(Fragment fragment, String fragmentClassName) {

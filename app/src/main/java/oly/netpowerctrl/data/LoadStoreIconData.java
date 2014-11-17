@@ -25,22 +25,16 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_base.data.StorableInterface;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.utils.Streams;
 
 /**
  * Util for scenes
@@ -86,9 +80,9 @@ public class LoadStoreIconData {
         return new UUID(0xABCE, 0).toString();
     }
 
-    public static File getImageDirectory(Context context, IconType iconType, IconState state) {
+    public static File getImageDirectory(Context context, IconState state) {
         File dir = new File(context.getFilesDir(), "images");
-        dir = new File(dir, iconType.name() + state.name());
+        dir = new File(dir, state.name());
         if (!dir.mkdirs() && !dir.isDirectory())
             throw new RuntimeException("Could not create image dir!");
         return dir;
@@ -108,8 +102,8 @@ public class LoadStoreIconData {
 
     @NonNull
     public static File getFilename(@NonNull Context context,
-                                   @NonNull String uuid, IconType iconType, IconState state) {
-        return new File(getImageDirectory(context, iconType, state), uuid + ".png");
+                                   @NonNull String uuid, IconState state) {
+        return new File(getImageDirectory(context, state), uuid + ".png");
     }
 
     public static File saveTempIcon(Context context, @Nullable Bitmap bitmap) {
@@ -138,12 +132,12 @@ public class LoadStoreIconData {
     }
 
     public static void saveIcon(@NonNull Context context, @Nullable Bitmap bitmap,
-                                @NonNull String uuid, IconType iconType, IconState state) {
-        File file = getFilename(context, uuid, iconType, state);
+                                @NonNull String uuid, IconState state) {
+        File file = getFilename(context, uuid, state);
         if (file.exists()) //noinspection ResultOfMethodCallIgnored
             file.delete();
 
-        String hashKey = uuid + String.valueOf(iconType.ordinal() + 100 * state.ordinal());
+        String hashKey = uuid + String.valueOf(state.ordinal());
         iconCache.remove(hashKey);
 
         if (bitmap == null) {
@@ -189,29 +183,79 @@ public class LoadStoreIconData {
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
     }
 
-    public static Drawable loadDrawable(Context context, String uniqueID, IconType iconType, IconState state) {
-        Bitmap b = loadBitmap(context, uniqueID, iconType, state);
+    public static Drawable loadDrawable(Context context, String uniqueID,
+                                        IconState state, @Nullable oly.netpowerctrl.utils.MutableBoolean isDefault) {
+        Bitmap b = loadBitmap(context, uniqueID, state, isDefault);
         if (b == null)
             return null;
         return new BitmapDrawable(context.getResources(), b);
     }
 
-    public static Bitmap loadBitmap(Context context, String uniqueID, IconType iconType, IconState state) {
-        String hashKey = uniqueID + String.valueOf(iconType.ordinal() + 100 * state.ordinal());
+    public static Bitmap loadBackgroundBitmap() {
+        File file = new File(App.instance.getFilesDir(), "image_bg");
+        if (!file.mkdirs() && !file.isDirectory())
+            throw new RuntimeException("Could not create image dir!");
+        file = new File(file, "bg.jpg");
+
+        Bitmap b = null;
+        if (file.exists()) {
+            b = BitmapFactory.decodeFile(file.getAbsolutePath());
+        }
+
+        if (b == null)
+            try {
+                b = BitmapFactory.decodeStream(App.instance.getAssets().open("backgrounds/bg.jpg"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        return b;
+    }
+
+    public static void saveBackground(Bitmap bitmap) {
+        File file = new File(App.instance.getFilesDir(), "image_bg");
+        if (!file.mkdirs() && !file.isDirectory())
+            throw new RuntimeException("Could not create image dir!");
+        file = new File(file, "bg.jpg");
+
+        if (file.exists()) //noinspection ResultOfMethodCallIgnored
+            file.delete();
+
+        if (bitmap == null) {
+            return;
+        }
+
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Bitmap loadBitmap(Context context, String uniqueID,
+                                    IconState state, @Nullable oly.netpowerctrl.utils.MutableBoolean isDefault) {
+        String hashKey = uniqueID + String.valueOf(state.ordinal());
+        if (isDefault != null)
+            isDefault.value = false;
         Bitmap c = iconCache.get(hashKey);
         if (c != null)
             return c;
 
-        File file = getFilename(context, uniqueID, iconType, state);
+        File file = getFilename(context, uniqueID, state);
         if (file.exists()) {
             c = BitmapFactory.decodeFile(file.getAbsolutePath());
             if (c == null)
+                //noinspection ResultOfMethodCallIgnored
                 file.delete();
         }
 
         if (c == null) {
+            if (isDefault != null)
+                isDefault.value = true;
             try {
-                hashKey = String.valueOf(iconType.ordinal() + 100 * state.ordinal());
+                hashKey = String.valueOf(state.ordinal());
                 c = iconCache.get(hashKey);
                 if (c != null)
                     return c;
@@ -241,21 +285,19 @@ public class LoadStoreIconData {
         return c;
     }
 
-    public static IconFile[] getAllIcons(Context context) {
-
-        List<IconFile> list = new ArrayList<>();
-        for (LoadStoreIconData.IconType iconType : LoadStoreIconData.IconType.values()) {
-            for (LoadStoreIconData.IconState state : LoadStoreIconData.IconState.values()) {
-                //noinspection ConstantConditions
-                File myDir = getImageDirectory(context, iconType, state);
-                for (File file : myDir.listFiles()) {
-                    list.add(new IconFile(file, state, iconType));
-                }
-            }
-        }
-
-        return list.toArray(new IconFile[list.size()]);
-    }
+//    public static IconFile[] getAllIcons(Context context) {
+//
+//        List<IconFile> list = new ArrayList<>();
+//        for (LoadStoreIconData.IconState state : LoadStoreIconData.IconState.values()) {
+//            //noinspection ConstantConditions
+//            File myDir = getImageDirectory(context, state);
+//            for (File file : myDir.listFiles()) {
+//                list.add(new IconFile(file, state));
+//            }
+//        }
+//
+//        return list.toArray(new IconFile[list.size()]);
+//    }
 
     public static LoadStoreIconData.IconState getIconState(DevicePort devicePort) {
         LoadStoreIconData.IconState t = LoadStoreIconData.IconState.StateOff;
@@ -302,8 +344,7 @@ public class LoadStoreIconData {
         select_icon_dialog.setTitle(context.getString(R.string.dialog_icon_title));
         if (callback_context_object instanceof DevicePort) {
             DevicePort oi = (DevicePort) callback_context_object;
-            Drawable icon = LoadStoreIconData.loadDrawable(context, oi.getUid(),
-                    LoadStoreIconData.IconType.DevicePortIcon, getIconState(oi));
+            Drawable icon = LoadStoreIconData.loadDrawable(context, oi.getUid(), getIconState(oi), null);
             select_icon_dialog.setIcon(icon);
         }
         select_icon_dialog.setAdapter(adapter, new DialogInterface.OnClickListener() {
@@ -366,16 +407,6 @@ public class LoadStoreIconData {
         iconCacheClearedObserver.onIconCacheCleared();
     }
 
-
-    public static enum IconType {
-        SceneIcon,
-        WidgetIcon,
-        DevicePortIcon,
-        GroupIcon,
-        BackgroundImage
-    }
-
-
     public static enum IconState {
         StateOn,
         StateOff,
@@ -390,38 +421,35 @@ public class LoadStoreIconData {
         void startActivityForResult(Intent intent, int requestCode);
     }
 
-    public static class IconFile implements StorableInterface {
-        public final File file;
-        public final IconState state;
-        public final IconType type;
-        public final UUID uuid;
-        public final String extension;
-
-        public IconFile(File file, IconState state, IconType type) {
-            this.file = file;
-            this.uuid = UUID.fromString(file.getName().replace(".jpg", "").replace(".png", ""));
-            String fullPath = file.getAbsolutePath();
-            int dot = fullPath.lastIndexOf(".");
-            this.extension = fullPath.substring(dot + 1);
-            this.state = state;
-            this.type = type;
-        }
-
-        @Override
-        public String getStorableName() {
-            return type.name() + state.name() + File.pathSeparator + uuid.toString() + "." + extension;
-        }
-
-        @Override
-        public void load(@NonNull InputStream input) {
-
-        }
-
-        @Override
-        public void save(@NonNull OutputStream output) throws IOException {
-            FileInputStream f = new FileInputStream(file);
-            Streams.copy(f, output);
-        }
-
-    }
+//    public static class IconFile implements StorableInterface {
+//        public final File file;
+//        public final IconState state;
+//        public final UUID uuid;
+//        public final String extension;
+//
+//        public IconFile(File file, IconState state) {
+//            this.file = file;
+//            this.uuid = UUID.fromString(file.getName().replace(".jpg", "").replace(".png", ""));
+//            String fullPath = file.getAbsolutePath();
+//            int dot = fullPath.lastIndexOf(".");
+//            this.extension = fullPath.substring(dot + 1);
+//            this.state = state;
+//        }
+//
+//        @Override
+//        public String getStorableName() {
+//            return state.name() + File.pathSeparator + uuid.toString() + "." + extension;
+//        }
+//
+//        @Override
+//        public void load(@NonNull InputStream input) {
+//
+//        }
+//
+//        @Override
+//        public void save(@NonNull OutputStream output) throws IOException {
+//            FileInputStream f = new FileInputStream(file);
+//            Streams.copy(f, output);
+//        }
+//    }
 }

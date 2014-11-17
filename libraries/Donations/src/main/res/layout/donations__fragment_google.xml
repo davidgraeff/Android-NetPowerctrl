@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:flatui="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -11,7 +12,7 @@
         android:text="@string/donations__google_android_market"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <TextView
+    <com.cengalabs.flatui.views.FlatTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingBottom="5dp"
@@ -32,12 +33,13 @@
             android:layout_weight="1"
             android:prompt="@string/donations__google_android_market_text" />
 
-        <Button
+        <com.cengalabs.flatui.views.FlatButton
             android:id="@+id/donations__google_android_market_donate_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/donations__google_android_market_donate_button" />
+            android:text="@string/donations__google_android_market_donate_button"
+            flatui:fl_touchEffect="fl_ripple" />
     </LinearLayout>
 
 </LinearLayout>

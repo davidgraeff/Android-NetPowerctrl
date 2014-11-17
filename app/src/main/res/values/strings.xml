@@ -45,25 +45,20 @@
     <string name="title_scene_edit">Edit scene</string>
 
     <string name="shortcut_show_mainwindow">Show mainwindow on execution</string>
-    <string name="delete_all_groups">Delete all scenes?</string>
 
     <string name="off">Off</string>
     <string name="on">On</string>
     <string name="toggle">Toggle</string>
 
     <string name="drawer_overview">Overview</string>
-    <string name="drawer_switch_title">Trigger actions</string>
     <string name="drawer_overview_list">View as list</string>
     <string name="drawer_overview_grid">View as grid</string>
     <string name="drawer_overview_compact">Compact view</string>
     <string name="drawer_app_title">App and Devices</string>
 
     <string name="drawer_devices">Devices</string>
-    <string name="drawer_devices_detail">New and configured devices</string>
     <string name="drawer_preferences">Preferences</string>
-    <string name="drawer_preferences_detail">Ports, Widgets, Theme, …</string>
     <string name="drawer_donate">Donate</string>
-    <string name="drawer_donate_detail">Google, Paypal, Flattr</string>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
@@ -108,13 +103,9 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="widget_outlet_not_reachable">(not reachable)</string>
     <string name="error_timeout_device">Execution: Timeout for device %1$s</string>
     <string name="pref_widgets">Widgets</string>
-    <string name="widget_image_on">Widget image: On state</string>
-    <string name="widget_image_off">Widget image: Off state</string>
-    <string name="widget_image_not_reachable">Widget image: Not available</string>
     <string name="crash_toast_text">Ooooops ! I crashed, but a report is send to my developer now to help fix the issue!</string>
     <string name="scene_rename">Scene name</string>
     <string name="new_devices">New devices</string>
-    <string name="configured_devices">Configured devices</string>
     <string name="devices">Change to Devices screen</string>
     <string name="preferences">Change to Preferences screen</string>
     <string name="scene_set_name">Set name</string>
@@ -191,7 +182,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_username_summary">Your user name. You may setup up to eight user names with different access rights on the website of the device.</string>
     <string name="device_password_summary">Your password. The password will be send in clear-text over the network!</string>
     <string name="device_ip_summary">The IP address or DNS name of the device</string>
-    <string name="device_http_port_summary">HTTP Port of the device. This is the same as the web interface port. Usually port 80.</string>
     <string name="alarm_weekdays_range">Weekdays: %1$s, On-time: %2$s, Off-time: %3$s</string>
     <string name="alarm_weekdays_range_alarm">Weekdays: %1$s, On-time: %2$s, Off-time: %3$s, Random toggle interval: %4$s</string>
     <string name="alarm_once">Execute once: $s</string>
@@ -263,11 +253,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="error_device_incomplete">Device data incomplete!</string>
     <string name="preference_user_interface">User interface</string>
     <string name="port_warning_1024_title">Allow administrative port range?</string>
-    <string name="preferences_all_widgets">All Widgets</string>
-    <string name="preference_widget_use_default">Use default settings</string>
-    <string name="preferencewidget_use_default_summary_on">Default settings are used</string>
-    <string name="preference_widget_use_default_summary_off">This widget uses custom settings (see below)</string>
-    <string name="preferences_all_widgets_summary">Default settings for widgets</string>
     <string name="preferences_backup">Import/Export</string>
     <string name="backup_import">Import</string>
     <string name="backup_export">Export</string>
@@ -333,13 +318,9 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="open_google_market">Google Play</string>
     <string name="feedback_add_title">Title</string>
     <string name="feedback_add_text">Wunsch, Verbesserungsvorschlag oder Anregung</string>
-    <string name="feedback_add_disclaimer">If you submit this entry, it will be visible to all users of the app!</string>
     <string name="app_name_disclaimer">Dies ist eine Quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
     <string name="feedback_contact_me">Kontaktieren Sie mich um Probleme mit der App oder Fragen schnell zu klären. Möchten Sie ein allgemein einsehbares Feedback hinterlassen, benutzen Sie bitte Google Play.</string>
     <string name="feedback_add_description">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger. Ihr Feedback ist dann ausdrücklich erwünscht, damit die normale Version möglichst stabil erscheinen kann.</string>
-    <string name="feedback_btn_add">Anregung hinzufügen</string>
-    <string name="feedback_btn_edit">Anregung editieren</string>
-    <string name="feedback_add_failed">Hinzufügen nicht erfolgreich!</string>
     <string name="drawer_change_view_type">Ansichtsmodus</string>
     <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
     <string name="outlets_view_type_list">Als Liste</string>
@@ -356,6 +337,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="label_title"><u>Titel</u></string>
     <string name="groups_assigned">Ansichtsgruppen</string>
     <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
+    <string name="delete_all_alarms">Zeitschaltungen löschen?</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

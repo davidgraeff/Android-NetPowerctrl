@@ -217,7 +217,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget);
         views.setImageViewBitmap(R.id.widget_image,
                 LoadStoreIconData.loadBitmap(this, LoadStoreIconData.uuidFromDefaultWidget(),
-                        LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown));
+                        LoadStoreIconData.IconState.StateUnknown, null));
         views.setTextViewText(R.id.widget_name, getString(R.string.error_widget_device_removed));
         views.setViewVisibility(R.id.widget_status, View.GONE);
         views.setViewVisibility(R.id.widget_inProgress, View.GONE);
@@ -300,22 +300,9 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), clickIntent, 0);
 
         // Load preferences
-        boolean widget_show_title;
-        boolean widget_show_status;
-        boolean widget_use_default;
-
-        {
-            String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-            SharedPreferences widgetPreferences;
-            widgetPreferences = getSharedPreferences(prefName, MODE_PRIVATE);
-            widget_use_default = widgetPreferences.getBoolean("widget_use_default", getResources().getBoolean(R.bool.widget_use_default));
-            if (widget_use_default) {
-                prefName = SharedPrefs.PREF_WIDGET_BASENAME;
-                widgetPreferences = getSharedPreferences(prefName, MODE_PRIVATE);
-            }
-            widget_show_title = widgetPreferences.getBoolean("widget_show_title", getResources().getBoolean(R.bool.widget_show_title));
-            widget_show_status = widgetPreferences.getBoolean("widget_show_status", getResources().getBoolean(R.bool.widget_show_status));
-        }
+        SharedPreferences widgetPreferences = getSharedPreferences(SharedPrefs.PREF_WIDGET_BASENAME, MODE_PRIVATE);
+        boolean widget_show_title = widgetPreferences.getBoolean("widget_show_title", getResources().getBoolean(R.bool.widget_show_title));
+        boolean widget_show_status = widgetPreferences.getBoolean("widget_show_status", getResources().getBoolean(R.bool.widget_show_status));
 
         // Do not show a status text line ("on"/"off") for a simple trigger
         if (executable.getType() == ExecutableType.TypeStateless)
@@ -358,13 +345,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             views.setOnClickPendingIntent(R.id.widget_name, pendingIntent);
             views.setOnClickPendingIntent(R.id.widget_status, pendingIntent);
         }
-        Bitmap bitmap;
-        if (widget_use_default)
-            bitmap = LoadStoreIconData.loadBitmap(this, LoadStoreIconData.uuidFromDefaultWidget(),
-                    LoadStoreIconData.IconType.WidgetIcon, iconState);
-        else
-            bitmap = LoadStoreIconData.loadBitmap(this, LoadStoreIconData.uuidFromWidgetID(appWidgetId),
-                    LoadStoreIconData.IconType.WidgetIcon, iconState);
+        Bitmap bitmap = LoadStoreIconData.loadBitmap(this, executable.getUid(), iconState, null);
         views.setImageViewBitmap(R.id.widget_image, bitmap);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);

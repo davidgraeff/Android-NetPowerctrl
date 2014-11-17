@@ -140,7 +140,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
             case R.id.menu_remove_all_timer:
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.delete_all_groups)
+                        .setTitle(R.string.delete_all_alarms)
                         .setMessage(R.string.confirmation_delete_all_alarms)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {

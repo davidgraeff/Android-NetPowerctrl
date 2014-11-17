@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 107
-        versionName "6.7.2"
+        versionCode 109
+        versionName "6.8"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -88,6 +88,7 @@ dependencies {
     //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08 5.0.89
     //compile 'com.google.android.gms:play-services:5.2.08'
     compile 'com.wefika:flowlayout:0.3.4'
+    compile 'com.github.eluleci:flatui:3.0.0'
     compile 'com.github.gabrielemariotti.changeloglib:library:1.5.1'
     compile 'ch.acra:acra:4.5.0'
     compile 'com.android.support:support-v13:21.0.0'

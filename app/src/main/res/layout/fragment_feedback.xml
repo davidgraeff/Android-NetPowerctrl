@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:flatui="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -155,14 +156,14 @@
                     android:text="@string/app_name_disclaimer"
                     android:textAppearance="@android:style/TextAppearance.Medium" />
 
-                <Button
+                <com.cengalabs.flatui.views.FlatButton
                     android:id="@+id/open_source_license"
-                    style="?colored_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginTop="10dp"
-                    android:text="@string/open_source_licenses" />
+                    android:text="@string/open_source_licenses"
+                    flatui:fl_touchEffect="fl_ripple" />
 
             </LinearLayout>
 
@@ -207,24 +208,24 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
+                    <com.cengalabs.flatui.views.FlatButton
                         android:id="@+id/mail"
-                        style="?colored_button"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="10dp"
                         android:layout_weight="1"
-                        android:text="Mail" />
+                        android:text="Mail"
+                        flatui:fl_touchEffect="fl_ripple" />
 
-                    <Button
+                    <com.cengalabs.flatui.views.FlatButton
                         android:id="@+id/google_market"
-                        style="?colored_button"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:text="@string/open_google_market" />
+                        android:text="@string/open_google_market"
+                        flatui:fl_touchEffect="fl_ripple" />
 
                 </LinearLayout>
 
@@ -272,24 +273,24 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
+                    <com.cengalabs.flatui.views.FlatButton
                         android:id="@+id/feedback_google_plus"
-                        style="?colored_button"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="10dp"
                         android:layout_weight="1"
-                        android:text="@string/feedback_google_plus" />
+                        android:text="@string/feedback_google_plus"
+                        flatui:fl_touchEffect="fl_ripple" />
 
-                    <Button
+                    <com.cengalabs.flatui.views.FlatButton
                         android:id="@+id/beta"
-                        style="?colored_button"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:text="@string/enter_beta" />
+                        android:text="@string/enter_beta"
+                        flatui:fl_touchEffect="fl_ripple" />
 
                 </LinearLayout>
 

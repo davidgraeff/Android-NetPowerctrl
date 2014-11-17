@@ -24,7 +24,6 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.Utils;
@@ -61,17 +60,17 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // This should not happen, but could if activity is restored (low_mem etc)
         if (editDevice == null) {
-            // Try to recover:
-            String pluginID = savedInstanceState.getString("pluginInterface");
-            PluginInterface pluginInterface = ListenService.getService().getPlugin(pluginID);
-            // Recover failed
-            if (pluginInterface == null) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle(R.string.device_add)
-                        .setPositiveButton(android.R.string.ok, null);
-                return builder.create();
-            }
-            setPlugin(pluginInterface);
+            // Try to recover: TODO ListenService not ready here!!
+//            String pluginID = savedInstanceState.getString("pluginInterface");
+//            PluginInterface pluginInterface = ListenService.getService().getPlugin(pluginID);
+//            // Recover failed
+//            if (pluginInterface == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.device_add)
+                    .setPositiveButton(android.R.string.ok, null);
+            return builder.create();
+//            }
+//            setPlugin(pluginInterface);
         }
 
         final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_new, null);

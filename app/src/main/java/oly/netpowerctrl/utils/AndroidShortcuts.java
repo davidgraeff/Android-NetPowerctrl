@@ -83,7 +83,7 @@ public class AndroidShortcuts {
     public static void createHomeIcon(Context context, Scene scene) {
         Intent extra = AndroidShortcuts.createShortcutExecutionIntent(context, scene, false, false);
         Bitmap bitmap = LoadStoreIconData.loadBitmap(context, scene.uuid,
-                LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState);
+                LoadStoreIconData.IconState.OnlyOneState, null);
         Intent shortcutIntent;
         if (bitmap != null) {
             shortcutIntent = AndroidShortcuts.createShortcut(extra, scene.sceneName,

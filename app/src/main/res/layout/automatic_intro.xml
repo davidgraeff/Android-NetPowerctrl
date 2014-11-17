@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:flatui="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/store_feature_new" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:padding="@dimen/list_inner_padding"
+            android:text="Willkommen"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:padding="@dimen/list_inner_padding"
+            android:text="Mit dieser App kannst du Anel Steckdosenleisten steuern. Du kannst direkt in den Gerätebildschirm wechseln um Geräte einzurichten oder fährst mit dieser Einführung fort, um Geräte automatisch einzurichten."
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <com.cengalabs.flatui.views.FlatButton
+            android:id="@+id/btnDevices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="@dimen/list_inner_padding"
+            android:text="Zum Gerätebildschirm"
+            flatui:fl_touchEffect="fl_ripple" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:padding="@dimen/list_inner_padding"
+            android:text="Automatische Einrichtung"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:padding="@dimen/list_inner_padding"
+            android:text="Damit die automatische Einrichtung alle Geräte erkennt, müssen einige Voraussetzungen erfüllt sein. Bei neu erworbenen Geräten entspricht das der Werkseinstellung."
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:shrinkColumns="1">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView android:src="@android:drawable/btn_radio" />
+
+                <TextView
+                    android:text="Du dich mit deinen Geräten im selben WLan Netzwerk befinden."
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/btn_radio" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Deine Geräte sollten eine halbwegs aktuelle Firmware installiert haben."
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/btn_radio" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="UDP muss eingeschaltet und der Senden/Empfangen-Port auf 1077 respektive 1075 eingestellt sein."
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/btn_radio" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Die Zugangsdaten müssen unverändert admin/anel lauten."
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
+        </TableLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:padding="@dimen/list_inner_padding"
+            android:text="Ok, los gehts, nutze den Automatische Erkennung-Knopf wenn du bereit bist."
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <com.cengalabs.flatui.views.FlatButton
+            android:id="@+id/btnStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="@dimen/list_inner_padding"
+            android:text="Automatische Erkennung"
+            flatui:fl_touchEffect="fl_ripple" />
+
+        <TextView
+            android:id="@+id/text_automatic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <com.cengalabs.flatui.views.FlatButton
+            android:id="@+id/btnClose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_margin="@dimen/list_inner_padding"
+            android:text="Schließen"
+            flatui:fl_touchEffect="fl_ripple" />
+    </LinearLayout>
+</ScrollView>

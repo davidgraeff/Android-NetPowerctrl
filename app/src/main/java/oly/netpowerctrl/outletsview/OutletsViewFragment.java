@@ -38,7 +38,6 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.devices.DevicesAutomaticDialog;
 import oly.netpowerctrl.executables.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.ExecutableViewHolder;
 import oly.netpowerctrl.executables.ExecutablesSourceBase;
@@ -51,6 +50,7 @@ import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceModeChanged;
 import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
+import oly.netpowerctrl.main.IntroductionFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onNotReachableUpdate;
 import oly.netpowerctrl.scenes.EditSceneActivity;
@@ -136,6 +136,14 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         return adapter;
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        groupPagerAdapter = new GroupPagerAdapter();
+        SharedPrefs.getInstance().registerHideNotReachable(this);
+        setHasOptionsMenu(true);
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -153,14 +161,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     mRecyclerView.setAdapter(adapter);
                 }
             };
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        groupPagerAdapter = new GroupPagerAdapter();
-        SharedPrefs.getInstance().registerHideNotReachable(this);
-        setHasOptionsMenu(true);
-    }
 
     @Override
     public void onDestroy() {
@@ -282,7 +282,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
      */
     private void onPlusClicked(View clickedView) {
         if (!AppData.getInstance().deviceCollection.hasDevices()) {
-            MainActivity.getNavigationController().changeToDialog(getActivity(), DevicesAutomaticDialog.class.getName());
+            MainActivity.getNavigationController().changeToFragment(IntroductionFragment.class.getName());
             return;
         }
 
@@ -424,7 +424,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     disableClicks = true;
                     int pos = slidingTabLayout.getCurrentPosition();
 
-                    allowSwipe = !(fromLeftToRight && pos == 0 || !fromLeftToRight && pos == slidingTabLayout.getCount() - 1);
+                    allowSwipe = !(fromLeftToRight && pos <= 0 || !fromLeftToRight && pos >= AppData.getInstance().groupCollection.length());
 
                     if (animation != null)
                         animation.cancel();

@@ -27,7 +27,7 @@ public class IconDeferredLoadingThread extends Thread {
         while (true) {
             try {
                 IconItem j = q.take();
-                j.setFinalBitmap(LoadStoreIconData.loadDrawable(j.context, j.uuid, j.iconType, j.state));
+                j.setFinalBitmap(LoadStoreIconData.loadDrawable(j.context, j.uuid, j.state, null));
             } catch (InterruptedException e) {
                 q.clear();
                 return;
@@ -45,17 +45,15 @@ public class IconDeferredLoadingThread extends Thread {
      */
     public static class IconItem {
         private final String uuid;
-        private final LoadStoreIconData.IconType iconType;
         private final LoadStoreIconData.IconState state;
         private final WeakReference<IconLoaded> target;
         private final int position;
         private final Context context;
 
-        public IconItem(Context context, String uuid, LoadStoreIconData.IconType iconType, LoadStoreIconData.IconState state,
+        public IconItem(Context context, String uuid, LoadStoreIconData.IconState state,
                         IconLoaded target, int position) {
             this.context = context;
             this.uuid = uuid;
-            this.iconType = iconType;
             this.state = state;
             this.target = new WeakReference<>(target);
             this.position = position;

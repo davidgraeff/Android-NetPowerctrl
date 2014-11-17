@@ -62,11 +62,10 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
     }
 
     @SuppressWarnings("SameParameterValue")
-    public void loadIcon(IconDeferredLoadingThread iconCache, String uuid,
-                         LoadStoreIconData.IconType iconType, LoadStoreIconData.IconState state,
+    public void loadIcon(IconDeferredLoadingThread iconCache, String uuid, LoadStoreIconData.IconState state,
                          int bitmapPosition) {
         iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
-                uuid, iconType, state, this, bitmapPosition));
+                uuid, state, this, bitmapPosition));
     }
 
     public void reload() {

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion changeDate="17. November 2014" versionName="6.8">
+        <changelogimprovement>Widgets und Übersichtseinträge teilen sich nun die zugewiesenen
+            Icons
+        </changelogimprovement>
+        <changelogimprovement>Einführungs- und Einrichtungsbildschirm für Erstnutzer hinzugefügt
+        </changelogimprovement>
+        <changelogbug>Einige Abstürze behoben</changelogbug>
+    </changelogversion>
+
     <changelogversion changeDate="15. November 2014" versionName="6.7.2">
         <changelogbug>Absturz bei Speicherung von Szenen behoben</changelogbug>
         <changelogbug>Absturz bei Erstellen von Geräten behoben</changelogbug>

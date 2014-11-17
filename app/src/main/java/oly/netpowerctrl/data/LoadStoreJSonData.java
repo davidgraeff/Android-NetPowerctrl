@@ -25,6 +25,9 @@ public class LoadStoreJSonData implements onStorageUpdate {
 
     @Override
     public void save(CollectionWithType collection, StorableInterface item) {
+        if (item.getStorableName() == null)
+            throw new RuntimeException("Save failed, name is null: " + item.getClass().getCanonicalName());
+
         File dir = new File(App.instance.getFilesDir(), collection.type());
         dir.mkdirs();
         File file = new File(dir, item.getStorableName());

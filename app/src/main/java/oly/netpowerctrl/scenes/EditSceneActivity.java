@@ -52,6 +52,7 @@ import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.MutableBoolean;
 
 /**
  * This activity is responsible for creating a "scene" either for the scene list
@@ -270,21 +271,22 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 
     @Override
     public void setIcon(Object context_object, Bitmap icon) {
+        MutableBoolean isDefault = new MutableBoolean();
         switch (((View) context_object).getId()) {
             case R.id.scene_image:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.OnlyOneState);
-                scene_icon_nostate = icon;
+                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconState.OnlyOneState, isDefault);
+                scene_icon_nostate = isDefault.value ? null : icon;
                 break;
             case R.id.scene_image_off:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOff);
-                scene_icon_off = icon;
+                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconState.StateOff, isDefault);
+                scene_icon_off = isDefault.value ? null : icon;
                 break;
             case R.id.scene_image_on:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOn);
-                scene_icon_on = icon;
+                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconState.StateOn, isDefault);
+                scene_icon_on = isDefault.value ? null : icon;
                 break;
         }
 
@@ -342,8 +344,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     @Override
     protected void onStop() {
         super.onStop();
-        sceneElements.onDestroy();
-        availableElements.onDestroy();
     }
 
     private void loadContent() {
@@ -508,7 +508,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 tempFilenames.add(tempFilename.toString());
                 tempFilenameStates.add(LoadStoreIconData.IconState.StateUnknown.name());
                 bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
-                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateUnknown).toString());
+                        LoadStoreIconData.IconState.StateUnknown).toString());
             }
 
             tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_off, 128, 128));
@@ -516,7 +516,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 tempFilenames.add(tempFilename.toString());
                 tempFilenameStates.add(LoadStoreIconData.IconState.StateOff.name());
                 bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
-                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOff).toString());
+                        LoadStoreIconData.IconState.StateOff).toString());
             }
 
             tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_on, 128, 128));
@@ -524,7 +524,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 tempFilenames.add(tempFilename.toString());
                 tempFilenameStates.add(LoadStoreIconData.IconState.StateOn.name());
                 bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
-                        LoadStoreIconData.IconType.SceneIcon, LoadStoreIconData.IconState.StateOn).toString());
+                        LoadStoreIconData.IconState.StateOn).toString());
             }
 
             intent.putExtra(RESULT_SCENE_BITMAP_FILES_TEMP, tempFilenames.toArray());

@@ -48,7 +48,6 @@
     <string name="title_scene_edit">Bearbeite Szene</string>
 
     <string name="shortcut_show_mainwindow">Öffne App beim Ausführen</string>
-    <string name="confirmation_delete_all_scenes">Sind Sie sicher, dass Sie alle Szenen löschen wollen?</string>
 
     <string name="off">Aus</string>
     <string name="on">Ein</string>
@@ -103,9 +102,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="widget_outlet_not_reachable">(nicht erreichbar)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
     <string name="pref_widgets">Widgets</string>
-    <string name="widget_image_on">Widget Aussehen: An</string>
-    <string name="widget_image_off">Widget Aussehen: Aus</string>
-    <string name="widget_image_not_reachable">Widget: Nicht erreichbar</string>
     <string name="crash_toast_text">Ich bin leider abgestürzt :( Ein Absturzbericht wird automatisch gesendet</string>
     <string name="scene_rename">Szenenname</string>
     <string name="new_devices">Unbekannte Geräte</string>
@@ -173,7 +169,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
         <item>Spende 5 Bier</item>
         <item>Spende 10 Bier</item>
     </string-array>
-    <string name="drawer_timer">Zeitschaltung</string>
+    <string name="drawer_timer">Zeitschaltungen</string>
     <string name="menu_add_timer">Automatischen Schaltvorgang hinzufügen</string>
     <string name="help_timers">Hier kannst du Zeitschaltvorgänge einstellen. Jedes eingerichtete Gerät kann unterschiedlich viele und unterschiedlich mächtige Zeitschalter unterstützen.\n\nAnel Geräte bieten i.d.R. 4 kombinierte An/Aus Zeitschaltvorgänge.\n\nAlle darüber hinaus eingerichteten Zeitschaltungen sowie die Zeitschaltungen für Szenen werden von deinem Android Mobiltelefon oder Tablet ausgelöst. Dieses muss zum entsprechendem Zeitpunkt aktiviertes WLan haben und in Reichweite der Steckdosen sein. Die App muss einmalig nach einem Neustart aufgerufen werden, damit die Zeiten beim Betriebssystem angemeldet werden können.\nOb ein Alarm auf dem Gerät oder über Android ausgelöst wird steht bei jedem Alarm Eintrag dabei.</string>
     <string name="show_extensions_in_market">Zeige Erweiterungen im Play Store</string>
@@ -256,11 +252,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="error_device_incomplete">Geräteangaben unvollständig!</string>
     <string name="preference_user_interface">Benutzerinterface</string>
     <string name="port_warning_1024_title">Allow administrative port range?</string>
-    <string name="preferences_all_widgets">Alle Widgets</string>
-    <string name="preference_widget_use_default">Standardeinstellung nutzen</string>
-    <string name="preferencewidget_use_default_summary_on">Es werden die Standardeinstellungen für Widgets genutzt</string>
-    <string name="preference_widget_use_default_summary_off">Eigene Einstellungen (weiter unten) gelten für dieses Widget</string>
-    <string name="preferences_all_widgets_summary">Öffnet die Standardeinstellungen für Widgets</string>
     <string name="preferences_backup">Import/Export</string>
     <string name="backup_import">Import</string>
     <string name="backup_export">Export</string>
@@ -299,8 +290,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="outlet_edit_title">Bearbeite %1$s</string>
     <string name="outlet_name_label">Name</string>
     <string name="outlet_groups_label">Gruppen</string>
-    <string name="outlet_icon_off_label">Zustandsgrafik Aus</string>
-    <string name="outlet_icon_on_label">Zustandsgrafik An</string>
     <string name="error_rename_only_with_http_connection">Umbenennen nur mit HTTP Verbindung möglich</string>
     <string name="notification_title_changelog">App aktualisiert auf Version %1$s</string>
     <string name="widget_inProgress">Warte</string>
@@ -352,6 +341,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="label_title"><u>Titel</u></string>
     <string name="groups_assigned">Ansichtsgruppen</string>
     <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
+    <string name="delete_all_alarms">Zeitschaltungen löschen?</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

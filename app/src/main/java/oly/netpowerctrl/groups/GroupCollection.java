@@ -1,28 +1,14 @@
 package oly.netpowerctrl.groups;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-
 import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.data.CollectionWithStorableItems;
-import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 
 public class GroupCollection extends CollectionWithStorableItems<GroupCollection, Group> {
     static long nextStableID = 0;
     private final Group groupIndexOfHelper = new Group(null, null);
-
-    //bitmap = Icons.loadBitmap(NetpowerctrlApplication.instance,uuid, Icons.IconType.GroupIcon);
-    public void setBitmap(Context context, Group item, Bitmap bitmap) {
-        if (item == null)
-            return;
-        item.bitmap = bitmap;
-        LoadStoreIconData.saveIcon(context, bitmap, item.uuid.toString(),
-                LoadStoreIconData.IconType.GroupIcon, LoadStoreIconData.IconState.StateUnknown);
-        notifyObservers(item, ObserverUpdateActions.UpdateAction, -1);
-    }
 
     /**
      * Add a group with the given name. If a group with this name already exist,

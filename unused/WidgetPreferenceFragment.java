@@ -67,7 +67,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateOn);
         preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
-                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn));
+                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn, null));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_off");
@@ -76,7 +76,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateOff);
         preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
-                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOff));
+                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOff, null));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_image_not_reachable");
@@ -85,7 +85,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
             preference.setDependency("widget_use_default");
         preference_to_state.put(preference, LoadStoreIconData.IconState.StateUnknown);
         preference.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
-                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown));
+                LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateUnknown, null));
         preference.setOnPreferenceClickListener(selectImage);
 
         preference = findPreference("widget_show_title");
@@ -112,7 +112,7 @@ public class WidgetPreferenceFragment extends PreferencesWithValuesFragment impl
         LoadStoreIconData.saveIcon(getActivity(), bitmap, widget_uuid, LoadStoreIconData.IconType.WidgetIcon, state);
         if (bitmap == null) {
             current.setIcon(LoadStoreIconData.loadDrawable(getActivity(), widget_uuid,
-                    LoadStoreIconData.IconType.WidgetIcon, state));
+                    LoadStoreIconData.IconType.WidgetIcon, state, null));
         } else {
             current.setIcon(new BitmapDrawable(getResources(), bitmap));
         }

@@ -19,7 +19,7 @@ package oly.netpowerctrl.main;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -35,9 +35,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import org.sufficientlysecure.donations.DonationsFragment;
+import com.cengalabs.flatui.FlatUI;
 
-import java.io.IOException;
+import org.sufficientlysecure.donations.DonationsFragment;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -54,6 +54,10 @@ public class MainActivity extends ActionBarActivity {
     public static MainActivity instance = null;
     private final NavigationController navigationController = new NavigationController();
     private long mBackPressed;
+
+    public MainActivity() {
+        instance = this;
+    }
 
     public static NavigationController getNavigationController() {
         return instance.navigationController;
@@ -75,6 +79,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         instance = this;
+
         //Remove title bar
         this.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -85,33 +90,44 @@ public class MainActivity extends ActionBarActivity {
 
         super.onCreate(savedInstanceState);
 
+        // Converts the default values (radius, size, border) to dp to be compatible with different
+        // screen sizes. If you skip this there may be problem with different screen densities
+        FlatUI.initDefaultValues(this);
+
         // Set theme, call super onCreate and set content view
         if (SharedPrefs.getInstance().isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
+            FlatUI.setDefaultTheme(FlatUI.SEA);
         } else {
             setTheme(R.style.Theme_CustomLightTheme);
+            FlatUI.setDefaultTheme(FlatUI.SEA);
         }
 
+        navigationController.createDrawerAdapter(this);
         assignContentView();
 
         checkUseHomeButton();
 
         WidgetUpdateService.ForceUpdateAll(this);
 
-        App.getMainThreadHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (SharedPrefs.getInstance().hasBeenUpdated()) {
-                    InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
+        if (!AppData.getInstance().deviceCollection.hasDevices() && SharedPrefs.getInstance().getFirstTabPosition() == -1) {
+            navigationController.changeToFragment(IntroductionFragment.class.getName());
+        } else {
+            App.getMainThreadHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (SharedPrefs.getInstance().hasBeenUpdated()) {
+                        InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
+                    }
                 }
-            }
-        }, 1500);
+            }, 1500);
+        }
     }
 
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        navigationController.createDrawer(MainActivity.this, NavigationController.RestorePositionEnum.RestoreLastSaved);
+        navigationController.restoreLastOpenedFragment(NavigationController.RestorePositionEnum.RestoreLastSaved);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -123,17 +139,12 @@ public class MainActivity extends ActionBarActivity {
             getSupportActionBar().hide();
         }
 
+        navigationController.setActivity(this);
+
         if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
-            Drawable d = LoadStoreIconData.loadDrawable(this, LoadStoreIconData.uuidForBackground(),
-                    LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateNotApplicable);
-            if (d == null)
-                try {
-                    d = new BitmapDrawable(getResources(), BitmapFactory.decodeStream(getAssets().open("backgrounds/bg.jpg")));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
+            Bitmap b = LoadStoreIconData.loadBackgroundBitmap();
+            Drawable d = new BitmapDrawable(getResources(), b);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
                 v.setBackground(d);
             else
@@ -196,7 +207,7 @@ public class MainActivity extends ActionBarActivity {
             navigationController.detachCurrentFragment();
             assignContentView();
             checkUseHomeButton();
-            navigationController.createDrawer(MainActivity.this,
+            navigationController.restoreLastOpenedFragment(
                     NavigationController.RestorePositionEnum.RestoreAfterConfigurationChanged);
 
         }

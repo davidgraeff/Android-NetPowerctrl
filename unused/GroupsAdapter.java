@@ -65,7 +65,7 @@ public class GroupsAdapter extends BaseAdapter implements onCollectionUpdated<Gr
         ImageView image = (ImageView) convertView.findViewById(R.id.icon_bitmap);
         if (data.bitmap == null) {
             data.bitmap = LoadStoreIconData.loadBitmap(context, data.uuid.toString(),
-                    LoadStoreIconData.IconType.GroupIcon, LoadStoreIconData.IconState.OnlyOneState);
+                    LoadStoreIconData.IconType.GroupIcon, LoadStoreIconData.IconState.OnlyOneState, null);
         }
 
         image.setImageBitmap(data.bitmap);

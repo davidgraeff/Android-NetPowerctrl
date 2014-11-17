@@ -1,10 +1,13 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.main;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
+import android.app.Fragment;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.widget.DrawerLayout;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -16,42 +19,75 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.devices.DevicesFragment;
+import oly.netpowerctrl.devices.EditDeviceInterface;
+import oly.netpowerctrl.devices.onCreateDeviceResult;
 import oly.netpowerctrl.listen_service.PluginInterface;
-import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.outletsview.OutletsViewFragment;
 
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
-public class DevicesAutomaticDialog extends DialogFragment implements onCreateDeviceResult {
+public class IntroductionFragment extends Fragment implements onCreateDeviceResult {
     private TextView textView;
     private List<Device> deviceList;
     private EditDeviceInterface editDevice;
     private int current = 0;
 
-    public DevicesAutomaticDialog() {
+    public IntroductionFragment() {
     }
 
+    @Nullable
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        textView = new TextView(getActivity());
-        textView.setText("Waiting for devices...\n");
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.automaticConfiguration)
-                .setView(textView)
-                .setPositiveButton(android.R.string.ok, null)
-                .setNeutralButton(R.string.devices, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
-                    }
-                });
-        return builder.create();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.automatic_intro, null);
+
+        textView = (TextView) root.findViewById(R.id.text_automatic);
+
+        Button button = (Button) root.findViewById(R.id.btnStart);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                start();
+            }
+        });
+
+        button = (Button) root.findViewById(R.id.btnClose);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.getNavigationController().changeToFragment(OutletsViewFragment.class.getName());
+            }
+        });
+
+        button = (Button) root.findViewById(R.id.btnDevices);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
+            }
+        });
+
+        return root;
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        MainActivity.instance.getSupportActionBar().hide();
+        MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        MainActivity.instance.getSupportActionBar().show();
+        MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+    }
+
+    void start() {
+        textView.setText("Waiting for devices...\n");
+
         deviceList = new ArrayList<>(AppData.getInstance().unconfiguredDeviceCollection.getItems());
         takeNext();
     }

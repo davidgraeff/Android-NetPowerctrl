@@ -5,9 +5,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.FragmentManager;
 import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,27 +14,18 @@ import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceScreen;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ImportExport;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.widget.DeviceWidgetProvider;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements LoadStoreIconData.IconSelected {
     private static final int REQUEST_CODE_IMPORT = 100;
@@ -197,70 +186,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 }
             });
         }
-
-        //noinspection ConstantConditions
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
-        ComponentName deviceWidgetWidget = new ComponentName(getActivity(),
-                DeviceWidgetProvider.class);
-        //noinspection ConstantConditions
-        int[] allWidgetIds = appWidgetManager.getAppWidgetIds(deviceWidgetWidget);
-        List<WidgetData> widgetDataList = new ArrayList<>();
-
-        for (int appWidgetId : allWidgetIds) {
-            String prefName = SharedPrefs.PREF_WIDGET_BASENAME + String.valueOf(appWidgetId);
-            String port_uuid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
-            if (port_uuid == null) {
-                Log.e("PREFERENCES", "Loading widget failed: " + String.valueOf(appWidgetId));
-                continue;
-            }
-            DevicePort port = AppData.getInstance().findDevicePort(port_uuid);
-            if (port == null) {
-                Log.e("PREFERENCES", "Port for widget not found: " + String.valueOf(appWidgetId));
-                continue;
-            }
-            widgetDataList.add(new WidgetData(
-                    port.device.getDeviceName() + ", " + port.getTitle(),
-                    prefName, appWidgetId));
-        }
-
-        //noinspection ConstantConditions
-        findPreference("all_widgets").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Bundle extra = new Bundle();
-                extra.putString("key", SharedPrefs.PREF_WIDGET_BASENAME);
-                extra.putInt("widgetId", -1);
-                MainActivity.getNavigationController().changeToFragment(WidgetPreferenceFragment.class.getName(), extra);
-                return false;
-            }
-        });
-
-        PreferenceCategory lp = (PreferenceCategory) findPreference(SharedPrefs.PREF_widgets);
-        assert lp != null;
-
-        for (final WidgetData aWidgetDataList : widgetDataList) {
-            //noinspection ConstantConditions
-            PreferenceScreen s = getPreferenceManager().createPreferenceScreen(getActivity());
-            assert s != null;
-            s.setKey(aWidgetDataList.prefName);
-            s.setFragment(WidgetPreferenceFragment.class.getName());
-            s.setTitle(aWidgetDataList.data);
-            s.setIcon(LoadStoreIconData.loadDrawable(getActivity(), LoadStoreIconData.uuidFromWidgetID(aWidgetDataList.widgetID),
-                    LoadStoreIconData.IconType.WidgetIcon, LoadStoreIconData.IconState.StateOn));
-            lp.addPreference(s);
-            s.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (preference.getKey() == null || preference.getKey().isEmpty())
-                        return true;
-                    Bundle extra = new Bundle();
-                    extra.putString("key", preference.getKey());
-                    extra.putInt("widgetId", aWidgetDataList.widgetID);
-                    MainActivity.getNavigationController().changeToFragment(preference.getFragment(), extra);
-                    return true;
-                }
-            });
-        }
     }
 
     @Override
@@ -290,22 +215,9 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
 
     @Override
     public void setIcon(Object context_object, Bitmap bitmap) {
-        LoadStoreIconData.saveIcon(getActivity(), bitmap, LoadStoreIconData.uuidForBackground(),
-                LoadStoreIconData.IconType.BackgroundImage, LoadStoreIconData.IconState.StateNotApplicable);
+        LoadStoreIconData.saveBackground(bitmap);
 
         if (SharedPrefs.getInstance().isBackground())
             reloadActivity.onPreferenceChange(null, null);
-    }
-
-    private static class WidgetData {
-        final CharSequence data;
-        final String prefName;
-        final int widgetID;
-
-        private WidgetData(CharSequence data, String prefName, int widgetID) {
-            this.data = data;
-            this.prefName = prefName;
-            this.widgetID = widgetID;
-        }
     }
 }
