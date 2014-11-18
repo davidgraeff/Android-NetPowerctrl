@@ -48,7 +48,7 @@ support libraries (v13), additional support library extensions (v7.RecyclerView)
 This repository uses git submodules. Use git clone -r to recursivly checkout.
 
 ### Plugin Development
-All you need to develop a plugin is described in detail at the [Plugin Developer Documentation](https://github.com/davidgraeff/Android-NetPowerctrl-Shared/wiki/Plugin-Developer-Documentation).
+All you need to develop a plugin is described in detail at the [Plugin Developer Documentation](https://github.com/davidgraeff/Android-NetPowerctrl-Shared#plugin-developer-documentation).
 
 ### Authors
 * david.graeff(at)web_de
