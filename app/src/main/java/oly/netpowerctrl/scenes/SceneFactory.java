@@ -13,6 +13,7 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.executables.ExecutableAdapterItem;
 import oly.netpowerctrl.utils.Streams;
@@ -60,6 +61,8 @@ public class SceneFactory {
 
         if (tempBitmapFile != null) {
             for (int i = 0; i < tempBitmapFile.length; ++i) {
+                if (tempBitmapFile[i] == null)
+                    continue;
                 try {
                     File tempFile = new File(tempBitmapFile[i]);
                     Streams.copy(new FileInputStream(tempFile), new FileOutputStream(new File(realBitmapFile[i])));
@@ -70,6 +73,7 @@ public class SceneFactory {
                     Toast.makeText(context, R.string.error_scene_icon_save_failed, Toast.LENGTH_SHORT).show();
                 }
             }
+            LoadStoreIconData.clearIconCache();
         }
 
         AppData appData = AppData.getInstance();

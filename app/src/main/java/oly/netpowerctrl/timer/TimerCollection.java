@@ -55,6 +55,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         @Override
         public void run() {
             requestActive = false;
+            notifyObservers(null, ObserverUpdateActions.ConnectionUpdateAction, -1);
             saveAll();
         }
     };
@@ -104,6 +105,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 i = replaced_at(available_timers, new_timer);
                 if (i == -1) {
                     available_timers.add(new_timer);
+                    notifyObservers(null, ObserverUpdateActions.ConnectionUpdateAction, -1);
                 }
             } else {
                 i = replaced_at(items, new_timer);

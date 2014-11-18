@@ -29,7 +29,6 @@ import com.wefika.flowlayout.FlowLayout;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -498,38 +497,33 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             intent.putExtra(RESULT_SCENE_JSON, scene.toString());
             intent.putExtra(RESULT_SCENE_IS_FAVOURITE, isFavourite);
 
-            List<String> tempFilenames = new ArrayList<>();
-            List<String> tempFilenameStates = new ArrayList<>();
-            List<String> bitmapFileNames = new ArrayList<>();
+            String[] tempFileNames = new String[]{null, null, null};
+            String[] bitmapFileNames = new String[]{null, null, null};
 
             // Save all icons that are setup.
             File tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_nostate, 128, 128));
             if (tempFilename != null) {
-                tempFilenames.add(tempFilename.toString());
-                tempFilenameStates.add(LoadStoreIconData.IconState.StateUnknown.name());
-                bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
-                        LoadStoreIconData.IconState.StateUnknown).toString());
+                tempFileNames[0] = (tempFilename.toString());
+                bitmapFileNames[0] = (LoadStoreIconData.getFilename(this, scene.uuid,
+                        LoadStoreIconData.IconState.OnlyOneState).toString());
             }
 
             tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_off, 128, 128));
             if (tempFilename != null) {
-                tempFilenames.add(tempFilename.toString());
-                tempFilenameStates.add(LoadStoreIconData.IconState.StateOff.name());
-                bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
+                tempFileNames[1] = (tempFilename.toString());
+                bitmapFileNames[1] = (LoadStoreIconData.getFilename(this, scene.uuid,
                         LoadStoreIconData.IconState.StateOff).toString());
             }
 
             tempFilename = LoadStoreIconData.saveTempIcon(this, LoadStoreIconData.resizeBitmap(this, scene_icon_on, 128, 128));
             if (tempFilename != null) {
-                tempFilenames.add(tempFilename.toString());
-                tempFilenameStates.add(LoadStoreIconData.IconState.StateOn.name());
-                bitmapFileNames.add(LoadStoreIconData.getFilename(this, scene.uuid,
+                tempFileNames[2] = (tempFilename.toString());
+                bitmapFileNames[2] = (LoadStoreIconData.getFilename(this, scene.uuid,
                         LoadStoreIconData.IconState.StateOn).toString());
             }
 
-            intent.putExtra(RESULT_SCENE_BITMAP_FILES_TEMP, tempFilenames.toArray());
-            intent.putExtra(RESULT_SCENE_BITMAP_FILES_DEST, bitmapFileNames.toArray());
-            intent.putExtra(RESULT_SCENE_BITMAP_STATES, tempFilenameStates.toArray());
+            intent.putExtra(RESULT_SCENE_BITMAP_FILES_TEMP, tempFileNames);
+            intent.putExtra(RESULT_SCENE_BITMAP_FILES_DEST, bitmapFileNames);
             setResult(RESULT_OK, intent);
         } else {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditSceneActivity.this,
