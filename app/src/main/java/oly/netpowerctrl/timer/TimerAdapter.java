@@ -92,6 +92,9 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
             else
                 image.setImageResource(android.R.drawable.presence_busy);
 
+            image = (ImageView) convertView.findViewById(R.id.alarm_image_isAndroid);
+            image.setVisibility(timer.deviceAlarm ? View.INVISIBLE : View.VISIBLE);
+
             // weekdays
             txt = (TextView) convertView.findViewById(R.id.alarm_weekdays);
             txt.setText(timer.days());

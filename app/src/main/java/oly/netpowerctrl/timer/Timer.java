@@ -21,6 +21,7 @@ import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.data.StorableInterface;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.main.App;
 
 /**
  * Represents an alarm and is used by TimerCollection.
@@ -130,10 +131,8 @@ public class Timer implements StorableInterface {
     }
 
     public String getTargetName() {
-        if (executable instanceof DevicePort)
-            return ((DevicePort) executable).device.getDeviceName() + ": " + executable.getTitle() + (!deviceAlarm ? " (Android)" : "");
-        else if (executable != null)
-            return executable.getTitle();
+        if (executable != null)
+            return executable.getDescription(App.instance) + ": " + executable.getTitle();
         return "";
     }
 
