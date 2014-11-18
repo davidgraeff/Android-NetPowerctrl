@@ -23,6 +23,7 @@ For bugs and feature requests please use [Github Issues](https://github.com/davi
 <td><img width="150px" src="doc/outlets-v600.png" /></td>
 <td><img width="150px" src="doc/devices-v600.png" /></td>
 <td><img width="150px" src="doc/alarms-v600.png" /></td>
+<td><img width="150px" src="doc/viewmode-v600.png" /></td>
 <td><img width="150px" src="doc/widgets-v600.png" /></td>
 </tr></table>
 
