@@ -71,6 +71,9 @@ public abstract class DeviceObserverBase {
      * @param device The DeviceInfo object all observes should be notified of.
      */
     public boolean notifyObservers(Device device) {
+        if (device.getUniqueDeviceID() == null)
+            throw new RuntimeException("Fresh device without unique id not allowed!");
+
         Iterator<Device> it = devices_to_observe.iterator();
         while (it.hasNext()) {
             Device device_to_observe = it.next();
@@ -95,6 +98,19 @@ public abstract class DeviceObserverBase {
             }
         }
         return devices_to_observe.isEmpty();
+    }
+
+    protected void notifyObserversInternal(Device device_from_observed_devices) {
+        Iterator<Device> it = devices_to_observe.iterator();
+        while (it.hasNext()) {
+            Device device = it.next();
+            if (device == device_from_observed_devices) {
+                it.remove();
+                if (target != null)
+                    target.onObserverDeviceUpdated(device);
+                break;
+            }
+        }
     }
 
     public boolean notifyObservers(String device_name) {

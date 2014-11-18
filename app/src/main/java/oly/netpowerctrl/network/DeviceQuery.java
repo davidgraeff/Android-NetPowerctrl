@@ -10,6 +10,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 
@@ -70,16 +71,22 @@ public class DeviceQuery extends DeviceObserverBase {
             Log.w(TAG, "redo: " + device.getDeviceName());
 
         PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
+        // First try to find the not assigned plugin
+        if (pluginInterface == null) {
+            pluginInterface = ListenService.getService().getPlugin(device.pluginID);
+            device.setPluginInterface(pluginInterface);
+        }
         if (pluginInterface == null) {
             device.setStatusMessageAllConnections(App.getAppString(R.string.error_plugin_not_installed));
             // remove from list of devices to observe and notify observers
-            notifyObservers(device);
+            notifyObserversInternal(device);
             return;
         }
+
         if (pluginInterface.isNetworkReducedState()) {
             device.setStatusMessageAllConnections(App.getAppString(R.string.device_energysave_mode));
             // remove from list of devices to observe and notify observers
-            notifyObservers(device);
+            notifyObserversInternal(device);
             return;
         }
 

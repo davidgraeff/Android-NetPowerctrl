@@ -206,7 +206,6 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
         device.lockDevice();
 
         device.makeTemporaryDevice();
-        device.getDeviceConnections().clear();
 
         List<DeviceConnection> deviceConnectionList = new ArrayList<>();
 
