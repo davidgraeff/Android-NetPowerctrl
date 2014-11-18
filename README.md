@@ -1,6 +1,6 @@
-# netpowerctrl
-	netpowerctrl is an Android App for controlling ANEL (http://www.anel-elektronik.de)
-	switchable network outlets.
+# Smart Power Control
+	Smart Power Control is an Android App for controlling switchable outlets
+	like the ANEL NET-series (http://www.anel-elektronik.de)
 
 You can find a ready to install apk at [Github Releases](https://github.com/davidgraeff/Android-NetPowerctrl/releases)
 and on [Google Play](https://play.google.com/store/apps/details?id=oly.netpowerctrl).
@@ -20,9 +20,10 @@ For bugs and feature requests please use [Github Issues](https://github.com/davi
 * Plugin support. With plugins you can control additional related functionality (at the moment: WakeOnLan for PCs, Yamaha network Amplifiers, Sanyo projectors) with this one app.
 
 <table><tr valign="top">
-<td><img width="150px" src="doc/device-2014-02-27-111333.png" /></td>
-<td><img width="150px" src="doc/device-2014-02-27-111655.png" /></td>
-<td><img width="150px" src="doc/device-2014-02-27-133810.png" /></td>
+<td><img width="150px" src="doc/outlets-v600.png" /></td>
+<td><img width="150px" src="doc/devices-600.png" /></td>
+<td><img width="150px" src="doc/alarms-600.png" /></td>
+<td><img width="150px" src="doc/widgets-v600.png" /></td>
 </tr></table>
 
 ### Automatic device detection
