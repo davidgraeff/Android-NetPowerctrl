@@ -27,10 +27,6 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
         this.controller = timerCollection;
     }
 
-    public void remove(int position) {
-        controller.removeFromCache(position);
-    }
-
     public void start() {
         controller.registerObserver(this);
     }

@@ -2,7 +2,6 @@ package oly.netpowerctrl.main;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.ndeftools.Message;
@@ -12,37 +11,36 @@ import org.ndeftools.util.activity.NfcReaderActivity;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.data.JSONHelper;
-import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.onServiceReady;
-import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.scenes.SceneItem;
-import oly.netpowerctrl.ui.notifications.InAppNotifications;
+import oly.netpowerctrl.timer.Timer;
+import oly.netpowerctrl.utils.WakeLocker;
 
-public class ExecutionActivity extends NfcReaderActivity implements onDeviceObserverResult, onExecutionFinished {
-    private Scene scene = null;
+/**
+ * Will be started on NFC contact, homescreen scene execution, alarm timeout
+ */
+public class ExecutionActivity extends NfcReaderActivity implements onExecutionFinished {
     private int scene_commands = 0;
     private int scene_executed_commands = 0;
     private boolean enable_feedback;
     private String scene_uuid;
+    private boolean isTimerCheck = false;
 //    private boolean updateWidget = false;
 
     @Override
     protected void onPause() {
         ListenService.stopUseService();
+        WakeLocker.release();
         super.onPause();
     }
 
@@ -62,6 +60,11 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         setVisible(false);
@@ -74,47 +77,69 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
 
         // Extract name group from intent extra
         final Bundle extra = it.getExtras();
-
-        if (extra == null ||
-                (!extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID) &&
-                        !extra.containsKey(EditSceneActivity.RESULT_SCENE_JSON) &&
-                        !extra.containsKey(EditSceneActivity.RESULT_SCENE_UUID) &&
-                        scene_uuid == null)) {
-            //noinspection ConstantConditions
+        if (extra == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        if (!extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID) &&
+                !extra.containsKey(EditSceneActivity.RESULT_SCENE_JSON) &&
+                !extra.containsKey(EditSceneActivity.RESULT_SCENE_UUID) && scene_uuid == null) {
+            isTimerCheck = true;
+        }
+
+        WakeLocker.acquire(this);
+
         // Load app data
         AppData.useAppData();
-        // If app data loaded -> start service
-        AppData.observersOnDataLoaded.register(new onDataLoaded() {
-            @Override
-            public boolean onDataLoaded() {
-                ListenService.useService(getApplicationContext(), false, false);
-                return false;
-            }
-        });
+        ListenService.useService(getApplicationContext(), false, false);
 
-        // Read data from intent
-        final boolean show_mainwindow = extra.getBoolean("show_mainWindow", false);
+        boolean show_mainwindow = extra.getBoolean("show_mainWindow", false);
         enable_feedback = extra.getBoolean("enable_feedback", true);
-        final String action_uuid = extra.getString(EditSceneActivity.RESULT_ACTION_UUID);
-        final int action_command = extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND);
-        final String scene_json = extra.getString(EditSceneActivity.RESULT_SCENE_JSON);
-        scene_uuid = extra.getString(EditSceneActivity.RESULT_SCENE_UUID, scene_uuid);
 
         // The application may have be started here -> we have to wait for the service to be ready
         ListenService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(ListenService service) {
+            public boolean onServiceReady(final ListenService service) {
+                if (!AppData.observersOnDataLoaded.dataLoaded)
+                    return true;
+
                 // wait for first data to be loaded
                 AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
 
                     @Override
                     public boolean onDataQueryFinished() {
-                        serviceAndDataReady(action_uuid, action_command, scene_json);
+                        final int action_command = extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND);
+
+                        if (isTimerCheck) {
+                            long current = System.currentTimeMillis();
+                            for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
+                                if (timer.deviceAlarm)
+                                    continue;
+
+                                Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(current);
+                                if (current - 50 < nextAlarm.unix_time && current + 50 > nextAlarm.unix_time) {
+                                    executeSingleAction(timer.executable_uid, nextAlarm.command);
+                                }
+                            }
+                            service.setupAndroidAlarm();
+                            return false;
+                        }
+
+                        // Read data from intent
+                        String action_uuid = extra.getString(EditSceneActivity.RESULT_ACTION_UUID);
+                        String scene_json = extra.getString(EditSceneActivity.RESULT_SCENE_JSON);
+                        scene_uuid = extra.getString(EditSceneActivity.RESULT_SCENE_UUID, scene_uuid);
+
+                        if (scene_json != null) {
+                            try {
+                                AppData.getInstance().execute(Scene.loadFromJson(JSONHelper.getReader(scene_json)), ExecutionActivity.this);
+                            } catch (IOException | ClassNotFoundException ignored) {
+                            }
+                        } else
+                            executeSingleAction(action_uuid, action_command);
+
                         return false;
                     }
                 });
@@ -134,61 +159,23 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
         }
     }
 
-    void serviceAndDataReady(String action_uuid, int action_command, String scene_json) {
-        // Execute single action (in contrast to scene)
-        if (action_uuid != null) {
-            executeSingleAction(action_uuid, action_command);
-        } else {
-            if (scene_uuid != null) {
-                Log.e("serviceAndDataReady", scene_uuid);
-                scene = AppData.getInstance().sceneCollection.findScene(scene_uuid);
-            } else if (scene_json != null) {
-                // Extract scene from extra bundle
-                try {
-                    scene = Scene.loadFromJson(JSONHelper.getReader(scene_json));
-                } catch (IOException | ClassNotFoundException ignored) {
-                    scene = null;
-                }
-            }
-            executeScene();
-        }
-    }
-
     @Override
     protected void onNfcStateChange(boolean enabled) {
 
     }
 
-    void executeSingleAction(String port_uuid_string, final int command) {
-        final DevicePort port = AppData.getInstance().findDevicePort(port_uuid_string);
-        if (port == null) {
+    void executeSingleAction(String executable_uid, final int command) {
+        final Executable executable = AppData.getInstance().findExecutable(executable_uid);
+        if (executable == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        AppData.getInstance().execute(port, command, ExecutionActivity.this);
-    }
-
-    void executeScene() {
-        if (scene == null) {
-            Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
-            finish();
-            return;
+        if (executable instanceof DevicePort)
+            AppData.getInstance().execute((DevicePort) executable, command, ExecutionActivity.this);
+        else if (executable instanceof Scene) {
+            AppData.getInstance().execute((Scene) executable, ExecutionActivity.this);
         }
-
-        // DeviceQuery for scene devices
-        TreeSet<Device> devices = new TreeSet<>();
-        scene_commands = 0;
-        for (SceneItem c : scene.sceneItems) {
-            DevicePort port = AppData.getInstance().findDevicePort(c.uuid);
-            if (port != null) {
-                devices.add(port.device);
-                ++scene_commands;
-            }
-        }
-
-        new DeviceQuery(this, ExecutionActivity.this, devices.iterator());
-
     }
 
     @Override
@@ -196,24 +183,6 @@ public class ExecutionActivity extends NfcReaderActivity implements onDeviceObse
         scene_executed_commands += commands;
         if (scene_executed_commands >= scene_commands)
             finish();
-    }
-
-    @Override
-    public void onObserverDeviceUpdated(Device di) {
-    }
-
-    @Override
-    public void onObserverJobFinished(List<Device> timeout_devices) {
-        for (Device di : timeout_devices) {
-            Toast.makeText(this, getString(R.string.error_timeout_device, di.getDeviceName()), Toast.LENGTH_SHORT).show();
-        }
-
-        if (enable_feedback) {
-            //noinspection ConstantConditions
-            InAppNotifications.toastWithLength(this,
-                    this.getString(R.string.scene_executed, scene.sceneName), 800);
-        }
-        AppData.getInstance().execute(scene, this);
     }
 
     @Override

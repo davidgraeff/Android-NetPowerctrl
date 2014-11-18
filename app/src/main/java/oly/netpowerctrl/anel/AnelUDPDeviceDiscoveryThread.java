@@ -131,12 +131,8 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
                 String io_port[] = msg[i].split(",");
                 if (io_port.length != 3) continue;
 
-                DevicePort devicePort = new DevicePort(device, ExecutableType.TypeToggle);
-
-                if (io_port[1].equals("1")) // input
-                    devicePort.id = io_id + 10;
-                else
-                    devicePort.id = io_id;
+                // input if io_port[1].equals("1") otherwise output
+                DevicePort devicePort = DevicePort.create(device, ExecutableType.TypeToggle, io_port[1].equals("1") ? io_id + 10 : io_id);
 
                 devicePort.setTitle(io_port[0]);
                 devicePort.current_value = io_port[2].equals("1") ? DevicePort.ON : DevicePort.OFF;
@@ -150,8 +146,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             String outlet[] = msg[6 + i].split(",");
             if (outlet.length < 1)
                 continue;
-            DevicePort devicePort = new DevicePort(device, ExecutableType.TypeToggle);
-            devicePort.id = i + 1; // 1-based
+            DevicePort devicePort = DevicePort.create(device, ExecutableType.TypeToggle, i + 1); // 1-based id
             devicePort.setTitle(outlet[0]);
             if (outlet.length > 1)
                 devicePort.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;

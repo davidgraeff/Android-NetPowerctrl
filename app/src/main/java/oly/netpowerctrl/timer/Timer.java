@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 
 import oly.netpowerctrl.R;
@@ -19,6 +20,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.data.StorableInterface;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 
 /**
  * Represents an alarm and is used by TimerCollection.
@@ -34,13 +36,13 @@ public class Timer implements StorableInterface {
     public final boolean[] weekdays = new boolean[7];
     // Unique ID
     public long id = -1;
-    public String port_id;
+    public String executable_uid;
     // Temporary
-    public DevicePort port;
+    public Executable executable;
     /**
      * True if the alarm is from a plugin/device and not a virtual alarm on the android system
      */
-    public boolean deviceAlarm;
+    public boolean deviceAlarm = true;
     /**
      * Not armed device alarm that is available to be programmed. It will not be shown on the
      * alarm list. To distinguish between a free alarm slot and a programmed but "disabled" alarm,
@@ -111,8 +113,8 @@ public class Timer implements StorableInterface {
 
     public String toString(Context context) {
         String pre = "";
-        if (port != null)
-            pre = port.device.getDeviceName() + ": " + port.getTitle() + " - ";
+        if (executable instanceof DevicePort)
+            pre = ((DevicePort) executable).device.getDeviceName() + ": " + executable.getTitle() + " - ";
 
         switch (type) {
             case TYPE_RANGE_ON_WEEKDAYS:
@@ -128,10 +130,11 @@ public class Timer implements StorableInterface {
     }
 
     public String getTargetName() {
-        if (port != null)
-            return port.device.getDeviceName() + ": " + port.getTitle();
-        else
-            return "";
+        if (executable instanceof DevicePort)
+            return ((DevicePort) executable).device.getDeviceName() + ": " + executable.getTitle() + (!deviceAlarm ? " (Android)" : "");
+        else if (executable != null)
+            return executable.getTitle();
+        return "";
     }
 
     /**
@@ -153,7 +156,7 @@ public class Timer implements StorableInterface {
     private void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("id").value(id);
-        writer.name("port_id").value(port_id);
+        writer.name("executable_uid").value(executable_uid);
         writer.name("deviceAlarm").value(deviceAlarm);
         writer.name("freeDeviceAlarm").value(freeDeviceAlarm);
         writer.name("enabled").value(enabled);
@@ -183,7 +186,6 @@ public class Timer implements StorableInterface {
     public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
         Timer timer = this;
-        timer.fromCache = true;
         while (reader.hasNext()) {
             String name = reader.nextName();
             assert name != null;
@@ -191,8 +193,8 @@ public class Timer implements StorableInterface {
                 case "id":
                     timer.id = reader.nextLong();
                     break;
-                case "port_id":
-                    timer.port_id = reader.nextString();
+                case "executable_uid":
+                    timer.executable_uid = reader.nextString();
                     break;
                 case "deviceAlarm":
                     timer.deviceAlarm = reader.nextBoolean();
@@ -236,13 +238,15 @@ public class Timer implements StorableInterface {
             }
         }
 
+        timer.fromCache = timer.deviceAlarm;
+
         reader.endObject();
 
-        if (timer.port_id == null)
+        if (timer.executable_uid == null)
             throw new ClassNotFoundException();
 
-        timer.port = AppData.getInstance().findDevicePort(timer.port_id);
-        if (timer.port == null)
+        timer.executable = AppData.getInstance().findExecutable(timer.executable_uid);
+        if (timer.executable == null)
             throw new ClassNotFoundException(timer.toString());
     }
 
@@ -254,5 +258,68 @@ public class Timer implements StorableInterface {
     @Override
     public void save(@NonNull OutputStream output) throws IOException {
         toJSON(JSONHelper.createWriter(output));
+    }
+
+    public void markFromCache() {
+        if (deviceAlarm)
+            fromCache = true;
+    }
+
+    public NextAlarm getNextAlarmUnixTime(long currentTime) {
+        NextAlarm nextAlarm = new NextAlarm();
+        Calendar calendar_start = Calendar.getInstance();
+        Calendar calendar_stop = Calendar.getInstance();
+        calendar_start.setTimeInMillis(currentTime);
+        calendar_stop.setTimeInMillis(currentTime);
+        int day = calendar_start.get(Calendar.DAY_OF_WEEK) - 1; // start with 1: Sunday
+        nextAlarm.command = DevicePort.TOGGLE;
+        nextAlarm.timerId = id;
+
+        Calendar calendar = null;
+
+        if (hour_minute_start != -1) {
+            calendar_start.set(Calendar.HOUR, getHour(hour_minute_start));
+            calendar_start.set(Calendar.MINUTE, getMinute(hour_minute_start));
+            for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
+                if (weekdays[(additionalDays + day) % 7]) {
+                    if (calendar_start.before(Calendar.getInstance())) {
+                        calendar_start.add(Calendar.HOUR, 24);
+                        continue;
+                    }
+                    calendar = calendar_start;
+                    nextAlarm.command = DevicePort.ON;
+                    break;
+                } else
+                    calendar_start.add(Calendar.HOUR, 24);
+            }
+        }
+
+        if (hour_minute_stop != -1) {
+            calendar_stop.set(Calendar.HOUR, getHour(hour_minute_stop));
+            calendar_stop.set(Calendar.MINUTE, getMinute(hour_minute_stop));
+            for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
+                if (weekdays[(additionalDays + day) % 7]) {
+                    if (calendar_stop.before(Calendar.getInstance())) {
+                        calendar_stop.add(Calendar.HOUR, 24);
+                        continue;
+                    }
+                    if (calendar == null || calendar.after(calendar_stop)) {
+                        calendar = calendar_stop;
+                        nextAlarm.command = DevicePort.OFF;
+                    }
+                    break;
+                } else
+                    calendar_stop.add(Calendar.HOUR, 24);
+            }
+        }
+
+        nextAlarm.unix_time = calendar != null ? calendar.getTimeInMillis() : 0;
+        return nextAlarm;
+    }
+
+    public class NextAlarm {
+        public long unix_time;
+        public int command;
+        public long timerId;
     }
 }

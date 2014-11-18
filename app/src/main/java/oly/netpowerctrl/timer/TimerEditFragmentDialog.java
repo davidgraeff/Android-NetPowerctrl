@@ -18,18 +18,27 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.text.DateFormatSymbols;
+import java.util.ArrayList;
+import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.onHttpRequestResult;
+import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 public class TimerEditFragmentDialog extends DialogFragment implements onHttpRequestResult {
     private Timer timer = new Timer();
     private View rootView;
     private View titleView;
+    private Toast toast;
+    private Spinner spinner;
+    private List<Executable> executables = new ArrayList<>();
 
     public TimerEditFragmentDialog() {
     }
@@ -40,40 +49,72 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         }
     }
 
+    int indexOfExecutable(String executable_uid) {
+        for (int i = 0; i < executables.size(); ++i)
+            if (executables.get(i).getUid().equals(executable_uid))
+                return i;
+        return -1;
+    }
+
+    private void changeExecutableList(boolean deviceAlarm) {
+        final ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
+        s.fullUpdate(null);
+
+        executables.clear();
+
+        for (int i = 0; i < s.getDevicePortList().size(); ++i)
+            executables.add(s.getDevicePortList().get(i));
+
+        if (!deviceAlarm) {
+            for (Scene scene : AppData.getInstance().sceneCollection.getItems()) {
+                executables.add(scene);
+            }
+        }
+
+        ArrayAdapter<String> array_adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
+        for (Executable executable : executables) array_adapter.add(executable.getTitle());
+
+        spinner.setAdapter(array_adapter);
+        spinner.setSelection(indexOfExecutable(timer.executable_uid));
+    }
+
     @SuppressLint("InflateParams")
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_alarm_edit, null);
 
+        toast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
+
         // Port selection
         {
-            final ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
-            s.fullUpdate(null);
-
-            Spinner spinner = ((Spinner) rootView.findViewById(R.id.alarm_port));
+            spinner = ((Spinner) rootView.findViewById(R.id.alarm_port));
 
             // Only enable device port selection if this is a new alarm
             spinner.setEnabled(timer.id == -1);
             spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    timer.port = s.getDevicePortList().get(i);
+                    timer.executable = executables.get(i);
                 }
 
                 @Override
                 public void onNothingSelected(AdapterView<?> adapterView) {
-                    timer.port = null;
+                    timer.executable = null;
                 }
             });
-
-            ArrayAdapter<String> array_adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
-            for (int i = 0; i < s.getDevicePortList().size(); ++i)
-                if (s.getDevicePortList().get(i) != null)
-                    array_adapter.add(s.getDevicePortList().get(i).getTitle());
-
-            spinner.setAdapter(array_adapter);
-            spinner.setSelection(s.indexOf(timer.port));
         }
+
+        changeExecutableList(timer.deviceAlarm);
+
+        CheckBox androidAlarm = ((CheckBox) rootView.findViewById(R.id.alarm_on_android));
+        androidAlarm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                changeExecutableList(!b);
+            }
+        });
+        androidAlarm.setEnabled(timer.id == -1);
+        androidAlarm.setChecked(!timer.deviceAlarm);
 
         // Add weekdays
         String[] weekDays_Strings = DateFormatSymbols.getInstance().getShortWeekdays();
@@ -138,25 +179,41 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         rootView.findViewById(R.id.alarm_port_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), R.string.alarm_device_name_summary, Toast.LENGTH_LONG).show();
+                toast.setText(R.string.alarm_device_name_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
+            }
+        });
+        rootView.findViewById(R.id.alarm_on_android_help_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toast.setText(R.string.alarm_on_android_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
         rootView.findViewById(R.id.alarm_start_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), R.string.alarm_start_time_summary, Toast.LENGTH_LONG).show();
+                toast.setText(R.string.alarm_start_time_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
         rootView.findViewById(R.id.alarm_stop_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), R.string.alarm_stop_time_summary, Toast.LENGTH_LONG).show();
+                toast.setText(R.string.alarm_stop_time_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
         rootView.findViewById(R.id.alarm_weekdays_help_icon).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), R.string.alarm_weekdays_summary, Toast.LENGTH_LONG).show();
+                toast.setText(R.string.alarm_weekdays_summary);
+                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
+                toast.show();
             }
         });
 
@@ -198,16 +255,10 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                removeAlarm();
+                AppData.getInstance().timerCollection.removeAlarm(timer, null);
+                dismiss();
             }
         });
-    }
-
-
-    private void removeAlarm() {
-        ListenService.getService().wakeupPlugin(timer.port.device);
-        PluginInterface plugin = (PluginInterface) timer.port.device.getPluginInterface();
-        plugin.removeAlarm(timer, this);
     }
 
     private void saveAlarm() {
@@ -228,12 +279,12 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         timer.enabled = ((CheckBox) titleView.findViewById(android.R.id.title)).isChecked();
 
         // Check input data
-        if (timer.port == null || timer.port.getUid() == null) {
+        if (timer.executable == null || timer.executable.getUid() == null) {
             Toast.makeText(getActivity(), R.string.alarm_no_target, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        timer.port_id = timer.port.getUid();
+        timer.executable_uid = timer.executable.getUid();
 
         // Check input data
         if (timer.hour_minute_start == -1 && timer.hour_minute_stop == -1) {
@@ -241,32 +292,42 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             return;
         }
 
-        ListenService.getService().wakeupPlugin(timer.port.device);
-        PluginInterface plugin = (PluginInterface) timer.port.device.getPluginInterface();
-
-        // Find free device alarm, if not already assigned
-        if (timer.id == -1) {
-            Timer found_timer;
-            found_timer = plugin.getNextFreeAlarm(timer.port, timer.type);
-
-            if (found_timer == null) {
-                Toast.makeText(getActivity(), R.string.alarm_no_device_alarm, Toast.LENGTH_LONG).show();
-                return;
+        boolean is_android_alarm = ((CheckBox) rootView.findViewById(R.id.alarm_on_android)).isChecked();
+        if (is_android_alarm) {
+            if (timer.id == -1) {
+                timer.id = System.currentTimeMillis();
             }
-
-            timer.id = found_timer.id;
+            timer.deviceAlarm = false;
+            AppData.getInstance().timerCollection.addAlarm(timer);
+            dismiss();
+        } else {
+            DevicePort devicePort = (DevicePort) timer.executable;
+            ListenService.getService().wakeupPlugin(devicePort.device);
+            PluginInterface plugin = (PluginInterface) devicePort.device.getPluginInterface();
             timer.deviceAlarm = true;
+
+            // Find free device alarm, if not already assigned
+            if (timer.id == -1) {
+                Timer found_timer;
+                found_timer = plugin.getNextFreeAlarm(devicePort, timer.type);
+
+                if (found_timer == null) {
+                    Toast.makeText(getActivity(), R.string.alarm_no_device_alarm, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                timer.id = found_timer.id;
+            }
+            plugin.saveAlarm(timer, this);
         }
-        plugin.saveAlarm(timer, this);
     }
 
     @Override
     public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
         if (!success) {
             Toast.makeText(getActivity(), error_message, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        dismiss();
+        } else
+            dismiss();
     }
 
     @Override

@@ -51,12 +51,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     @Override
     public void onResume() {
         super.onResume();
-
-        ListenService service = ListenService.getService();
-        if (service == null)
-            ListenService.observersServiceReady.register(this);
-        else
-            refresh(service);
+        ListenService.observersServiceReady.register(this);
     }
 
     @Override
@@ -132,7 +127,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh:
-                refresh(ListenService.getService());
+                onRefresh();
                 return true;
             case R.id.menu_add_timer:
                 MainActivity.getNavigationController().changeToDialog(getActivity(), TimerEditFragmentDialog.class.getName());
@@ -146,7 +141,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 TimerCollection c = AppData.getInstance().timerCollection;
-                                c.clear();
+                                c.removeAll();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -175,12 +170,6 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                 Fragment.instantiate(getActivity(), TimerEditFragmentDialog.class.getName());
         fragment.setParameter(timerAdapter.getAlarm(position));
 
-//        Timer timer = timerAdapter.getAlarm(position);
-//        timerAdapter.remove(position);
-//        timerAdapter.notifyDataSetChanged();
-//        PluginInterface plugin = (PluginInterface)timer.port.device.getPluginInterface();
-//        plugin.removeAlarm(timer, this);
-
         MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
     }
 
@@ -196,6 +185,8 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
 
     @Override
     public boolean onServiceReady(ListenService service) {
+        if (!AppData.observersOnDataLoaded.dataLoaded)
+            return true;
         refresh(service);
         return false;
     }

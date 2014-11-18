@@ -338,6 +338,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="groups_assigned">Ansichtsgruppen</string>
     <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
     <string name="delete_all_alarms">Zeitschaltungen löschen?</string>
+    <string name="alarm_on_android">Android Alarm</string>
+    <string name="alarm_on_android_summary">Wenn aktiviert wird dieser Alarm nicht vom Zielgerät umgesetzt, sondern von diesem Tablet/Handy. Szenen können nur auf diese Weise einen Alarm erhalten. Dieses Gerät muss dann eingeschaltet und in Reichweite zum Alarm Ziel sein!</string>
 
     <string-array name="default_fallback_icon_set_names">
         <item>Rund, Dreidimensional, Transparent</item>

@@ -1,5 +1,7 @@
 package oly.netpowerctrl.listen_service;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,13 +11,16 @@ import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -27,10 +32,13 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverFinishedResult;
 import oly.netpowerctrl.network.onDeviceObserverResult;
+import oly.netpowerctrl.scenes.EditSceneActivity;
+import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -88,6 +96,10 @@ public class ListenService extends Service {
 
             // Delay plugin activation (we wait for extensions)
             wakeupAllDevices(true);
+
+            observersServiceReady.onServiceReady(ListenService.this);
+
+            setupAndroidAlarm();
 
             return false;
         }
@@ -175,6 +187,47 @@ public class ListenService extends Service {
         return mDiscoverService;
     }
 
+    public void setupAndroidAlarm() {
+        long current = System.currentTimeMillis();
+        Timer.NextAlarm nextTimerTime = null;
+        Timer nextTimer = null;
+
+        for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
+            if (timer.deviceAlarm)
+                continue;
+
+            Timer.NextAlarm alarm = timer.getNextAlarmUnixTime(current);
+            if (alarm.unix_time > current && (nextTimerTime == null || alarm.unix_time < nextTimerTime.unix_time)) {
+                nextTimerTime = alarm;
+                nextTimer = timer;
+            }
+        }
+
+        Log.w(TAG, "alarm setup");
+
+
+        AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, ExecutionActivity.class);
+        if (nextTimerTime != null)
+            intent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, nextTimerTime.command);
+        PendingIntent pi = PendingIntent.getActivity(this, 1191, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mgr.cancel(pi);
+
+        if (nextTimerTime == null)
+            return;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(nextTimerTime.unix_time);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Log.w(TAG, "Next alarm " + sdf.format(calendar.getTime()) + " " + nextTimer.getTargetName());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+        else
+            mgr.set(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -199,8 +252,6 @@ public class ListenService extends Service {
         // Listen to preferences changes
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
-
-        observersServiceReady.onServiceReady(ListenService.this);
 
         return super.onStartCommand(intent, flags, startId);
     }

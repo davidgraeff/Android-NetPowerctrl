@@ -31,7 +31,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 return true;
 
             if (device == null) {
-                clear();
+                removeAll();
                 return true;
             }
 
@@ -41,7 +41,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 DevicePort devicePort = iterator.next();
                 for (int index = items.size() - 1; index >= 0; --index) {
                     Timer timer = items.get(index);
-                    if (timer.port_id.equals(devicePort.getUid())) {
+                    if (timer.executable_uid.equals(devicePort.getUid())) {
                         removeFromCache(index);
                     }
                 }
@@ -55,20 +55,10 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         @Override
         public void run() {
             requestActive = false;
-            notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
             saveAll();
         }
     };
-    private long lastExecuted;
-    private final Runnable notifyRunnableNow = new Runnable() {
-        @Override
-        public void run() {
-            if (System.currentTimeMillis() - lastExecuted < 200)
-                return;
-            lastExecuted = System.currentTimeMillis();
-            notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
-        }
-    };
+
 
     public boolean isRequestActive() {
         return requestActive;
@@ -78,15 +68,16 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         return items.size() + available_timers.size();
     }
 
-    private boolean not_replaced(List<Timer> list, Timer timer) {
+    private int replaced_at(List<Timer> list, Timer timer) {
         for (int i = 0; i < list.size(); ++i) {
             Timer a = list.get(i);
-            if (a.id == timer.id && a.port_id.equals(timer.port_id)) {
+            if (a.id == timer.id && a.executable_uid.equals(timer.executable_uid)) {
                 list.set(i, timer);
-                return false;
+                notifyObservers(timer, ObserverUpdateActions.UpdateAction, i);
+                return i;
             }
         }
-        return true;
+        return -1;
     }
 
     /**
@@ -94,22 +85,49 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
      *
      * @param new_timers All alarms of the plugin.
      */
-    synchronized public void alarmsFromPlugin(List<Timer> new_timers) {
-        for (Timer new_timer : new_timers) {
-            if (new_timer.freeDeviceAlarm) {
-                if (not_replaced(available_timers, new_timer)) {
-                    available_timers.add(new_timer);
-                }
-            } else {
-                if (not_replaced(items, new_timer) && new_timer.port_id != null) {
-                    items.add(new_timer);
-                }
-            }
-        }
+    public void alarmsFromPluginOtherThread(final List<Timer> new_timers) {
         Handler h = App.getMainThreadHandler();
         h.removeCallbacks(notifyRunnable);
         h.postDelayed(notifyRunnable, 1200);
-        h.postDelayed(notifyRunnableNow, 100);
+        h.post(new Runnable() {
+            @Override
+            public void run() {
+                updateTimers(new_timers);
+            }
+        });
+    }
+
+    public void updateTimers(List<Timer> new_timers) {
+        for (Timer new_timer : new_timers) {
+            int i;
+            if (new_timer.freeDeviceAlarm) {
+                i = replaced_at(available_timers, new_timer);
+                if (i == -1) {
+                    available_timers.add(new_timer);
+                }
+            } else {
+                i = replaced_at(items, new_timer);
+                if (i == -1 && new_timer.executable_uid != null) {
+                    items.add(new_timer);
+                    notifyObservers(null, ObserverUpdateActions.AddAction, items.size() - 1);
+                }
+            }
+        }
+    }
+
+    public void addAlarm(Timer alarm) {
+        int i = replaced_at(items, alarm);
+        if (i == -1 && alarm.executable_uid != null) {
+            items.add(alarm);
+            i = items.size() - 1;
+            notifyObservers(alarm, ObserverUpdateActions.AddAction, i);
+        } else {
+            notifyObservers(alarm, ObserverUpdateActions.UpdateAction, i);
+        }
+        save(alarm);
+
+        if (!alarm.deviceAlarm)
+            ListenService.getService().setupAndroidAlarm();
     }
 
     public List<Timer> getAvailableDeviceAlarms() {
@@ -117,15 +135,28 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     }
 
     void removeAlarm(Timer timer, onHttpRequestResult callback) {
-        ListenService.getService().wakeupPlugin(timer.port.device);
-        PluginInterface p = (PluginInterface) timer.port.device.getPluginInterface();
-        p.removeAlarm(timer, callback);
+        if (timer.executable instanceof DevicePort && timer.deviceAlarm) {
+            Device device = ((DevicePort) timer.executable).device;
+            ListenService.getService().wakeupPlugin(device);
+            PluginInterface p = (PluginInterface) device.getPluginInterface();
+            p.removeAlarm(timer, callback);
+        } else {
+            remove(timer);
+            for (int i = 0; i < items.size(); ++i) {
+                if (items.get(i).id == timer.id) {
+                    items.remove(i);
+                    notifyObservers(timer, ObserverUpdateActions.RemoveAction, i);
+                    break;
+                }
+            }
+        }
     }
 
     public void removeFromCache(int position) {
         if (position != -1) {
             remove(items.get(position));
             items.remove(position);
+            notifyObservers(null, ObserverUpdateActions.RemoveAction, position);
         }
     }
 
@@ -141,8 +172,9 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         // Flag all alarms as from-cache
         HashSet<String> alarm_uuids = new HashSet<>();
         for (Timer timer : items) {
-            timer.fromCache = true;
-            alarm_uuids.add(timer.port_id);
+            timer.markFromCache();
+            if (timer.deviceAlarm)
+                alarm_uuids.add(timer.executable_uid);
         }
 
         notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
@@ -180,7 +212,9 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         for (DevicePort port : alarm_ports) {
             PluginInterface i = (PluginInterface) port.device.getPluginInterface();
-            i.requestAlarms(port, this);
+            //TODO eigentlich sollen alle getPluginInterface() etwas zurückgeben. Jedoch laden Erweiterungen nicht schnell genug für diesen Aufruf hier
+            if (i != null)
+                i.requestAlarms(port, this);
         }
 
         return requestActive;
@@ -193,12 +227,13 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
     }
 
-    public void clear() {
+    public void removeAll() {
+        int b = items.size();
         // Delete all alarms
         for (Timer timer : getItems())
             removeAlarm(timer, null);
         items.clear();
-        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
+        notifyObservers(null, ObserverUpdateActions.RemoveAllAction, b);
     }
 
     @Override

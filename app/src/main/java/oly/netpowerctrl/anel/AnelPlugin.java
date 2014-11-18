@@ -417,7 +417,7 @@ final public class AnelPlugin implements PluginInterface {
                     return;
                 }
                 try {
-                    timerCollection.alarmsFromPlugin(extractAlarms(port, response_message));
+                    timerCollection.alarmsFromPluginOtherThread(extractAlarms(port, response_message));
                 } catch (SAXException | IOException e) {
                     e.printStackTrace();
                 }
@@ -489,8 +489,8 @@ final public class AnelPlugin implements PluginInterface {
                 switch (dataIndex) {
                     case 0: { // enabled / disabled
                         timer.deviceAlarm = true;
-                        timer.port = port;
-                        timer.port_id = port.getUid();
+                        timer.executable = port;
+                        timer.executable_uid = port.getUid();
                         timer.enabled = checked != null;
                         timer.id = (port.id & 255) | timerNumber << 8;
                         timer.type = timerNumber < 4 ? Timer.TYPE_RANGE_ON_WEEKDAYS : Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS;
@@ -743,21 +743,22 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void saveAlarm(final Timer timer, final onHttpRequestResult callback) {
+        DevicePort devicePort = (DevicePort) timer.executable;
         if (callback != null)
-            callback.httpRequestStart(timer.port);
+            callback.httpRequestStart(devicePort);
 
         // First call the dd.htm page to get all current values (we only want to change one of those
         // and have to set all the others to the same values as before)
-        final String getData = "dd.htm?DD" + String.valueOf(timer.port.id);
+        final String getData = "dd.htm?DD" + String.valueOf(devicePort.id);
         final int timerNumber = (int) (timer.id >> 8) & 255;
         // Get the timerController object. We will add received alarms to that instance.
         final TimerCollection timerCollection = AppData.getInstance().timerCollection;
-        final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) timer.port.device.getFirstReachableConnection("HTTP");
+        final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) devicePort.device.getFirstReachableConnection("HTTP");
         if (ci == null)
             return;
 
         HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, getData, null,
-                timer.port, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
+                devicePort, true, new HttpThreadPool.HTTPCallback<DevicePort>() {
             @Override
             public void httpResponse(DevicePort port, boolean callback_success, String response_message) {
                 if (!callback_success) {
@@ -799,7 +800,7 @@ final public class AnelPlugin implements PluginInterface {
                             callback.httpRequestResult(port, callback_success, response_message);
 
                         try {
-                            timerCollection.alarmsFromPlugin(extractAlarms(port, response_message));
+                            timerCollection.alarmsFromPluginOtherThread(extractAlarms(port, response_message));
                         } catch (SAXException | IOException e) {
                             e.printStackTrace();
                         }
@@ -814,7 +815,7 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public void removeAlarm(Timer timer, final onHttpRequestResult callback) {
         if (callback != null)
-            callback.httpRequestStart(timer.port);
+            callback.httpRequestStart((DevicePort) timer.executable);
 
         // Reset all data to default values
         timer.hour_minute_start = 0;

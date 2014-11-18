@@ -56,9 +56,7 @@ public class AnelPluginHttp {
                         // DevicePorts data. Put that into a new map and use copyFreshDevicePorts method
                         // on the existing device.
                         for (int i = 0; i < 8; ++i) {
-                            DevicePort port = new DevicePort(device, ExecutableType.TypeToggle);
-                            port.id = i + 1; // 1-based
-                            port.setTitle(data[10 + i].trim());
+                            DevicePort port = DevicePort.createWithTitle(device, ExecutableType.TypeToggle, i + 1, data[10 + i].trim());
                             port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
                             port.Disabled = data[30 + i].equals("1");
                             device.updatePort(port);
