@@ -21,7 +21,7 @@ For bugs and feature requests please use [Github Issues](https://github.com/davi
 
 <table><tr valign="top">
 <td><img width="120px" src="doc/outlets-v600.png" /></td>
-<td><img width="120px" src="doc/outlets-big_icons-v600" /></td>
+<td><img width="120px" src="doc/outlets-big_icons-v600.png" /></td>
 <td><img width="120px" src="doc/devices-v600.png" /></td>
 <td><img width="120px" src="doc/alarms-v600.png" /></td>
 <td><img width="120px" src="doc/viewmode-v600.png" /></td>
