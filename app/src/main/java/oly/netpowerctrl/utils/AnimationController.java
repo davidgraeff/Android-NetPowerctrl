@@ -2,11 +2,9 @@ package oly.netpowerctrl.utils;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
 import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
 
@@ -18,26 +16,33 @@ public class AnimationController {
         if (view.getVisibility() == View.VISIBLE) // Do nothing if already visible
             return;
 
+        if (view.getHeight() == 0) {
+            view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View view, int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8) {
+                    view.removeOnLayoutChangeListener(this);
+                    animateBottomViewIn(view);
+                }
+            });
+            return;
+        }
+
         view.setVisibility(View.VISIBLE);
         view.setTranslationY(view.getHeight() * 2);
         view.animate().setDuration(800).setInterpolator(new OvershootInterpolator()).translationY(0f);
     }
 
     public static void animateBottomViewOut(final View view) {
-        if (view.getTranslationY() != 0) // Do nothing if already out of view
+        if (view.getTranslationY() != 0 || view.getVisibility() != View.VISIBLE) // Do nothing if already out of view
             return;
 
-        final ObjectAnimator o = ObjectAnimator.ofFloat(view, "translationY", view.getHeight() * 2);
-        o.setDuration(500);
-        o.setInterpolator(new LinearInterpolator());
-        o.addListener(new AnimatorListenerAdapter() {
+        view.animate().setDuration(800).translationY(view.getHeight() * 2).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 view.setVisibility(View.GONE);
             }
         });
-        o.start();
     }
 
     public static ViewPropertyAnimator animateViewInOut(final View view, final boolean in, final boolean makeGone) {

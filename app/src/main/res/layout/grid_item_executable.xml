@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<oly.netpowerctrl.ui.widgets.RelativeLayoutRipple xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
     android:gravity="center_horizontal"
     android:minWidth="150dp"
-    android:padding="5dip">
+    android:paddingLeft="5dip"
+    android:paddingRight="5dip">
 
     <ImageView
         android:id="@+id/icon_bitmap"
@@ -28,22 +30,29 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/icon_bitmap"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:background="?attr/text_transparent_background"
         android:singleLine="true"
         android:textAppearance="@android:style/TextAppearance.Medium"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title"
+        android:singleLine="true"
+        android:textAppearance="@android:style/TextAppearance.Small" />
 
     <ImageView
         android:id="@+id/icon_edit"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_alignEnd="@id/title"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignRight="@id/title"
         android:alpha="0.5"
         android:src="@android:drawable/ic_menu_manage"
         tools:ignore="ContentDescription" />
@@ -60,4 +69,4 @@
         android:thumb="@android:color/transparent"
         android:visibility="gone" />
 
-</RelativeLayout>
+</oly.netpowerctrl.ui.widgets.RelativeLayoutRipple>

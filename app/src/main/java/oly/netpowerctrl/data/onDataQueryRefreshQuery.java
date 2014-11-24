@@ -1,8 +1,8 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.data;
 
 /**
  * Refresh has started or is finished
  */
-public interface onServiceRefreshQuery {
+public interface onDataQueryRefreshQuery {
     void onRefreshStateChanged(boolean isRefreshing);
 }

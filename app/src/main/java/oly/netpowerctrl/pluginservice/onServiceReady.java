@@ -1,10 +1,10 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.pluginservice;
 
 /**
  * Get a notification when the service is ready or has finished
  */
 public interface onServiceReady {
-    boolean onServiceReady(ListenService service);
+    boolean onServiceReady(PluginService service);
 
     void onServiceFinished();
 }

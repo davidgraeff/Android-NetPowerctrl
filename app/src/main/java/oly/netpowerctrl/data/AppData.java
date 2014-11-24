@@ -22,18 +22,20 @@ import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceObserverBase;
 import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
+import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
 import oly.netpowerctrl.timer.TimerCollection;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
+import oly.netpowerctrl.utils.Logging;
 
 /**
  * Device Updates go into this object and are propagated to all observers and the device collection.
@@ -44,9 +46,11 @@ import oly.netpowerctrl.ui.notifications.InAppNotifications;
 public class AppData {
     // Observers are static for this singleton class
     public static final DataQueryCompletedObserver observersDataQueryCompleted = new DataQueryCompletedObserver();
+    public static final DataQueryRefreshObserver observersStartStopRefresh = new DataQueryRefreshObserver();
     public static final DataLoadedObserver observersOnDataLoaded = new DataLoadedObserver();
-    private static final String TAG = "AppData";
 
+    private static final String TAG = "AppData";
+    static int findDevicesRun = 0;
     final public DeviceCollection deviceCollection = new DeviceCollection();
     final public UnconfiguredDeviceCollection unconfiguredDeviceCollection = new UnconfiguredDeviceCollection();
     final public GroupCollection groupCollection = new GroupCollection();
@@ -55,6 +59,10 @@ public class AppData {
     final public TimerCollection timerCollection = new TimerCollection();
     private final List<DeviceObserverBase> updateDeviceStateList = new ArrayList<>();
     private LoadStoreJSonData loadStoreJSonData = null;
+    /**
+     * Detect new devices and check reach-ability of configured devices.
+     */
+    private boolean isDetecting = false;
 
     private AppData() {
         deviceCollection.registerObserver(sceneCollection.deviceObserver);
@@ -73,6 +81,14 @@ public class AppData {
         AppData appData = getInstance();
         if (appData.loadStoreJSonData != null)
             return;
+
+        observersOnDataLoaded.register(new onDataLoaded() {
+            @Override
+            public boolean onDataLoaded() {
+                TimerCollection.setupAndroidAlarm(App.instance);
+                return false;
+            }
+        });
 
         appData.loadStoreJSonData = new LoadStoreJSonData();
         appData.loadStoreJSonData.loadData(appData);
@@ -403,7 +419,7 @@ public class AppData {
         if (callback != null)
             callback.httpRequestStart(port);
 
-        ListenService.getService().wakeupPlugin(port.device);
+        PluginService.getService().wakeupPlugin(port.device);
 
         PluginInterface remote = (PluginInterface) port.device.getPluginInterface();
         if (remote != null) {
@@ -441,15 +457,15 @@ public class AppData {
         }
 
         for (SceneItem item : scene.sceneItems) {
-            DevicePort p = findDevicePort(item.uuid);
-            if (p == null) {
+            DevicePort devicePort = findDevicePort(item.uuid);
+            if (devicePort == null) {
                 Log.e(TAG, "Execute scene, DevicePort not found " + item.uuid);
                 continue;
             }
 
-            deviceSet.add(p.device);
+            deviceSet.add(devicePort.device);
 
-            PluginInterface remote = (PluginInterface) p.device.getPluginInterface();
+            PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
             if (remote == null) {
                 Log.e(TAG, "Execute scene, PluginInterface not found " + item.uuid);
                 continue;
@@ -460,13 +476,13 @@ public class AppData {
             if (master_command != DevicePort.INVALID && item.command == DevicePort.TOGGLE)
                 command = master_command;
 
-            remote.addToTransaction(p, command);
+            remote.addToTransaction(devicePort, command);
             if (!pluginInterfaces.contains(remote))
                 pluginInterfaces.add(remote);
         }
 
         for (Device device : deviceSet) {
-            ListenService.getService().wakeupPlugin(device);
+            PluginService.getService().wakeupPlugin(device);
         }
 
         for (PluginInterface p : pluginInterfaces) {
@@ -488,17 +504,17 @@ public class AppData {
             DevicePort devicePort = (DevicePort) executable;
             PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
             if (remote != null) {
-                ListenService.getService().wakeupPlugin(devicePort.device);
+                PluginService.getService().wakeupPlugin(devicePort.device);
                 remote.execute(devicePort, DevicePort.TOGGLE, callback);
             }
 
             if (callback != null)
-                callback.onExecutionFinished(1);
+                callback.onExecutionProgress(1, findDevicesRun);
             return;
         }
 
         if (callback != null)
-            callback.onExecutionFinished(1);
+            callback.onExecutionProgress(1, findDevicesRun);
     }
 
     /**
@@ -512,7 +528,7 @@ public class AppData {
         assert devicePort.device != null;
         PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
         if (remote != null) {
-            ListenService.getService().wakeupPlugin(devicePort.device);
+            PluginService.getService().wakeupPlugin(devicePort.device);
             remote.execute(devicePort, command, callback);
             return;
         }
@@ -520,7 +536,7 @@ public class AppData {
         if (callback == null)
             return;
 
-        callback.onExecutionFinished(1);
+        callback.onExecutionProgress(1, 1);
     }
 
     public int countNetworkDevices() {
@@ -540,6 +556,45 @@ public class AppData {
             }
         }
         return list;
+    }
+
+    public void refreshDeviceData() {
+        final int currentRun = ++findDevicesRun;
+
+        // The following mechanism allows only one update request within a
+        // 1sec timeframe.
+        if (isDetecting)
+            return;
+        isDetecting = true;
+
+        final long startTime = System.nanoTime();
+        Log.w(TAG, "refreshDeviceData:start " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
+
+        App.getMainThreadHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isDetecting = false;
+            }
+        }, 1000);
+
+        if (SharedPrefs.getInstance().logEnergySaveMode())
+            Logging.appendLog(App.instance, "Energiesparen aus: Suche Geräte");
+
+        observersStartStopRefresh.onRefreshStateChanged(true);
+
+        clearNewDevices();
+        new DeviceQuery(App.instance, new onDeviceObserverResult() {
+            @Override
+            public void onObserverDeviceUpdated(Device di) {
+            }
+
+            @Override
+            public void onObserverJobFinished(List<Device> timeout_devices) {
+                Log.w(TAG, "refreshDeviceData:job_finished " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun) + " timeout " + String.valueOf(timeout_devices.size()));
+                observersDataQueryCompleted.onDataQueryFinished(timeout_devices.size() == countNetworkDevices());
+                observersStartStopRefresh.onRefreshStateChanged(false);
+            }
+        });
     }
 
     private static class SingletonHolder {

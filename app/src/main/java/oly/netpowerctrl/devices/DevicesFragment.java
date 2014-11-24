@@ -23,13 +23,13 @@ import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.onDataQueryRefreshQuery;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
-import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -41,7 +41,7 @@ import oly.netpowerctrl.utils.DividerItemDecoration;
  */
 public class DevicesFragment extends Fragment
         implements PopupMenu.OnMenuItemClickListener,
-        SwipeRefreshLayout.OnRefreshListener, onServiceRefreshQuery {
+        SwipeRefreshLayout.OnRefreshListener, onDataQueryRefreshQuery {
     private DevicesAdapter adapter;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private RecyclerView mRecyclerView;
@@ -60,7 +60,7 @@ public class DevicesFragment extends Fragment
 
     @Override
     public void onPause() {
-        ListenService.observersStartStopRefresh.unregister(this);
+        AppData.observersStartStopRefresh.unregister(this);
         super.onPause();
         if (adapter != null)
             adapter.onPause();
@@ -68,7 +68,7 @@ public class DevicesFragment extends Fragment
 
     @Override
     public void onResume() {
-        ListenService.observersStartStopRefresh.register(this);
+        AppData.observersStartStopRefresh.register(this);
         super.onResume();
         if (adapter != null)
             adapter.onResume();
@@ -101,7 +101,7 @@ public class DevicesFragment extends Fragment
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
                                 AppData.getInstance().deviceCollection.removeAll();
-                                refresh();
+                                onRefresh();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -110,7 +110,7 @@ public class DevicesFragment extends Fragment
             }
 
             case R.id.refresh: {
-                refresh();
+                onRefresh();
                 return true;
             }
 
@@ -302,7 +302,7 @@ public class DevicesFragment extends Fragment
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 AppData.getInstance().deviceCollection.remove(current_device);
-                                ListenService.getService().findDevices(false, null);
+                                AppData.getInstance().refreshDeviceData();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -326,7 +326,7 @@ public class DevicesFragment extends Fragment
 
             DevicesWizardNewDialog newFragment = (DevicesWizardNewDialog) Fragment.instantiate(getActivity(), DevicesWizardNewDialog.class.getName());
             //newFragment.setPlugin(ListenService.getService().getPluginByID(plugins[selected]));
-            newFragment.setPlugin(ListenService.getService().getPlugin(selected));
+            newFragment.setPlugin(PluginService.getService().getPlugin(selected));
             MainActivity.getNavigationController().changeToDialog(getActivity(), newFragment);
         } else {
             PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
@@ -338,10 +338,6 @@ public class DevicesFragment extends Fragment
         }
     }
 
-    private void refresh() {
-        ListenService.getService().findDevices(true, null);
-    }
-
     @Override
     public void onRefreshStateChanged(boolean isRefreshing) {
         mPullToRefreshLayout.setRefreshing(isRefreshing);
@@ -349,6 +345,7 @@ public class DevicesFragment extends Fragment
 
     @Override
     public void onRefresh() {
-        refresh();
+        PluginService.getService().showNotificationForNextRefresh(true);
+        AppData.getInstance().refreshDeviceData();
     }
 }

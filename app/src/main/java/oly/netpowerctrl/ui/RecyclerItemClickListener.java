@@ -10,7 +10,6 @@ import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 
-
 public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
     private static final int SWIPE_MIN_DISTANCE = 160;
     private static final int SWIPE_THRESHOLD_VELOCITY = 200;

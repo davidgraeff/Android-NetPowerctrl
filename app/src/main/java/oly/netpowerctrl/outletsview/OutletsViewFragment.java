@@ -35,6 +35,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconCacheCleared;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.data.onDataQueryRefreshQuery;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
@@ -47,12 +48,11 @@ import oly.netpowerctrl.executables.ExecutablesSourceGroups;
 import oly.netpowerctrl.executables.ExecutablesSourceScenes;
 import oly.netpowerctrl.executables.ExecuteAdapter;
 import oly.netpowerctrl.groups.GroupUtilities;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.onServiceModeChanged;
-import oly.netpowerctrl.listen_service.onServiceRefreshQuery;
 import oly.netpowerctrl.main.IntroductionFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onNotReachableUpdate;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceModeChanged;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneFactory;
@@ -72,7 +72,7 @@ import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
  */
 public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         onNotReachableUpdate, onFragmentChangeArguments,
-        onServiceRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged,
+        onDataQueryRefreshQuery, SharedPrefs.IHideNotReachable, onServiceModeChanged,
         SwipeRefreshLayout.OnRefreshListener, IconCacheCleared, RecyclerItemClickListener.OnItemClickListener {
 
     // Column computations
@@ -98,6 +98,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     private UUID groupFilter = null;
     private UUID clicked_group_uid;
     private boolean disableClicks = false;
+    private int lastScrolledPosition = 0;
     /**
      * Called by the model data listener
      */
@@ -137,11 +138,35 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (groupFilter != null)
+            outState.putString("groupFilter", groupFilter.toString());
+        if (mRecyclerView != null) {
+            View view = mRecyclerView.findChildViewUnder(10, 10);
+            if (view != null)
+                outState.putInt("lastScrolledPosition", mRecyclerView.getChildPosition(view));
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            String groupFilterString = savedInstanceState.getString("groupFilter");
+            if (groupFilterString != null)
+                groupFilter = UUID.fromString(groupFilterString);
+            lastScrolledPosition = savedInstanceState.getInt("lastScrolledPosition", 0);
+        }
         groupPagerAdapter = new GroupPagerAdapter();
         SharedPrefs.getInstance().registerHideNotReachable(this);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        groupPagerAdapter.onDestroy();
     }
 
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
@@ -159,19 +184,15 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     mRecyclerView.setHasFixedSize(false);
                     mRecyclerView.setLayoutManager(gridLayoutManager);
                     mRecyclerView.setAdapter(adapter);
+                    if (lastScrolledPosition != 0)
+                        mRecyclerView.scrollToPosition(lastScrolledPosition);
                 }
             };
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        groupPagerAdapter.onDestroy();
-    }
-
-    @Override
     public void onPause() {
-        ListenService.observersStartStopRefresh.unregister(this);
-        ListenService.observersServiceModeChanged.unregister(this);
+        AppData.observersStartStopRefresh.unregister(this);
+        PluginService.observersServiceModeChanged.unregister(this);
         super.onPause();
         if (adapterSource != null)
             adapterSource.onPause();
@@ -179,8 +200,8 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
     @Override
     public void onResume() {
-        ListenService.observersStartStopRefresh.register(this);
-        ListenService.observersServiceModeChanged.register(this);
+        AppData.observersStartStopRefresh.register(this);
+        PluginService.observersServiceModeChanged.register(this);
 
         if (adapterSource != null)
             adapterSource.onResume();
@@ -220,16 +241,16 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         switch (viewType) {
             case VIEW_AS_COMPACT:
-                adapter.setLayoutRes(R.layout.grid_item_icon_center);
+                adapter.setLayoutRes(R.layout.grid_item_compact_executable);
                 requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
                 break;
             case VIEW_AS_GRID:
-                adapter.setLayoutRes(R.layout.grid_item_icon);
+                adapter.setLayoutRes(R.layout.grid_item_executable);
                 requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
                 break;
             case VIEW_AS_LIST:
             default:
-                adapter.setLayoutRes(R.layout.list_item_icon);
+                adapter.setLayoutRes(R.layout.list_item_executable);
                 requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
                 break;
         }
@@ -278,7 +299,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     /**
      * Handles clicks on the plus floating button
      *
-     * @param clickedView
+     * @param clickedView The clicked view
      */
     private void onPlusClicked(View clickedView) {
         if (!AppData.getInstance().deviceCollection.hasDevices()) {
@@ -461,7 +482,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         }
 
         btnWireless = (FloatingActionButton) view.findViewById(R.id.btnWirelessSettings);
-        if (!ListenService.isWirelessLanConnected(getActivity()))
+        if (!PluginService.isWirelessLanConnected(getActivity()))
             AnimationController.animateBottomViewIn(btnWireless);
         btnWireless.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -524,12 +545,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     public void refreshNow() {
-        ListenService service = ListenService.getService();
-        if (service != null)
-            service.findDevices(true, null);
-        else {
-            InAppNotifications.showException(getActivity(), null, "OutletsFragment refresh: Service is down.");
-        }
+        AppData.getInstance().refreshDeviceData();
     }
 
     public void checkEmpty(int count, UUID groupFilter) {
@@ -703,7 +719,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
     @Override
     public void onServiceModeChanged(boolean isNetworkDown) {
-        if (!ListenService.isWirelessLanConnected(getActivity()))
+        if (!PluginService.isWirelessLanConnected(getActivity()))
             AnimationController.animateBottomViewIn(btnWireless);
         else
             AnimationController.animateBottomViewOut(btnWireless);

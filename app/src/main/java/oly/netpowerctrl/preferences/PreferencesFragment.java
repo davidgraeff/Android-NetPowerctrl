@@ -2,11 +2,8 @@ package oly.netpowerctrl.preferences;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.FragmentManager;
-import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -40,23 +37,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             return true;
         }
     };
-    private final Preference.OnPreferenceChangeListener reloadProcess = new Preference.OnPreferenceChangeListener() {
-        public boolean onPreferenceChange(Preference preference, Object newValue) {
-            App.getMainThreadHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Intent mStartActivity = new Intent(getActivity(), MainActivity.class);
-                    int mPendingIntentId = 123456;
-                    PendingIntent mPendingIntent = PendingIntent.getActivity(getActivity(), mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-                    AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-                    mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-                    System.exit(0);
-                }
-            }, 50);
-
-            return true;
-        }
-    };
 
     @Override
     public void onPause() {
@@ -75,7 +55,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference(SharedPrefs.PREF_use_dark_theme).setOnPreferenceChangeListener(reloadActivity);
         findPreference(SharedPrefs.PREF_fullscreen).setOnPreferenceChangeListener(reloadActivity);
         findPreference(SharedPrefs.PREF_background).setOnPreferenceChangeListener(reloadActivity);
-        findPreference(SharedPrefs.PREF_default_fallback_icon_set).setOnPreferenceChangeListener(reloadProcess);
 
         //noinspection ConstantConditions
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

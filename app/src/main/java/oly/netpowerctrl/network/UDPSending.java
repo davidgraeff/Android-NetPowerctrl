@@ -17,8 +17,8 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
@@ -194,7 +194,7 @@ public class UDPSending {
 
         @Override
         public void process() {
-            Context context = ListenService.getService();
+            Context context = PluginService.getService();
             if (context == null)
                 return;
 
@@ -297,7 +297,7 @@ public class UDPSending {
             if (ip == null)
                 return;
 
-            Context context = ListenService.getService();
+            Context context = PluginService.getService();
             if (context == null)
                 return;
 

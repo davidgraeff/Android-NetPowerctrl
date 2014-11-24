@@ -1,4 +1,4 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.pluginservice;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -64,8 +64,10 @@ public class PluginRemote implements PluginInterface {
                 return;
             }
 
+            device.lockDevice();
             DeviceConnection deviceConnection = device.getConnectionByID(connection_id);
             if (deviceConnection == null) {
+                device.releaseDevice();
                 if (SharedPrefs.getInstance().logExtensions()) {
                     Logging.appendLog(context, "Extension " + serviceName + " stateChanged: no deviceConnection found!");
                 }
@@ -77,9 +79,10 @@ public class PluginRemote implements PluginInterface {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
+            device.releaseDevice();
 
             device.connectionUsed(deviceConnection);
-            AppData.getInstance().updateExistingDevice(device);
+            AppData.getInstance().updateExistingDeviceFromOtherThread(device);
         }
 
         @Override
@@ -105,8 +108,10 @@ public class PluginRemote implements PluginInterface {
                 Log.w(TAG, "devicePortsChanged, no device found for " + device_port_json);
                 return;
             }
+            device.lockDevicePorts();
             device.updatePort(devicePort);
-            AppData.getInstance().updateExistingDevice(device);
+            device.releaseDevicePorts();
+            AppData.getInstance().updateExistingDeviceFromOtherThread(device);
         }
 
         @Override
@@ -134,12 +139,12 @@ public class PluginRemote implements PluginInterface {
             serviceName = className.getClassName();
             service = INetPwrCtrlPlugin.Stub.asInterface(binder);
             init();
-            enterFullNetworkState(ListenService.getService(), null);
+            enterFullNetworkState(PluginService.getService(), null);
         }
 
         public void onServiceDisconnected(ComponentName className) {
             service = null;
-            ListenService c = ListenService.getService();
+            PluginService c = PluginService.getService();
             if (c != null)
                 c.removeExtension(PluginRemote.this);
 
@@ -170,7 +175,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     public static PluginRemote create(String serviceName, String localized_name, String packageName) {
-        Context context = ListenService.getService();
+        Context context = PluginService.getService();
         PluginRemote r = new PluginRemote(context, serviceName, localized_name, packageName);
         Intent in = new Intent();
         in.setClassName(packageName, serviceName);
@@ -189,7 +194,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public void onStart(ListenService service) {
+    public void onStart(PluginService service) {
 
     }
 
@@ -282,7 +287,7 @@ public class PluginRemote implements PluginInterface {
     @Override
     public void executeTransaction(onExecutionFinished callback) {
         if (callback != null)
-            callback.onExecutionFinished(transaction_counter);
+            callback.onExecutionProgress(transaction_counter, 1);
 
         transaction_counter = 0;
     }
@@ -347,7 +352,7 @@ public class PluginRemote implements PluginInterface {
     public void execute(DevicePort port, int command, onExecutionFinished callback) {
         if (service == null) {
             if (callback != null)
-                callback.onExecutionFinished(1);
+                callback.onExecutionProgress(1, 1);
             return;
         }
 
@@ -359,7 +364,7 @@ public class PluginRemote implements PluginInterface {
         }
 
         if (callback != null)
-            callback.onExecutionFinished(1);
+            callback.onExecutionProgress(1, 1);
     }
 
     @Override

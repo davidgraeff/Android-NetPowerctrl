@@ -91,7 +91,7 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
     }
 
     @Override
-    public boolean onDataQueryFinished() {
+    public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
         //updateNow();
         return true;
     }

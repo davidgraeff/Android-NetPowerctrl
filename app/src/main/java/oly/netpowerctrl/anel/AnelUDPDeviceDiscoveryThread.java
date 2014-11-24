@@ -15,9 +15,9 @@ import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
 import oly.netpowerctrl.device_base.device.DeviceFeatureTemperature;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPReceiving;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     public static AnelPlugin anelPlugin;
@@ -53,12 +53,12 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
             App.getMainThreadHandler().post(new Runnable() {
                 public void run() {
-                    ListenService service = ListenService.getService();
+                    PluginService service = PluginService.getService();
                     if (service == null)
                         return;
                     String errMessage = msg[2].trim();
                     if (errMessage.trim().equals("NoPass"))
-                        errMessage = ListenService.getService().getString(R.string.error_nopass);
+                        errMessage = PluginService.getService().getString(R.string.error_nopass);
                     AppData.getInstance().onDeviceErrorByName(
                             service,
                             msg[1].trim(),

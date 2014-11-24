@@ -28,8 +28,8 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 public class DeviceEditDialog extends DialogFragment implements onCreateDeviceResult {
     final List<View> connectionViews = new ArrayList<>();
@@ -43,7 +43,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     }
 
     public void setDevice(@NonNull Device device) {
-        editDevice = ListenService.getService().openEditDevice(device);
+        editDevice = PluginService.getService().openEditDevice(device);
         editDevice.setResultListener(this);
     }
 
@@ -331,7 +331,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     }
 
     private void saveAndFinish() {
-        ListenService.getService().wakeupPlugin(editDevice.getDevice());
+        PluginService.getService().wakeupPlugin(editDevice.getDevice());
 
         AppData.getInstance().addToConfiguredDevices(getActivity(), editDevice.getDevice());
         dismiss();

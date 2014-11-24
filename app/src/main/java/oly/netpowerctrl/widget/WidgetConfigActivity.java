@@ -21,8 +21,8 @@ import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceChain;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.executables.ExecutablesSourceScenes;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
 public class WidgetConfigActivity extends Activity {
@@ -31,7 +31,7 @@ public class WidgetConfigActivity extends Activity {
 
     @Override
     protected void onPause() {
-        ListenService.stopUseService();
+        PluginService.stopUseService();
         super.onPause();
     }
 
@@ -39,7 +39,7 @@ public class WidgetConfigActivity extends Activity {
     public void onResume() {
         super.onResume();
         AppData.useAppData();
-        ListenService.useService(getApplicationContext(), true, false);
+        PluginService.useService();
     }
 
     @Override

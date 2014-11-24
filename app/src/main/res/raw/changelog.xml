@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<changelog bulletedList="true">
+<changelog bulletedList="false">
+    <changelogversion changeDate="22. November 2014" versionName="6.9.1">
+        <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleinen
+            Geräten
+        </changelogimprovement>
+        <changelogimprovement>Verbesserte Ansicht des Zeitschaltungen-Fensters
+        </changelogimprovement>
+        <changelogbug>Gelöschte Zeitschaltungen tauchen nun nicht mehr in der Zeitschaltungen Liste
+            auf
+        </changelogbug>
+        <changelogbug>Plugin nicht installiert Meldunng behoben</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="20. November 2014" versionName="6.9">
+        <changelogimprovement>Neuzuweisung von Icons leider notwendig: Die internen einzigartigen
+            Kennungen für Steckdosen werden jetzt anders ermittelt.
+        </changelogimprovement>
+        <changelogimprovement>Zeitschaltungen für Szenen, Steckdosen jetzt über das Android System
+            möglich. Funktioniert natürlich nur wenn das Android Gerät an und in Reichweite ist.
+            Damit geht das Licht morgens endlich nur noch an, wenn man auch zuhause ist.
+        </changelogimprovement>
+        <changelogimprovement>Standard Icon Theme jetzt über den Menüpunkt Ansichtsmodus mit
+            Vorschau festlegbar
+        </changelogimprovement>
+        <changelogbug>Zurück Knopf vom Szenen Bearbeiten Fenster funktionierte fehlerhaft
+        </changelogbug>
+        <changelogbug>Die Zuweisung von Steckdosen Bildern funktioniert jetzt, ohne dabei jedesmal
+            in die Übersicht zurückgeworfen zu werden.
+        </changelogbug>
+        <changelogbug>Fehlerberichte jetzt auch unter Android 5 möglich</changelogbug>
+    </changelogversion>
+
     <changelogversion changeDate="17. November 2014" versionName="6.8">
         <changelogimprovement>Widgets und Übersichtseinträge teilen sich nun die zugewiesenen
             Icons

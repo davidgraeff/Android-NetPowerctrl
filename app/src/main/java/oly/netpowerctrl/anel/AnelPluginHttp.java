@@ -17,8 +17,8 @@ import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.network.HttpThreadPool;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.timer.Timer;
 
 /**
@@ -38,7 +38,7 @@ public class AnelPluginHttp {
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
-                    ci.device.setStatusMessage(ci, ListenService.getService().getString(R.string.error_packet_received), true);
+                    ci.device.setStatusMessage(ci, PluginService.getService().getString(R.string.error_packet_received), true);
                 } else {
                     { // Device Lock
                         device.lockDevice();

@@ -166,6 +166,10 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
             }
         };
 
+        // We may return from another activity, but the menu should be visible. animate in now.
+        if (iconMenuVisible)
+            AnimationController.animateViewInOut(execute_icons_container.findViewById(R.id.executable_icons), true, false);
+
         execute_icons_container.findViewById(R.id.scene_image).setOnClickListener(iconClick);
         execute_icons_container.findViewById(R.id.scene_image_on).setOnClickListener(iconClick);
         execute_icons_container.findViewById(R.id.scene_image_off).setOnClickListener(iconClick);
@@ -211,28 +215,28 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
         MutableBoolean isDefault = new MutableBoolean();
         switch (((View) context_object).getId()) {
             case R.id.scene_image:
-                if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
-                            LoadStoreIconData.IconState.OnlyOneState, isDefault);
                 if (!loadingDoNotSaveIcon)
                     AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
                             devicePort, icon, LoadStoreIconData.IconState.OnlyOneState);
-                break;
-            case R.id.scene_image_off:
                 if (icon == null)
                     icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
-                            LoadStoreIconData.IconState.StateOff, isDefault);
+                            LoadStoreIconData.IconState.OnlyOneState, isDefault);
+                break;
+            case R.id.scene_image_off:
                 if (!loadingDoNotSaveIcon)
                     AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
                             devicePort, icon, LoadStoreIconData.IconState.StateOff);
-                break;
-            case R.id.scene_image_on:
                 if (icon == null)
                     icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
-                            LoadStoreIconData.IconState.StateOn, isDefault);
+                            LoadStoreIconData.IconState.StateOff, isDefault);
+                break;
+            case R.id.scene_image_on:
                 if (!loadingDoNotSaveIcon)
                     AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
                             devicePort, icon, LoadStoreIconData.IconState.StateOn);
+                if (icon == null)
+                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
+                            LoadStoreIconData.IconState.StateOn, isDefault);
                 break;
             default:
                 throw new RuntimeException("Image id not known!");

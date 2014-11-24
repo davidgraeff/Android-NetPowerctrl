@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -15,7 +14,7 @@ import android.widget.TextView;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.ui.widgets.RelativeLayoutRipple;
 
 /**
  * An item in a devicePort adapter. Used for implementing the ViewHolder pattern.
@@ -133,10 +132,11 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
 
         setIsRecyclable(false);
 
-        progress.setVisibility(View.VISIBLE);
+        if (entry instanceof RelativeLayoutRipple) {
+            ((RelativeLayoutRipple) entry).afterClickTouchEvent();
+        }
 
-        Animation highlightAnimation = AnimationUtils.loadAnimation(App.instance, R.anim.button_zoom);
-        title.startAnimation(highlightAnimation);
+        progress.setVisibility(View.VISIBLE);
 
         animation = new AlphaAnimation(1, 0);
         animation.setDuration(1200);

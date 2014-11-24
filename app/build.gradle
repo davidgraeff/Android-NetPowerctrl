@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 109
-        versionName "6.8"
+        versionCode 110
+        versionName "6.9"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -83,22 +83,30 @@ android {
 }
 
 dependencies {
-    compile project(':libraries:Donations')
-    compile project(':libraries:device_base')
     //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08 5.0.89
     //compile 'com.google.android.gms:play-services:5.2.08'
-    compile 'com.wefika:flowlayout:0.3.4'
-    compile 'com.github.eluleci:flatui:3.0.0'
-    compile 'com.github.gabrielemariotti.changeloglib:library:1.5.1'
-    compile 'ch.acra:acra:4.5.0'
-    compile 'com.android.support:support-v13:21.0.0'
-    compile 'com.android.support:recyclerview-v7:21.0.0'
-    compile 'com.android.support:palette-v7:21.0.0'
-    compile 'com.android.support:cardview-v7:21.0.0'
+    compile project(':libraries:Donations')
+    compile project(':libraries:device_base')
     //noinspection GradleDependency
-    compile 'com.android.support:appcompat-v7:21.0.0'
-    compile 'net.lingala.zip4j:zip4j:1.3.2'
-    compile 'com.google.code.ndef-tools-for-android:ndeftools:1.2.4'
-    compile 'com.google.code.ndef-tools-for-android:ndeftools-util:1.2.4'
+    compile('com.android.support:appcompat-v7:21.0.0')
+    compile('com.android.support:support-v13:21.0.0')
+    compile('com.android.support:recyclerview-v7:21.0.0')
+    compile('com.android.support:palette-v7:21.0.0')
+    compile('com.android.support:cardview-v7:21.0.0')
+    compile('com.wefika:flowlayout:0.3.4') { exclude group: 'com.google.android' }
+    compile('com.github.eluleci:flatui:3.0.0') { exclude group: 'com.google.android' }
+    compile('com.github.gabrielemariotti.changeloglib:library:1.5.1') {
+        exclude group: 'com.google.android'
+    }
+    compile('ch.acra:acra-mh:5.0.0-SNAPSHOT') {
+        exclude group: 'com.google.android'; exclude group: 'org.json'
+    }
+    compile('net.lingala.zip4j:zip4j:1.3.2') { exclude group: 'com.google.android' }
+    compile('com.google.code.ndef-tools-for-android:ndeftools:1.2.4') {
+        exclude group: 'com.google.android'
+    }
+    compile('com.google.code.ndef-tools-for-android:ndeftools-util:1.2.4') {
+        exclude group: 'com.google.android'
+    }
     androidTestCompile 'junit:junit:4.11'
 }

@@ -43,7 +43,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.navigation.NavigationController;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -127,7 +127,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        navigationController.restoreLastOpenedFragment(NavigationController.RestorePositionEnum.RestoreLastSaved);
+        navigationController.restoreLastOpenedFragment();
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -178,13 +178,13 @@ public class MainActivity extends ActionBarActivity {
         navigationController.saveSelection();
 
         // Stop listener
-        ListenService.stopUseService();
+        PluginService.stopUseService();
     }
 
     @Override
     public void onResume() {
         AppData.useAppData();
-        ListenService.useService(getApplicationContext(), true, false);
+        PluginService.useService();
         super.onResume();
     }
 
@@ -207,12 +207,17 @@ public class MainActivity extends ActionBarActivity {
             navigationController.detachCurrentFragment();
             assignContentView();
             checkUseHomeButton();
-            navigationController.restoreLastOpenedFragment(
-                    NavigationController.RestorePositionEnum.RestoreAfterConfigurationChanged);
+            navigationController.restoreLastOpenedFragment();
 
         }
         // now the fragments
         super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        navigationController.detachCurrentFragment();
     }
 
     private void checkUseHomeButton() {

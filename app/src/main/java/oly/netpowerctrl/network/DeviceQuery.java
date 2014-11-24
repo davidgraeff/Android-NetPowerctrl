@@ -10,9 +10,9 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -73,13 +73,13 @@ public class DeviceQuery extends DeviceObserverBase {
         PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
         // First try to find the not assigned plugin
         if (pluginInterface == null) {
-            pluginInterface = ListenService.getService().getPlugin(device.pluginID);
+            pluginInterface = PluginService.getService().getPlugin(device.pluginID);
             device.setPluginInterface(pluginInterface);
         }
         if (pluginInterface == null) {
             device.setStatusMessageAllConnections(App.getAppString(R.string.error_plugin_not_installed));
             // remove from list of devices to observe and notify observers
-            notifyObserversInternal(device);
+            //notifyObserversInternal(device);
             return;
         }
 

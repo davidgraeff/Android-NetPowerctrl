@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.utils.AnimationController;
 
 /**
@@ -62,12 +62,12 @@ public class InAppNotifications {
     public static void showException(Context context, Throwable exception, String message) {
         FromOtherThread(context, message + "\n" + context.getString(R.string.error_restart_app));
         ACRA.getErrorReporter().putCustomData("misc", message);
-        boolean serviceRunning = ListenService.getService() != null;
+        boolean serviceRunning = PluginService.getService() != null;
         ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
         if (serviceRunning) {
-            ACRA.getErrorReporter().putCustomData("plugin_anel_state", ListenService.getService().getPlugin(0).isNetworkReducedState() ? "down" : "running");
+            ACRA.getErrorReporter().putCustomData("plugin_anel_state", PluginService.getService().getPlugin(0).isNetworkReducedState() ? "down" : "running");
         } else {
-            ACRA.getErrorReporter().putCustomData("service_shutdown_reason", ListenService.service_shutdown_reason);
+            ACRA.getErrorReporter().putCustomData("service_shutdown_reason", PluginService.service_shutdown_reason);
         }
 
         if (exception == null)

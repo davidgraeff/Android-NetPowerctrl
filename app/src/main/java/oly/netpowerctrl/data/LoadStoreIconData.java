@@ -43,8 +43,8 @@ public class LoadStoreIconData {
 
     private static final int PICK_IMAGE_BEFORE_KITKAT = 10;
     private static final int PICK_IMAGE_KITKAT = 11;
-    private static final int INITIAL_ICON_CACHE_CAPACITY = 12;
-    public static LruCache<String, Bitmap> iconCache = new LruCache<>(INITIAL_ICON_CACHE_CAPACITY);
+    private static final int INITIAL_ICON_CACHE_CAPACITY = 50;
+    public static LruCache<String, CacheEntry> iconCache = new LruCache<>(INITIAL_ICON_CACHE_CAPACITY);
     public static String defaultFallbackIconSet = "";
     public static IconDeferredLoadingThread iconLoadingThread;
     public static IconCacheClearedObserver iconCacheClearedObserver = new IconCacheClearedObserver();
@@ -53,9 +53,9 @@ public class LoadStoreIconData {
     /**
      * Decode drawable from an URI. This is used after a file picker activity returned.
      *
-     * @param context
-     * @param uri
-     * @return
+     * @param context A context
+     * @param uri     An uri
+     * @return Returns a drawable
      * @throws IOException
      */
     private static BitmapDrawable getDrawableFromUri(Context context, Uri uri) throws IOException {
@@ -66,14 +66,6 @@ public class LoadStoreIconData {
         Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
         parcelFileDescriptor.close();
         return new BitmapDrawable(context.getResources(), image);
-    }
-
-    public static String uuidForBackground() {
-        return new UUID(0xABCD, 0xABCD).toString();
-    }
-
-    public static String uuidFromWidgetID(int widgetId) {
-        return new UUID(0xABCD, (long) widgetId).toString();
     }
 
     public static String uuidFromDefaultWidget() {
@@ -98,6 +90,13 @@ public class LoadStoreIconData {
         defaultFallbackIconSet = SharedPrefs.getDefaultFallbackIconSet(context);
         iconLoadingThread = new IconDeferredLoadingThread();
         iconLoadingThread.start();
+    }
+
+    public static void setDefaultFallbackIconSet(String new_theme) {
+        defaultFallbackIconSet = new_theme;
+        SharedPrefs.getInstance().setDefaultFallbackIconSet(new_theme);
+        iconCache.evictAll();
+        iconCacheClearedObserver.onIconCacheCleared();
     }
 
     @NonNull
@@ -234,55 +233,80 @@ public class LoadStoreIconData {
         }
     }
 
+    public static Bitmap loadDefaultBitmap(Context context, IconState state, String iconTheme) throws IOException {
+        switch (state) {
+            case StateOff:
+                return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/off_" + iconTheme + ".png"));
+            case OnlyOneState:
+                return BitmapFactory.decodeResource(context.getResources(), R.drawable.netpowerctrl);
+            case StateOn:
+                return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/on_" + iconTheme + ".png"));
+            case StateUnknown:
+                return BitmapFactory.decodeStream(context.getAssets().open("widget_icons/unknown_" + iconTheme + ".png"));
+        }
+        return null;
+    }
+
     public static Bitmap loadBitmap(Context context, String uniqueID,
                                     IconState state, @Nullable oly.netpowerctrl.utils.MutableBoolean isDefault) {
-        String hashKey = uniqueID + String.valueOf(state.ordinal());
-        if (isDefault != null)
-            isDefault.value = false;
-        Bitmap c = iconCache.get(hashKey);
-        if (c != null)
-            return c;
 
-        File file = getFilename(context, uniqueID, state);
-        if (file.exists()) {
-            c = BitmapFactory.decodeFile(file.getAbsolutePath());
-            if (c == null)
-                //noinspection ResultOfMethodCallIgnored
-                file.delete();
+        // Get from Cache
+        String hashKey_original = uniqueID + String.valueOf(state.ordinal());
+        CacheEntry cacheEntry = iconCache.get(hashKey_original);
+        if (cacheEntry != null) {
+            if (isDefault != null)
+                isDefault.value = cacheEntry.isDefault;
+            return cacheEntry.bitmap;
         }
 
-        if (c == null) {
+        // Load from file
+        Bitmap bitmap = null;
+        File file = getFilename(context, uniqueID, state);
+        if (file.exists()) {
+            bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+            if (bitmap == null)
+                //noinspection ResultOfMethodCallIgnored
+                file.delete();
+            else
+                iconCache.put(hashKey_original, new CacheEntry(bitmap, false));
+        }
+
+        // Load from default theme set
+        if (bitmap == null) {
             if (isDefault != null)
                 isDefault.value = true;
             try {
-                hashKey = String.valueOf(state.ordinal());
-                c = iconCache.get(hashKey);
-                if (c != null)
-                    return c;
-
-                switch (state) {
-                    case StateOff:
-                        c = BitmapFactory.decodeStream(context.getAssets().open("widget_icons/off_" + defaultFallbackIconSet + ".png"));
-                        break;
-                    case OnlyOneState:
-                        c = BitmapFactory.decodeResource(context.getResources(), R.drawable.netpowerctrl);
-                        break;
-                    case StateOn:
-                        c = BitmapFactory.decodeStream(context.getAssets().open("widget_icons/on_" + defaultFallbackIconSet + ".png"));
-                        break;
-                    case StateUnknown:
-                        c = BitmapFactory.decodeStream(context.getAssets().open("widget_icons/unknown_" + defaultFallbackIconSet + ".png"));
-                        break;
+                // Try cache first
+                String hashKey = String.valueOf(state.ordinal());
+                cacheEntry = iconCache.get(hashKey);
+                if (cacheEntry != null) {
+                    // Cache entry for default found: Add cache entry for original request
+                    iconCache.put(hashKey_original, new CacheEntry(cacheEntry.bitmap, true));
+                    return cacheEntry.bitmap;
                 }
+
+                // Load default icon, save in cache
+                bitmap = loadDefaultBitmap(context, state, defaultFallbackIconSet);
+                iconCache.put(hashKey, new CacheEntry(bitmap, true));
+
+                // Add cache entry for original request
+                if (!hashKey_original.equals(hashKey))
+                    iconCache.put(hashKey_original, new CacheEntry(bitmap, true));
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
 
-        if (c != null)
-            iconCache.put(hashKey, c);
-        return c;
+        return bitmap;
+    }
+
+    public static LoadStoreIconData.IconState getIconState(DevicePort devicePort) {
+        LoadStoreIconData.IconState t = LoadStoreIconData.IconState.StateOff;
+        if (devicePort.getCurrentValue() != devicePort.min_value &&
+                (devicePort.getType() == ExecutableType.TypeToggle ||
+                        devicePort.getType() == ExecutableType.TypeRangedValue))
+            t = LoadStoreIconData.IconState.StateOn;
+        return t;
     }
 
 //    public static IconFile[] getAllIcons(Context context) {
@@ -298,15 +322,6 @@ public class LoadStoreIconData {
 //
 //        return list.toArray(new IconFile[list.size()]);
 //    }
-
-    public static LoadStoreIconData.IconState getIconState(DevicePort devicePort) {
-        LoadStoreIconData.IconState t = LoadStoreIconData.IconState.StateOff;
-        if (devicePort.getCurrentValue() != devicePort.min_value &&
-                (devicePort.getType() == ExecutableType.TypeToggle ||
-                        devicePort.getType() == ExecutableType.TypeRangedValue))
-            t = LoadStoreIconData.IconState.StateOn;
-        return t;
-    }
 
     public static void show_select_icon_dialog(final Context context, String assetSet,
                                                final IconSelected callback, final Object callback_context_object) {
@@ -419,6 +434,16 @@ public class LoadStoreIconData {
         void setIcon(Object context_object, Bitmap bitmap);
 
         void startActivityForResult(Intent intent, int requestCode);
+    }
+
+    public static class CacheEntry {
+        Bitmap bitmap;
+        boolean isDefault;
+
+        public CacheEntry(Bitmap bitmap, boolean isDefault) {
+            this.bitmap = bitmap;
+            this.isDefault = isDefault;
+        }
     }
 
 //    public static class IconFile implements StorableInterface {

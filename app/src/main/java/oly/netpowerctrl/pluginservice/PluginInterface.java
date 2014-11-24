@@ -1,4 +1,4 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.pluginservice;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -18,7 +18,7 @@ public interface PluginInterface {
     ////////////// Life cycle //////////////
     void onDestroy();
 
-    void onStart(ListenService service);
+    void onStart(PluginService service);
 
     ////////////// Request data and executeToggle //////////////
     void requestData();

@@ -26,7 +26,7 @@ public class DataQueryCompletedObserver extends Observer<onDataQueryCompleted> i
         boolean register = true;
         if (initialDataQueryCompleted) {
             // If the object return false we do not register it for further changes.
-            register = o.onDataQueryFinished();
+            register = o.onDataQueryFinished(false);
         }
 
         if (register)
@@ -34,11 +34,11 @@ public class DataQueryCompletedObserver extends Observer<onDataQueryCompleted> i
     }
 
     @Override
-    public boolean onDataQueryFinished() {
+    public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
         initialDataQueryCompleted = true;
         Iterator<onDataQueryCompleted> iterator = listeners.keySet().iterator();
         while (iterator.hasNext()) {
-            if (!iterator.next().onDataQueryFinished())
+            if (!iterator.next().onDataQueryFinished(false))
                 iterator.remove();
         }
         return true;

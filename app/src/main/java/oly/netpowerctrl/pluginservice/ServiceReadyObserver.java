@@ -1,4 +1,4 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.pluginservice;
 
 import java.util.Iterator;
 
@@ -11,13 +11,13 @@ public class ServiceReadyObserver extends Observer<onServiceReady> implements on
     @Override
     public void register(onServiceReady o) {
         super.register(o);
-        if (ListenService.isServiceReady()) {
-            o.onServiceReady(ListenService.getService());
+        if (PluginService.isServiceReady()) {
+            o.onServiceReady(PluginService.getService());
         }
     }
 
     @Override
-    public boolean onServiceReady(ListenService service) {
+    public boolean onServiceReady(PluginService service) {
         Iterator<onServiceReady> iterator = listeners.keySet().iterator();
         while (iterator.hasNext()) {
             if (!iterator.next().onServiceReady(service))

@@ -1,4 +1,4 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.pluginservice;
 
 import oly.netpowerctrl.utils.Observer;
 

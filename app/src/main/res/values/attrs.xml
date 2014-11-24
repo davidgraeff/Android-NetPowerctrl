@@ -18,10 +18,6 @@
     <attr name="ic_action_view_as_grid" format="reference" />
     <attr name="textColorPrimary" format="reference" />
 
-    <declare-styleable name="CompoundButton">
-        <attr name="android:button" />
-    </declare-styleable>
-
     <declare-styleable name="FloatingActionButton">
         <attr name="text" format="string" />
         <attr name="drawable" format="integer" />

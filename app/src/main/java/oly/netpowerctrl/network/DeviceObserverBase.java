@@ -15,8 +15,8 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * This base class is used by the device query and device-resend-command class.
@@ -138,7 +138,7 @@ public abstract class DeviceObserverBase {
     }
 
     public void startQuery() {
-        ListenService service = ListenService.getService();
+        PluginService service = PluginService.getService();
         if ((isEmpty() && !broadcast) || service == null) {
             if (target != null)
                 target.onObserverJobFinished(timeout_devices);
@@ -157,8 +157,8 @@ public abstract class DeviceObserverBase {
         mainLoopHandler.postDelayed(timeoutRunnable, 1500);
 
         if (broadcast) {
-            service.wakeupAllDevices(false);
-            service.sendBroadcastQuery();
+            service.wakeupAllDevices();
+            service.requestDataAll();
         } else {
             // Send out broadcast
             List<Device> deviceList = new ArrayList<>(devices_to_observe);

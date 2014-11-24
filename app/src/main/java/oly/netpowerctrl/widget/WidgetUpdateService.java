@@ -34,12 +34,12 @@ import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -89,7 +89,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     @Override
     public void onDestroy() {
-        if (ListenService.isServiceReady() && allWidgets.size() > 0)
+        if (PluginService.isServiceReady() && allWidgets.size() > 0)
             InAppNotifications.showException(this, null, "WidgetService: Unexpected request to close");
 
         /**
@@ -99,18 +99,13 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
          */
         AppData.getInstance().deviceCollection.unregisterObserver(this);
         AppData.getInstance().sceneCollection.unregisterObserver(this);
-        ListenService.observersServiceReady.unregister(this);
-        ListenService.stopUseService();
+        PluginService.observersServiceReady.unregister(this);
+        PluginService.stopUseService();
     }
 
     /**
      * This method will be called by every startService call.
      * We update a widget here, if the android system requested a widget update.
-     *
-     * @param intent
-     * @param flags
-     * @param startId
-     * @return
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -147,8 +142,8 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         if (!initDone) {
             initDone = true;
             AppData.useAppData();
-            ListenService.useService(getApplicationContext(), false, false);
-            ListenService.observersServiceReady.register(this);
+            PluginService.useService();
+            PluginService.observersServiceReady.register(this);
         } else
             preCheckUpdate();
 
@@ -156,7 +151,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     private void preCheckUpdate() {
-        if (!ListenService.isServiceReady())
+        if (!PluginService.isServiceReady())
             return;
 
         if (!AppData.isDataLoaded()) {
@@ -206,7 +201,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         if (widgetClicks.size() > 0) {
             for (WidgetClick widgetClick : widgetClicks)
-                executeSingleAction(widgetClick.uuid, widgetClick.command);
+                executeSingleAction(widgetClick.uuid);
             widgetClicks.clear();
         } else
             updateDevices();
@@ -237,7 +232,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         return null;
     }
 
-    private void executeSingleAction(String executable_uid, final int command) {
+    private void executeSingleAction(String executable_uid) {
         Executable executable = AppData.getInstance().findDevicePort(executable_uid);
         if (executable == null) {
             executable = AppData.getInstance().sceneCollection.findScene(executable_uid);
@@ -258,7 +253,8 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             setWidgetState(widgetEntry.widgetID, executable, true);
 
             if (!executable.isReachable()) {
-                ListenService.getService().findDevices(true, null);
+                PluginService.getService().showNotificationForNextRefresh(true);
+                AppData.getInstance().refreshDeviceData();
                 return;
             }
         }
@@ -266,7 +262,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         final long currentTime = System.currentTimeMillis();
         AppData.getInstance().executeToggle(executable, new onExecutionFinished() {
             @Override
-            public void onExecutionFinished(int commands) {
+            public void onExecutionProgress(int current, int all) {
                 // Fail safe: If no response from the device, we set the widget to broken state
                 if (widgetEntry.device != null)
                     App.getMainThreadHandler().postDelayed(new Runnable() {
@@ -369,7 +365,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     @Override
-    public boolean onServiceReady(ListenService service) {
+    public boolean onServiceReady(PluginService service) {
         AppData.getInstance().deviceCollection.registerObserver(this);
         AppData.getInstance().sceneCollection.registerObserver(this);
         preCheckUpdate();
@@ -378,7 +374,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     @Override
     public void onServiceFinished() {
-        if (ListenService.isServiceUsed())
+        if (PluginService.isServiceUsed())
             InAppNotifications.showException(this, null, "WidgetService: ListenService unexpectedly closed");
         stopSelf();
     }

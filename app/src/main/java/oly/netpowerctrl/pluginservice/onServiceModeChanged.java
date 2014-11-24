@@ -1,4 +1,4 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.pluginservice;
 
 /**
  * Refresh has started or is finished

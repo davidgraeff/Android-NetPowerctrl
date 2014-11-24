@@ -26,9 +26,9 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.network.onHttpRequestResult;
+import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
@@ -118,7 +118,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         // Add weekdays
         String[] weekDays_Strings = DateFormatSymbols.getInstance().getShortWeekdays();
-        RelativeLayout layout = (RelativeLayout) rootView.findViewById(R.id.layout);
+        com.wefika.flowlayout.FlowLayout layout = (com.wefika.flowlayout.FlowLayout) rootView.findViewById(R.id.weekday_layout);
         int lastID = R.id.alarm_weekdays;
         for (int i = 0; i < 7; ++i) {
             final int weekday = i;
@@ -133,9 +133,9 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
                     timer.weekdays[weekday] = b;
                 }
             });
-            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            lp.addRule(RelativeLayout.BELOW, lastID);
+            com.wefika.flowlayout.FlowLayout.LayoutParams lp = new com.wefika.flowlayout.FlowLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(5, 2, 5, 2);
             p.setId(lastID + 1);
             ++lastID;
             layout.addView(p, lp);
@@ -144,6 +144,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         {
             final TimePicker sp = ((TimePicker) rootView.findViewById(R.id.alarm_start_time));
             final CheckBox cp = ((CheckBox) rootView.findViewById(R.id.alarm_start_enabled));
+            sp.setIs24HourView(true);
             cp.setChecked(timer.hour_minute_start != -1);
             sp.setVisibility(timer.hour_minute_start != -1 ? View.VISIBLE : View.GONE);
             cp.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -161,6 +162,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         {
             final TimePicker sp = ((TimePicker) rootView.findViewById(R.id.alarm_stop_time));
             final CheckBox cp = ((CheckBox) rootView.findViewById(R.id.alarm_stop_enabled));
+            sp.setIs24HourView(true);
             cp.setChecked(timer.hour_minute_stop != -1);
             sp.setVisibility(timer.hour_minute_stop != -1 ? View.VISIBLE : View.GONE);
             cp.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -302,7 +304,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             dismiss();
         } else {
             DevicePort devicePort = (DevicePort) timer.executable;
-            ListenService.getService().wakeupPlugin(devicePort.device);
+            PluginService.getService().wakeupPlugin(devicePort.device);
             PluginInterface plugin = (PluginInterface) devicePort.device.getPluginInterface();
             timer.deviceAlarm = true;
 

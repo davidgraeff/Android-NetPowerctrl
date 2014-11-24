@@ -345,10 +345,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_on_android">Android Alarm</string>
     <string name="alarm_on_android_summary">Wenn aktiviert wird dieser Alarm nicht vom Zielgerät umgesetzt, sondern von diesem Tablet/Handy. Szenen können nur auf diese Weise einen Alarm erhalten. Dieses Gerät muss dann eingeschaltet und in Reichweite zum Alarm Ziel sein!</string>
 
-    <string-array name="default_fallback_icon_set_names">
-        <item>Rund, Dreidimensional, Transparent</item>
-        <item>Rund, Flach</item>
-        <item>Rund, Dreidimensional</item>
-        <item>Farbiges Powerzeichen, Flach</item>
-    </string-array>
+    <string name="icon_theme_1">Rund, Transparent</string>
+    <string name="icon_theme_2">Rund, Flach</string>
+    <string name="icon_theme_3">Rund, Dreidimensional</string>
+    <string name="icon_theme_4">Farbiges Powerzeichen</string>
 </resources>

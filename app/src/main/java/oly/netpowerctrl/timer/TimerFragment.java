@@ -24,10 +24,10 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.onHttpRequestResult;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
 
@@ -39,25 +39,25 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     public TimerFragment() {
     }
 
-    private void refresh(ListenService service) {
+    private void refresh(PluginService service) {
         if (service == null)
             return;
 
         TimerCollection c = AppData.getInstance().timerCollection;
         if (c.refresh(service))
-            AnimationController.animateViewInOut(progressText, true, false);
+            AnimationController.animateBottomViewIn(progressText);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        ListenService.observersServiceReady.register(this);
+        PluginService.observersServiceReady.register(this);
     }
 
     @Override
     public void onPause() {
-        ListenService.observersServiceReady.unregister(this);
-        AnimationController.animateViewInOut(progressText, false, false);
+        PluginService.observersServiceReady.unregister(this);
+        progressText.setVisibility(View.GONE);
         TimerCollection c = AppData.getInstance().timerCollection;
         c.unregisterObserver(this);
         if (timerAdapter != null)
@@ -184,7 +184,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
-    public boolean onServiceReady(ListenService service) {
+    public boolean onServiceReady(PluginService service) {
         if (!AppData.observersOnDataLoaded.dataLoaded)
             return true;
         refresh(service);
@@ -201,12 +201,12 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         boolean inProgress = timerCollection.isRequestActive();
         if (inProgress) {
             progressText.setText(getString(R.string.alarm_receiving, timerCollection.countAllDeviceAlarms()));
-            AnimationController.animateViewInOut(progressText, true, false);
+            AnimationController.animateBottomViewIn(progressText);
         } else {
             Activity a = getActivity();
             if (a != null) {
                 a.invalidateOptionsMenu();
-                AnimationController.animateViewInOut(progressText, false, false);
+                AnimationController.animateBottomViewOut(progressText);
             }
         }
         mPullToRefreshLayout.setRefreshing(inProgress);
@@ -215,6 +215,6 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
 
     @Override
     public void onRefresh() {
-        refresh(ListenService.getService());
+        refresh(PluginService.getService());
     }
 }

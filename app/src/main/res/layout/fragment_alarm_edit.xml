@@ -5,7 +5,7 @@
     android:layout_height="wrap_content">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/layout"
+        android:id="@+id/layout_alarm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"
@@ -85,7 +85,8 @@
             android:layout_marginBottom="20dip"
             android:layout_toLeftOf="@id/alarm_start_help_icon"
             android:layout_toStartOf="@id/alarm_start_help_icon"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:timePickerMode="clock" />
 
         <!--  stop time -->
         <CheckBox
@@ -114,7 +115,8 @@
             android:layout_marginBottom="20dip"
             android:layout_toLeftOf="@id/alarm_stop_help_icon"
             android:layout_toStartOf="@id/alarm_stop_help_icon"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:timePickerMode="clock" />
 
         <!--  Weekdays -->
         <ImageButton
@@ -136,6 +138,15 @@
             android:layout_toLeftOf="@id/alarm_weekdays_help_icon"
             android:layout_toStartOf="@id/alarm_weekdays_help_icon"
             android:text="@string/alarm_type_weekdays" />
+
+        <com.wefika.flowlayout.FlowLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/weekday_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/alarm_weekdays"
+            android:layout_gravity="start|top">
+
+        </com.wefika.flowlayout.FlowLayout>
 
     </RelativeLayout>
 </ScrollView>

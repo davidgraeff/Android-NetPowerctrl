@@ -1,26 +1,18 @@
-package oly.netpowerctrl.listen_service;
+package oly.netpowerctrl.pluginservice;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
-import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -28,34 +20,28 @@ import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onDataLoaded;
+import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.DeviceQuery;
-import oly.netpowerctrl.network.onDeviceObserverFinishedResult;
-import oly.netpowerctrl.network.onDeviceObserverResult;
-import oly.netpowerctrl.scenes.EditSceneActivity;
-import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.utils.Logging;
 
 /**
  * Look for and load plugins. After network change: Rescan for reachable devices.
  */
-public class ListenService extends Service {
+public class PluginService extends Service implements onDataQueryCompleted, onDataLoaded {
     public static final ServiceReadyObserver observersServiceReady = new ServiceReadyObserver();
-    public static final ServiceRefreshQueryObserver observersStartStopRefresh = new ServiceRefreshQueryObserver();
     public static final ServiceModeChangedObserver observersServiceModeChanged = new ServiceModeChangedObserver();
     private static final String TAG = "NetpowerctrlService";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private static final String PAYLOAD_SERVICE_NAME = "SERVICE_NAME";
+    private static final NetworkChangedBroadcastReceiver networkChangedListener = new NetworkChangedBroadcastReceiver();
     public static String service_shutdown_reason = "";
-    static int findDevicesRun = 0;
     ///////////////// Service start/stop listener /////////////////
     static private int mDiscoverServiceRefCount = 0;
-    static private ListenService mDiscoverService;
+    static private PluginService mDiscoverService;
     static private boolean mWaitForService;
     private final Runnable stopRunnable = new Runnable() {
         @Override
@@ -69,41 +55,8 @@ public class ListenService extends Service {
         }
     };
     private final Handler stopServiceHandler = new Handler();
-
-    private final BroadcastReceiver networkChangedListener = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            @SuppressWarnings("ConstantConditions")
-            ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
-                if (SharedPrefs.getInstance().logEnergySaveMode())
-                    Logging.appendLog(ListenService.this, "Energiesparen aus: Netzwechsel erkannt");
-                wakeupAllDevices(true);
-            } else {
-                if (SharedPrefs.getInstance().logEnergySaveMode())
-                    Logging.appendLog(ListenService.this, "Energiesparen an: Kein Netzwerk");
-
-                enterNetworkReducedMode();
-            }
-        }
-    };
     private final List<PluginInterface> plugins = new ArrayList<>();
-    private onDataLoaded onDataLoadedListener = new onDataLoaded() {
-        @Override
-        public boolean onDataLoaded() {
-            for (PluginInterface pluginInterface : plugins)
-                updatePluginReferencesInDevices(pluginInterface);
 
-            // Delay plugin activation (we wait for extensions)
-            wakeupAllDevices(true);
-
-            observersServiceReady.onServiceReady(ListenService.this);
-
-            setupAndroidAlarm();
-
-            return false;
-        }
-    };
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
@@ -114,18 +67,13 @@ public class ListenService extends Service {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
             if (SharedPrefs.getInstance().isPreferenceNameLogEnergySaveMode(s)) {
                 if (SharedPrefs.getInstance().logEnergySaveMode())
-                    Logging.appendLog(ListenService.this, "Energiesparen abgeschaltet");
-                wakeupAllDevices(true);
+                    Logging.appendLog(PluginService.this, "Energiesparen abgeschaltet");
+                wakeupAllDevices();
             }
         }
     };
     // Debug
-    long startTime;
-    private boolean isNetworkChangedListener = false;
-    /**
-     * Detect new devices and check reach-ability of configured devices.
-     */
-    private boolean isDetecting = false;
+    private boolean notificationAfterNextRefresh;
 
     public static boolean isWirelessLanConnected(Context context) {
         @SuppressWarnings("ConstantConditions")
@@ -139,12 +87,8 @@ public class ListenService extends Service {
 
     /**
      * Call this in onResume if you need any of the service functionality.
-     *
-     * @param refreshDevices   Refresh devices immediately or after the service
-     *                         is ready if it is not started yet.
-     * @param showNotification
      */
-    public static void useService(Context context, boolean refreshDevices, boolean showNotification) {
+    public static void useService() {
         ++mDiscoverServiceRefCount;
         // Stop delayed stop-service
         // Service is not running anymore, restart it
@@ -152,16 +96,13 @@ public class ListenService extends Service {
             if (mWaitForService)
                 return;
             mWaitForService = true;
+            Context context = App.instance;
             // start service
-            Intent intent = new Intent(context, ListenService.class);
-            intent.putExtra("refreshDevices", refreshDevices);
-            intent.putExtra("showNotification", showNotification);
+            Intent intent = new Intent(context, PluginService.class);
             context.startService(intent);
         } else { // service already running. refresh devices?
             service_shutdown_reason = "";
             mDiscoverService.stopServiceHandler.removeCallbacks(mDiscoverService.stopRunnable);
-            if (refreshDevices)
-                mDiscoverService.findDevices(showNotification, null);
         }
     }
 
@@ -183,49 +124,8 @@ public class ListenService extends Service {
         return mDiscoverServiceRefCount;
     }
 
-    public static ListenService getService() {
+    public static PluginService getService() {
         return mDiscoverService;
-    }
-
-    public void setupAndroidAlarm() {
-        long current = System.currentTimeMillis();
-        Timer.NextAlarm nextTimerTime = null;
-        Timer nextTimer = null;
-
-        for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
-            if (timer.deviceAlarm)
-                continue;
-
-            Timer.NextAlarm alarm = timer.getNextAlarmUnixTime(current);
-            if (alarm.unix_time > current && (nextTimerTime == null || alarm.unix_time < nextTimerTime.unix_time)) {
-                nextTimerTime = alarm;
-                nextTimer = timer;
-            }
-        }
-
-        Log.w(TAG, "alarm setup");
-
-
-        AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, ExecutionActivity.class);
-        if (nextTimerTime != null)
-            intent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, nextTimerTime.command);
-        PendingIntent pi = PendingIntent.getActivity(this, 1191, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        mgr.cancel(pi);
-
-        if (nextTimerTime == null)
-            return;
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(nextTimerTime.unix_time);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Log.w(TAG, "Next alarm " + sdf.format(calendar.getTime()) + " " + nextTimer.getTargetName());
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-            mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
-        else
-            mgr.set(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
     }
 
     @Override
@@ -233,6 +133,15 @@ public class ListenService extends Service {
         return null;
     }
 
+    /**
+     * Startup is like this:
+     * 1) Create anel plugin
+     * 2a) Load app data (devices, alarms etc)
+     * 2b) Discover devices and extensions
+     * 3) If all data loaded and all extensions for all loaded devices are loaded (or timeout):
+     * 3.1) updatePluginReferencesInDevices
+     * 3.2) wakeupAllDevices (initiates update for every loaded device, if not updated the last 5sec)
+     */
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
         if (mDiscoverService != null)
@@ -245,21 +154,36 @@ public class ListenService extends Service {
 
         plugins.add(new AnelPlugin());
 
-        // We may be in the situation that the service and plugins are ready before
-        // all devices are loaded. Therefore create anel plugin and update plugin references after load.
-        AppData.observersOnDataLoaded.register(onDataLoadedListener);
-
         // Listen to preferences changes
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
+        AppData.observersDataQueryCompleted.register(this);
+        AppData.observersOnDataLoaded.register(this);
+
+        discoverExtensions();
+
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void discoverExtensions() {
+        if (SharedPrefs.getInstance().getLoadExtensions()) {
+            Intent i = new Intent(PLUGIN_QUERY_ACTION);
+            i.addFlags(Intent.FLAG_FROM_BACKGROUND);
+            i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            //i.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
+            i.putExtra(PAYLOAD_SERVICE_NAME, MainActivity.class.getCanonicalName());
+            List<ResolveInfo> list = getPackageManager().queryIntentServices(i, 0);
+            for (ResolveInfo resolveInfo : list) {
+                extensionDiscovered(resolveInfo.serviceInfo.name, resolveInfo.loadLabel(getPackageManager()).toString(), resolveInfo.serviceInfo.packageName);
+            }
+        }
     }
 
     @Override
     public void onDestroy() {
-        if (isNetworkChangedListener) {
-            isNetworkChangedListener = false;
+        if (networkChangedListener.isNetworkChangedListener) {
+            networkChangedListener.isNetworkChangedListener = false;
             unregisterReceiver(networkChangedListener);
         }
 
@@ -291,9 +215,7 @@ public class ListenService extends Service {
     }
 
     ///////////////// Service start/stop /////////////////
-    private void enterNetworkReducedMode() {
-        Log.w(TAG, "findDevices:enterNetworkReducedMode " + String.valueOf((System.nanoTime() - startTime) / 1000000.0));
-
+    void enterNetworkReducedMode() {
         observersServiceModeChanged.onServiceModeChanged(true);
 
         AppData.observersDataQueryCompleted.resetDataQueryCompleted();
@@ -303,16 +225,17 @@ public class ListenService extends Service {
                 pluginInterface.enterNetworkReducedState(this);
 
         // Stop listening for network changes
-        if (isNetworkChangedListener && !SharedPrefs.getInstance().isWakeUpFromEnergySaving()) {
+        if (!SharedPrefs.getInstance().isWakeUpFromEnergySaving()) {
+            networkChangedListener.unregister(this);
             if (SharedPrefs.getInstance().logEnergySaveMode())
                 Logging.appendLog(this, "Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
-            isNetworkChangedListener = false;
-            unregisterReceiver(networkChangedListener);
         }
     }
 
-    public void wakeupAllDevices(boolean refreshDevices) {
-
+    /**
+     * Do not use DeviceObserver here!
+     */
+    public void wakeupAllDevices() {
         observersServiceModeChanged.onServiceModeChanged(false);
 
         if (SharedPrefs.getInstance().logEnergySaveMode())
@@ -321,18 +244,9 @@ public class ListenService extends Service {
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterFullNetworkState(this, null);
 
-        if (!isNetworkChangedListener) {
-            if (SharedPrefs.getInstance().logEnergySaveMode())
-                Logging.appendLog(this, "Netzwerkwechsel überwacht");
-            isNetworkChangedListener = true;
-            IntentFilter filter = new IntentFilter();
-            filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
-            registerReceiver(networkChangedListener, filter);
-        }
-
-        // refresh devices after service start
-        if (refreshDevices)
-            findDevices(false, null);
+        networkChangedListener.registerReceiver(this);
+        if (networkChangedListener.isNetworkChangedListener && SharedPrefs.getInstance().logEnergySaveMode())
+            Logging.appendLog(this, "Netzwerkwechsel überwacht");
     }
 
     private void extensionDiscovered(String serviceName, String localized_name, String packageName) {
@@ -362,7 +276,9 @@ public class ListenService extends Service {
         }
 
         plugins.add(plugin);
-        updatePluginReferencesInDevices(plugin);
+
+        if (AppData.observersOnDataLoaded.dataLoaded)
+            updatePluginReferencesInDevices(plugin);
     }
 
     private void updatePluginReferencesInDevices(PluginInterface plugin) {
@@ -399,94 +315,6 @@ public class ListenService extends Service {
                 AppData.getInstance().updateExistingDevice(device);
             }
         }
-    }
-
-    public void sendBroadcastQuery() {
-        for (PluginInterface pluginInterface : plugins) {
-            pluginInterface.requestData();
-        }
-
-        if (SharedPrefs.getInstance().getLoadExtensions()) {
-            Intent i = new Intent(PLUGIN_QUERY_ACTION);
-            i.addFlags(Intent.FLAG_FROM_BACKGROUND);
-            i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            //i.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
-            i.putExtra(PAYLOAD_SERVICE_NAME, MainActivity.class.getCanonicalName());
-            List<ResolveInfo> list = getPackageManager().queryIntentServices(i, 0);
-            for (ResolveInfo resolveInfo : list) {
-                extensionDiscovered(resolveInfo.serviceInfo.name, resolveInfo.loadLabel(getPackageManager()).toString(), resolveInfo.serviceInfo.packageName);
-            }
-        }
-    }
-
-    public void findDevices(final boolean showNotification, final onDeviceObserverFinishedResult callback) {
-        final int currentRun = ++findDevicesRun;
-
-        // The following mechanism allows only one update request within a
-        // 1sec timeframe.
-        if (isDetecting)
-            return;
-        isDetecting = true;
-
-        startTime = System.nanoTime();
-        Log.w(TAG, "findDevices:start " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
-
-        App.getMainThreadHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                isDetecting = false;
-            }
-        }, 1000);
-
-        if (SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(this, "Energiesparen aus: Suche Geräte");
-
-        observersStartStopRefresh.onRefreshStateChanged(true);
-
-        // First try a broadcast
-        AppData.getInstance().clearNewDevices();
-        new DeviceQuery(this, new onDeviceObserverResult() {
-            @Override
-            public void onObserverDeviceUpdated(Device di) {
-            }
-
-            @Override
-            public void onObserverJobFinished(List<Device> timeout_devices) {
-                Log.w(TAG, "findDevices:job_finished " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
-                AppData.observersDataQueryCompleted.onDataQueryFinished();
-                if (callback != null)
-                    callback.onObserverJobFinished(timeout_devices);
-
-                observersStartStopRefresh.onRefreshStateChanged(false);
-
-                if (showNotification) {
-                    // Show notification 500ms later, to also aggregate new devices for the message
-                    App.getMainThreadHandler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            //noinspection ConstantConditions
-                            Toast.makeText(ListenService.this,
-                                    ListenService.this.getString(R.string.devices_refreshed,
-                                            AppData.getInstance().getReachableConfiguredDevices(),
-                                            AppData.getInstance().unconfiguredDeviceCollection.size()),
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
-                    }, 500);
-                }
-
-                if (timeout_devices.size() == 0)
-                    return;
-                Log.w(TAG, "findDevices:timeout_devices " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
-
-                // Do we need to go into network reduced mode?
-                if (timeout_devices.size() == AppData.getInstance().countNetworkDevices()) {
-                    if (SharedPrefs.getInstance().logEnergySaveMode())
-                        Logging.appendLog(ListenService.this, "Energiesparen an: Keine Geräte gefunden");
-                    enterNetworkReducedMode();
-                }
-            }
-        });
     }
 
     /**
@@ -529,5 +357,50 @@ public class ListenService extends Service {
             if (plugin.getPluginID().equals(plugin_id))
                 return plugin;
         return null;
+    }
+
+    public void requestDataAll() {
+        discoverExtensions();
+
+        for (PluginInterface pluginInterface : plugins) {
+            pluginInterface.requestData();
+        }
+    }
+
+    public void showNotificationForNextRefresh(boolean notificationAfterNextRefresh) {
+        this.notificationAfterNextRefresh = notificationAfterNextRefresh;
+    }
+
+    @Override
+    public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
+        if (notificationAfterNextRefresh) {
+            notificationAfterNextRefresh = false;
+            // Show notification 500ms later, to also aggregate new devices for the message
+            App.getMainThreadHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    //noinspection ConstantConditions
+                    Toast.makeText(App.instance,
+                            App.instance.getString(R.string.devices_refreshed,
+                                    AppData.getInstance().getReachableConfiguredDevices(),
+                                    AppData.getInstance().unconfiguredDeviceCollection.size()),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+            }, 500);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onDataLoaded() {
+        for (PluginInterface pluginInterface : plugins)
+            updatePluginReferencesInDevices(pluginInterface);
+
+        observersServiceReady.onServiceReady(PluginService.this);
+        AppData.getInstance().refreshDeviceData();
+
+        return false;
     }
 }

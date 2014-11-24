@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreJSonData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.listen_service.ListenService;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Created by david on 08.07.14.
@@ -40,7 +40,7 @@ public class BasicTests extends AndroidTestCase {
         assertNotNull(l);
         assertEquals(l instanceof TestObjects.LoadStoreJSonDataTest, true);
 
-        assertNull(ListenService.getService());
+        assertNull(PluginService.getService());
 
         c.updateDevice(TestObjects.createDevice());
 

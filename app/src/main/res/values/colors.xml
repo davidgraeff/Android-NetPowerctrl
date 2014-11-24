@@ -6,13 +6,13 @@
     <!--#33b5e5-->
     <color name="colorSecondaryLight">#0099cc</color>
     <!--#0099cc-->
-    <color name="colorPrimaryDark">#0a2b36</color>
+    <color name="colorPrimaryDark">#1b3c47</color>
     <!--#33b5e5-->
     <color name="colorSecondaryDark">#0099cc</color>
     <!--#0099cc-->
     <color name="colorBackgroundLight">#a0cdff</color>
     <!--#0099cc-->
-    <color name="colorBackgroundDark">#0a2b36</color>
+    <color name="colorBackgroundDark">#091a25</color>
     <color name="colorBackgroundCardsDark">#1b3c47</color>
     <color name="floating_button_colorDark">#0099cc</color>
     <color name="floating_button_colorLight">#0099cc</color>

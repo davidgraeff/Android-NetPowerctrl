@@ -18,28 +18,25 @@ import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.onServiceReady;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
+import oly.netpowerctrl.timer.TimerCollection;
 import oly.netpowerctrl.utils.WakeLocker;
 
 /**
  * Will be started on NFC contact, homescreen scene execution, alarm timeout
  */
 public class ExecutionActivity extends NfcReaderActivity implements onExecutionFinished {
-    private int scene_commands = 0;
-    private int scene_executed_commands = 0;
-    private boolean enable_feedback;
     private String scene_uuid;
     private boolean isTimerCheck = false;
 //    private boolean updateWidget = false;
 
     @Override
     protected void onPause() {
-        ListenService.stopUseService();
+        PluginService.stopUseService();
         WakeLocker.release();
         super.onPause();
     }
@@ -93,62 +90,47 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
 
         // Load app data
         AppData.useAppData();
-        ListenService.useService(getApplicationContext(), false, false);
+        PluginService.useService();
 
         boolean show_mainwindow = extra.getBoolean("show_mainWindow", false);
-        enable_feedback = extra.getBoolean("enable_feedback", true);
+        boolean enable_feedback = extra.getBoolean("enable_feedback", true);
 
-        // The application may have be started here -> we have to wait for the service to be ready
-        ListenService.observersServiceReady.register(new onServiceReady() {
+        // wait for first data to be loaded
+        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+
             @Override
-            public boolean onServiceReady(final ListenService service) {
-                if (!AppData.observersOnDataLoaded.dataLoaded)
-                    return true;
+            public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
+                final int action_command = extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND);
 
-                // wait for first data to be loaded
-                AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+                if (isTimerCheck) {
+                    long current = System.currentTimeMillis();
+                    for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
+                        if (timer.deviceAlarm)
+                            continue;
 
-                    @Override
-                    public boolean onDataQueryFinished() {
-                        final int action_command = extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND);
-
-                        if (isTimerCheck) {
-                            long current = System.currentTimeMillis();
-                            for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
-                                if (timer.deviceAlarm)
-                                    continue;
-
-                                Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(current);
-                                if (current - 50 < nextAlarm.unix_time && current + 50 > nextAlarm.unix_time) {
-                                    executeSingleAction(timer.executable_uid, nextAlarm.command);
-                                }
-                            }
-                            service.setupAndroidAlarm();
-                            return false;
+                        Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(current);
+                        if (current - 50 < nextAlarm.unix_time && current + 50 > nextAlarm.unix_time) {
+                            executeSingleAction(timer.executable_uid, nextAlarm.command);
                         }
-
-                        // Read data from intent
-                        String action_uuid = extra.getString(EditSceneActivity.RESULT_ACTION_UUID);
-                        String scene_json = extra.getString(EditSceneActivity.RESULT_SCENE_JSON);
-                        scene_uuid = extra.getString(EditSceneActivity.RESULT_SCENE_UUID, scene_uuid);
-
-                        if (scene_json != null) {
-                            try {
-                                AppData.getInstance().execute(Scene.loadFromJson(JSONHelper.getReader(scene_json)), ExecutionActivity.this);
-                            } catch (IOException | ClassNotFoundException ignored) {
-                            }
-                        } else
-                            executeSingleAction(action_uuid, action_command);
-
-                        return false;
                     }
-                });
-                return false;
-            }
+                    TimerCollection.setupAndroidAlarm(ExecutionActivity.this);
+                    return false;
+                }
 
-            @Override
-            public void onServiceFinished() {
-                finish();
+                // Read data from intent
+                String action_uuid = extra.getString(EditSceneActivity.RESULT_ACTION_UUID);
+                String scene_json = extra.getString(EditSceneActivity.RESULT_SCENE_JSON);
+                scene_uuid = extra.getString(EditSceneActivity.RESULT_SCENE_UUID, scene_uuid);
+
+                if (scene_json != null) {
+                    try {
+                        AppData.getInstance().execute(Scene.loadFromJson(JSONHelper.getReader(scene_json)), ExecutionActivity.this);
+                    } catch (IOException | ClassNotFoundException ignored) {
+                    }
+                } else
+                    executeSingleAction(action_uuid, action_command);
+
+                return false;
             }
         });
 
@@ -179,10 +161,8 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
     }
 
     @Override
-    public void onExecutionFinished(int commands) {
-        scene_executed_commands += commands;
-        if (scene_executed_commands >= scene_commands)
-            finish();
+    public void onExecutionProgress(int current, int all) {
+
     }
 
     @Override

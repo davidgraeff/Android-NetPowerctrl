@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreJSonData;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.onServiceReady;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 
 /**
  * Testing service start and shutdown
@@ -36,13 +36,13 @@ public class ServiceTests extends AndroidTestCase {
         assertNotNull(l);
         assertEquals(l instanceof TestObjects.LoadStoreJSonDataTest, true);
 
-        assertNull(ListenService.getService());
-        ListenService.useService(getContext(), false, false);
+        assertNull(PluginService.getService());
+        PluginService.useService();
 
         final CountDownLatch signal = new CountDownLatch(1);
-        ListenService.observersServiceReady.register(new onServiceReady() {
+        PluginService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(ListenService service) {
+            public boolean onServiceReady(PluginService service) {
                 signal.countDown();
                 return false;
             }
@@ -54,16 +54,16 @@ public class ServiceTests extends AndroidTestCase {
 
         signal.await(4, TimeUnit.SECONDS);
 
-        ListenService service = ListenService.getService();
+        PluginService service = PluginService.getService();
         assertNotNull(service);
-        assertEquals(service, ListenService.getService());
+        assertEquals(service, PluginService.getService());
 
-        assertEquals(ListenService.getUsedCount(), 1);
+        assertEquals(PluginService.getUsedCount(), 1);
 
         final CountDownLatch shutDownSignal = new CountDownLatch(1);
-        ListenService.observersServiceReady.register(new onServiceReady() {
+        PluginService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(ListenService service) {
+            public boolean onServiceReady(PluginService service) {
                 return false;
             }
 
@@ -73,9 +73,9 @@ public class ServiceTests extends AndroidTestCase {
             }
         });
 
-        ListenService.stopUseService();
+        PluginService.stopUseService();
         shutDownSignal.await(4, TimeUnit.SECONDS);
 
-        assertNull(ListenService.getService());
+        assertNull(PluginService.getService());
     }
 }

@@ -1,8 +1,16 @@
 package oly.netpowerctrl.timer;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -14,15 +22,18 @@ import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DeviceCollection;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.network.onHttpRequestResult;
+import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.scenes.EditSceneActivity;
 
 /**
  * Control all configured alarms
  */
 public class TimerCollection extends CollectionWithStorableItems<TimerCollection, Timer> {
+    private static final String TAG = "TimerCollection";
     private final List<Timer> available_timers = new ArrayList<>();
     public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
         @Override
@@ -54,12 +65,62 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     private final Runnable notifyRunnable = new Runnable() {
         @Override
         public void run() {
-            requestActive = false;
-            notifyObservers(null, ObserverUpdateActions.ConnectionUpdateAction, -1);
+            for (int index = items.size() - 1; index >= 0; --index) {
+                Timer timer = items.get(index);
+                if (timer.fromCache) {
+                    requestActive = false;
+                    removeFromCache(index);
+                }
+            }
+
+            if (requestActive) {
+                requestActive = false;
+                notifyObservers(null, ObserverUpdateActions.ConnectionUpdateAction, -1);
+            }
             saveAll();
         }
     };
 
+    public static void setupAndroidAlarm(Context context) {
+        long current = System.currentTimeMillis();
+        Timer.NextAlarm nextTimerTime = null;
+        Timer nextTimer = null;
+
+        for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
+            if (timer.deviceAlarm)
+                continue;
+
+            Timer.NextAlarm alarm = timer.getNextAlarmUnixTime(current);
+            if (alarm.unix_time > current && (nextTimerTime == null || alarm.unix_time < nextTimerTime.unix_time)) {
+                nextTimerTime = alarm;
+                nextTimer = timer;
+            }
+        }
+
+        Log.w(TAG, "alarm setup");
+
+
+        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, ExecutionActivity.class);
+        if (nextTimerTime != null)
+            intent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, nextTimerTime.command);
+        PendingIntent pi = PendingIntent.getActivity(context, 1191, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mgr.cancel(pi);
+
+        if (nextTimerTime == null)
+            return;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(nextTimerTime.unix_time);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Log.w(TAG, "Next alarm " + sdf.format(calendar.getTime()) + " " + nextTimer.getTargetName());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+        else
+            mgr.set(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+    }
 
     public boolean isRequestActive() {
         return requestActive;
@@ -89,7 +150,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     public void alarmsFromPluginOtherThread(final List<Timer> new_timers) {
         Handler h = App.getMainThreadHandler();
         h.removeCallbacks(notifyRunnable);
-        h.postDelayed(notifyRunnable, 1200);
+        h.postDelayed(notifyRunnable, 1500);
         h.post(new Runnable() {
             @Override
             public void run() {
@@ -129,7 +190,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         save(alarm);
 
         if (!alarm.deviceAlarm)
-            ListenService.getService().setupAndroidAlarm();
+            setupAndroidAlarm(App.instance);
     }
 
     public List<Timer> getAvailableDeviceAlarms() {
@@ -139,7 +200,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     void removeAlarm(Timer timer, onHttpRequestResult callback) {
         if (timer.executable instanceof DevicePort && timer.deviceAlarm) {
             Device device = ((DevicePort) timer.executable).device;
-            ListenService.getService().wakeupPlugin(device);
+            PluginService.getService().wakeupPlugin(device);
             PluginInterface p = (PluginInterface) device.getPluginInterface();
             p.removeAlarm(timer, callback);
         } else {
@@ -162,12 +223,11 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         }
     }
 
-
-    public boolean refresh(ListenService service) {
+    public boolean refresh(PluginService service) {
         if (requestActive)
             return true;
 
-        App.getMainThreadHandler().postDelayed(notifyRunnable, 1200);
+        App.getMainThreadHandler().postDelayed(notifyRunnable, 1500);
 
         available_timers.clear();
 
@@ -179,13 +239,12 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 alarm_uuids.add(timer.executable_uid);
         }
 
-        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
-
         requestActive = true;
+        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
 
         List<DevicePort> alarm_ports = new ArrayList<>();
 
-        service.wakeupAllDevices(false);
+        service.wakeupAllDevices();
 
         DeviceCollection c = AppData.getInstance().deviceCollection;
         // Put all ports of all devices into the list alarm_ports.
@@ -242,4 +301,5 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     public String type() {
         return "alarms";
     }
+
 }

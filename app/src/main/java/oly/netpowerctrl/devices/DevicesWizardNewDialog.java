@@ -24,9 +24,9 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.Utils;
+import oly.netpowerctrl.pluginservice.PluginInterface;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**

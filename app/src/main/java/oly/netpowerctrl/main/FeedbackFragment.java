@@ -19,6 +19,8 @@ import oly.netpowerctrl.ui.ChangeLogUtil;
 import oly.netpowerctrl.utils.GithubAndCloudant;
 
 public class FeedbackFragment extends Fragment {
+    GithubAndCloudant githubAndCloudant = new GithubAndCloudant();
+
     public FeedbackFragment() {
     }
 
@@ -46,7 +48,7 @@ public class FeedbackFragment extends Fragment {
         });
 
         ((TextView) view.findViewById(R.id.bugs)).setText(R.string.issues_wait);
-        GithubAndCloudant.getOpenAutomaticIssues(new GithubAndCloudant.IGithubOpenIssues() {
+        githubAndCloudant.getOpenAutomaticIssues(new GithubAndCloudant.IGithubOpenIssues() {
             @Override
             public void gitHubOpenIssuesUpdated(int count, long last_access) {
                 ((TextView) view.findViewById(R.id.bugs)).setText(String.valueOf(count));
@@ -59,7 +61,7 @@ public class FeedbackFragment extends Fragment {
         }, false);
 
         ((TextView) view.findViewById(R.id.bugs2)).setText(R.string.issues_wait);
-        GithubAndCloudant.getOpenIssues(new GithubAndCloudant.IGithubOpenIssues() {
+        githubAndCloudant.getOpenIssues(new GithubAndCloudant.IGithubOpenIssues() {
             @Override
             public void gitHubOpenIssuesUpdated(int count, long last_access) {
                 ((TextView) view.findViewById(R.id.bugs2)).setText(String.valueOf(count));

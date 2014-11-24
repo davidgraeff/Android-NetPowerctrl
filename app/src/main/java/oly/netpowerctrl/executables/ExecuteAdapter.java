@@ -20,7 +20,7 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
     public ExecuteAdapter(ExecutablesSourceBase source,
                           IconDeferredLoadingThread iconCache) {
         super(source, iconCache, true);
-        setLayoutRes(R.layout.list_item_icon);
+        setLayoutRes(R.layout.list_item_executable);
     }
 
     @Override

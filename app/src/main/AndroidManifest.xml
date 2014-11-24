@@ -145,7 +145,7 @@
         </receiver>
 
         <service
-            android:name=".listen_service.ListenService"
+            android:name=".pluginservice.PluginService"
             android:exported="true"
             android:permission="oly.netpowerctrl.permission.PLUGINS" />
 

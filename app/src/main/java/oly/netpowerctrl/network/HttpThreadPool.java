@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
-import oly.netpowerctrl.listen_service.ListenService;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * All http related stuff
@@ -55,7 +55,7 @@ public class HttpThreadPool {
         }
     }
 
-    public static void execute(HTTPRunner httpRunner) {
+    public static void execute(Runnable httpRunner) {
         startHTTP();
         pool.execute(httpRunner);
     }
@@ -86,7 +86,7 @@ public class HttpThreadPool {
 
         @Override
         public void run() {
-            Context context = ListenService.getService();
+            Context context = PluginService.getService();
             if (context == null)
                 return;
 

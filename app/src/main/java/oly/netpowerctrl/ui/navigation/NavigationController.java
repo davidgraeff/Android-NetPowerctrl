@@ -84,7 +84,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
 
     public void detachCurrentFragment() {
         Activity context = mDrawerActivity.get();
-        if (context == null || currentFragment == null) // should never happen
+        if (context == null || currentFragment == null)
             return;
         context.getFragmentManager().beginTransaction().detach(currentFragment).commitAllowingStateLoss();
         context.getFragmentManager().executePendingTransactions();
@@ -164,8 +164,11 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         observers.remove(o);
     }
 
-    public void restoreLastOpenedFragment(RestorePositionEnum restore) {
-        if (restore == RestorePositionEnum.RestoreLastSaved) {
+    public void restoreLastOpenedFragment() {
+        ActionBarActivity context = mDrawerActivity.get();
+        if (currentFragment != null && currentFragmentClass != null) {
+            context.getFragmentManager().beginTransaction().attach(currentFragment).commitAllowingStateLoss();
+        } else {
             // Restore the last visited screen
             Bundle extra = SharedPrefs.getInstance().getFirstTabExtra();
             String className = SharedPrefs.getInstance().getFirstTab();
@@ -178,9 +181,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             }
             //backstack.add(new BackStackEntry(className, null));
             changeToFragment(className, extra, false, pos);
-        } else if (restore == RestorePositionEnum.RestoreAfterConfigurationChanged && currentFragmentClass != null) {
-            ActionBarActivity context = mDrawerActivity.get();
-            context.getFragmentManager().beginTransaction().attach(currentFragment).commitAllowingStateLoss();
         }
     }
 

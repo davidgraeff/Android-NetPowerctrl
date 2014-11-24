@@ -22,8 +22,8 @@ import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.outletsview.OutletsViewFragment;
+import oly.netpowerctrl.pluginservice.PluginInterface;
 
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.

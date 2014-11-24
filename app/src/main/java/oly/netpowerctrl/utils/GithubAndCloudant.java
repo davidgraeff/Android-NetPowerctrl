@@ -16,120 +16,14 @@ import java.net.URL;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.network.HttpThreadPool;
 
 /**
  * Created by david on 07.08.14.
  */
 public class GithubAndCloudant {
-    private static boolean isAlreadyRunning = false;
-
-
-    public static void getOpenAutomaticIssues(final IGithubOpenIssues callback, boolean force) {
-        if (isAlreadyRunning)
-            return;
-
-        long lastAccess = SharedPrefs.getInstance().getLastTimeOpenAutoIssuesRequested();
-        if (!force && lastAccess != -1 && System.currentTimeMillis() - lastAccess < 1000 * 1800) {
-            callback.gitHubOpenIssuesUpdated(SharedPrefs.getInstance().getOpenAutoIssues(), lastAccess);
-            return;
-        }
-
-        isAlreadyRunning = true;
-
-        final Handler handler = new Handler(Looper.getMainLooper());
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int open_issues = 0;
-                try {
-                    String addr = App.getAppString(R.string.cloudant_bugs);
-                    final URL url = new URL(addr);
-                    final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    con.setConnectTimeout(1500);
-                    con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
-                    String cred = App.getAppString(R.string.acralyzer_http_login) + ":" + App.getAppString(R.string.acralyzer_http_pwd);
-                    con.setRequestProperty("Authorization", "Basic " +
-                            Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));
-
-                    switch (con.getResponseCode()) {
-                        case 200:
-                            open_issues = parseAutoIssues(con, callback, handler);
-                            SharedPrefs.getInstance().setOpenAutoIssues(open_issues, System.currentTimeMillis());
-                            break;
-                    }
-                } catch (SocketTimeoutException e) {
-                    open_issues = -2;
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    open_issues = -1;
-                    e.printStackTrace();
-                }
-                isAlreadyRunning = false;
-                final int open_issues_final = open_issues;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.gitHubOpenIssuesUpdated(open_issues_final, System.currentTimeMillis());
-                    }
-                });
-            }
-        }).start();
-    }
-
-
-    public static void getOpenIssues(final IGithubOpenIssues callback, boolean force, final String filter) {
-        if (isAlreadyRunning)
-            return;
-
-        long lastAccess = SharedPrefs.getInstance().getLastTimeOpenIssuesRequested();
-        if (!force && lastAccess != -1 && System.currentTimeMillis() - lastAccess < 1000 * 1800) {
-            callback.gitHubOpenIssuesUpdated(SharedPrefs.getInstance().getOpenIssues(), lastAccess);
-            return;
-        }
-
-        isAlreadyRunning = true;
-
-        final Handler handler = new Handler(Looper.getMainLooper());
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int open_issues = 0;
-                String label = "";
-                if (filter != null)
-                    label = "&labels=" + filter;
-                try {
-                    String addr = App.getAppString(R.string.github_issues);
-                    String access = App.getAppString(R.string.github_access_token);
-                    final URL url = new URL(addr + "?access_token=" + access + "&state=open&per_page=100" + label);
-                    final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    con.setConnectTimeout(1500);
-                    con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
-                    switch (con.getResponseCode()) {
-                        case 200:
-                            open_issues = parseIssues(con, callback, handler);
-                            SharedPrefs.getInstance().setOpenIssues(open_issues, System.currentTimeMillis());
-                            break;
-                    }
-                } catch (SocketTimeoutException e) {
-                    open_issues = -2;
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    open_issues = -1;
-                    e.printStackTrace();
-                }
-                isAlreadyRunning = false;
-                final int open_issues_final = open_issues;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.gitHubOpenIssuesUpdated(open_issues_final, System.currentTimeMillis());
-                    }
-                });
-            }
-        }).start();
-    }
+    private boolean isAlreadyRunningOpenAutomaticIssues = false;
+    private boolean isAlreadyRunningGithub = false;
 
     private static int parseAutoIssues(HttpURLConnection con, final IGithubOpenIssues callback, final Handler handler) throws IOException {
         int open_issues = 0;
@@ -215,7 +109,113 @@ public class GithubAndCloudant {
         return open_issues;
     }
 
-    public static void newIssues(final String issueJson, final IGithubNewIssue callback) {
+    public void getOpenAutomaticIssues(final IGithubOpenIssues callback, boolean force) {
+        if (isAlreadyRunningOpenAutomaticIssues)
+            return;
+
+        long lastAccess = SharedPrefs.getInstance().getLastTimeOpenAutoIssuesRequested();
+        if (!force && lastAccess != -1 && System.currentTimeMillis() - lastAccess < 1000 * 1800) {
+            callback.gitHubOpenIssuesUpdated(SharedPrefs.getInstance().getOpenAutoIssues(), lastAccess);
+            return;
+        }
+
+        isAlreadyRunningOpenAutomaticIssues = true;
+
+        final Handler handler = new Handler(Looper.getMainLooper());
+
+        HttpThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                int open_issues = 0;
+                try {
+                    String addr = App.getAppString(R.string.cloudant_bugs);
+                    final URL url = new URL(addr);
+                    final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setConnectTimeout(1500);
+                    con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
+                    String cred = App.getAppString(R.string.acralyzer_http_login) + ":" + App.getAppString(R.string.acralyzer_http_pwd);
+                    con.setRequestProperty("Authorization", "Basic " +
+                            Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));
+
+                    switch (con.getResponseCode()) {
+                        case 200:
+                            open_issues = parseAutoIssues(con, callback, handler);
+                            SharedPrefs.getInstance().setOpenAutoIssues(open_issues, System.currentTimeMillis());
+                            break;
+                    }
+                } catch (SocketTimeoutException e) {
+                    open_issues = -2;
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    open_issues = -1;
+                    e.printStackTrace();
+                }
+                isAlreadyRunningOpenAutomaticIssues = false;
+                final int open_issues_final = open_issues;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.gitHubOpenIssuesUpdated(open_issues_final, System.currentTimeMillis());
+                    }
+                });
+            }
+        });
+    }
+
+    public void getOpenIssues(final IGithubOpenIssues callback, boolean force, final String filter) {
+        if (isAlreadyRunningGithub)
+            return;
+
+        long lastAccess = SharedPrefs.getInstance().getLastTimeOpenIssuesRequested();
+        if (!force && lastAccess != -1 && System.currentTimeMillis() - lastAccess < 1000 * 1800) {
+            callback.gitHubOpenIssuesUpdated(SharedPrefs.getInstance().getOpenIssues(), lastAccess);
+            return;
+        }
+
+        isAlreadyRunningGithub = true;
+
+        final Handler handler = new Handler(Looper.getMainLooper());
+
+        HttpThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                int open_issues = 0;
+                String label = "";
+                if (filter != null)
+                    label = "&labels=" + filter;
+                try {
+                    String addr = App.getAppString(R.string.github_issues);
+                    String access = App.getAppString(R.string.github_access_token);
+                    final URL url = new URL(addr + "?access_token=" + access + "&state=open&per_page=100" + label);
+                    final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setConnectTimeout(1500);
+                    con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
+                    switch (con.getResponseCode()) {
+                        case 200:
+                            open_issues = parseIssues(con, callback, handler);
+                            SharedPrefs.getInstance().setOpenIssues(open_issues, System.currentTimeMillis());
+                            break;
+                    }
+                } catch (SocketTimeoutException e) {
+                    open_issues = -2;
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    open_issues = -1;
+                    e.printStackTrace();
+                }
+                isAlreadyRunningGithub = false;
+                final int open_issues_final = open_issues;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.gitHubOpenIssuesUpdated(open_issues_final, System.currentTimeMillis());
+                    }
+                });
+            }
+        });
+    }
+
+    public void newIssues(final String issueJson, final IGithubNewIssue callback) {
 
         final Handler handler = new Handler(Looper.getMainLooper());
 

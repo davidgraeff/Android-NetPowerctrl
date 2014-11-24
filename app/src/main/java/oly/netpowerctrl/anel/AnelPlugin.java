@@ -36,14 +36,14 @@ import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DeviceEditDialog;
 import oly.netpowerctrl.devices.EditDeviceInterface;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.listen_service.PluginInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSending;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
+import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerCollection;
@@ -86,17 +86,17 @@ final public class AnelPlugin implements PluginInterface {
     private void executeDeviceBatch(Device device, List<Scene.PortAndCommand> command_list,
                                     onExecutionFinished callback) {
         // Get necessary objects
-        ListenService service = ListenService.getService();
+        PluginService service = PluginService.getService();
         if (service == null) {
             if (callback != null)
-                callback.onExecutionFinished(command_list.size());
+                callback.onExecutionProgress(command_list.size(), 1);
             return;
         }
 
         DeviceConnection ci = device.getFirstReachableConnection();
         if (ci == null) {
             if (callback != null)
-                callback.onExecutionFinished(command_list.size());
+                callback.onExecutionProgress(command_list.size(), 1);
             return;
         }
 
@@ -113,13 +113,13 @@ final public class AnelPlugin implements PluginInterface {
             }
         } else if (!(ci instanceof DeviceConnectionUDP)) { // unknown protocol
             if (callback != null)
-                callback.onExecutionFinished(command_list.size());
+                callback.onExecutionProgress(command_list.size(), 1);
             return;
         }
 
         if (checkAndStartUDP()) {
             if (callback != null)
-                callback.onExecutionFinished(command_list.size());
+                callback.onExecutionProgress(command_list.size(), 1);
             return;
         }
 
@@ -205,7 +205,7 @@ final public class AnelPlugin implements PluginInterface {
         }
 
         if (callback != null)
-            callback.onExecutionFinished(command_list.size());
+            callback.onExecutionProgress(command_list.size(), 1);
     }
 
     public void startUDPDiscoveryThreads(Set<Integer> additional_port) {
@@ -283,7 +283,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     public void execute(DevicePort port, int command, onExecutionFinished callback) {
         // Get necessary objects
-        ListenService service = ListenService.getService();
+        PluginService service = PluginService.getService();
         if (service == null)
             return;
 
@@ -341,7 +341,7 @@ final public class AnelPlugin implements PluginInterface {
         }
 
         if (callback != null)
-            callback.onExecutionFinished(1);
+            callback.onExecutionProgress(1, command);
     }
 
     /**
@@ -349,7 +349,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     private boolean checkAndStartUDP() {
         if (udpSending == null) {
-            InAppNotifications.showException(ListenService.getService(), new Exception(), "udpSending null");
+            InAppNotifications.showException(PluginService.getService(), new Exception(), "udpSending null");
             return true;
         }
         return false;
@@ -361,14 +361,14 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void onStart(ListenService service) {
+    public void onStart(PluginService service) {
 
     }
 
     @Override
     public void requestData() {
         // Get necessary objects
-        ListenService service = ListenService.getService();
+        PluginService service = PluginService.getService();
         if (service == null)
             return;
         if (checkAndStartUDP()) {
@@ -381,7 +381,7 @@ final public class AnelPlugin implements PluginInterface {
     @Override
     public void requestData(Device device, int device_connection_id) {
         // Get necessary objects
-        ListenService service = ListenService.getService();
+        PluginService service = PluginService.getService();
         if (service == null)
             return;
 

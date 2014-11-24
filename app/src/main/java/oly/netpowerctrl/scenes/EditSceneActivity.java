@@ -43,9 +43,8 @@ import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.groups.GroupUtilities;
-import oly.netpowerctrl.listen_service.ListenService;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
@@ -259,7 +258,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 
     @Override
     public void onBackPressed() {
-        MainActivity.getNavigationController().onBackPressed();
+        finish();
     }
 
     private void updateFavButton() {
@@ -331,13 +330,13 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     protected void onResume() {
         super.onResume();
         AppData.useAppData();
-        ListenService.useService(getApplicationContext(), false, false);
+        PluginService.useService();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        ListenService.stopUseService();
+        PluginService.stopUseService();
     }
 
     @Override

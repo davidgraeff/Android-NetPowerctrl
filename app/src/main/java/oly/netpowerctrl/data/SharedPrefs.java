@@ -77,6 +77,11 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return prefs.getString(PREF_default_fallback_icon_set, value);
     }
 
+    public void setDefaultFallbackIconSet(String new_theme) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putString(PREF_default_fallback_icon_set, new_theme).apply();
+    }
+
     public int getLastPreferenceVersion() {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -89,7 +94,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public void setCurrentPreferenceVersion() {
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("prefVersion", PREF_CURRENT_VERSION).apply();
     }
