@@ -97,9 +97,6 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             }
         }
 
-        Log.w(TAG, "alarm setup");
-
-
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, ExecutionActivity.class);
         if (nextTimerTime != null)

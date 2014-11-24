@@ -182,8 +182,10 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
 
                 if (executable == null) {
-                    Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId));
-                    setWidgetStateBroken(appWidgetId);
+                    if (executable_uid != null) {
+                        Log.e(TAG, "Loading widget failed: " + String.valueOf(appWidgetId) + " " + executable_uid);
+                        setWidgetStateBroken(appWidgetId);
+                    }
                     continue;
                 }
 

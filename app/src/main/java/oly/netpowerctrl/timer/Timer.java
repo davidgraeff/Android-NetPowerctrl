@@ -277,29 +277,29 @@ public class Timer implements StorableInterface {
         Calendar calendar = null;
 
         if (hour_minute_start != -1) {
-            calendar_start.set(Calendar.HOUR, getHour(hour_minute_start));
+            calendar_start.set(Calendar.HOUR_OF_DAY, getHour(hour_minute_start));
             calendar_start.set(Calendar.MINUTE, getMinute(hour_minute_start));
             for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
                 if (weekdays[(additionalDays + day) % 7]) {
                     if (calendar_start.before(Calendar.getInstance())) {
-                        calendar_start.add(Calendar.HOUR, 24);
+                        calendar_start.add(Calendar.HOUR_OF_DAY, 24);
                         continue;
                     }
                     calendar = calendar_start;
                     nextAlarm.command = DevicePort.ON;
                     break;
                 } else
-                    calendar_start.add(Calendar.HOUR, 24);
+                    calendar_start.add(Calendar.HOUR_OF_DAY, 24);
             }
         }
 
         if (hour_minute_stop != -1) {
-            calendar_stop.set(Calendar.HOUR, getHour(hour_minute_stop));
+            calendar_stop.set(Calendar.HOUR_OF_DAY, getHour(hour_minute_stop));
             calendar_stop.set(Calendar.MINUTE, getMinute(hour_minute_stop));
             for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
                 if (weekdays[(additionalDays + day) % 7]) {
                     if (calendar_stop.before(Calendar.getInstance())) {
-                        calendar_stop.add(Calendar.HOUR, 24);
+                        calendar_stop.add(Calendar.HOUR_OF_DAY, 24);
                         continue;
                     }
                     if (calendar == null || calendar.after(calendar_stop)) {
@@ -308,7 +308,7 @@ public class Timer implements StorableInterface {
                     }
                     break;
                 } else
-                    calendar_stop.add(Calendar.HOUR, 24);
+                    calendar_stop.add(Calendar.HOUR_OF_DAY, 24);
             }
         }
 

@@ -2,11 +2,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/list_outer_padding"
+    android:layout_marginLeft="@dimen/list_outer_padding"
+    android:layout_marginRight="@dimen/list_outer_padding"
     android:baselineAligned="true"
-    android:padding="@dimen/list_inner_padding">
+    android:padding="5dp">
 
-    <ImageView
+<ImageView
         android:id="@+id/device_connection_reachable"
         android:layout_width="40dp"
         android:layout_height="40dp"
