@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,13 +22,15 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.main.ExecutionActivity;
+import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.PluginInterface;
 import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.scenes.EditSceneActivity;
+import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.utils.WakeLocker;
 
 /**
  * Control all configured alarms
@@ -98,10 +101,8 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         }
 
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, ExecutionActivity.class);
-        if (nextTimerTime != null)
-            intent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, nextTimerTime.command);
-        PendingIntent pi = PendingIntent.getActivity(context, 1191, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(context, PluginService.class);
+        PendingIntent pi = PendingIntent.getService(context, 1191, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mgr.cancel(pi);
 
@@ -117,6 +118,44 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
         else
             mgr.set(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+    }
+
+    public static void checkAndExecuteAlarm() {
+        Toast.makeText(App.instance, "checkAndExecuteAlarm", Toast.LENGTH_LONG).show();
+
+        onExecutionFinished executionFinished = new onExecutionFinished() {
+            @Override
+            public void onExecutionProgress(int current, int all) {
+                Toast.makeText(App.instance, "checkAndExecuteAlarm:exec:finished", Toast.LENGTH_LONG).show();
+                if (current >= all)
+                    WakeLocker.release();
+            }
+        };
+        long current = System.currentTimeMillis();
+        for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
+            if (timer.deviceAlarm)
+                continue;
+
+            Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(current);
+            if (current - 50 < nextAlarm.unix_time && current + 50 > nextAlarm.unix_time) {
+                WakeLocker.acquire(App.instance);
+                Executable executable = AppData.getInstance().findExecutable(timer.executable_uid);
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(nextAlarm.unix_time);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                Log.w(TAG, "Now alarm " + sdf.format(calendar.getTime()) + " " + executable.getTitle());
+                Toast.makeText(App.instance, "checkAndExecuteAlarm:exec " + sdf.format(calendar.getTime()) + " " + executable.getTitle(), Toast.LENGTH_LONG).show();
+
+                if (executable instanceof DevicePort)
+                    AppData.getInstance().execute((DevicePort) executable, nextAlarm.command, executionFinished);
+                else if (executable instanceof Scene) {
+                    AppData.getInstance().execute((Scene) executable, executionFinished);
+                } else
+                    WakeLocker.release();
+            }
+        }
+        TimerCollection.setupAndroidAlarm(App.instance);
     }
 
     public boolean isRequestActive() {

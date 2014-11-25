@@ -42,6 +42,31 @@ public class PluginRemote implements PluginInterface {
     public String serviceName;
     // TAG is a class member variable, because we want to append the remote service name for debug output.
     private String TAG = "PluginRemote";
+    private boolean isInitialized = false;
+    private INetPwrCtrlPlugin service = null;
+    private int transaction_counter = 0;
+    private onPluginReady pluginReady = null;
+    private final ServiceConnection svcConn = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className,
+                                       IBinder binder) {
+            serviceName = className.getClassName();
+            service = INetPwrCtrlPlugin.Stub.asInterface(binder);
+            init();
+            if (pluginReady != null)
+                pluginReady.onPluginReady(PluginRemote.this);
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            service = null;
+            context.unbindService(this);
+            // Set non reachable and notify
+            if (SharedPrefs.getInstance().logExtensions()) {
+                Logging.appendLog(context, "Extension " + serviceName + " disconnected");
+            }
+            if (pluginReady != null)
+                pluginReady.onFinished(PluginRemote.this);
+        }
+    };
     private final INetPwrCtrlPluginResult.Stub callback = new INetPwrCtrlPluginResult.Stub() {
         @Override
         public void finished(boolean api_version_missmatch) {
@@ -51,6 +76,8 @@ public class PluginRemote implements PluginInterface {
                 else
                     device.setStatusMessageAllConnections(context.getString(R.string.error_plugin_no_service_connection));
             }
+            if (service != null)
+                context.unbindService(svcConn);
         }
 
         @Override
@@ -131,31 +158,6 @@ public class PluginRemote implements PluginInterface {
             });
         }
     };
-    private boolean isInitialized = false;
-    private INetPwrCtrlPlugin service = null;
-    private final ServiceConnection svcConn = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className,
-                                       IBinder binder) {
-            serviceName = className.getClassName();
-            service = INetPwrCtrlPlugin.Stub.asInterface(binder);
-            init();
-            enterFullNetworkState(PluginService.getService(), null);
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            service = null;
-            PluginService c = PluginService.getService();
-            if (c != null)
-                c.removeExtension(PluginRemote.this);
-
-            context.unbindService(this);
-            // Set non reachable and notify
-            if (SharedPrefs.getInstance().logExtensions()) {
-                Logging.appendLog(context, "Extension " + serviceName + " disconnected");
-            }
-        }
-    };
-    private int transaction_counter = 0;
 
     /**
      * Initialize a plugin. Try to load an already configured DeviceInfo for this plugin
@@ -204,7 +206,6 @@ public class PluginRemote implements PluginInterface {
     private void init() {
         try {
             if (service != null) {
-                Log.w(TAG, "init");
                 service.init(callback, api_version);
                 isInitialized = true;
             } else {
@@ -225,11 +226,12 @@ public class PluginRemote implements PluginInterface {
     @Override
     public void requestData() {
         if (!isInitialized) {
+            Log.e(TAG, "requestData: not initialized!");
             return;
         }
         try {
             if (service != null) {
-                Log.w(TAG, "refresh");
+                Log.w(TAG, "refresh: devices");
                 service.requestData();
             } else
                 InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_no_service_connection, localized_name));
@@ -245,11 +247,12 @@ public class PluginRemote implements PluginInterface {
     @Override
     public void requestData(Device device, int device_connection_id) {
         if (!isInitialized) {
+            Log.e(TAG, "requestData: not initialized!");
             return;
         }
         try {
             if (service != null) {
-                Log.w(TAG, "refresh");
+                Log.w(TAG, "refresh: device connection");
                 service.requestDataByConnection(device.getUniqueDeviceID(), device_connection_id);
             } else
                 InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_no_service_connection, localized_name));
@@ -299,7 +302,6 @@ public class PluginRemote implements PluginInterface {
 
     @Override
     public void enterFullNetworkState(Context context, Device device) {
-        requestData();
     }
 
     @Override
@@ -380,5 +382,11 @@ public class PluginRemote implements PluginInterface {
     @Override
     public EditDeviceInterface openEditDevice(Device device) {
         return null;
+    }
+
+    public void registerReadyObserver(onPluginReady pluginReady) {
+        this.pluginReady = pluginReady;
+        if (service != null && pluginReady != null)
+            pluginReady.onPluginReady(PluginRemote.this);
     }
 }

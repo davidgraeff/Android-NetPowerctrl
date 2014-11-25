@@ -52,7 +52,7 @@
         <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
         <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list_dark</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_dark</item>
-        <item name="colored_button">@android:style/Widget.Holo.Button</item>
+        <item name="colored_button">@style/Colored_Button.Customlighttheme</item>
 
         <item name="textColorPrimary">@android:color/white</item>
         <item name="colorPrimary">@color/colorPrimaryDark</item>

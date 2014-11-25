@@ -2,6 +2,6 @@
 
 <resources>
     <item name="activity_main" type="layout">@layout/activity_main_two_pane</item>
-    <item name="activity_create_scene" type="layout">@layout/activity_create_scene_one_pane</item>
     <bool name="has_two_panes">true</bool>
+    <bool name="scene_beside">true</bool>
 </resources>

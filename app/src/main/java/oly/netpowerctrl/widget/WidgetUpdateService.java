@@ -256,7 +256,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
             if (!executable.isReachable()) {
                 PluginService.getService().showNotificationForNextRefresh(true);
-                AppData.getInstance().refreshDeviceData();
+                AppData.getInstance().refreshDeviceData(false);
                 return;
             }
         }

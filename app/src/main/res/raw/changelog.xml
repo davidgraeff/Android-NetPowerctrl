@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
     <changelogversion changeDate="22. November 2014" versionName="6.9.1">
-        <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleinen
-            Geräten
+        <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleineren
+            Bildschirmen
         </changelogimprovement>
         <changelogimprovement>Verbesserte Ansicht des Zeitschaltungen-Fensters
         </changelogimprovement>
         <changelogbug>Gelöschte Zeitschaltungen tauchen nun nicht mehr in der Zeitschaltungen Liste
             auf
         </changelogbug>
-        <changelogbug>Plugin nicht installiert Meldunng behoben</changelogbug>
+        <changelogbug>Plugin nicht installiert Meldung behoben</changelogbug>
     </changelogversion>
 
     <changelogversion changeDate="20. November 2014" versionName="6.9">

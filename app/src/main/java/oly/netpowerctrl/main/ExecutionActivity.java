@@ -22,22 +22,16 @@ import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
-import oly.netpowerctrl.timer.Timer;
-import oly.netpowerctrl.timer.TimerCollection;
-import oly.netpowerctrl.utils.WakeLocker;
 
 /**
  * Will be started on NFC contact, homescreen scene execution, alarm timeout
  */
 public class ExecutionActivity extends NfcReaderActivity implements onExecutionFinished {
     private String scene_uuid;
-    private boolean isTimerCheck = false;
-//    private boolean updateWidget = false;
 
     @Override
     protected void onPause() {
         PluginService.stopUseService();
-        WakeLocker.release();
         super.onPause();
     }
 
@@ -83,10 +77,9 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
         if (!extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID) &&
                 !extra.containsKey(EditSceneActivity.RESULT_SCENE_JSON) &&
                 !extra.containsKey(EditSceneActivity.RESULT_SCENE_UUID) && scene_uuid == null) {
-            isTimerCheck = true;
+            finish();
+            return;
         }
-
-        WakeLocker.acquire(this);
 
         // Load app data
         AppData.useAppData();
@@ -96,26 +89,12 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
         boolean enable_feedback = extra.getBoolean("enable_feedback", true);
 
         // wait for first data to be loaded
+        AppData.observersDataQueryCompleted.resetDataQueryCompleted();
         AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
 
             @Override
             public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
                 final int action_command = extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND);
-
-                if (isTimerCheck) {
-                    long current = System.currentTimeMillis();
-                    for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
-                        if (timer.deviceAlarm)
-                            continue;
-
-                        Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(current);
-                        if (current - 50 < nextAlarm.unix_time && current + 50 > nextAlarm.unix_time) {
-                            executeSingleAction(timer.executable_uid, nextAlarm.command);
-                        }
-                    }
-                    TimerCollection.setupAndroidAlarm(ExecutionActivity.this);
-                    return false;
-                }
 
                 // Read data from intent
                 String action_uuid = extra.getString(EditSceneActivity.RESULT_ACTION_UUID);
@@ -162,7 +141,8 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
 
     @Override
     public void onExecutionProgress(int current, int all) {
-
+        if (current >= all)
+            finish();
     }
 
     @Override

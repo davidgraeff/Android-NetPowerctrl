@@ -26,6 +26,7 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.timer.TimerCollection;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -54,6 +55,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             }
         }
     };
+
     private final Handler stopServiceHandler = new Handler();
     private final List<PluginInterface> plugins = new ArrayList<>();
 
@@ -144,8 +146,12 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      */
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
-        if (mDiscoverService != null)
+        Log.w(TAG, "start service");
+
+        if (mDiscoverService != null) {
+            TimerCollection.checkAndExecuteAlarm();
             return super.onStartCommand(intent, flags, startId);
+        }
 
         if (mDiscoverServiceRefCount == 0)
             mDiscoverServiceRefCount = 1;
@@ -166,7 +172,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void discoverExtensions() {
+    public void discoverExtensions() {
         if (SharedPrefs.getInstance().getLoadExtensions()) {
             Intent i = new Intent(PLUGIN_QUERY_ACTION);
             i.addFlags(Intent.FLAG_FROM_BACKGROUND);
@@ -264,29 +270,39 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
          */
         for (PluginInterface pi : plugins) {
             if (pi instanceof PluginRemote && ((PluginRemote) pi).serviceName.equals(serviceName)) {
-                updatePluginReferencesInDevices(pi);
                 return;
             }
         }
 
-        PluginRemote plugin = PluginRemote.create(serviceName, localized_name, packageName);
+        final PluginRemote plugin = PluginRemote.create(serviceName, localized_name, packageName);
 
         if (plugin == null) {
             return;
         }
 
-        plugins.add(plugin);
+        plugin.registerReadyObserver(new onPluginReady() {
+            @Override
+            public void onPluginReady(PluginRemote plugin) {
+                plugins.add(plugin);
+                plugin.enterFullNetworkState(PluginService.this, null);
+                if (AppData.observersOnDataLoaded.dataLoaded)
+                    updatePluginReferencesInDevices(plugin, false);
+            }
 
-        if (AppData.observersOnDataLoaded.dataLoaded)
-            updatePluginReferencesInDevices(plugin);
+            @Override
+            public void onFinished(PluginRemote plugin) {
+                removeExtension(plugin);
+            }
+        });
     }
 
-    private void updatePluginReferencesInDevices(PluginInterface plugin) {
+    private void updatePluginReferencesInDevices(PluginInterface plugin, boolean updateChangesFlag) {
         DeviceCollection deviceCollection = AppData.getInstance().deviceCollection;
         for (Device device : deviceCollection.getItems()) {
             if (device.getPluginInterface() != plugin && device.pluginID.equals(plugin.getPluginID())) {
                 device.setPluginInterface(plugin);
-                device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
+                if (updateChangesFlag)
+                    device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
                 AppData.getInstance().updateExistingDevice(device);
             }
         }
@@ -360,8 +376,6 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     }
 
     public void requestDataAll() {
-        discoverExtensions();
-
         for (PluginInterface pluginInterface : plugins) {
             pluginInterface.requestData();
         }
@@ -390,16 +404,18 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             }, 500);
         }
 
+        TimerCollection.checkAndExecuteAlarm();
+
         return true;
     }
 
     @Override
     public boolean onDataLoaded() {
         for (PluginInterface pluginInterface : plugins)
-            updatePluginReferencesInDevices(pluginInterface);
+            updatePluginReferencesInDevices(pluginInterface, false);
 
         observersServiceReady.onServiceReady(PluginService.this);
-        AppData.getInstance().refreshDeviceData();
+        AppData.getInstance().refreshDeviceData(false);
 
         return false;
     }

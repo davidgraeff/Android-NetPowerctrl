@@ -169,6 +169,15 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         groupPagerAdapter.onDestroy();
     }
 
+    @Override
+    public void onPause() {
+        AppData.observersStartStopRefresh.unregister(this);
+        PluginService.observersServiceModeChanged.unregister(this);
+        super.onPause();
+        if (adapterSource != null)
+            adapterSource.onPause();
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -188,15 +197,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                         mRecyclerView.scrollToPosition(lastScrolledPosition);
                 }
             };
-
-    @Override
-    public void onPause() {
-        AppData.observersStartStopRefresh.unregister(this);
-        PluginService.observersServiceModeChanged.unregister(this);
-        super.onPause();
-        if (adapterSource != null)
-            adapterSource.onPause();
-    }
 
     @Override
     public void onResume() {
@@ -545,7 +545,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     public void refreshNow() {
-        AppData.getInstance().refreshDeviceData();
+        AppData.getInstance().refreshDeviceData(false);
     }
 
     public void checkEmpty(int count, UUID groupFilter) {

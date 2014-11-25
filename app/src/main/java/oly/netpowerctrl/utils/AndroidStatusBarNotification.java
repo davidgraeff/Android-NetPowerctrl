@@ -5,7 +5,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
+import android.graphics.Bitmap;
+import android.view.View;
+import android.widget.RemoteViews;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.FavCollection;
+import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
@@ -43,18 +46,23 @@ public class AndroidStatusBarNotification {
         PendingIntent startMainPendingIntent =
                 PendingIntent.getActivity(context, (int) System.currentTimeMillis(), startMainIntent, 0);
 
-        Notification.Builder b = new Notification.Builder(context)
-                .setContentTitle(context.getString(R.string.app_name))
-                .setContentText(context.getString(R.string.app_name))
-                .setSmallIcon(R.drawable.netpowerctrl)
-                .setContentIntent(startMainPendingIntent)
-                .setOngoing(true);
+        Notification.Builder b;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            AppData appData = AppData.getInstance();
-            FavCollection g = appData.favCollection;
-            int maxLength = 0;
-            List<FavCollection.FavItem> items = new ArrayList<>(g.getItems());
+        AppData appData = AppData.getInstance();
+        FavCollection g = appData.favCollection;
+        int maxLength = 0;
+        List<FavCollection.FavItem> items = new ArrayList<>(g.getItems());
+
+        if (items.size() == 0) {
+            b = new Notification.Builder(context)
+                    .setContentText(context.getString(R.string.statusbar_no_favourites))
+                    .setContentTitle(context.getString(R.string.app_name))
+                    .setSmallIcon(R.drawable.netpowerctrl)
+                    .setContentIntent(startMainPendingIntent)
+                    .setOngoing(true);
+        } else {
+            RemoteViews remoteViewsRoot = new RemoteViews(context.getPackageName(), R.layout.statusbar_container);
+
             for (FavCollection.FavItem favItem : items) {
                 Executable executable = appData.findExecutable(favItem.executable_uid);
 
@@ -74,8 +82,20 @@ public class AndroidStatusBarNotification {
                 clickIntent.setAction(Intent.ACTION_MAIN);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
-                b.addAction(0, executable.getTitle(), pendingIntent);
+                Bitmap bitmap = LoadStoreIconData.loadBitmap(context, executable.getUid(), LoadStoreIconData.IconState.OnlyOneState, null);
+                RemoteViews remoteViewsWidget = new RemoteViews(context.getPackageName(), R.layout.widget);
+                remoteViewsWidget.setTextViewText(R.id.widget_name, executable.getTitle());
+                remoteViewsWidget.setImageViewBitmap(R.id.widget_image, bitmap);
+                remoteViewsWidget.setViewVisibility(R.id.widget_status, View.GONE);
+                remoteViewsWidget.setOnClickPendingIntent(R.id.widgetLayout, pendingIntent);
+                remoteViewsRoot.addView(R.id.notifications, remoteViewsWidget);
             }
+
+            b = new Notification.Builder(context)
+                    .setContent(remoteViewsRoot)
+                    .setSmallIcon(R.drawable.netpowerctrl)
+                    .setContentIntent(startMainPendingIntent)
+                    .setOngoing(true);
         }
 
         //noinspection deprecation

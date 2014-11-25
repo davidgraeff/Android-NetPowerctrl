@@ -67,8 +67,11 @@ public class FavCollection extends CollectionWithStorableItems<FavCollection, Fa
         return "favourites";
     }
 
-    public class FavItem implements StorableInterface {
+    public static class FavItem implements StorableInterface {
         public String executable_uid;
+
+        public FavItem() {
+        }
 
         @Override
         public String getStorableName() {
@@ -84,9 +87,7 @@ public class FavCollection extends CollectionWithStorableItems<FavCollection, Fa
                 assert name != null;
                 switch (name) {
                     case "executable_uid":
-                        FavItem item = new FavItem();
-                        item.executable_uid = reader.nextString();
-                        items.add(item);
+                        executable_uid = reader.nextString();
                         break;
                     default:
                         reader.skipValue();

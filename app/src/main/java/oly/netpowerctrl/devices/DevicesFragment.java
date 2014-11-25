@@ -302,7 +302,7 @@ public class DevicesFragment extends Fragment
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 AppData.getInstance().deviceCollection.remove(current_device);
-                                AppData.getInstance().refreshDeviceData();
+                                AppData.getInstance().refreshDeviceData(true);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -346,6 +346,6 @@ public class DevicesFragment extends Fragment
     @Override
     public void onRefresh() {
         PluginService.getService().showNotificationForNextRefresh(true);
-        AppData.getInstance().refreshDeviceData();
+        AppData.getInstance().refreshDeviceData(true);
     }
 }

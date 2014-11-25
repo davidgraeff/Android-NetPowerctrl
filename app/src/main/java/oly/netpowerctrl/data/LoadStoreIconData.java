@@ -43,7 +43,7 @@ public class LoadStoreIconData {
 
     private static final int PICK_IMAGE_BEFORE_KITKAT = 10;
     private static final int PICK_IMAGE_KITKAT = 11;
-    private static final int INITIAL_ICON_CACHE_CAPACITY = 50;
+    private static final int INITIAL_ICON_CACHE_CAPACITY = 60;
     public static LruCache<String, CacheEntry> iconCache = new LruCache<>(INITIAL_ICON_CACHE_CAPACITY);
     public static String defaultFallbackIconSet = "";
     public static IconDeferredLoadingThread iconLoadingThread;

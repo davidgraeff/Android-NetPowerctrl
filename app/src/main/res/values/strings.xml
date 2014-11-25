@@ -345,4 +345,9 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="icon_theme_2">Rund, Flach</string>
     <string name="icon_theme_3">Rund, Dreidimensional</string>
     <string name="icon_theme_4">Farbiges Powerzeichen</string>
+    <string name="statusbar_no_favourites">No favourites defined</string>
+    <string name="icon_state_undefined">Unbestimmt</string>
+    <string name="icon_state_off">Ausgeschaltet</string>
+    <string name="icon_state_on">Eingeschaltet</string>
+    <string name="scene_elements">Szenenelemente</string>
 </resources>

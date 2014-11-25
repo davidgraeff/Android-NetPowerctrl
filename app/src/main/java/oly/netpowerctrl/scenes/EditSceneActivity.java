@@ -17,7 +17,9 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -96,6 +98,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     private FlowLayout groups_layout;
     private Toast toast;
     private boolean iconMenuVisible = false;
+    private boolean addMenuVisible = false;
     private boolean isFavourite;
 
     /*
@@ -156,10 +159,34 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         adapter_available = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
         adapter_included = new SceneElementsAdapter();
 
-        sceneElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
-                findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
-        availableElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
-                findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
+        if (getResources().getBoolean(R.bool.scene_beside)) {
+            ViewGroup view = (ViewGroup) findViewById(R.id.items_container);
+            LayoutInflater layoutInflater = LayoutInflater.from(this);
+            layoutInflater.inflate(R.layout.scene_elements_two_pane, view, true);
+
+            sceneElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+                    findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
+            availableElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+                    findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
+        } else {
+            ViewGroup view = (ViewGroup) findViewById(R.id.items_container);
+            LayoutInflater layoutInflater = LayoutInflater.from(this);
+            layoutInflater.inflate(R.layout.scene_elements_one_pane, view, true);
+
+            sceneElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+                    findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
+            availableElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+                    findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
+
+            View btnAdd = findViewById(R.id.btnAdd);
+            btnAdd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    addMenuVisible = !addMenuVisible;
+                    AnimationController.animateViewInOut(findViewById(R.id.available), addMenuVisible, true);
+                }
+            });
+        }
 
         btnOk = (FloatingActionButton) findViewById(R.id.btnOk);
         btnOk.setOnClickListener(new View.OnClickListener() {
@@ -369,10 +396,9 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             }
         }
 
-        FloatingActionButton btnRemove = (FloatingActionButton) findViewById(R.id.btnRemove);
-        if (scene == null)
-            btnRemove.hide(true);
-        else
+        if (scene != null) {
+            FloatingActionButton btnRemove = (FloatingActionButton) findViewById(R.id.btnRemove);
+            AnimationController.animateBottomViewIn(btnRemove);
             btnRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -382,7 +408,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                     finish();
                 }
             });
-
+        }
 
         // Load current set of available outlets
         removeIncludedFromAvailable(adapter_available, adapter_included);

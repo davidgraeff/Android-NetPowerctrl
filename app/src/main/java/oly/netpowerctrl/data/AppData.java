@@ -82,14 +82,6 @@ public class AppData {
         if (appData.loadStoreJSonData != null)
             return;
 
-        observersOnDataLoaded.register(new onDataLoaded() {
-            @Override
-            public boolean onDataLoaded() {
-                TimerCollection.setupAndroidAlarm(App.instance);
-                return false;
-            }
-        });
-
         appData.loadStoreJSonData = new LoadStoreJSonData();
         appData.loadStoreJSonData.loadData(appData);
     }
@@ -525,7 +517,6 @@ public class AppData {
      * @param callback   The callback for the execution-done messages
      */
     public void execute(@NonNull final DevicePort devicePort, final int command, final onExecutionFinished callback) {
-        assert devicePort.device != null;
         PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
         if (remote != null) {
             PluginService.getService().wakeupPlugin(devicePort.device);
@@ -558,7 +549,7 @@ public class AppData {
         return list;
     }
 
-    public void refreshDeviceData() {
+    public void refreshDeviceData(boolean refreshKnownExtentions) {
         final int currentRun = ++findDevicesRun;
 
         // The following mechanism allows only one update request within a
@@ -581,6 +572,9 @@ public class AppData {
             Logging.appendLog(App.instance, "Energiesparen aus: Suche Geräte");
 
         observersStartStopRefresh.onRefreshStateChanged(true);
+
+        if (refreshKnownExtentions)
+            PluginService.getService().discoverExtensions();
 
         clearNewDevices();
         new DeviceQuery(App.instance, new onDeviceObserverResult() {

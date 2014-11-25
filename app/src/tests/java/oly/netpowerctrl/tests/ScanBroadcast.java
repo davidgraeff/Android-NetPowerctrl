@@ -104,7 +104,7 @@ public class ScanBroadcast extends AndroidTestCase {
 
         AppData.observersStartStopRefresh.register(refreshStartedStopped);
 
-        AppData.getInstance().refreshDeviceData();
+        AppData.getInstance().refreshDeviceData(false);
 
         assertTrue("Timeout of refreshDeviceData", signal_receive.await(4, TimeUnit.SECONDS));
 

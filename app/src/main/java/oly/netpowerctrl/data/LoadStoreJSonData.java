@@ -109,16 +109,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
     void readOtherThreadCollection(CollectionWithStorableItems<COLLECTION, ITEM> collection,
                                    Class<ITEM> classType, boolean keepOnFailure) throws IllegalAccessException, InstantiationException {
 
-        File files;
-
-        { // legacy folder support
-            files = App.instance.getDir(collection.type(), 0);
-            if (files.exists())
-                //noinspection ResultOfMethodCallIgnored
-                files.renameTo(new File(App.instance.getFilesDir(), collection.type()));
-        }
-
-        files = new File(App.instance.getFilesDir(), collection.type());
+        File files = new File(App.instance.getFilesDir(), collection.type());
 
         collection.getItems().clear();
         for (File file : files.listFiles()) {

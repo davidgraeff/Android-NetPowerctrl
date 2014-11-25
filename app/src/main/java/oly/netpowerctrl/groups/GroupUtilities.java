@@ -3,6 +3,7 @@ package oly.netpowerctrl.groups;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.v7.internal.widget.TintCheckBox;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -33,7 +34,7 @@ public class GroupUtilities {
             if (groupCollection.equalsAtIndex(i, listOfGroupsPreChecked))
                 checked[i] = true;
 
-            CheckBox p = new CheckBox(context);
+            CheckBox p = new TintCheckBox(context);
             p.setChecked(checked[i]);
             // The first entry of weekDays_Strings is an empty string
             p.setText(items[i]);

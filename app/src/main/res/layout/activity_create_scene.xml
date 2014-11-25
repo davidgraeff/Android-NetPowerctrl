@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:flatui="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -31,45 +32,7 @@
                 card_view:cardCornerRadius="4dp"
                 card_view:cardElevation="5dp">
 
-                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
 
-                    android:orientation="vertical"
-                    android:padding="@dimen/list_inner_padding">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="start|top"
-                        android:text="Szenenelemente"
-                        android:textAppearance="@android:style/TextAppearance.Large" />
-
-                    <HorizontalScrollView
-                        android:layout_width="match_parent"
-                        android:layout_height="500dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:orientation="horizontal">
-
-                            <include
-                                android:id="@+id/included"
-                                layout="@layout/fragment_with_list"
-                                android:layout_width="300dp"
-                                android:layout_height="match_parent" />
-
-                            <include
-                                android:id="@+id/available"
-                                layout="@layout/fragment_with_list"
-                                android:layout_width="250dp"
-                                android:layout_height="match_parent" />
-                        </LinearLayout>
-
-                    </HorizontalScrollView>
-
-                </LinearLayout>
             </android.support.v7.widget.CardView>
 
             <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
@@ -112,25 +75,25 @@
                         android:layout_marginTop="5dp"
                         android:text="@string/shortcut_enable_feedback" />
 
-                    <Button
+                    <com.cengalabs.flatui.views.FlatButton
                         android:id="@+id/btnNFC"
-                        style="?colored_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:ellipsize="marquee"
                         android:singleLine="true"
-                        android:text="@string/scene_nfc_write" />
+                        android:text="@string/scene_nfc_write"
+                        flatui:fl_touchEffect="fl_ripple" />
 
-                    <Button
+                    <com.cengalabs.flatui.views.FlatButton
                         android:id="@+id/btnSceneAddHomescreen"
-                        style="?colored_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:ellipsize="marquee"
                         android:singleLine="true"
-                        android:text="@string/scene_add_homescreen" />
+                        android:text="@string/scene_add_homescreen"
+                        flatui:fl_touchEffect="fl_ripple" />
 
                 </LinearLayout>
 
@@ -175,6 +138,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_toLeftOf="@id/btnOk"
+        android:visibility="invisible"
         app:drawable="@android:drawable/ic_menu_delete"
         app:mainColor="?attr/floating_button_color" />
 

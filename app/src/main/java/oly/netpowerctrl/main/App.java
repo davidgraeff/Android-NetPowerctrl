@@ -77,7 +77,6 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
-        //ACRAConfiguration config = ACRA.getNewDefaultConfig(instance);
         config.setFormUri(getString(R.string.acralyzer_http_url));
         config.setFormUriBasicAuthLogin(getString(R.string.acralyzer_http_login));
         config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));

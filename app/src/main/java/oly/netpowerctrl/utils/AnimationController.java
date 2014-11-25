@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
@@ -17,10 +18,10 @@ public class AnimationController {
             return;
 
         if (view.getHeight() == 0) {
-            view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
-                public void onLayoutChange(View view, int i, int i2, int i3, int i4, int i5, int i6, int i7, int i8) {
-                    view.removeOnLayoutChangeListener(this);
+                public void onGlobalLayout() {
+                    view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                     animateBottomViewIn(view);
                 }
             });
