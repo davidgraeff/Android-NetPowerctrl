@@ -14,8 +14,9 @@ import java.util.Enumeration;
 import java.util.Set;
 
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPSending;
-import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.utils.Logging;
 
 /**
  * A DeviceSend.Job that provide broadcast sending to anel devices.
@@ -46,16 +47,15 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
 
     @Override
     public void process() {
-        Context context = PluginService.getService();
-        if (context == null)
-            return;
-
         Set<Integer> ports = AppData.getInstance().getAllSendPorts();
 
         UDPSending udpSending = udpSendingReference.get();
-        if (udpSending == null)
+        if (udpSending == null) {
+            Logging.getInstance().logDetect("UDP AnelBroadcastSendJob: No udp Sending!");
             return;
+        }
         DatagramSocket datagramSocket = udpSending.datagramSocket;
+        boolean logDetect = Logging.getInstance().mLogDetect;
 
         Enumeration list;
         try {
@@ -72,12 +72,20 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
                         if (address == null) continue;
                         InetAddress broadcast = address.getBroadcast();
                         if (broadcast == null) continue;
+
+                        if (logDetect) {
+                            String portsString = "";
+                            for (Integer port : ports) portsString += String.valueOf(port) + " ";
+                            Logging.getInstance().logDetect("UDP Broadcast on " + broadcast.toString() + " Ports: " + portsString);
+                        }
+
                         for (int port : ports)
-                            sendPacket(context, datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
+                            sendPacket(App.instance, datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
                     }
                 }
             }
         } catch (SocketException ex) {
+            Logging.getInstance().logDetect("UDP AnelBroadcastSendJob: Error while getting network interfaces");
             Log.w("sendBroadcastQuery", "Error while getting network interfaces");
             ex.printStackTrace();
         }

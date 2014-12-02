@@ -182,7 +182,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
     private int addDeviceToList(Device device, int startIndex) {
         mList.add(startIndex++, new DeviceAdapterItem(device));
-        if (showConnections) {
+        if (showConnections && device.isConfigured()) {
             device.lockDevice();
             int s = device.getDeviceConnections().size();
             for (int i = 0; i < s; ++i) {

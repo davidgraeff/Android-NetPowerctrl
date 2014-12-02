@@ -60,7 +60,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                MainActivity.getNavigationController().changeToFragment(EnergySaveLogFragment.class.getName());
+                MainActivity.getNavigationController().changeToFragment(LogFragment.class.getName());
                 return false;
             }
         });
@@ -138,18 +138,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 return false;
             }
         });
-
-        //noinspection ConstantConditions
-        findPreference("use_log_energy_saving_mode").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                if ((Boolean) newValue) {
-                    //noinspection ConstantConditions
-                    Toast.makeText(getActivity(), getString(R.string.log_activated), Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-
 
         if (NfcAdapter.getDefaultAdapter(getActivity()) == null) {
             getPreferenceScreen().removePreference(findPreference("nfc_bind"));

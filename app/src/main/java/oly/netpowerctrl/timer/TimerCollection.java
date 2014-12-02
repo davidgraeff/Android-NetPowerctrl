@@ -2,12 +2,12 @@ package oly.netpowerctrl.timer;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ import java.util.List;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
@@ -30,6 +31,7 @@ import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.PluginInterface;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.WakeLocker;
 
 /**
@@ -85,7 +87,12 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     };
 
     public static void setupAndroidAlarm(Context context) {
+        // We use either the current time or if it the same as the already saved next alarm time, current time + 1
         long current = System.currentTimeMillis();
+        long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(context);
+        if (current == nextAlarmTimestamp)
+            ++current;
+
         Timer.NextAlarm nextTimerTime = null;
         Timer nextTimer = null;
 
@@ -102,59 +109,101 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, PluginService.class);
-        PendingIntent pi = PendingIntent.getService(context, 1191, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pi = PendingIntent.getService(context, 1191, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_CANCEL_CURRENT);
 
         mgr.cancel(pi);
 
-        if (nextTimerTime == null)
+        if (nextTimerTime == null) {
+            if (nextAlarmTimestamp > 0) {
+                // Disable the manifest entry for the BootCompletedReceiver. This way the app won't unnecessarly wake up after boot.
+                ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
+                PackageManager pm = context.getPackageManager();
+                pm.setComponentEnabledSetting(receiver,
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP);
+                // Reset next alarm time cache
+                SharedPrefs.setNextAlarmCheckTimestamp(context, 0);
+            }
             return;
+        }
+
+        SharedPrefs.setNextAlarmCheckTimestamp(context, nextTimerTime.unix_time);
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(nextTimerTime.unix_time);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Log.w(TAG, "Next alarm " + sdf.format(calendar.getTime()) + " " + nextTimer.getTargetName());
+        Logging.getInstance().logAlarm("Next alarm: " + nextTimer.getTargetName() + "\nOn: " + sdf.format(calendar.getTime()));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
             mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
         else
             mgr.set(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+
+        // Enable the manifest entry for the BootCompletedReceiver. This way alarms are setup again after a reboot.
+        ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
+        PackageManager pm = context.getPackageManager();
+        pm.setComponentEnabledSetting(receiver,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
     }
 
     public static void checkAndExecuteAlarm() {
-        Toast.makeText(App.instance, "checkAndExecuteAlarm", Toast.LENGTH_LONG).show();
+        long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(App.instance);
+
+        { // Check if current time matches somehow the setup next alarm time
+            long maxDiffms = 50000;
+            long current = System.currentTimeMillis();
+
+            if (nextAlarmTimestamp > current || nextAlarmTimestamp + maxDiffms < current) {
+                TimerCollection.setupAndroidAlarm(App.instance);
+                return;
+            }
+        } // From here on, we use nextAlarmTimestamp as current
 
         onExecutionFinished executionFinished = new onExecutionFinished() {
             @Override
-            public void onExecutionProgress(int current, int all) {
-                Toast.makeText(App.instance, "checkAndExecuteAlarm:exec:finished", Toast.LENGTH_LONG).show();
-                if (current >= all)
+            public void onExecutionProgress(int success, int errors, int all) {
+                if (success + errors >= all) {
+                    Logging.getInstance().logAlarm("Alarm items (OK, FAIL):\n" + String.valueOf(success) + ", " + String.valueOf(errors));
                     WakeLocker.release();
+                }
             }
         };
-        long current = System.currentTimeMillis();
+
+        boolean alarmExecuted = false;
+
         for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
             if (timer.deviceAlarm)
                 continue;
 
-            Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(current);
-            if (current - 50 < nextAlarm.unix_time && current + 50 > nextAlarm.unix_time) {
-                WakeLocker.acquire(App.instance);
+            Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(nextAlarmTimestamp);
+
+            if (nextAlarm.unix_time == nextAlarmTimestamp) {
                 Executable executable = AppData.getInstance().findExecutable(timer.executable_uid);
 
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(nextAlarm.unix_time);
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                Log.w(TAG, "Now alarm " + sdf.format(calendar.getTime()) + " " + executable.getTitle());
-                Toast.makeText(App.instance, "checkAndExecuteAlarm:exec " + sdf.format(calendar.getTime()) + " " + executable.getTitle(), Toast.LENGTH_LONG).show();
+                if (executable != null)
+                    Logging.getInstance().logAlarm("Alarm: " + executable.getTitle());
+                else {
+                    Logging.getInstance().logAlarm("Alarm: Executable does not exist!");
+                    continue;
+                }
 
-                if (executable instanceof DevicePort)
+                alarmExecuted = true;
+
+                if (executable instanceof DevicePort) {
+                    WakeLocker.acquire(App.instance);
                     AppData.getInstance().execute((DevicePort) executable, nextAlarm.command, executionFinished);
-                else if (executable instanceof Scene) {
+                } else if (executable instanceof Scene) {
+                    WakeLocker.acquire(App.instance);
                     AppData.getInstance().execute((Scene) executable, executionFinished);
-                } else
-                    WakeLocker.release();
+                }
             }
         }
+
+        if (!alarmExecuted)
+            Logging.getInstance().logAlarm("Armed alarm not found!");
+
+        // Setup new alarm if one got executed
         TimerCollection.setupAndroidAlarm(App.instance);
     }
 

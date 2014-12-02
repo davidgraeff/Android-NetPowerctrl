@@ -28,7 +28,6 @@ import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
@@ -83,21 +82,23 @@ final public class AnelPlugin implements PluginInterface {
         }
     }
 
-    private void executeDeviceBatch(Device device, List<Scene.PortAndCommand> command_list,
-                                    onExecutionFinished callback) {
+    /**
+     * Execute multiple port commands for one device (anel supports this as an extra command).
+     *
+     * @param device       The target device (preferable with a valid device connection, otherwise 0 is returned)
+     * @param command_list Command list where each entry is a port and command
+     * @return
+     */
+    private int executeDeviceBatch(Device device, List<Scene.PortAndCommand> command_list) {
         // Get necessary objects
         PluginService service = PluginService.getService();
         if (service == null) {
-            if (callback != null)
-                callback.onExecutionProgress(command_list.size(), 1);
-            return;
+            return 0;
         }
 
         DeviceConnection ci = device.getFirstReachableConnection();
         if (ci == null) {
-            if (callback != null)
-                callback.onExecutionProgress(command_list.size(), 1);
-            return;
+            return 0;
         }
 
         if (ci instanceof DeviceConnectionHTTP) { // http
@@ -112,15 +113,11 @@ final public class AnelPlugin implements PluginInterface {
                         "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
             }
         } else if (!(ci instanceof DeviceConnectionUDP)) { // unknown protocol
-            if (callback != null)
-                callback.onExecutionProgress(command_list.size(), 1);
-            return;
+            return 0;
         }
 
         if (checkAndStartUDP()) {
-            if (callback != null)
-                callback.onExecutionProgress(command_list.size(), 1);
-            return;
+            return 0;
         }
 
         // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
@@ -204,8 +201,7 @@ final public class AnelPlugin implements PluginInterface {
                     requestMessage, UDPSending.INQUERY_REQUEST));
         }
 
-        if (callback != null)
-            callback.onExecutionProgress(command_list.size(), 1);
+        return command_list.size();
     }
 
     public void startUDPDiscoveryThreads(Set<Integer> additional_port) {
@@ -281,11 +277,14 @@ final public class AnelPlugin implements PluginInterface {
      * @param command  Execute this command
      * @param callback This callback will be called when the execution finished
      */
-    public void execute(DevicePort port, int command, onExecutionFinished callback) {
+    @Override
+    public boolean execute(DevicePort port, int command, onExecutionFinished callback) {
         // Get necessary objects
         PluginService service = PluginService.getService();
-        if (service == null)
-            return;
+        if (service == null) {
+            if (callback != null) callback.onExecutionProgress(0, 1, 1);
+            return false;
+        }
 
         port.last_command_timecode = System.currentTimeMillis();
 
@@ -304,7 +303,8 @@ final public class AnelPlugin implements PluginInterface {
         if (ci instanceof DeviceConnectionHTTP) {
             if (ci.getDestinationPort() < 0) {
                 Toast.makeText(service, R.string.error_device_no_network_connections, Toast.LENGTH_SHORT).show();
-                return;
+                if (callback != null) callback.onExecutionProgress(0, 1, 1);
+                return false;
             }
             // The http interface can only toggle. If the current state is the same as the command state
             // then we request values instead of sending a command.
@@ -315,33 +315,41 @@ final public class AnelPlugin implements PluginInterface {
                 // Important: For UDP the id is 1-based. For Http the id is 0 based!
                 HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci, "ctrl.htm",
                         "F" + String.valueOf(port.id - 1) + "=s", (DeviceConnectionHTTP) ci, false, AnelPluginHttp.receiveSwitchResponseHtml));
+
+            return true;
         } else if (ci instanceof DeviceConnectionUDP) {
             if (checkAndStartUDP()) {
-                return;
+                if (callback != null) callback.onExecutionProgress(0, 1, 1);
+                return false;
             }
 
             byte[] data;
-            UDPSending.Job j = null;
+            UDPSending.Job j;
             if (port.id >= 10 && port.id < 20) {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         port.id - 10, device.getUserName(), device.getPassword()).getBytes();
                 j = new UDPSending.SendAndObserveJob(udpSending, service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                udpSending.addJob(j);
+                if (callback != null) callback.onExecutionProgress(1, 0, 1);
+                return true;
             } else if (port.id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         port.id, device.getUserName(), device.getPassword()).getBytes();
                 j = new UDPSending.SendAndObserveJob(udpSending, service, ci, data, requestMessage, UDPSending.INQUERY_REQUEST);
-            }
-
-            if (j != null)
                 udpSending.addJob(j);
+                if (callback != null) callback.onExecutionProgress(1, 0, 1);
+                return true;
+            } else {
+                if (callback != null) callback.onExecutionProgress(0, 1, 1);
+                return false;
+            }
         } else {
             Log.e("Anel", "execute. No reachable DeviceConnection found!");
+            if (callback != null) callback.onExecutionProgress(0, 1, 1);
+            return false;
         }
-
-        if (callback != null)
-            callback.onExecutionProgress(1, command);
     }
 
     /**
@@ -620,6 +628,9 @@ final public class AnelPlugin implements PluginInterface {
         TreeMap<Device, List<Scene.PortAndCommand>> commands_grouped_by_devices =
                 new TreeMap<>();
 
+        int all = command_list.size();
+        int success = 0;
+
         // add to tree
         for (Scene.PortAndCommand portAndCommand : command_list) {
             if (!commands_grouped_by_devices.containsKey(portAndCommand.port.device)) {
@@ -630,10 +641,12 @@ final public class AnelPlugin implements PluginInterface {
 
         // executeToggle by device
         for (TreeMap.Entry<Device, List<Scene.PortAndCommand>> entry : commands_grouped_by_devices.entrySet()) {
-            executeDeviceBatch(entry.getKey(), entry.getValue(), callback);
+            success += executeDeviceBatch(entry.getKey(), entry.getValue());
         }
 
         command_list.clear();
+
+        if (callback != null) callback.onExecutionProgress(success, all - success, all);
     }
 
     @Override
@@ -643,8 +656,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void enterFullNetworkState(Context context, Device device) {
-        if (SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(context, "Anel: enterFullNetworkState");
+        Logging.getInstance().logEnergy("Anel: enterFullNetworkState");
 
         // Start send thread
         if (udpSending == null)
@@ -671,8 +683,7 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void enterNetworkReducedState(Context context) {
-        if (SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(context, "Anel: enterNetworkReducedState");
+        Logging.getInstance().logEnergy("Anel: enterNetworkReducedState");
 
         new AsyncTask<AnelPlugin, Void, Void>() {
             @Override

@@ -333,7 +333,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     private void saveAndFinish() {
         PluginService.getService().wakeupPlugin(editDevice.getDevice());
 
-        AppData.getInstance().addToConfiguredDevices(getActivity(), editDevice.getDevice());
+        AppData.getInstance().addToConfiguredDevices(editDevice.getDevice());
         dismiss();
     }
 

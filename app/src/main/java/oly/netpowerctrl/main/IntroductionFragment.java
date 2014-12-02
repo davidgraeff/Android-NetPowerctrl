@@ -2,6 +2,9 @@ package oly.netpowerctrl.main;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
@@ -29,6 +32,11 @@ import oly.netpowerctrl.pluginservice.PluginInterface;
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
 public class IntroductionFragment extends Fragment implements onCreateDeviceResult {
+    Handler takeNextHandler = new Handler(Looper.getMainLooper()) {
+        public void handleMessage(Message msg) {
+            takeNext();
+        }
+    };
     private TextView textView;
     private List<Device> deviceList;
     private EditDeviceInterface editDevice;
@@ -75,14 +83,16 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     public void onStart() {
         super.onStart();
         MainActivity.instance.getSupportActionBar().hide();
-        MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        if (MainActivity.getNavigationController().getDrawerLayout() != null) // tablet landscape mode
+            MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
 
     @Override
     public void onStop() {
         super.onStop();
         MainActivity.instance.getSupportActionBar().show();
-        MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        if (MainActivity.getNavigationController().getDrawerLayout() != null) // tablet landscape mode
+            MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
     void start() {
@@ -105,12 +115,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
         if (device.getPluginInterface() == null) {
             textView.append("\tPlugin not found\n");
             editDevice = null;
-            App.getMainThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    takeNext();
-                }
-            });
+            takeNextHandler.sendEmptyMessage(0);
             return;
         }
 
@@ -119,14 +124,9 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
         // If no edit device -> there is no configuration necessary
         if (editDevice == null) {
             textView.append("\tOK\n");
-            AppData.getInstance().addToConfiguredDevices(getActivity(), device);
+            AppData.getInstance().addToConfiguredDevices(device);
             editDevice = null;
-            App.getMainThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    takeNext();
-                }
-            });
+            takeNextHandler.sendEmptyMessage(0);
             return;
         }
 
@@ -135,12 +135,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
         if (!editDevice.startTest(getActivity())) {
             textView.append("\tPlugin failed\n");
             editDevice = null;
-            App.getMainThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    takeNext();
-                }
-            });
+            takeNextHandler.sendEmptyMessage(0);
         }
     }
 
@@ -162,30 +157,20 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
                         devicePortIterator.next().groups.add(group);
                     deviceToAdd.releaseDevicePorts();
                     // Add device to configured devices
-                    d.addToConfiguredDevices(getActivity(), deviceToAdd);
+                    d.addToConfiguredDevices(deviceToAdd);
                 }
             });
         } else {
             textView.append("\tFAILED\n");
         }
         editDevice = null;
-        App.getMainThreadHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                takeNext();
-            }
-        });
+        takeNextHandler.sendEmptyMessage(0);
     }
 
     @Override
     public void testDeviceNotReachable() {
         editDevice = null;
         textView.append("\tLogin data wrong\n");
-        App.getMainThreadHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                takeNext();
-            }
-        });
+        takeNextHandler.sendEmptyMessage(0);
     }
 }

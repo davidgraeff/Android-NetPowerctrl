@@ -2,17 +2,27 @@ package oly.netpowerctrl.data;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import oly.netpowerctrl.main.App;
 
 /**
  * Load icons for the ViewHolder of DevicePortsBaseAdapter in a separate thread
  */
 public class IconDeferredLoadingThread extends Thread {
     private final LinkedBlockingQueue<IconItem> q = new LinkedBlockingQueue<>();
+    private Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            IconItem j = (IconItem) msg.obj;
+            IconLoaded viewHolder = j.target.get();
+            if (viewHolder == null) return;
+            viewHolder.setDrawable(j.drawable, j.position);
+        }
+    };
 
     public IconDeferredLoadingThread() {
         super("IconDeferredLoadingThread");
@@ -27,7 +37,8 @@ public class IconDeferredLoadingThread extends Thread {
         while (true) {
             try {
                 IconItem j = q.take();
-                j.setFinalBitmap(LoadStoreIconData.loadDrawable(j.context, j.uuid, j.state, null));
+                j.drawable = LoadStoreIconData.loadDrawable(j.context, j.uuid, j.state, null);
+                handler.obtainMessage(j.position, j).sendToTarget();
             } catch (InterruptedException e) {
                 q.clear();
                 return;
@@ -49,6 +60,7 @@ public class IconDeferredLoadingThread extends Thread {
         private final WeakReference<IconLoaded> target;
         private final int position;
         private final Context context;
+        private Drawable drawable;
 
         public IconItem(Context context, String uuid, LoadStoreIconData.IconState state,
                         IconLoaded target, int position) {
@@ -58,18 +70,5 @@ public class IconDeferredLoadingThread extends Thread {
             this.target = new WeakReference<>(target);
             this.position = position;
         }
-
-        public void setFinalBitmap(final Drawable drawable) {
-            App.getMainThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    IconLoaded viewHolder = target.get();
-                    if (viewHolder == null)
-                        return;
-                    viewHolder.setDrawable(drawable, position);
-                }
-            });
-        }
-
     }
 }

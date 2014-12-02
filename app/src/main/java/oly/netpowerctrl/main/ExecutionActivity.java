@@ -140,8 +140,8 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
     }
 
     @Override
-    public void onExecutionProgress(int current, int all) {
-        if (current >= all)
+    public void onExecutionProgress(int success, int errors, int all) {
+        if (success >= all)
             finish();
     }
 

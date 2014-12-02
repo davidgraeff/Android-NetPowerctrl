@@ -1,6 +1,9 @@
 package oly.netpowerctrl.network;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Base64;
 
 import java.io.BufferedReader;
@@ -18,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
@@ -26,6 +28,13 @@ import oly.netpowerctrl.pluginservice.PluginService;
  */
 public class HttpThreadPool {
     private static ExecutorService pool;
+    private static Handler resultHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            HTTPRunner httpRunner = (HTTPRunner) msg.obj;
+            httpRunner.callback.httpResponse(httpRunner.additional, msg.what > 0, httpRunner.result_message);
+        }
+    };
 
     public static void startHTTP() {
         if (pool == null)
@@ -71,6 +80,7 @@ public class HttpThreadPool {
         private final T additional;
         private final boolean responseInMainThread;
         private final HTTPCallback<T> callback;
+        String result_message;
 
         public HTTPRunner(final DeviceConnectionHTTP deviceConnection, final String getData,
                           final String postData, final T additional,
@@ -92,7 +102,6 @@ public class HttpThreadPool {
 
             URL url;
             boolean success = false;
-            String result_message;
             final Device device = deviceConnection.getDevice();
             try {
                 String cred = device.getUserName() + ":" + device.getPassword();
@@ -125,25 +134,17 @@ public class HttpThreadPool {
                 }
             } catch (SocketTimeoutException e) {
                 result_message = context.getString(R.string.device_timeout);
-            } catch (MalformedURLException e) {
-                result_message = e.getMessage();
-            } catch (ProtocolException e) {
+            } catch (MalformedURLException | ProtocolException e) {
                 result_message = e.getMessage();
             } catch (IOException e) {
                 e.printStackTrace();
                 result_message = e.getMessage();
             }
             final boolean callback_success = success;
-            final String callback_error_message = result_message;
             if (responseInMainThread)
-                App.getMainThreadHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.httpResponse(additional, callback_success, callback_error_message);
-                    }
-                });
+                resultHandler.obtainMessage(callback_success ? 1 : 0, this).sendToTarget();
             else
-                callback.httpResponse(additional, callback_success, callback_error_message);
+                callback.httpResponse(additional, callback_success, result_message);
         }
     }
 

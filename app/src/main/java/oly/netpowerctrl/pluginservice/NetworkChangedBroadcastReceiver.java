@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 
-import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -35,13 +34,10 @@ class NetworkChangedBroadcastReceiver extends BroadcastReceiver {
         @SuppressWarnings("ConstantConditions")
         ConnectivityManager cm = (ConnectivityManager) pluginService.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
-            if (SharedPrefs.getInstance().logEnergySaveMode())
-                Logging.appendLog(pluginService, "Energiesparen aus: Netzwechsel erkannt");
+            Logging.getInstance().logEnergy("Energiesparen aus: Netzwechsel erkannt");
             pluginService.wakeupAllDevices();
         } else {
-            if (SharedPrefs.getInstance().logEnergySaveMode())
-                Logging.appendLog(pluginService, "Energiesparen an: Kein Netzwerk");
-
+            Logging.getInstance().logEnergy("Energiesparen an: Kein Netzwerk");
             pluginService.enterNetworkReducedMode();
         }
     }

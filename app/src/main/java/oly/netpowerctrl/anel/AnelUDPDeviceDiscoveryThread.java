@@ -15,9 +15,9 @@ import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
 import oly.netpowerctrl.device_base.device.DeviceFeatureTemperature;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.utils.Logging;
 
 class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     public static AnelPlugin anelPlugin;
@@ -25,6 +25,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     public AnelUDPDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
         super(port, "AnelDeviceDiscoveryThread");
         AnelUDPDeviceDiscoveryThread.anelPlugin = anelPlugin;
+        Logging.getInstance().logDetect("UDP Listen " + String.valueOf(port));
     }
 
     private static Device createReceivedAnelDevice(String MacAddress) {
@@ -40,38 +41,36 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
     @Override
     public void parsePacket(final byte[] message, int length, int receive_port, InetAddress local, InetAddress peer) {
         final String msg[];
+        final String incoming;
         try {
-            msg = new String(message, 0, length, "iso8859-1").split(":");
-        } catch (UnsupportedEncodingException e) {
+            incoming = new String(message, 0, length, "iso8859-1");
+            msg = incoming.split(":");
+        } catch (UnsupportedEncodingException e) { // Will not happen
+            e.printStackTrace();
             return;
         }
 
         if (msg.length < 3) {
+            Logging.getInstance().logDetect("UDP Receive Error\n" + incoming);
             return;
         }
 
         if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
-            App.getMainThreadHandler().post(new Runnable() {
-                public void run() {
-                    PluginService service = PluginService.getService();
-                    if (service == null)
-                        return;
-                    String errMessage = msg[2].trim();
-                    if (errMessage.trim().equals("NoPass"))
-                        errMessage = PluginService.getService().getString(R.string.error_nopass);
-                    AppData.getInstance().onDeviceErrorByName(
-                            service,
-                            msg[1].trim(),
-                            errMessage);
-                }
-            });
-
+            Logging.getInstance().logDetect("UDP Device Error\n" + incoming);
+            String name = msg[1].trim();
+            String errMessage = msg[2].trim();
+            if (errMessage.trim().equals("NoPass"))
+                errMessage = PluginService.getService().getString(R.string.error_nopass);
+            AppData.getInstance().updateDeviceHandler.obtainMessage(AppData.UPDATE_MESSAGE_BROKEN_DEVICE,
+                    new String[]{name, errMessage}).sendToTarget();
             return;
         }
 
         final String HostName = msg[2];
         final String DeviceName = msg[1].trim();
         final String MacAddress = msg[5].trim();
+
+        Logging.getInstance().logDetect("UDP Device detected\n" + DeviceName);
 
         boolean isNewDevice = false;
         Device device = AppData.getInstance().findDevice(MacAddress);

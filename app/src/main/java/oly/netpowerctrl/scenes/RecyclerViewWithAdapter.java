@@ -114,6 +114,10 @@ public class RecyclerViewWithAdapter<ADAPTER extends RecyclerView.Adapter> {
         });
     }
 
+    public RecyclerView getRecyclerView() {
+        return mRecyclerView;
+    }
+
     public ADAPTER getAdapter() {
         return mAdapter;
     }

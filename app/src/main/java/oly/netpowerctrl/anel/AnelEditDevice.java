@@ -2,6 +2,7 @@ package oly.netpowerctrl.anel;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 
 import java.util.List;
@@ -25,6 +26,16 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
     TestStates test_state = TestStates.TEST_INIT;
     private Device device;
     private onCreateDeviceResult listener = null;
+    private Handler timeoutHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (test_state == TestStates.TEST_ACCESS || test_state == TestStates.TEST_INIT) {
+                test_state = TestStates.TEST_INIT;
+                if (listener != null)
+                    listener.testDeviceNotReachable();
+            }
+        }
+    };
     private DeviceQuery deviceQuery;
 
     public AnelEditDevice(String defaultDeviceName, @Nullable Device edit_device) {
@@ -113,16 +124,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
                 AppData.getInstance().execute(oi, oi.current_value, null);
 
             // Timeout is 1,1s
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (test_state == TestStates.TEST_ACCESS || test_state == TestStates.TEST_INIT) {
-                        test_state = TestStates.TEST_INIT;
-                        if (listener != null)
-                            listener.testDeviceNotReachable();
-                    }
-                }
-            }, 1100);
+            timeoutHandler.sendEmptyMessageDelayed(0, 1100);
         } else if (test_state == TestStates.TEST_ACCESS) {
             if (listener != null)
                 listener.testFinished(true);

@@ -24,7 +24,6 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.pluginservice.PluginInterface;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -240,14 +239,7 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
     @Override
     public void testFinished(boolean success) {
         if (success) {
-            final Device deviceToAdd = editDevice.getDevice();
-            App.getMainThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    AppData.getInstance().addToConfiguredDevices(getActivity(),
-                            deviceToAdd);
-                }
-            });
+            AppData.getInstance().addToConfiguredDevicesFromOtherThread(editDevice.getDevice());
             dismiss();
         } else {
             Toast.makeText(getActivity(), R.string.device_test_not_reachable, Toast.LENGTH_SHORT).show();

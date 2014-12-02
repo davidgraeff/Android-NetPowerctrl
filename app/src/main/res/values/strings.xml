@@ -148,8 +148,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="help_devices">On this screen you may see all automatically found devices. Click on an entry within the category "Unknown Devices" to open the new device wizard. Click the refresh button on the top right to search the network again. UDP have to be enabled on your devices to be found automatically. If you want to add a device that was not found, you may do so by clicking the add button.</string>
     <string name="empty_no_outlets_no_devices">Welcome!\nWith this app you may control Anel devices. First you have to configure some devices though. Use the navigation to come back to the outlet overview. Open the navigation from anywhere in your app by swiping from the left edge of the screen.</string>
     <string name="log_screen">Log</string>
-    <string name="preference_use_log_energy_saving_mode">Log: Energy saving mode</string>
-    <string name="preference_use_log_energy_saving_mod_summary">Log all activities of the energy saving mode</string>
+    <string name="preference_use_log_energy">Log: Energy saving mode</string>
+    <string name="preference_use_log_energy_summary">Log all activities of the energy saving mode</string>
     <string name="menu_log_send_mail">Send the log to the developer</string>
     <string name="help_log">All logged events. You should clear the log regularly.</string>
     <string name="log_activated">Log has been activated</string>
@@ -350,4 +350,10 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="icon_state_off">Ausgeschaltet</string>
     <string name="icon_state_on">Eingeschaltet</string>
     <string name="scene_elements">Szenenelemente</string>
+    <string name="log_send_mail_confirmation">Die Logdaten werden an den Entwickler per Fehlerbericht gesendet. Daten jetzt senden?</string>
+    <string name="preference_use_log_alarm">Log: Alarm</string>
+    <string name="preference_use_log_alarm_summary">Log all alarm activities</string>
+    <string name="preference_log_detect">Log: Geräteerkennung</string>
+    <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
+    <string name="error_plugin_removed">Plugin wurde entfernt!</string>
 </resources>

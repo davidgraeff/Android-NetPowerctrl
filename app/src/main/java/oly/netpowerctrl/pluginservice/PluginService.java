@@ -3,14 +3,11 @@ package oly.netpowerctrl.pluginservice;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +32,7 @@ import oly.netpowerctrl.utils.Logging;
 public class PluginService extends Service implements onDataQueryCompleted, onDataLoaded {
     public static final ServiceReadyObserver observersServiceReady = new ServiceReadyObserver();
     public static final ServiceModeChangedObserver observersServiceModeChanged = new ServiceModeChangedObserver();
+    public static final PluginsReadyObserver observersPluginsReady = new PluginsReadyObserver();
     private static final String TAG = "NetpowerctrlService";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private static final String PAYLOAD_SERVICE_NAME = "SERVICE_NAME";
@@ -64,18 +62,10 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      * not in range, this variable is set to true.
      */
 
-    private final SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-            if (SharedPrefs.getInstance().isPreferenceNameLogEnergySaveMode(s)) {
-                if (SharedPrefs.getInstance().logEnergySaveMode())
-                    Logging.appendLog(PluginService.this, "Energiesparen abgeschaltet");
-                wakeupAllDevices();
-            }
-        }
-    };
+
     // Debug
     private boolean notificationAfterNextRefresh;
+    private DataQueryFinishedMessageRunnable afterDataQueryFinishedHandler = new DataQueryFinishedMessageRunnable();
 
     public static boolean isWirelessLanConnected(Context context) {
         @SuppressWarnings("ConstantConditions")
@@ -146,12 +136,12 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      */
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
-        Log.w(TAG, "start service");
-
         if (mDiscoverService != null) {
             TimerCollection.checkAndExecuteAlarm();
             return super.onStartCommand(intent, flags, startId);
         }
+
+        Logging.getInstance().logMain("START");
 
         if (mDiscoverServiceRefCount == 0)
             mDiscoverServiceRefCount = 1;
@@ -159,10 +149,6 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         mDiscoverService = this;
 
         plugins.add(new AnelPlugin());
-
-        // Listen to preferences changes
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         AppData.observersDataQueryCompleted.register(this);
         AppData.observersOnDataLoaded.register(this);
@@ -174,12 +160,14 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
 
     public void discoverExtensions() {
         if (SharedPrefs.getInstance().getLoadExtensions()) {
+            Logging.getInstance().logExtensions("Suche neue Erweiterungen");
             Intent i = new Intent(PLUGIN_QUERY_ACTION);
             i.addFlags(Intent.FLAG_FROM_BACKGROUND);
             i.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             //i.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
             i.putExtra(PAYLOAD_SERVICE_NAME, MainActivity.class.getCanonicalName());
             List<ResolveInfo> list = getPackageManager().queryIntentServices(i, 0);
+            observersPluginsReady.setPluginCount(list.size());
             for (ResolveInfo resolveInfo : list) {
                 extensionDiscovered(resolveInfo.serviceInfo.name, resolveInfo.loadLabel(getPackageManager()).toString(), resolveInfo.serviceInfo.packageName);
             }
@@ -193,16 +181,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             unregisterReceiver(networkChangedListener);
         }
 
-        // Unregister from preferences changes
-        try {
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-            sp.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener);
-        } catch (IllegalArgumentException ignored) {
-        }
-
-        // Logging
-        if (SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(this, "ENDE: Hintergrunddienste aus");
+        Logging.getInstance().logMain("ENDE");
 
         enterNetworkReducedMode();
 
@@ -233,8 +212,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         // Stop listening for network changes
         if (!SharedPrefs.getInstance().isWakeUpFromEnergySaving()) {
             networkChangedListener.unregister(this);
-            if (SharedPrefs.getInstance().logEnergySaveMode())
-                Logging.appendLog(this, "Netzwerkwechsel nicht mehr überwacht. Manuelle Suche erforderlich.");
+            Logging.getInstance().logEnergy("Netzwerkwechsel nicht mehr überwacht!");
         }
     }
 
@@ -244,68 +222,76 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     public void wakeupAllDevices() {
         observersServiceModeChanged.onServiceModeChanged(false);
 
-        if (SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(this, "Alle Geräte aufgeweckt");
+        Logging.getInstance().logEnergy("Alle Geräte aufgeweckt");
 
         for (PluginInterface pluginInterface : plugins)
             pluginInterface.enterFullNetworkState(this, null);
 
         networkChangedListener.registerReceiver(this);
-        if (networkChangedListener.isNetworkChangedListener && SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(this, "Netzwerkwechsel überwacht");
+        if (networkChangedListener.isNetworkChangedListener)
+            Logging.getInstance().logEnergy("Netzwerkwechsel überwacht");
     }
 
     private void extensionDiscovered(String serviceName, String localized_name, String packageName) {
         if (serviceName == null || serviceName.isEmpty() || packageName == null || packageName.isEmpty()) {
-            if (SharedPrefs.getInstance().logExtensions())
-                Logging.appendLog(this, localized_name + "failed");
+            observersPluginsReady.decreasePluginCount();
+            Logging.getInstance().logExtensions(localized_name + " Fehler!");
             Log.e(TAG, localized_name + " failed");
             return;
         }
-
-        Log.w(TAG, "Extension: " + serviceName + " " + localized_name + " " + packageName);
 
         /**
          * We received a message from a plugin, we already know: ignore
          */
         for (PluginInterface pi : plugins) {
             if (pi instanceof PluginRemote && ((PluginRemote) pi).serviceName.equals(serviceName)) {
+                observersPluginsReady.decreasePluginCount();
                 return;
             }
         }
 
-        final PluginRemote plugin = PluginRemote.create(serviceName, localized_name, packageName);
-
-        if (plugin == null) {
-            return;
-        }
+        final PluginRemote plugin = new PluginRemote(this, serviceName, localized_name, packageName);
+        Logging.getInstance().logExtensions("Hinzufügen: " + localized_name);
+        plugins.add(plugin);
+        plugin.enterFullNetworkState(PluginService.this, null);
 
         plugin.registerReadyObserver(new onPluginReady() {
             @Override
             public void onPluginReady(PluginRemote plugin) {
-                plugins.add(plugin);
-                plugin.enterFullNetworkState(PluginService.this, null);
+                Logging.getInstance().logExtensions("Aktiv: " + plugin.serviceName);
                 if (AppData.observersOnDataLoaded.dataLoaded)
                     updatePluginReferencesInDevices(plugin, false);
+                observersPluginsReady.decreasePluginCount();
             }
 
             @Override
-            public void onFinished(PluginRemote plugin) {
+            public void onPluginFailedToInit(PluginRemote plugin) {
+                Logging.getInstance().logExtensions("Fehler: " + plugin.serviceName);
+                if (AppData.observersOnDataLoaded.dataLoaded)
+                    updatePluginReferencesInDevices(plugin, false);
+                observersPluginsReady.decreasePluginCount();
+            }
+
+            @Override
+            public void onPluginFinished(PluginRemote plugin) {
                 removeExtension(plugin);
             }
         });
     }
 
-    private void updatePluginReferencesInDevices(PluginInterface plugin, boolean updateChangesFlag) {
+    private boolean updatePluginReferencesInDevices(PluginInterface plugin, boolean updateChangesFlag) {
+        boolean affectedDevices = false;
         DeviceCollection deviceCollection = AppData.getInstance().deviceCollection;
         for (Device device : deviceCollection.getItems()) {
             if (device.getPluginInterface() != plugin && device.pluginID.equals(plugin.getPluginID())) {
+                affectedDevices = true;
                 device.setPluginInterface(plugin);
                 if (updateChangesFlag)
                     device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
                 AppData.getInstance().updateExistingDevice(device);
             }
         }
+        return affectedDevices;
     }
 
     private PluginInterface getPluginByID(String pluginID) {
@@ -316,6 +302,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     }
 
     public void removeExtension(PluginRemote plugin) {
+        Logging.getInstance().logExtensions("Entfernen: " + plugin.serviceName);
         plugins.remove(plugin);
         removePluginReferencesInDevices(plugin);
     }
@@ -326,7 +313,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         for (Device device : deviceCollection.getItems()) {
             if (plugin == null || device.getPluginInterface() == plugin) {
                 device.setPluginInterface(null);
-                device.setStatusMessageAllConnections(getString(R.string.error_plugin_not_installed));
+                device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
                 device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
                 AppData.getInstance().updateExistingDevice(device);
             }
@@ -390,18 +377,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         if (notificationAfterNextRefresh) {
             notificationAfterNextRefresh = false;
             // Show notification 500ms later, to also aggregate new devices for the message
-            App.getMainThreadHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //noinspection ConstantConditions
-                    Toast.makeText(App.instance,
-                            App.instance.getString(R.string.devices_refreshed,
-                                    AppData.getInstance().getReachableConfiguredDevices(),
-                                    AppData.getInstance().unconfiguredDeviceCollection.size()),
-                            Toast.LENGTH_SHORT
-                    ).show();
-                }
-            }, 500);
+            DataQueryFinishedMessageRunnable.show(afterDataQueryFinishedHandler);
         }
 
         TimerCollection.checkAndExecuteAlarm();
@@ -414,8 +390,14 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         for (PluginInterface pluginInterface : plugins)
             updatePluginReferencesInDevices(pluginInterface, false);
 
-        observersServiceReady.onServiceReady(PluginService.this);
-        AppData.getInstance().refreshDeviceData(false);
+        observersPluginsReady.register(new onPluginsReady() {
+            @Override
+            public boolean onPluginsReady() {
+                observersServiceReady.onServiceReady(PluginService.this);
+                AppData.getInstance().refreshDeviceData(false);
+                return false;
+            }
+        });
 
         return false;
     }

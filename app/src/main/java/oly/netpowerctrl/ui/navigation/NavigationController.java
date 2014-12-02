@@ -8,6 +8,7 @@ import android.app.FragmentTransaction;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -48,6 +49,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
     private final ArrayList<DrawerStateChanged> observers = new ArrayList<>();
     private final List<BackStackEntry> backstack = new ArrayList<>();
     OnNavigationBackButtonPressed onNavigationBackButtonPressed;
+    @Nullable
     private DrawerLayout mDrawerLayout;
     private RecyclerView mRecyclerView;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -190,13 +192,15 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             return;
         this.onNavigationBackButtonPressed = onNavigationBackButtonPressed;
         mDrawerToggle = null;
-        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        if (mDrawerLayout != null)
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE);
         context.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_USE_LOGO |
                 ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
     }
 
     public void createDrawerToggle() {
+        if (mDrawerLayout == null) return;
         onNavigationBackButtonPressed = null;
         mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
         ActionBarActivity context = mDrawerActivity.get();
@@ -234,19 +238,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         }
     }
 
-    public void menuKeyPressed() {
-        if (isLoading() || mDrawerLayout == null)
-            return;
-
-        boolean drawerControllableByMenuKey = false;
-        if (drawerControllableByMenuKey) {
-            if (mDrawerLayout.isDrawerOpen(mRecyclerView))
-                mDrawerLayout.closeDrawer(mRecyclerView);
-            else
-                mDrawerLayout.openDrawer(mRecyclerView);
-        }
-    }
-
     public void saveSelection() {
         if (isLoading())
             return;
@@ -262,8 +253,11 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
 
     public boolean onOptionsItemSelected(MenuItem item) {
         if (mDrawerToggle == null) {
-            onNavigationBackButtonPressed.onNavigationBackButtonPressed();
-            return true;
+            if (onNavigationBackButtonPressed != null) {
+                onNavigationBackButtonPressed.onNavigationBackButtonPressed();
+                return true;
+            }
+            return false;
         } else
             return mDrawerToggle.onOptionsItemSelected(item);
     }
@@ -311,6 +305,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             return;
 
         if (addToBackstack && currentFragmentClass != null) {
+            //noinspection SuspiciousMethodCalls
             int index = backstack.indexOf(fragmentClassName);
             if (index != -1)
                 backstack.remove(index);
@@ -438,13 +433,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         changeToFragment(item.fragmentClassName, item.mExtra, true, position);
         return true;
     }
-
-    public enum RestorePositionEnum {
-        NoRestore,
-        RestoreLastSaved,
-        RestoreAfterConfigurationChanged
-    }
-
 
     public interface OnNavigationBackButtonPressed {
         void onNavigationBackButtonPressed();

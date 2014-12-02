@@ -25,7 +25,7 @@ public interface PluginInterface {
 
     void requestData(Device device, int device_connection_id);
 
-    void execute(DevicePort port, final int command, onExecutionFinished callback);
+    boolean execute(DevicePort port, final int command, onExecutionFinished callback);
 
     void addToTransaction(DevicePort port, final int command);
 

@@ -266,8 +266,10 @@ public class Timer implements StorableInterface {
 
     public NextAlarm getNextAlarmUnixTime(long currentTime) {
         NextAlarm nextAlarm = new NextAlarm();
+        Calendar calendar_current = Calendar.getInstance();
         Calendar calendar_start = Calendar.getInstance();
         Calendar calendar_stop = Calendar.getInstance();
+        calendar_current.setTimeInMillis(currentTime);
         calendar_start.setTimeInMillis(currentTime);
         calendar_stop.setTimeInMillis(currentTime);
         int day = calendar_start.get(Calendar.DAY_OF_WEEK) - 1; // start with 1: Sunday
@@ -281,7 +283,7 @@ public class Timer implements StorableInterface {
             calendar_start.set(Calendar.MINUTE, getMinute(hour_minute_start));
             for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
                 if (weekdays[(additionalDays + day) % 7]) {
-                    if (calendar_start.before(Calendar.getInstance())) {
+                    if (calendar_start.before(calendar_current)) {
                         calendar_start.add(Calendar.HOUR_OF_DAY, 24);
                         continue;
                     }
@@ -298,10 +300,11 @@ public class Timer implements StorableInterface {
             calendar_stop.set(Calendar.MINUTE, getMinute(hour_minute_stop));
             for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
                 if (weekdays[(additionalDays + day) % 7]) {
-                    if (calendar_stop.before(Calendar.getInstance())) {
+                    if (calendar_stop.before(calendar_current)) {
                         calendar_stop.add(Calendar.HOUR_OF_DAY, 24);
                         continue;
                     }
+                    // Use the stop time if it is before the start time or the start time is not set
                     if (calendar == null || calendar.after(calendar_stop)) {
                         calendar = calendar_stop;
                         nextAlarm.command = DevicePort.OFF;

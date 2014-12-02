@@ -146,8 +146,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Du musst auf deinen Geräten UDP für die automatische Einrichtung eingeschaltet haben! Benutze den Plus-Button um ein Gerät einzurichten, welches nicht automatisch gefunden wurde.</string>
     <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
     <string name="log_screen">Logbuch</string>
-    <string name="preference_use_log_energy_saving_mode">Log: Energiesparmodus</string>
-    <string name="preference_use_log_energy_saving_mod_summary">Alle Energiespar-Aktivitäten mitloggen</string>
+    <string name="preference_use_log_energy">Log: Energiesparmodus</string>
+    <string name="preference_use_log_energy_summary">Alle Energiespar-Aktivitäten mitloggen</string>
     <string name="menu_log_send_mail">Dem Entwickler das Logbuch per Mail senden</string>
     <string name="help_log">Hier siehst du alle mitgeloggten Ereignisse. Das Log sollte regelmäßig geleert werden, da es Speicherplatz auf der SD-Karte verwendet.</string>
     <string name="log_activated">Log wurde aktiviert</string>
@@ -354,4 +354,10 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="icon_state_off">Ausgeschaltet</string>
     <string name="icon_state_on">Eingeschaltet</string>
     <string name="scene_elements">Szenenelemente</string>
+    <string name="log_send_mail_confirmation">Die Logdaten werden an den Entwickler per Fehlerbericht gesendet. Daten jetzt senden?</string>
+    <string name="preference_use_log_alarm">Log: Alarm</string>
+    <string name="preference_use_log_alarm_summary">Log all alarm activities</string>
+    <string name="preference_log_detect">Log: Geräteerkennung</string>
+    <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
+    <string name="error_plugin_removed">Plugin wurde entfernt!</string>
 </resources>

@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
-    <changelogversion changeDate="22. November 2014" versionName="6.9.1">
+    <changelogversion changeDate="26. November 2014" versionName="6.9.3">
+        <changelogimprovement>Verbessertes Logbuch. Alarm-, Erweiterungen-, Widgets-, und
+            Geräteerkennungsereignisse können aufgezeichnet werden.
+        </changelogimprovement>
+        <changelogbug>Erweiterungen erst vollständig laden vor dem Ausführen einer Szene oder eines
+            Alarms
+        </changelogbug>
+        <changelogbug>Import/Export Backup Passwort bei Erststart generieren</changelogbug>
+        <changelogbug>Fehler bei den Android Zeitschaltungen behoben</changelogbug>
+        <changelogbug>Backup Passwort bei Erststart generieren</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="22. November 2014" versionName="6.9.1-6.9.2">
         <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleineren
             Bildschirmen
         </changelogimprovement>
@@ -10,6 +22,9 @@
             auf
         </changelogbug>
         <changelogbug>Plugin nicht installiert Meldung behoben</changelogbug>
+        <changelogbug>Ladefehler beim Start behoben, wenn Daten von Version 5.x noch vorhanden
+            waren
+        </changelogbug>
     </changelogversion>
 
     <changelogversion changeDate="20. November 2014" versionName="6.9">

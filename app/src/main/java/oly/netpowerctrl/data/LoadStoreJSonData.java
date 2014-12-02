@@ -51,10 +51,11 @@ public class LoadStoreJSonData implements onStorageUpdate {
     public void clear(CollectionWithType collection) {
         File dir = new File(App.instance.getFilesDir(), collection.type());
         String[] children = dir.list();
-        for (String aChildren : children) {
-            //noinspection ResultOfMethodCallIgnored
-            new File(dir, aChildren).delete();
-        }
+        if (children != null)
+            for (String aChildren : children) {
+                //noinspection ResultOfMethodCallIgnored
+                new File(dir, aChildren).delete();
+            }
     }
 
     /**
@@ -109,10 +110,13 @@ public class LoadStoreJSonData implements onStorageUpdate {
     void readOtherThreadCollection(CollectionWithStorableItems<COLLECTION, ITEM> collection,
                                    Class<ITEM> classType, boolean keepOnFailure) throws IllegalAccessException, InstantiationException {
 
-        File files = new File(App.instance.getFilesDir(), collection.type());
+        File fileDir = new File(App.instance.getFilesDir(), collection.type());
 
         collection.getItems().clear();
-        for (File file : files.listFiles()) {
+        File[] files = fileDir.listFiles();
+        if (files == null)
+            return;
+        for (File file : files) {
             ITEM item = classType.newInstance();
             try {
                 item.load(new FileInputStream(file));

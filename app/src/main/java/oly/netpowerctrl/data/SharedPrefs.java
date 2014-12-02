@@ -43,6 +43,7 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
 
     private SharedPrefs() {
         this.context = App.instance;
+        setBackupPassword(getBackupPassword());
         PreferenceManager.getDefaultSharedPreferences(context).registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -75,6 +76,16 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String value = context.getResources().getString(R.string.default_fallback_icon_set);
         return prefs.getString(PREF_default_fallback_icon_set, value);
+    }
+
+    public static long getNextAlarmCheckTimestamp(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getLong("next_alarm_timestamp", -1);
+    }
+
+    public static void setNextAlarmCheckTimestamp(Context context, long next_alarm_timestamp) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putLong("next_alarm_timestamp", next_alarm_timestamp).apply();
     }
 
     public void setDefaultFallbackIconSet(String new_theme) {
@@ -253,9 +264,9 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         prefs.edit().putInt("OutletsViewType", type).apply();
     }
 
-    public boolean logEnergySaveMode() {
+    public boolean logEnergy() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean("use_log_energy_saving_mode", false);
+        return prefs.getBoolean("use_log_energy", false);
     }
 
     public boolean logExtensions() {
@@ -263,8 +274,23 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return prefs.getBoolean("use_log_extensions", false);
     }
 
-    public boolean isPreferenceNameLogEnergySaveMode(String name) {
-        return name.equals("use_log_energy_saving_mode");
+    public boolean logAlarm() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("use_log_alarm", false);
+    }
+
+    public boolean logWidget() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("use_log_widgets", false);
+    }
+
+    public boolean logDetection() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("use_log_detect", false);
+    }
+
+    public boolean isPreferenceNameLogs(String name) {
+        return name.equals("use_log_energy") || name.equals("use_log_extensions") || name.equals("use_log_alarm") || name.equals("use_log_widgets") || name.equals("use_log_detect");
     }
 
     /**

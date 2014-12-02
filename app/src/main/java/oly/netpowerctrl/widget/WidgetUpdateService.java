@@ -43,6 +43,7 @@ import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
+import oly.netpowerctrl.utils.Logging;
 
 /**
  * Widget Update Service
@@ -59,6 +60,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     private AppWidgetManager appWidgetManager;
     private int[] updateWidgetIDs = null;
     private boolean initDone = false;
+    private String stopReason = "";
 
     static public void ForceUpdate(Context ctx, int widgetId) {
         Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
@@ -89,8 +91,10 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     @Override
     public void onDestroy() {
-        if (PluginService.isServiceReady() && allWidgets.size() > 0)
-            InAppNotifications.showException(this, null, "WidgetService: Unexpected request to close");
+        if (PluginService.isServiceReady() && allWidgets.size() > 0 && !stopReason.isEmpty())
+            InAppNotifications.silentException(new Exception("WidgetService: Unexpected request to close: " + stopReason));
+
+        Logging.getInstance().logWidgets("Service close");
 
         /**
          * If the service is kept running but now should be finished (preferences changed,
@@ -135,11 +139,13 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         // Exit if no widgets
         if (updateWidgetIDs == null || updateWidgetIDs.length == 0) {
+            stopReason = "onStart:no widgets";
             stopSelf();
             return START_NOT_STICKY;
         }
 
         if (!initDone) {
+            Logging.getInstance().logWidgets("Service start");
             initDone = true;
             AppData.useAppData();
             PluginService.useService();
@@ -194,6 +200,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
             // Exit if no widgets
             if (allWidgets.size() == 0) {
+                stopReason = "preCheckUpdate: no widgets";
                 stopSelf();
                 return;
             }
@@ -202,6 +209,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         if (widgetClicks.size() > 0) {
+            Logging.getInstance().logWidgets("Handle Clicks");
             for (WidgetClick widgetClick : widgetClicks)
                 executeSingleAction(widgetClick.uuid);
             widgetClicks.clear();
@@ -264,7 +272,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         final long currentTime = System.currentTimeMillis();
         AppData.getInstance().executeToggle(executable, new onExecutionFinished() {
             @Override
-            public void onExecutionProgress(int current, int all) {
+            public void onExecutionProgress(int success, int errors, int all) {
                 // Fail safe: If no response from the device, we set the widget to broken state
                 if (widgetEntry.device != null)
                     App.getMainThreadHandler().postDelayed(new Runnable() {
@@ -376,13 +384,13 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     @Override
     public void onServiceFinished() {
-        if (PluginService.isServiceUsed())
-            InAppNotifications.showException(this, null, "WidgetService: ListenService unexpectedly closed");
+        stopReason = "ListenService finished!";
         stopSelf();
     }
 
     private int finishServiceIfDone() {
         if (allWidgets.size() == 0) {
+            stopReason = "finishServiceIfDone: no widgets";
             stopSelf();
             return START_NOT_STICKY;
         }

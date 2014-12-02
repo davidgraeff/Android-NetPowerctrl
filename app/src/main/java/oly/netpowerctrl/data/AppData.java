@@ -1,6 +1,8 @@
 package oly.netpowerctrl.data;
 
-import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -30,6 +32,7 @@ import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.PluginInterface;
 import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onPluginsReady;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
@@ -48,7 +51,33 @@ public class AppData {
     public static final DataQueryCompletedObserver observersDataQueryCompleted = new DataQueryCompletedObserver();
     public static final DataQueryRefreshObserver observersStartStopRefresh = new DataQueryRefreshObserver();
     public static final DataLoadedObserver observersOnDataLoaded = new DataLoadedObserver();
-
+    /**
+     * Don't use updateDevice from another thread, but AppData.getInstance().updateDeviceFromOtherThread();
+     */
+    public static final int UPDATE_MESSAGE_NEW_DEVICE = 0;
+    public static final int UPDATE_MESSAGE_EXISTING_DEVICE = 1;
+    public static final int UPDATE_MESSAGE_BROKEN_DEVICE = 2;
+    public static final int UPDATE_MESSAGE_ADD_DEVICE = 3;
+    public android.os.Handler updateDeviceHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UPDATE_MESSAGE_NEW_DEVICE:
+                    updateDevice((Device) msg.obj);
+                    break;
+                case UPDATE_MESSAGE_EXISTING_DEVICE:
+                    updateExistingDevice((Device) msg.obj);
+                    break;
+                case UPDATE_MESSAGE_BROKEN_DEVICE:
+                    String[] d = (String[]) msg.obj;
+                    onDeviceErrorByName(d[0], d[1]);
+                    break;
+                case UPDATE_MESSAGE_ADD_DEVICE:
+                    addToConfiguredDevices((Device) msg.obj);
+                    break;
+            }
+        }
+    };
     private static final String TAG = "AppData";
     static int findDevicesRun = 0;
     final public DeviceCollection deviceCollection = new DeviceCollection();
@@ -63,6 +92,20 @@ public class AppData {
      * Detect new devices and check reach-ability of configured devices.
      */
     private boolean isDetecting = false;
+    private Handler restrictDetectingHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            isDetecting = false;
+        }
+    };
+    private onPluginsReady refreshAfterPluginsReady = new onPluginsReady() {
+        @Override
+        public boolean onPluginsReady() {
+            isDetecting = false;
+            refreshDeviceData(false);
+            return false;
+        }
+    };
+    private int temp_success, temp_errors;
 
     private AppData() {
         deviceCollection.registerObserver(sceneCollection.deviceObserver);
@@ -214,9 +257,16 @@ public class AppData {
         unconfiguredDeviceCollection.removeAll();
     }
 
-    public void addToConfiguredDevices(Context context, Device device) {
+    /**
+     * Add the given device to the configured devices. Remove the device from the unconfigured device list
+     * if necessary. Don't use addToConfiguredDevices from another thread,
+     * but AppData.getInstance().addToConfiguredDevicesFromOtherThread();
+     *
+     * @param device
+     */
+    public void addToConfiguredDevices(Device device) {
         if (device.getUniqueDeviceID() == null) {
-            InAppNotifications.showException(context, null, "addToConfiguredDevices. Failed to add device: no unique id!");
+            InAppNotifications.showException(App.instance, null, "addToConfiguredDevices. Failed to add device: no unique id!");
             return;
         }
 
@@ -231,28 +281,24 @@ public class AppData {
 
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
         if (device.getFirstReachableConnection() == null)
-            new DeviceQuery(context, null, device);
+            new DeviceQuery(App.instance, null, device);
+    }
+
+    public void addToConfiguredDevicesFromOtherThread(Device device) {
+        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_ADD_DEVICE, device).sendToTarget();
     }
 
     /**
      * Call this by your plugin if a device changed and you are on another thread
      *
-     * @param device_info The changed device
+     * @param device The changed device
      */
-    public void updateDeviceFromOtherThread(final Device device_info) {
-        App.getMainThreadHandler().post(new Runnable() {
-            public void run() {
-                updateDevice(device_info);
-            }
-        });
+    public void updateDeviceFromOtherThread(final Device device) {
+        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_NEW_DEVICE, device).sendToTarget();
     }
 
-    public void updateExistingDeviceFromOtherThread(final Device device_info) {
-        App.getMainThreadHandler().post(new Runnable() {
-            public void run() {
-                updateExistingDevice(device_info);
-            }
-        });
+    public void updateExistingDeviceFromOtherThread(final Device device) {
+        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_EXISTING_DEVICE, device).sendToTarget();
     }
 
     /**
@@ -325,7 +371,7 @@ public class AppData {
         }
     }
 
-    public void onDeviceErrorByName(Context context, String name, String errMessage) {
+    public void onDeviceErrorByName(String name, String errMessage) {
         // notify observers who are using the DeviceQuery class
         Iterator<DeviceObserverBase> it = updateDeviceStateList.iterator();
         while (it.hasNext()) {
@@ -338,8 +384,8 @@ public class AppData {
         }
 
         // error packet received
-        String error = context.getString(R.string.error_packet_received) + ": " + errMessage;
-        InAppNotifications.FromOtherThread(context, error);
+        String error = App.getAppString(R.string.error_packet_received) + ": " + errMessage;
+        InAppNotifications.FromOtherThread(App.instance, error);
     }
 
     public int getReachableConfiguredDevices() {
@@ -426,7 +472,7 @@ public class AppData {
      * @param scene    The scene to executeToggle
      * @param callback The callback for the execution-done messages
      */
-    public void execute(@NonNull Scene scene, onExecutionFinished callback) {
+    public void execute(@NonNull Scene scene, final onExecutionFinished callback) {
         List<PluginInterface> pluginInterfaces = new ArrayList<>();
         Set<Device> deviceSet = new TreeSet<>();
 
@@ -448,6 +494,7 @@ public class AppData {
             }
         }
 
+        int countValidSceneItems = 0;
         for (SceneItem item : scene.sceneItems) {
             DevicePort devicePort = findDevicePort(item.uuid);
             if (devicePort == null) {
@@ -455,6 +502,7 @@ public class AppData {
                 continue;
             }
 
+            ++countValidSceneItems;
             deviceSet.add(devicePort.device);
 
             PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
@@ -477,8 +525,19 @@ public class AppData {
             PluginService.getService().wakeupPlugin(device);
         }
 
+        temp_success = 0;
+        temp_errors = 0;
+        final int finalCountValidSceneItems = countValidSceneItems;
         for (PluginInterface p : pluginInterfaces) {
-            p.executeTransaction(callback);
+            p.executeTransaction(new onExecutionFinished() {
+                @Override
+                public void onExecutionProgress(int success, int errors, int all) {
+                    temp_success += success;
+                    temp_errors += errors;
+                    if (callback != null)
+                        callback.onExecutionProgress(temp_success, temp_errors, finalCountValidSceneItems);
+                }
+            });
         }
     }
 
@@ -491,7 +550,6 @@ public class AppData {
     public void executeToggle(@NonNull final Executable executable, final onExecutionFinished callback) {
         if (executable instanceof Scene) {
             execute(((Scene) executable), callback);
-            return;
         } else if (executable instanceof DevicePort) {
             DevicePort devicePort = (DevicePort) executable;
             PluginInterface remote = (PluginInterface) devicePort.device.getPluginInterface();
@@ -501,12 +559,11 @@ public class AppData {
             }
 
             if (callback != null)
-                callback.onExecutionProgress(1, findDevicesRun);
-            return;
+                callback.onExecutionProgress(1, 0, 1);
+        } else {
+            if (callback != null)
+                callback.onExecutionProgress(0, 1, 1);
         }
-
-        if (callback != null)
-            callback.onExecutionProgress(1, findDevicesRun);
     }
 
     /**
@@ -521,13 +578,10 @@ public class AppData {
         if (remote != null) {
             PluginService.getService().wakeupPlugin(devicePort.device);
             remote.execute(devicePort, command, callback);
-            return;
+            if (callback != null) callback.onExecutionProgress(1, 0, 1);
+        } else {
+            if (callback != null) callback.onExecutionProgress(0, 1, 1);
         }
-
-        if (callback == null)
-            return;
-
-        callback.onExecutionProgress(1, 1);
     }
 
     public int countNetworkDevices() {
@@ -549,27 +603,23 @@ public class AppData {
         return list;
     }
 
-    public void refreshDeviceData(boolean refreshKnownExtentions) {
-        final int currentRun = ++findDevicesRun;
-
+    public void refreshDeviceData(final boolean refreshKnownExtentions) {
         // The following mechanism allows only one update request within a
         // 1sec timeframe.
         if (isDetecting)
             return;
         isDetecting = true;
 
+        if (!PluginService.observersPluginsReady.isLoaded()) {
+            PluginService.observersPluginsReady.register(refreshAfterPluginsReady);
+            return;
+        } else
+            restrictDetectingHandler.sendEmptyMessageDelayed(0, 1000);
+
+        final int currentRun = ++findDevicesRun;
+
         final long startTime = System.nanoTime();
-        Log.w(TAG, "refreshDeviceData:start " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
-
-        App.getMainThreadHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                isDetecting = false;
-            }
-        }, 1000);
-
-        if (SharedPrefs.getInstance().logEnergySaveMode())
-            Logging.appendLog(App.instance, "Energiesparen aus: Suche Geräte");
+        Logging.getInstance().logEnergy("Suche Geräte\n" + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun));
 
         observersStartStopRefresh.onRefreshStateChanged(true);
 
@@ -584,7 +634,7 @@ public class AppData {
 
             @Override
             public void onObserverJobFinished(List<Device> timeout_devices) {
-                Log.w(TAG, "refreshDeviceData:job_finished " + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " " + String.valueOf(currentRun) + " timeout " + String.valueOf(timeout_devices.size()));
+                Logging.getInstance().logEnergy("Suche Geräte fertig\n" + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " Timeout: " + String.valueOf(timeout_devices.size()));
                 observersDataQueryCompleted.onDataQueryFinished(timeout_devices.size() == countNetworkDevices());
                 observersStartStopRefresh.onRefreshStateChanged(false);
             }
