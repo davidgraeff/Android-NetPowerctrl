@@ -80,8 +80,7 @@
             android:layout_marginBottom="20dp"
             android:layout_toLeftOf="@id/alarm_start_help_icon"
             android:layout_toStartOf="@id/alarm_start_help_icon"
-            android:singleLine="true"
-            android:timePickerMode="clock" />
+            android:timePickerMode="spinner" />
 
         <!--  stop time -->
         <CheckBox
@@ -111,8 +110,7 @@
             android:layout_marginBottom="20dp"
             android:layout_toLeftOf="@id/alarm_stop_help_icon"
             android:layout_toStartOf="@id/alarm_stop_help_icon"
-            android:singleLine="true"
-            android:timePickerMode="clock" />
+            android:timePickerMode="spinner" />
 
         <!--  Weekdays -->
         <ImageButton

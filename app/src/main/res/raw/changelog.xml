@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
-    <changelogversion changeDate="26. November 2014" versionName="6.9.3">
+    <changelogversion changeDate="03. Dezember 2014" versionName="6.9.4">
+        <changelogimprovement>Android-Zeitschaltungen werden beim Neustart des Geräts
+            wiederhergestellt
+        </changelogimprovement>
+        <changelogbug>Viele Fehler bei Verwendung der App auf Tablets behoben</changelogbug>
+        <changelogbug>Fehler auf Android 5.0 Systemen behoben</changelogbug>
+        <changelogbug>Laden/Speichern konnte zu Abstürzen führen</changelogbug>
+        <changelogbug>Erststart-Assistent stürzte unter bestimmten Umständen ab</changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="22. November 2014" versionName="6.9.1-6.9.3">
         <changelogimprovement>Verbessertes Logbuch. Alarm-, Erweiterungen-, Widgets-, und
             Geräteerkennungsereignisse können aufgezeichnet werden.
+        </changelogimprovement>
+        <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleineren
+            Bildschirmen
+        </changelogimprovement>
+        <changelogimprovement>Verbesserte Ansicht des Zeitschaltungen-Fensters
         </changelogimprovement>
         <changelogbug>Erweiterungen erst vollständig laden vor dem Ausführen einer Szene oder eines
             Alarms
@@ -10,14 +25,6 @@
         <changelogbug>Import/Export Backup Passwort bei Erststart generieren</changelogbug>
         <changelogbug>Fehler bei den Android Zeitschaltungen behoben</changelogbug>
         <changelogbug>Backup Passwort bei Erststart generieren</changelogbug>
-    </changelogversion>
-
-    <changelogversion changeDate="22. November 2014" versionName="6.9.1-6.9.2">
-        <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleineren
-            Bildschirmen
-        </changelogimprovement>
-        <changelogimprovement>Verbesserte Ansicht des Zeitschaltungen-Fensters
-        </changelogimprovement>
         <changelogbug>Gelöschte Zeitschaltungen tauchen nun nicht mehr in der Zeitschaltungen Liste
             auf
         </changelogbug>
