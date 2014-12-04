@@ -1,5 +1,7 @@
 package oly.netpowerctrl.executables;
 
+import android.support.annotation.NonNull;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -65,7 +67,7 @@ public class ExecutablesSourceScenes extends ExecutablesSourceBase implements on
     }
 
     @Override
-    public boolean updated(Object collection, Scene scene, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull Object collection, Scene scene, @NonNull ObserverUpdateActions action, int position) {
         if (adapterWeakReference == null || scene == null)
             return true;
 

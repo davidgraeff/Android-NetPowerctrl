@@ -1,5 +1,6 @@
 package oly.netpowerctrl.executables;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -104,7 +105,7 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
     }
 
     @Override
-    public boolean updated(Object collection, Device device, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull Object collection, Device device, @NonNull ObserverUpdateActions action, int position) {
         if (adapterWeakReference == null || device == null)
             return true;
 

@@ -1,5 +1,7 @@
 package oly.netpowerctrl.executables;
 
+import android.support.annotation.NonNull;
+
 import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
@@ -51,7 +53,7 @@ public class ExecutablesSourceGroups extends ExecutablesSourceBase implements on
     }
 
     @Override
-    public boolean updated(Object collection, Object item, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull Object collection, Object item, @NonNull ObserverUpdateActions action, int position) {
         if (adapterWeakReference == null || item == null)
             return true;
 

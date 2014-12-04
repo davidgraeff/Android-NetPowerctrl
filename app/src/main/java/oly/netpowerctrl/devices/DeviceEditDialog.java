@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -28,7 +27,6 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.PluginService;
 
 public class DeviceEditDialog extends DialogFragment implements onCreateDeviceResult {
@@ -132,9 +130,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
         btnAddHttp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DeviceEditNewHttpDialog dialog = (DeviceEditNewHttpDialog) Fragment.instantiate(getActivity(), DeviceEditNewHttpDialog.class.getName());
-                dialog.setDevice(device);
-                MainActivity.getNavigationController().changeToDialog(getActivity(), dialog);
+                DeviceEditNewHttpDialog.show(getActivity(), device);
             }
         });
         btnAddHttpHelp = (ImageButton) rootView.findViewById(R.id.device_new_http_help_icon);

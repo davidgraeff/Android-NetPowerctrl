@@ -1,9 +1,11 @@
 package oly.netpowerctrl.devices;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,7 +21,11 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.main.MainActivity;
 
+/**
+ * This dialog allows the user to setup a new
+ */
 public class DeviceEditNewHttpDialog extends DialogFragment {
     private Device device;
     private ProgressBar progressBar;
@@ -30,6 +36,12 @@ public class DeviceEditNewHttpDialog extends DialogFragment {
     private DeviceConnectionHTTP newDeviceConnection = null;
 
     public DeviceEditNewHttpDialog() {
+    }
+
+    public static void show(Activity context, Device device) {
+        DeviceEditNewHttpDialog dialog = (DeviceEditNewHttpDialog) Fragment.instantiate(context, DeviceEditNewHttpDialog.class.getName());
+        dialog.device = device;
+        MainActivity.getNavigationController().changeToDialog(context, dialog);
     }
 
     @Override
@@ -144,9 +156,5 @@ public class DeviceEditNewHttpDialog extends DialogFragment {
                 }
             }
         }.execute();
-    }
-
-    public void setDevice(Device devicePort) {
-        this.device = devicePort;
     }
 }

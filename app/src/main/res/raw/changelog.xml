@@ -8,6 +8,8 @@
         <changelogbug>Fehler auf Android 5.0 Systemen behoben</changelogbug>
         <changelogbug>Laden/Speichern konnte zu Abstürzen führen</changelogbug>
         <changelogbug>Erststart-Assistent stürzte unter bestimmten Umständen ab</changelogbug>
+        <changelogbug>Android 4.0.3 und 4.0.4 Fehler bzgl. Hardwarebeschleunigung umgangen
+        </changelogbug>
     </changelogversion>
 
     <changelogversion changeDate="22. November 2014" versionName="6.9.1-6.9.3">

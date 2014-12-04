@@ -1,5 +1,6 @@
 package oly.netpowerctrl.scenes;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
 
     public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
         @Override
-        public boolean updated(DeviceCollection deviceCollection, Device device, ObserverUpdateActions action, int position) {
+        public boolean updated(@NonNull DeviceCollection deviceCollection, @Nullable Device device, @NonNull ObserverUpdateActions action, int position) {
             if (device == null || (action != ObserverUpdateActions.UpdateAction && action != ObserverUpdateActions.ConnectionUpdateAction))
                 return true;
 

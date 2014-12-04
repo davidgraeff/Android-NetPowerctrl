@@ -1,6 +1,7 @@
 package oly.netpowerctrl.timer;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -148,7 +149,7 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
 
 
     @Override
-    public boolean updated(TimerCollection timerCollection, Timer timer, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull TimerCollection timerCollection, Timer timer, @NonNull ObserverUpdateActions action, int position) {
         notifyDataSetChanged();
         return true;
     }

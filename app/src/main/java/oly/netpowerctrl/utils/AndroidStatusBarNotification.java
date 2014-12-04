@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -113,7 +114,7 @@ public class AndroidStatusBarNotification {
             if (collectionUpdateListener == null) {
                 collectionUpdateListener = new onCollectionUpdated<FavCollection, FavCollection.FavItem>() {
                     @Override
-                    public boolean updated(FavCollection collection, FavCollection.FavItem item, ObserverUpdateActions action, int position) {
+                    public boolean updated(@NonNull FavCollection collection, FavCollection.FavItem item, @NonNull ObserverUpdateActions action, int position) {
                         setEnabled(context, true);
                         return true;
                     }

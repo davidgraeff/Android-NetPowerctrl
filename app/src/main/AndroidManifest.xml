@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="oly.netpowerctrl">
 
     <!-- Api level 14: Android 4.0 15. Dezember 2011 -->
@@ -29,11 +28,13 @@
         android:name="android.hardware.nfc"
         android:required="false" />
 
-    <uses-sdk tools:node="replace" />
+    <uses-sdk />
 
+    <!-- isNotIceCreamSandwich: bug fix for android 4.0.3 and 4.0.4 -->
     <application
         android:name=".main.App"
         android:allowBackup="true"
+        android:hardwareAccelerated="@bool/isNotIceCreamSandwich"
         android:icon="@drawable/netpowerctrl"
         android:label="@string/app_name"
         android:supportsRtl="true">

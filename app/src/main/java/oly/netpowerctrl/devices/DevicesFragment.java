@@ -313,6 +313,10 @@ public class DevicesFragment extends Fragment
                 PluginInterface pluginInterface = (PluginInterface) current_device.getPluginInterface();
                 if (pluginInterface != null)
                     pluginInterface.openConfigurationPage(current_device, getActivity());
+                return true;
+            case R.id.menu_device_share:
+                DeviceShareFragment.show(getActivity(), current_device);
+                return true;
             default:
                 return false;
         }

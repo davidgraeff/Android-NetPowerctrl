@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -420,7 +421,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     @Override
-    public boolean updated(Object collection, Object item, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull Object collection, Object item, @NonNull ObserverUpdateActions action, int position) {
         //Log.w("widget", di != null ? di.DeviceName : "empty di");
         if (item == null)
             return true;

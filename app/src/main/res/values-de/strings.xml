@@ -360,4 +360,5 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_log_detect">Log: Geräteerkennung</string>
     <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
     <string name="error_plugin_removed">Plugin wurde entfernt!</string>
+    <string name="menu_device_share">Share device to network</string>
 </resources>

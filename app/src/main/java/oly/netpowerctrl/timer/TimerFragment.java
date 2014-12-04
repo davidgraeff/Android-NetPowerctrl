@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -197,7 +198,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
-    public boolean updated(TimerCollection timerCollection, Timer timer, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull TimerCollection timerCollection, Timer timer, @NonNull ObserverUpdateActions action, int position) {
         boolean inProgress = timerCollection.isRequestActive();
         if (inProgress) {
             progressText.setText(getString(R.string.alarm_receiving, timerCollection.countAllDeviceAlarms()));

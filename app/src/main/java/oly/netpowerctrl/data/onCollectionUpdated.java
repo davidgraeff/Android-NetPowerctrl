@@ -1,5 +1,8 @@
 package oly.netpowerctrl.data;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 /**
  * Created by david on 01.09.14.
  */
@@ -11,5 +14,5 @@ public interface onCollectionUpdated<COLLECTION, ITEM> {
      *
      * @return Return false to be removed as listener for further events
      */
-    boolean updated(COLLECTION collection, ITEM item, ObserverUpdateActions action, int position);
+    boolean updated(@NonNull COLLECTION collection, @Nullable ITEM item, @NonNull ObserverUpdateActions action, int position);
 }

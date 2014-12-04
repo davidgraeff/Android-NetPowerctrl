@@ -348,12 +348,12 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="statusbar_no_favourites">No favourites defined</string>
     <string name="icon_state_undefined">Unbestimmt</string>
     <string name="icon_state_off">Ausgeschaltet</string>
-    <string name="icon_state_on">Eingeschaltet</string>
-    <string name="scene_elements">Szenenelemente</string>
+    <string name="icon_state_on">Eingeschaltet</string>g>
     <string name="log_send_mail_confirmation">Die Logdaten werden an den Entwickler per Fehlerbericht gesendet. Daten jetzt senden?</string>
     <string name="preference_use_log_alarm">Log: Alarm</string>
     <string name="preference_use_log_alarm_summary">Log all alarm activities</string>
     <string name="preference_log_detect">Log: Geräteerkennung</string>
     <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
     <string name="error_plugin_removed">Plugin wurde entfernt!</string>
+    <string name="menu_device_share">Share device to network</string>
 </resources>

@@ -1,5 +1,6 @@
 package oly.netpowerctrl.outletsview;
 
+import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 
@@ -36,7 +37,7 @@ public class GroupPagerAdapter extends PagerAdapter implements onCollectionUpdat
     }
 
     @Override
-    public boolean updated(GroupCollection groupCollection, Group group, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull GroupCollection groupCollection, Group group, @NonNull ObserverUpdateActions action, int position) {
         count = AppData.getInstance().groupCollection.size() + 1;
         notifyDataSetChanged();
         return true;

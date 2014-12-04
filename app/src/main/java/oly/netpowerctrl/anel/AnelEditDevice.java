@@ -3,6 +3,7 @@ package oly.netpowerctrl.anel;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.List;
@@ -95,7 +96,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
     }
 
     @Override
-    public boolean updated(DeviceCollection deviceCollection, Device updated_device, ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull DeviceCollection deviceCollection, Device updated_device, @NonNull ObserverUpdateActions action, int position) {
         if (updated_device.getUniqueDeviceID() == null || !updated_device.equalsByUniqueID(device))
             return true;
 
