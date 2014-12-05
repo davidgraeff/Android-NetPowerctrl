@@ -178,6 +178,17 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             adapterSource.onPause();
     }
 
+    @Override
+    public void onResume() {
+        AppData.observersStartStopRefresh.register(this);
+        PluginService.observersServiceModeChanged.register(this);
+
+        if (adapterSource != null)
+            adapterSource.onResume();
+
+        super.onResume();
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -197,17 +208,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                         mRecyclerView.scrollToPosition(lastScrolledPosition);
                 }
             };
-
-    @Override
-    public void onResume() {
-        AppData.observersStartStopRefresh.register(this);
-        PluginService.observersServiceModeChanged.register(this);
-
-        if (adapterSource != null)
-            adapterSource.onResume();
-
-        super.onResume();
-    }
 
     public void changeArguments(Bundle extra) {
         if (mRecyclerView == null) {
@@ -520,8 +520,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                 checkEmpty(adapter.getItemCount(), groupFilter);
             }
         });
-
-        adapterSource.updateNow();
 
         ///// For pull to refresh
         mPullToRefreshLayout = (EnhancedSwipeRefreshLayout) view.findViewById(R.id.list_layout);

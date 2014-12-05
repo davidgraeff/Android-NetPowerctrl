@@ -41,7 +41,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
 
     public AnelEditDevice(String defaultDeviceName, @Nullable Device edit_device) {
         if (edit_device == null) {
-            device = new Device(AnelUDPDeviceDiscoveryThread.anelPlugin.getPluginID(), true);
+            device = new Device(AnelUDPReceive.anelPlugin.getPluginID(), true);
             device.setDeviceName(defaultDeviceName);
             // Default values for user and password
             device.setUserName("admin");

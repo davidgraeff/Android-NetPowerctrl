@@ -30,9 +30,8 @@
             android:contentDescription="@string/menu_help"
             android:src="@android:drawable/ic_menu_help" />
 
-
         <ImageButton
-            android:id="@+id/alarm_port_help_icon"
+            android:id="@+id/alarm_is_switch_on_help_icon"
             style="?colored_button"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -42,25 +41,39 @@
             android:contentDescription="@string/menu_help"
             android:src="@android:drawable/ic_menu_help" />
 
+        <CheckBox
+            android:id="@+id/alarm_is_switch_on"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/alarm_on_android"
+            android:layout_marginBottom="20dp"
+            android:layout_toLeftOf="@id/alarm_is_switch_on_help_icon"
+            android:layout_toStartOf="@id/alarm_is_switch_on_help_icon"
+            android:checked="true"
+            android:text="@string/alarm_is_switch_on" />
+
+        <ImageButton
+            android:id="@+id/alarm_port_help_icon"
+            style="?colored_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/alarm_is_switch_on"
+            android:contentDescription="@string/menu_help"
+            android:src="@android:drawable/ic_menu_help" />
+
         <Spinner
             android:id="@+id/alarm_port"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/alarm_on_android"
+            android:layout_below="@id/alarm_is_switch_on"
             android:layout_marginBottom="20dp"
             android:layout_toLeftOf="@id/alarm_port_help_icon"
             android:layout_toStartOf="@id/alarm_port_help_icon"
             android:singleLine="true" />
 
         <!--  start time -->
-        <CheckBox
-            android:id="@+id/alarm_start_enabled"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/alarm_port"
-            android:layout_marginBottom="20dp"
-            android:text="@string/alarm_start_time" />
-
         <ImageButton
             android:id="@+id/alarm_start_help_icon"
             style="?colored_button"
@@ -76,40 +89,10 @@
             android:id="@+id/alarm_start_time"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/alarm_start_enabled"
+            android:layout_below="@id/alarm_port"
             android:layout_marginBottom="20dp"
             android:layout_toLeftOf="@id/alarm_start_help_icon"
             android:layout_toStartOf="@id/alarm_start_help_icon"
-            android:timePickerMode="spinner" />
-
-        <!--  stop time -->
-        <CheckBox
-            android:id="@+id/alarm_stop_enabled"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/alarm_start_time"
-            android:layout_marginBottom="20dp"
-            android:text="@string/alarm_stop_time" />
-
-        <ImageButton
-            android:id="@+id/alarm_stop_help_icon"
-            style="?colored_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_below="@id/alarm_start_time"
-            android:contentDescription="@string/menu_help"
-            android:src="@android:drawable/ic_menu_help" />
-
-        <TimePicker
-            android:id="@+id/alarm_stop_time"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/alarm_stop_enabled"
-            android:layout_marginBottom="20dp"
-            android:layout_toLeftOf="@id/alarm_stop_help_icon"
-            android:layout_toStartOf="@id/alarm_stop_help_icon"
             android:timePickerMode="spinner" />
 
         <!--  Weekdays -->
@@ -120,7 +103,7 @@
             android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/alarm_stop_time"
+            android:layout_below="@id/alarm_start_time"
             android:contentDescription="@string/menu_help"
             android:src="@android:drawable/ic_menu_help" />
 
@@ -128,7 +111,7 @@
             android:id="@+id/alarm_weekdays"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/alarm_stop_time"
+            android:layout_below="@id/alarm_start_time"
             android:layout_toLeftOf="@id/alarm_weekdays_help_icon"
             android:layout_toStartOf="@id/alarm_weekdays_help_icon"
             android:text="@string/alarm_type_weekdays" />

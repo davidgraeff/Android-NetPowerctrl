@@ -61,7 +61,7 @@ public interface PluginInterface {
     boolean isNetworkPlugin();
 
     ////////////// Alarms //////////////
-    Timer getNextFreeAlarm(DevicePort port, int type);
+    Timer getNextFreeAlarm(DevicePort port, int type, int command);
 
     void saveAlarm(Timer timer, final onHttpRequestResult callback);
 

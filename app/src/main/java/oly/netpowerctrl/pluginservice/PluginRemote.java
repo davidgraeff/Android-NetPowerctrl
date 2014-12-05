@@ -321,7 +321,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     @Override
-    public Timer getNextFreeAlarm(DevicePort port, int type) {
+    public Timer getNextFreeAlarm(DevicePort port, int type, int command) {
         return null;
     }
 

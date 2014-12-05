@@ -170,4 +170,25 @@ public class Utils {
         alertDialogBuilder.create().show();
         //Toast.makeText(context, R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
     }
+
+    //
+//    public boolean onlyLinkLocalDevices() {
+//        boolean linkLocals = true;
+//        for (DeviceInfo di : deviceCollection) {
+//            if (di.pluginID != DeviceInfo.DeviceType.AnelDevice)
+//                continue;
+//
+//            try {
+//                InetAddress address = InetAddress.getByName(di.mHostName);
+//                linkLocals &= (address.isLinkLocalAddress() || address.isSiteLocalAddress());
+//            } catch (UnknownHostException e) {
+//                // we couldn't resolve the device hostname to an IP address. One reason is, that
+//                // the user entered a dns name instead of an IP (and the dns server is not reachable
+//                // at the moment). Therefore we assume that there not only link local addresses.
+//                return false;
+//            }
+//        }
+//        return linkLocals;
+//    }
+
 }

@@ -52,14 +52,4 @@
         android:layout_alignStart="@id/alarm_target"
         android:layout_below="@id/alarm_weekdays"
         android:textAppearance="@android:style/TextAppearance.Medium" />
-
-    <TextView
-        android:id="@+id/alarm_random"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/alarm_target"
-        android:layout_alignStart="@id/alarm_target"
-        android:layout_below="@id/alarm_time"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:textStyle="normal|bold" />
 </RelativeLayout>

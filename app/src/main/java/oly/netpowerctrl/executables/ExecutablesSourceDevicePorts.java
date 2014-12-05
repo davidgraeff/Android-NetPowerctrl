@@ -37,7 +37,7 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
             Iterator<DevicePort> iterator = device.getDevicePortIterator();
             while (iterator.hasNext()) {
                 DevicePort devicePort = iterator.next();
-                if (!devicePort.Disabled && (uuid == null && devicePort.groups.size() == 0 || devicePort.groups.contains(uuid)))
+                if (!devicePort.isHidden() && (uuid == null && devicePort.groups.size() == 0 || devicePort.groups.contains(uuid)))
                     ++c;
             }
             device.releaseDevicePorts();
@@ -57,7 +57,7 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
             Iterator<DevicePort> iterator = device.getDevicePortIterator();
             while (iterator.hasNext()) {
                 DevicePort devicePort = iterator.next();
-                if (devicePort.Disabled)
+                if (devicePort.isHidden())
                     continue;
                 mList.add(devicePort);
             }
@@ -129,7 +129,7 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
             Iterator<DevicePort> iterator = device.getDevicePortIterator();
             while (iterator.hasNext()) {
                 DevicePort devicePort = iterator.next();
-                if (devicePort.Disabled)
+                if (devicePort.isHidden())
                     continue;
                 adapter.addItem(devicePort, devicePort.current_value);
             }

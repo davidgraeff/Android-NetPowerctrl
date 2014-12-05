@@ -315,7 +315,10 @@ public class DevicesFragment extends Fragment
                     pluginInterface.openConfigurationPage(current_device, getActivity());
                 return true;
             case R.id.menu_device_share:
-                DeviceShareFragment.show(getActivity(), current_device);
+                DeviceShareDialog.show(getActivity(), current_device);
+                return true;
+            case R.id.menu_device_hide_items:
+                DeviceItemsDialog.show(getActivity(), current_device);
                 return true;
             default:
                 return false;

@@ -61,6 +61,8 @@ public class InAppNotifications {
 
     public static void showException(Context context, Throwable exception, String message) {
         FromOtherThread(context, message + "\n" + context.getString(R.string.error_restart_app));
+        if (!App.useErrorReporter)
+            return;
         ACRA.getErrorReporter().putCustomData("misc", message);
         boolean serviceRunning = PluginService.getService() != null;
         ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
@@ -78,7 +80,8 @@ public class InAppNotifications {
     }
 
     public static void silentException(Throwable exception) {
-        ACRA.getErrorReporter().handleSilentException(exception);
+        if (App.useErrorReporter)
+            ACRA.getErrorReporter().handleSilentException(exception);
     }
 
     public static void updatePermanentNotification(@NonNull Activity activity, @NonNull PermanentNotification newPermanentNotification) {

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.device_base.device.DevicePort;
 
 /**
  * List all alarms of the timer controller
@@ -53,7 +54,7 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
 
     @Override
     public long getItemId(int position) {
-        return controller.get(position).id;
+        return controller.get(position).viewID;
     }
 
     @Override
@@ -86,35 +87,47 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
             txt.setText(timer.getTargetName());
 
             ImageView image = (ImageView) convertView.findViewById(R.id.alarm_image);
-            if (timer.fromCache)
+            if (timer.isFromCache())
                 image.setImageResource(android.R.drawable.presence_offline);
-            else if (timer.enabled)
-                image.setImageResource(android.R.drawable.presence_online);
-            else
+            else if (!timer.enabled)
                 image.setImageResource(android.R.drawable.presence_busy);
+            else if (timer.command == DevicePort.ON)
+                image.setImageResource(android.R.drawable.presence_online);
+            else if (timer.command == DevicePort.OFF)
+                image.setImageResource(android.R.drawable.presence_online);
+            else if (timer.command == DevicePort.TOGGLE)
+                image.setImageResource(android.R.drawable.presence_video_online);
 
             image = (ImageView) convertView.findViewById(R.id.alarm_image_isAndroid);
-            image.setVisibility(timer.deviceAlarm ? View.INVISIBLE : View.VISIBLE);
+            image.setVisibility(timer.alarmOnDevice != null ? View.INVISIBLE : View.VISIBLE);
 
-            // weekdays
+            // Weekdays or Absolute Date
             txt = (TextView) convertView.findViewById(R.id.alarm_weekdays);
-            txt.setText(timer.days());
+            if (timer.type == Timer.TYPE_ONCE) {
+                txt.setText(timer.absolute_date.toString());
+            } else
+                txt.setText(timer.days());
 
-            // start+stop time
+            // Time
             txt = (TextView) convertView.findViewById(R.id.alarm_time);
-            txt.setText(Html.fromHtml(context.getString(R.string.alarm_switch_on_off,
-                    Timer.time(timer.hour_minute_start),
-                    Timer.time(timer.hour_minute_stop))));
-
-            txt = (TextView) convertView.findViewById(R.id.alarm_random);
-            if (timer.type == Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS) {
-                // random time
-                txt.setText(Html.fromHtml(context.getString(R.string.alarm_toggle_random,
-                        Timer.time(timer.hour_minute_random_interval))));
-                txt.setVisibility(View.VISIBLE);
-            } else {
-                txt.setVisibility(View.GONE);
+            String text;
+            switch (timer.command) {
+                case DevicePort.OFF:
+                    text = context.getString(R.string.alarm_switch_off,
+                            Timer.time(timer.hour_minute));
+                    break;
+                case DevicePort.ON:
+                    text = context.getString(R.string.alarm_switch_on,
+                            Timer.time(timer.hour_minute));
+                    break;
+                case DevicePort.TOGGLE:
+                    text = context.getString(R.string.alarm_toggle_random,
+                            Timer.time(timer.hour_minute));
+                    break;
+                default:
+                    text = "";
             }
+            txt.setText(Html.fromHtml(text));
 
 //        } else if (timer.type == Timer.TYPE_ONCE) {
 //            // Port name, device name
@@ -131,7 +144,7 @@ public class TimerAdapter extends BaseAdapter implements onCollectionUpdated<Tim
 //
 //            // start time
 //            txt = (TextView) convertView.findViewById(R.id.alarm_start);
-//            txt.setText(Timer.time(timer.hour_minute_start));
+//            txt.setText(Timer.time(timer.hour_minute));
 //            txt.setPaintFlags(txt.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
 //
 //            // stop time

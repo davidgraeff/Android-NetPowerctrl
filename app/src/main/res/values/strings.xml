@@ -8,7 +8,7 @@
 
     <string name="changelog_title">What\'s New</string>
 
-    <string name="configure_device">Edit Device</string>
+    <string name="device_connections_edit">Edit network connections</string>
     <string name="delete_device">Delete Device</string>
     <string name="delete_all_devices">Delete all devices</string>
 
@@ -195,11 +195,10 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="alarm_type_absolute_summary">A one time alarm need a fixed date!</string>
     <string name="alarm_start_time">On time</string>
     <string name="alarm_stop_time">Off time</string>
-    <string name="alarm_start_time_summary">The switch on time is optional if a switch off time is given.</string>
-    <string name="alarm_stop_time_summary">The switch off time is optional if a switch on time is given.</string>
+    <string name="alarm_start_time_summary">Either on or off time. Depends on the type of alarm.</string>
     <string name="alarm_date">Alarm date</string>
     <string name="master_slave">Master/Slave</string>
-    <string name="alarm_no_device_alarm">No free alarm available on the target device!</string>
+    <string name="alarm_no_device_alarm">No free alarm available on the target device! Use an android alarm instead.</string>
     <string name="remove">Remove</string>
     <string name="alarm_toggle_random">Toggle randomly: <b>%1$s</b></string>
     <string name="alarm_switch_on_off">Switch on: <b>%1$s</b>, Switch off: <b>%2$s</b></string>
@@ -356,4 +355,10 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
     <string name="error_plugin_removed">Plugin wurde entfernt!</string>
     <string name="menu_device_share">Share device to network</string>
+    <string name="menu_device_hide_items">Aktionen des Geräts aus-/einblenden</string>
+    <string name="error_device_not_found">Device not found!</string>
+    <string name="device_share_to_network">Share to network</string>
+    <string name="alarm_is_switch_on">Einschalten statt Ausschalten</string>
+    <string name="alarm_wait_remove">Please wait, remove alarm…</string>
+    <string name="alarm_wait_save">Please wait, save alarm…</string>
 </resources>

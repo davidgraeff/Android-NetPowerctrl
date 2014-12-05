@@ -24,7 +24,7 @@ import oly.netpowerctrl.timer.Timer;
 /**
  * Created by david on 04.07.14.
  */
-public class AnelPluginHttp {
+public class AnelHttpReceiveSend {
     static final HttpThreadPool.HTTPCallback<DeviceConnection> receiveCtrlHtml = new HttpThreadPool.HTTPCallback<DeviceConnection>() {
         @Override
         public void httpResponse(DeviceConnection ci, boolean callback_success, String response_message) {
@@ -58,10 +58,10 @@ public class AnelPluginHttp {
                         for (int i = 0; i < 8; ++i) {
                             DevicePort port = DevicePort.createWithTitle(device, ExecutableType.TypeToggle, i + 1, data[10 + i].trim());
                             port.current_value = data[20 + i].equals("1") ? DevicePort.ON : DevicePort.OFF;
-                            port.Disabled = data[30 + i].equals("1");
-                            device.updatePort(port);
+                            boolean disabled = data[30 + i].equals("1");
+                            if (!disabled)
+                                device.updatePort(port);
                         }
-
                         device.removeInvalidDevicePorts();
                         device.releaseDevicePorts();
                     }
@@ -101,7 +101,7 @@ public class AnelPluginHttp {
      * @throws java.io.IOException
      */
     static String createHTTP_Post_byHTTP_response(String response_message,
-                                                  final String newName, final Timer[] newTimer)
+                                                  final String newName, final AnelTimer[] newTimer)
             throws SAXException, IOException {
 
         final String[] complete_post_data = {""};
@@ -159,7 +159,7 @@ public class AnelPluginHttp {
             complete_post_data[0] += "TN=" + URLEncoder.encode(newName, "utf-8") + "&";
 
         for (int i = 0; i < newTimer.length; ++i) {
-            Timer current = newTimer[i];
+            AnelTimer current = newTimer[i];
             if (current == null)
                 continue;
 

@@ -1,6 +1,5 @@
 package oly.netpowerctrl.timer;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.JsonReader;
 import android.util.JsonWriter;
@@ -14,12 +13,11 @@ import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.data.StorableInterface;
-import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.main.App;
 
@@ -33,37 +31,38 @@ public class Timer implements StorableInterface {
     public static final int TYPE_RANGE_ON_RANDOM_WEEKDAYS = 2;
     public static final int TYPE_ONCE = 10; // fixed date+time
     public static final int TYPES = 3;
+    private static long NEXT_ID = 0;
     // Store days. Start with SUNDAY
     public final boolean[] weekdays = new boolean[7];
-    // Unique ID
-    public long id = -1;
+    public final long viewID;
+    // Relative alarm in minutes of the day: hour*60+minute. -1 for disabled
+    public int hour_minute = -1;
+    // Absolute date and time
+    public Date absolute_date;
+    // Command and executable
+    public int command = -100;
     public String executable_uid;
     // Temporary
     public Executable executable;
-    /**
-     * True if the alarm is from a plugin/device and not a virtual alarm on the android system
-     */
-    public boolean deviceAlarm = true;
-    /**
-     * Not armed device alarm that is available to be programmed. It will not be shown on the
-     * alarm list. To distinguish between a free alarm slot and a programmed but "disabled" alarm,
-     * "freeDeviceAlarm" is only set, if the alarm values are the default values. For anel devices
-     * this is: All weekdays, on-time from 00:00 to 23:59.
-     */
-    public boolean freeDeviceAlarm;
+    public long next_execution_unix_time = 0;
+    public AlarmOnDevice alarmOnDevice;
     // True if the alarm is enabled.
     public boolean enabled = true;
-    // If this alarm is not from device (yet) but only from the cache, this flag is set.
-    public boolean fromCache = false;
-    // Absolute date and time
-    public Date absolute_date;
+    public String uuid;
 
-    // Relative alarm in minutes of the day: hour*60+minute. -1 for disabled
-    public int hour_minute_start = -1;
-    // For ranged alarms in minutes of the day: hour*60+minute
-    public int hour_minute_stop = -1;
-    // For random alarms in minutes of the day: hour*60+minute
-    public int hour_minute_random_interval = -1;
+    /**
+     * Do NOT use this constructor! Use createNewTimer instead.
+     */
+    public Timer() {
+        NEXT_ID++;
+        viewID = NEXT_ID;
+    }
+
+    public static Timer createNewTimer() {
+        Timer timer = new Timer();
+        timer.uuid = UUID.randomUUID().toString();
+        return timer;
+    }
 
     /**
      * Convert minutes of the day to a string representation like "11:12".
@@ -85,6 +84,14 @@ public class Timer implements StorableInterface {
 
     public static int getMinute(int hour_minute) {
         return hour_minute % 60;
+    }
+
+    boolean equals(Timer timer) {
+        return uuid.equals(timer.uuid);
+    }
+
+    public boolean isFromCache() {
+        return alarmOnDevice != null && alarmOnDevice.fromCache;
     }
 
     /**
@@ -112,24 +119,6 @@ public class Timer implements StorableInterface {
         return d;
     }
 
-    public String toString(Context context) {
-        String pre = "";
-        if (executable instanceof DevicePort)
-            pre = ((DevicePort) executable).device.getDeviceName() + ": " + executable.getTitle() + " - ";
-
-        switch (type) {
-            case TYPE_RANGE_ON_WEEKDAYS:
-                return pre + context.getString(R.string.alarm_weekdays_range,
-                        days(), time(hour_minute_start), time(hour_minute_stop));
-            case TYPE_RANGE_ON_RANDOM_WEEKDAYS:
-                return pre + context.getString(R.string.alarm_weekdays_range_alarm,
-                        days(), time(hour_minute_start), time(hour_minute_stop), time(hour_minute_random_interval));
-            case TYPE_ONCE:
-                return pre + context.getString(R.string.alarm_once, DateFormat.getInstance().format(absolute_date));
-        }
-        return pre;
-    }
-
     public String getTargetName() {
         if (executable != null)
             return executable.getDescription(App.instance) + ": " + executable.getTitle();
@@ -153,18 +142,26 @@ public class Timer implements StorableInterface {
     }
 
     private void toJSON(JsonWriter writer) throws IOException {
+        // DO not write free device alarms to disk.
+        if (alarmOnDevice != null && alarmOnDevice.freeDeviceAlarm) {
+            writer.close();
+            return;
+        }
         writer.beginObject();
-        writer.name("id").value(id);
         writer.name("executable_uid").value(executable_uid);
-        writer.name("deviceAlarm").value(deviceAlarm);
-        writer.name("freeDeviceAlarm").value(freeDeviceAlarm);
+        if (alarmOnDevice != null) {
+            writer.name("alarmOnDevice").beginObject().
+                    name("portId").value(alarmOnDevice.portId).
+                    name("timerId").value(alarmOnDevice.timerId).
+                    endObject();
+        }
+        writer.name("uniqueID").value(uuid);
         writer.name("enabled").value(enabled);
         writer.name("type").value(type);
         if (absolute_date != null)
             writer.name("absolute_date").value(DateFormat.getDateInstance().format(absolute_date));
-        writer.name("hour_minute_start").value(hour_minute_start);
-        writer.name("hour_minute_stop").value(hour_minute_stop);
-        writer.name("hour_minute_random_interval").value(hour_minute_random_interval);
+        writer.name("hour_minute").value(hour_minute);
+        writer.name("command").value(command);
 
         writer.name("weekdays").beginArray();
         for (boolean b : weekdays) {
@@ -179,55 +176,64 @@ public class Timer implements StorableInterface {
 
     @Override
     public String getStorableName() {
-        return String.valueOf(id);
+        return uuid;
     }
 
     public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
         reader.beginObject();
-        Timer timer = this;
         while (reader.hasNext()) {
             String name = reader.nextName();
             assert name != null;
             switch (name) {
-                case "id":
-                    timer.id = reader.nextLong();
+                case "uniqueID":
+                    uuid = reader.nextString();
                     break;
                 case "executable_uid":
-                    timer.executable_uid = reader.nextString();
+                    executable_uid = reader.nextString();
                     break;
-                case "deviceAlarm":
-                    timer.deviceAlarm = reader.nextBoolean();
-                    break;
-                case "freeDeviceAlarm":
-                    timer.freeDeviceAlarm = reader.nextBoolean();
+                case "alarmOnDevice":
+                    reader.beginObject();
+                    alarmOnDevice = new AlarmOnDevice(true);
+                    while (reader.hasNext()) {
+                        name = reader.nextName();
+                        switch (name) {
+                            case "portId":
+                                alarmOnDevice.portId = (byte) reader.nextInt();
+                                break;
+                            case "timerId":
+                                alarmOnDevice.timerId = (byte) reader.nextInt();
+                                break;
+                            default:
+                                reader.skipValue();
+                                break;
+                        }
+                    }
+                    reader.endObject();
                     break;
                 case "enabled":
-                    timer.enabled = reader.nextBoolean();
+                    enabled = reader.nextBoolean();
                     break;
                 case "type":
-                    timer.type = reader.nextInt();
+                    type = reader.nextInt();
                     break;
                 case "absolute_date":
                     try {
-                        timer.absolute_date = DateFormat.getDateInstance().parse(reader.nextString());
+                        absolute_date = DateFormat.getDateInstance().parse(reader.nextString());
                     } catch (ParseException e) {
                         throw new IOException(e);
                     }
                     break;
-                case "hour_minute_start":
-                    timer.hour_minute_start = reader.nextInt();
+                case "hour_minute":
+                    hour_minute = reader.nextInt();
                     break;
-                case "hour_minute_stop":
-                    timer.hour_minute_stop = reader.nextInt();
-                    break;
-                case "hour_minute_random_interval":
-                    timer.hour_minute_random_interval = reader.nextInt();
+                case "command":
+                    command = reader.nextInt();
                     break;
                 case "weekdays":
                     reader.beginArray();
                     int i = 0;
                     while (reader.hasNext()) {
-                        timer.weekdays[i++] = reader.nextBoolean();
+                        weekdays[i++] = reader.nextBoolean();
                     }
                     reader.endArray();
                     break;
@@ -237,16 +243,17 @@ public class Timer implements StorableInterface {
             }
         }
 
-        timer.fromCache = timer.deviceAlarm;
-
         reader.endObject();
 
-        if (timer.executable_uid == null)
+        if (uuid == null)
+            throw new ClassNotFoundException("Old format!");
+
+        if (executable_uid == null)
             throw new ClassNotFoundException();
 
-        timer.executable = AppData.getInstance().findExecutable(timer.executable_uid);
-        if (timer.executable == null)
-            throw new ClassNotFoundException(timer.toString());
+        executable = AppData.getInstance().findExecutable(executable_uid);
+        if (executable == null)
+            throw new ClassNotFoundException(toString());
     }
 
     @Override
@@ -260,68 +267,34 @@ public class Timer implements StorableInterface {
     }
 
     public void markFromCache() {
-        if (deviceAlarm)
-            fromCache = true;
+        if (alarmOnDevice != null)
+            alarmOnDevice.fromCache = true;
     }
 
-    public NextAlarm getNextAlarmUnixTime(long currentTime) {
-        NextAlarm nextAlarm = new NextAlarm();
+    public void computeNextAlarmUnixTime(long currentTime) {
+        if (type == TYPE_ONCE) {
+            next_execution_unix_time = absolute_date.getTime();
+            return;
+        }
         Calendar calendar_current = Calendar.getInstance();
         Calendar calendar_start = Calendar.getInstance();
-        Calendar calendar_stop = Calendar.getInstance();
         calendar_current.setTimeInMillis(currentTime);
         calendar_start.setTimeInMillis(currentTime);
-        calendar_stop.setTimeInMillis(currentTime);
-        int day = calendar_start.get(Calendar.DAY_OF_WEEK) - 1; // start with 1: Sunday
-        nextAlarm.command = DevicePort.TOGGLE;
-        nextAlarm.timerId = id;
-
-        Calendar calendar = null;
-
-        if (hour_minute_start != -1) {
-            calendar_start.set(Calendar.HOUR_OF_DAY, getHour(hour_minute_start));
-            calendar_start.set(Calendar.MINUTE, getMinute(hour_minute_start));
+        final int day = calendar_start.get(Calendar.DAY_OF_WEEK) - 1; // start with 1: Sunday
+        if (hour_minute != -1) {
+            calendar_start.set(Calendar.HOUR_OF_DAY, getHour(hour_minute));
+            calendar_start.set(Calendar.MINUTE, getMinute(hour_minute));
             for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
                 if (weekdays[(additionalDays + day) % 7]) {
                     if (calendar_start.before(calendar_current)) {
                         calendar_start.add(Calendar.HOUR_OF_DAY, 24);
                         continue;
                     }
-                    calendar = calendar_start;
-                    nextAlarm.command = DevicePort.ON;
-                    break;
+                    next_execution_unix_time = calendar_start.getTimeInMillis();
+                    return;
                 } else
                     calendar_start.add(Calendar.HOUR_OF_DAY, 24);
             }
         }
-
-        if (hour_minute_stop != -1) {
-            calendar_stop.set(Calendar.HOUR_OF_DAY, getHour(hour_minute_stop));
-            calendar_stop.set(Calendar.MINUTE, getMinute(hour_minute_stop));
-            for (int additionalDays = 0; additionalDays < 8; ++additionalDays) {
-                if (weekdays[(additionalDays + day) % 7]) {
-                    if (calendar_stop.before(calendar_current)) {
-                        calendar_stop.add(Calendar.HOUR_OF_DAY, 24);
-                        continue;
-                    }
-                    // Use the stop time if it is before the start time or the start time is not set
-                    if (calendar == null || calendar.after(calendar_stop)) {
-                        calendar = calendar_stop;
-                        nextAlarm.command = DevicePort.OFF;
-                    }
-                    break;
-                } else
-                    calendar_stop.add(Calendar.HOUR_OF_DAY, 24);
-            }
-        }
-
-        nextAlarm.unix_time = calendar != null ? calendar.getTimeInMillis() : 0;
-        return nextAlarm;
-    }
-
-    public class NextAlarm {
-        public long unix_time;
-        public int command;
-        public long timerId;
     }
 }

@@ -8,7 +8,7 @@
 
     <string name="changelog_title">Was ist neu…</string>
 
-    <string name="configure_device">Gerät bearbeiten</string>
+    <string name="device_connections_edit">Netzwerkverbindungen bearbeiten</string>
     <string name="delete_device">Gerät löschen</string>
     <string name="delete_all_devices">Alle löschen</string>
 
@@ -194,14 +194,14 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_type_absolute_summary">Ein einmaliger Alarm benötigt ein festes Datum, für welches die Ein- und Auszeiten gelten sollen.</string>
     <string name="alarm_start_time">Einschaltzeit</string>
     <string name="alarm_stop_time">Ausschaltzeit</string>
-    <string name="alarm_start_time_summary">Die Angabe der Einschaltzeit ist optional, sofern eine Ausschaltzeit angegeben wurde.</string>
-    <string name="alarm_stop_time_summary">Die Angabe der Ausschaltzeit ist optional, sofern eine Einschaltzeit angegeben wurde.</string>
+    <string name="alarm_start_time_summary">Entwerder Ein- oder Ausschaltzeit, je nachdem welche Art von Alarm erstellt wird.</string>
     <string name="alarm_date">Alarm Datum</string>
     <string name="master_slave">Master/Slave</string>
-    <string name="alarm_no_device_alarm">Kein freier Gerätealarm für diesen Typ verfügbar. App Alarm noch nicht unterstützt.</string>
+    <string name="alarm_no_device_alarm">Kein freier Gerätealarm verfügbar. Stattdessen kann ein Android Alarm genutzt werden.</string>
     <string name="remove">Löschen</string>
     <string name="alarm_toggle_random">Zufällig umschalten: &lt;b>%1$s&lt;/b></string>
-    <string name="alarm_switch_on_off">An um: &lt;b>%1$s&lt;/b>, Aus um: &lt;b>%2$s&lt;/b></string>
+    <string name="alarm_switch_on">An um: &lt;b>%1$s&lt;/b></string>
+    <string name="alarm_switch_off">Aus um: &lt;b>%1$s&lt;/b></string>
     <string name="alarm_no_target">Es wurde kein Zielgerät für diesen Alarm ausgewählt!</string>
     <string name="alarm_no_start_no_stop">Es wurden weder Einschalt- noch Ausschaltzeit angegeben!</string>
     <string name="confirmation_delete_all_alarms">Sollen wirklich alle Alarme zurückgesetzt werden?</string>
@@ -361,4 +361,10 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
     <string name="error_plugin_removed">Plugin wurde entfernt!</string>
     <string name="menu_device_share">Share device to network</string>
+    <string name="menu_device_hide_items">Aktionen des Geräts aus-/einblenden</string>
+    <string name="error_device_not_found">Device not found!</string>
+    <string name="device_share_to_network">Share to network</string>
+    <string name="alarm_is_switch_on">Einschalten statt Ausschalten</string>
+    <string name="alarm_wait_remove">Bitte warten. Entferne Alarm…</string>
+    <string name="alarm_wait_save">Bitte warten. Speichere Alarm…</string>
 </resources>

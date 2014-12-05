@@ -40,7 +40,6 @@ import oly.netpowerctrl.utils.WakeLocker;
  */
 public class TimerCollection extends CollectionWithStorableItems<TimerCollection, Timer> {
     private static final String TAG = "TimerCollection";
-    private final List<Timer> available_timers = new ArrayList<>();
     public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
         @Override
         public boolean updated(@NonNull DeviceCollection deviceCollection, Device device, @NonNull ObserverUpdateActions action, int position) {
@@ -73,7 +72,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         public void run() {
             for (int index = items.size() - 1; index >= 0; --index) {
                 Timer timer = items.get(index);
-                if (timer.fromCache) {
+                if (timer.isFromCache()) {
                     requestActive = false;
                     removeFromCache(index);
                 }
@@ -94,16 +93,15 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         if (current == nextAlarmTimestamp)
             ++current;
 
-        Timer.NextAlarm nextTimerTime = null;
         Timer nextTimer = null;
 
         for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
-            if (timer.deviceAlarm)
+            if (timer.alarmOnDevice != null)
                 continue;
 
-            Timer.NextAlarm alarm = timer.getNextAlarmUnixTime(current);
-            if (alarm.unix_time > current && (nextTimerTime == null || alarm.unix_time < nextTimerTime.unix_time)) {
-                nextTimerTime = alarm;
+            timer.computeNextAlarmUnixTime(current);
+            if (timer.next_execution_unix_time > current &&
+                    (nextTimer == null || timer.next_execution_unix_time < nextTimer.next_execution_unix_time)) {
                 nextTimer = timer;
             }
         }
@@ -114,7 +112,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         mgr.cancel(pi);
 
-        if (nextTimerTime == null) {
+        if (nextTimer == null) {
             if (nextAlarmTimestamp > 0) {
                 // Disable the manifest entry for the BootCompletedReceiver. This way the app won't unnecessarly wake up after boot.
                 ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
@@ -128,17 +126,17 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             return;
         }
 
-        SharedPrefs.setNextAlarmCheckTimestamp(context, nextTimerTime.unix_time);
+        SharedPrefs.setNextAlarmCheckTimestamp(context, nextTimer.next_execution_unix_time);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(nextTimerTime.unix_time);
+        calendar.setTimeInMillis(nextTimer.next_execution_unix_time);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         Logging.getInstance().logAlarm("Next alarm: " + nextTimer.getTargetName() + "\nOn: " + sdf.format(calendar.getTime()));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-            mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+            mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimer.next_execution_unix_time, pi);
         else
-            mgr.set(AlarmManager.RTC_WAKEUP, nextTimerTime.unix_time, pi);
+            mgr.set(AlarmManager.RTC_WAKEUP, nextTimer.next_execution_unix_time, pi);
 
         // Enable the manifest entry for the BootCompletedReceiver. This way alarms are setup again after a reboot.
         ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
@@ -174,12 +172,12 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         boolean alarmExecuted = false;
 
         for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
-            if (timer.deviceAlarm)
+            if (timer.alarmOnDevice != null)
                 continue;
 
-            Timer.NextAlarm nextAlarm = timer.getNextAlarmUnixTime(nextAlarmTimestamp);
+            timer.computeNextAlarmUnixTime(nextAlarmTimestamp);
 
-            if (nextAlarm.unix_time == nextAlarmTimestamp) {
+            if (timer.next_execution_unix_time == nextAlarmTimestamp) {
                 Executable executable = AppData.getInstance().findExecutable(timer.executable_uid);
 
                 if (executable != null)
@@ -193,7 +191,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
                 if (executable instanceof DevicePort) {
                     WakeLocker.acquire(App.instance);
-                    AppData.getInstance().execute((DevicePort) executable, nextAlarm.command, executionFinished);
+                    AppData.getInstance().execute((DevicePort) executable, timer.command, executionFinished);
                 } else if (executable instanceof Scene) {
                     WakeLocker.acquire(App.instance);
                     AppData.getInstance().execute((Scene) executable, executionFinished);
@@ -213,14 +211,14 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     }
 
     public int countAllDeviceAlarms() {
-        return items.size() + available_timers.size();
+        return items.size();
     }
 
-    private int replaced_at(List<Timer> list, Timer timer) {
-        for (int i = 0; i < list.size(); ++i) {
-            Timer a = list.get(i);
-            if (a.id == timer.id && a.executable_uid.equals(timer.executable_uid)) {
-                list.set(i, timer);
+    private int replaced_at(Timer timer) {
+        for (int i = 0; i < items.size(); ++i) {
+            Timer a = items.get(i);
+            if (a.equals(timer)) {
+                items.set(i, timer);
                 notifyObservers(timer, ObserverUpdateActions.UpdateAction, i);
                 return i;
             }
@@ -240,32 +238,19 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         h.post(new Runnable() {
             @Override
             public void run() {
-                updateTimers(new_timers);
+                for (Timer new_timer : new_timers) {
+                    int i = replaced_at(new_timer);
+                    if (i == -1 && new_timer.executable_uid != null) {
+                        items.add(new_timer);
+                        notifyObservers(null, ObserverUpdateActions.AddAction, items.size() - 1);
+                    }
+                }
             }
         });
     }
 
-    public void updateTimers(List<Timer> new_timers) {
-        for (Timer new_timer : new_timers) {
-            int i;
-            if (new_timer.freeDeviceAlarm) {
-                i = replaced_at(available_timers, new_timer);
-                if (i == -1) {
-                    available_timers.add(new_timer);
-                    notifyObservers(null, ObserverUpdateActions.ConnectionUpdateAction, -1);
-                }
-            } else {
-                i = replaced_at(items, new_timer);
-                if (i == -1 && new_timer.executable_uid != null) {
-                    items.add(new_timer);
-                    notifyObservers(null, ObserverUpdateActions.AddAction, items.size() - 1);
-                }
-            }
-        }
-    }
-
     public void addAlarm(Timer alarm) {
-        int i = replaced_at(items, alarm);
+        int i = replaced_at(alarm);
         if (i == -1 && alarm.executable_uid != null) {
             items.add(alarm);
             i = items.size() - 1;
@@ -275,28 +260,42 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         }
         save(alarm);
 
-        if (!alarm.deviceAlarm)
+        if (alarm.alarmOnDevice == null)
             setupAndroidAlarm(App.instance);
     }
 
-    public List<Timer> getAvailableDeviceAlarms() {
-        return available_timers;
-    }
-
-    void removeAlarm(Timer timer, onHttpRequestResult callback) {
-        if (timer.executable instanceof DevicePort && timer.deviceAlarm) {
+    void removeAlarm(final Timer timer, final onHttpRequestResult callback) {
+        if (timer.executable instanceof DevicePort && timer.alarmOnDevice != null) {
             Device device = ((DevicePort) timer.executable).device;
             PluginService.getService().wakeupPlugin(device);
             PluginInterface p = (PluginInterface) device.getPluginInterface();
-            p.removeAlarm(timer, callback);
-        } else {
-            remove(timer);
-            for (int i = 0; i < items.size(); ++i) {
-                if (items.get(i).id == timer.id) {
-                    items.remove(i);
-                    notifyObservers(timer, ObserverUpdateActions.RemoveAction, i);
-                    break;
+            p.removeAlarm(timer, new onHttpRequestResult() {
+                @Override
+                public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
+                    if (success)
+                        removeAlarmFromDisk(timer);
+                    if (callback != null)
+                        callback.httpRequestResult(oi, success, error_message);
                 }
+
+                @Override
+                public void httpRequestStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
+                    if (callback != null)
+                        callback.httpRequestStart(oi);
+                }
+            });
+        } else {
+            removeAlarmFromDisk(timer);
+        }
+    }
+
+    void removeAlarmFromDisk(Timer timer) {
+        remove(timer);
+        for (int i = 0; i < items.size(); ++i) {
+            if (items.get(i) == timer) {
+                items.remove(i);
+                notifyObservers(timer, ObserverUpdateActions.RemoveAction, i);
+                break;
             }
         }
     }
@@ -315,13 +314,11 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         App.getMainThreadHandler().postDelayed(notifyRunnable, 1500);
 
-        available_timers.clear();
-
         // Flag all alarms as from-cache
         HashSet<String> alarm_uuids = new HashSet<>();
         for (Timer timer : items) {
             timer.markFromCache();
-            if (timer.deviceAlarm)
+            if (timer.alarmOnDevice != null)
                 alarm_uuids.add(timer.executable_uid);
         }
 
@@ -346,7 +343,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
                 final DevicePort port = it.next();
-                if (port.Disabled)
+                if (port.isHidden())
                     continue;
 
                 if (alarm_uuids.contains(port.getUid()))

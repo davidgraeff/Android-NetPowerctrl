@@ -17,22 +17,19 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
 
-public class TimerFragment extends Fragment implements onCollectionUpdated<TimerCollection, Timer>, AdapterView.OnItemClickListener, onHttpRequestResult, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
+public class TimerFragment extends Fragment implements onCollectionUpdated<TimerCollection, Timer>, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, onServiceReady {
     private TimerAdapter timerAdapter;
     private TextView progressText;
     private SwipeRefreshLayout mPullToRefreshLayout;
@@ -172,16 +169,6 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         fragment.setParameter(timerAdapter.getAlarm(position));
 
         MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
-    }
-
-    @Override
-    public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
-        Toast.makeText(getActivity(), R.string.alarm_saving_now, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void httpRequestStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
-
     }
 
     @Override

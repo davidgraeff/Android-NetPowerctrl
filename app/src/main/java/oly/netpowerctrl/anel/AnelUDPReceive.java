@@ -19,12 +19,12 @@ import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.utils.Logging;
 
-class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
+class AnelUDPReceive extends UDPReceiving {
     public static AnelPlugin anelPlugin;
 
-    public AnelUDPDeviceDiscoveryThread(AnelPlugin anelPlugin, int port) {
+    public AnelUDPReceive(AnelPlugin anelPlugin, int port) {
         super(port, "AnelDeviceDiscoveryThread");
-        AnelUDPDeviceDiscoveryThread.anelPlugin = anelPlugin;
+        AnelUDPReceive.anelPlugin = anelPlugin;
         Logging.getInstance().logDetect("UDP Listen " + String.valueOf(port));
     }
 
@@ -80,8 +80,10 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
         } else
             device.lockDevice();
 
+        // Normally, the device sends info for 8 outlets no matter how many are actually equipped.
+        // We will filter out any disabled outlets
         int disabledOutlets = 0;
-        int numOutlets = 8; // normally, the device sends info for 8 outlets no matter how many are actually equipped
+        int numOutlets = 8;
 
         device.setDeviceName(DeviceName);
 
@@ -141,6 +143,7 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             device.setVersion(msg[25].trim());
         }
 
+        device.makeAllDevicePortsInvalid();
         for (int i = 0; i < numOutlets; i++) {
             String outlet[] = msg[6 + i].split(",");
             if (outlet.length < 1)
@@ -149,10 +152,11 @@ class AnelUDPDeviceDiscoveryThread extends UDPReceiving {
             devicePort.setTitle(outlet[0]);
             if (outlet.length > 1)
                 devicePort.current_value = outlet[1].equals("1") ? DevicePort.ON : DevicePort.OFF;
-            devicePort.Disabled = (disabledOutlets & (1 << i)) != 0;
-
-            device.updatePort(devicePort);
+            boolean disabled = (disabledOutlets & (1 << i)) != 0;
+            if (!disabled)
+                device.updatePort(devicePort);
         }
+        device.removeInvalidDevicePorts();
         device.releaseDevicePorts();
 
         device.replaceAutomaticAssignedConnections(deviceConnectionList);
