@@ -15,8 +15,6 @@ import org.acra.sender.HttpSender;
 
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.utils.AndroidStatusBarNotification;
 
 /**
  * Application:
@@ -29,7 +27,6 @@ public class App extends Application {
     public static App instance;
     public static boolean useErrorReporter = (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT); // Lollipop acra does not work;
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
-    private AndroidStatusBarNotification androidStatusBarNotification;
 
     public App() {
         App.instance = this;
@@ -77,24 +74,24 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
-        config.setFormUri(getString(R.string.acralyzer_http_url));
-        config.setFormUriBasicAuthLogin(getString(R.string.acralyzer_http_login));
-        config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));
-        config.setReportType(HttpSender.Type.JSON);
-        config.setResToastText(R.string.crash_toast_text);
-        try {
-            config.setMode(ReportingInteractionMode.TOAST);
-        } catch (ACRAConfigurationException e) {
-            e.printStackTrace();
-        }
-        config.setCustomReportContent(new ReportField[]{ReportField.REPORT_ID, ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.PACKAGE_NAME, ReportField.PHONE_MODEL, ReportField.ANDROID_VERSION, ReportField.BUILD, ReportField.BRAND, ReportField.PRODUCT, ReportField.TOTAL_MEM_SIZE, ReportField.AVAILABLE_MEM_SIZE, ReportField.CUSTOM_DATA, ReportField.STACK_TRACE, ReportField.USER_COMMENT, ReportField.USER_APP_START_DATE, ReportField.USER_CRASH_DATE, ReportField.USER_EMAIL, ReportField.IS_SILENT, ReportField.DEVICE_FEATURES, ReportField.SHARED_PREFERENCES, ReportField.THREAD_DETAILS});
-        ACRA.setConfig(config);
-        if (useErrorReporter)
+        if (useErrorReporter) {
+            ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
+            config.setFormUri(getString(R.string.acralyzer_http_url));
+            config.setFormUriBasicAuthLogin(getString(R.string.acralyzer_http_login));
+            config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));
+            config.setReportType(HttpSender.Type.JSON);
+            config.setResToastText(R.string.crash_toast_text);
+            try {
+                config.setMode(ReportingInteractionMode.TOAST);
+            } catch (ACRAConfigurationException e) {
+                e.printStackTrace();
+            }
+            config.setCustomReportContent(new ReportField[]{ReportField.REPORT_ID, ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.PACKAGE_NAME, ReportField.PHONE_MODEL, ReportField.ANDROID_VERSION, ReportField.BUILD, ReportField.BRAND, ReportField.PRODUCT, ReportField.TOTAL_MEM_SIZE, ReportField.AVAILABLE_MEM_SIZE, ReportField.CUSTOM_DATA, ReportField.STACK_TRACE, ReportField.USER_COMMENT, ReportField.USER_APP_START_DATE, ReportField.USER_CRASH_DATE, ReportField.USER_EMAIL, ReportField.IS_SILENT, ReportField.DEVICE_FEATURES, ReportField.SHARED_PREFERENCES, ReportField.THREAD_DETAILS});
+            ACRA.setConfig(config);
             ACRA.init(this);
+        }
 
-        LoadStoreIconData.init(this);
-        androidStatusBarNotification = new AndroidStatusBarNotification(this);
+        registerActivityLifecycleCallbacks(new LifecycleHandler());
     }
 
 }

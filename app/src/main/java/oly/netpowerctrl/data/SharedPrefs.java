@@ -39,7 +39,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     private final static String firstTabExtraFilename = "firstTabExtra";
     private final Context context;
     private final WeakHashMap<IHideNotReachable, Boolean> observers_HideNotReachable = new WeakHashMap<>();
-    private final WeakHashMap<IShowPersistentNotification, Boolean> observers_ShowPersistentNotification = new WeakHashMap<>();
 
     private SharedPrefs() {
         this.context = App.instance;
@@ -86,6 +85,24 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     public static void setNextAlarmCheckTimestamp(Context context, long next_alarm_timestamp) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putLong("next_alarm_timestamp", next_alarm_timestamp).apply();
+    }
+
+    public static boolean isNotification(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.show_persistent_notification);
+        return prefs.getBoolean(PREF_show_persistent_notification, value);
+    }
+
+    public static boolean isSpeechEnabled(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean value = context.getResources().getBoolean(R.bool.speech_enabled);
+        return prefs.getBoolean("speech_enabled", value);
+    }
+
+    public static String getSpeechCommandWord(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String value = context.getResources().getString(R.string.speech_command_word);
+        return prefs.getString("speech_command_word", value);
     }
 
     public void setDefaultFallbackIconSet(String new_theme) {
@@ -231,12 +248,12 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return receive_port_udp;
     }
 
-    public boolean isWakeUpFromEnergySaving() {
+    public boolean isMaximumEnergySaving() {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean wakeUp_energy_saving_mode = context.getResources().getBoolean(R.bool.wakeup_energy_saving_mode);
+        boolean wakeUp_energy_saving_mode = context.getResources().getBoolean(R.bool.maximum_energy_saving_mode);
         try {
-            wakeUp_energy_saving_mode = prefs.getBoolean("wakeup_energy_saving_mode", wakeUp_energy_saving_mode);
+            wakeUp_energy_saving_mode = prefs.getBoolean("maximum_energy_saving_mode", wakeUp_energy_saving_mode);
         } catch (Exception ignored) {
         }
         return wakeUp_energy_saving_mode;
@@ -313,12 +330,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String currentVersion = getVersionName(context);
         prefs.edit().putString("lastVersion", currentVersion).apply();
-    }
-
-    public boolean isNotification() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.show_persistent_notification);
-        return prefs.getBoolean(PREF_show_persistent_notification, value);
     }
 
     public boolean isHideNotReachable() {
@@ -417,23 +428,7 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
                 }
                 break;
             }
-            case SharedPrefs.PREF_show_persistent_notification: {
-                value = isNotification();
-                Set<IShowPersistentNotification> observers = observers_ShowPersistentNotification.keySet();
-                for (IShowPersistentNotification observer : observers) {
-                    observer.showPersistentNotificationChanged(value);
-                }
-                break;
-            }
         }
-    }
-
-    public void registerShowPersistentNotification(IShowPersistentNotification observer) {
-        observers_ShowPersistentNotification.put(observer, true);
-    }
-
-    public interface IShowPersistentNotification {
-        void showPersistentNotificationChanged(boolean enabled);
     }
 
     public interface IHideNotReachable {

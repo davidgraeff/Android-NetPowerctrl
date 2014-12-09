@@ -189,26 +189,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         super.onResume();
     }
 
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    if (i < 1) i = 1;
-                    adapter.setItemsInRow(i);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-                    if (lastScrolledPosition != 0)
-                        mRecyclerView.scrollToPosition(lastScrolledPosition);
-                }
-            };
-
     public void changeArguments(Bundle extra) {
         if (mRecyclerView == null) {
             mExtra = extra;
@@ -232,6 +212,26 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             viewType = (SharedPrefs.getInstance().getOutletsViewType());
         setViewType(viewType);
     }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+
+                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
+                    if (i < 1) i = 1;
+                    adapter.setItemsInRow(i);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(adapter);
+                    if (lastScrolledPosition != 0)
+                        mRecyclerView.scrollToPosition(lastScrolledPosition);
+                }
+            };
 
     private void setViewType(int viewType) {
         SharedPrefs.getInstance().setOutletsViewType(viewType);
@@ -538,7 +538,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         changeArguments(mExtra);
-
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -609,7 +608,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         groupFilter = position == 0 ? null : AppData.getInstance().groupCollection.get(position - 1).uuid;
         if (adapter != null) {
-            if (adapter.setGroupFilter(groupFilter))
+            if (adapter.setGroupFilter(groupFilter) || groupFilter == null)
                 adapterSource.updateNow();
         }
     }

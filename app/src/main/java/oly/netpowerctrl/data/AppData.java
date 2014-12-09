@@ -88,6 +88,7 @@ public class AppData {
     final public TimerCollection timerCollection = new TimerCollection();
     private final List<DeviceObserverBase> updateDeviceStateList = new ArrayList<>();
     private LoadStoreJSonData loadStoreJSonData = null;
+
     /**
      * Detect new devices and check reach-ability of configured devices.
      */
@@ -411,6 +412,47 @@ public class AppData {
             return sceneCollection.findScene(executable_uid);
         } else
             return executable;
+    }
+
+    @Nullable
+    public Executable findFirstExecutableByName(@NonNull String executable_title, boolean unprecise) {
+        for (Device di : deviceCollection.items) {
+            di.lockDevicePorts();
+            Iterator<DevicePort> it = di.getDevicePortIterator();
+            while (it.hasNext()) {
+                DevicePort port = it.next();
+                if (!unprecise) {
+                    if (executable_title.contains(port.getTitle().toLowerCase())) {
+                        di.releaseDevicePorts();
+                        return port;
+                    }
+                } else {
+                    String[] strings = port.getTitle().toLowerCase().split("\\W+");
+                    for (String string : strings) {
+                        if (executable_title.contains(string)) {
+                            di.releaseDevicePorts();
+                            return port;
+                        }
+                    }
+                }
+            }
+            di.releaseDevicePorts();
+        }
+
+        for (Scene scene : sceneCollection.items)
+            if (!unprecise) {
+                if (executable_title.contains(scene.getTitle().toLowerCase()))
+                    return scene;
+            } else {
+                String[] strings = scene.getTitle().toLowerCase().split("\\W+");
+                for (String string : strings) {
+                    if (executable_title.contains(string)) {
+                        return scene;
+                    }
+                }
+            }
+
+        return null;
     }
 
     @Nullable

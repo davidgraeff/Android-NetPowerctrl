@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.executables.AdapterFragment;
@@ -22,25 +21,11 @@ import oly.netpowerctrl.executables.ExecutablesSourceChain;
 import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.executables.ExecutablesSourceScenes;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
 public class WidgetConfigActivity extends Activity {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private ExecutablesBaseAdapter adapter;
-
-    @Override
-    protected void onPause() {
-        PluginService.stopUseService();
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        AppData.useAppData();
-        PluginService.useService();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

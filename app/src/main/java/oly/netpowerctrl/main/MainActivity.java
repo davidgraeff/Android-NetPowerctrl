@@ -42,11 +42,10 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.navigation.NavigationController;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
-import oly.netpowerctrl.widget.WidgetUpdateService;
+import oly.netpowerctrl.utils.AndroidStatusBarService;
 
 public class MainActivity extends ActionBarActivity {
     private static final long TIME_INTERVAL_MS = 2000;
@@ -71,6 +70,12 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == AndroidStatusBarService.REQUEST_CODE) {
+            if (AndroidStatusBarService.instance != null)
+                AndroidStatusBarService.instance.onActivityResult(resultCode, data);
+            return;
+        }
+        // Work-a-round
         if (DonationsFragment.class.equals(navigationController.getCurrentFragment().getClass()))
             navigationController.getCurrentFragment().onActivityResult(requestCode, resultCode, data);
     }
@@ -104,23 +109,6 @@ public class MainActivity extends ActionBarActivity {
 
         navigationController.createDrawerAdapter(this);
         assignContentView();
-
-        checkUseHomeButton();
-
-        WidgetUpdateService.ForceUpdateAll(this);
-
-        if (!AppData.getInstance().deviceCollection.hasDevices() && SharedPrefs.getInstance().getFirstTabPosition() == -1) {
-            navigationController.changeToFragment(IntroductionFragment.class.getName());
-        } else {
-            App.getMainThreadHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (SharedPrefs.getInstance().hasBeenUpdated()) {
-                        InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
-                    }
-                }
-            }, 1500);
-        }
     }
 
     @Override
@@ -150,6 +138,14 @@ public class MainActivity extends ActionBarActivity {
                 //noinspection deprecation
                 v.setBackgroundDrawable(d);
         }
+
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(!has_two_panes);
+            actionBar.setHomeButtonEnabled(!has_two_panes);
+        }
     }
 
     /* Called whenever we call invalidateOptionsMenu() */
@@ -163,20 +159,27 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-
-        navigationController.saveSelection();
-
-        // Stop listener
-        PluginService.stopUseService();
+    protected void onStart() {
+        super.onStart();
+        if (!AppData.getInstance().deviceCollection.hasDevices() && SharedPrefs.getInstance().getFirstTabPosition() == -1) {
+            navigationController.changeToFragment(IntroductionFragment.class.getName());
+        } else {
+            App.getMainThreadHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (SharedPrefs.getInstance().hasBeenUpdated()) {
+                        InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
+                    }
+                }
+            }, 1500);
+        }
     }
 
     @Override
-    public void onResume() {
-        AppData.useAppData();
-        PluginService.useService();
-        super.onResume();
+    protected void onStop() {
+        super.onStop();
+        navigationController.saveSelection();
+        navigationController.detachCurrentFragment();
     }
 
     @Override
@@ -197,7 +200,6 @@ public class MainActivity extends ActionBarActivity {
 
             navigationController.detachCurrentFragment();
             assignContentView();
-            checkUseHomeButton();
             navigationController.restoreLastOpenedFragment();
 
         }
@@ -206,28 +208,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        navigationController.detachCurrentFragment();
-    }
-
-    private void checkUseHomeButton() {
-        // enable ActionBar app icon to behave as action to toggle nav drawer
-        boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(!has_two_panes);
-            actionBar.setHomeButtonEnabled(!has_two_panes);
-        }
-    }
-
-    @Override
     public void setTitle(CharSequence title) {
         navigationController.setTitle(title);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(title);
-        }
     }
 
     @Override

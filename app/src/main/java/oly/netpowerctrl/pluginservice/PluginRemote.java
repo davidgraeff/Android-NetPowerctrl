@@ -175,7 +175,7 @@ public class PluginRemote implements PluginInterface {
     }
 
     /**
-     * init
+     * onCreate
      */
     private void init() {
         try {

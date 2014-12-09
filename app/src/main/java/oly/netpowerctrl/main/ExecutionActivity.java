@@ -19,7 +19,6 @@ import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.network.onExecutionFinished;
-import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 
@@ -28,12 +27,6 @@ import oly.netpowerctrl.scenes.Scene;
  */
 public class ExecutionActivity extends NfcReaderActivity implements onExecutionFinished {
     private String scene_uuid;
-
-    @Override
-    protected void onPause() {
-        PluginService.stopUseService();
-        super.onPause();
-    }
 
     @Override
     protected void onNfcFeatureNotFound() {
@@ -80,10 +73,6 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
             finish();
             return;
         }
-
-        // Load app data
-        AppData.useAppData();
-        PluginService.useService();
 
         boolean show_mainwindow = extra.getBoolean("show_mainWindow", false);
         boolean enable_feedback = extra.getBoolean("enable_feedback", true);

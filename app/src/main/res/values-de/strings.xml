@@ -157,8 +157,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="outlet_master_slave_title">Slaves für %1$s setzen</string>
     <string name="scene_create_available">Verfügbar</string>
     <string name="scene_create_added">Zugewiesene Aktionen</string>
-    <string name="preference_wakeup_energy_saving_mode">Aufwachen aus Energiesparmodus</string>
-    <string name="preference_wakeup_energy_saving_mode_summary">Normalerweise wird der Energiesparmodus nicht automatisch wieder beendet (außer bei neu-öffnen der App). Mit dieser Option bleibt ein Teil der App aktiv und sucht bei jedem Netzwechsel nach Geräten.</string>
+    <string name="preference_maximum_energy_saving_mode">Maximal Energie sparen</string>
+    <string name="preference_maximum_energy_saving_mode_summary">Geräte werden nach einem Netzwechsel nicht mehr automatisch aktualisiert. Wird die App in den Hintergrund geschickt (Bild aus/Homescreen Knopf) werden umgehend alle Erweiterungen/Netzwerkkomponenten entladen. Für Mobiltelefone empfohlen.</string>
     <string name="scene_remove_item">Entferne von Szene</string>
     <string name="outlet_set_icon">Zustandsbild…</string>
     <string name="create_device_not_all_data_set">Bitte erstmal alle Daten ausfüllen!</string>
@@ -185,7 +185,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_weekdays_range_alarm">Wochentage: %1$s, Einschaltzeit: %2$s, Ausschaltzeit: %3$s, Zufälliges Umschaltinterval: %4$s</string>
     <string name="alarm_once">Einmalig ausführen: $s</string>
     <string name="preference_show_persistent_notification">In Statusbar anzeigen</string>
-    <string name="preference_show_persistent_notification_summary">Aktivieren um bis zu 3 favorisierte Szenen in der Statusleiste zum schnellen auswählen einzublenden (Android 4.1+). Die App läuft dann jedoch im Hintergrund.</string>
+    <string name="preference_show_persistent_notification_summary">Aktivieren um bis zu 3 favorisierte Szenen in der Statusleiste zum schnellen auswählen einzublenden.</string>
     <string name="alarm_edit">Alarm editieren</string>
     <string name="alarm_device_name">Alarm Ziel</string>
     <string name="alarm_device_name_summary">Wähle das Ziel dieses Alarms (Gerät, Anschluss)</string>
@@ -367,4 +367,9 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_is_switch_on">Einschalten statt Ausschalten</string>
     <string name="alarm_wait_remove">Bitte warten. Entferne Alarm…</string>
     <string name="alarm_wait_save">Bitte warten. Speichere Alarm…</string>
+    <string name="preference_speech_enabled">Sprachkontrolle</string>
+    <string name="preference_speech_enabled_summary">Kommandowort sprechen. Nach Bestätigung den Namen der Szene oder der Steckdose nennen. Nur für Geräte an der Steckdose empfohlen.</string>
+    <string name="preference_speech_command_word">Sprachsteuerung Kommandowort</string>
+    <string name="preference_speech_command_word_summary">Sagen Sie das Kommandowort um die Sprachsteuerung zu starten</string>
+    <string name="device_shown_actions">Sichtbare Aktionen</string>
 </resources>

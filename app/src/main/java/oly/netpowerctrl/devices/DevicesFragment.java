@@ -29,6 +29,7 @@ import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.PluginRemote;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
@@ -221,7 +222,9 @@ public class DevicesFragment extends Fragment
                     PopupMenu popup = new PopupMenu(getActivity(), view);
                     MenuInflater inflater = popup.getMenuInflater();
                     inflater.inflate(R.menu.configured_device_item, popup.getMenu());
-                    popup.getMenu().findItem(R.id.menu_device_configuration_page).setVisible(device.getPluginInterface() != null);
+                    Menu menu = popup.getMenu();
+                    menu.findItem(R.id.menu_device_configuration_page).setVisible(device.getPluginInterface() != null);
+                    menu.findItem(R.id.menu_device_configure_network).setVisible(!(device.getPluginInterface() instanceof PluginRemote));
                     popup.setOnMenuItemClickListener(DevicesFragment.this);
                     popup.show();
                 } else {
@@ -264,7 +267,7 @@ public class DevicesFragment extends Fragment
         final Device current_device = deviceWeakReference.get();
 
         switch (menuItem.getItemId()) {
-            case R.id.menu_device_configure: {
+            case R.id.menu_device_configure_network: {
                 show_configure_device_dialog(current_device);
                 return true;
             }

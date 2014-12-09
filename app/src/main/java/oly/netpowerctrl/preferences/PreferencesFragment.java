@@ -23,6 +23,7 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
+import oly.netpowerctrl.utils.AndroidStatusBarService;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements LoadStoreIconData.IconSelected {
     private static final int REQUEST_CODE_IMPORT = 100;
@@ -34,6 +35,12 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             LoadStoreIconData.clearIconCache();
             //noinspection ConstantConditions
             getActivity().recreate();
+            return true;
+        }
+    };
+    private final Preference.OnPreferenceChangeListener reloadAndroidStatusBar = new Preference.OnPreferenceChangeListener() {
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            AndroidStatusBarService.startOrStop(getActivity());
             return true;
         }
     };
@@ -64,6 +71,13 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                 return false;
             }
         });
+
+        //noinspection ConstantConditions
+        findPreference("show_persistent_notification").setOnPreferenceChangeListener(reloadAndroidStatusBar);
+        //noinspection ConstantConditions
+        findPreference("speech_enabled").setOnPreferenceChangeListener(reloadAndroidStatusBar);
+        //noinspection ConstantConditions
+        findPreference("speech_command_word").setOnPreferenceChangeListener(reloadAndroidStatusBar);
 
         //noinspection ConstantConditions
         findPreference("import").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

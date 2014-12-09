@@ -12,7 +12,7 @@
         <item>flat</item>
     </string-array>
 
-    <item name="wakeup_energy_saving_mode" format="boolean" type="bool">False</item>
+    <item name="maximum_energy_saving_mode" format="boolean" type="bool">False</item>
     <item name="use_dark_theme" format="boolean" type="bool">False</item>
     <item name="load_extensions" format="boolean" type="bool">False</item>
     <item name="widget_show_status" format="boolean" type="bool">False</item>
@@ -20,6 +20,8 @@
     <item name="widget_use_default" format="boolean" type="bool">True</item>
     <item name="showHiddenOutlets" format="boolean" type="bool">False</item>
     <item name="show_persistent_notification" format="boolean" type="bool">False</item>
+    <item name="speech_enabled" format="boolean" type="bool">False</item>
+    <item name="speech_command_word" format="string" type="string">computer</item>
     <item name="hide_not_reachable" format="boolean" type="bool">True</item>
     <item name="notify_on_non_reachable" format="boolean" type="bool">False</item>
     <item name="outlet_editing_enabled" format="boolean" type="bool">True</item>

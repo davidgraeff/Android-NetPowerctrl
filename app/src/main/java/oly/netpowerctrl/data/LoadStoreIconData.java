@@ -80,7 +80,7 @@ public class LoadStoreIconData {
         return dir;
     }
 
-    public static void init(Context context) {
+    public static void onCreate(Context context) {
         { // Legacy dir support
             File dir = new File(App.instance.getFilesDir(), "images");
             File old_dir = App.instance.getDir("images", 0);
@@ -90,6 +90,12 @@ public class LoadStoreIconData {
         defaultFallbackIconSet = SharedPrefs.getDefaultFallbackIconSet(context);
         iconLoadingThread = new IconDeferredLoadingThread();
         iconLoadingThread.start();
+    }
+
+    public static void onDestroy() {
+        if (iconLoadingThread != null)
+            iconLoadingThread.interrupt();
+        iconLoadingThread = null;
     }
 
     public static void setDefaultFallbackIconSet(String new_theme) {

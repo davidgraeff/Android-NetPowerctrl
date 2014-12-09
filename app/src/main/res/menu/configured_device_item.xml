@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_device_configure"
+        android:id="@+id/menu_device_configure_network"
         android:title="@string/device_connections_edit" />
     <item
         android:id="@+id/menu_device_configuration_page"

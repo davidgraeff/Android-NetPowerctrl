@@ -92,7 +92,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             // start service
             Intent intent = new Intent(context, PluginService.class);
             context.startService(intent);
-        } else { // service already running. refresh devices?
+        } else { // service already running. if service was going to go down, stop the shutdown task.
             service_shutdown_reason = "";
             mDiscoverService.stopServiceHandler.removeCallbacks(mDiscoverService.stopRunnable);
         }
@@ -210,7 +210,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
                 pluginInterface.enterNetworkReducedState(this);
 
         // Stop listening for network changes
-        if (!SharedPrefs.getInstance().isWakeUpFromEnergySaving()) {
+        if (SharedPrefs.getInstance().isMaximumEnergySaving()) {
             networkChangedListener.unregister(this);
             Logging.getInstance().logEnergy("Netzwerkwechsel nicht mehr überwacht!");
         }

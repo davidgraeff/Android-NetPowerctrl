@@ -1,7 +1,12 @@
 package oly.netpowerctrl.executables;
 
+import android.support.annotation.NonNull;
 import android.util.SparseBooleanArray;
+import android.view.View;
 import android.widget.CheckedTextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
@@ -11,20 +16,19 @@ public class ExecutablesListAdapter extends ExecutablesBaseAdapter {
     private final SparseBooleanArray checked = new SparseBooleanArray();
     private final boolean checkable;
 
-    public ExecutablesListAdapter(boolean checkable, ExecutablesSourceBase source,
-                                  IconDeferredLoadingThread iconCache, boolean showGroups) {
+    public ExecutablesListAdapter(boolean checkable, @NonNull ExecutablesSourceBase source,
+                                  @NonNull IconDeferredLoadingThread iconCache, boolean showGroups) {
         super(source, iconCache, showGroups);
         this.checkable = checkable;
         if (checkable)
             setLayoutRes(R.layout.list_item_selectable_outlet);
         else
             setLayoutRes(R.layout.list_item_available_outlet);
-        if (source != null)
-            source.updateNow();
+        source.updateNow();
     }
 
     @Override
-    public void onBindViewHolder(ExecutableViewHolder executableViewHolder, int position) {
+    public void onBindViewHolder(final ExecutableViewHolder executableViewHolder, final int position) {
         super.onBindViewHolder(executableViewHolder, position);
 
         ExecutableAdapterItem item = mItems.get(position);
@@ -35,8 +39,15 @@ public class ExecutablesListAdapter extends ExecutablesBaseAdapter {
             return;
 
         if (checkable) {
-            CheckedTextView t = (CheckedTextView) executableViewHolder.title;
+            final CheckedTextView t = (CheckedTextView) executableViewHolder.title;
             t.setChecked(checked.get(position));
+            t.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    t.setChecked(!t.isChecked());
+                    checked.put(position, t.isChecked());
+                }
+            });
         }
     }
 
@@ -45,22 +56,16 @@ public class ExecutablesListAdapter extends ExecutablesBaseAdapter {
         notifyDataSetChanged();
     }
 
-//    public List<UUID> getCheckedUUids() {
-//        List<UUID> slaves = new ArrayList<>();
-//        for (int i = 0; i < getItemCount(); i++) {
-//            if (checked.get(i)) {
-//                slaves.add(getDevicePort(i).uuid);
-//            }
-//        }
-//        return slaves;
-//    }
-//
-//    public void setChecked(List<UUID> slaves) {
-//        for (UUID slave : slaves) {
-//            int position = findPositionByUUid(slave);
-//            if (position == -1)
-//                continue;
-//            checked.put(position, true);
-//        }
-//    }
+    public List<Boolean> getChecked() {
+        List<Boolean> slaves = new ArrayList<>();
+        for (int i = 0; i < getItemCount(); i++) {
+            slaves.add(checked.get(i));
+        }
+        return slaves;
+    }
+
+    public void setChecked(SparseBooleanArray checked) {
+        for (int i = 0; i < checked.size(); ++i)
+            this.checked.put(checked.keyAt(i), checked.valueAt(i));
+    }
 }
