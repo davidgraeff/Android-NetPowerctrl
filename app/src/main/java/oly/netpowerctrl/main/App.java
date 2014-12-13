@@ -15,6 +15,7 @@ import org.acra.sender.HttpSender;
 
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.LoadStoreIconData;
 
 /**
  * Application:
@@ -27,6 +28,7 @@ public class App extends Application {
     public static App instance;
     public static boolean useErrorReporter = (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT); // Lollipop acra does not work;
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+    private LifecycleHandler lifecycleHandler;
 
     public App() {
         App.instance = this;
@@ -91,7 +93,17 @@ public class App extends Application {
             ACRA.init(this);
         }
 
-        registerActivityLifecycleCallbacks(new LifecycleHandler());
+        lifecycleHandler = new LifecycleHandler();
+        registerActivityLifecycleCallbacks(lifecycleHandler);
     }
 
+    @Override
+    public void onTrimMemory(int level) {
+        if (level >= TRIM_MEMORY_MODERATE) {
+            LoadStoreIconData.clearIconCache();
+        } else if (level >= TRIM_MEMORY_UI_HIDDEN) {
+            lifecycleHandler.onBackground();
+        }
+        super.onTrimMemory(level);
+    }
 }

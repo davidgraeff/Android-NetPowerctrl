@@ -95,14 +95,23 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         Timer nextTimer = null;
 
-        for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
+        TimerCollection timerCollection = AppData.getInstance().timerCollection;
+        List<Timer> timerList = timerCollection.getItems();
+        for (int i = timerList.size() - 1; i >= 0; --i) {
+            Timer timer = timerList.get(i);
             if (timer.alarmOnDevice != null)
                 continue;
 
             timer.computeNextAlarmUnixTime(current);
-            if (timer.next_execution_unix_time > current &&
+
+            if (timer.next_execution_unix_time >= current &&
                     (nextTimer == null || timer.next_execution_unix_time < nextTimer.next_execution_unix_time)) {
                 nextTimer = timer;
+            }
+
+            // Remove old one-time timer
+            if (timer.type == Timer.TYPE_ONCE && timer.next_execution_unix_time < current) {
+                timerCollection.removeAlarmFromDisk(timer);
             }
         }
 
@@ -114,7 +123,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         if (nextTimer == null) {
             if (nextAlarmTimestamp > 0) {
-                // Disable the manifest entry for the BootCompletedReceiver. This way the app won't unnecessarly wake up after boot.
+                // Disable the manifest entry for the BootCompletedReceiver. This way the app won't unnecessary wake up after boot.
                 ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
                 PackageManager pm = context.getPackageManager();
                 pm.setComponentEnabledSetting(receiver,
@@ -264,7 +273,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             setupAndroidAlarm(App.instance);
     }
 
-    void removeAlarm(final Timer timer, final onHttpRequestResult callback) {
+    void removeDeviceAlarm(final Timer timer, final onHttpRequestResult callback) {
         if (timer.executable instanceof DevicePort && timer.alarmOnDevice != null) {
             Device device = ((DevicePort) timer.executable).device;
             PluginService.getService().wakeupPlugin(device);
@@ -375,7 +384,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         int b = items.size();
         // Delete all alarms
         for (Timer timer : getItems())
-            removeAlarm(timer, null);
+            removeDeviceAlarm(timer, null);
         items.clear();
         notifyObservers(null, ObserverUpdateActions.RemoveAllAction, b);
     }

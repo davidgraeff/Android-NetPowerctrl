@@ -45,7 +45,7 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.ui.navigation.NavigationController;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
-import oly.netpowerctrl.utils.AndroidStatusBarService;
+import oly.netpowerctrl.utils.statusbar_and_speech.AndroidStatusBarService;
 
 public class MainActivity extends ActionBarActivity {
     private static final long TIME_INTERVAL_MS = 2000;

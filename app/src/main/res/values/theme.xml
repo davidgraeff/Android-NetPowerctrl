@@ -17,9 +17,13 @@
         <item name="segment_radio_left">@drawable/segment_radio_left_light</item>
         <item name="segment_radio_middle">@drawable/segment_radio_middle_light</item>
         <item name="segment_radio_right">@drawable/segment_radio_right_light</item>
-        <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
         <item name="colored_button">@style/Colored_Button.Customlighttheme</item>
+
+        <item name="ic_action_download_themed">@drawable/ic_action_download</item>
+        <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off</item>
+        <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on</item>
+        <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle</item>
 
         <item name="textColorPrimary">@android:color/white</item>
         <item name="colorPrimary">@color/colorPrimaryLight</item>
@@ -50,9 +54,13 @@
         <item name="segment_radio_left">@drawable/segment_radio_left_dark</item>
         <item name="segment_radio_middle">@drawable/segment_radio_middle_dark</item>
         <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
-        <item name="ic_action_view_as_list">@drawable/ic_action_view_as_list_dark</item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_dark</item>
         <item name="colored_button">@style/Colored_Button.Customlighttheme</item>
+
+        <item name="ic_action_download_themed">@drawable/ic_action_download_light</item>
+        <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off_light</item>
+        <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on_light</item>
+        <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle_light</item>
 
         <item name="textColorPrimary">@android:color/white</item>
         <item name="colorPrimary">@color/colorPrimaryDark</item>

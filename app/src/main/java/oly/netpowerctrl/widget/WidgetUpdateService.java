@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +106,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         AppData.getInstance().deviceCollection.unregisterObserver(this);
         AppData.getInstance().sceneCollection.unregisterObserver(this);
         PluginService.observersServiceReady.unregister(this);
-        PluginService.stopUseService();
+        PluginService.stopUseService(this);
     }
 
     /**
@@ -149,7 +150,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             Logging.getInstance().logWidgets("Service start");
             initDone = true;
             AppData.useAppData();
-            PluginService.useService();
+            PluginService.useService(new WeakReference<Object>(this));
             PluginService.observersServiceReady.register(this);
         } else
             preCheckUpdate();

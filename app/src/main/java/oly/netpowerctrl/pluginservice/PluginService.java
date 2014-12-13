@@ -9,8 +9,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
@@ -39,7 +41,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     private static final NetworkChangedBroadcastReceiver networkChangedListener = new NetworkChangedBroadcastReceiver();
     public static String service_shutdown_reason = "";
     ///////////////// Service start/stop listener /////////////////
-    static private int mDiscoverServiceRefCount = 0;
+    static private WeakHashMap<Object, Boolean> weakHashMap = new WeakHashMap<>();
     static private PluginService mDiscoverService;
     static private boolean mWaitForService;
     private final Runnable stopRunnable = new Runnable() {
@@ -80,8 +82,8 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     /**
      * Call this in onResume if you need any of the service functionality.
      */
-    public static void useService() {
-        ++mDiscoverServiceRefCount;
+    public static void useService(WeakReference<Object> useReference) {
+        weakHashMap.put(useReference, true);
         // Stop delayed stop-service
         // Service is not running anymore, restart it
         if (mDiscoverService == null) {
@@ -99,21 +101,15 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     }
 
     public static boolean isServiceUsed() {
-        return mDiscoverServiceRefCount > 0;
+        return weakHashMap.size() > 0;
     }
 
-    public static void stopUseService() {
-        if (mDiscoverServiceRefCount > 0) {
-            mDiscoverServiceRefCount--;
-        }
-        if (mDiscoverServiceRefCount == 0 && mDiscoverService != null) {
+    public static void stopUseService(Object useReference) {
+        weakHashMap.remove(useReference);
+        if (weakHashMap.size() == 0 && mDiscoverService != null) {
             service_shutdown_reason = "No use of service!";
             mDiscoverService.stopServiceHandler.postDelayed(mDiscoverService.stopRunnable, 2000);
         }
-    }
-
-    public static int getUsedCount() {
-        return mDiscoverServiceRefCount;
     }
 
     public static PluginService getService() {
@@ -143,8 +139,9 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
 
         Logging.getInstance().logMain("START");
 
-        if (mDiscoverServiceRefCount == 0)
-            mDiscoverServiceRefCount = 1;
+        if (weakHashMap.size() == 0)
+            throw new RuntimeException(TAG + " cannot be started without useService");
+
         mWaitForService = false;
         mDiscoverService = this;
 
@@ -193,7 +190,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             pluginInterface.onDestroy();
         plugins.clear();
 
-        mDiscoverServiceRefCount = 0;
+        weakHashMap.clear();
         mDiscoverService = null;
         mWaitForService = false;
 

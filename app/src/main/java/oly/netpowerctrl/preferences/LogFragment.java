@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.scenes.RecyclerViewWithAdapter;
+import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.ActionBarTitle;
 import oly.netpowerctrl.utils.DividerItemDecoration;
@@ -87,7 +88,7 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
         bitmapsForType[TYPE_POWER] = BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_lock_idle_low_battery);
         bitmapsForType[TYPE_WIDGETS] = BitmapFactory.decodeResource(getResources(), R.drawable.netpowerctrl);
         bitmapsForType[TYPE_DETECTION] = BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_menu_zoom);
-        recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(getActivity(), view, view, adapter, R.string.log_no_records);
+        recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(getActivity(), (ViewParent) view, view, adapter, R.string.log_no_records);
         recyclerViewWithAdapter.getRecyclerView().addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST) {
             @Override
             public boolean dividerForPosition(int position) {
@@ -221,8 +222,8 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
 
     private class LogItem {
         private String type = "";
-        private int typeInt = TYPE_MAIN;
         private String date = "";
+        private int typeInt = TYPE_MAIN;
         private String time = "";
         private String text;
 
@@ -254,6 +255,7 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
                     break;
             }
         }
+
 
     }
 }

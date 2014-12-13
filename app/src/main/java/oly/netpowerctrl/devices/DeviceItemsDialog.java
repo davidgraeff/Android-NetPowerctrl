@@ -68,11 +68,14 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
         if (device != null) {
             @SuppressLint("InflateParams")
             final View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_with_list, null);
+            // Create list view
             RecyclerView mRecyclerView = (RecyclerView) rootView.findViewById(android.R.id.list);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            // Item click listener
             onItemClickListener = new RecyclerItemClickListener(getActivity(), this, null);
             mRecyclerView.addOnItemTouchListener(onItemClickListener);
+            // Adapter (Checkable list) and Adapter Source (DevicePorts of one Device)
             executablesSourceBase = new ExecutablesSourceOneDevicePorts(null, device);
             adapter = new ExecutablesListAdapter(true, executablesSourceBase, LoadStoreIconData.iconLoadingThread, false);
             adapter.setChecked(hiddenDevicePortArray());

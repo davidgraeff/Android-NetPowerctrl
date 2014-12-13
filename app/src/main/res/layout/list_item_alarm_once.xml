@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/alarm_image"
+        android:layout_width="?android:attr/listPreferredItemHeight"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:contentDescription="@string/alarm_device_name"
+        android:paddingEnd="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp"
+        android:scaleType="fitCenter" />
+
+    <ImageView
+        android:id="@+id/alarm_image_isAndroid"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:contentDescription="@string/alarm_device_name"
+        android:paddingBottom="5dp"
+        android:paddingEnd="5dp"
+        android:paddingRight="5dp"
+        android:src="@android:drawable/sym_def_app_icon" />
+
+    <TextView
+        android:id="@+id/alarm_target"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/alarm_image"
+        android:layout_toRightOf="@id/alarm_image"
+        android:textAppearance="@android:style/TextAppearance.Large" />
+
+    <TextView
+        android:id="@+id/alarm_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/alarm_target"
+        android:layout_alignStart="@id/alarm_target"
+        android:layout_below="@id/alarm_target"
+        android:textAppearance="@android:style/TextAppearance.Medium" />
+</RelativeLayout>

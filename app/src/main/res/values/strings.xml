@@ -172,7 +172,7 @@ Please double check that you are in the same network as your devices, UDP on the
     </string-array>
     <string name="drawer_timer">Alarm</string>
     <string name="menu_add_timer">Add alarm</string>
-    <string name="help_timers">On this screen you may configure alarms. Every supported device differs a little bit in its capabilities. Usually you may save up to 5 alarms with on and off time per port. If you set up more alarms or an alarm for a scene those are stored on your android device. For those alarms to work your mobile have to be on, wlan activated and in range.</string>
+    <string name="help_timers">On this screen you may configure alarms. Every supported device differs a little bit in its capabilities. On anel devices usually you may save up to 5 alarms with on and off time per port. Furthermore you may set up alarms that are stored on your android device and executed by it. One-time alarms and alarms for scenes are only possible by android alarms. For those alarms to work your mobile have to be on, wlan activated and in range.</string>
     <string name="show_extensions_in_market">Show extensions in the Google Play Store</string>
     <string name="extensions">Extensions</string>
     <string name="device_udp">UDP Connections</string>
@@ -315,8 +315,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="scene">Scene</string>
     <string name="help_overview_and_groups">Auf diesem Bildschirm siehst du im ersten Moment alle Steckdosen aufgelistet. Klicke einen Eintrag um einen Zustandswechsel herbeizuführen. Berühre das Schraubenschlüssel-Symbol um den Namen, das Icon, oder die Gruppenzugehörigkeit eines Eintrags zu ändern. Einträge können in Ansichtsgruppen zusammengefasst werden, wobei ein Eintrag auch mehreren Gruppen zugewiesen werden kann. Durch die Gruppen wechselst du durch Wischbewegungen. Der (+)-Knopf unten links erlaubt das Erstellen von neuen Gruppen und Szenen.</string>
     <string name="open_google_market">Google Play</string>
-    <string name="feedback_add_title">Title</string>
-    <string name="feedback_add_text">Wunsch, Verbesserungsvorschlag oder Anregung</string>
     <string name="app_name_disclaimer">Dies ist eine Quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
     <string name="feedback_contact_me">Kontaktieren Sie mich um Probleme mit der App oder Fragen schnell zu klären. Möchten Sie ein allgemein einsehbares Feedback hinterlassen, benutzen Sie bitte Google Play.</string>
     <string name="feedback_add_description">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger. Ihr Feedback ist dann ausdrücklich erwünscht, damit die normale Version möglichst stabil erscheinen kann.</string>
@@ -326,7 +324,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="error_plugin_api_version_missmatch">Plugin to old. Version missmatch!</string>
     <string name="error_scene_save_failed">Failed to save scene!</string>
     <string name="error_scene_icon_save_failed">Scene icon save failed!</string>
-    <string name="open_source_licenses">Verwendete Open Source Software</string>
+    <string name="open_source_licenses">Used open source software</string>
     <string name="outlets_view_type_compact">Kompakte Ansicht</string>
     <string name="outlets_view_type_extended">Erweiterte Ansicht</string>
     <string name="feedback_google_plus">Google Plus Group</string>
@@ -334,20 +332,18 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="group_add_items">Fill group…</string>
     <string name="help_groups">Um Elemente einer Gruppe hinzuzufügen, wechsel in die Übersicht und berühre das Werkzeug Symbol. Im folgendem Dialog kannst du dem Element Gruppen zuweisen.</string>
     <string name="label_title"><u>Titel</u></string>
-    <string name="groups_assigned">Ansichtsgruppen</string>
+    <string name="groups_assigned">Assigned groups</string>
     <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
-    <string name="delete_all_alarms">Zeitschaltungen löschen?</string>
-    <string name="alarm_on_android">Android Alarm</string>
-    <string name="alarm_on_android_summary">Wenn aktiviert wird dieser Alarm nicht vom Zielgerät umgesetzt, sondern von diesem Tablet/Handy. Szenen können nur auf diese Weise einen Alarm erhalten. Dieses Gerät muss dann eingeschaltet und in Reichweite zum Alarm Ziel sein!</string>
+    <string name="delete_all_alarms">Remove all alarms?</string>
 
     <string name="icon_theme_1">Rund, Transparent</string>
     <string name="icon_theme_2">Rund, Flach</string>
     <string name="icon_theme_3">Rund, Dreidimensional</string>
     <string name="icon_theme_4">Farbiges Powerzeichen</string>
     <string name="statusbar_no_favourites">No favourites defined</string>
-    <string name="icon_state_undefined">Unbestimmt</string>
-    <string name="icon_state_off">Ausgeschaltet</string>
-    <string name="icon_state_on">Eingeschaltet</string>g>
+    <string name="icon_state_undefined">Unknown</string>
+    <string name="icon_state_off">Offline</string>
+    <string name="icon_state_on">Online</string>g>
     <string name="log_send_mail_confirmation">Die Logdaten werden an den Entwickler per Fehlerbericht gesendet. Daten jetzt senden?</string>
     <string name="preference_use_log_alarm">Log: Alarm</string>
     <string name="preference_use_log_alarm_summary">Log all alarm activities</string>
@@ -355,15 +351,19 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
     <string name="error_plugin_removed">Plugin wurde entfernt!</string>
     <string name="menu_device_share">Share device to network</string>
-    <string name="menu_device_hide_items">Aktionen des Geräts aus-/einblenden</string>
+    <string name="menu_device_hide_items">Hide/show actions of this device</string>
     <string name="error_device_not_found">Device not found!</string>
     <string name="device_share_to_network">Share to network</string>
     <string name="alarm_is_switch_on">Einschalten statt Ausschalten</string>
     <string name="alarm_wait_remove">Please wait, remove alarm…</string>
     <string name="alarm_wait_save">Please wait, save alarm…</string>
-    <string name="preference_speech_enabled">Sprachkontrolle</string>
+    <string name="preference_speech_enabled">Speech recognition</string>
     <string name="preference_speech_enabled_summary">Kommandowort sprechen. Nach Bestätigung den Namen der Szene oder der Steckdose nennen. Nur für Geräte an der Steckdose empfohlen.</string>
-    <string name="preference_speech_command_word">Sprachsteuerung Kommandowort</string>
-    <string name="preference_speech_command_word_summary">Sagen Sie das Kommandowort um die Sprachsteuerung zu starten</string>
+    <string name="preference_speech_command_word">Speech recognition: Hot word</string>
+    <string name="preference_speech_command_word_summary">Use the hot word to activate the speech command processing</string>
     <string name="device_shown_actions">Shown device items</string>
+    <string name="menu_timer_android_once">Android alarm: Once</string>
+    <string name="menu_timer_android_weekdays">Android alarm: Repeating</string>
+    <string name="menu_timer_device_weekdays">Device alarm: Repeating</string>
+    <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
 </resources>

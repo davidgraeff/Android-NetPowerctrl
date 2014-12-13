@@ -2,6 +2,7 @@ package oly.netpowerctrl.tests;
 
 import android.test.AndroidTestCase;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,7 @@ public class ServiceTests extends AndroidTestCase {
         assertEquals(l instanceof TestObjects.LoadStoreJSonDataTest, true);
 
         assertNull(PluginService.getService());
-        PluginService.useService();
+        PluginService.useService(new WeakReference<Object>(this));
 
         final CountDownLatch signal = new CountDownLatch(1);
         PluginService.observersServiceReady.register(new onServiceReady() {
@@ -58,7 +59,7 @@ public class ServiceTests extends AndroidTestCase {
         assertNotNull(service);
         assertEquals(service, PluginService.getService());
 
-        assertEquals(PluginService.getUsedCount(), 1);
+        assertEquals(PluginService.isServiceUsed(), true);
 
         final CountDownLatch shutDownSignal = new CountDownLatch(1);
         PluginService.observersServiceReady.register(new onServiceReady() {
@@ -73,9 +74,10 @@ public class ServiceTests extends AndroidTestCase {
             }
         });
 
-        PluginService.stopUseService();
+        PluginService.stopUseService(this);
         shutDownSignal.await(4, TimeUnit.SECONDS);
 
+        assertEquals(PluginService.isServiceUsed(), false);
         assertNull(PluginService.getService());
     }
 }

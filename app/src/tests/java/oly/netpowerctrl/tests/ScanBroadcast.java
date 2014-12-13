@@ -2,6 +2,7 @@ package oly.netpowerctrl.tests;
 
 import android.test.AndroidTestCase;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -38,10 +39,10 @@ public class ScanBroadcast extends AndroidTestCase {
         c.useAppData(new TestObjects.LoadStoreJSonDataTest());
         assertNotNull(c);
 
-        assertEquals(PluginService.getUsedCount(), 0);
+        assertEquals(PluginService.isServiceUsed(), false);
         assertNull(PluginService.getService());
-        PluginService.useService();
-        assertEquals(PluginService.getUsedCount(), 1);
+        PluginService.useService(new WeakReference<Object>(this));
+        assertEquals(PluginService.isServiceUsed(), true);
 
         final CountDownLatch signal = new CountDownLatch(1);
         PluginService.observersServiceReady.register(new onServiceReady() {
@@ -53,16 +54,17 @@ public class ScanBroadcast extends AndroidTestCase {
 
             @Override
             public void onServiceFinished() {
+                signal.countDown();
             }
         });
 
         signal.await(4, TimeUnit.SECONDS);
-        assertEquals(PluginService.getUsedCount(), 1);
+        assertEquals(PluginService.isServiceUsed(), true);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        assertEquals(PluginService.getUsedCount(), 1);
+        assertEquals(PluginService.isServiceUsed(), true);
 
         final CountDownLatch signal = new CountDownLatch(1);
         PluginService.observersServiceReady.register(new onServiceReady() {
@@ -77,7 +79,7 @@ public class ScanBroadcast extends AndroidTestCase {
             }
         });
 
-        PluginService.stopUseService();
+        PluginService.stopUseService(this);
         signal.await(4, TimeUnit.SECONDS);
 
         assertNull(PluginService.getService());

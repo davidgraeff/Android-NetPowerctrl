@@ -51,7 +51,7 @@
             android:title="@string/preference_speech_enabled" />
 
         <EditTextPreference
-            android:defaultValue="@bool/speech_enabled"
+            android:defaultValue="@string/speech_command_word"
             android:dependency="speech_enabled"
             android:dialogMessage="@string/preference_speech_command_word_summary"
             android:key="speech_command_word"

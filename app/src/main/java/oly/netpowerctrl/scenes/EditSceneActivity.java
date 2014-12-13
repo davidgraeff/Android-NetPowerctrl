@@ -46,8 +46,8 @@ import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
-import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
@@ -164,18 +164,18 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             LayoutInflater layoutInflater = LayoutInflater.from(this);
             layoutInflater.inflate(R.layout.scene_elements_two_pane, view, true);
 
-            sceneElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+            sceneElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
                     findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
-            availableElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+            availableElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
                     findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
         } else {
             ViewGroup view = (ViewGroup) findViewById(R.id.items_container);
             LayoutInflater layoutInflater = LayoutInflater.from(this);
             layoutInflater.inflate(R.layout.scene_elements_one_pane, view, true);
 
-            sceneElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+            sceneElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
                     findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
-            availableElements = new RecyclerViewWithAdapter<>(this, findViewById(R.id.scroll_vertical),
+            availableElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
                     findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
 
             View btnAdd = findViewById(R.id.btnAdd);
@@ -351,19 +351,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         resultCanvas.drawBitmap(rounder, 0, 0, xferPaint);
 
         ((ImageView) context_object).setImageBitmap(result);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        AppData.useAppData();
-        PluginService.useService();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        PluginService.stopUseService();
     }
 
     @Override

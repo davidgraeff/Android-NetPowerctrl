@@ -8,19 +8,7 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/refresh"
-        android:icon="@drawable/ic_menu_refresh"
-        android:title="@string/refresh"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/menu_add_device"
-        android:icon="@android:drawable/ic_menu_add"
-        android:title="@string/device_add"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/menu_delete_all_devices"
+        android:id="@+id/menu_delete_all"
         android:icon="@android:drawable/ic_menu_delete"
         android:title="@string/remove_all"
         app:showAsAction="never" />

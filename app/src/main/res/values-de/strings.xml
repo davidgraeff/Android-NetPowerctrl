@@ -171,7 +171,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     </string-array>
     <string name="drawer_timer">Zeitschaltungen</string>
     <string name="menu_add_timer">Automatischen Schaltvorgang hinzufügen</string>
-    <string name="help_timers">Hier kannst du Zeitschaltvorgänge einstellen. Jedes eingerichtete Gerät kann unterschiedlich viele und unterschiedlich mächtige Zeitschalter unterstützen.\n\nAnel Geräte bieten i.d.R. 4 kombinierte An/Aus Zeitschaltvorgänge.\n\nAlle darüber hinaus eingerichteten Zeitschaltungen sowie die Zeitschaltungen für Szenen werden von deinem Android Mobiltelefon oder Tablet ausgelöst. Dieses muss zum entsprechendem Zeitpunkt aktiviertes WLan haben und in Reichweite der Steckdosen sein. Die App muss einmalig nach einem Neustart aufgerufen werden, damit die Zeiten beim Betriebssystem angemeldet werden können.\nOb ein Alarm auf dem Gerät oder über Android ausgelöst wird steht bei jedem Alarm Eintrag dabei.</string>
+    <string name="help_timers">Hier kannst du Zeitschaltvorgänge einstellen. Jedes eingerichtete Gerät kann unterschiedlich viele und unterschiedlich mächtige Zeitschalter unterstützen.\n\nAnel Geräte bieten i.d.R. 4 kombinierte An/Aus Zeitschaltvorgänge.\n\nDarüber hinaus können auch Zeitschaltungen eingerichtet werden, welche von deinem Android Mobiltelefon oder Tablet ausgelöst werden. Dieses muss zum entsprechendem Zeitpunkt aktiviertes WLan haben und in Reichweite der Steckdosen sein. Die einmaligen sowie Szenen-Zeitschaltungen können nur mit Android Zeitschaltungen realisiert werden.\nOb ein Alarm über Android ausgelöst wird, erkennst du an dem Android-Symbol rechts neben dem Alarm-Eintrag.</string>
     <string name="show_extensions_in_market">Zeige Erweiterungen im Play Store</string>
     <string name="extensions">Erweiterungen</string>
     <string name="device_udp">UDP Verbindungen</string>
@@ -321,17 +321,17 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="open_google_market">Google Play</string>
     <string name="feedback_add_title">Überschrift</string>
     <string name="feedback_add_text">Wunsch, Verbesserungsvorschlag oder Anregung</string>
-    <string name="app_name_disclaimer">Dies ist eine Quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
-    <string name="feedback_contact_me">Kontaktieren Sie mich um Probleme mit der App oder Fragen schnell zu klären. Möchten Sie ein allgemein einsehbares Feedback hinterlassen, benutzen Sie bitte Google Play.</string>
+    <string name="app_name_disclaimer">Dies ist eine quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
+    <string name="feedback_contact_me">Kontaktiere mich um Probleme mit der App oder Fragen schnell zu klären. Möchtest du ein allgemein einsehbares Feedback hinterlassen, benutze bitte Google Play.</string>
     <string name="feedback_add_description">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger. Ihr Feedback ist dann ausdrücklich erwünscht, damit die normale Version möglichst stabil erscheinen kann.</string>
     <string name="feedback_btn_add">Anregung hinzufügen</string>
     <string name="drawer_change_view_type">Ansichtsmodus</string>
     <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
     <string name="outlets_view_type_list">Als Liste</string>
-    <string name="error_plugin_api_version_missmatch">Plugin to old. Version missmatch!</string>
-    <string name="error_scene_save_failed">Failed to save scene!</string>
-    <string name="error_scene_icon_save_failed">Scene icon save failed!</string>
-    <string name="open_source_licenses">Verwendete Open Source Software</string>
+    <string name="error_plugin_api_version_missmatch">Erweiterung zu alt und nicht weiter unterstützt!</string>
+    <string name="error_scene_save_failed">Szene konnte nicht gespeichert werden!</string>
+    <string name="error_scene_icon_save_failed">Szenen Bild konnte nicht gespeichert werden!</string>
+    <string name="open_source_licenses">Verwendete quelloffene Software</string>
     <string name="outlets_view_type_compact">Kompakte Ansicht</string>
     <string name="outlets_view_type_extended">Erweiterte Ansicht</string>
     <string name="feedback_google_plus">Google Plus Gruppe</string>
@@ -342,29 +342,27 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="groups_assigned">Ansichtsgruppen</string>
     <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
     <string name="delete_all_alarms">Zeitschaltungen löschen?</string>
-    <string name="alarm_on_android">Android Alarm</string>
-    <string name="alarm_on_android_summary">Wenn aktiviert wird dieser Alarm nicht vom Zielgerät umgesetzt, sondern von diesem Tablet/Handy. Szenen können nur auf diese Weise einen Alarm erhalten. Dieses Gerät muss dann eingeschaltet und in Reichweite zum Alarm Ziel sein!</string>
 
     <string name="icon_theme_1">Rund, Transparent</string>
     <string name="icon_theme_2">Rund, Flach</string>
     <string name="icon_theme_3">Rund, Dreidimensional</string>
     <string name="icon_theme_4">Farbiges Powerzeichen</string>
-    <string name="statusbar_no_favourites">No favourites defined</string>
+    <string name="statusbar_no_favourites">Keine Favouriten gesetzt</string>
     <string name="icon_state_undefined">Unbestimmt</string>
     <string name="icon_state_off">Ausgeschaltet</string>
     <string name="icon_state_on">Eingeschaltet</string>
     <string name="scene_elements">Szenenelemente</string>
     <string name="log_send_mail_confirmation">Die Logdaten werden an den Entwickler per Fehlerbericht gesendet. Daten jetzt senden?</string>
     <string name="preference_use_log_alarm">Log: Alarm</string>
-    <string name="preference_use_log_alarm_summary">Log all alarm activities</string>
+    <string name="preference_use_log_alarm_summary">Zeichnet alle Alarmaktivitäten auf</string>
     <string name="preference_log_detect">Log: Geräteerkennung</string>
     <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
     <string name="error_plugin_removed">Plugin wurde entfernt!</string>
-    <string name="menu_device_share">Share device to network</string>
+    <string name="menu_device_share">Gerät ins Netzwerk teilen</string>
     <string name="menu_device_hide_items">Aktionen des Geräts aus-/einblenden</string>
-    <string name="error_device_not_found">Device not found!</string>
-    <string name="device_share_to_network">Share to network</string>
-    <string name="alarm_is_switch_on">Einschalten statt Ausschalten</string>
+    <string name="error_device_not_found">Gerät nicht gefunden!</string>
+    <string name="device_share_to_network">Ins Netzwerk teilen</string>
+    <string name="alarm_is_switch_on">Ziel Aus-/Einschalten?</string>
     <string name="alarm_wait_remove">Bitte warten. Entferne Alarm…</string>
     <string name="alarm_wait_save">Bitte warten. Speichere Alarm…</string>
     <string name="preference_speech_enabled">Sprachkontrolle</string>
@@ -372,4 +370,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_speech_command_word">Sprachsteuerung Kommandowort</string>
     <string name="preference_speech_command_word_summary">Sagen Sie das Kommandowort um die Sprachsteuerung zu starten</string>
     <string name="device_shown_actions">Sichtbare Aktionen</string>
+    <string name="menu_timer_android_once">Android Alarm: Einmalig</string>
+    <string name="menu_timer_android_weekdays">Android Alarm: Wiederholend</string>
+    <string name="menu_timer_device_weekdays">Gerätealarm: Wiederholend</string>
+    <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
 </resources>

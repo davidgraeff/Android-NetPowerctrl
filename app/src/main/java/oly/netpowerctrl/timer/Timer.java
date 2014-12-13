@@ -64,6 +64,18 @@ public class Timer implements StorableInterface {
         return timer;
     }
 
+    public static Timer createNewOneTimeTimer(Calendar calendar, Executable executable, int command) {
+        Timer timer = new Timer();
+        timer.uuid = UUID.randomUUID().toString();
+        timer.absolute_date = calendar.getTime();
+        timer.type = TYPE_ONCE;
+        timer.executable = executable;
+        timer.executable_uid = executable.getUid();
+        timer.command = command;
+        timer.computeNextAlarmUnixTime(0);
+        return timer;
+    }
+
     /**
      * Convert minutes of the day to a string representation like "11:12".
      *
@@ -159,7 +171,7 @@ public class Timer implements StorableInterface {
         writer.name("enabled").value(enabled);
         writer.name("type").value(type);
         if (absolute_date != null)
-            writer.name("absolute_date").value(DateFormat.getDateInstance().format(absolute_date));
+            writer.name("absolute_date").value(DateFormat.getDateTimeInstance().format(absolute_date));
         writer.name("hour_minute").value(hour_minute);
         writer.name("command").value(command);
 
@@ -218,7 +230,7 @@ public class Timer implements StorableInterface {
                     break;
                 case "absolute_date":
                     try {
-                        absolute_date = DateFormat.getDateInstance().parse(reader.nextString());
+                        absolute_date = DateFormat.getDateTimeInstance().parse(reader.nextString());
                     } catch (ParseException e) {
                         throw new IOException(e);
                     }

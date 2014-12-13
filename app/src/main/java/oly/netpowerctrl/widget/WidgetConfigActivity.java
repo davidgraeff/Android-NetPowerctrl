@@ -1,20 +1,22 @@
 package oly.netpowerctrl.widget;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.executables.AdapterFragment;
 import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
 import oly.netpowerctrl.executables.ExecutablesListAdapter;
 import oly.netpowerctrl.executables.ExecutablesSourceChain;
@@ -22,9 +24,35 @@ import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.executables.ExecutablesSourceScenes;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 
 public class WidgetConfigActivity extends Activity {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    RecyclerItemClickListener recyclerItemClickListener =
+            new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public boolean onItemClick(View view, int position, boolean isLongClick) {
+                    if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
+                        return false;
+                    String uid = adapter.getItem(position).getExecutableUid();
+                    if (uid == null)
+                        return false;
+
+                    SharedPrefs.getInstance().SaveWidget(widgetId, uid);
+
+                    App.getMainThreadHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent resultValue = new Intent();
+                            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+                            setResult(RESULT_OK, resultValue);
+                            finish();
+                            WidgetUpdateService.ForceUpdate(WidgetConfigActivity.this, widgetId);
+                        }
+                    });
+                    return true;
+                }
+            }, null);
     private ExecutablesBaseAdapter adapter;
 
     @Override
@@ -71,35 +99,19 @@ public class WidgetConfigActivity extends Activity {
         adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
         adapterSource.setTargetAdapter(adapter);
 
-        AdapterFragment<ExecutablesBaseAdapter> f = new AdapterFragment<>();
-        f.setAdapter(this.adapter);
-
-        f.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+        Fragment fragment = new Fragment() {
+            @Nullable
             @Override
-            public boolean onItemClick(View view, int position, boolean isLongClick) {
-                if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
-                    return false;
-                String uid = adapter.getItem(position).getExecutableUid();
-                if (uid == null)
-                    return false;
-
-                SharedPrefs.getInstance().SaveWidget(widgetId, uid);
-
-                App.getMainThreadHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Intent resultValue = new Intent();
-                        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-                        setResult(RESULT_OK, resultValue);
-                        finish();
-                        WidgetUpdateService.ForceUpdate(WidgetConfigActivity.this, widgetId);
-                    }
-                });
-                return true;
+            public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+                View rootView = inflater.inflate(R.layout.fragment_with_list, container, false);
+                RecyclerViewWithAdapter<ExecutablesBaseAdapter> recyclerViewWithAdapter =
+                        new RecyclerViewWithAdapter<>(getActivity(), null, rootView, adapter, 0);
+                recyclerViewWithAdapter.setOnItemClickListener(recyclerItemClickListener);
+                return rootView;
             }
-        }, null));
+        };
 
-        getFragmentManager().beginTransaction().replace(R.id.content_frame, f).commit();
+        getFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();

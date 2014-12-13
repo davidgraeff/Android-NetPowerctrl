@@ -56,7 +56,7 @@ public class DevicesFragment extends Fragment
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.devices, menu);
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_delete_all_devices).setVisible(AppData.getInstance().deviceCollection.hasDevices());
+        menu.findItem(R.id.menu_delete_all).setVisible(AppData.getInstance().deviceCollection.hasDevices());
     }
 
     @Override
@@ -78,11 +78,6 @@ public class DevicesFragment extends Fragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_add_device: {
-                show_configure_device_dialog(null);
-                return true;
-            }
-
             case R.id.menu_help: {
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
@@ -92,7 +87,7 @@ public class DevicesFragment extends Fragment
                 return true;
             }
 
-            case R.id.menu_delete_all_devices: {
+            case R.id.menu_delete_all: {
                 //noinspection ConstantConditions
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.delete_all_devices)
@@ -109,12 +104,6 @@ public class DevicesFragment extends Fragment
 
                 return true;
             }
-
-            case R.id.refresh: {
-                onRefresh();
-                return true;
-            }
-
         }
         return false;
     }
