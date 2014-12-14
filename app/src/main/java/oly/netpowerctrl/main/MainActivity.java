@@ -45,7 +45,6 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.ui.navigation.NavigationController;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
-import oly.netpowerctrl.utils.statusbar_and_speech.AndroidStatusBarService;
 
 public class MainActivity extends ActionBarActivity {
     private static final long TIME_INTERVAL_MS = 2000;
@@ -70,11 +69,6 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == AndroidStatusBarService.REQUEST_CODE) {
-            if (AndroidStatusBarService.instance != null)
-                AndroidStatusBarService.instance.onActivityResult(resultCode, data);
-            return;
-        }
         // Work-a-round
         if (DonationsFragment.class.equals(navigationController.getCurrentFragment().getClass()))
             navigationController.getCurrentFragment().onActivityResult(requestCode, resultCode, data);

@@ -29,10 +29,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.main.App;
 
@@ -66,10 +66,6 @@ public class LoadStoreIconData {
         Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
         parcelFileDescriptor.close();
         return new BitmapDrawable(context.getResources(), image);
-    }
-
-    public static String uuidFromDefaultWidget() {
-        return new UUID(0xABCE, 0).toString();
     }
 
     public static File getImageDirectory(Context context, IconState state) {
@@ -188,12 +184,21 @@ public class LoadStoreIconData {
         return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
     }
 
-    public static Drawable loadDrawable(Context context, String uniqueID,
+    public static IconState getIconState(Executable executable) {
+        IconState t = IconState.StateOff;
+        if (executable.getCurrentValue() != executable.getMinimumValue() &&
+                (executable.getType() == ExecutableType.TypeToggle ||
+                        executable.getType() == ExecutableType.TypeRangedValue))
+            t = IconState.StateOn;
+        return t;
+    }
+
+    public static Drawable loadDrawable(Executable executable,
                                         IconState state, @Nullable oly.netpowerctrl.utils.MutableBoolean isDefault) {
-        Bitmap b = loadBitmap(context, uniqueID, state, isDefault);
+        Bitmap b = loadBitmap(App.instance, executable, state, isDefault);
         if (b == null)
             return null;
-        return new BitmapDrawable(context.getResources(), b);
+        return new BitmapDrawable(App.instance.getResources(), b);
     }
 
     public static Bitmap loadBackgroundBitmap() {
@@ -253,10 +258,11 @@ public class LoadStoreIconData {
         return null;
     }
 
-    public static Bitmap loadBitmap(Context context, String uniqueID,
+    public static Bitmap loadBitmap(Context context, @NonNull Executable executable,
                                     IconState state, @Nullable oly.netpowerctrl.utils.MutableBoolean isDefault) {
 
         // Get from Cache
+        String uniqueID = executable.getUid();
         String hashKey_original = uniqueID + String.valueOf(state.ordinal());
         CacheEntry cacheEntry = iconCache.get(hashKey_original);
         if (cacheEntry != null) {
@@ -304,15 +310,6 @@ public class LoadStoreIconData {
         }
 
         return bitmap;
-    }
-
-    public static LoadStoreIconData.IconState getIconState(DevicePort devicePort) {
-        LoadStoreIconData.IconState t = LoadStoreIconData.IconState.StateOff;
-        if (devicePort.getCurrentValue() != devicePort.min_value &&
-                (devicePort.getType() == ExecutableType.TypeToggle ||
-                        devicePort.getType() == ExecutableType.TypeRangedValue))
-            t = LoadStoreIconData.IconState.StateOn;
-        return t;
     }
 
 //    public static IconFile[] getAllIcons(Context context) {
@@ -365,7 +362,7 @@ public class LoadStoreIconData {
         select_icon_dialog.setTitle(context.getString(R.string.dialog_icon_title));
         if (callback_context_object instanceof DevicePort) {
             DevicePort oi = (DevicePort) callback_context_object;
-            Drawable icon = LoadStoreIconData.loadDrawable(context, oi.getUid(), getIconState(oi), null);
+            Drawable icon = LoadStoreIconData.loadDrawable(oi, getIconState(oi), null);
             select_icon_dialog.setIcon(icon);
         }
         select_icon_dialog.setAdapter(adapter, new DialogInterface.OnClickListener() {

@@ -74,10 +74,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
 
         //noinspection ConstantConditions
         findPreference("show_persistent_notification").setOnPreferenceChangeListener(reloadAndroidStatusBar);
-        //noinspection ConstantConditions
-        findPreference("speech_enabled").setOnPreferenceChangeListener(reloadAndroidStatusBar);
-        //noinspection ConstantConditions
-        findPreference("speech_command_word").setOnPreferenceChangeListener(reloadAndroidStatusBar);
 
         //noinspection ConstantConditions
         findPreference("import").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

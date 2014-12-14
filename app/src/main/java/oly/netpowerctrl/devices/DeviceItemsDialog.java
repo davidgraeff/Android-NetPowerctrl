@@ -12,10 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseBooleanArray;
 import android.view.View;
-
-import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -47,15 +44,6 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
         MainActivity.getNavigationController().changeToDialog(context, newFragment);
     }
 
-    SparseBooleanArray hiddenDevicePortArray() {
-        SparseBooleanArray checked = new SparseBooleanArray();
-        List<DevicePort> ports = executablesSourceBase.getDevicePortList();
-        for (int i = 0; i < ports.size(); ++i) {
-            if (!ports.get(i).isHidden())
-                checked.put(i, true);
-        }
-        return checked;
-    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -78,13 +66,20 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
             // Adapter (Checkable list) and Adapter Source (DevicePorts of one Device)
             executablesSourceBase = new ExecutablesSourceOneDevicePorts(null, device);
             adapter = new ExecutablesListAdapter(true, executablesSourceBase, LoadStoreIconData.iconLoadingThread, false);
-            adapter.setChecked(hiddenDevicePortArray());
+            executablesSourceBase.fullUpdate(adapter);
+            adapter.setChecked(executablesSourceBase.shownDevicePorts());
             mRecyclerView.setAdapter(adapter);
 
             AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
             return b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    Boolean[] checked = adapter.getChecked();
+                    for (int c = 0; c < checked.length; ++c) {
+                        DevicePort devicePort = (DevicePort) adapter.getItem(c).executable;
+                        devicePort.setHidden(!checked[c]);
+                    }
+                    AppData.getInstance().deviceCollection.save(device);
                     dismiss();
                 }
             }).setTitle(R.string.device_shown_actions).setView(rootView).create();
@@ -93,12 +88,6 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
             return b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    List<DevicePort> list = executablesSourceBase.getDevicePortList();
-                    List<Boolean> checked = adapter.getChecked();
-                    for (int c = 0; c < list.size(); ++c) {
-                        list.get(c).setHidden(!checked.get(c));
-                    }
-                    AppData.getInstance().deviceCollection.save(device);
                     dismiss();
                 }
             }).setTitle(R.string.error_device_not_found).create();

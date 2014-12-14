@@ -93,18 +93,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return prefs.getBoolean(PREF_show_persistent_notification, value);
     }
 
-    public static boolean isSpeechEnabled(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.speech_enabled);
-        return prefs.getBoolean("speech_enabled", value);
-    }
-
-    public static String getSpeechCommandWord(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String value = context.getResources().getString(R.string.speech_command_word);
-        return prefs.getString("speech_command_word", value);
-    }
-
     public void setDefaultFallbackIconSet(String new_theme) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putString(PREF_default_fallback_icon_set, new_theme).apply();
@@ -344,12 +332,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.notify_on_non_reachable);
         return prefs.getBoolean("notify_on_non_reachable", value);
-    }
-
-    public boolean isOutletEditingEnabled() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.outlet_editing_enabled);
-        return prefs.getBoolean("outlet_editing_enabled", value);
     }
 
     public boolean isBackground() {

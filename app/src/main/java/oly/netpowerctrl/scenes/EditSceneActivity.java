@@ -300,17 +300,17 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         switch (((View) context_object).getId()) {
             case R.id.scene_image:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconState.OnlyOneState, isDefault);
+                    icon = LoadStoreIconData.loadBitmap(this, scene, LoadStoreIconData.IconState.OnlyOneState, isDefault);
                 scene_icon_nostate = isDefault.value ? null : icon;
                 break;
             case R.id.scene_image_off:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconState.StateOff, isDefault);
+                    icon = LoadStoreIconData.loadBitmap(this, scene, LoadStoreIconData.IconState.StateOff, isDefault);
                 scene_icon_off = isDefault.value ? null : icon;
                 break;
             case R.id.scene_image_on:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, scene.uuid, LoadStoreIconData.IconState.StateOn, isDefault);
+                    icon = LoadStoreIconData.loadBitmap(this, scene, LoadStoreIconData.IconState.StateOn, isDefault);
                 scene_icon_on = isDefault.value ? null : icon;
                 break;
         }

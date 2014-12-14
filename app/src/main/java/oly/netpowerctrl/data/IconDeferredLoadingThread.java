@@ -1,6 +1,5 @@
 package oly.netpowerctrl.data;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,6 +7,8 @@ import android.os.Message;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import oly.netpowerctrl.device_base.executables.Executable;
 
 /**
  * Load icons for the ViewHolder of DevicePortsBaseAdapter in a separate thread
@@ -37,7 +38,10 @@ public class IconDeferredLoadingThread extends Thread {
         while (true) {
             try {
                 IconItem j = q.take();
-                j.drawable = LoadStoreIconData.loadDrawable(j.context, j.uuid, j.state, null);
+                IconLoaded iconLoaded = j.target.get();
+                if (iconLoaded == null) continue;
+
+                j.drawable = LoadStoreIconData.loadDrawable(iconLoaded.getExecutable(), j.state, null);
                 handler.obtainMessage(j.position, j).sendToTarget();
             } catch (InterruptedException e) {
                 q.clear();
@@ -48,6 +52,8 @@ public class IconDeferredLoadingThread extends Thread {
 
     public interface IconLoaded {
         void setDrawable(Drawable bitmap, int position);
+
+        Executable getExecutable();
     }
 
     /**
@@ -55,20 +61,15 @@ public class IconDeferredLoadingThread extends Thread {
      * ViewHolder and the bitmap index.
      */
     public static class IconItem {
-        private final String uuid;
         private final LoadStoreIconData.IconState state;
         private final WeakReference<IconLoaded> target;
         private final int position;
-        private final Context context;
         private Drawable drawable;
 
-        public IconItem(Context context, String uuid, LoadStoreIconData.IconState state,
-                        IconLoaded target, int position) {
-            this.context = context;
-            this.uuid = uuid;
+        public IconItem(LoadStoreIconData.IconState state, int position, IconLoaded target) {
             this.state = state;
-            this.target = new WeakReference<>(target);
             this.position = position;
+            this.target = new WeakReference<>(target);
         }
     }
 }

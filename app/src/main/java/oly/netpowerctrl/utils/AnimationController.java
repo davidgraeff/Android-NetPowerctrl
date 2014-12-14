@@ -3,6 +3,7 @@ package oly.netpowerctrl.utils;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
@@ -29,7 +30,8 @@ public class AnimationController {
         }
 
         view.setVisibility(View.VISIBLE);
-        view.setTranslationY(view.getHeight() * 2);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        view.setTranslationY(view.getHeight() + lp.bottomMargin);
         view.animate().setDuration(800).setInterpolator(new OvershootInterpolator()).translationY(0f);
     }
 

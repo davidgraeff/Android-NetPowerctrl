@@ -7,12 +7,25 @@
     android:paddingLeft="@dimen/list_outer_padding"
     android:paddingRight="@dimen/list_outer_padding">
 
+    <TextView
+        android:id="@+id/edit_hint"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_alignParentBottom="true"
+        android:background="?attr/colorPrimaryDark"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center"
+        android:text="Nach oben ziehen zum Bearbeiten"
+        android:textAppearance="@android:style/TextAppearance.Small" />
+
     <oly.netpowerctrl.ui.widgets.EnhancedSwipeRefreshLayout
         android:id="@+id/list_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="fill_parent"
+        android:layout_above="@id/edit_hint">
 
-        <android.support.v7.widget.RecyclerView
+    <android.support.v7.widget.RecyclerView
             android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -43,6 +56,20 @@
         android:textAppearance="@android:style/TextAppearance.Large"
         android:visibility="gone" />
 
+    <TextView
+        android:id="@+id/edit_hint_big"
+        android:layout_width="match_parent"
+        android:layout_height="62dp"
+        android:layout_alignParentBottom="true"
+        android:background="?attr/colorPrimaryDark"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:paddingEnd="90dp"
+        android:paddingRight="90dp"
+        android:text="Bearbeitungsmodus. Nach unten ziehen um zu steuern."
+        android:textAppearance="@android:style/TextAppearance.Small"
+        android:visibility="invisible" />
+
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/btnAdd"
         android:layout_width="72dp"
@@ -53,6 +80,7 @@
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
+        android:visibility="gone"
         app:drawable="@android:drawable/ic_menu_add"
         app:mainColor="?attr/floating_button_color" />
 

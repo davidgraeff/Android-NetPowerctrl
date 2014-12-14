@@ -57,17 +57,6 @@
         android:singleLine="true"
         android:textAppearance="@android:style/TextAppearance.Small" />
 
-    <ImageView
-        android:id="@+id/icon_edit"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:alpha="0.5"
-        android:src="@android:drawable/ic_menu_manage"
-        tools:ignore="ContentDescription" />
-
     <SeekBar
         android:id="@+id/item_seekbar"
         android:layout_width="match_parent"

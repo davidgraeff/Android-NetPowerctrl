@@ -14,15 +14,16 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -80,19 +81,47 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     public static final int VIEW_AS_GRID = 1;
     public static final int VIEW_AS_COMPACT = 2;
     SwipeMoveAnimator swipeMoveAnimator;
+    View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+        private GestureDetector g = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
+            static final int SWIPE_MIN_DISTANCE = 200;
+            static final int SWIPE_MAX_OFF_PATH = 80;
+            static final int SWIPE_THRESHOLD_VELOCITY = 200;
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return true;
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MIN_DISTANCE &&
+                        Math.abs(e1.getX() - e2.getX()) < SWIPE_MAX_OFF_PATH &&
+                        Math.abs(velocityY) >= SWIPE_THRESHOLD_VELOCITY) {
+
+                    setEditMode(true);
+                }
+                return false;
+            }
+        });
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            return g.onTouchEvent(motionEvent);
+        }
+    };
     private RecyclerView mRecyclerView;
     private TextView emptyText;
     private TextView groupTitle;
+    private View edit_hint_big;
     private EnhancedSwipeRefreshLayout mPullToRefreshLayout;
     private SlidingTabLayout slidingTabLayout;
     private FloatingActionButton btnWireless;
     private Bundle mExtra = null;
     private int requestedColumnWidth;
-
+    private FloatingActionButton btnAdd;
     // Adapter
     private ExecutablesSourceBase adapterSource;
     private ExecuteAdapter adapter;
-
     // Groups
     private GroupPagerAdapter groupPagerAdapter;
     private UUID groupFilter = null;
@@ -103,6 +132,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
      * Called by the model data listener
      */
     private int lastResID = 0;
+    private boolean editMode;
 
     public OutletsViewFragment() {
     }
@@ -255,7 +285,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                 break;
         }
 
-        adapter.setEnableEditing(SharedPrefs.getInstance().isOutletEditingEnabled());
+        setEditMode(false);
         mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
         mRecyclerView.requestLayout();
     }
@@ -370,23 +400,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
         assert view != null;
-
-        { // Add scene floating button
-            final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.btnAdd);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    onPlusClicked(fab);
-                }
-            });
-            if (!SharedPrefs.getInstance().isOutletEditingEnabled())
-                fab.setVisibility(View.GONE);
-            else {
-                fab.setVisibility(View.INVISIBLE);
-                AnimationController.animateBottomViewIn(fab);
-            }
-            fab.setHideOnLongClick(2000);
-        }
 
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -532,6 +545,27 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         mRecyclerView.setAdapter(adapter);
 
+        // Edit Mode
+        edit_hint_big = view.findViewById(R.id.edit_hint_big);
+        edit_hint_big.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                setEditMode(false);
+            }
+        });
+        view.findViewById(R.id.edit_hint).setOnTouchListener(onTouchListener);
+
+        { // Add scene floating button
+            btnAdd = (FloatingActionButton) view.findViewById(R.id.btnAdd);
+            btnAdd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onPlusClicked(btnAdd);
+                }
+            });
+            btnAdd.setVisibility(View.INVISIBLE);
+        }
+        setEditMode(false);
+
         return view;
     }
 
@@ -645,42 +679,25 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         }
 
         //////////////// EDIT ITEM ////////////////
-        if (view.getId() == R.id.icon_edit) {
-            // Animate press
-            Animation a = AnimationController.animatePress(view);
+        if (editMode) {
+            Executable executable = adapter.getItem(position).getExecutable();
+            if (executable instanceof DevicePort) {
+                DevicePort devicePort = (DevicePort) executable;
 
-            final Executable executable = adapter.getItem(position).getExecutable();
-            a.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
+                OutletEditFragment dialog = (OutletEditFragment) Fragment.instantiate(getActivity(), OutletEditFragment.class.getName());
+                dialog.setDevicePort(devicePort, (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position), adapter);
+                MainActivity.getNavigationController().changeToFragment(dialog, OutletEditFragment.class.getName());
+            } else if (executable instanceof Scene) {
+                Scene scene = ((Scene) executable);
+                if (!AppData.getInstance().sceneCollection.getItems().contains(scene)) {
+                    throw new RuntimeException("Scene not in sceneCollection!");
                 }
 
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    if (executable instanceof DevicePort) {
-                        DevicePort devicePort = (DevicePort) executable;
-
-                        OutletEditFragment dialog = (OutletEditFragment) Fragment.instantiate(getActivity(), OutletEditFragment.class.getName());
-                        dialog.setDevicePort(devicePort, (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position), adapter);
-                        MainActivity.getNavigationController().changeToFragment(dialog, OutletEditFragment.class.getName());
-                    } else if (executable instanceof Scene) {
-                        Scene scene = ((Scene) executable);
-                        if (!AppData.getInstance().sceneCollection.getItems().contains(scene)) {
-                            throw new RuntimeException("Scene not in sceneCollection!");
-                        }
-
-                        Intent it = new Intent(getActivity(), EditSceneActivity.class);
-                        it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
-                        it.putExtra(EditSceneActivity.LOAD_SCENE, scene.toString());
-                        startActivityForResult(it, EditSceneActivity.REQUEST_CODE);
-                    }
-                }
-            });
-
+                Intent it = new Intent(getActivity(), EditSceneActivity.class);
+                it.putExtra(EditSceneActivity.EDIT_SCENE_NOT_SHORTCUT, true);
+                it.putExtra(EditSceneActivity.LOAD_SCENE, scene.toString());
+                startActivityForResult(it, EditSceneActivity.REQUEST_CODE);
+            }
             return true;
         }
 
@@ -740,6 +757,17 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             SceneFactory.createSceneFromActivityIntent(getActivity(), data);
         } else
             super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+        if (editMode) {
+            AnimationController.animateBottomViewIn(edit_hint_big);
+            AnimationController.animateBottomViewIn(btnAdd);
+        } else {
+            AnimationController.animateBottomViewOut(edit_hint_big);
+            AnimationController.animateBottomViewOut(btnAdd);
+        }
     }
 
 

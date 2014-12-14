@@ -1,6 +1,5 @@
 package oly.netpowerctrl.executables;
 
-import android.graphics.Paint;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,12 +15,11 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.groups.Group;
-import oly.netpowerctrl.main.App;
 
 public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewHolder> {
 
     public final List<ExecutableAdapterItem> mItems;
-    final IconDeferredLoadingThread mIconCache;
+    final IconDeferredLoadingThread mIconLoadThread;
     // Source of values for this adapter.
     private final ExecutablesSourceBase mSource;
     protected int mNextId = 0; // we need stable IDs
@@ -45,7 +43,7 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
                            boolean showGroups) {
         mSource = source;
         mShowGroups = showGroups;
-        mIconCache = iconCache;
+        mIconLoadThread = iconCache;
         mItems = new ArrayList<>();
         if (source != null) {
             source.setTargetAdapter(this);
@@ -92,7 +90,7 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
                 break;
         }
 
-        return new ExecutableViewHolder(view, groupTypeEnum);
+        return new ExecutableViewHolder(view, groupTypeEnum, mIconLoadThread);
     }
 
     public GridLayoutManager.SpanSizeLookup getSpanSizeLookup() {
@@ -105,29 +103,12 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
         final Executable executable = item.getExecutable();
 
         executableViewHolder.position = position;
+        executableViewHolder.setExecutable(executable);
 
         if (executable == null) { // header
             executableViewHolder.title.setText(item.groupName);
             if (executableViewHolder.line != null)
                 executableViewHolder.line.setVisibility(item.groupName.isEmpty() ? View.INVISIBLE : View.VISIBLE);
-        } else { // no header
-//            current_viewHolder.title.setTypeface(
-//                    port.Hidden ? Typeface.MONOSPACE : Typeface.DEFAULT,
-//                    port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
-
-            if (executableViewHolder.subtitle != null) {
-                executableViewHolder.subtitle.setText(executable.getDescription(App.instance));
-            }
-
-            executableViewHolder.title.setText(executable.getTitle());
-            executableViewHolder.title.setEnabled(executable.isEnabled());
-
-            if (executable.isReachable())
-                executableViewHolder.title.setPaintFlags(
-                        executableViewHolder.title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
-            else
-                executableViewHolder.title.setPaintFlags(
-                        executableViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
     }
 

@@ -279,6 +279,11 @@ public class Scene implements StorableInterface, Executable {
         this.maximumValue = maximumValue;
     }
 
+    @Override
+    public int getMinimumValue() {
+        return 0;
+    }
+
     public static class PortAndCommand {
         public final DevicePort port;
         public final Integer command;

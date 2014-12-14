@@ -1,7 +1,9 @@
 package oly.netpowerctrl.executables;
 
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -14,16 +16,19 @@ import android.widget.TextView;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.ui.widgets.RelativeLayoutRipple;
 
 /**
  * An item in a devicePort adapter. Used for implementing the ViewHolder pattern.
  */
 public class ExecutableViewHolder extends RecyclerView.ViewHolder implements IconDeferredLoadingThread.IconLoaded {
+    @Nullable
     final ImageView imageIcon;
-    final ImageView imageEdit;
     //LinearLayout mainTextView;
     final View entry;
+    @Nullable
     final SeekBar seekBar;
     final ProgressBar progress;
     final TextView title;
@@ -35,13 +40,15 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
     boolean isNew = true;
     private boolean multiStateDrawables = false;
     private DrawableState state = DrawableState.Off;
+    private Executable executable;
+    private IconDeferredLoadingThread mIconLoadThread;
 
-    ExecutableViewHolder(View convertView, ExecutableAdapterItem.groupTypeEnum groupTypeEnum) {
+    ExecutableViewHolder(View convertView, ExecutableAdapterItem.groupTypeEnum groupTypeEnum, IconDeferredLoadingThread iconLoadThread) {
         super(convertView);
 
+        this.mIconLoadThread = iconLoadThread;
         entry = convertView.findViewById(R.id.item_layout);
         title = (TextView) convertView.findViewById(R.id.title);
-        imageEdit = (ImageView) convertView.findViewById(R.id.icon_edit);
 
         if (groupTypeEnum == ExecutableAdapterItem.groupTypeEnum.GROUP_TYPE) {
             subtitle = null;
@@ -61,18 +68,17 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
     }
 
     @SuppressWarnings("SameParameterValue")
-    public void loadIcon(IconDeferredLoadingThread iconCache, String uuid, LoadStoreIconData.IconState state,
-                         int bitmapPosition) {
-        iconCache.loadIcon(new IconDeferredLoadingThread.IconItem(imageIcon.getContext(),
-                uuid, state, this, bitmapPosition));
+    private void loadIcon(LoadStoreIconData.IconState state, int bitmapPosition) {
+        if (imageIcon == null) return;
+        mIconLoadThread.loadIcon(new IconDeferredLoadingThread.IconItem(state, bitmapPosition, this));
     }
 
     public void reload() {
         isNew = true;
     }
 
-    public void setBitmapOff() {
-        if (state == DrawableState.Off) return;
+    private void setBitmapOff() {
+        if (state == DrawableState.Off || imageIcon == null) return;
         state = DrawableState.Off;
 
         if (drawables[0] == null)
@@ -90,8 +96,8 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
             imageIcon.setImageDrawable(drawables[0]);
     }
 
-    public void setBitmapOn() {
-        if (state == DrawableState.On) return;
+    private void setBitmapOn() {
+        if (state == DrawableState.On || imageIcon == null) return;
         state = DrawableState.On;
 
         if (drawables[1] == null)
@@ -159,6 +165,97 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
             }
         });
         progress.startAnimation(animation);
+    }
+
+    public void setSeekBarListener(SeekBar.OnSeekBarChangeListener onSeekBarChangeListener) {
+        if (seekBar != null) {
+            seekBar.setOnSeekBarChangeListener(onSeekBarChangeListener);
+        }
+    }
+
+    @Override
+    public Executable getExecutable() {
+        return executable;
+    }
+
+    public void setExecutable(@Nullable Executable executable) {
+        this.executable = executable;
+
+        if (executable == null) return;
+
+        //            current_viewHolder.title.setTypeface(
+//                    port.Hidden ? Typeface.MONOSPACE : Typeface.DEFAULT,
+//                    port.Hidden ? Typeface.ITALIC : Typeface.NORMAL);
+
+        if (subtitle != null) {
+            subtitle.setText(executable.getDescription(App.instance));
+        }
+
+        title.setText(executable.getTitle());
+        title.setEnabled(executable.isEnabled());
+
+        if (executable.isReachable())
+            title.setPaintFlags(
+                    title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
+        else
+            title.setPaintFlags(
+                    title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+
+        // We do this only once, if the viewHolder is new
+        if (isNew) {
+            switch (executable.getType()) {
+                case TypeToggle: {
+                    if (seekBar != null)
+                        seekBar.setVisibility(View.GONE);
+                    loadIcon(LoadStoreIconData.IconState.StateOff, 0);
+                    loadIcon(LoadStoreIconData.IconState.StateOn, 1);
+                    break;
+                }
+                case TypeStateless: {
+                    loadIcon(LoadStoreIconData.IconState.OnlyOneState, 0);
+                    if (seekBar != null)
+                        seekBar.setVisibility(View.GONE);
+                    setBitmapOff();
+                    break;
+                }
+                case TypeRangedValue:
+                    loadIcon(LoadStoreIconData.IconState.StateOff, 0);
+                    loadIcon(LoadStoreIconData.IconState.StateOn, 1);
+                    if (seekBar != null) {
+                        seekBar.setVisibility(View.VISIBLE);
+                        seekBar.setTag(-1);
+                        seekBar.setMax(executable.getMaximumValue() - executable.getMinimumValue());
+                    }
+                    break;
+            }
+
+        }
+
+        // This has to be done more often
+        switch (executable.getType()) {
+            case TypeStateless: {
+                break;
+            }
+            case TypeToggle: {
+                if (executable.getCurrentValue() >= executable.getMaximumValue())
+                    setBitmapOn();
+                else
+                    setBitmapOff();
+                break;
+            }
+            case TypeRangedValue:
+                if (seekBar != null) {
+                    seekBar.setTag(-1);
+                    seekBar.setProgress(executable.getCurrentValue() - executable.getMinimumValue());
+                    seekBar.setTag(position);
+                }
+                if (executable.getCurrentValue() <= executable.getMinimumValue())
+                    setBitmapOff();
+                else
+                    setBitmapOn();
+                break;
+        }
     }
 
     private enum DrawableState {Off, On}

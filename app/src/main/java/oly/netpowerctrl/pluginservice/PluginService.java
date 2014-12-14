@@ -137,10 +137,14 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             return super.onStartCommand(intent, flags, startId);
         }
 
-        Logging.getInstance().logMain("START");
+        if (weakHashMap.size() == 0) {
+            Logging.getInstance().logMain("ILLEGAL START");
+            stopSelf();
+            Log.w(TAG, "cannot be started without useService");
+            return START_NOT_STICKY;
+        }
 
-        if (weakHashMap.size() == 0)
-            throw new RuntimeException(TAG + " cannot be started without useService");
+        Logging.getInstance().logMain("START");
 
         mWaitForService = false;
         mDiscoverService = this;

@@ -219,7 +219,7 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
                     AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
                             devicePort, icon, LoadStoreIconData.IconState.OnlyOneState);
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
+                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort,
                             LoadStoreIconData.IconState.OnlyOneState, isDefault);
                 break;
             case R.id.scene_image_off:
@@ -227,7 +227,7 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
                     AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
                             devicePort, icon, LoadStoreIconData.IconState.StateOff);
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
+                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort,
                             LoadStoreIconData.IconState.StateOff, isDefault);
                 break;
             case R.id.scene_image_on:
@@ -235,7 +235,7 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
                     AppData.getInstance().deviceCollection.setDevicePortBitmap(getActivity(),
                             devicePort, icon, LoadStoreIconData.IconState.StateOn);
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort.getUid(),
+                    icon = LoadStoreIconData.loadBitmap(getActivity(), devicePort,
                             LoadStoreIconData.IconState.StateOn, isDefault);
                 break;
             default:

@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     private int[] updateWidgetIDs = null;
     private boolean initDone = false;
     private String stopReason = "";
+    private Bitmap image_broken;
 
     static public void ForceUpdate(Context ctx, int widgetId) {
         Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
@@ -88,6 +90,12 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     @Override
     public void onCreate() {
         appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
+        try {
+            image_broken = LoadStoreIconData.loadDefaultBitmap(this, LoadStoreIconData.IconState.StateUnknown,
+                    SharedPrefs.getDefaultFallbackIconSet(this));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         super.onCreate();
     }
 
@@ -222,9 +230,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     private void setWidgetStateBroken(int appWidgetId) {
         @SuppressWarnings("ConstantConditions")
         RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget);
-        views.setImageViewBitmap(R.id.widget_image,
-                LoadStoreIconData.loadBitmap(this, LoadStoreIconData.uuidFromDefaultWidget(),
-                        LoadStoreIconData.IconState.StateUnknown, null));
+        views.setImageViewBitmap(R.id.widget_image, image_broken);
         views.setTextViewText(R.id.widget_name, getString(R.string.error_widget_device_removed));
         views.setViewVisibility(R.id.widget_status, View.GONE);
         views.setViewVisibility(R.id.widget_inProgress, View.GONE);
@@ -353,7 +359,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             views.setOnClickPendingIntent(R.id.widget_name, pendingIntent);
             views.setOnClickPendingIntent(R.id.widget_status, pendingIntent);
         }
-        Bitmap bitmap = LoadStoreIconData.loadBitmap(this, executable.getUid(), iconState, null);
+        Bitmap bitmap = LoadStoreIconData.loadBitmap(this, executable, iconState, null);
         views.setImageViewBitmap(R.id.widget_image, bitmap);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);

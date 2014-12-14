@@ -44,21 +44,6 @@
             android:title="@string/preference_show_persistent_notification" />
 
         <CheckBoxPreference
-            android:defaultValue="@bool/speech_enabled"
-            android:dependency="show_persistent_notification"
-            android:key="speech_enabled"
-            android:summary="@string/preference_speech_enabled_summary"
-            android:title="@string/preference_speech_enabled" />
-
-        <EditTextPreference
-            android:defaultValue="@string/speech_command_word"
-            android:dependency="speech_enabled"
-            android:dialogMessage="@string/preference_speech_command_word_summary"
-            android:key="speech_command_word"
-            android:summary="@string/preference_speech_command_word_summary"
-            android:title="@string/preference_speech_command_word" />
-
-        <CheckBoxPreference
             android:defaultValue="@bool/hide_not_reachable"
             android:key="hide_not_reachable"
             android:summary="@string/preference_hide_not_reachable_summary"
@@ -69,12 +54,6 @@
             android:key="notify_on_non_reachable"
             android:summary="@string/preference_notify_on_non_reachable_summary"
             android:title="@string/preference_notify_on_non_reachable" />
-
-        <CheckBoxPreference
-            android:defaultValue="@bool/outlet_editing_enabled"
-            android:key="outlet_editing_enabled"
-            android:summary="@string/preference_outlet_editing_enabled_summary"
-            android:title="@string/preference_outlet_editing_enabled" />
 
         <CheckBoxPreference
             android:defaultValue="@bool/fullscreen"
