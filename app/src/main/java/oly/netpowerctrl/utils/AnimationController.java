@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.ScaleAnimation;
 
@@ -14,36 +15,43 @@ import android.view.animation.ScaleAnimation;
  * Created by david on 08.07.14.
  */
 public class AnimationController {
-    public static void animateBottomViewIn(final View view) {
-        if (view.getVisibility() == View.VISIBLE) // Do nothing if already visible
-            return;
-
+    public static void animateBottomViewIn(final View view, final boolean fromCurrentPosition) {
         if (view.getHeight() == 0) {
             view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
                     view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                    animateBottomViewIn(view);
+                    animateBottomViewIn(view, fromCurrentPosition);
                 }
             });
             return;
         }
 
+        if (view.getTranslationY() == 0 && view.getVisibility() == View.VISIBLE) // Do nothing if already visible
+            return;
+
         view.setVisibility(View.VISIBLE);
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-        view.setTranslationY(view.getHeight() + lp.bottomMargin);
+        if (!fromCurrentPosition) {
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            view.setTranslationY(view.getHeight() + lp.bottomMargin);
+        }
         view.animate().setDuration(800).setInterpolator(new OvershootInterpolator()).translationY(0f);
     }
 
     public static void animateBottomViewOut(final View view) {
-        if (view.getTranslationY() != 0 || view.getVisibility() != View.VISIBLE) // Do nothing if already out of view
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        float destY = (view.getHeight() + lp.bottomMargin);
+
+        if (view.getTranslationY() == destY || view.getVisibility() != View.VISIBLE) // Do nothing if already out of view
             return;
 
-        view.animate().setDuration(800).translationY(view.getHeight() * 2).setListener(new AnimatorListenerAdapter() {
+        final ViewPropertyAnimator animator = view.animate();
+        animator.setDuration(800).translationY(destY).setInterpolator(new LinearInterpolator()).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 view.setVisibility(View.GONE);
+                animator.setListener(null);
             }
         });
     }

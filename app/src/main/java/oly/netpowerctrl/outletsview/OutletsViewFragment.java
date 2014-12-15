@@ -81,7 +81,9 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     public static final int VIEW_AS_GRID = 1;
     public static final int VIEW_AS_COMPACT = 2;
     SwipeMoveAnimator swipeMoveAnimator;
-    View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+    View.OnTouchListener onBottomEditTouch = new View.OnTouchListener() {
+        float yOffset;
+        float yTranslation;
         private GestureDetector g = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
             static final int SWIPE_MIN_DISTANCE = 200;
             static final int SWIPE_MAX_OFF_PATH = 80;
@@ -106,7 +108,23 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            return g.onTouchEvent(motionEvent);
+            boolean s = g.onTouchEvent(motionEvent);
+            if (motionEvent.getActionMasked() == MotionEvent.ACTION_MOVE && !s) {
+                float diff = yOffset - motionEvent.getRawY();
+                if (diff > 0 && diff <= yTranslation)
+                    edit_hint_big.setTranslationY(yTranslation - diff);
+            } else if (motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                edit_hint_big.setVisibility(View.VISIBLE);
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) edit_hint_big.getLayoutParams();
+                yTranslation = edit_hint_big.getHeight() + lp.bottomMargin;
+                edit_hint_big.setTranslationY(yTranslation);
+                yOffset = motionEvent.getRawY();
+            } else if (motionEvent.getActionMasked() == MotionEvent.ACTION_UP && !s) {
+                float diff = yOffset - motionEvent.getRawY();
+                setEditMode(diff >= yTranslation - 5.0);
+                return true;
+            }
+            return s;
         }
     };
     private RecyclerView mRecyclerView;
@@ -243,26 +261,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         setViewType(viewType);
     }
 
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    if (i < 1) i = 1;
-                    adapter.setItemsInRow(i);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-                    if (lastScrolledPosition != 0)
-                        mRecyclerView.scrollToPosition(lastScrolledPosition);
-                }
-            };
-
     private void setViewType(int viewType) {
         SharedPrefs.getInstance().setOutletsViewType(viewType);
 
@@ -289,6 +287,26 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
         mRecyclerView.requestLayout();
     }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+
+                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
+                    if (i < 1) i = 1;
+                    adapter.setItemsInRow(i);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(adapter);
+                    if (lastScrolledPosition != 0)
+                        mRecyclerView.scrollToPosition(lastScrolledPosition);
+                }
+            };
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -496,7 +514,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         btnWireless = (FloatingActionButton) view.findViewById(R.id.btnWirelessSettings);
         if (!PluginService.isWirelessLanConnected(getActivity()))
-            AnimationController.animateBottomViewIn(btnWireless);
+            AnimationController.animateBottomViewIn(btnWireless, false);
         btnWireless.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -552,18 +570,15 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                 setEditMode(false);
             }
         });
-        view.findViewById(R.id.edit_hint).setOnTouchListener(onTouchListener);
+        view.findViewById(R.id.edit_hint).setOnTouchListener(onBottomEditTouch);
+        btnAdd = (FloatingActionButton) view.findViewById(R.id.btnAdd);
+        btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onPlusClicked(btnAdd);
+            }
+        });
 
-        { // Add scene floating button
-            btnAdd = (FloatingActionButton) view.findViewById(R.id.btnAdd);
-            btnAdd.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    onPlusClicked(btnAdd);
-                }
-            });
-            btnAdd.setVisibility(View.INVISIBLE);
-        }
         setEditMode(false);
 
         return view;
@@ -734,7 +749,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     @Override
     public void onServiceModeChanged(boolean isNetworkDown) {
         if (!PluginService.isWirelessLanConnected(getActivity()))
-            AnimationController.animateBottomViewIn(btnWireless);
+            AnimationController.animateBottomViewIn(btnWireless, false);
         else
             AnimationController.animateBottomViewOut(btnWireless);
 
@@ -762,8 +777,8 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     private void setEditMode(boolean editMode) {
         this.editMode = editMode;
         if (editMode) {
-            AnimationController.animateBottomViewIn(edit_hint_big);
-            AnimationController.animateBottomViewIn(btnAdd);
+            AnimationController.animateBottomViewIn(edit_hint_big, edit_hint_big.getVisibility() == View.VISIBLE);
+            AnimationController.animateBottomViewIn(btnAdd, false);
         } else {
             AnimationController.animateBottomViewOut(edit_hint_big);
             AnimationController.animateBottomViewOut(btnAdd);

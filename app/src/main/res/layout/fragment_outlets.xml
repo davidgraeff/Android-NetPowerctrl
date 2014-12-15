@@ -25,7 +25,7 @@
         android:layout_height="fill_parent"
         android:layout_above="@id/edit_hint">
 
-    <android.support.v7.widget.RecyclerView
+        <android.support.v7.widget.RecyclerView
             android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -64,9 +64,10 @@
         android:background="?attr/colorPrimaryDark"
         android:clickable="true"
         android:focusableInTouchMode="true"
+        android:gravity="center"
         android:paddingEnd="90dp"
         android:paddingRight="90dp"
-        android:text="Bearbeitungsmodus. Nach unten ziehen um zu steuern."
+        android:text="Wähle einen Eintrag um diesen zu bearbeiten. Klicke hier um den Bearbeitungsmodus zu verlassen."
         android:textAppearance="@android:style/TextAppearance.Small"
         android:visibility="invisible" />
 
@@ -80,7 +81,7 @@
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:drawable="@android:drawable/ic_menu_add"
         app:mainColor="?attr/floating_button_color" />
 
@@ -94,7 +95,7 @@
         android:layout_marginRight="16dp"
         android:layout_toEndOf="@id/btnAdd"
         android:layout_toRightOf="@id/btnAdd"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:drawable="@android:drawable/ic_menu_preferences"
         app:mainColor="?attr/floating_button_color" />
 </RelativeLayout>

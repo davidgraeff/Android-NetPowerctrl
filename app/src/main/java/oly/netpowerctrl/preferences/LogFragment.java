@@ -67,6 +67,7 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
     };
     private RecyclerViewWithAdapter<RecyclerView.Adapter<ViewHolder>> recyclerViewWithAdapter;
     private BufferedReader reader;
+    private View btnRemove;
 
     public LogFragment() {
     }
@@ -96,6 +97,14 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
             }
         });
 
+        btnRemove = view.findViewById(R.id.btnRemove);
+        btnRemove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clearLog();
+            }
+        });
+
         mPullToRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.list_layout);
         mPullToRefreshLayout.setOnRefreshListener(this);
         mPullToRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -119,6 +128,8 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
         reader = Logging.getInstance().getReader();
         Logging.getInstance().setLogChangedListener(this);
         onLogChanged();
+        if (adapter.getItemCount() != 0)
+            Toast.makeText(getActivity(), getString(R.string.log_file_size, Logging.getInstance().getLogFile().length() / 1024.0f), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -146,6 +157,7 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
             e.printStackTrace();
         }
         adapter.notifyDataSetChanged();
+        btnRemove.setEnabled(adapter.getItemCount() != 0);
     }
 
     @Override
@@ -156,15 +168,19 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
         menu.findItem(R.id.menu_remove_log).setVisible(adapter.getItemCount() != 0);
     }
 
+    private void clearLog() {
+        Logging.getInstance().clear();
+        listItems.clear();
+        adapter.notifyDataSetChanged();
+        //noinspection ConstantConditions
+        getActivity().invalidateOptionsMenu();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_remove_log: {
-                Logging.getInstance().clear();
-                listItems.clear();
-                adapter.notifyDataSetChanged();
-                //noinspection ConstantConditions
-                getActivity().invalidateOptionsMenu();
+                clearLog();
                 return true;
             }
             case R.id.menu_log_send_mail: {
@@ -223,8 +239,8 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
     private class LogItem {
         private String type = "";
         private String date = "";
-        private int typeInt = TYPE_MAIN;
         private String time = "";
+        private int typeInt = TYPE_MAIN;
         private String text;
 
         LogItem(String line) {

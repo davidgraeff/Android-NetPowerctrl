@@ -246,7 +246,7 @@ public class DevicesFragment extends Fragment
             }
         });
         fab.setVisibility(View.INVISIBLE);
-        AnimationController.animateBottomViewIn(fab);
+        AnimationController.animateBottomViewIn(fab, false);
 
         return view;
     }

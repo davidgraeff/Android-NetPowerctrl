@@ -385,7 +385,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
 
         if (scene != null) {
             FloatingActionButton btnRemove = (FloatingActionButton) findViewById(R.id.btnRemove);
-            AnimationController.animateBottomViewIn(btnRemove);
+            AnimationController.animateBottomViewIn(btnRemove, false);
             btnRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

@@ -3,6 +3,7 @@ package oly.netpowerctrl.data;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.WallpaperManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -201,24 +202,22 @@ public class LoadStoreIconData {
         return new BitmapDrawable(App.instance.getResources(), b);
     }
 
-    public static Bitmap loadBackgroundBitmap() {
+    public static Drawable loadBackgroundBitmap() {
         File file = new File(App.instance.getFilesDir(), "image_bg");
         if (!file.mkdirs() && !file.isDirectory())
             throw new RuntimeException("Could not create image dir!");
         file = new File(file, "bg.jpg");
 
         Bitmap b = null;
-        if (file.exists()) {
+        if (file.exists())
             b = BitmapFactory.decodeFile(file.getAbsolutePath());
+
+        if (b == null) {
+            WallpaperManager w = WallpaperManager.getInstance(App.instance);
+            return w.getDrawable();
         }
 
-        if (b == null)
-            try {
-                b = BitmapFactory.decodeStream(App.instance.getAssets().open("backgrounds/bg.jpg"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        return b;
+        return new BitmapDrawable(App.instance.getResources(), b);
     }
 
     public static void saveBackground(Bitmap bitmap) {

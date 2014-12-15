@@ -81,7 +81,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
         for (int i = 0; i < s.getDevicePortList().size(); ++i)
             executables.add(s.getDevicePortList().get(i));
 
-        if (!is_android_alarm) {
+        if (is_android_alarm) {
             for (Scene scene : AppData.getInstance().sceneCollection.getItems()) {
                 executables.add(scene);
             }

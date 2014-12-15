@@ -45,7 +45,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
 
         TimerCollection c = AppData.getInstance().timerCollection;
         if (c.refresh(service))
-            AnimationController.animateBottomViewIn(progressText);
+            AnimationController.animateBottomViewIn(progressText, false);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
             }
         });
         fab.setVisibility(View.INVISIBLE);
-        AnimationController.animateBottomViewIn(fab);
+        AnimationController.animateBottomViewIn(fab, false);
 
         return rootView;
     }
@@ -192,7 +192,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         boolean inProgress = timerCollection.isRequestActive();
         if (inProgress) {
             progressText.setText(getString(R.string.alarm_receiving, timerCollection.countAllDeviceAlarms()));
-            AnimationController.animateBottomViewIn(progressText);
+            AnimationController.animateBottomViewIn(progressText, false);
         } else {
             Activity a = getActivity();
             if (a != null) {

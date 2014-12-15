@@ -19,8 +19,6 @@ package oly.netpowerctrl.main;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -124,8 +122,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
-            Bitmap b = LoadStoreIconData.loadBackgroundBitmap();
-            Drawable d = new BitmapDrawable(getResources(), b);
+            Drawable d = LoadStoreIconData.loadBackgroundBitmap();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
                 v.setBackground(d);
             else

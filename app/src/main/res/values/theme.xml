@@ -26,6 +26,8 @@
         <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle</item>
 
         <item name="textColorPrimary">@android:color/white</item>
+
+        <item name="colorPrimaryTransparent">@color/colorPrimaryTransparentLight</item>
         <item name="colorPrimary">@color/colorPrimaryLight</item>
         <item name="colorPrimaryDark">@color/colorSecondaryLight</item>
 
@@ -63,6 +65,7 @@
         <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle_light</item>
 
         <item name="textColorPrimary">@android:color/white</item>
+        <item name="colorPrimaryTransparent">@color/colorPrimaryTransparentDark</item>
         <item name="colorPrimary">@color/colorPrimaryDark</item>
         <item name="colorPrimaryDark">@color/colorSecondaryDark</item>
 

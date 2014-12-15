@@ -96,7 +96,7 @@ public class InAppNotifications {
             return;
         }
 
-        AnimationController.animateBottomViewIn(toolbar);
+        AnimationController.animateBottomViewIn(toolbar, false);
 
         doUpdatePermanentNotification(activity, toolbar, newPermanentNotification);
     }

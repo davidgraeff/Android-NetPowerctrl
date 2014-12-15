@@ -235,7 +235,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_http_new_info">Bitte gib den Hostnamen/IP und den Port ein. Bei Eingabe eines Hostnames muss dieser existieren!</string>
     <string name="error_reading_alarms">Einlesen der zwischengespeicherten Zeitschaltungen fehlgeschlagen!</string>
     <string name="preference_show_background">Hintergrundbild anzeigen</string>
-    <string name="preference_show_background_summary">Im Hintergrund wird ein Bild statt einer einfarbigen Fläche angezeigt. Ein eigenes Bild ist ab Android 4.1 möglich.</string>
+    <string name="preference_show_background_summary">Statt einer einfarbigen Fläche wird dein Hintergrundbild angezeigt.</string>
     <string name="issues_wait">Rufe ab…</string>
     <string name="issues_open">Gemeldete offene Fehler: %1$s</string>
     <string name="issues_error">Abrufen der gemeldeten Fehler gescheitert!</string>
@@ -313,7 +313,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_timeout">Verbindungszeit überschritten, abgebrochen</string>
     <string name="jump_to_group">Springe zu Gruppe</string>
     <string name="scene">Szene</string>
-    <string name="help_overview_and_groups">Auf diesem Bildschirm siehst du im ersten Moment alle Steckdosen aufgelistet. Klicke einen Eintrag an, um einen Zustandswechsel herbeizuführen. Berühre das Schraubenschlüssel-Symbol um den Namen, das Icon, oder die Gruppenzugehörigkeit zu ändern. Einträge können in Ansichtsgruppen zusammengefasst werden, wobei ein Eintrag auch mehreren Gruppen zugewiesen sein kann. Durch die Gruppen wechselst du durch Wischbewegungen. Der (+)-Knopf unten rechts erlaubt dir das Erstellen von neuen Gruppen und Szenen. Eine Szene kombiniert mehrere Aktionen, weitere Hilfe zu Szenen findest du im Szene-Erstellen Bildschirm.</string>
+    <string name="help_overview_and_groups">Auf diesem Bildschirm siehst du alle eingerichteten Steckdosen aufgelistet. Klicke einen Eintrag an, um einen Zustandswechsel herbeizuführen. Steckdosen können in Ansichtsgruppen zusammengefasst werden. Durch die Gruppen wechselst du durch seitliche Wischbewegungen.\nWenn du die untere Leiste nach oben ziehst wechselst du in den Bearbeitungsmodus: EIn Klick auf einen Eintrag zeigt das Bearbeitungsfenster an. Der Plus-Knopf dient zum Hinzufügen von neuen Ansichtsgruppen und Szenen. Eine Szene kombiniert mehrere Steckdosen-Aktionen und wird ebenfalls in der Liste der Steckdosen aufgeführt.</string>
     <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
     Lege die Kopie einer Szene auf deinem Homescreen ab und führe diese von dort direkt aus.\nMache eine Szene zu einem Favoriten, so wird sie im Navigationsmenü aufgelistet. Wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
     \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
@@ -374,4 +374,5 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_timer_android_weekdays">Android Alarm: Wiederholend</string>
     <string name="menu_timer_device_weekdays">Gerätealarm: Wiederholend</string>
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
+    <string name="log_file_size">Logdatei Größe: %1$f kb</string>
 </resources>

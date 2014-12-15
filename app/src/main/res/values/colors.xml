@@ -3,20 +3,16 @@
     <color name="colorFloatButton">#F3F3F4</color>
     <color name="drawer">#F3F3F4</color>
     <color name="colorPrimaryLight">#bdd8e1</color>
-    <!--#33b5e5-->
-    <color name="colorSecondaryLight">#0099cc</color>
-    <!--#0099cc-->
     <color name="colorPrimaryDark">#1b3c47</color>
-    <!--#33b5e5-->
+    <color name="colorPrimaryTransparentLight">#88bdd8e1</color>
+    <color name="colorPrimaryTransparentDark">#881b3c47</color>
+    <color name="colorSecondaryLight">#0099cc</color>
     <color name="colorSecondaryDark">#0099cc</color>
-    <!--#0099cc-->
     <color name="colorBackgroundLight">#a0cdff</color>
-    <!--#0099cc-->
     <color name="colorBackgroundDark">#091a25</color>
     <color name="colorBackgroundCardsDark">#1b3c47</color>
     <color name="floating_button_colorDark">#0099cc</color>
     <color name="floating_button_colorLight">#0099cc</color>
-    <!-- FFDF4D38 -->
     <color name="NiceButtonStartColor">#0099cc</color>
     <color name="NiceButtonEndColor">#33b5e5</color>
     <color name="NiceButtonDisabledStartColor">#565051</color>

@@ -235,7 +235,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_http_new_info">Please enter the Hostname/IP and port. A hostname is only accepted if it exists!</string>
     <string name="error_reading_alarms">Failed to load cached alarms!</string>
     <string name="preference_show_background">Show background image</string>
-    <string name="preference_show_background_summary">Use a background texture instead of the solid color background. Your own image is selectable with android 4.1+.</string>
+    <string name="preference_show_background_summary">Use your home-screen wallpaper as background instead of the solid color.</string>
     <string name="issues_wait">Collecting data…</string>
     <string name="issues_open">Open bug reports: %1$s</string>
     <string name="issues_error">Retrieving of reported errors failed!</string>
@@ -366,4 +366,5 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="menu_timer_android_weekdays">Android alarm: Repeating</string>
     <string name="menu_timer_device_weekdays">Device alarm: Repeating</string>
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
+    <string name="log_file_size">Logfile size: %1$f kb</string>
 </resources>

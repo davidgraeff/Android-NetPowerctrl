@@ -17,6 +17,7 @@
 
     <attr name="ic_action_view_as_grid" format="reference" />
     <attr name="textColorPrimary" format="reference" />
+    <attr name="colorPrimaryTransparent" format="reference" />
 
     <attr name="ic_action_download_themed" format="reference" />
     <attr name="ic_action_flash_off_themed" format="reference" />
