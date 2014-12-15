@@ -191,7 +191,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     public boolean updated(@NonNull TimerCollection timerCollection, Timer timer, @NonNull ObserverUpdateActions action, int position) {
         boolean inProgress = timerCollection.isRequestActive();
         if (inProgress) {
-            progressText.setText(getString(R.string.alarm_receiving, timerCollection.countAllDeviceAlarms()));
+            progressText.setText(getString(R.string.alarm_receiving, timerCollection.countReceivedAlarms(), timerCollection.countAllAlarms()));
             AnimationController.animateBottomViewIn(progressText, false);
         } else {
             Activity a = getActivity();

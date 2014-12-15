@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,6 +67,8 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             return true;
         }
     };
+    private int receivedAlarmCount = 0;
+    private int allAlarmCount = 0;
     private boolean requestActive = false;
     private final Runnable notifyRunnable = new Runnable() {
         @Override
@@ -117,6 +120,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, PluginService.class);
+        intent.putExtra("isAlarm", true);
         PendingIntent pi = PendingIntent.getService(context, 1191, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_CANCEL_CURRENT);
 
         mgr.cancel(pi);
@@ -174,6 +178,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 if (success + errors >= all) {
                     Logging.getInstance().logAlarm("Alarm items (OK, FAIL):\n" + String.valueOf(success) + ", " + String.valueOf(errors));
                     WakeLocker.release();
+                    PluginService.getService().checkStopAfterAlarm();
                 }
             }
         };
@@ -219,8 +224,12 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         return requestActive;
     }
 
-    public int countAllDeviceAlarms() {
-        return items.size();
+    public int countAllAlarms() {
+        return allAlarmCount;
+    }
+
+    public int countReceivedAlarms() {
+        return receivedAlarmCount;
     }
 
     private int replaced_at(Timer timer) {
@@ -247,6 +256,9 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         h.post(new Runnable() {
             @Override
             public void run() {
+                ++receivedAlarmCount;
+                notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
+                if (new_timers == null) return;
                 for (Timer new_timer : new_timers) {
                     int i = replaced_at(new_timer);
                     if (i == -1 && new_timer.executable_uid != null) {
@@ -352,8 +364,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
                 final DevicePort port = it.next();
-                if (port.isHidden())
-                    continue;
+                Log.w(TAG, port.getTitle());
 
                 if (alarm_uuids.contains(port.getUid()))
                     alarm_ports.add(0, port); // add in front of all alarm_uuids
@@ -363,12 +374,17 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             device.releaseDevicePorts();
         }
 
+        receivedAlarmCount = 0;
+        allAlarmCount = 0;
         for (DevicePort port : alarm_ports) {
             PluginInterface i = (PluginInterface) port.device.getPluginInterface();
             //TODO eigentlich sollen alle getPluginInterface() etwas zurückgeben. Jedoch laden Erweiterungen nicht schnell genug für diesen Aufruf hier
-            if (i != null)
+            if (i != null) {
+                ++allAlarmCount;
                 i.requestAlarms(port, this);
+            }
         }
+        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
 
         return requestActive;
     }

@@ -206,7 +206,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_no_start_no_stop">Es wurden weder Einschalt- noch Ausschaltzeit angegeben!</string>
     <string name="confirmation_delete_all_alarms">Sollen wirklich alle Alarme zurückgesetzt werden?</string>
     <string name="port_warning_1024">Ein Empfangsport kleiner als 1024 benötigt Root-Rechte und das die App als System-App installiert ist! Soll für den jetzigen Vorgang die Portbeschränkung ignoriert werden?\nBitte die vorherige Aktion nach Bestätigung wiederholen.</string>
-    <string name="alarm_receiving">Empfange Alarm %1$d</string>
+    <string name="alarm_receiving">Empfange Alarm %1$d/%2$d</string>
     <string name="alarm_saving_now">Bitte warten. Speichere Alarm…</string>
     <string name="toWirelessSettings">WLAN einschalten</string>
     <string name="outlets_hidden">Elemente versteckt</string>
@@ -375,4 +375,5 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_timer_device_weekdays">Gerätealarm: Wiederholend</string>
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
     <string name="log_file_size">Logdatei Größe: %1$f kb</string>
+    <string name="outlets_edit_hint">Nach oben ziehen zum Bearbeiten</string>
 </resources>

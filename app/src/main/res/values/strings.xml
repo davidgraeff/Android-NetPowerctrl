@@ -206,7 +206,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="alarm_no_start_no_stop">There is neither a start nor a stop time set!</string>
     <string name="confirmation_delete_all_alarms">Remove all alarms?</string>
     <string name="port_warning_1024">For using a receive port number smaller than 1024 you need to have root access and make this app a system application. Allow administrative port range for now? Redo your previous action after granting!</string>
-    <string name="alarm_receiving">Receiving alarm $d</string>
+    <string name="alarm_receiving">Receiving alarm $d/$d</string>
     <string name="alarm_saving_now">Please wait. Saving alarm…</string>
     <string name="toWirelessSettings">Activate WiFi</string>
     <string name="outlets_hidden">Elements hidden</string>
@@ -367,4 +367,5 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="menu_timer_device_weekdays">Device alarm: Repeating</string>
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
     <string name="log_file_size">Logfile size: %1$f kb</string>
+    <string name="outlets_edit_hint">Nach oben ziehen zum Bearbeiten</string>
 </resources>

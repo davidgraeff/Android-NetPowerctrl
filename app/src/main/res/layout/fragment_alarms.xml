@@ -2,21 +2,35 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingLeft="@dimen/list_outer_padding"
-    android:paddingRight="@dimen/list_outer_padding">
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/progressText"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_alignParentBottom="true"
+        android:background="?attr/colorPrimaryDark"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="start"
+        android:padding="@dimen/list_inner_padding"
+        android:text=""
+        android:textAppearance="@android:style/TextAppearance.Small" />
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/ptr_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@id/progressText"
         android:paddingBottom="@dimen/list_inner_padding"
         android:paddingTop="@dimen/list_inner_padding">
 
         <android.support.v7.widget.RecyclerView
             android:id="@android:id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/list_outer_padding"
+            android:paddingRight="@dimen/list_outer_padding" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -26,7 +40,8 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="10dp"
+        android:paddingLeft="@dimen/list_outer_padding"
+        android:paddingRight="@dimen/list_outer_padding"
         android:visibility="gone">
 
         <TextView
@@ -46,19 +61,6 @@
             android:layout_marginTop="5dp"
             android:text="@string/devices" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/progressText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="5dp"
-        android:background="?item_selector"
-        android:gravity="left"
-        android:padding="5dp"
-        android:paddingLeft="@dimen/list_outer_padding"
-        android:paddingRight="@dimen/list_outer_padding"
-        android:textAppearance="@android:style/TextAppearance.Medium" />
 
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/btnAdd"

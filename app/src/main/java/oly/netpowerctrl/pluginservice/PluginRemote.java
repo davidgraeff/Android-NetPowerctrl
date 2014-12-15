@@ -353,7 +353,7 @@ public class PluginRemote implements PluginInterface {
 
     @Override
     public void requestAlarms(DevicePort port, TimerCollection timerCollection) {
-
+        timerCollection.alarmsFromPluginOtherThread(null);
     }
 
     @Override

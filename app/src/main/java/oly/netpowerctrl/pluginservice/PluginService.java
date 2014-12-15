@@ -122,6 +122,14 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     }
 
     /**
+     * Called after an alarm is executed. If the service is not used anymore (weakHashMap empty),
+     * then stop the service.
+     */
+    public void checkStopAfterAlarm() {
+        if (weakHashMap.size() == 0) stopSelf();
+    }
+
+    /**
      * Startup is like this:
      * 1) Create anel plugin
      * 2a) Load app data (devices, alarms etc)
@@ -137,14 +145,17 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             return super.onStartCommand(intent, flags, startId);
         }
 
-        if (weakHashMap.size() == 0) {
+        boolean isAlarm = intent.getBooleanExtra("isAlarm", false);
+
+        if (isAlarm) {
+            Logging.getInstance().logMain("START by alarm");
+        } else if (weakHashMap.size() == 0) {
             Logging.getInstance().logMain("ILLEGAL START");
             stopSelf();
             Log.w(TAG, "cannot be started without useService");
             return START_NOT_STICKY;
-        }
-
-        Logging.getInstance().logMain("START");
+        } else
+            Logging.getInstance().logMain("START");
 
         mWaitForService = false;
         mDiscoverService = this;
