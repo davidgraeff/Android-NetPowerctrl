@@ -22,7 +22,9 @@ import oly.netpowerctrl.data.AppData;
  */
 public class GroupUtilities {
 
-    public static boolean[] addGroupCheckBoxesToLayout(Context context, FlowLayout layout, List<UUID> listOfGroupsPreChecked) {
+    public static boolean[] addGroupCheckBoxesToLayout(Context context, FlowLayout layout,
+                                                       List<UUID> listOfGroupsPreChecked,
+                                                       final CompoundButton.OnCheckedChangeListener checkedChangeListener) {
 
         final GroupCollection groupCollection = AppData.getInstance().groupCollection;
 
@@ -43,6 +45,8 @@ public class GroupUtilities {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     checked[index] = b;
+                    if (checkedChangeListener != null)
+                        checkedChangeListener.onCheckedChanged(compoundButton, b);
                 }
             });
             FlowLayout.LayoutParams lp = new FlowLayout.LayoutParams(

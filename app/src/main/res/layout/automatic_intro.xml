@@ -4,7 +4,6 @@
     android:layout_height="match_parent">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:flatui="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -32,14 +31,13 @@
             android:text="Mit dieser App kannst du Anel Steckdosenleisten steuern. Du kannst direkt in den Gerätebildschirm wechseln um Geräte einzurichten oder fährst mit dieser Einführung fort, um Geräte automatisch einzurichten."
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <com.cengalabs.flatui.views.FlatButton
+        <Button
             android:id="@+id/btnDevices"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/list_inner_padding"
-            android:text="Zum Gerätebildschirm"
-            flatui:fl_touchEffect="fl_ripple" />
+            android:text="Zum Gerätebildschirm" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -131,27 +129,25 @@
             android:text="Ok, los gehts, nutze den Automatische Erkennung-Knopf wenn du bereit bist."
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <com.cengalabs.flatui.views.FlatButton
+        <Button
             android:id="@+id/btnStart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/list_inner_padding"
-            android:text="Automatische Erkennung"
-            flatui:fl_touchEffect="fl_ripple" />
+            android:text="Automatische Erkennung" />
 
         <TextView
             android:id="@+id/text_automatic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.cengalabs.flatui.views.FlatButton
+        <Button
             android:id="@+id/btnClose"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_margin="@dimen/list_inner_padding"
-            android:text="Schließen"
-            flatui:fl_touchEffect="fl_ripple" />
+            android:text="Schließen" />
     </LinearLayout>
 </ScrollView>

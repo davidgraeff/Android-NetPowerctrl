@@ -3,6 +3,5 @@
 <resources>
     <item name="activity_main" type="layout">@layout/activity_main_one_pane</item>
     <bool name="has_two_panes">false</bool>
-    <bool name="scene_beside">false</bool>
     <bool name="isNotIceCreamSandwich">true</bool>
 </resources>

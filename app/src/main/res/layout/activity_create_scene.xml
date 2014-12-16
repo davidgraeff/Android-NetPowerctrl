@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:flatui="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -22,83 +21,11 @@
 
             <include layout="@layout/executable_groups" />
 
-            <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/items_container"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="@dimen/list_outer_padding"
-                card_view:cardBackgroundColor="?cards_background"
-                card_view:cardCornerRadius="4dp"
-                card_view:cardElevation="5dp">
+            <include layout="@layout/scene_elements" />
 
+            <include layout="@layout/scene_options" />
 
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/options_container"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:padding="@dimen/list_outer_padding"
-                card_view:cardBackgroundColor="?cards_background"
-                card_view:cardCornerRadius="4dp"
-                card_view:cardElevation="5dp">
-
-                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/list_inner_padding">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="start|top"
-                        android:text="Optionen"
-                        android:textAppearance="@android:style/TextAppearance.Large" />
-
-                    <CheckBox
-                        android:id="@+id/shortcut_show_mainwindow"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginTop="5dp"
-                        android:text="@string/shortcut_show_mainwindow"
-                        android:visibility="gone" />
-
-                    <CheckBox
-                        android:id="@+id/shortcut_enable_feedback"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginTop="5dp"
-                        android:text="@string/shortcut_enable_feedback" />
-
-                    <com.cengalabs.flatui.views.FlatButton
-                        android:id="@+id/btnNFC"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:ellipsize="marquee"
-                        android:singleLine="true"
-                        android:text="@string/scene_nfc_write"
-                        flatui:fl_touchEffect="fl_ripple" />
-
-                    <com.cengalabs.flatui.views.FlatButton
-                        android:id="@+id/btnSceneAddHomescreen"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:ellipsize="marquee"
-                        android:singleLine="true"
-                        android:text="@string/scene_add_homescreen"
-                        flatui:fl_touchEffect="fl_ripple" />
-
-                </LinearLayout>
-
-            </android.support.v7.widget.CardView>
-
+            <!-- bottom space to make all options viewable even if FloatingActionButton are on the bottom -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="100dp" />
@@ -107,6 +34,7 @@
 
     </ScrollView>
 
+    <!-- the main toolbar of this activity -->
     <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/toolbar_actionbar"
@@ -115,31 +43,69 @@
         android:minHeight="?attr/actionBarSize"
         app:theme="?attr/toolbar_style" />
 
+    <!-- the icon button on the top -->
     <include layout="@layout/executable_icons" />
 
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/available"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="@dimen/list_inner_padding"
+        android:layout_marginRight="@dimen/list_inner_padding"
+        android:background="?attr/cards_background"
+        android:visibility="gone">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:id="@android:id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/empty_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?item_selector"
+                android:padding="5dp"
+                android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/btnOk"
+        android:id="@+id/btnSaveOrTrash"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         app:mainColor="?attr/floating_button_color" />
 
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/btnRemove"
+        android:id="@+id/btnAdd"
         android:layout_width="72dp"
         android:layout_height="72dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="16dp"
+        android:layout_above="@+id/btnSaveOrTrash"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_toLeftOf="@id/btnOk"
-        android:visibility="invisible"
-        app:drawable="@android:drawable/ic_menu_delete"
+        app:drawable="@android:drawable/ic_menu_add"
         app:mainColor="?attr/floating_button_color" />
 
 </RelativeLayout>

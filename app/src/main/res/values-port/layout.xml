@@ -2,5 +2,4 @@
 
 <resources>
     <item name="activity_main" type="layout">@layout/activity_main_one_pane</item>
-    <bool name="scene_beside">false</bool>
 </resources>

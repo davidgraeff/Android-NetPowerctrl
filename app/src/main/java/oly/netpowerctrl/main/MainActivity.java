@@ -32,8 +32,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.cengalabs.flatui.FlatUI;
-
 import org.sufficientlysecure.donations.DonationsFragment;
 
 import oly.netpowerctrl.R;
@@ -86,17 +84,11 @@ public class MainActivity extends ActionBarActivity {
 
         super.onCreate(savedInstanceState);
 
-        // Converts the default values (radius, size, border) to dp to be compatible with different
-        // screen sizes. If you skip this there may be problem with different screen densities
-        FlatUI.initDefaultValues(this);
-
         // Set theme, call super onCreate and set content view
         if (SharedPrefs.getInstance().isDarkTheme()) {
             setTheme(R.style.Theme_CustomDarkTheme);
-            FlatUI.setDefaultTheme(FlatUI.SEA);
         } else {
             setTheme(R.style.Theme_CustomLightTheme);
-            FlatUI.setDefaultTheme(FlatUI.SEA);
         }
 
         navigationController.createDrawerAdapter(this);

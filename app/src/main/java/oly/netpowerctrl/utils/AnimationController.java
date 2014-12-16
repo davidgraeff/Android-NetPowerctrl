@@ -24,6 +24,7 @@ public class AnimationController {
                     animateBottomViewIn(view, fromCurrentPosition);
                 }
             });
+            view.setVisibility(View.INVISIBLE);
             return;
         }
 

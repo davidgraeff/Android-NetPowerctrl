@@ -376,4 +376,5 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
     <string name="log_file_size">Logdatei Größe: %1$f kb</string>
     <string name="outlets_edit_hint">Nach oben ziehen zum Bearbeiten</string>
+    <string name="scene_options_title">Optionen</string>
 </resources>

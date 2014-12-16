@@ -19,6 +19,8 @@ import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onPluginsReady;
 import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 
@@ -98,6 +100,14 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
                 } else
                     executeSingleAction(action_uuid, action_command);
 
+                return false;
+            }
+        });
+
+        PluginService.observersPluginsReady.register(new onPluginsReady() {
+            @Override
+            public boolean onPluginsReady() {
+                AppData.getInstance().refreshDeviceData(true);
                 return false;
             }
         });

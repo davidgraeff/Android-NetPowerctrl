@@ -93,20 +93,29 @@ dependencies {
     compile('com.android.support:recyclerview-v7:21.0.0')
     compile('com.android.support:palette-v7:21.0.0')
     compile('com.android.support:cardview-v7:21.0.0')
-    compile('com.wefika:flowlayout:0.3.4') { exclude group: 'com.google.android' }
-    compile('com.github.eluleci:flatui:3.0.0') { exclude group: 'com.google.android' }
-    compile('com.github.gabrielemariotti.changeloglib:library:1.5.1') {
+    compile('com.wefika:flowlayout:0.3.4') {
         exclude group: 'com.google.android'
+        exclude group: 'com.android.support'
+    }
+    //compile('com.github.eluleci:flatui:3.0.0') { exclude group: 'com.google.android' }
+    compile('com.github.gabrielemariotti.changeloglib:library:1.5.1') {
+        exclude group: 'com.google.android'; exclude group: 'com.android.support'
     }
     compile('ch.acra:acra-mh:5.0.0-SNAPSHOT') {
-        exclude group: 'com.google.android'; exclude group: 'org.json'
+        exclude group: 'com.google.android'; exclude group: 'org.json';
+        exclude group: 'com.android.support'
     }
-    compile('net.lingala.zip4j:zip4j:1.3.2') { exclude group: 'com.google.android' }
+    compile('net.lingala.zip4j:zip4j:1.3.2') {
+        exclude group: 'com.google.android'
+        exclude group: 'com.android.support'
+    }
     compile('com.google.code.ndef-tools-for-android:ndeftools:1.2.4') {
         exclude group: 'com.google.android'
+        exclude group: 'com.android.support'
     }
     compile('com.google.code.ndef-tools-for-android:ndeftools-util:1.2.4') {
         exclude group: 'com.google.android'
+        exclude group: 'com.android.support'
     }
     androidTestCompile 'junit:junit:4.11'
 }

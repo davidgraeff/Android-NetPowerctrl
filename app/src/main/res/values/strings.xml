@@ -368,4 +368,5 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
     <string name="log_file_size">Logfile size: %1$f kb</string>
     <string name="outlets_edit_hint">Nach oben ziehen zum Bearbeiten</string>
+    <string name="scene_options_title">Options</string>
 </resources>

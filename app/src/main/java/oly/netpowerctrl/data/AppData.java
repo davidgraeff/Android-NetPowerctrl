@@ -645,7 +645,7 @@ public class AppData {
         return list;
     }
 
-    public void refreshDeviceData(final boolean refreshKnownExtentions) {
+    public void refreshDeviceData(final boolean refreshKnownExtensions) {
         // The following mechanism allows only one update request within a
         // 1sec timeframe.
         if (isDetecting)
@@ -665,7 +665,7 @@ public class AppData {
 
         observersStartStopRefresh.onRefreshStateChanged(true);
 
-        if (refreshKnownExtentions)
+        if (refreshKnownExtensions)
             PluginService.getService().discoverExtensions();
 
         clearNewDevices();

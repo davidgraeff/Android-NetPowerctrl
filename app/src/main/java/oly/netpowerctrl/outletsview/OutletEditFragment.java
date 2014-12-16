@@ -192,7 +192,7 @@ public class OutletEditFragment extends Fragment implements onHttpRequestResult,
 
         @SuppressLint("WrongViewCast")
         FlowLayout layout = (FlowLayout) rootView.findViewById(R.id.groups_layout);
-        checked = GroupUtilities.addGroupCheckBoxesToLayout(getActivity(), layout, devicePort.groups);
+        checked = GroupUtilities.addGroupCheckBoxesToLayout(getActivity(), layout, devicePort.groups, null);
 
         return rootView;
     }

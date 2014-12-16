@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -364,7 +363,6 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
                 final DevicePort port = it.next();
-                Log.w(TAG, port.getTitle());
 
                 if (alarm_uuids.contains(port.getUid()))
                     alarm_ports.add(0, port); // add in front of all alarm_uuids

@@ -7,6 +7,7 @@ import android.content.pm.ResolveInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
@@ -139,13 +140,13 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      * 3.2) wakeupAllDevices (initiates update for every loaded device, if not updated the last 5sec)
      */
     @Override
-    public int onStartCommand(final Intent intent, final int flags, final int startId) {
+    public int onStartCommand(@Nullable final Intent intent, final int flags, final int startId) {
         if (mDiscoverService != null) {
             TimerCollection.checkAndExecuteAlarm();
             return super.onStartCommand(intent, flags, startId);
         }
 
-        boolean isAlarm = intent.getBooleanExtra("isAlarm", false);
+        boolean isAlarm = intent != null && intent.getBooleanExtra("isAlarm", false);
 
         if (isAlarm) {
             Logging.getInstance().logMain("START by alarm");

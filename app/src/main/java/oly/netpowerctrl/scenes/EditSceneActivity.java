@@ -14,16 +14,17 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ import com.wefika.flowlayout.FlowLayout;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -80,8 +82,9 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     CheckBox enable_feedback;
     boolean[] checked;
     RecyclerViewWithAdapter<ExecutablesListAdapter> availableElements;
-    RecyclerViewWithAdapter<SceneElementsAdapter> sceneElements;
-    private FloatingActionButton btnOk;
+    SceneElements sceneElements;
+    private boolean isChanged = false;
+    private FloatingActionButton btnSaveOrTrash;
     private ExecutablesListAdapter adapter_available;
     private SceneElementsAdapter adapter_included;
     // Scene and flag variables
@@ -100,30 +103,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     private boolean iconMenuVisible = false;
     private boolean addMenuVisible = false;
     private boolean isFavourite;
-
-    /*
- * ActionBar icon clicked
- */
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        SceneElementsAdapter adapter_included = mAdapter;
-//        switch (item.getItemId()) {
-//            case R.id.menu_switch_all_on:
-//                adapter_included.switchAllOn();
-//                return true;
-//            case R.id.menu_switch_all_off:
-//                adapter_included.switchAllOff();
-//                return true;
-//            case R.id.menu_switch_all_toogle:
-//                adapter_included.toggleAll();
-//                return true;
-//            case R.id.menu_switch_all_ignore:
-//                adapter_included.clear();
-//                adapter_available.getSource().updateNow();
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
 
     @SuppressLint("ShowToast")
     @Override
@@ -159,40 +138,32 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         adapter_available = new ExecutablesListAdapter(false, s, LoadStoreIconData.iconLoadingThread, true);
         adapter_included = new SceneElementsAdapter();
 
-        if (getResources().getBoolean(R.bool.scene_beside)) {
-            ViewGroup view = (ViewGroup) findViewById(R.id.items_container);
-            LayoutInflater layoutInflater = LayoutInflater.from(this);
-            layoutInflater.inflate(R.layout.scene_elements_two_pane, view, true);
+        sceneElements = new SceneElements((FlowLayout) findViewById(R.id.included),
+                adapter_included, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public boolean onItemClick(View view, int position, boolean isLongClick) {
+                adapter_available.addItem(adapter_included.take(position).getExecutable(), DevicePort.TOGGLE);
+                isChanged = true;
+                updateSaveButton();
+                return true;
+            }
+        });
+        availableElements = new RecyclerViewWithAdapter<>(this, null,
+                findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
 
-            sceneElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
-                    findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
-            availableElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
-                    findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
-        } else {
-            ViewGroup view = (ViewGroup) findViewById(R.id.items_container);
-            LayoutInflater layoutInflater = LayoutInflater.from(this);
-            layoutInflater.inflate(R.layout.scene_elements_one_pane, view, true);
-
-            sceneElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
-                    findViewById(R.id.included), adapter_included, R.string.scene_create_include_twopane);
-            availableElements = new RecyclerViewWithAdapter<>(this, (ViewGroup) findViewById(R.id.scroll_vertical),
-                    findViewById(R.id.available), adapter_available, R.string.scene_create_helptext_available);
-
-            View btnAdd = findViewById(R.id.btnAdd);
-            btnAdd.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    addMenuVisible = !addMenuVisible;
-                    AnimationController.animateViewInOut(findViewById(R.id.available), addMenuVisible, true);
-                }
-            });
-        }
-
-        btnOk = (FloatingActionButton) findViewById(R.id.btnOk);
-        btnOk.setOnClickListener(new View.OnClickListener() {
+        final FloatingActionButton btnAdd = (FloatingActionButton) findViewById(R.id.btnAdd);
+        btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                save_and_close();
+                addMenuVisible = !addMenuVisible;
+                Resources r = getResources();
+                if (addMenuVisible) {
+                    btnAdd.setDrawable(r.getDrawable(android.R.drawable.ic_menu_close_clear_cancel));
+                    AnimationController.animateBottomViewIn(findViewById(R.id.available), false);
+                } else {
+                    btnAdd.setDrawable(r.getDrawable(android.R.drawable.ic_menu_add));
+                    AnimationController.animateBottomViewOut(findViewById(R.id.available));
+                }
             }
         });
 
@@ -209,6 +180,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                     return;
                 }
 
+                isChanged = true;
                 iconMenuVisible = true;
                 AnimationController.animateViewInOut(findViewById(R.id.executable_icons), true, false);
             }
@@ -223,6 +195,20 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             public void onClick(View view) {
                 iconMenuVisible = false;
                 AnimationController.animateViewInOut(findViewById(R.id.executable_icons), false, false);
+            }
+        });
+
+        btnSaveOrTrash = (FloatingActionButton) findViewById(R.id.btnSaveOrTrash);
+        btnSaveOrTrash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isLoaded && !isChanged) {
+                    Intent intent = new Intent();
+                    intent.putExtra(RESULT_SCENE_REMOVE_UID, scene.getUid());
+                    setResult(RESULT_OK, intent);
+                    finish();
+                } else
+                    save_and_close();
             }
         });
 
@@ -242,6 +228,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             @Override
             public void onClick(View view) {
                 isFavourite = !isFavourite;
+                isChanged = true;
                 updateFavButton();
                 toast.setText(isFavourite ? R.string.scene_make_favourite : R.string.scene_remove_favourite);
                 InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
@@ -264,6 +251,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 scene.sceneName = s.toString().trim();
+                isChanged = true;
                 updateSaveButton();
             }
 
@@ -282,6 +270,30 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             }
         }, 50);
     }
+
+    /*
+ * ActionBar icon clicked
+ */
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        SceneElementsAdapter adapter_included = mAdapter;
+//        switch (item.getItemId()) {
+//            case R.id.menu_switch_all_on:
+//                adapter_included.switchAllOn();
+//                return true;
+//            case R.id.menu_switch_all_off:
+//                adapter_included.switchAllOff();
+//                return true;
+//            case R.id.menu_switch_all_toogle:
+//                adapter_included.toggleAll();
+//                return true;
+//            case R.id.menu_switch_all_ignore:
+//                adapter_included.clear();
+//                adapter_available.getSource().updateNow();
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
 
     @Override
     public void onBackPressed() {
@@ -383,20 +395,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             }
         }
 
-        if (scene != null) {
-            FloatingActionButton btnRemove = (FloatingActionButton) findViewById(R.id.btnRemove);
-            AnimationController.animateBottomViewIn(btnRemove, false);
-            btnRemove.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent();
-                    intent.putExtra(RESULT_SCENE_REMOVE_UID, scene.getUid());
-                    setResult(RESULT_OK, intent);
-                    finish();
-                }
-            });
-        }
-
         // Load current set of available outlets
         removeIncludedFromAvailable(adapter_available, adapter_included);
 
@@ -405,18 +403,6 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
         }
 
         isFavourite = AppData.getInstance().favCollection.isFavourite(scene.getUid());
-
-        // Add click listener for the remove button on each included action
-        sceneElements.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public boolean onItemClick(View view, int position, boolean isLongClick) {
-                if (view.getId() != R.id.outlet_list_close)
-                    return false;
-                adapter_available.addItem(adapter_included.take(position).getExecutable(), DevicePort.TOGGLE);
-                updateSaveButton();
-                return true;
-            }
-        }, null));
 
         // Add click listener to available list to move the clicked action
         // to the included list.
@@ -431,6 +417,7 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
                 }
                 adapter_available.removeAt(position);
                 adapter_included.addItem(devicePort, DevicePort.TOGGLE);
+                isChanged = true;
                 updateSaveButton();
                 return true;
             }
@@ -442,22 +429,56 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
             setIcon(findViewById(R.id.scene_image_on), null);
         }
 
-        onNameChanged();
-
-        if (show_mainWindow == null || scene == null)
-            return;
-
         if (!isSceneNotShortcut) {
             show_mainWindow.setVisibility(View.VISIBLE);
             enable_feedback.setVisibility(View.VISIBLE);
             isLoaded = false;
         }
 
-        checked = GroupUtilities.addGroupCheckBoxesToLayout(this, groups_layout, scene.groups);
+        checked = GroupUtilities.addGroupCheckBoxesToLayout(this, groups_layout, scene.groups,
+                new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                        isChanged = true;
+                    }
+                });
 
         btnSceneAddHomescreen.setVisibility(isLoaded ? View.VISIBLE : View.GONE);
         btnNFC.setVisibility(isLoaded ? View.VISIBLE : View.GONE);
+
+        String sceneName = scene.sceneName;
+
+//        if (sceneName.length() == 0)
+//            sceneName = getString(R.string.title_scene_no_name);
+
+        TextView textView = (TextView) findViewById(R.id.scene_name);
+        textView.setText(sceneName);
+        //getSupportActionBar().setTitle(sceneName);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (isSceneNotShortcut) {
+            if (isLoaded) {
+                actionBar.setSubtitle(R.string.title_scene_edit);
+            } else
+                actionBar.setSubtitle(R.string.title_scene_create);
+        } else {
+            actionBar.setSubtitle(R.string.title_shortcut);
+        }
+
+        //noinspection ConstantConditions
+//        ActionBar actionBar = getSupportActionBar();
+//
+//        if (adapter_included.getItemCount() == 0)
+//            actionBar.setSubtitle(getString(R.string.error_scene_no_actions));
+//        else if (scene.sceneName.length() == 0)
+//            actionBar.setSubtitle(getString(R.string.error_scene_no_name));
+//        else
+//            actionBar.setSubtitle("");
+
         updateFavButton();
+
+        isChanged = false;
+        updateSaveButton();
     }
 
     private void removeIncludedFromAvailable(ExecutablesBaseAdapter available, SceneElementsAdapter included) {
@@ -554,52 +575,71 @@ public class EditSceneActivity extends ActionBarActivity implements LoadStoreIco
     }
 
     private void updateSaveButton() {
+        if (isLoaded && !isChanged) {
+            btnSaveOrTrash.setDrawable(getResources().getDrawable(android.R.drawable.ic_menu_delete));
+            return;
+        }
         boolean en = (adapter_included.getItemCount() != 0) && scene.sceneName.length() > 0;
         Resources r = getResources();
-        btnOk.setDrawable(en ? r.getDrawable(android.R.drawable.ic_menu_save) :
+        btnSaveOrTrash.setDrawable(en ? r.getDrawable(android.R.drawable.ic_menu_save) :
                 r.getDrawable(R.drawable.btn_save_disabled));
-    }
-
-    /**
-     * Called by the widget/object/dialog that is responsible for asking the
-     * user for a new scene name after a name has been chosen.
-     */
-    public void onNameChanged() {
-        String sceneName = scene.sceneName;
-
-//        if (sceneName.length() == 0)
-//            sceneName = getString(R.string.title_scene_no_name);
-
-        TextView textView = (TextView) findViewById(R.id.scene_name);
-        textView.setText(sceneName);
-        //getSupportActionBar().setTitle(sceneName);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (isSceneNotShortcut) {
-            if (isLoaded) {
-                actionBar.setSubtitle(R.string.title_scene_edit);
-            } else
-                actionBar.setSubtitle(R.string.title_scene_create);
-        } else {
-            actionBar.setSubtitle(R.string.title_shortcut);
-        }
-
-        //noinspection ConstantConditions
-//        ActionBar actionBar = getSupportActionBar();
-//
-//        if (adapter_included.getItemCount() == 0)
-//            actionBar.setSubtitle(getString(R.string.error_scene_no_actions));
-//        else if (scene.sceneName.length() == 0)
-//            actionBar.setSubtitle(getString(R.string.error_scene_no_name));
-//        else
-//            actionBar.setSubtitle("");
-
-        updateSaveButton();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
         LoadStoreIconData.activityCheckForPickedImage(this, this, requestCode, resultCode, imageReturnedIntent);
+    }
+
+    private static class SceneElements extends RecyclerView.AdapterDataObserver {
+        private final FlowLayout flowLayout;
+        private final SceneElementsAdapter adapter_included;
+        private RecyclerItemClickListener.OnItemClickListener onItemClickListener;
+        private List<SceneElementsAdapter.ViewHolder> elements = new ArrayList<>();
+
+        public SceneElements(FlowLayout flowLayout,
+                             SceneElementsAdapter adapter_included, RecyclerItemClickListener.OnItemClickListener onItemClickListener) {
+            this.flowLayout = flowLayout;
+            this.adapter_included = adapter_included;
+            this.onItemClickListener = onItemClickListener;
+
+            adapter_included.registerAdapterDataObserver(this);
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            for (int i = positionStart + itemCount - 1; i >= positionStart; --i) {
+                SceneElementsAdapter.ViewHolder vh = elements.get(positionStart);
+                elements.remove(i);
+                flowLayout.removeView(vh.itemView);
+                adapter_included.onViewDetachedFromWindow(vh);
+                adapter_included.onViewRecycled(vh);
+            }
+            for (int i = positionStart; i < adapter_included.getItemCount(); ++i) {
+                SceneElementsAdapter.ViewHolder vh = elements.get(i);
+                vh.position = i;
+            }
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            for (int i = positionStart; i < positionStart + itemCount; ++i) {
+                final SceneElementsAdapter.ViewHolder vh = adapter_included.createViewHolder(flowLayout,
+                        adapter_included.mItems.get(i).getItemViewType());
+                vh.position = i;
+                adapter_included.onBindViewHolder(vh, i);
+                elements.add(i, vh);
+                vh.close.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onItemClickListener.onItemClick(null, vh.position, false);
+                    }
+                });
+                FlowLayout.LayoutParams lp = new FlowLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                flowLayout.addView(vh.itemView, lp);
+                adapter_included.onViewAttachedToWindow(vh);
+            }
+        }
     }
 }

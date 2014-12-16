@@ -4,9 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -41,6 +41,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     private Timer timer = Timer.createNewTimer();
     private View rootView;
     private View titleView;
+    private ViewParent scrollView;
     private Toast toast;
     private Spinner spinner;
     private boolean isNew = true;
@@ -131,6 +132,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         // Add weekdays
         com.wefika.flowlayout.FlowLayout layout = (com.wefika.flowlayout.FlowLayout) rootView.findViewById(R.id.weekday_layout);
+        scrollView = (ViewParent) rootView.findViewById(R.id.scrollView);
 
         if (timer.type == Timer.TYPE_RANGE_ON_WEEKDAYS || timer.type == Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS) {
             String[] weekDays_Strings = DateFormatSymbols.getInstance().getShortWeekdays();
@@ -169,8 +171,8 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         {
             final TimePicker sp = ((TimePicker) rootView.findViewById(R.id.alarm_start_time));
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
-                sp.setIs24HourView(true);
+            //if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+            sp.setIs24HourView(true);
             if (timer.hour_minute != -1) {
                 sp.setCurrentHour(Timer.getHour(timer.hour_minute));
                 sp.setCurrentMinute(Timer.getMinute(timer.hour_minute));
