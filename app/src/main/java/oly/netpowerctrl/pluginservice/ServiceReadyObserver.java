@@ -27,9 +27,9 @@ public class ServiceReadyObserver extends Observer<onServiceReady> implements on
     }
 
     @Override
-    public void onServiceFinished() {
+    public void onServiceFinished(PluginService service) {
         for (onServiceReady listener : listeners.keySet()) {
-            listener.onServiceFinished();
+            listener.onServiceFinished(service);
         }
     }
 }

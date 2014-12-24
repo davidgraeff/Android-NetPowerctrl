@@ -32,7 +32,7 @@ class NetworkChangedBroadcastReceiver extends BroadcastReceiver {
         }
 
         @SuppressWarnings("ConstantConditions")
-        ConnectivityManager cm = (ConnectivityManager) pluginService.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) pluginService.getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
         if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
             Logging.getInstance().logEnergy("Energiesparen aus: Netzwechsel erkannt");
             pluginService.wakeupAllDevices();

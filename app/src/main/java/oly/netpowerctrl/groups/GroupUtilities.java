@@ -15,18 +15,15 @@ import java.util.List;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 
 /**
  * Utility methods for groups
  */
 public class GroupUtilities {
 
-    public static boolean[] addGroupCheckBoxesToLayout(Context context, FlowLayout layout,
+    public static boolean[] addGroupCheckBoxesToLayout(Context context, final GroupCollection groupCollection, FlowLayout layout,
                                                        List<UUID> listOfGroupsPreChecked,
                                                        final CompoundButton.OnCheckedChangeListener checkedChangeListener) {
-
-        final GroupCollection groupCollection = AppData.getInstance().groupCollection;
 
         CharSequence[] items = groupCollection.getGroupsArray();
         final boolean checked[] = new boolean[items.length];
@@ -62,7 +59,7 @@ public class GroupUtilities {
      *
      * @param context The context
      */
-    public static void createGroup(Context context, final GroupCreatedCallback groupCreatedCallback) {
+    public static void createGroup(Context context, final GroupCollection groupCollection, final GroupCreatedCallback groupCreatedCallback) {
         //noinspection ConstantConditions
         AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
@@ -76,7 +73,7 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                int index = AppData.getInstance().groupCollection.add(name);
+                int index = groupCollection.add(name);
                 if (groupCreatedCallback != null)
                     groupCreatedCallback.onGroupCreated(index);
             }
@@ -86,8 +83,8 @@ public class GroupUtilities {
         alert.show();
     }
 
-    public static void renameGroup(Context context, UUID groupFilter) {
-        final Group group = AppData.getInstance().groupCollection.get(groupFilter);
+    public static void renameGroup(Context context, final GroupCollection groupCollection, UUID groupFilter) {
+        final Group group = groupCollection.get(groupFilter);
         if (group == null)
             return;
 
@@ -105,7 +102,7 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                AppData.getInstance().groupCollection.edit(group.uuid, name);
+                groupCollection.edit(group.uuid, name);
             }
         });
 

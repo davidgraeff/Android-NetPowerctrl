@@ -35,10 +35,6 @@ public class ScanBroadcast extends AndroidTestCase {
 //        assertEquals(getApplication(), NetpowerctrlApplication.instance);
 //        assertNotNull(getApplication());
 
-        c = AppData.getInstance();
-        c.useAppData(new TestObjects.LoadStoreJSonDataTest());
-        assertNotNull(c);
-
         assertEquals(PluginService.isServiceUsed(), false);
         assertNull(PluginService.getService());
         PluginService.useService(new WeakReference<Object>(this));
@@ -53,7 +49,7 @@ public class ScanBroadcast extends AndroidTestCase {
             }
 
             @Override
-            public void onServiceFinished() {
+            public void onServiceFinished(PluginService service) {
                 signal.countDown();
             }
         });
@@ -74,7 +70,7 @@ public class ScanBroadcast extends AndroidTestCase {
             }
 
             @Override
-            public void onServiceFinished() {
+            public void onServiceFinished(PluginService service) {
                 signal.countDown();
             }
         });
@@ -98,7 +94,7 @@ public class ScanBroadcast extends AndroidTestCase {
 
         AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
             @Override
-            public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
+            public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
                 signal_receive.countDown();
                 return false;
             }
@@ -106,13 +102,13 @@ public class ScanBroadcast extends AndroidTestCase {
 
         AppData.observersStartStopRefresh.register(refreshStartedStopped);
 
-        AppData.getInstance().refreshDeviceData(false);
+        service.getAppData().refreshDeviceData(service, false);
 
         assertTrue("Timeout of refreshDeviceData", signal_receive.await(4, TimeUnit.SECONDS));
 
         AppData.observersStartStopRefresh.unregister(refreshStartedStopped);
         assertEquals("RefreshStartStop count wrong", 0, refreshStartedStopped_signal);
 
-        assertTrue("No devices found!", AppData.getInstance().unconfiguredDeviceCollection.size() > 0);
+        assertTrue("No devices found!", service.getAppData().unconfiguredDeviceCollection.size() > 0);
     }
 }

@@ -105,7 +105,7 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
             }
         });
 
-        mPullToRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.list_layout);
+        mPullToRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
         mPullToRefreshLayout.setOnRefreshListener(this);
         mPullToRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
@@ -195,7 +195,7 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 App.setErrorReportContentLogFile(Logging.getInstance().getLogFile().getAbsolutePath());
-                                InAppNotifications.silentException(null);
+                                InAppNotifications.silentException(null, null);
                                 App.setErrorReportContentCrash();
                                 Toast.makeText(getActivity(), R.string.log_data_send, Toast.LENGTH_SHORT).show();
                             }
@@ -240,8 +240,8 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
         private String type = "";
         private String date = "";
         private String time = "";
-        private int typeInt = TYPE_MAIN;
         private String text;
+        private int typeInt = TYPE_MAIN;
 
         LogItem(String line) {
             String[] strings = line.replace('\t', '\n').split("\\|");

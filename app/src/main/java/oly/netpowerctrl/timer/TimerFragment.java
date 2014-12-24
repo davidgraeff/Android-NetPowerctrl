@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
@@ -31,19 +33,31 @@ import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.DividerItemDecoration;
 
-public class TimerFragment extends Fragment implements onCollectionUpdated<TimerCollection, Timer>, SwipeRefreshLayout.OnRefreshListener, onServiceReady, PopupMenu.OnMenuItemClickListener {
+public class TimerFragment extends Fragment implements onCollectionUpdated<TimerCollection, Timer>, SwipeRefreshLayout.OnRefreshListener, PopupMenu.OnMenuItemClickListener, onServiceReady {
+    private final AppData appData;
     private TimerAdapter timerAdapter;
     private TextView progressText;
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            Activity a = getActivity();
+            if (a != null) {
+                a.invalidateOptionsMenu();
+                AnimationController.animateBottomViewOut(progressText);
+            }
+        }
+    };
     private SwipeRefreshLayout mPullToRefreshLayout;
 
     public TimerFragment() {
+        appData = PluginService.getService().getAppData();
     }
 
     private void refresh(PluginService service) {
         if (service == null)
             return;
 
-        TimerCollection c = AppData.getInstance().timerCollection;
+        TimerCollection c = appData.timerCollection;
         if (c.refresh(service))
             AnimationController.animateBottomViewIn(progressText, false);
     }
@@ -55,10 +69,20 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
+    public boolean onServiceReady(PluginService service) {
+        refresh(PluginService.getService());
+        return false;
+    }
+
+    @Override
+    public void onServiceFinished(PluginService service) {
+
+    }
+
+    @Override
     public void onPause() {
-        PluginService.observersServiceReady.unregister(this);
         progressText.setVisibility(View.GONE);
-        TimerCollection c = AppData.getInstance().timerCollection;
+        TimerCollection c = appData.timerCollection;
         c.unregisterObserver(this);
         if (timerAdapter != null)
             timerAdapter.finish();
@@ -71,7 +95,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_alarms, container, false);
 
-        TimerCollection c = AppData.getInstance().timerCollection;
+        TimerCollection c = appData.timerCollection;
         timerAdapter = new TimerAdapter(getActivity(), c);
         timerAdapter.start();
         RecyclerViewWithAdapter<TimerAdapter> recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(getActivity(), null, rootView, timerAdapter, R.string.alarms_no_alarms);
@@ -106,7 +130,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         ///// END: For pull to refresh
 
         Button btnChangeToDevices = (Button) rootView.findViewById(R.id.btnChangeToDevices);
-        boolean hasDevices = AppData.getInstance().deviceCollection.hasDevices();
+        boolean hasDevices = appData.deviceCollection.hasDevices();
 
         btnChangeToDevices.setVisibility(hasDevices ? View.GONE : View.VISIBLE);
         btnChangeToDevices.setOnClickListener(new View.OnClickListener() {
@@ -150,7 +174,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                TimerCollection c = AppData.getInstance().timerCollection;
+                                TimerCollection c = appData.timerCollection;
                                 c.removeAll();
                             }
                         })
@@ -175,30 +199,15 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     @Override
-    public boolean onServiceReady(PluginService service) {
-        if (!AppData.observersOnDataLoaded.dataLoaded)
-            return true;
-        refresh(service);
-        return false;
-    }
-
-    @Override
-    public void onServiceFinished() {
-
-    }
-
-    @Override
     public boolean updated(@NonNull TimerCollection timerCollection, Timer timer, @NonNull ObserverUpdateActions action, int position) {
+        handler.removeMessages(0);
         boolean inProgress = timerCollection.isRequestActive();
         if (inProgress) {
             progressText.setText(getString(R.string.alarm_receiving, timerCollection.countReceivedAlarms(), timerCollection.countAllAlarms()));
-            AnimationController.animateBottomViewIn(progressText, false);
+            //AnimationController.animateBottomViewIn(progressText, false);
         } else {
-            Activity a = getActivity();
-            if (a != null) {
-                a.invalidateOptionsMenu();
-                AnimationController.animateBottomViewOut(progressText);
-            }
+            progressText.setText(getString(R.string.alarm_received));
+            handler.sendEmptyMessageDelayed(0, 1000);
         }
         mPullToRefreshLayout.setRefreshing(inProgress);
         return true;
@@ -228,4 +237,5 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         }
         throw new RuntimeException("Menu switch missing entry!");
     }
+
 }

@@ -14,12 +14,45 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.ui.ChangeLogUtil;
 import oly.netpowerctrl.utils.GithubAndCloudant;
 
 public class FeedbackFragment extends Fragment {
-    GithubAndCloudant githubAndCloudant = new GithubAndCloudant();
+    GithubAndCloudant.IGithubOpenIssues githubIssues = new GithubAndCloudant.IGithubOpenIssues() {
+        @Override
+        public void gitHubOpenIssuesUpdated(GithubAndCloudant.IssuesDetails details, long last_access) {
+            bugs.setText(String.valueOf(details.open));
+        }
+
+        @Override
+        public void gitHubIssue(int number, String title, String body) {
+
+        }
+    };
+    GithubAndCloudant.IGithubOpenIssues cloudantIssues = new GithubAndCloudant.IGithubOpenIssues() {
+        @Override
+        public void gitHubOpenIssuesUpdated(GithubAndCloudant.IssuesDetails details, long last_access) {
+            bugs2.setText(String.valueOf(details.open));
+            bugs3.setText(String.valueOf(details.reported_open));
+            bugs4.setText(String.valueOf(details.closed));
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(details.latest);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            bugs5.setText(sdf.format(calendar.getTime()));
+        }
+
+        @Override
+        public void gitHubIssue(int number, String title, String body) {
+
+        }
+    };
+    private GithubAndCloudant githubAndCloudant = new GithubAndCloudant();
+    private TextView bugs, bugs2, bugs3, bugs4, bugs5;
 
     public FeedbackFragment() {
     }
@@ -47,31 +80,33 @@ public class FeedbackFragment extends Fragment {
             }
         });
 
-        ((TextView) view.findViewById(R.id.bugs)).setText(R.string.issues_wait);
-        githubAndCloudant.getOpenAutomaticIssues(new GithubAndCloudant.IGithubOpenIssues() {
+        bugs = ((TextView) view.findViewById(R.id.bugs));
+        bugs.setPaintFlags(bugs.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        bugs.setText(R.string.issues_wait);
+        bugs.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void gitHubOpenIssuesUpdated(int count, long last_access) {
-                ((TextView) view.findViewById(R.id.bugs)).setText(String.valueOf(count));
+            public void onClick(View view) {
+                bugs.setText(R.string.issues_wait);
+                githubAndCloudant.getGithubIssues(githubIssues, true, null);
             }
+        });
 
+        bugs2 = ((TextView) view.findViewById(R.id.bugs2));
+        bugs3 = ((TextView) view.findViewById(R.id.bugs3));
+        bugs4 = ((TextView) view.findViewById(R.id.bugs4));
+        bugs5 = ((TextView) view.findViewById(R.id.bugs5));
+        bugs2.setPaintFlags(bugs2.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        bugs2.setText(R.string.issues_wait);
+        bugs2.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void gitHubIssue(int number, String title, String body) {
-
+            public void onClick(View view) {
+                bugs2.setText(R.string.issues_wait);
+                githubAndCloudant.getACRAIssues(cloudantIssues, true);
             }
-        }, false);
+        });
 
-        ((TextView) view.findViewById(R.id.bugs2)).setText(R.string.issues_wait);
-        githubAndCloudant.getOpenIssues(new GithubAndCloudant.IGithubOpenIssues() {
-            @Override
-            public void gitHubOpenIssuesUpdated(int count, long last_access) {
-                ((TextView) view.findViewById(R.id.bugs2)).setText(String.valueOf(count));
-            }
-
-            @Override
-            public void gitHubIssue(int number, String title, String body) {
-
-            }
-        }, false, null);
+        githubAndCloudant.getGithubIssues(githubIssues, false, null);
+        githubAndCloudant.getACRAIssues(cloudantIssues, false);
 
         view.findViewById(R.id.mail).setOnClickListener(new View.OnClickListener() {
             @Override

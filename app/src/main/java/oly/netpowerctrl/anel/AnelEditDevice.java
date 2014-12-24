@@ -1,6 +1,5 @@
 package oly.netpowerctrl.anel;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -8,7 +7,6 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
@@ -18,6 +16,7 @@ import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Use this class for testing device settings. Results are propagated via the onCreateDeviceResult interface.
@@ -74,7 +73,7 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean startTest(Context context) {
+    public boolean startTest(PluginService context) {
         if (device == null)
             return false;
 
@@ -118,11 +117,11 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
             // Should change nothing but we will get a feedback if the credentials are working.
             device.releaseDevice();
             if (deviceQuery != null) {
-                deviceQuery.addDevice(device, false);
+                deviceQuery.addDevice(deviceCollection.appData, device);
             }
             DevicePort oi = device.getFirst();
             if (oi != null)
-                AppData.getInstance().execute(oi, oi.current_value, null);
+                deviceCollection.appData.execute(oi, oi.current_value, null);
 
             // Timeout is 1,1s
             timeoutHandler.sendEmptyMessageDelayed(0, 1100);

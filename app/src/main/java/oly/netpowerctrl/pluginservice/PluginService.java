@@ -19,6 +19,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.data.WakeUpDeviceInterface;
 import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.device.Device;
@@ -32,10 +33,9 @@ import oly.netpowerctrl.utils.Logging;
 /**
  * Look for and load plugins. After network change: Rescan for reachable devices.
  */
-public class PluginService extends Service implements onDataQueryCompleted, onDataLoaded {
+public class PluginService extends Service implements onDataQueryCompleted, onDataLoaded, WakeUpDeviceInterface {
     public static final ServiceReadyObserver observersServiceReady = new ServiceReadyObserver();
     public static final ServiceModeChangedObserver observersServiceModeChanged = new ServiceModeChangedObserver();
-    public static final PluginsReadyObserver observersPluginsReady = new PluginsReadyObserver();
     private static final String TAG = "NetpowerctrlService";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private static final String PAYLOAD_SERVICE_NAME = "SERVICE_NAME";
@@ -56,10 +56,11 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             }
         }
     };
-
+    public final PluginsReadyObserver observersPluginsReady = new PluginsReadyObserver(this);
     private final Handler stopServiceHandler = new Handler();
-    private final List<PluginInterface> plugins = new ArrayList<>();
-
+    private final List<AbstractBasePlugin> plugins = new ArrayList<>();
+    private AppData appData = new AppData(this);
+    private DataQueryFinishedMessageRunnable afterDataQueryFinishedHandler = new DataQueryFinishedMessageRunnable(appData);
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
@@ -68,11 +69,10 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
 
     // Debug
     private boolean notificationAfterNextRefresh;
-    private DataQueryFinishedMessageRunnable afterDataQueryFinishedHandler = new DataQueryFinishedMessageRunnable();
 
     public static boolean isWirelessLanConnected(Context context) {
         @SuppressWarnings("ConstantConditions")
-        WifiManager cm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager cm = (WifiManager) context.getSystemService(android.content.Context.WIFI_SERVICE);
         return cm.isWifiEnabled() && cm.getConnectionInfo() != null;
     }
 
@@ -142,7 +142,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     @Override
     public int onStartCommand(@Nullable final Intent intent, final int flags, final int startId) {
         if (mDiscoverService != null) {
-            TimerCollection.checkAndExecuteAlarm();
+            TimerCollection.checkAlarm();
             return super.onStartCommand(intent, flags, startId);
         }
 
@@ -150,6 +150,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
 
         if (isAlarm) {
             Logging.getInstance().logMain("START by alarm");
+            TimerCollection.checkAlarm();
         } else if (weakHashMap.size() == 0) {
             Logging.getInstance().logMain("ILLEGAL START");
             stopSelf();
@@ -161,10 +162,12 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         mWaitForService = false;
         mDiscoverService = this;
 
-        plugins.add(new AnelPlugin());
+        plugins.add(new AnelPlugin(this));
 
         AppData.observersDataQueryCompleted.register(this);
-        AppData.observersOnDataLoaded.register(this);
+        AppData.addServiceToDataLoadedObserver(this);
+
+        appData.loadData();
 
         discoverExtensions();
 
@@ -194,33 +197,34 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             unregisterReceiver(networkChangedListener);
         }
 
-        Logging.getInstance().logMain("ENDE");
 
+        observersServiceReady.onServiceFinished(this);
+
+        appData.onDestroy();
         enterNetworkReducedMode();
-
-        observersServiceReady.onServiceFinished();
 
         // Clean up
         removePluginReferencesInDevices(null);
-        for (PluginInterface pluginInterface : plugins)
-            pluginInterface.onDestroy();
+        for (AbstractBasePlugin abstractBasePlugin : plugins)
+            abstractBasePlugin.onDestroy();
         plugins.clear();
 
         weakHashMap.clear();
         mDiscoverService = null;
         mWaitForService = false;
 
+        Logging.getInstance().logMain("ENDE");
     }
 
     ///////////////// Service start/stop /////////////////
     void enterNetworkReducedMode() {
         observersServiceModeChanged.onServiceModeChanged(true);
 
-        AppData.observersDataQueryCompleted.resetDataQueryCompleted();
+        AppData.observersDataQueryCompleted.reset();
 
-        for (PluginInterface pluginInterface : plugins)
-            if (pluginInterface.isNetworkPlugin())
-                pluginInterface.enterNetworkReducedState(this);
+        for (AbstractBasePlugin abstractBasePlugin : plugins)
+            if (abstractBasePlugin.isNetworkPlugin())
+                abstractBasePlugin.enterNetworkReducedState(this);
 
         // Stop listening for network changes
         if (SharedPrefs.getInstance().isMaximumEnergySaving()) {
@@ -237,8 +241,8 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
 
         Logging.getInstance().logEnergy("Alle Geräte aufgeweckt");
 
-        for (PluginInterface pluginInterface : plugins)
-            pluginInterface.enterFullNetworkState(this, null);
+        for (AbstractBasePlugin abstractBasePlugin : plugins)
+            abstractBasePlugin.enterFullNetworkState(this, null);
 
         networkChangedListener.registerReceiver(this);
         if (networkChangedListener.isNetworkChangedListener)
@@ -256,7 +260,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         /**
          * We received a message from a plugin, we already know: ignore
          */
-        for (PluginInterface pi : plugins) {
+        for (AbstractBasePlugin pi : plugins) {
             if (pi instanceof PluginRemote && ((PluginRemote) pi).serviceName.equals(serviceName)) {
                 observersPluginsReady.decreasePluginCount();
                 return;
@@ -272,7 +276,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             @Override
             public void onPluginReady(PluginRemote plugin) {
                 Logging.getInstance().logExtensions("Aktiv: " + plugin.serviceName);
-                if (AppData.observersOnDataLoaded.dataLoaded)
+                if (AppData.isDataLoaded())
                     updatePluginReferencesInDevices(plugin, false);
                 observersPluginsReady.decreasePluginCount();
             }
@@ -280,7 +284,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             @Override
             public void onPluginFailedToInit(PluginRemote plugin) {
                 Logging.getInstance().logExtensions("Fehler: " + plugin.serviceName);
-                if (AppData.observersOnDataLoaded.dataLoaded)
+                if (AppData.isDataLoaded())
                     updatePluginReferencesInDevices(plugin, false);
                 observersPluginsReady.decreasePluginCount();
             }
@@ -292,25 +296,25 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         });
     }
 
-    private boolean updatePluginReferencesInDevices(PluginInterface plugin, boolean updateChangesFlag) {
+    private boolean updatePluginReferencesInDevices(AbstractBasePlugin plugin, boolean updateChangesFlag) {
         boolean affectedDevices = false;
-        DeviceCollection deviceCollection = AppData.getInstance().deviceCollection;
+        DeviceCollection deviceCollection = appData.deviceCollection;
         for (Device device : deviceCollection.getItems()) {
             if (device.getPluginInterface() != plugin && device.pluginID.equals(plugin.getPluginID())) {
                 affectedDevices = true;
                 device.setPluginInterface(plugin);
                 if (updateChangesFlag)
                     device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
-                AppData.getInstance().updateExistingDevice(device);
+                appData.updateExistingDevice(device, true);
             }
         }
         return affectedDevices;
     }
 
-    private PluginInterface getPluginByID(String pluginID) {
-        for (PluginInterface pluginInterface : plugins)
-            if (pluginInterface.getPluginID().equals(pluginID))
-                return pluginInterface;
+    private AbstractBasePlugin getPluginByID(String pluginID) {
+        for (AbstractBasePlugin abstractBasePlugin : plugins)
+            if (abstractBasePlugin.getPluginID().equals(pluginID))
+                return abstractBasePlugin;
         return null;
     }
 
@@ -320,15 +324,15 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         removePluginReferencesInDevices(plugin);
     }
 
-    private void removePluginReferencesInDevices(PluginInterface plugin) {
+    private void removePluginReferencesInDevices(AbstractBasePlugin plugin) {
         // Remove all references in Device objects.
-        DeviceCollection deviceCollection = AppData.getInstance().deviceCollection;
+        DeviceCollection deviceCollection = appData.deviceCollection;
         for (Device device : deviceCollection.getItems()) {
             if (plugin == null || device.getPluginInterface() == plugin) {
                 device.setPluginInterface(null);
                 device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
                 device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
-                AppData.getInstance().updateExistingDevice(device);
+                appData.updateExistingDevice(device, true);
             }
         }
     }
@@ -337,14 +341,15 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      * This does nothing if a plugin is already awake.
      * Wake up a plugin, but will send it to sleep again if the given device didn't get updated within 3s
      *
-     * @param device
-     * @return
+     * @param device The device to wake up.
+     * @return Return true if wake up worked.
      */
+    @Override
     public boolean wakeupPlugin(Device device) {
-        PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
-        if (pluginInterface != null) {
-            if (pluginInterface.isNetworkReducedState())
-                pluginInterface.enterFullNetworkState(this, device);
+        AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
+        if (abstractBasePlugin != null) {
+            if (abstractBasePlugin.isNetworkReducedState())
+                abstractBasePlugin.enterFullNetworkState(this, device);
             return true;
         } else {
             return false;
@@ -362,22 +367,22 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         return getPluginByID(device.pluginID).openEditDevice(device);
     }
 
-    public PluginInterface getPlugin(int selected) {
+    public AbstractBasePlugin getPlugin(int selected) {
         return plugins.get(selected);
     }
 
-    public PluginInterface getPlugin(String plugin_id) {
+    public AbstractBasePlugin getPlugin(String plugin_id) {
         if (plugin_id == null)
             return null;
-        for (PluginInterface plugin : plugins)
+        for (AbstractBasePlugin plugin : plugins)
             if (plugin.getPluginID().equals(plugin_id))
                 return plugin;
         return null;
     }
 
     public void requestDataAll() {
-        for (PluginInterface pluginInterface : plugins) {
-            pluginInterface.requestData();
+        for (AbstractBasePlugin abstractBasePlugin : plugins) {
+            abstractBasePlugin.requestData();
         }
     }
 
@@ -386,32 +391,33 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     }
 
     @Override
-    public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
+    public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
         if (notificationAfterNextRefresh) {
             notificationAfterNextRefresh = false;
             // Show notification 500ms later, to also aggregate new devices for the message
             DataQueryFinishedMessageRunnable.show(afterDataQueryFinishedHandler);
         }
-
-        TimerCollection.checkAndExecuteAlarm();
-
         return true;
     }
 
     @Override
     public boolean onDataLoaded() {
-        for (PluginInterface pluginInterface : plugins)
-            updatePluginReferencesInDevices(pluginInterface, false);
+        for (AbstractBasePlugin abstractBasePlugin : plugins)
+            updatePluginReferencesInDevices(abstractBasePlugin, false);
 
         observersPluginsReady.register(new onPluginsReady() {
             @Override
-            public boolean onPluginsReady() {
-                observersServiceReady.onServiceReady(PluginService.this);
-                AppData.getInstance().refreshDeviceData(false);
+            public boolean onPluginsReady(PluginService pluginService) {
+                observersServiceReady.onServiceReady(pluginService);
+                appData.refreshDeviceData(pluginService, false);
                 return false;
             }
         });
 
         return false;
+    }
+
+    public AppData getAppData() {
+        return appData;
     }
 }

@@ -19,9 +19,11 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.executables.AdapterSource;
+import oly.netpowerctrl.executables.AdapterSourceInputOneDevicePorts;
 import oly.netpowerctrl.executables.ExecutablesListAdapter;
-import oly.netpowerctrl.executables.ExecutablesSourceOneDevicePorts;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
 /**
@@ -29,7 +31,7 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
  */
 public class DeviceItemsDialog extends DialogFragment implements RecyclerItemClickListener.OnItemClickListener {
     RecyclerItemClickListener onItemClickListener;
-    ExecutablesSourceOneDevicePorts executablesSourceBase;
+    AdapterSource adapterSource;
     ExecutablesListAdapter adapter;
     private Device device;
 
@@ -48,10 +50,11 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle bundle = getArguments();
+        final AppData appData = PluginService.getService().getAppData();
         if (bundle != null)
-            device = AppData.getInstance().findDevice(bundle.getString("device"));
+            device = appData.findDevice(bundle.getString("device"));
         if (device == null && savedInstanceState != null)
-            device = AppData.getInstance().findDevice(savedInstanceState.getString("device"));
+            device = appData.findDevice(savedInstanceState.getString("device"));
 
         if (device != null) {
             @SuppressLint("InflateParams")
@@ -64,10 +67,12 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
             onItemClickListener = new RecyclerItemClickListener(getActivity(), this, null);
             mRecyclerView.addOnItemTouchListener(onItemClickListener);
             // Adapter (Checkable list) and Adapter Source (DevicePorts of one Device)
-            executablesSourceBase = new ExecutablesSourceOneDevicePorts(null, device);
-            adapter = new ExecutablesListAdapter(true, executablesSourceBase, LoadStoreIconData.iconLoadingThread, false);
-            executablesSourceBase.fullUpdate(adapter);
-            adapter.setChecked(executablesSourceBase.shownDevicePorts());
+            AdapterSourceInputOneDevicePorts inputOneDevicePorts = new AdapterSourceInputOneDevicePorts(device);
+            adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.NoAutoStart);
+            adapterSource.add(inputOneDevicePorts);
+            adapter = new ExecutablesListAdapter(true, adapterSource, LoadStoreIconData.iconLoadingThread, false);
+            adapterSource.updateNow();
+            adapter.setChecked(inputOneDevicePorts.shownDevicePorts());
             mRecyclerView.setAdapter(adapter);
 
             AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
@@ -79,7 +84,7 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
                         DevicePort devicePort = (DevicePort) adapter.getItem(c).executable;
                         devicePort.setHidden(!checked[c]);
                     }
-                    AppData.getInstance().deviceCollection.save(device);
+                    appData.deviceCollection.save(device);
                     dismiss();
                 }
             }).setTitle(R.string.device_shown_actions).setView(rootView).create();

@@ -1,5 +1,6 @@
 package oly.netpowerctrl.devices;
 
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.device_base.device.Device;
@@ -9,6 +10,10 @@ import oly.netpowerctrl.device_base.device.Device;
  */
 public class UnconfiguredDeviceCollection extends CollectionWithStorableItems<UnconfiguredDeviceCollection, Device> {
     private static final String TAG = "UnconfiguredDeviceCollection";
+
+    public UnconfiguredDeviceCollection(AppData appData) {
+        super(appData);
+    }
 
 
     /**

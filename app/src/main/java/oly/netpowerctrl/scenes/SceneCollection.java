@@ -44,9 +44,14 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
         }
     };
 
+    public SceneCollection(AppData appData) {
+        super(appData);
+        appData.deviceCollection.registerObserver(deviceObserver);
+    }
+
     @SuppressWarnings("unused")
-    public static SceneCollection fromScenes(List<Scene> scenes, onStorageUpdate storage) {
-        SceneCollection dc = new SceneCollection();
+    public static SceneCollection fromScenes(AppData appData, List<Scene> scenes, onStorageUpdate storage) {
+        SceneCollection dc = new SceneCollection(appData);
         dc.storage = storage;
         dc.items = scenes;
         if (dc.items == null)
@@ -100,7 +105,7 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
             }
 
         // Get status of master
-        DevicePort devicePort = AppData.getInstance().findDevicePort(scene.getMasterUUid());
+        DevicePort devicePort = appData.findDevicePort(scene.getMasterUUid());
         if (devicePort != null)
             updateSceneValue(scene, devicePort);
 

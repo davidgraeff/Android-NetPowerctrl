@@ -11,7 +11,6 @@ import java.io.StringReader;
 import java.net.URLEncoder;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
@@ -68,7 +67,7 @@ public class AnelHttpReceiveSend {
 
                 }
             }
-            AppData.getInstance().updateExistingDeviceFromOtherThread(device);
+            PluginService.getService().getAppData().updateExistingDeviceFromOtherThread(device);
         }
     };
 
@@ -83,7 +82,7 @@ public class AnelHttpReceiveSend {
                     device.connectionUsed(ci);
                     if (!callback_success) {
                         ci.device.setStatusMessage(ci, response_message, true);
-                        AppData.getInstance().updateExistingDeviceFromOtherThread(device);
+                        PluginService.getService().getAppData().updateExistingDeviceFromOtherThread(device);
                     } else
                         HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
                 }

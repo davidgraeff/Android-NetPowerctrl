@@ -346,16 +346,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         return prefs.getBoolean(PREF_fullscreen, value);
     }
 
-    public int getOpenIssues() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getInt("open_issues", -1);
-    }
-
-    public int getOpenAutoIssues() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getInt("open_auto_issues", -1);
-    }
-
     public long getLastTimeOpenIssuesRequested() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getLong("open_issues_last_access", -1);
@@ -384,14 +374,14 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
         prefs.edit().putString("backup_password", password).apply();
     }
 
-    public void setOpenIssues(int value, long last_access) {
+    public void setOpenIssues(long last_access) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("open_issues", value).putLong("open_issues_last_access", last_access).apply();
+        prefs.edit().putLong("open_issues_last_access", last_access).apply();
     }
 
-    public void setOpenAutoIssues(int value, long last_access) {
+    public void setOpenAutoIssues(long last_access) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("open_auto_issues", value).putLong("open_auto_issues_last_access", last_access).apply();
+        prefs.edit().putLong("open_auto_issues_last_access", last_access).apply();
     }
 
     public void registerHideNotReachable(IHideNotReachable observer) {

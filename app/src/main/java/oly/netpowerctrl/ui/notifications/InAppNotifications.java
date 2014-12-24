@@ -79,9 +79,12 @@ public class InAppNotifications {
             App.setErrorReportContentCrash();
     }
 
-    public static void silentException(Throwable exception) {
-        if (App.useErrorReporter)
-            ACRA.getErrorReporter().handleSilentException(exception);
+    public static void silentException(Throwable exception, String additionalData) {
+        if (!App.useErrorReporter) return;
+
+        if (additionalData != null)
+            ACRA.getErrorReporter().putCustomData("data", additionalData);
+        ACRA.getErrorReporter().handleSilentException(exception);
     }
 
     public static void updatePermanentNotification(@NonNull Activity activity, @NonNull PermanentNotification newPermanentNotification) {

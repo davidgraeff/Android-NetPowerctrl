@@ -3,12 +3,17 @@ package oly.netpowerctrl.groups;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 
 public class GroupCollection extends CollectionWithStorableItems<GroupCollection, Group> {
     static long nextStableID = 0;
     private final Group groupIndexOfHelper = new Group(null, null);
+
+    public GroupCollection(AppData appData) {
+        super(appData);
+    }
 
     /**
      * Add a group with the given name. If a group with this name already exist,
@@ -115,5 +120,9 @@ public class GroupCollection extends CollectionWithStorableItems<GroupCollection
     @Override
     public String type() {
         return "groups";
+    }
+
+    public void executableToGroupAdded() {
+        notifyObservers(null, ObserverUpdateActions.ClearAndNewAction, -1);
     }
 }

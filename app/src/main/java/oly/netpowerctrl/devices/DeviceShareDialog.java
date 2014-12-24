@@ -15,6 +15,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Share a device to network dialog. This will be shown if a user clicks on a configured device
@@ -38,14 +39,15 @@ public class DeviceShareDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle bundle = getArguments();
+        AppData appData = PluginService.getService().getAppData();
         if (bundle != null)
-            device = AppData.getInstance().findDevice(bundle.getString("device"));
+            device = appData.findDevice(bundle.getString("device"));
         if (device == null && savedInstanceState != null)
-            device = AppData.getInstance().findDevice(savedInstanceState.getString("device"));
+            device = appData.findDevice(savedInstanceState.getString("device"));
 
         if (device != null) {
             @SuppressLint("InflateParams")
-            final View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_edit_connection_http, null);
+            final View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_share_network, null);
             AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
             return b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override

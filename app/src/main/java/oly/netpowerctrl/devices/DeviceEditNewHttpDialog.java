@@ -145,7 +145,9 @@ public class DeviceEditNewHttpDialog extends DialogFragment {
 
                 if (success) {
                     if (closeIfReachable) {
+                        device.lockDevice();
                         device.addConnection(newDeviceConnection);
+                        device.releaseDevice();
                         dismiss();
                     } else {
                         connectionStateImage.setImageResource(android.R.drawable.presence_online);

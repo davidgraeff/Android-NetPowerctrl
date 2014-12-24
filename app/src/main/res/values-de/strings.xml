@@ -319,12 +319,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
     </string>
     <string name="open_google_market">Google Play</string>
-    <string name="feedback_add_title">Überschrift</string>
-    <string name="feedback_add_text">Wunsch, Verbesserungsvorschlag oder Anregung</string>
     <string name="app_name_disclaimer">Dies ist eine quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
-    <string name="feedback_contact_me">Kontaktiere mich um Probleme mit der App oder Fragen schnell zu klären. Möchtest du ein allgemein einsehbares Feedback hinterlassen, benutze bitte Google Play.</string>
-    <string name="feedback_add_description">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger. Ihr Feedback ist dann ausdrücklich erwünscht, damit die normale Version möglichst stabil erscheinen kann.</string>
-    <string name="feedback_btn_add">Anregung hinzufügen</string>
+    <string name="feedback_contact">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger und Ihr Feedback ist ausdrücklich erwünscht. Bewerten Sie die App auf Google Play um ein Feedback zu hinerlassen.</string>
     <string name="drawer_change_view_type">Ansichtsmodus</string>
     <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
     <string name="outlets_view_type_list">Als Liste</string>
@@ -375,6 +371,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_timer_device_weekdays">Gerätealarm: Wiederholend</string>
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
     <string name="log_file_size">Logdatei Größe: %1$f kb</string>
-    <string name="outlets_edit_hint">Nach oben ziehen zum Bearbeiten</string>
+    <string name="outlets_edit_hint">Bearbeitunsgmodus</string>
     <string name="scene_options_title">Optionen</string>
+    <string name="alarm_received">Sychnonisierung abgeschlossen</string>
+    <string name="groups_all">Alles zeigen</string>
 </resources>

@@ -10,6 +10,8 @@ import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 
+import oly.netpowerctrl.ui.widgets.RelativeLayoutRipple;
+
 public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
     private static final int SWIPE_MIN_DISTANCE = 160;
     private static final int SWIPE_THRESHOLD_VELOCITY = 200;
@@ -40,6 +42,11 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                 if (mListenerClick != null) {
                     // Get element of the RecyclerView that was clicked
                     View childView = view.findChildViewUnder(e.getX(), e.getY());
+
+                    if (childView instanceof RelativeLayoutRipple) {
+                        RelativeLayoutRipple r = (RelativeLayoutRipple) childView;
+                        r.afterClickTouchEvent();
+                    }
 
                     if (childView == null) return false;
                     if (childView instanceof ViewGroup) {

@@ -21,14 +21,17 @@ import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onPluginsReady;
-import oly.netpowerctrl.scenes.EditSceneActivity;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.Scene;
 
 /**
  * Will be started on NFC contact, homescreen scene execution, alarm timeout
  */
 public class ExecutionActivity extends NfcReaderActivity implements onExecutionFinished {
-    private String scene_uuid;
+    public static final String EXECUTE_ACTION_UUID = "action_uuid";
+    public static final String EXECUTE_ACTION_COMMAND = "action_command";
+    public static final String EXECUTE_SCENE_JSON = "scene";
+    private String destination_uuid;
 
     @Override
     protected void onNfcFeatureNotFound() {
@@ -69,9 +72,8 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
             return;
         }
 
-        if (!extra.containsKey(EditSceneActivity.RESULT_ACTION_UUID) &&
-                !extra.containsKey(EditSceneActivity.RESULT_SCENE_JSON) &&
-                !extra.containsKey(EditSceneActivity.RESULT_SCENE_UUID) && scene_uuid == null) {
+        if (!extra.containsKey(EXECUTE_ACTION_UUID) &&
+                !extra.containsKey(EXECUTE_SCENE_JSON) && destination_uuid == null) {
             finish();
             return;
         }
@@ -80,35 +82,44 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
         boolean enable_feedback = extra.getBoolean("enable_feedback", true);
 
         // wait for first data to be loaded
-        AppData.observersDataQueryCompleted.resetDataQueryCompleted();
+        AppData.observersDataQueryCompleted.reset();
         AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
 
             @Override
-            public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
-                final int action_command = extra.getInt(EditSceneActivity.RESULT_ACTION_COMMAND);
+            public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+                final int action_command = extra.getInt(EXECUTE_ACTION_COMMAND);
 
                 // Read data from intent
-                String action_uuid = extra.getString(EditSceneActivity.RESULT_ACTION_UUID);
-                String scene_json = extra.getString(EditSceneActivity.RESULT_SCENE_JSON);
-                scene_uuid = extra.getString(EditSceneActivity.RESULT_SCENE_UUID, scene_uuid);
-
+                destination_uuid = extra.getString(EXECUTE_ACTION_UUID, destination_uuid);
+                String scene_json = extra.getString(EXECUTE_SCENE_JSON);
                 if (scene_json != null) {
                     try {
-                        AppData.getInstance().execute(Scene.loadFromJson(JSONHelper.getReader(scene_json)), ExecutionActivity.this);
+                        appData.execute(Scene.loadFromJson(JSONHelper.getReader(scene_json)), ExecutionActivity.this);
                     } catch (IOException | ClassNotFoundException ignored) {
                     }
                 } else
-                    executeSingleAction(action_uuid, action_command);
+                    executeSingleAction(appData, destination_uuid, action_command);
 
                 return false;
             }
         });
 
-        PluginService.observersPluginsReady.register(new onPluginsReady() {
+        PluginService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onPluginsReady() {
-                AppData.getInstance().refreshDeviceData(true);
+            public boolean onServiceReady(PluginService service) {
+                service.observersPluginsReady.register(new onPluginsReady() {
+                    @Override
+                    public boolean onPluginsReady(PluginService pluginService) {
+                        pluginService.getAppData().refreshDeviceData(pluginService, true);
+                        return false;
+                    }
+                });
                 return false;
+            }
+
+            @Override
+            public void onServiceFinished(PluginService service) {
+
             }
         });
 
@@ -124,17 +135,17 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
 
     }
 
-    void executeSingleAction(String executable_uid, final int command) {
-        final Executable executable = AppData.getInstance().findExecutable(executable_uid);
+    void executeSingleAction(AppData appData, String executable_uid, final int command) {
+        final Executable executable = appData.findExecutable(executable_uid);
         if (executable == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
         if (executable instanceof DevicePort)
-            AppData.getInstance().execute((DevicePort) executable, command, ExecutionActivity.this);
+            appData.execute((DevicePort) executable, command, ExecutionActivity.this);
         else if (executable instanceof Scene) {
-            AppData.getInstance().execute((Scene) executable, ExecutionActivity.this);
+            appData.execute((Scene) executable, ExecutionActivity.this);
         }
     }
 
@@ -151,7 +162,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
                 MimeRecord mimeRecord = (MimeRecord) record;
                 if (mimeRecord.getMimeType() != null && mimeRecord.getMimeType().equals("application/oly.netpowerctrl")) {
                     try {
-                        scene_uuid = new String(mimeRecord.getData(), "ASCII");
+                        destination_uuid = new String(mimeRecord.getData(), "ASCII");
                     } catch (UnsupportedEncodingException ignored) {
                     }
                 }

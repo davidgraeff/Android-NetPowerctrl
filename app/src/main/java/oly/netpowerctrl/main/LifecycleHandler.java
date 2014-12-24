@@ -7,7 +7,6 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.pluginservice.PluginService;
@@ -52,7 +51,6 @@ public class LifecycleHandler implements Application.ActivityLifecycleCallbacks 
     public void onActivityStarted(Activity activity) {
         if (started == 0) {
             PluginService.useService(new WeakReference<Object>(activity));
-            AppData.useAppData();
         }
         ++started;
     }

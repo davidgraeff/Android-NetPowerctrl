@@ -16,6 +16,10 @@ import oly.netpowerctrl.device_base.data.StorableInterface;
  * List of scenes
  */
 public class FavCollection extends CollectionWithStorableItems<FavCollection, FavCollection.FavItem> {
+    public FavCollection(AppData appData) {
+        super(appData);
+    }
+
     public int length() {
         return items.size();
     }

@@ -3,12 +3,9 @@ package oly.netpowerctrl.tests;
 import android.test.AndroidTestCase;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.LoadStoreJSonData;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
 
@@ -25,18 +22,6 @@ public class ServiceTests extends AndroidTestCase {
     }
 
     public void testServiceInit() throws Exception {
-        AppData c = AppData.getInstance();
-        c.useAppData(new TestObjects.LoadStoreJSonDataTest());
-        assertNotNull(c);
-
-        // Test if load store is set up.
-        Field privateStringField = AppData.class.
-                getDeclaredField("loadStoreData");
-        privateStringField.setAccessible(true);
-        LoadStoreJSonData l = (LoadStoreJSonData) privateStringField.get(c);
-        assertNotNull(l);
-        assertEquals(l instanceof TestObjects.LoadStoreJSonDataTest, true);
-
         assertNull(PluginService.getService());
         PluginService.useService(new WeakReference<Object>(this));
 
@@ -49,7 +34,7 @@ public class ServiceTests extends AndroidTestCase {
             }
 
             @Override
-            public void onServiceFinished() {
+            public void onServiceFinished(PluginService service) {
             }
         });
 
@@ -69,7 +54,7 @@ public class ServiceTests extends AndroidTestCase {
             }
 
             @Override
-            public void onServiceFinished() {
+            public void onServiceFinished(PluginService service) {
                 shutDownSignal.countDown();
             }
         });

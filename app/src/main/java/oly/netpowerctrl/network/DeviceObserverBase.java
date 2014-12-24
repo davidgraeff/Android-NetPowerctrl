@@ -2,21 +2,19 @@ package oly.netpowerctrl.network;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
+import android.os.Looper;
+import android.os.Message;
+import android.support.annotation.Nullable;
 
-import java.lang.ref.WeakReference;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
-import oly.netpowerctrl.device_base.device.DeviceConnection;
-import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * This base class is used by the device query and device-resend-command class.
@@ -24,45 +22,110 @@ import oly.netpowerctrl.pluginservice.PluginService;
  * provide the result of a query/a sending action to the DeviceQueryResult object.
  */
 public abstract class DeviceObserverBase {
-    protected final Handler mainLoopHandler;
+    private static final int MSG_REPEAT = 1;
+    private static Queue<DeviceObserverBase> globalQueue = new ConcurrentLinkedQueue<>();
     protected final Context context;
-    protected final AtomicInteger countWait = new AtomicInteger();
-    final Runnable timeoutRunnable = new Runnable() {
-        @Override
-        public void run() {
-            finishWithTimeouts();
-        }
-    };
-    final Runnable redoRunnable = new Runnable() {
-        @Override
-        public void run() {
-            retryRemainingDevices();
-        }
-    };
-    private final List<Device> devices_to_observe = new ArrayList<>();
-    private final List<Device> timeout_devices = new ArrayList<>();
+    protected final List<Device> devices_to_observe = new ArrayList<>();
+    protected final List<Device> timeout_devices = new ArrayList<>();
+    private final int repeatTimeout;
     protected boolean broadcast = false;
-    private boolean timeoutRepeat = false;
-    private onDeviceObserverResult target;
+    protected onDeviceObserverResult target;
+    private int repeatCountDown;
+    protected final Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_REPEAT: {
+                    if (repeatCountDown >= 0)
+                        repeat();
+                    else
+                        finishWithTimeouts();
+                    --repeatCountDown;
+                }
+            }
+        }
+    };
+    private AppData appData;
 
-    DeviceObserverBase(Context context, onDeviceObserverResult target) {
+    DeviceObserverBase(Context context, onDeviceObserverResult target, int repeatTimeout, int repeatCount) {
         this.context = context;
-        mainLoopHandler = new Handler(context.getMainLooper());
+        this.repeatTimeout = repeatTimeout;
+        this.repeatCountDown = repeatCount;
         setDeviceQueryResult(target);
     }
 
-    private void retryRemainingDevices() {
-        List<Device> deviceList = new ArrayList<>(devices_to_observe);
-        for (Device device : deviceList) {
-            doAction(device, true);
+
+    /**
+     * Notify observers who are using the DeviceQuery class
+     *
+     * @param source Source device that has been updated
+     */
+    public static void notifyOfUpdatedDevice(Device source) {
+        Iterator<DeviceObserverBase> it = globalQueue.iterator();
+        while (it.hasNext()) {
+            // Return true if the DeviceQuery object has finished its task.
+            DeviceObserverBase deviceObserverBase = it.next();
+            if (deviceObserverBase.notifyObservers(source)) {
+                it.remove();
+                deviceObserverBase.finishWithTimeouts();
+            }
         }
+    }
+
+    public static void finishAll() {
+        Iterator<DeviceObserverBase> it = globalQueue.iterator();
+        while (it.hasNext()) {
+            DeviceObserverBase deviceObserverBase = it.next();
+            it.remove();
+            deviceObserverBase.finishWithTimeouts();
+        }
+    }
+
+    /**
+     * Start a query by adding this object to the device updated observer list and calling
+     * doAction for every added device.
+     */
+    public void startQuery() {
+        if ((isEmpty() && !broadcast)) {
+            if (target != null)
+                target.onObserverJobFinished(timeout_devices);
+            return;
+        }
+        globalQueue.add(this);
+        handler.sendEmptyMessage(MSG_REPEAT);
+    }
+
+    /**
+     * Basic implementation. Just call doAction for every added device.
+     */
+    protected void repeat() {
+        if (broadcast) {
+            doAction(null, repeatCountDown);
+            return;
+        } else {
+            List<Device> deviceList = new ArrayList<>(devices_to_observe);
+            for (Device device : deviceList) {
+                doAction(device, repeatCountDown);
+            }
+        }
+        handler.sendEmptyMessageDelayed(MSG_REPEAT, repeatTimeout);
     }
 
     public void setDeviceQueryResult(onDeviceObserverResult target) {
         this.target = target;
     }
 
-    protected abstract void doAction(Device device, boolean repeated);
+    /**
+     * Will be called after startQuery. If broadcast flag is set, the device parameter will be null.
+     * You may reset the broadcast flag while in doAction.
+     * If no broadcast is set, doAction will be called for every added device.
+     * After a given timeout without a device response, doAction will be called again.
+     *
+     * @param device           The device, that is still in devices_to_observe (no response so far) or null
+     *                         if broadcast flag is set.
+     * @param remainingRepeats Amount of repeats remaining.
+     */
+    protected abstract void doAction(@Nullable Device device, int remainingRepeats);
 
     /**
      * Return true if all devices responded and this DeviceQuery object
@@ -70,7 +133,7 @@ public abstract class DeviceObserverBase {
      *
      * @param device The DeviceInfo object all observes should be notified of.
      */
-    public boolean notifyObservers(Device device) {
+    private boolean notifyObservers(Device device) {
         if (device.getUniqueDeviceID() == null)
             throw new RuntimeException("Fresh device without unique id not allowed!");
 
@@ -113,21 +176,6 @@ public abstract class DeviceObserverBase {
         }
     }
 
-    public boolean notifyObservers(String device_name) {
-        Iterator<Device> it = devices_to_observe.iterator();
-        while (it.hasNext()) {
-            Device device = it.next();
-            boolean eq = device_name.equals(device.getDeviceName());
-            if (eq) {
-                it.remove();
-                if (target != null)
-                    target.onObserverDeviceUpdated(device);
-                break;
-            }
-        }
-        return devices_to_observe.isEmpty();
-    }
-
     public void clearDevicesToObserve() {
         devices_to_observe.clear();
         timeout_devices.clear();
@@ -137,49 +185,14 @@ public abstract class DeviceObserverBase {
         return devices_to_observe.isEmpty();
     }
 
-    public void startQuery() {
-        PluginService service = PluginService.getService();
-        if ((isEmpty() && !broadcast) || service == null) {
-            if (target != null)
-                target.onObserverJobFinished(timeout_devices);
-            return;
-        }
 
-        // Register on main application object to receive device updates
-        AppData.getInstance().addUpdateDeviceState(this);
-
-        // We do not repeat the broadcast as often as individual requests
-        if (!broadcast) {
-            mainLoopHandler.postDelayed(redoRunnable, 300);
-            mainLoopHandler.postDelayed(redoRunnable, 1200);
-        }
-        mainLoopHandler.postDelayed(redoRunnable, 600);
-        mainLoopHandler.postDelayed(timeoutRunnable, 1500);
-
-        if (broadcast) {
-            service.wakeupAllDevices();
-            service.requestDataAll();
-        } else {
-            // Send out broadcast
-            List<Device> deviceList = new ArrayList<>(devices_to_observe);
-            for (Device device : deviceList) {
-                service.wakeupPlugin(device);
-                doAction(device, true);
-            }
-        }
-
-        // one time only, flag reset
-        broadcast = false;
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    public int addDevice(final Device device, boolean resetTimeout) {
-
+    public boolean addDevice(AppData appData, final Device device) {
+        this.appData = appData;
         if (!device.isEnabled()) {
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_disabled));
             timeout_devices.add(device);
-            AppData.getInstance().updateExistingDevice(device);
-            return countWait.get();
+            appData.updateExistingDevice(device, false);
+            return false;
         }
 
         // We explicitly allow devices without connections (udp/http). Those connections
@@ -191,47 +204,12 @@ public abstract class DeviceObserverBase {
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_incomplete));
             device.releaseDevice();
             timeout_devices.add(device);
-            AppData.getInstance().updateExistingDevice(device);
-            return countWait.get();
+            appData.updateExistingDevice(device, false);
+            return false;
         }
 
-        // If the device has connections we have to check now for hostname->ip resolving.
-        // This can only be done in another thread.
-        boolean needResolve = false;
-        device.lockDevice();
-        for (final DeviceConnection connection : device.getDeviceConnections()) {
-            if (connection.needResolveName()) {
-                resetTimeout = true; // we need more time
-                needResolve = true;
-                break;
-            }
-        }
-        device.releaseDevice();
-
-        if (resetTimeout) {
-            repeatTimeout(1500);
-        }
-
-        if (!needResolve) {
-            devices_to_observe.add(device);
-            return countWait.get();
-        } else {
-            timeoutRepeat = true;
-            new Thread(new ResolveHostnameRunnable(device, this)).start();
-            return countWait.incrementAndGet();
-        }
-    }
-
-    private void finishedLookup(Device device) {
         devices_to_observe.add(device);
-        if (countWait.decrementAndGet() == 0) {
-            startQuery();
-        }
-    }
-
-    private void repeatTimeout(int time_in_ms) {
-        mainLoopHandler.removeCallbacks(timeoutRunnable);
-        mainLoopHandler.postDelayed(timeoutRunnable, time_in_ms);
+        return true;
     }
 
     /**
@@ -240,75 +218,26 @@ public abstract class DeviceObserverBase {
      * remaining device queries of this object have to timeout now.
      */
     public void finishWithTimeouts() {
-        mainLoopHandler.removeCallbacks(timeoutRunnable);
-        mainLoopHandler.removeCallbacks(redoRunnable);
-
-        // Remove update listener manually to be sure. Normally this is done by the notify.. method caller by
-        // returning false if all devices responded. We have to remove the listener before calling
-        // onObserverJobFinished to not get into an endless loop!
-        AppData.getInstance().removeUpdateDeviceState(DeviceObserverBase.this);
-
-        // Wait for all ResolveHostnameRunnable threads, max 200ms (we already waited 1,5sec longer)
-        if (countWait.get() != 0) {
-            if (timeoutRepeat) {
-                timeoutRepeat = false;
-                repeatTimeout(200);
-                return;
-            } else {
-                Log.w("finishWithTimeouts", "DNS resolve to long: " + String.valueOf(countWait.get()));
+        handler.removeMessages(MSG_REPEAT);
+        Iterator<DeviceObserverBase> it = globalQueue.iterator();
+        while (it.hasNext()) {
+            DeviceObserverBase deviceObserverBase = it.next();
+            if (deviceObserverBase == this) {
+                it.remove();
+                break;
             }
         }
 
-        // We have to work with a copy of devices_to_observe here, because ResolveHostnameRunnable may
-        // return while we are in this list!
-        List<Device> deviceList = new ArrayList<>(devices_to_observe);
-        for (Device device : deviceList) {
-            if (device.getFirstReachableConnection() != null)
+        for (Device device : devices_to_observe) {
+            if (device.getFirstReachableConnection() == null)
                 device.setStatusMessageAllConnections(context.getString(R.string.error_timeout_device, ""));
             // Call onConfiguredDeviceUpdated to update device info.
-            AppData.getInstance().updateExistingDevice(device);
+            appData.updateExistingDevice(device, false);
             timeout_devices.add(device);
         }
         devices_to_observe.clear();
 
         if (target != null)
             target.onObserverJobFinished(timeout_devices);
-    }
-
-    private static class ResolveHostnameRunnable implements Runnable {
-        private final Device device;
-        private final WeakReference<DeviceObserverBase> deviceObserverBaseWeakReference;
-
-        public ResolveHostnameRunnable(Device device, DeviceObserverBase deviceObserverBase) {
-            this.device = device;
-            this.deviceObserverBaseWeakReference = new WeakReference<>(deviceObserverBase);
-        }
-
-        @Override
-        public void run() {
-            device.lockDevice();
-            List<DeviceConnection> connections = new ArrayList<>(device.getDeviceConnections());
-            device.releaseDevice();
-            for (final DeviceConnection connection : connections) {
-                if (connection.needResolveName()) {
-                    try {
-                        connection.lookupIPs();
-                    } catch (UnknownHostException e) {
-                        connection.device.setStatusMessage(connection, e.getLocalizedMessage(), true);
-                    }
-                }
-            }
-
-            final DeviceObserverBase deviceObserverBase = deviceObserverBaseWeakReference.get();
-            if (deviceObserverBase == null)
-                return;
-
-            App.getMainThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    deviceObserverBase.finishedLookup(device);
-                }
-            });
-        }
     }
 }

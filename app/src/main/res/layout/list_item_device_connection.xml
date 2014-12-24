@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<oly.netpowerctrl.ui.widgets.RelativeLayoutRipple xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="@dimen/list_outer_padding"
@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:padding="5dp">
 
-<ImageView
+    <ImageView
         android:id="@+id/device_connection_reachable"
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -34,4 +34,4 @@
         android:layout_toEndOf="@id/device_connection_reachable"
         android:layout_toRightOf="@id/device_connection_reachable"
         android:textAppearance="?android:attr/textAppearanceSmall" />
-</RelativeLayout>
+</oly.netpowerctrl.ui.widgets.RelativeLayoutRipple>

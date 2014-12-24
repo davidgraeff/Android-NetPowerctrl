@@ -65,7 +65,6 @@ public class LoadStoreJSonData implements onStorageUpdate {
      *                reloaded data. This should invalidate all caches (icons etc).
      */
     public void loadData(final AppData appData) {
-        final int lastPrefVersion = SharedPrefs.getInstance().getLastPreferenceVersion();
         appData.deviceCollection.setStorage(this);
         appData.sceneCollection.setStorage(this);
         appData.groupCollection.setStorage(this);
@@ -90,15 +89,12 @@ public class LoadStoreJSonData implements onStorageUpdate {
             @Override
             protected void onPostExecute(Boolean success) {
                 SharedPrefs.getInstance().setCurrentPreferenceVersion();
-
-                AppData.observersOnDataLoaded.dataLoaded = true;
-                AppData.observersOnDataLoaded.onDataLoaded();
+                AppData.setDataLoadingCompleted();
             }
         }.execute();
     }
 
-    public void finish() {
-        AppData appData = AppData.getInstance();
+    public void finish(AppData appData) {
         appData.deviceCollection.setStorage(null);
         appData.sceneCollection.setStorage(null);
         appData.groupCollection.setStorage(null);
@@ -120,7 +116,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
             ITEM item = classType.newInstance();
             try {
                 item.load(new FileInputStream(file));
-                collection.getItems().add(item);
+                collection.addWithourSave(item);
             } catch (IOException e) {
                 e.printStackTrace();
                 failedToRead(e, file, item);
@@ -134,7 +130,14 @@ public class LoadStoreJSonData implements onStorageUpdate {
     }
 
     private <ITEM> void failedToRead(Exception e, File file, ITEM item) {
-        InAppNotifications.silentException(e);
+        try {
+            byte fileContent[] = new byte[(int) file.length()];
+            new FileInputStream(file).read(fileContent);
+            InAppNotifications.silentException(e, new String(fileContent));
+        } catch (IOException ignored) {
+            InAppNotifications.silentException(e, null);
+        }
+
         InAppNotifications.FromOtherThread(App.instance, "Failed to read " + item.getClass().getSimpleName());
         if (!file.delete())
             Log.e("readOtherThreadCollection", "Failed to delete " + file.getAbsolutePath());

@@ -31,19 +31,18 @@ import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
-import oly.netpowerctrl.scenes.EditSceneActivity;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.Logging;
@@ -52,7 +51,7 @@ import oly.netpowerctrl.utils.Logging;
  * Widget Update Service
  */
 public class WidgetUpdateService extends Service implements onDeviceObserverResult,
-        onCollectionUpdated, onServiceReady, onDataLoaded {
+        onCollectionUpdated, onServiceReady {
     public static final int UPDATE_WIDGET = 0;
     public static final int DELETE_WIDGET = 1;
     public static final int CLICK_WIDGET = 2;
@@ -65,6 +64,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     private boolean initDone = false;
     private String stopReason = "";
     private Bitmap image_broken;
+    private PluginService service;
 
     static public void ForceUpdate(Context ctx, int widgetId) {
         Intent updateWidget = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE, null,
@@ -102,7 +102,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     @Override
     public void onDestroy() {
         if (PluginService.isServiceReady() && allWidgets.size() > 0 && !stopReason.isEmpty())
-            InAppNotifications.silentException(new Exception("WidgetService: Unexpected request to close: " + stopReason));
+            InAppNotifications.silentException(new Exception("WidgetService: Unexpected request to close: " + stopReason), null);
 
         Logging.getInstance().logWidgets("Service close");
 
@@ -111,8 +111,10 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
          * system ends service) unregister from the listener service and from the shared preferences
          * changed signal.
          */
-        AppData.getInstance().deviceCollection.unregisterObserver(this);
-        AppData.getInstance().sceneCollection.unregisterObserver(this);
+        if (PluginService.isServiceReady()) {
+            service.getAppData().deviceCollection.unregisterObserver(this);
+            service.getAppData().sceneCollection.unregisterObserver(this);
+        }
         PluginService.observersServiceReady.unregister(this);
         PluginService.stopUseService(this);
     }
@@ -134,8 +136,8 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
                     allWidgets.remove(updateWidgetIDs[updateWidgetIndex]);
                 return finishServiceIfDone();
             } else if (command == CLICK_WIDGET) {
-                widgetClicks.add(new WidgetClick(intent.getStringExtra(EditSceneActivity.RESULT_ACTION_UUID),
-                        intent.getIntExtra(EditSceneActivity.RESULT_ACTION_COMMAND, -1)));
+                widgetClicks.add(new WidgetClick(intent.getStringExtra(ExecutionActivity.EXECUTE_ACTION_UUID),
+                        intent.getIntExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, -1)));
             }
         }
 
@@ -155,29 +157,19 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         if (!initDone) {
-            Logging.getInstance().logWidgets("Service start");
-            initDone = true;
-            AppData.useAppData();
             PluginService.useService(new WeakReference<Object>(this));
             PluginService.observersServiceReady.register(this);
-        } else
-            preCheckUpdate();
+        }
 
         return START_STICKY;
     }
 
-    private void preCheckUpdate() {
+    private void preCheckUpdate(AppData appData) {
         if (!PluginService.isServiceReady())
             return;
 
-        if (!AppData.isDataLoaded()) {
-            AppData.observersOnDataLoaded.register(this);
-            return;
-        }
-
         // Filter: Only those widgets ids with linked preferences are valid
         if (updateWidgetIDs != null) {
-            AppData appData = AppData.getInstance();
             for (int appWidgetId : updateWidgetIDs) {
                 String executable_uid = SharedPrefs.getInstance().LoadWidget(appWidgetId);
                 Executable executable = null;
@@ -221,7 +213,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         if (widgetClicks.size() > 0) {
             Logging.getInstance().logWidgets("Handle Clicks");
             for (WidgetClick widgetClick : widgetClicks)
-                executeSingleAction(widgetClick.uuid);
+                executeSingleAction(appData, widgetClick.uuid);
             widgetClicks.clear();
         } else
             updateDevices();
@@ -250,10 +242,10 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         return null;
     }
 
-    private void executeSingleAction(String executable_uid) {
-        Executable executable = AppData.getInstance().findDevicePort(executable_uid);
+    private void executeSingleAction(AppData appData, String executable_uid) {
+        Executable executable = appData.findDevicePort(executable_uid);
         if (executable == null) {
-            executable = AppData.getInstance().sceneCollection.findScene(executable_uid);
+            executable = appData.sceneCollection.findScene(executable_uid);
         }
         if (executable == null) {
             Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
@@ -272,13 +264,13 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
             if (!executable.isReachable()) {
                 PluginService.getService().showNotificationForNextRefresh(true);
-                AppData.getInstance().refreshDeviceData(false);
+                appData.refreshDeviceData(service, false);
                 return;
             }
         }
 
         final long currentTime = System.currentTimeMillis();
-        AppData.getInstance().executeToggle(executable, new onExecutionFinished() {
+        appData.executeToggle(executable, new onExecutionFinished() {
             @Override
             public void onExecutionProgress(int success, int errors, int all) {
                 // Fail safe: If no response from the device, we set the widget to broken state
@@ -308,8 +300,8 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         Intent clickIntent = new Intent(this, WidgetUpdateService.class);
-        clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_UUID, executable.getUid());
-        clickIntent.putExtra(EditSceneActivity.RESULT_ACTION_COMMAND, DevicePort.TOGGLE);
+        clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_UUID, executable.getUid());
+        clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, DevicePort.TOGGLE);
         clickIntent.putExtra(DeviceWidgetProvider.EXTRA_WIDGET_COMMAND, CLICK_WIDGET);
         PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), clickIntent, 0);
 
@@ -372,26 +364,30 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
     @Override
     public void onObserverDeviceUpdated(Device device) {
-        updated(null, device, ObserverUpdateActions.UpdateAction, -1);
+        updated(service.getAppData().deviceCollection, device, ObserverUpdateActions.UpdateAction, -1);
     }
 
     @Override
     public void onObserverJobFinished(List<Device> timeout_devices) {
+        DeviceCollection deviceCollection = service.getAppData().deviceCollection;
         for (Device device : timeout_devices) {
-            updated(null, device, ObserverUpdateActions.UpdateAction, -1);
+            updated(deviceCollection, device, ObserverUpdateActions.UpdateAction, -1);
         }
     }
 
     @Override
     public boolean onServiceReady(PluginService service) {
-        AppData.getInstance().deviceCollection.registerObserver(this);
-        AppData.getInstance().sceneCollection.registerObserver(this);
-        preCheckUpdate();
+        this.service = service;
+        initDone = true;
+        Logging.getInstance().logWidgets("Service start");
+        service.getAppData().deviceCollection.registerObserver(this);
+        service.getAppData().sceneCollection.registerObserver(this);
+        preCheckUpdate(service.getAppData());
         return true;
     }
 
     @Override
-    public void onServiceFinished() {
+    public void onServiceFinished(PluginService service) {
         stopReason = "ListenService finished!";
         stopSelf();
     }
@@ -422,7 +418,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         }
 
         if (devicesToUpdate.size() > 0)
-            new DeviceQuery(this, this, devicesToUpdate.iterator());
+            new DeviceQuery(service, this, devicesToUpdate.iterator(), false);
         else
             finishServiceIfDone();
     }
@@ -447,13 +443,6 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         finishServiceIfDone();
         return true;
-    }
-
-    @Override
-    public boolean onDataLoaded() {
-        preCheckUpdate();
-        // unregister now
-        return false;
     }
 
     private static class WidgetClick {

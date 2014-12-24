@@ -28,7 +28,7 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
-import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginRemote;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.preferences.PreferencesFragment;
@@ -55,16 +55,15 @@ public class DevicesFragment extends Fragment
     public void onCreateOptionsMenu(
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.devices, menu);
+        AppData appData = PluginService.getService().getAppData();
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_delete_all).setVisible(AppData.getInstance().deviceCollection.hasDevices());
+        menu.findItem(R.id.menu_delete_all).setVisible(appData.deviceCollection.hasDevices());
     }
 
     @Override
     public void onPause() {
         AppData.observersStartStopRefresh.unregister(this);
         super.onPause();
-        if (adapter != null)
-            adapter.onPause();
     }
 
     @Override
@@ -96,7 +95,8 @@ public class DevicesFragment extends Fragment
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 // Delete all scenes
-                                AppData.getInstance().deviceCollection.removeAll();
+                                AppData appData = PluginService.getService().getAppData();
+                                appData.deviceCollection.removeAll();
                                 onRefresh();
                             }
                         })
@@ -177,16 +177,17 @@ public class DevicesFragment extends Fragment
                 if (!item.enabled)
                     return true;
 
+                AppData appData = PluginService.getService().getAppData();
                 Device device = item.isConfigured ?
-                        AppData.getInstance().findDevice(item.getUid()) :
-                        AppData.getInstance().findDeviceUnconfigured(item.getUid());
+                        appData.findDevice(item.getUid()) :
+                        appData.findDeviceUnconfigured(item.getUid());
 
                 if (device == null)
                     return true;
 
                 if (!item.isDeviceHeader) {
-                    final PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
-                    if (pluginInterface != null) {
+                    final AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
+                    if (abstractBasePlugin != null) {
                         item.tested = false;
                         item.reachable = false;
                         item.subtitle = getString(R.string.device_connection_testing);
@@ -198,7 +199,7 @@ public class DevicesFragment extends Fragment
                             @Override
                             public void run() {
                                 item.enabled = true;
-                                pluginInterface.requestData(finalDevice, item.connectionID);
+                                abstractBasePlugin.requestData(finalDevice, item.connectionID);
                             }
                         }, 1000);
                     }
@@ -277,8 +278,9 @@ public class DevicesFragment extends Fragment
                                     it.next().addToGroup(uuidOfDevice);
                                 }
                                 current_device.releaseDevicePorts();
-                                AppData.getInstance().deviceCollection.save(current_device);
-                                AppData.getInstance().groupCollection.edit(uuidOfDevice, current_device.getDeviceName());
+                                AppData appData = PluginService.getService().getAppData();
+                                appData.deviceCollection.save(current_device);
+                                appData.groupCollection.edit(uuidOfDevice, current_device.getDeviceName());
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -293,8 +295,9 @@ public class DevicesFragment extends Fragment
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                AppData.getInstance().deviceCollection.remove(current_device);
-                                AppData.getInstance().refreshDeviceData(true);
+                                AppData appData = PluginService.getService().getAppData();
+                                appData.deviceCollection.remove(current_device);
+                                appData.refreshDeviceData(PluginService.getService(), true);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -302,9 +305,9 @@ public class DevicesFragment extends Fragment
             }
 
             case R.id.menu_device_configuration_page:
-                PluginInterface pluginInterface = (PluginInterface) current_device.getPluginInterface();
-                if (pluginInterface != null)
-                    pluginInterface.openConfigurationPage(current_device, getActivity());
+                AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) current_device.getPluginInterface();
+                if (abstractBasePlugin != null)
+                    abstractBasePlugin.openConfigurationPage(current_device, getActivity());
                 return true;
             case R.id.menu_device_share:
                 DeviceShareDialog.show(getActivity(), current_device);
@@ -328,12 +331,12 @@ public class DevicesFragment extends Fragment
             newFragment.setPlugin(PluginService.getService().getPlugin(selected));
             MainActivity.getNavigationController().changeToDialog(getActivity(), newFragment);
         } else {
-            PluginInterface pluginInterface = (PluginInterface) device.getPluginInterface();
-            if (pluginInterface == null) {
+            AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
+            if (abstractBasePlugin == null) {
                 InAppNotifications.showException(getActivity(), null, "show_configure_device_dialog: Plugin not known!");
                 return;
             }
-            pluginInterface.showConfigureDeviceScreen(device);
+            abstractBasePlugin.showConfigureDeviceScreen(device);
         }
     }
 
@@ -344,7 +347,8 @@ public class DevicesFragment extends Fragment
 
     @Override
     public void onRefresh() {
-        PluginService.getService().showNotificationForNextRefresh(true);
-        AppData.getInstance().refreshDeviceData(true);
+        PluginService service = PluginService.getService();
+        service.showNotificationForNextRefresh(true);
+        service.getAppData().refreshDeviceData(service, true);
     }
 }

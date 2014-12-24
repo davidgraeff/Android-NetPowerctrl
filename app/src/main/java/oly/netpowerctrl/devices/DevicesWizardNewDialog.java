@@ -25,7 +25,8 @@ import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 /**
@@ -37,12 +38,13 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
     private EditDeviceInterface editDevice = null;
     private ArrayAdapter<String> ip_autocomplete;
     private Toast toast;
+    private AppData appData;
 
     public DevicesWizardNewDialog() {
     }
 
-    public void setPlugin(PluginInterface pluginInterface) {
-        editDevice = pluginInterface.openEditDevice(null);
+    public void setPlugin(AbstractBasePlugin abstractBasePlugin) {
+        editDevice = abstractBasePlugin.openEditDevice(null);
         if (editDevice == null)
             throw new RuntimeException("DevicesWizardNewDialog only for configurable devices!");
         editDevice.setResultListener(this);
@@ -72,12 +74,14 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
 //            setPlugin(pluginInterface);
         }
 
+        appData = PluginService.getService().getAppData();
+
         final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_new, null);
 
         ip_autocomplete = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1);
         EditText textView;
 
-        List<Device> devices = AppData.getInstance().deviceCollection.getItems();
+        List<Device> devices = appData.deviceCollection.getItems();
         for (Device device : devices) {
             device.lockDevice();
             for (DeviceConnection deviceConnection : device.getDeviceConnections()) {
@@ -231,7 +235,7 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
             return;
         }
 
-        if (!editDevice.startTest(getActivity())) {
+        if (!editDevice.startTest(PluginService.getService())) {
             Toast.makeText(getActivity(), R.string.error_plugin_not_installed, Toast.LENGTH_SHORT).show();
         }
     }
@@ -239,7 +243,7 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
     @Override
     public void testFinished(boolean success) {
         if (success) {
-            AppData.getInstance().addToConfiguredDevicesFromOtherThread(editDevice.getDevice());
+            appData.addToConfiguredDevicesFromOtherThread(editDevice.getDevice());
             dismiss();
         } else {
             Toast.makeText(getActivity(), R.string.device_test_not_reachable, Toast.LENGTH_SHORT).show();

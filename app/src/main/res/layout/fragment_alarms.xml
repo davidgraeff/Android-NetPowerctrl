@@ -7,11 +7,9 @@
     <TextView
         android:id="@+id/progressText"
         android:layout_width="match_parent"
-        android:layout_height="32dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="?attr/colorPrimaryDark"
-        android:clickable="true"
-        android:focusableInTouchMode="true"
         android:gravity="start"
         android:padding="@dimen/list_inner_padding"
         android:text=""

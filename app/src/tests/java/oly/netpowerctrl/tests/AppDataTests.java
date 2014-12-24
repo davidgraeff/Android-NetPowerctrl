@@ -6,23 +6,20 @@ import java.lang.reflect.Field;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreJSonData;
-import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.data.WakeUpDeviceInterface;
+import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
- * Created by david on 08.07.14.
+ * Testing AppData class. AppData should be fully independent of PluginService.
  */
-public class BasicTests extends AndroidTestCase {
+public class AppDataTests extends AndroidTestCase {
     AppData c;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         testAndroidTestCaseSetupProperly();
-        c = AppData.getInstance();
-        c.useAppData(new TestObjects.LoadStoreJSonDataTest());
-        assertNotNull(c);
-        SharedPrefs.getInstance();
     }
 
     @Override
@@ -32,9 +29,19 @@ public class BasicTests extends AndroidTestCase {
     }
 
     public void testMainApp() throws Exception {
+        WakeUpDeviceInterface wakeUpDeviceInterface = new WakeUpDeviceInterface() {
+            @Override
+            public boolean wakeupPlugin(Device device) {
+                return false;
+            }
+        };
+        c = new AppData(wakeUpDeviceInterface);
+        c.setLoadStoreController(new TestObjects.LoadStoreJSonDataTest());
+        assertNotNull(c);
+
         // Test if load store is set up.
         Field privateStringField = AppData.class.
-                getDeclaredField("loadStoreData");
+                getDeclaredField("loadStoreJSonData");
         privateStringField.setAccessible(true);
         LoadStoreJSonData l = (LoadStoreJSonData) privateStringField.get(c);
         assertNotNull(l);

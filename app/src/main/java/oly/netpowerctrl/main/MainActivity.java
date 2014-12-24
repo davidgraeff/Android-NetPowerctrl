@@ -35,9 +35,10 @@ import android.widget.Toast;
 import org.sufficientlysecure.donations.DonationsFragment;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.ui.navigation.NavigationController;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -46,6 +47,29 @@ public class MainActivity extends ActionBarActivity {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
     private final NavigationController navigationController = new NavigationController();
+    onServiceReady start_after_data_loaded = new onServiceReady() {
+        @Override
+        public boolean onServiceReady(PluginService service) {
+            if (!service.getAppData().deviceCollection.hasDevices() && SharedPrefs.getInstance().getFirstTabPosition() == -1) {
+                navigationController.changeToFragment(IntroductionFragment.class.getName());
+            } else {
+                App.getMainThreadHandler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (SharedPrefs.getInstance().hasBeenUpdated()) {
+                            InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
+                        }
+                    }
+                }, 1500);
+            }
+            return false;
+        }
+
+        @Override
+        public void onServiceFinished(PluginService service) {
+
+        }
+    };
     private long mBackPressed;
 
     public MainActivity() {
@@ -144,18 +168,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (!AppData.getInstance().deviceCollection.hasDevices() && SharedPrefs.getInstance().getFirstTabPosition() == -1) {
-            navigationController.changeToFragment(IntroductionFragment.class.getName());
-        } else {
-            App.getMainThreadHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (SharedPrefs.getInstance().hasBeenUpdated()) {
-                        InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
-                    }
-                }
-            }, 1500);
-        }
+        PluginService.observersServiceReady.register(start_after_data_loaded);
     }
 
     @Override

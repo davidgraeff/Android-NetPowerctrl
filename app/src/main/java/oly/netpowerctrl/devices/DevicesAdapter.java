@@ -14,19 +14,21 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 
 /**
  * An adapter for showing all configured (and newly discovered) devices. Configured and new devices
  * are separated by headers.
  */
 public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHolder>
-        implements onCollectionUpdated<Object, Device>, onDataLoaded {
+        implements onCollectionUpdated<CollectionWithStorableItems, Device>, onServiceReady {
 
     private static final int DEVICE_HEADER = 0;
     private static final int DEVICE_CONNECTION = 1;
@@ -41,15 +43,8 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         onResume();
     }
 
-    public void onPause() {
-        AppData d = AppData.getInstance();
-        d.deviceCollection.unregisterObserver(this);
-        d.unconfiguredDeviceCollection.unregisterObserver(this);
-        AppData.observersOnDataLoaded.unregister(this);
-    }
-
     public void onResume() {
-        AppData.observersOnDataLoaded.register(this);
+        PluginService.observersServiceReady.register(this);
     }
 
     @Override
@@ -94,12 +89,12 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         return mList.size();
     }
 
-    private void fullUpdate() {
+    private void fullUpdate(AppData appData) {
         mList.clear();
 
-        List<Device> deviceList = new ArrayList<>(AppData.getInstance().deviceCollection.getItems());
+        List<Device> deviceList = new ArrayList<>(appData.deviceCollection.getItems());
         if (showNewDevices)
-            deviceList.addAll(AppData.getInstance().unconfiguredDeviceCollection.getItems());
+            deviceList.addAll(appData.unconfiguredDeviceCollection.getItems());
 
         for (Device device : deviceList)
             addDeviceToList(device, mList.size());
@@ -109,19 +104,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
     }
 
     @Override
-    public boolean onDataLoaded() {
-        AppData.getInstance().deviceCollection.registerObserver(this);
-        if (showNewDevices) {
-            AppData.getInstance().unconfiguredDeviceCollection.registerObserver(this);
-        }
-
-        fullUpdate();
-
-        return true;
-    }
-
-    @Override
-    public boolean updated(@NonNull Object deviceCollection, Device device, @NonNull ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull CollectionWithStorableItems deviceCollection, Device device, @NonNull ObserverUpdateActions action, int position) {
         if (device != null && device.getUniqueDeviceID() == null)
             return true;
 
@@ -165,7 +148,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
                 break;
             case ClearAndNewAction:
             case RemoveAllAction:
-                fullUpdate();
+                fullUpdate(deviceCollection.appData);
                 break;
             case RemoveAction:
                 for (int i = mList.size() - 1; i >= 0; --i) {
@@ -197,6 +180,26 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
     public DeviceAdapterItem getItem(int position) {
         return mList.get(position);
+    }
+
+    @Override
+    public boolean onServiceReady(PluginService service) {
+        AppData appData = service.getAppData();
+        appData.deviceCollection.registerObserver(this);
+        if (showNewDevices) {
+            appData.unconfiguredDeviceCollection.registerObserver(this);
+        }
+
+        fullUpdate(appData);
+
+        return false;
+    }
+
+    @Override
+    public void onServiceFinished(PluginService service) {
+        AppData appData = service.getAppData();
+        appData.deviceCollection.unregisterObserver(this);
+        appData.unconfiguredDeviceCollection.unregisterObserver(this);
     }
 
     public static class DeviceAdapterItem {

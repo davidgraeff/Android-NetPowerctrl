@@ -23,10 +23,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
+import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 
 public class DeviceEditDialog extends DialogFragment implements onCreateDeviceResult {
@@ -288,7 +288,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
             return;
         }
 
-        if (!editDevice.startTest(getActivity())) {
+        if (!editDevice.startTest(PluginService.getService())) {
             Toast.makeText(getActivity(), R.string.error_plugin_not_installed, Toast.LENGTH_SHORT).show();
         }
     }
@@ -327,9 +327,13 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     }
 
     private void saveAndFinish() {
-        PluginService.getService().wakeupPlugin(editDevice.getDevice());
-
-        AppData.getInstance().addToConfiguredDevices(editDevice.getDevice());
+        Device device = editDevice.getDevice();
+        PluginService service = PluginService.getService();
+        service.wakeupPlugin(device);
+        service.getAppData().addToConfiguredDevices(device);
+        // Initiate detect devices, if this added device is not flagged as reachable at the moment.
+        if (device.getFirstReachableConnection() == null)
+            new DeviceQuery(service, null, device);
         dismiss();
     }
 

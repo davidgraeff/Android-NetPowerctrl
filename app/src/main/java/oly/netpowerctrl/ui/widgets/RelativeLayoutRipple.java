@@ -53,6 +53,7 @@ public class RelativeLayoutRipple extends RelativeLayout {
     }
 
     public void afterClickTouchEvent() {
+        setWillNotDraw(false);
         touchEffectAnimator.animateTouch();
     }
 

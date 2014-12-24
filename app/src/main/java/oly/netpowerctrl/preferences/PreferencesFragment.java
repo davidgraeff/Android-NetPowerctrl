@@ -23,6 +23,7 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.utils.statusbar_and_speech.AndroidStatusBarService;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements LoadStoreIconData.IconSelected {
@@ -182,7 +183,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_CODE_IMPORT) {
-                ImportExport.importData(getActivity(), intent.getData());
+                ImportExport.importData(PluginService.getService(), intent.getData());
             } else if (requestCode == REQUEST_CODE_EXPORT) {
                 ImportExport.exportData(getActivity(), intent.getData());
             } else

@@ -25,8 +25,8 @@ import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
-import oly.netpowerctrl.outletsview.OutletsViewFragment;
-import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.
@@ -41,6 +41,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     private List<Device> deviceList;
     private EditDeviceInterface editDevice;
     private int current = 0;
+    private AppData appData = null;
 
     public IntroductionFragment() {
     }
@@ -97,8 +98,9 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
 
     void start() {
         textView.setText("Waiting for devices...\n");
-
-        deviceList = new ArrayList<>(AppData.getInstance().unconfiguredDeviceCollection.getItems());
+        appData = PluginService.getService().getAppData();
+        if (appData == null) return;
+        deviceList = new ArrayList<>(appData.unconfiguredDeviceCollection.getItems());
         takeNext();
     }
 
@@ -119,12 +121,12 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
             return;
         }
 
-        editDevice = ((PluginInterface) device.getPluginInterface()).openEditDevice(device);
+        editDevice = ((AbstractBasePlugin) device.getPluginInterface()).openEditDevice(device);
 
         // If no edit device -> there is no configuration necessary
         if (editDevice == null) {
             textView.append("\tOK\n");
-            AppData.getInstance().addToConfiguredDevices(device);
+            appData.addToConfiguredDevices(device);
             editDevice = null;
             takeNextHandler.sendEmptyMessage(0);
             return;
@@ -132,7 +134,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
 
         editDevice.setResultListener(this);
 
-        if (!editDevice.startTest(getActivity())) {
+        if (!editDevice.startTest(PluginService.getService())) {
             textView.append("\tPlugin failed\n");
             editDevice = null;
             takeNextHandler.sendEmptyMessage(0);
@@ -147,17 +149,16 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
             App.getMainThreadHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    AppData d = AppData.getInstance();
                     // Add to group with name DeviceName
-                    int index = d.groupCollection.add(deviceToAdd.getDeviceName());
-                    UUID group = d.groupCollection.get(index).uuid;
+                    int index = appData.groupCollection.add(deviceToAdd.getDeviceName());
+                    UUID group = appData.groupCollection.get(index).uuid;
                     deviceToAdd.lockDevicePorts();
                     Iterator<DevicePort> devicePortIterator = deviceToAdd.getDevicePortIterator();
                     while (devicePortIterator.hasNext())
                         devicePortIterator.next().groups.add(group);
                     deviceToAdd.releaseDevicePorts();
                     // Add device to configured devices
-                    d.addToConfiguredDevices(deviceToAdd);
+                    appData.addToConfiguredDevices(deviceToAdd);
                 }
             });
         } else {

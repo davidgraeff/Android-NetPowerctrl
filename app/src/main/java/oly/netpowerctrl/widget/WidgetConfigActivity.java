@@ -17,11 +17,11 @@ import android.view.ViewGroup;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.executables.AdapterSource;
+import oly.netpowerctrl.executables.AdapterSourceInputDevicePorts;
+import oly.netpowerctrl.executables.AdapterSourceInputScenes;
 import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
 import oly.netpowerctrl.executables.ExecutablesListAdapter;
-import oly.netpowerctrl.executables.ExecutablesSourceChain;
-import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
-import oly.netpowerctrl.executables.ExecutablesSourceScenes;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
@@ -54,6 +54,7 @@ public class WidgetConfigActivity extends Activity {
                 }
             }, null);
     private ExecutablesBaseAdapter adapter;
+    private AdapterSource adapterSource;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,16 +89,10 @@ public class WidgetConfigActivity extends Activity {
         findViewById(R.id.left_drawer_list).setVisibility(View.GONE);
         findViewById(R.id.toolbar_actionbar).setVisibility(View.GONE);
 
-        ExecutablesSourceChain executablesSourceChain = new ExecutablesSourceChain();
-
-        ExecutablesSourceDevicePorts adapterSource = new ExecutablesSourceDevicePorts(executablesSourceChain);
-        ExecutablesSourceScenes sceneSource = new ExecutablesSourceScenes(executablesSourceChain);
-
-        adapter = new ExecutablesListAdapter(false, adapterSource, LoadStoreIconData.iconLoadingThread, false);
-        sceneSource.setTargetAdapter(adapter);
-        adapterSource.setAutomaticUpdate(true);
+        adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
         adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
-        adapterSource.setTargetAdapter(adapter);
+        adapterSource.add(new AdapterSourceInputDevicePorts(), new AdapterSourceInputScenes());
+        adapter = new ExecutablesListAdapter(false, adapterSource, LoadStoreIconData.iconLoadingThread, false);
 
         Fragment fragment = new Fragment() {
             @Nullable

@@ -4,4 +4,6 @@
     <dimen name="list_inner_padding">5dp</dimen>
     <dimen name="min_list_item_width">230dp</dimen>
     <dimen name="min_grid_item_width">150dp</dimen>
+    <dimen name="shadow_width">15dp</dimen>
+    <dimen name="slidingmenu_offset">60dp</dimen>
 </resources>

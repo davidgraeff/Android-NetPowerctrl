@@ -1,27 +1,23 @@
 package oly.netpowerctrl.executables;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.scenes.Scene;
 
 /**
  * Created by david on 07.07.14.
  */
-public class ExecutablesSourceDemo extends ExecutablesSourceBase {
+public class AdapterSourceInputDemo extends AdapterSourceInput {
     private List<Scene> demoItems = new ArrayList<>();
 
-    public ExecutablesSourceDemo(ExecutablesSourceChain executablesSourceChain) {
-        super(executablesSourceChain);
+    public AdapterSourceInputDemo() {
         demoItems.add(createScene("Demo 1", true, false));
         demoItems.add(createScene("Demo 2", false, false));
-    }
-
-    @Override
-    public int doCountIfGroup(UUID uuid) {
-        return 2;
     }
 
     private Scene createScene(String name, boolean isReachable, boolean isOn) {
@@ -34,18 +30,18 @@ public class ExecutablesSourceDemo extends ExecutablesSourceBase {
     }
 
     @Override
-    public void fullUpdate(ExecutablesBaseAdapter adapter) {
-        if (adapter != null) {
-            for (Scene scene : demoItems)
-                adapter.addItem(scene, DevicePort.TOGGLE);
-        }
+    public void doUpdateNow(@NonNull ExecutablesBaseAdapter adapter) {
+        for (Scene scene : demoItems)
+            adapter.addItem(scene, DevicePort.TOGGLE);
     }
 
     @Override
-    protected void automaticUpdatesDisable() {
+    void onStart(AppData appData) {
+
     }
 
     @Override
-    protected void automaticUpdatesEnable() {
+    void onFinish() {
+
     }
 }

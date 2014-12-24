@@ -7,10 +7,11 @@ import android.util.JsonReader;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import oly.netpowerctrl.R;
@@ -19,58 +20,72 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
 
 /**
- * Created by david on 07.08.14.
+ * Fetch bug count from cloudant and from github
  */
 public class GithubAndCloudant {
     private boolean isAlreadyRunningOpenAutomaticIssues = false;
     private boolean isAlreadyRunningGithub = false;
 
-    private static int parseAutoIssues(HttpURLConnection con, final IGithubOpenIssues callback, final Handler handler) throws IOException {
-        int open_issues = 0;
-        JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream()));
-        if (!reader.hasNext()) return -1;
+    private static IssuesDetails parseAutoIssues(InputStream con) throws IOException {
+        IssuesDetails issuesDetails = new IssuesDetails();
+        JsonReader reader = new JsonReader(new InputStreamReader(con));
+        if (!reader.hasNext()) return null;
         reader.beginObject();
-        if (!reader.hasNext()) return -1;
+        if (!reader.hasNext()) return null;
         String name = reader.nextName();
-        if (!name.equals("rows")) return -1;
+        if (!name.equals("rows")) return null;
         reader.beginArray();
-        if (!reader.hasNext()) return -1;
-        reader.beginObject();
+        if (!reader.hasNext()) return null;
+        int count;
         while (reader.hasNext()) {
-            name = reader.nextName();
-            switch (name) {
-                case "value":
-                    reader.beginObject();
-                    while (reader.hasNext()) {
-                        name = reader.nextName();
-                        switch (name) {
-                            case "count":
-                                return reader.nextInt();
-                            //break;
-                            default:
-                                reader.skipValue();
-                                break;
+            reader.beginObject();
+            while (reader.hasNext()) {
+                name = reader.nextName();
+                switch (name) {
+                    case "value":
+                        count = 0;
+                        reader.beginObject();
+                        while (reader.hasNext()) {
+                            name = reader.nextName();
+                            switch (name) {
+                                case "count":
+                                    count = reader.nextInt();
+                                    break;
+                                case "latest":
+                                    issuesDetails.setLatest(reader.nextLong());
+                                    break;
+                                case "solved":
+                                    if (!reader.nextBoolean()) {
+                                        ++issuesDetails.open;
+                                        issuesDetails.reported_open += count;
+                                    } else
+                                        ++issuesDetails.closed;
+                                    break;
+                                default:
+                                    reader.skipValue();
+                                    break;
+                            }
                         }
-                    }
-                    reader.endObject();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
+                        reader.endObject();
+                        break;
+                    default:
+                        reader.skipValue();
+                        break;
+                }
             }
+            reader.endObject();
         }
-        reader.endObject();
         reader.endArray();
         reader.endObject();
-        return open_issues;
+        return issuesDetails;
     }
 
-    private static int parseIssues(HttpURLConnection con, final IGithubOpenIssues callback, final Handler handler) throws IOException {
-        int open_issues = 0;
-        JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream()));
+    private static IssuesDetails parseIssues(InputStream con, final IGithubOpenIssues callback, final Handler handler) throws IOException {
+        IssuesDetails issuesDetails = new IssuesDetails();
+        JsonReader reader = new JsonReader(new InputStreamReader(con));
         reader.beginArray();
         while (reader.hasNext()) {
-            open_issues++;
+            ++issuesDetails.open;
             reader.beginObject();
             String body = null;
             String title = null;
@@ -106,17 +121,21 @@ public class GithubAndCloudant {
             reader.endObject();
         }
         reader.endArray();
-        return open_issues;
+        return issuesDetails;
     }
 
-    public void getOpenAutomaticIssues(final IGithubOpenIssues callback, boolean force) {
+    public void getACRAIssues(final IGithubOpenIssues callback, boolean force) {
         if (isAlreadyRunningOpenAutomaticIssues)
             return;
 
+        final String fileName = "cloudant_issues.json";
         long lastAccess = SharedPrefs.getInstance().getLastTimeOpenAutoIssuesRequested();
         if (!force && lastAccess != -1 && System.currentTimeMillis() - lastAccess < 1000 * 1800) {
-            callback.gitHubOpenIssuesUpdated(SharedPrefs.getInstance().getOpenAutoIssues(), lastAccess);
-            return;
+            try {
+                callback.gitHubOpenIssuesUpdated(parseAutoIssues(App.instance.openFileInput(fileName)), lastAccess);
+                return;
+            } catch (IOException ignored) {
+            }
         }
 
         isAlreadyRunningOpenAutomaticIssues = true;
@@ -126,7 +145,7 @@ public class GithubAndCloudant {
         HttpThreadPool.execute(new Runnable() {
             @Override
             public void run() {
-                int open_issues = 0;
+                IssuesDetails issuesDetails = null;
                 try {
                     String addr = App.getAppString(R.string.cloudant_bugs);
                     final URL url = new URL(addr);
@@ -139,83 +158,103 @@ public class GithubAndCloudant {
 
                     switch (con.getResponseCode()) {
                         case 200:
-                            open_issues = parseAutoIssues(con, callback, handler);
-                            SharedPrefs.getInstance().setOpenAutoIssues(open_issues, System.currentTimeMillis());
+                            InputStream inputStream = con.getInputStream();
+                            FileOutputStream outputStream = App.instance.openFileOutput(fileName, 0);
+
+                            int bytesRead;
+                            byte[] buffer = new byte[1024];
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                outputStream.write(buffer, 0, bytesRead);
+                            }
+
+                            outputStream.close();
+                            inputStream.close();
+                            issuesDetails = parseAutoIssues(App.instance.openFileInput(fileName));
+                            SharedPrefs.getInstance().setOpenAutoIssues(System.currentTimeMillis());
                             break;
                     }
-                } catch (SocketTimeoutException e) {
-                    open_issues = -2;
-                    e.printStackTrace();
                 } catch (IOException e) {
-                    open_issues = -1;
                     e.printStackTrace();
                 }
                 isAlreadyRunningOpenAutomaticIssues = false;
-                final int open_issues_final = open_issues;
+                final IssuesDetails issuesDetails_final = issuesDetails;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        callback.gitHubOpenIssuesUpdated(open_issues_final, System.currentTimeMillis());
+                        callback.gitHubOpenIssuesUpdated(issuesDetails_final, System.currentTimeMillis());
                     }
                 });
             }
         });
     }
 
-    public void getOpenIssues(final IGithubOpenIssues callback, boolean force, final String filter) {
+    public void getGithubIssues(final IGithubOpenIssues callback, boolean force, final String filter) {
         if (isAlreadyRunningGithub)
             return;
 
+        final String fileName = "github_issues.json";
+        final Handler handler = new Handler(Looper.getMainLooper());
         long lastAccess = SharedPrefs.getInstance().getLastTimeOpenIssuesRequested();
+
         if (!force && lastAccess != -1 && System.currentTimeMillis() - lastAccess < 1000 * 1800) {
-            callback.gitHubOpenIssuesUpdated(SharedPrefs.getInstance().getOpenIssues(), lastAccess);
+            try {
+                callback.gitHubOpenIssuesUpdated(parseIssues(App.instance.openFileInput(fileName), callback, handler), lastAccess);
+                return;
+            } catch (IOException ignored) {
+            }
             return;
         }
 
         isAlreadyRunningGithub = true;
 
-        final Handler handler = new Handler(Looper.getMainLooper());
-
         HttpThreadPool.execute(new Runnable() {
             @Override
             public void run() {
-                int open_issues = 0;
+                IssuesDetails issuesDetails = null;
                 String label = "";
                 if (filter != null)
                     label = "&labels=" + filter;
                 try {
-                    String addr = App.getAppString(R.string.github_issues);
+                    String address = App.getAppString(R.string.github_issues);
                     String access = App.getAppString(R.string.github_access_token);
-                    final URL url = new URL(addr + "?access_token=" + access + "&state=open&per_page=100" + label);
+                    final URL url = new URL(address + "?access_token=" + access + "&state=open&per_page=100" + label);
                     final HttpURLConnection con = (HttpURLConnection) url.openConnection();
                     con.setConnectTimeout(1500);
                     con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
                     switch (con.getResponseCode()) {
                         case 200:
-                            open_issues = parseIssues(con, callback, handler);
-                            SharedPrefs.getInstance().setOpenIssues(open_issues, System.currentTimeMillis());
+                            InputStream inputStream = con.getInputStream();
+                            FileOutputStream outputStream = App.instance.openFileOutput(fileName, 0);
+
+                            int bytesRead;
+                            byte[] buffer = new byte[1024];
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                outputStream.write(buffer, 0, bytesRead);
+                            }
+
+                            outputStream.close();
+                            inputStream.close();
+                            issuesDetails = parseIssues(App.instance.openFileInput(fileName), callback, handler);
+                            SharedPrefs.getInstance().setOpenIssues(System.currentTimeMillis());
                             break;
                     }
-                } catch (SocketTimeoutException e) {
-                    open_issues = -2;
-                    e.printStackTrace();
                 } catch (IOException e) {
-                    open_issues = -1;
                     e.printStackTrace();
                 }
                 isAlreadyRunningGithub = false;
-                final int open_issues_final = open_issues;
+                final IssuesDetails issuesDetails_final = issuesDetails;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        callback.gitHubOpenIssuesUpdated(open_issues_final, System.currentTimeMillis());
+                        callback.gitHubOpenIssuesUpdated(issuesDetails_final, System.currentTimeMillis());
                     }
                 });
             }
         });
     }
 
-    public void newIssues(final String issueJson, final IGithubNewIssue callback) {
+    @SuppressWarnings("unused")
+    void newIssues(final String issueJson, final IGithubNewIssue callback) {
 
         final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -223,9 +262,9 @@ public class GithubAndCloudant {
             @Override
             public void run() {
                 try {
-                    String addr = App.getAppString(R.string.github_issues);
+                    String address = App.getAppString(R.string.github_issues);
                     String access = App.getAppString(R.string.github_access_token);
-                    final URL url = new URL(addr + "?access_token=" + access);
+                    final URL url = new URL(address + "?access_token=" + access);
                     final HttpURLConnection con = (HttpURLConnection) url.openConnection();
                     con.setConnectTimeout(1500);
                     con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
@@ -233,7 +272,7 @@ public class GithubAndCloudant {
                     con.getOutputStream().write(issueJson.getBytes());
                     switch (con.getResponseCode()) {
                         case 200:
-                            parseIssues(con, callback, handler);
+                            parseIssues(con.getInputStream(), callback, handler);
                             break;
                         default:
                             BufferedReader rd = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -268,8 +307,19 @@ public class GithubAndCloudant {
     }
 
     public interface IGithubOpenIssues {
-        void gitHubOpenIssuesUpdated(int count, long last_access);
+        void gitHubOpenIssuesUpdated(IssuesDetails details, long last_access);
 
         void gitHubIssue(int number, String title, String body);
+    }
+
+    public static class IssuesDetails {
+        public int closed = 0;
+        public int open = 0;
+        public int reported_open = 0;
+        public long latest = 0;
+
+        void setLatest(long latest) {
+            if (latest > this.latest) this.latest = latest;
+        }
     }
 }

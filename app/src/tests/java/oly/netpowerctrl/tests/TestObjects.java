@@ -31,16 +31,7 @@ public class TestObjects {
 
         @Override
         public void loadData(final AppData appData) {
-            // Do nothing
-            // Notify data is loaded now
-            AppData.observersOnDataLoaded.onDataLoaded();
-        }
-
-        @Override
-        public void finish() {
-        }
-
-        public void markVersion() {
+            appData.setDataLoadingCompleted();
         }
     }
 }

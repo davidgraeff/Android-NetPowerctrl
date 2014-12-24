@@ -15,13 +15,16 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.groups.Group;
+import oly.netpowerctrl.groups.GroupCollection;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 
-public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewHolder> {
-
+public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewHolder> implements onServiceReady {
     public final List<ExecutableAdapterItem> mItems;
     final IconDeferredLoadingThread mIconLoadThread;
     // Source of values for this adapter.
-    private final ExecutablesSourceBase mSource;
+    private final AdapterSource mSource;
+    public GroupCollection groupCollection;
     protected int mNextId = 0; // we need stable IDs
     int mOutlet_res_id = 0;
     private UUID mFilterGroup = null;
@@ -38,10 +41,12 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
                 return 1;
         }
     };
+    private AppData appData;
 
-    ExecutablesBaseAdapter(ExecutablesSourceBase source, IconDeferredLoadingThread iconCache,
+    ExecutablesBaseAdapter(AdapterSource source, IconDeferredLoadingThread iconCache,
                            boolean showGroups) {
         mSource = source;
+        PluginService.observersServiceReady.register(this);
         mShowGroups = showGroups;
         mIconLoadThread = iconCache;
         mItems = new ArrayList<>();
@@ -50,7 +55,7 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
         }
     }
 
-    public ExecutablesSourceBase getSource() {
+    public AdapterSource getSource() {
         return mSource;
     }
 
@@ -218,7 +223,7 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
     }
 
     private int addHeaderIfNotExists(UUID group, Executable executable) {
-        Group groupItem = AppData.getInstance().groupCollection.get(group);
+        Group groupItem = appData != null ? appData.groupCollection.get(group) : null;
         if (groupItem == null) {
             // Group does not exist. Remove it from oi
             executable.getGroups().remove(group);
@@ -313,5 +318,16 @@ public class ExecutablesBaseAdapter extends RecyclerView.Adapter<ExecutableViewH
                 return;
             }
         }
+    }
+
+    @Override
+    public boolean onServiceReady(PluginService service) {
+        appData = service.getAppData();
+        return false;
+    }
+
+    @Override
+    public void onServiceFinished(PluginService service) {
+        appData = null;
     }
 }

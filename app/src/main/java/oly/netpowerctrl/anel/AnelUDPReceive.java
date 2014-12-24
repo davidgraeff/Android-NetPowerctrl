@@ -56,13 +56,11 @@ class AnelUDPReceive extends UDPReceiving {
         }
 
         if ((msg.length >= 4) && (msg[3].trim().equals("Err"))) {
-            Logging.getInstance().logDetect("UDP Device Error\n" + incoming);
             String name = msg[1].trim();
             String errMessage = msg[2].trim();
             if (errMessage.trim().equals("NoPass"))
                 errMessage = PluginService.getService().getString(R.string.error_nopass);
-            AppData.getInstance().updateDeviceHandler.obtainMessage(AppData.UPDATE_MESSAGE_BROKEN_DEVICE,
-                    new String[]{name, errMessage}).sendToTarget();
+            Logging.getInstance().logDetect("UDP Device Error\n" + name + " " + errMessage);
             return;
         }
 
@@ -72,8 +70,9 @@ class AnelUDPReceive extends UDPReceiving {
 
         Logging.getInstance().logDetect("UDP Device detected\n" + DeviceName);
 
+        AppData appData = anelPlugin.getPluginService().getAppData();
         boolean isNewDevice = false;
-        Device device = AppData.getInstance().findDevice(MacAddress);
+        Device device = appData.findDevice(MacAddress);
         if (device == null) {
             device = createReceivedAnelDevice(MacAddress);
             isNewDevice = true;
@@ -163,8 +162,8 @@ class AnelUDPReceive extends UDPReceiving {
         device.releaseDevice();
 
         if (isNewDevice)
-            AppData.getInstance().updateDeviceFromOtherThread(device);
+            appData.updateDeviceFromOtherThread(device);
         else
-            AppData.getInstance().updateExistingDeviceFromOtherThread(device);
+            appData.updateExistingDeviceFromOtherThread(device);
     }
 }

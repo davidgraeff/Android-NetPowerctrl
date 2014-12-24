@@ -1,4 +1,4 @@
-package oly.netpowerctrl.outletsview;
+package oly.netpowerctrl.main;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -23,10 +23,9 @@ import java.io.IOException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.executables.ExecutablesSourceDemo;
+import oly.netpowerctrl.executables.AdapterSource;
+import oly.netpowerctrl.executables.AdapterSourceInputDemo;
 import oly.netpowerctrl.executables.ExecuteAdapter;
-import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.ui.SoftRadioGroup;
 
 /**
@@ -79,7 +78,9 @@ public class OutletsViewTypeDialog extends DialogFragment {
         radioGroupDesign.addView((RadioButton) rootView.findViewById(R.id.design2));
         radioGroupDesign.addView((RadioButton) rootView.findViewById(R.id.design3));
 
-        ExecutablesSourceDemo adapterSource = new ExecutablesSourceDemo(null);
+        AdapterSource adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.NoAutoStart);
+        AdapterSourceInputDemo sourceInput = new AdapterSourceInputDemo();
+        adapterSource.add(sourceInput);
         ExecuteAdapter adapter;
         GridLayoutManager gridLayoutManager;
         int rows;

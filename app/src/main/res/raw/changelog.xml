@@ -1,6 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
-    <changelogversion changeDate="03. Dezember 2014" versionName="6.9.4">
+    <changelogversion changeDate="16. Dezember 2014" versionName="7.0">
+        <changelogimprovement>Zeitschaltungen verbessert. Neue Icons, neue Dialoge, bessere Trennung
+            von Geräte und Android Zeitschaltungen.
+        </changelogimprovement>
+        <changelogimprovement>Verstecken von Steckdosen jetzt möglich. Zu finden unter: Geräte ->
+            Gerät anklicken -> Aktionen des Geräts aus-/einblenden
+        </changelogimprovement>
+        <changelogimprovement>Prozedur zum Bearbeiten von Steckdosen/Szenen verändert,
+            Schraubenschlüssel Icon entfernt
+        </changelogimprovement>
+        <changelogimprovement>Statt eines mitgelieferten Hintergrundbildes wird jetzt das
+            Systemhintergrundbild verwendet, sofern kein eigenes eingestellt wird
+        </changelogimprovement>
+        <changelogimprovement>Im Feedback Fenster können jetzt erweiterte Fehlerstatistiken zur App
+            eingesehen werden
+        </changelogimprovement>
+        <changelogimprovement>Szene-Bearbeiten Fenster verbessert</changelogimprovement>
+        <changelogbug>Es konnte beim Speichern von Geräten zu Fehlern kommen, wenn zugleich eine
+            Geräteaktualisierung im Gang war.
+        </changelogbug>
+        <changelogbug>Manuelle Geräteverbinungen (HTTP) konnten bei einem Timeout die App zum
+            Absturz bringen.
+        </changelogbug>
+        <changelogbug>Die Ausführung von Szenen auf dem Homescreen funktionierte nicht mehr
+            richtig.
+        </changelogbug>
+    </changelogversion>
+
+    <changelogversion changeDate="22.11.2014-03.12.2014" versionName="6.9.1-6.9.4">
+        <changelogimprovement>Verbessertes Logbuch. Alarm-, Erweiterungen-, Widgets-, und
+            Geräteerkennungsereignisse können aufgezeichnet werden.
+        </changelogimprovement>
+        <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleineren
+            Bildschirmen
+        </changelogimprovement>
+        <changelogimprovement>Verbesserte Ansicht des Zeitschaltungen-Fensters
+        </changelogimprovement>
         <changelogimprovement>Android-Zeitschaltungen werden beim Neustart des Geräts
             wiederhergestellt
         </changelogimprovement>
@@ -10,17 +46,6 @@
         <changelogbug>Erststart-Assistent stürzte unter bestimmten Umständen ab</changelogbug>
         <changelogbug>Android 4.0.3 und 4.0.4 Fehler bzgl. Hardwarebeschleunigung umgangen
         </changelogbug>
-    </changelogversion>
-
-    <changelogversion changeDate="22. November 2014" versionName="6.9.1-6.9.3">
-        <changelogimprovement>Verbessertes Logbuch. Alarm-, Erweiterungen-, Widgets-, und
-            Geräteerkennungsereignisse können aufgezeichnet werden.
-        </changelogimprovement>
-        <changelogimprovement>Verbesserte Ansicht des Szenen-Erstellen Fensters auf kleineren
-            Bildschirmen
-        </changelogimprovement>
-        <changelogimprovement>Verbesserte Ansicht des Zeitschaltungen-Fensters
-        </changelogimprovement>
         <changelogbug>Erweiterungen erst vollständig laden vor dem Ausführen einer Szene oder eines
             Alarms
         </changelogbug>
@@ -30,7 +55,6 @@
         <changelogbug>Gelöschte Zeitschaltungen tauchen nun nicht mehr in der Zeitschaltungen Liste
             auf
         </changelogbug>
-        <changelogbug>Plugin nicht installiert Meldung behoben</changelogbug>
         <changelogbug>Ladefehler beim Start behoben, wenn Daten von Version 5.x noch vorhanden
             waren
         </changelogbug>

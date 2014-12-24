@@ -183,7 +183,7 @@ public class AnelAlarm {
         return null;
     }
 
-    void saveAlarm(Timer timer, final onHttpRequestResult callback) {
+    void saveAlarm(AppData appData, Timer timer, final onHttpRequestResult callback) {
         DevicePort devicePort = (DevicePort) timer.executable;
         if (callback != null)
             callback.httpRequestStart(devicePort);
@@ -203,7 +203,7 @@ public class AnelAlarm {
         final String getData = "dd.htm?DD" + String.valueOf(devicePort.id);
         final int timerNumber = temp.alarmOnDevice.timerId;
         // Get the timerController object. We will add received alarms to that instance.
-        final TimerCollection timerCollection = AppData.getInstance().timerCollection;
+        final TimerCollection timerCollection = appData.timerCollection;
         final DeviceConnectionHTTP ci = (DeviceConnectionHTTP) devicePort.device.getFirstReachableConnection("HTTP");
         if (ci == null) {
             Log.e("Anel Alarm", "No connection! " + devicePort.getTitle());
@@ -255,7 +255,7 @@ public class AnelAlarm {
         ));
     }
 
-    void removeAlarm(Timer timer, final onHttpRequestResult callback) {
+    void removeAlarm(AppData appData, Timer timer, final onHttpRequestResult callback) {
         if (callback != null)
             callback.httpRequestStart((DevicePort) timer.executable);
 
@@ -266,7 +266,7 @@ public class AnelAlarm {
             timer.hour_minute = 0;
         for (int i = 0; i < 7; ++i) timer.weekdays[i] = true;
         timer.enabled = false;
-        saveAlarm(timer, callback);
+        saveAlarm(appData, timer, callback);
     }
 
     void requestAlarms(DevicePort port, DeviceConnectionHTTP ci, final TimerCollection timerCollection, final String postData, final onHttpRequestResult callback) {

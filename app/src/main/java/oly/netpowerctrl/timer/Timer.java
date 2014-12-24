@@ -15,7 +15,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.data.StorableInterface;
 import oly.netpowerctrl.device_base.executables.Executable;
@@ -262,10 +261,6 @@ public class Timer implements StorableInterface {
 
         if (executable_uid == null)
             throw new ClassNotFoundException();
-
-        executable = AppData.getInstance().findExecutable(executable_uid);
-        if (executable == null)
-            throw new ClassNotFoundException(toString());
     }
 
     @Override

@@ -6,5 +6,5 @@ package oly.netpowerctrl.pluginservice;
 public interface onServiceReady {
     boolean onServiceReady(PluginService service);
 
-    void onServiceFinished();
+    void onServiceFinished(PluginService service);
 }

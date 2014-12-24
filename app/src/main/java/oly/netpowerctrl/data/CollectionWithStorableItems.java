@@ -12,10 +12,14 @@ import oly.netpowerctrl.device_base.data.StorableInterface;
  */
 abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends StorableInterface> implements CollectionWithType {
 
+    final public AppData appData;
     private final WeakHashMap<onCollectionUpdated<COLLECTION, ITEM>, Boolean> observers = new WeakHashMap<>();
-
     protected List<ITEM> items = new ArrayList<>();
     protected onStorageUpdate storage;
+
+    public CollectionWithStorableItems(AppData appData) {
+        this.appData = appData;
+    }
 
     final public List<ITEM> getItems() {
         return items;
@@ -69,5 +73,9 @@ abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends Stora
 
     final public void setStorage(onStorageUpdate storage) {
         this.storage = storage;
+    }
+
+    public void addWithourSave(ITEM item) throws ClassNotFoundException {
+        items.add(item);
     }
 }

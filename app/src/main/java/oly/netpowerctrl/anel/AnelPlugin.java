@@ -34,10 +34,11 @@ import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.HttpThreadPool;
+import oly.netpowerctrl.network.SendAndObserve;
 import oly.netpowerctrl.network.UDPSending;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
@@ -49,13 +50,17 @@ import oly.netpowerctrl.utils.Logging;
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
  * This is a specialized class for Anel devices.
  */
-final public class AnelPlugin implements PluginInterface {
+final public class AnelPlugin extends AbstractBasePlugin {
     public static final String PLUGIN_ID = "org.anel.outlets_and_io";
     private static final byte[] requestMessage = "wer da?\r\n".getBytes();
     private final List<AnelUDPReceive> discoveryThreads = new ArrayList<>();
     private final List<Scene.PortAndCommand> command_list = new ArrayList<>();
     private UDPSending udpSending;
     private AnelAlarm anelAlarm = new AnelAlarm();
+
+    public AnelPlugin(PluginService pluginService) {
+        super(pluginService);
+    }
 
     private static byte switchOn(byte data, int outletNumber) {
         data |= ((byte) (1 << outletNumber - 1));
@@ -97,6 +102,7 @@ final public class AnelPlugin implements PluginInterface {
             }
             return success;
         } else if (!(deviceConnection instanceof DeviceConnectionUDP)) { // unknown protocol
+            Log.e(PLUGIN_ID, "executeDeviceBatch: no known DeviceConnection " + deviceConnection.getProtocol());
             return 0;
         }
 
@@ -175,15 +181,15 @@ final public class AnelPlugin implements PluginInterface {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(udpSending, App.instance, deviceConnection, data,
-                    requestMessage, UDPSending.INQUERY_REQUEST));
+            new SendAndObserve(udpSending, App.instance, deviceConnection, data,
+                    requestMessage, UDPSending.INQUERY_REQUEST);
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            udpSending.addJob(new UDPSending.SendAndObserveJob(udpSending, App.instance, deviceConnection, data,
-                    requestMessage, UDPSending.INQUERY_REQUEST));
+            new SendAndObserve(udpSending, App.instance, deviceConnection, data,
+                    requestMessage, UDPSending.INQUERY_REQUEST);
         }
 
         return command_list.size();
@@ -191,7 +197,7 @@ final public class AnelPlugin implements PluginInterface {
 
     public void startUDPDiscoveryThreads(Set<Integer> additional_port) {
         // Get all ports of configured devices and add the additional_port if != 0
-        Set<Integer> ports = AppData.getInstance().getAllReceivePorts();
+        Set<Integer> ports = pluginService.getAppData().getAllReceivePorts();
         if (additional_port != null)
             ports.addAll(additional_port);
 
@@ -316,21 +322,18 @@ final public class AnelPlugin implements PluginInterface {
             }
 
             byte[] data;
-            UDPSending.Job j;
             if (port.id >= 10 && port.id < 20) {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         port.id - 10, device.getUserName(), device.getPassword()).getBytes();
-                j = new UDPSending.SendAndObserveJob(udpSending, service, deviceConnection, data, requestMessage, UDPSending.INQUERY_REQUEST);
-                udpSending.addJob(j);
+                new SendAndObserve(udpSending, service, deviceConnection, data, requestMessage, UDPSending.INQUERY_REQUEST);
                 if (callback != null) callback.onExecutionProgress(1, 0, 1);
                 return true;
             } else if (port.id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         port.id, device.getUserName(), device.getPassword()).getBytes();
-                j = new UDPSending.SendAndObserveJob(udpSending, service, deviceConnection, data, requestMessage, UDPSending.INQUERY_REQUEST);
-                udpSending.addJob(j);
+                new SendAndObserve(udpSending, service, deviceConnection, data, requestMessage, UDPSending.INQUERY_REQUEST);
                 if (callback != null) callback.onExecutionProgress(1, 0, 1);
                 return true;
             } else {
@@ -338,7 +341,7 @@ final public class AnelPlugin implements PluginInterface {
                 return false;
             }
         } else {
-            Log.e("Anel", "execute. No reachable DeviceConnection found!");
+            Log.e(PLUGIN_ID, "execute. No reachable DeviceConnection found!");
             if (callback != null) callback.onExecutionProgress(0, 1, 1);
             return false;
         }
@@ -349,7 +352,7 @@ final public class AnelPlugin implements PluginInterface {
      */
     private boolean checkAndStartUDP() {
         if (udpSending == null) {
-            InAppNotifications.showException(PluginService.getService(), new Exception(), "udpSending null");
+            InAppNotifications.showException(pluginService, new Exception(), "udpSending null");
             return true;
         }
         return false;
@@ -361,7 +364,7 @@ final public class AnelPlugin implements PluginInterface {
     }
 
     @Override
-    public void onStart(PluginService service) {
+    public void onStart() {
 
     }
 
@@ -391,6 +394,10 @@ final public class AnelPlugin implements PluginInterface {
         device.lockDevice();
         DeviceConnection ci = device.getConnectionByID(device_connection_id);
         device.releaseDevice();
+        if (ci == null) {
+            Log.e(PLUGIN_ID, "requestData: no DeviceConnection for id " + String.valueOf(device_connection_id));
+            return;
+        }
         if (ci instanceof DeviceConnectionHTTP) {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci,
                     "strg.cfg", "", ci, false, AnelHttpReceiveSend.receiveCtrlHtml));
@@ -398,7 +405,7 @@ final public class AnelPlugin implements PluginInterface {
             if (checkAndStartUDP()) {
                 return;
             }
-            udpSending.addJob(new UDPSending.SendAndObserveJob(udpSending, service, ci, requestMessage, UDPSending.INQUERY_REQUEST));
+            new SendAndObserve(udpSending, service, ci, requestMessage, UDPSending.INQUERY_REQUEST);
         }
     }
 
@@ -560,12 +567,12 @@ final public class AnelPlugin implements PluginInterface {
             }
         }.execute(this);
 
-        AppData d = AppData.getInstance();
+        AppData d = pluginService.getAppData();
         for (Device di : d.findDevices(this)) {
             // Mark all devices as changed: If network reduced mode ends all
             // devices propagate changes then.
             di.setStatusMessage("UDP", App.getAppString(R.string.device_energysave_mode), true);
-            d.updateExistingDevice(di);
+            d.updateExistingDevice(di, true);
         }
     }
 
@@ -609,12 +616,12 @@ final public class AnelPlugin implements PluginInterface {
 
     @Override
     public void saveAlarm(Timer timer, onHttpRequestResult callback) {
-        anelAlarm.saveAlarm(timer, callback);
+        anelAlarm.saveAlarm(pluginService.getAppData(), timer, callback);
     }
 
     @Override
     public void removeAlarm(Timer timer, onHttpRequestResult callback) {
-        anelAlarm.removeAlarm(timer, callback);
+        anelAlarm.removeAlarm(pluginService.getAppData(), timer, callback);
     }
 
     @Override

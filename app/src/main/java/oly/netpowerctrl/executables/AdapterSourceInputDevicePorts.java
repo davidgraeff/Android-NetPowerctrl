@@ -6,51 +6,26 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.data.onDataLoaded;
-import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.devices.DeviceCollection;
 
 /**
  * Created by david on 07.07.14.
  */
-public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implements onCollectionUpdated<Object, Device>, onDataQueryCompleted, onDataLoaded {
+public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements onCollectionUpdated<Object, Device> {
     private List<DevicePort> mList = new ArrayList<>();
-
-    public ExecutablesSourceDevicePorts(ExecutablesSourceChain executablesSourceChain) {
-        super(executablesSourceChain);
-    }
+    private DeviceCollection deviceCollection = null;
 
     @Override
-    public int doCountIfGroup(UUID uuid) {
-        int c = 0;
-        for (Device device : AppData.getInstance().deviceCollection.getItems()) {
-            if (hideNotReachable && device.getFirstReachableConnection() == null)
-                continue;
-
-            device.lockDevicePorts();
-            Iterator<DevicePort> iterator = device.getDevicePortIterator();
-            while (iterator.hasNext()) {
-                DevicePort devicePort = iterator.next();
-                if (!devicePort.isHidden() && (uuid == null && devicePort.groups.size() == 0 || devicePort.groups.contains(uuid)))
-                    ++c;
-            }
-            device.releaseDevicePorts();
-        }
-        return c;
-    }
-
-    @Override
-    public void fullUpdate(ExecutablesBaseAdapter adapter) {
-
+    public void doUpdateNow(@NonNull ExecutablesBaseAdapter adapter) {
         mList.clear();
-        for (Device device : AppData.getInstance().deviceCollection.getItems()) {
-            if (hideNotReachable && device.getFirstReachableConnection() == null)
+        for (Device device : deviceCollection.getItems()) {
+            if (adapterSource.hideNotReachable && device.getFirstReachableConnection() == null)
                 continue;
 
             device.lockDevicePorts();
@@ -64,57 +39,35 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
             device.releaseDevicePorts();
         }
 
-        if (adapter == null) {
-            automaticUpdatesDisable();
-        } else {
-            for (DevicePort devicePort : mList)
-                if (!hideNotReachable || devicePort.isReachable())
-                    adapter.addItem(devicePort, devicePort.current_value);
-        }
+        for (DevicePort devicePort : mList)
+            if (!adapterSource.hideNotReachable || devicePort.isReachable())
+                adapter.addItem(devicePort, devicePort.current_value);
     }
 
     @Override
-    protected void automaticUpdatesDisable() {
-        AppData.observersDataQueryCompleted.unregister(this);
-        AppData.getInstance().deviceCollection.unregisterObserver(this);
+    void onStart(AppData appData) {
+        this.deviceCollection = appData.deviceCollection;
+        deviceCollection.registerObserver(this);
     }
 
     @Override
-    protected void automaticUpdatesEnable() {
-        AppData.observersDataQueryCompleted.register(this);
-        // If no data has been loaded so far, wait for load action to be completed before
-        // registering to deviceCollection changes.
-        if (!AppData.isDataLoaded())
-            AppData.observersOnDataLoaded.register(this);
-        else {
-            AppData.getInstance().deviceCollection.registerObserver(this);
-        }
+    void onFinish() {
+        if (deviceCollection != null) deviceCollection.unregisterObserver(this);
+        deviceCollection = null;
     }
 
-    @Override
-    public boolean onDataQueryFinished(boolean networkDevicesNotReachable) {
-        //updateNow();
-        return true;
-    }
-
-    @Override
-    public boolean onDataLoaded() {
-        if (automaticUpdatesEnabled)
-            automaticUpdatesEnable();
-        return true;
-    }
 
     @Override
     public boolean updated(@NonNull Object collection, Device device, @NonNull ObserverUpdateActions action, int position) {
-        if (adapterWeakReference == null || device == null)
+        if (device == null || adapterSource.ignoreUpdatesExecutable == device)
             return true;
 
-        ExecutablesBaseAdapter adapter = adapterWeakReference.get();
+        ExecutablesBaseAdapter adapter = adapterSource.getAdapter();
         if (adapter == null) {
             return true;
         }
 
-        if (action == ObserverUpdateActions.RemoveAction || (hideNotReachable && device.getFirstReachableConnection() == null)) {
+        if (action == ObserverUpdateActions.RemoveAction || (adapterSource.hideNotReachable && device.getFirstReachableConnection() == null)) {
             Log.w("REMOVE source ports", device.getDeviceName());
             device.lockDevicePorts();
             Iterator<DevicePort> it = device.getDevicePortIterator();
@@ -137,12 +90,11 @@ public class ExecutablesSourceDevicePorts extends ExecutablesSourceBase implemen
 
         } else if (action == ObserverUpdateActions.ClearAndNewAction || action == ObserverUpdateActions.RemoveAllAction) {
             Log.w("CLEAR source ports", device.getDeviceName());
-            updateNow();
+            adapterSource.updateNow();
             return true;
         }
 
-        if (onChangeListener != null)
-            onChangeListener.sourceChanged();
+        adapterSource.sourceChanged();
 
         return true;
     }

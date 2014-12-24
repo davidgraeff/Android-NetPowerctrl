@@ -1,8 +1,7 @@
 package oly.netpowerctrl.devices;
 
-import android.content.Context;
-
 import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Created by david on 05.09.14.
@@ -16,7 +15,7 @@ public interface EditDeviceInterface {
 
     boolean isTesting();
 
-    boolean startTest(Context context);
+    boolean startTest(PluginService context);
 
     boolean isTestOK();
 

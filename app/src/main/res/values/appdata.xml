@@ -6,5 +6,5 @@
     <string name="acralyzer_http_pwd" translatable="false">Ap1xIKwclTDDcU3BiNDtjl5Q</string>
     <string name="github_issues" translatable="false">https://api.github.com/repos/davidgraeff/Android-NetPowerctrl/issues</string>
     <string name="github_access_token" translatable="false">5cb89af92fa58959dcb8672c688f422c0ae8fd6b</string>
-    <string name="cloudant_bugs" translatable="false">https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_view/bugs</string>
+    <string name="cloudant_bugs" translatable="false">https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_view/bugs?group=true</string>
 </resources>

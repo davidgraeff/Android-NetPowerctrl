@@ -18,16 +18,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.utils.Streams;
 
 /**
  * Created by david on 07.09.14.
  */
 public class ImportExport {
-    public static void clearData(Context context) {
+    public static void clearData(PluginService context) {
         //noinspection ResultOfMethodCallIgnored
         context.getDir("images", 0).delete();
-        AppData appData = AppData.getInstance();
+        AppData appData = context.getAppData();
         LoadStoreJSonData loadStoreJSonData = appData.getLoadStoreJSonData();
         loadStoreJSonData.clear(appData.groupCollection);
         loadStoreJSonData.clear(appData.sceneCollection);
@@ -94,7 +95,7 @@ public class ImportExport {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void importData(Context context, Uri sourceFileUri) {
+    public static void importData(PluginService context, Uri sourceFileUri) {
         File destinationPathFile = context.getFilesDir();
         File destinationPathFileTemp = context.getDir("temp", 0);
         String destinationPathTemp = destinationPathFileTemp.getAbsolutePath();

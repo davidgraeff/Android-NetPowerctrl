@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 
 import java.util.List;
 
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
@@ -18,8 +19,12 @@ import oly.netpowerctrl.device_base.device.DevicePort;
 public class DeviceCollection extends CollectionWithStorableItems<DeviceCollection, Device> {
     private static final String TAG = "DeviceCollection";
 
-    public static DeviceCollection fromDevices(List<Device> devices, onStorageUpdate storage) {
-        DeviceCollection dc = new DeviceCollection();
+    public DeviceCollection(AppData appData) {
+        super(appData);
+    }
+
+    public static DeviceCollection fromDevices(AppData appData, List<Device> devices, onStorageUpdate storage) {
+        DeviceCollection dc = new DeviceCollection(appData);
         dc.storage = storage;
         dc.items = devices;
         return dc;
@@ -97,10 +102,6 @@ public class DeviceCollection extends CollectionWithStorableItems<DeviceCollecti
     @Override
     public String type() {
         return "devices";
-    }
-
-    public void groupsUpdated(Device device) {
-        notifyObservers(device, ObserverUpdateActions.ClearAndNewAction, -1);
     }
 
     public void setHasChangedAll() {

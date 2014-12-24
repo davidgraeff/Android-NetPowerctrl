@@ -18,7 +18,6 @@ import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.ui.widgets.RelativeLayoutRipple;
 
 /**
  * An item in a devicePort adapter. Used for implementing the ViewHolder pattern.
@@ -42,6 +41,7 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
     private DrawableState state = DrawableState.Off;
     private Executable executable;
     private IconDeferredLoadingThread mIconLoadThread;
+    private boolean showImages;
 
     ExecutableViewHolder(View convertView, ExecutableAdapterItem.groupTypeEnum groupTypeEnum, IconDeferredLoadingThread iconLoadThread) {
         super(convertView);
@@ -69,7 +69,7 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
 
     @SuppressWarnings("SameParameterValue")
     private void loadIcon(LoadStoreIconData.IconState state, int bitmapPosition) {
-        if (imageIcon == null) return;
+        if (imageIcon == null || !showImages) return;
         mIconLoadThread.loadIcon(new IconDeferredLoadingThread.IconItem(state, bitmapPosition, this));
     }
 
@@ -138,9 +138,9 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
 
         setIsRecyclable(false);
 
-        if (entry instanceof RelativeLayoutRipple) {
-            ((RelativeLayoutRipple) entry).afterClickTouchEvent();
-        }
+//        if (entry instanceof RelativeLayoutRipple) {
+//            ((RelativeLayoutRipple) entry).afterClickTouchEvent();
+//        }
 
         progress.setVisibility(View.VISIBLE);
 
@@ -256,6 +256,14 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
                     setBitmapOn();
                 break;
         }
+    }
+
+    public boolean isShowImages() {
+        return showImages;
+    }
+
+    public void setShowImages(boolean showImages) {
+        this.showImages = showImages;
     }
 
     private enum DrawableState {Off, On}

@@ -13,9 +13,9 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Set;
 
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPSending;
+import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -47,13 +47,13 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
 
     @Override
     public void process() {
-        Set<Integer> ports = AppData.getInstance().getAllSendPorts();
-
         UDPSending udpSending = udpSendingReference.get();
         if (udpSending == null) {
             Logging.getInstance().logDetect("UDP AnelBroadcastSendJob: No udp Sending!");
             return;
         }
+        Set<Integer> ports = PluginService.getService().getAppData().getAllSendPorts();
+
         DatagramSocket datagramSocket = udpSending.datagramSocket;
         boolean logDetect = Logging.getInstance().mLogDetect;
 

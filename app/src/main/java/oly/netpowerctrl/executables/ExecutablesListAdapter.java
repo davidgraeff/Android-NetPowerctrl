@@ -13,7 +13,7 @@ public class ExecutablesListAdapter extends ExecutablesBaseAdapter {
     private final boolean checkable;
     private SparseBooleanArray checked = new SparseBooleanArray();
 
-    public ExecutablesListAdapter(boolean checkable, @NonNull ExecutablesSourceBase source,
+    public ExecutablesListAdapter(boolean checkable, @NonNull AdapterSource source,
                                   @NonNull IconDeferredLoadingThread iconCache, boolean showGroups) {
         super(source, iconCache, showGroups);
         this.checkable = checkable;
@@ -21,7 +21,7 @@ public class ExecutablesListAdapter extends ExecutablesBaseAdapter {
             setLayoutRes(R.layout.list_item_selectable_outlet);
         else
             setLayoutRes(R.layout.list_item_available_outlet);
-        source.updateNow();
+        source.setTargetAdapter(this);
     }
 
     @Override

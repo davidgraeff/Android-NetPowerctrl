@@ -22,15 +22,16 @@ import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 
 /**
  * Show a permanent notification in the android statusbar and add favourite scenes and devicePorts as actions.
  */
-public class AndroidStatusBarService extends Service implements onDataLoaded {
+public class AndroidStatusBarService extends Service implements onServiceReady {
 
     public static AndroidStatusBarService instance;
     NotificationManager mNotificationManager;
@@ -38,7 +39,7 @@ public class AndroidStatusBarService extends Service implements onDataLoaded {
             new onCollectionUpdated<FavCollection, FavCollection.FavItem>() {
                 @Override
                 public boolean updated(@NonNull FavCollection collection, FavCollection.FavItem item, @NonNull ObserverUpdateActions action, int position) {
-                    createNotification();
+                    createNotification(collection.appData);
                     return true;
                 }
             };
@@ -50,7 +51,7 @@ public class AndroidStatusBarService extends Service implements onDataLoaded {
             context.stopService(new Intent(context, AndroidStatusBarService.class));
     }
 
-    private void createNotification() {
+    private void createNotification(AppData appData) {
         Context context = this;
         Intent startMainIntent = new Intent(context, MainActivity.class);
         startMainIntent.setAction(Intent.ACTION_MAIN);
@@ -59,7 +60,6 @@ public class AndroidStatusBarService extends Service implements onDataLoaded {
 
         Notification.Builder b;
 
-        AppData appData = AppData.getInstance();
         FavCollection g = appData.favCollection;
         int maxLength = 0;
         List<FavCollection.FavItem> items = new ArrayList<>(g.getItems());
@@ -112,15 +112,6 @@ public class AndroidStatusBarService extends Service implements onDataLoaded {
         mNotificationManager.cancel(1);
         //noinspection deprecation
         mNotificationManager.notify(1, b.getNotification());
-
-        AppData.useAppData();
-        AppData.observersOnDataLoaded.register(this);
-    }
-
-    @Override
-    public boolean onDataLoaded() {
-        AppData.getInstance().favCollection.registerObserver(collectionUpdateListener);
-        return false;
     }
 
     @Override
@@ -129,7 +120,7 @@ public class AndroidStatusBarService extends Service implements onDataLoaded {
 
         instance = this;
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        createNotification();
+        PluginService.observersServiceReady.register(this);
     }
 
     @Override
@@ -142,5 +133,17 @@ public class AndroidStatusBarService extends Service implements onDataLoaded {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public boolean onServiceReady(PluginService service) {
+        createNotification(service.getAppData());
+        service.getAppData().favCollection.registerObserver(collectionUpdateListener);
+        return false;
+    }
+
+    @Override
+    public void onServiceFinished(PluginService service) {
+
     }
 }

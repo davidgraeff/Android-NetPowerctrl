@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -23,15 +22,16 @@ import android.widget.Toast;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
+import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.executables.ExecutablesSourceDevicePorts;
 import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
@@ -41,13 +41,13 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     private Timer timer = Timer.createNewTimer();
     private View rootView;
     private View titleView;
-    private ViewParent scrollView;
     private Toast toast;
     private Spinner spinner;
     private boolean isNew = true;
     private boolean is_android_alarm;
     private List<Executable> executables = new ArrayList<>();
     private boolean willDelete = false;
+    private AppData appData;
 
     public TimerEditFragmentDialog() {
     }
@@ -74,16 +74,27 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     }
 
     private void changeExecutableList() {
-        final ExecutablesSourceDevicePorts s = new ExecutablesSourceDevicePorts(null);
-        s.fullUpdate(null);
+        List<DevicePort> mList = new ArrayList<>();
+
+        for (Device device : appData.deviceCollection.getItems()) {
+            device.lockDevicePorts();
+            Iterator<DevicePort> iterator = device.getDevicePortIterator();
+            while (iterator.hasNext()) {
+                DevicePort devicePort = iterator.next();
+                if (devicePort.isHidden())
+                    continue;
+                mList.add(devicePort);
+            }
+            device.releaseDevicePorts();
+        }
 
         executables.clear();
 
-        for (int i = 0; i < s.getDevicePortList().size(); ++i)
-            executables.add(s.getDevicePortList().get(i));
+        for (int i = 0; i < mList.size(); ++i)
+            executables.add(mList.get(i));
 
         if (is_android_alarm) {
-            for (Scene scene : AppData.getInstance().sceneCollection.getItems()) {
+            for (Scene scene : appData.sceneCollection.getItems()) {
                 executables.add(scene);
             }
         }
@@ -99,6 +110,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_alarm_edit, null);
+        appData = PluginService.getService().getAppData();
 
         toast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
 
@@ -132,7 +144,6 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         // Add weekdays
         com.wefika.flowlayout.FlowLayout layout = (com.wefika.flowlayout.FlowLayout) rootView.findViewById(R.id.weekday_layout);
-        scrollView = (ViewParent) rootView.findViewById(R.id.scrollView);
 
         if (timer.type == Timer.TYPE_RANGE_ON_WEEKDAYS || timer.type == Timer.TYPE_RANGE_ON_RANDOM_WEEKDAYS) {
             String[] weekDays_Strings = DateFormatSymbols.getInstance().getShortWeekdays();
@@ -242,7 +253,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             @Override
             public void onClick(View v) {
                 willDelete = true;
-                AppData.getInstance().timerCollection.removeDeviceAlarm(timer, TimerEditFragmentDialog.this);
+                appData.timerCollection.removeDeviceAlarm(timer, TimerEditFragmentDialog.this);
             }
         });
     }
@@ -283,12 +294,12 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
 
         if (is_android_alarm) {
-            AppData.getInstance().timerCollection.addAlarm(timer);
+            appData.timerCollection.addAlarm(timer);
             dismiss();
         } else {
             DevicePort devicePort = (DevicePort) timer.executable;
             PluginService.getService().wakeupPlugin(devicePort.device);
-            PluginInterface plugin = (PluginInterface) devicePort.device.getPluginInterface();
+            AbstractBasePlugin plugin = (AbstractBasePlugin) devicePort.device.getPluginInterface();
 
             // Find free device alarm, if not already assigned
             if (timer.alarmOnDevice == null || commandBefore != timer.command) {

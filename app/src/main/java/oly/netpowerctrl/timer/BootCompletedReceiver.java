@@ -4,8 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.onDataLoaded;
+import java.lang.ref.WeakReference;
+
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 
 /**
  * Setup alarms on boot
@@ -13,16 +16,23 @@ import oly.netpowerctrl.data.onDataLoaded;
 public class BootCompletedReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive(final Context context, final Intent intent) {
-        AppData.observersOnDataLoaded.register(new onDataLoaded() {
-            @Override
-            public boolean onDataLoaded() {
-                if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-                    TimerCollection.setupAndroidAlarm(context);
+    public void onReceive(Context context, final Intent intent) {
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            final Object keepServiceAliveObject = new Object();
+            PluginService.observersServiceReady.register(new onServiceReady() {
+                @Override
+                public boolean onServiceReady(PluginService service) {
+                    service.getAppData().timerCollection.setupAndroidAlarm(App.instance);
+                    PluginService.stopUseService(keepServiceAliveObject);
+                    return false;
                 }
-                return false;
-            }
-        });
-        AppData.useAppData();
+
+                @Override
+                public void onServiceFinished(PluginService service) {
+
+                }
+            });
+            PluginService.useService(new WeakReference<>(keepServiceAliveObject));
+        }
     }
 }

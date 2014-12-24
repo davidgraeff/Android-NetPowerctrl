@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,12 +17,15 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
@@ -29,8 +33,9 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.pluginservice.PluginInterface;
+import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.WakeLocker;
@@ -88,7 +93,49 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         }
     };
 
-    public static void setupAndroidAlarm(Context context) {
+    public TimerCollection(AppData appData) {
+        super(appData);
+        appData.deviceCollection.registerObserver(deviceObserver);
+    }
+
+    /**
+     * Check for alarms. The PluginService as well as the AppData object may not be ready at this time.
+     */
+    public static void checkAlarm() {
+        final long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(App.instance);
+
+        { // Check if current time matches somehow the setup next alarm time
+            long maxDiffms = 50000;
+            long current = System.currentTimeMillis();
+            // Do not setup an alarm again, if there is one setup in the future already
+            if (nextAlarmTimestamp > current) return;
+
+            if (nextAlarmTimestamp + maxDiffms < current) {
+                PluginService.observersServiceReady.register(new onServiceReady() {
+                    @Override
+                    public boolean onServiceReady(PluginService service) {
+                        service.getAppData().timerCollection.setupAndroidAlarm(App.instance);
+                        return false;
+                    }
+
+                    @Override
+                    public void onServiceFinished(PluginService service) {
+                    }
+                });
+                return;
+            }
+        } // From here on, we use nextAlarmTimestamp as current
+
+        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+            @Override
+            public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+                appData.timerCollection.executeAlarm(appData, nextAlarmTimestamp);
+                return false;
+            }
+        });
+    }
+
+    public void setupAndroidAlarm(Context context) {
         // We use either the current time or if it the same as the already saved next alarm time, current time + 1
         long current = System.currentTimeMillis();
         long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(context);
@@ -97,8 +144,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         Timer nextTimer = null;
 
-        TimerCollection timerCollection = AppData.getInstance().timerCollection;
-        List<Timer> timerList = timerCollection.getItems();
+        List<Timer> timerList = getItems();
         for (int i = timerList.size() - 1; i >= 0; --i) {
             Timer timer = timerList.get(i);
             if (timer.alarmOnDevice != null)
@@ -113,11 +159,14 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
             // Remove old one-time timer
             if (timer.type == Timer.TYPE_ONCE && timer.next_execution_unix_time < current) {
-                timerCollection.removeAlarmFromDisk(timer);
+                removeAlarmFromDisk(timer);
             }
         }
 
-        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (nextTimer != null && nextAlarmTimestamp == nextTimer.next_execution_unix_time)
+            throw new RuntimeException("Same alarm selected for next execution!");
+
+        AlarmManager mgr = (AlarmManager) context.getSystemService(android.content.Context.ALARM_SERVICE);
         Intent intent = new Intent(context, PluginService.class);
         intent.putExtra("isAlarm", true);
         PendingIntent pi = PendingIntent.getService(context, 1191, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_CANCEL_CURRENT);
@@ -158,40 +207,22 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 PackageManager.DONT_KILL_APP);
     }
 
-    public static void checkAndExecuteAlarm() {
-        long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(App.instance);
+    private void executeAlarm(AppData appData, long nextAlarmTimestamp) {
+        List<Executable> executables = new ArrayList<>();
+        List<Integer> commands = new ArrayList<>();
 
-        { // Check if current time matches somehow the setup next alarm time
-            long maxDiffms = 50000;
-            long current = System.currentTimeMillis();
+        // Reset the stored nextAlarm time.
+        SharedPrefs.setNextAlarmCheckTimestamp(App.instance, -1);
 
-            if (nextAlarmTimestamp > current || nextAlarmTimestamp + maxDiffms < current) {
-                TimerCollection.setupAndroidAlarm(App.instance);
-                return;
-            }
-        } // From here on, we use nextAlarmTimestamp as current
-
-        onExecutionFinished executionFinished = new onExecutionFinished() {
-            @Override
-            public void onExecutionProgress(int success, int errors, int all) {
-                if (success + errors >= all) {
-                    Logging.getInstance().logAlarm("Alarm items (OK, FAIL):\n" + String.valueOf(success) + ", " + String.valueOf(errors));
-                    WakeLocker.release();
-                    PluginService.getService().checkStopAfterAlarm();
-                }
-            }
-        };
-
-        boolean alarmExecuted = false;
-
-        for (Timer timer : AppData.getInstance().timerCollection.getItems()) {
+        // Determine executables for the given alarm time {@link nextAlarmTimestamp}
+        for (Timer timer : getItems()) {
             if (timer.alarmOnDevice != null)
                 continue;
 
             timer.computeNextAlarmUnixTime(nextAlarmTimestamp);
 
             if (timer.next_execution_unix_time == nextAlarmTimestamp) {
-                Executable executable = AppData.getInstance().findExecutable(timer.executable_uid);
+                Executable executable = appData.findExecutable(timer.executable_uid);
 
                 if (executable != null)
                     Logging.getInstance().logAlarm("Alarm: " + executable.getTitle());
@@ -200,23 +231,52 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                     continue;
                 }
 
-                alarmExecuted = true;
-
-                if (executable instanceof DevicePort) {
-                    WakeLocker.acquire(App.instance);
-                    AppData.getInstance().execute((DevicePort) executable, timer.command, executionFinished);
-                } else if (executable instanceof Scene) {
-                    WakeLocker.acquire(App.instance);
-                    AppData.getInstance().execute((Scene) executable, executionFinished);
-                }
+                executables.add(executable);
+                commands.add(timer.command);
             }
         }
 
-        if (!alarmExecuted)
+        if (executables.size() == 0) {
             Logging.getInstance().logAlarm("Armed alarm not found!");
+            setupAndroidAlarm(App.instance);
+            return;
+        }
 
+        // Setup executionFinished callback and countDownLatch to release the wavelock, that we will
+        // acquire for the duration of the alarm execution.
+        final CountDownLatch countDownLatch = new CountDownLatch(executables.size());
+        onExecutionFinished executionFinished = new onExecutionFinished() {
+            @Override
+            public void onExecutionProgress(int success, int errors, int all) {
+                if (success + errors >= all) {
+                    Log.w(TAG, "alarm finished");
+                    Thread.dumpStack();
+                    Logging.getInstance().logAlarm("Alarm items (OK, FAIL):\n" + String.valueOf(success) + ", " + String.valueOf(errors));
+                    countDownLatch.countDown();
+                }
+            }
+        };
+
+        Iterator<Integer> command_it = commands.iterator();
+        for (Executable executable : executables) {
+            if (executable instanceof DevicePort) {
+                WakeLocker.acquire(App.instance);
+                appData.execute((DevicePort) executable, command_it.next(), executionFinished);
+            } else if (executable instanceof Scene) {
+                WakeLocker.acquire(App.instance);
+                appData.execute((Scene) executable, executionFinished);
+            }
+        }
+
+        try {
+            countDownLatch.await(5000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ignored) {
+        }
+
+        WakeLocker.release();
+        PluginService.getService().checkStopAfterAlarm();
         // Setup new alarm if one got executed
-        TimerCollection.setupAndroidAlarm(App.instance);
+        setupAndroidAlarm(App.instance);
     }
 
     public boolean isRequestActive() {
@@ -288,7 +348,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         if (timer.executable instanceof DevicePort && timer.alarmOnDevice != null) {
             Device device = ((DevicePort) timer.executable).device;
             PluginService.getService().wakeupPlugin(device);
-            PluginInterface p = (PluginInterface) device.getPluginInterface();
+            AbstractBasePlugin p = (AbstractBasePlugin) device.getPluginInterface();
             p.removeAlarm(timer, new onHttpRequestResult() {
                 @Override
                 public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
@@ -349,7 +409,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         service.wakeupAllDevices();
 
-        DeviceCollection c = AppData.getInstance().deviceCollection;
+        DeviceCollection c = service.getAppData().deviceCollection;
         // Put all ports of all devices into the list alarm_ports.
         // If a port is referenced by the alarm_uuids hashSet, it will be put in front of the list
         // to refresh that port first.
@@ -375,7 +435,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         receivedAlarmCount = 0;
         allAlarmCount = 0;
         for (DevicePort port : alarm_ports) {
-            PluginInterface i = (PluginInterface) port.device.getPluginInterface();
+            AbstractBasePlugin i = (AbstractBasePlugin) port.device.getPluginInterface();
             //TODO eigentlich sollen alle getPluginInterface() etwas zurückgeben. Jedoch laden Erweiterungen nicht schnell genug für diesen Aufruf hier
             if (i != null) {
                 ++allAlarmCount;
@@ -408,4 +468,11 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         return "alarms";
     }
 
+    @Override
+    public void addWithourSave(Timer timer) throws ClassNotFoundException {
+        Executable executable = appData.findExecutable(timer.executable_uid);
+        if (executable == null)
+            throw new ClassNotFoundException(toString());
+        super.addWithourSave(timer);
+    }
 }

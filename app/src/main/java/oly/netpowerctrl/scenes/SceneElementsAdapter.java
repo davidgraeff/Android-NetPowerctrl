@@ -226,9 +226,9 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
      *
      * @param scene
      */
-    public void loadItemsOfScene(Scene scene) {
+    public void loadItemsOfScene(AppData appData, Scene scene) {
         for (SceneItem sceneItem : scene.sceneItems) {
-            DevicePort port = AppData.getInstance().findDevicePort(sceneItem.uuid);
+            DevicePort port = appData.findDevicePort(sceneItem.uuid);
             if (port == null) {
                 continue;
             }
