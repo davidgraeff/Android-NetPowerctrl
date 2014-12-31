@@ -72,8 +72,8 @@ public class SceneCollection extends CollectionWithStorableItems<SceneCollection
             scene.setMaximumValue(devicePort.getMaximumValue());
             changed = true;
         }
-        if (scene.isReachable() != devicePort.isReachable()) {
-            scene.setReachable(devicePort.isReachable());
+        if (scene.reachableState() != devicePort.reachableState()) {
+            scene.setReachable(devicePort.reachableState());
             changed = true;
         }
 

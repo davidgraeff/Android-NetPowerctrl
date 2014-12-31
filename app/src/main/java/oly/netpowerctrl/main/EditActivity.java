@@ -28,6 +28,8 @@ import android.widget.Toast;
 
 import com.wefika.flowlayout.FlowLayout;
 
+import java.util.UUID;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
@@ -142,6 +144,21 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         show_mainWindow = (CheckBox) findViewById(R.id.shortcut_show_mainwindow);
         enable_feedback = (CheckBox) findViewById(R.id.shortcut_enable_feedback);
         groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
+        Button btnGroupAdd = (Button) findViewById(R.id.btnAddGroup);
+        btnGroupAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final AppData appData = PluginService.getService().getAppData();
+                GroupUtilities.createGroup(view.getContext(), appData.groupCollection,
+                        new GroupUtilities.GroupCreatedCallback() {
+                            @Override
+                            public void onGroupCreated(int group_index, UUID group_uid) {
+                                updateGroups(appData.groupCollection);
+                            }
+                        });
+            }
+        });
+
 
         View.OnClickListener iconClick = new View.OnClickListener() {
             @Override
@@ -323,7 +340,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     }
 
     private void createContent(final AppData appData, boolean createNewScene) {
-        executable = Scene.createNewSzene();
+        executable = Scene.createNewScene();
         btnAddHomescreen.setVisibility(View.GONE);
         btnNFC.setVisibility(View.GONE);
         btnFav.setVisibility(View.GONE);
@@ -396,14 +413,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             groups_layout.setVisibility(View.GONE);
             checked = null;
         } else {
-            checked = GroupUtilities.addGroupCheckBoxesToLayout(this, appData.groupCollection, groups_layout, executable.getGroups(),
-                    new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                            isChanged = true;
-                            updateSaveButton();
-                        }
-                    });
+            updateGroups(appData.groupCollection);
         }
 
         EditText nameEdit = (EditText) findViewById(R.id.scene_name);
@@ -423,6 +433,18 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         isChanged = false;
         updateSaveButton();
+    }
+
+    private void updateGroups(GroupCollection groupCollection) {
+        groups_layout.removeAllViews();
+        checked = GroupUtilities.addGroupCheckBoxesToLayout(this, groupCollection, groups_layout, executable.getGroups(),
+                new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                        isChanged = true;
+                        updateSaveButton();
+                    }
+                });
     }
 
     private void save_and_close() {

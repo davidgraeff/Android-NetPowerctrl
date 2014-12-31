@@ -1,7 +1,5 @@
 package oly.netpowerctrl.executables;
 
-import android.support.annotation.NonNull;
-
 import oly.netpowerctrl.data.AppData;
 
 /**
@@ -10,7 +8,7 @@ import oly.netpowerctrl.data.AppData;
 public abstract class AdapterSourceInput {
     protected AdapterSource adapterSource;
 
-    abstract void doUpdateNow(@NonNull ExecutablesBaseAdapter adapter);
+    abstract void doUpdateNow();
 
     abstract void onStart(AppData appData);
 

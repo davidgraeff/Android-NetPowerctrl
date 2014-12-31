@@ -34,6 +34,7 @@ import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
@@ -262,7 +263,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         if (widgetEntry.device != null) {
             setWidgetState(widgetEntry.widgetID, executable, true);
 
-            if (!executable.isReachable()) {
+            if (executable.reachableState() == ExecutableReachability.NotReachable) {
                 PluginService.getService().showNotificationForNextRefresh(true);
                 appData.refreshDeviceData(service, false);
                 return;
@@ -324,7 +325,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         LoadStoreIconData.IconState iconState;
         int string_res;
-        if (!executable.isReachable()) { // unreachable
+        if (executable.reachableState() == ExecutableReachability.NotReachable) { // unreachable
             string_res = R.string.widget_outlet_not_reachable;
             iconState = LoadStoreIconData.IconState.StateUnknown;
         } else if (executable.getCurrentValue() > 0) { // On
@@ -409,7 +410,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         List<Device> devicesToUpdate = new ArrayList<>();
         for (Map.Entry<Integer, WidgetExecutable> entry : allWidgets.entrySet()) {
             WidgetExecutable widgetExecutable = entry.getValue();
-            if (widgetExecutable.executable.isReachable())
+            if (widgetExecutable.executable.reachableState() == ExecutableReachability.Reachable)
                 setWidgetState(entry.getKey(), widgetExecutable.executable, false);
             else if (widgetExecutable.device != null) {
                 setWidgetState(entry.getKey(), widgetExecutable.executable, true);

@@ -21,6 +21,7 @@ import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
@@ -284,7 +285,7 @@ public class AppData {
     /**
      * Call this if you have made your changes to the given device and want to propagate those now.
      *
-     * @param existing_device The existing device (Device has to be an object within deviceCollection!)
+     * @param existing_device       The existing device (Device has to be an object within deviceCollection!)
      * @param notifyDeviceObservers Usually you want to inform also the DeviceQueries about updated
      *                              devices, except if you call this method from a DeviceQuery.
      */
@@ -313,7 +314,8 @@ public class AppData {
             deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.ConnectionUpdateAction, position);
         }
 
-        if (!existing_device.isReachable() && SharedPrefs.getInstance().notifyDeviceNotReachable()) {
+        if (existing_device.reachableState() == ExecutableReachability.NotReachable
+                && SharedPrefs.getInstance().notifyDeviceNotReachable()) {
             long current_time = System.currentTimeMillis();
             Toast.makeText(App.instance,
                     App.getAppString(R.string.error_setting_outlet, existing_device.getDeviceName(),

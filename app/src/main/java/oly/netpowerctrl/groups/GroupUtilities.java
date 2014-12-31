@@ -75,7 +75,7 @@ public class GroupUtilities {
                     return;
                 int index = groupCollection.add(name);
                 if (groupCreatedCallback != null)
-                    groupCreatedCallback.onGroupCreated(index);
+                    groupCreatedCallback.onGroupCreated(index, groupCollection.get(index).uuid);
             }
         });
 
@@ -111,6 +111,6 @@ public class GroupUtilities {
     }
 
     public interface GroupCreatedCallback {
-        void onGroupCreated(int group_index);
+        void onGroupCreated(int group_index, UUID group_uid);
     }
 }

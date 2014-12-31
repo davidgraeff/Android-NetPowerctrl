@@ -23,16 +23,17 @@ import java.io.IOException;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.executables.AdapterSource;
 import oly.netpowerctrl.executables.AdapterSourceInputDemo;
-import oly.netpowerctrl.executables.ExecuteAdapter;
+import oly.netpowerctrl.executables.ExecutablesAdapter;
 import oly.netpowerctrl.ui.SoftRadioGroup;
 
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
-public class OutletsViewTypeDialog extends DialogFragment {
-    public OutletsViewTypeDialog() {
+public class OutletsViewModeDialog extends DialogFragment {
+    public OutletsViewModeDialog() {
     }
 
     @Override
@@ -78,17 +79,15 @@ public class OutletsViewTypeDialog extends DialogFragment {
         radioGroupDesign.addView((RadioButton) rootView.findViewById(R.id.design2));
         radioGroupDesign.addView((RadioButton) rootView.findViewById(R.id.design3));
 
-        AdapterSource adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.NoAutoStart);
-        AdapterSourceInputDemo sourceInput = new AdapterSourceInputDemo();
-        adapterSource.add(sourceInput);
-        ExecuteAdapter adapter;
+        ExecutablesAdapter adapter;
+        AdapterSource adapterSource;
         GridLayoutManager gridLayoutManager;
         int rows;
 
         rows = 1;
-        adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
-        adapterSource.updateNow();
-        adapter.setLayoutRes(R.layout.list_item_executable);
+        adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
+        adapterSource.addInput(new AdapterSourceInputDemo());
+        adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.list_item_executable);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list1);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -114,9 +113,9 @@ public class OutletsViewTypeDialog extends DialogFragment {
         });
 
         rows = 2;
-        adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
-        adapterSource.updateNow();
-        adapter.setLayoutRes(R.layout.grid_item_executable);
+        adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
+        adapterSource.addInput(new AdapterSourceInputDemo());
+        adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.grid_item_executable);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list2);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -141,9 +140,9 @@ public class OutletsViewTypeDialog extends DialogFragment {
             }
         });
 
-        adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
-        adapterSource.updateNow();
-        adapter.setLayoutRes(R.layout.grid_item_compact_executable);
+        adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
+        adapterSource.addInput(new AdapterSourceInputDemo());
+        adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.grid_item_compact_executable);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list3);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -181,8 +180,7 @@ public class OutletsViewTypeDialog extends DialogFragment {
 
                         index = radioGroupDesign.getCheckedRadioButtonIndex();
                         if (index != -1) {
-                            Bundle extra = OutletsViewFragment.createBundleForView(index);
-                            MainActivity.getNavigationController().changeToFragment(OutletsViewFragment.class.getName(), extra);
+                            SharedPrefs.getInstance().setOutletsViewType(index);
                         }
                     }
                 });

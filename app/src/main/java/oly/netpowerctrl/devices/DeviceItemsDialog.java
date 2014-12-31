@@ -14,6 +14,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreIconData;
@@ -21,7 +24,7 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.executables.AdapterSource;
 import oly.netpowerctrl.executables.AdapterSourceInputOneDevicePorts;
-import oly.netpowerctrl.executables.ExecutablesListAdapter;
+import oly.netpowerctrl.executables.ExecutablesCheckableAdapter;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
@@ -32,7 +35,7 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
 public class DeviceItemsDialog extends DialogFragment implements RecyclerItemClickListener.OnItemClickListener {
     RecyclerItemClickListener onItemClickListener;
     AdapterSource adapterSource;
-    ExecutablesListAdapter adapter;
+    ExecutablesCheckableAdapter adapter;
     private Device device;
 
     public DeviceItemsDialog() {
@@ -68,10 +71,10 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
             mRecyclerView.addOnItemTouchListener(onItemClickListener);
             // Adapter (Checkable list) and Adapter Source (DevicePorts of one Device)
             AdapterSourceInputOneDevicePorts inputOneDevicePorts = new AdapterSourceInputOneDevicePorts(device);
-            adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.NoAutoStart);
-            adapterSource.add(inputOneDevicePorts);
-            adapter = new ExecutablesListAdapter(true, adapterSource, LoadStoreIconData.iconLoadingThread, false);
-            adapterSource.updateNow();
+            adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
+            adapterSource.addInput(inputOneDevicePorts);
+            adapterSource.setShowHeaders(false);
+            adapter = new ExecutablesCheckableAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
             adapter.setChecked(inputOneDevicePorts.shownDevicePorts());
             mRecyclerView.setAdapter(adapter);
 
@@ -79,11 +82,15 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
             return b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    Boolean[] checked = adapter.getChecked();
-                    for (int c = 0; c < checked.length; ++c) {
-                        DevicePort devicePort = (DevicePort) adapter.getItem(c).executable;
-                        devicePort.setHidden(!checked[c]);
+                    Set<String> shownExecutableUids = adapter.getCheckedItems();
+
+                    device.lockDevicePorts();
+                    Iterator<DevicePort> iterator = device.getDevicePortIterator();
+                    while (iterator.hasNext()) {
+                        DevicePort devicePort = iterator.next();
+                        devicePort.setHidden(!shownExecutableUids.contains(devicePort.getUid()));
                     }
+                    device.releaseDevicePorts();
                     appData.deviceCollection.save(device);
                     dismiss();
                 }

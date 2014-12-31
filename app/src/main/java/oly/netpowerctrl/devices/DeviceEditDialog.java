@@ -26,6 +26,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 
@@ -192,7 +193,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
             ((EditText) p.findViewById(R.id.device_http_port)).setText(String.valueOf(connection.getDestinationPort()));
             ImageView imageView = ((ImageView) p.findViewById(R.id.connection_reachable));
             imageView.setVisibility(View.VISIBLE);
-            if (connection.isReachable())
+            if (connection.reachableState() != ExecutableReachability.NotReachable)
                 imageView.setImageResource(android.R.drawable.presence_online);
             else
                 imageView.setImageResource(android.R.drawable.presence_offline);

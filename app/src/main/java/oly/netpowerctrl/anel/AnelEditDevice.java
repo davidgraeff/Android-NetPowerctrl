@@ -11,6 +11,7 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
@@ -99,10 +100,11 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
         if (updated_device.getUniqueDeviceID() == null || !updated_device.equalsByUniqueID(device))
             return true;
 
-        if (!updated_device.isReachable()) {
+        if (updated_device.reachableState() == ExecutableReachability.NotReachable) {
             test_state = TestStates.TEST_INIT;
             if (listener != null)
                 listener.testFinished(false);
+            return true;
         }
 
         if (test_state == TestStates.TEST_REACHABLE) {

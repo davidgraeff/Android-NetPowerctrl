@@ -26,6 +26,7 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.onDataQueryRefreshQuery;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
@@ -188,8 +189,7 @@ public class DevicesFragment extends Fragment
                 if (!item.isDeviceHeader) {
                     final AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
                     if (abstractBasePlugin != null) {
-                        item.tested = false;
-                        item.reachable = false;
+                        item.reachable = ExecutableReachability.MaybeReachable;
                         item.subtitle = getString(R.string.device_connection_testing);
                         adapter.notifyItemChanged(position);
                         item.enabled = false;

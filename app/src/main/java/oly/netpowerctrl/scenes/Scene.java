@@ -18,6 +18,7 @@ import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.data.StorableInterface;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 
 public class Scene implements StorableInterface, Executable {
@@ -32,7 +33,7 @@ public class Scene implements StorableInterface, Executable {
     private int currentValue = 0;
     private int maximumValue = 0;
 
-    private boolean reachable = false;
+    private ExecutableReachability reachable = ExecutableReachability.MaybeReachable;
 
     /**
      * Create an invalid scene. Do not use that constructor, it is for instantiating per reflection only!
@@ -40,7 +41,7 @@ public class Scene implements StorableInterface, Executable {
     public Scene() {
     }
 
-    public static Scene createNewSzene() {
+    public static Scene createNewScene() {
         Scene scene = new Scene();
         scene.uuid = UUID.randomUUID().toString();
         return scene;
@@ -254,11 +255,11 @@ public class Scene implements StorableInterface, Executable {
     }
 
     @Override
-    public boolean isReachable() {
-        return !isMasterSlave() || reachable;
+    public ExecutableReachability reachableState() {
+        return reachable;
     }
 
-    public void setReachable(boolean reachable) {
+    public void setReachable(ExecutableReachability reachable) {
         this.reachable = reachable;
     }
 

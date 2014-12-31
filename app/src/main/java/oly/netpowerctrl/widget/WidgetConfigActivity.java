@@ -20,8 +20,7 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.executables.AdapterSource;
 import oly.netpowerctrl.executables.AdapterSourceInputDevicePorts;
 import oly.netpowerctrl.executables.AdapterSourceInputScenes;
-import oly.netpowerctrl.executables.ExecutablesBaseAdapter;
-import oly.netpowerctrl.executables.ExecutablesListAdapter;
+import oly.netpowerctrl.executables.ExecutablesAdapter;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
@@ -34,7 +33,7 @@ public class WidgetConfigActivity extends Activity {
                 public boolean onItemClick(View view, int position, boolean isLongClick) {
                     if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
                         return false;
-                    String uid = adapter.getItem(position).getExecutableUid();
+                    String uid = adapterSource.getItem(position).getExecutableUid();
                     if (uid == null)
                         return false;
 
@@ -53,7 +52,7 @@ public class WidgetConfigActivity extends Activity {
                     return true;
                 }
             }, null);
-    private ExecutablesBaseAdapter adapter;
+    private ExecutablesAdapter adapter;
     private AdapterSource adapterSource;
 
     @Override
@@ -90,16 +89,16 @@ public class WidgetConfigActivity extends Activity {
         findViewById(R.id.toolbar_actionbar).setVisibility(View.GONE);
 
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
-        adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
-        adapterSource.add(new AdapterSourceInputDevicePorts(), new AdapterSourceInputScenes());
-        adapter = new ExecutablesListAdapter(false, adapterSource, LoadStoreIconData.iconLoadingThread, false);
+        adapterSource.setShowHeaders(false);
+        adapterSource.addInput(new AdapterSourceInputDevicePorts(), new AdapterSourceInputScenes());
+        adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.list_item_available_outlet);
 
         Fragment fragment = new Fragment() {
             @Nullable
             @Override
             public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
                 View rootView = inflater.inflate(R.layout.fragment_with_list, container, false);
-                RecyclerViewWithAdapter<ExecutablesBaseAdapter> recyclerViewWithAdapter =
+                RecyclerViewWithAdapter<ExecutablesAdapter> recyclerViewWithAdapter =
                         new RecyclerViewWithAdapter<>(getActivity(), null, rootView, adapter, 0);
                 recyclerViewWithAdapter.setOnItemClickListener(recyclerItemClickListener);
                 return rootView;

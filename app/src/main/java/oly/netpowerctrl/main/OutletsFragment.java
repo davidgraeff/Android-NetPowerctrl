@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -40,7 +42,9 @@ import oly.netpowerctrl.executables.AdapterSourceInputGroups;
 import oly.netpowerctrl.executables.AdapterSourceInputScenes;
 import oly.netpowerctrl.executables.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.ExecutableViewHolder;
-import oly.netpowerctrl.executables.ExecuteAdapter;
+import oly.netpowerctrl.executables.ExecutablesEditableAdapter;
+import oly.netpowerctrl.executables.FilterByReachable;
+import oly.netpowerctrl.executables.FilterBySingleGroup;
 import oly.netpowerctrl.groups.GroupAdapter;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.pluginservice.PluginService;
@@ -55,10 +59,12 @@ import oly.netpowerctrl.utils.fragments.onFragmentBackButton;
  * This fragment consists of some floating buttons (add + no_wireless) and a view pager. Within the
  * fragments in the view pager is a RecycleView and a placeholder text. The computation for
  */
-public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
+public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
         onFragmentBackButton,
         onDataQueryRefreshQuery,
-        SwipeRefreshLayout.OnRefreshListener, IconCacheCleared, RecyclerItemClickListener.OnItemClickListener, onServiceReady {
+        SwipeRefreshLayout.OnRefreshListener, IconCacheCleared,
+        RecyclerItemClickListener.OnItemClickListener, onServiceReady,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     // Column computations
     public static final int VIEW_AS_LIST = 0;
@@ -70,17 +76,15 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     private View edit_hint_big;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private FloatingActionButton btnWireless;
-    private Bundle mExtra = null;
     private int requestedColumnWidth;
     private FloatingActionButton btnAdd;
     // Adapter
     private AdapterSource adapterSource;
-    private ExecuteAdapter adapter;
+    private ExecutablesEditableAdapter adapter;
     // Groups
     private GroupAdapter groupAdapter = new GroupAdapter();
-    private UUID groupFilter = null;
+    private FilterBySingleGroup filterBySingleGroup = new FilterBySingleGroup(null);
     private UUID clicked_group_uid;
-    private int lastScrolledPosition = 0;
     /**
      * Called by the model data listener
      */
@@ -88,13 +92,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     private boolean editMode;
     private AppData appData;
 
-    public OutletsViewFragment() {
-    }
-
-    public static Bundle createBundleForView(int viewType) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("viewtype", viewType);
-        return bundle;
+    public OutletsFragment() {
     }
 
     @Override
@@ -117,47 +115,34 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             mRecyclerView.setAdapter(getAdapter());
     }
 
-    public ExecuteAdapter getAdapter() {
+    public ExecutablesEditableAdapter getAdapter() {
         return adapter;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (groupFilter != null)
-            outState.putString("groupFilter", groupFilter.toString());
-        if (mRecyclerView != null) {
-            View view = mRecyclerView.findChildViewUnder(10, 10);
-            if (view != null)
-                outState.putInt("lastScrolledPosition", mRecyclerView.getChildPosition(view));
-        }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PreferenceManager.getDefaultSharedPreferences(App.instance).registerOnSharedPreferenceChangeListener(this);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(App.instance).unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public boolean onServiceReady(PluginService service) {
         appData = service.getAppData();
+        filterBySingleGroup.setFilterGroup(SharedPrefs.getInstance().getLastGroupUid());
+        applyViewType();
+        return false;
+    }
 
-        UUID newGroupFilter;
-
-        if (mExtra != null && mExtra.containsKey("filter"))
-            newGroupFilter = UUID.fromString(mExtra.getString("filter"));
-        else
-            newGroupFilter = null;
-
-        setCurrentGroupByIndex(appData.groupCollection.indexOf(newGroupFilter) + 1); // +1 because position is without "overview" entry.
-
+    private void applyViewType() {
         // Set view type
-        int viewType;
-        if (mExtra != null && mExtra.containsKey("viewtype")) {
-            viewType = mExtra.getInt("viewtype");
-        } else
-            viewType = (SharedPrefs.getInstance().getOutletsViewType());
+        int viewType = SharedPrefs.getInstance().getOutletsViewType();
 
         switch (viewType) {
             case VIEW_AS_COMPACT:
@@ -177,9 +162,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
         mRecyclerView.requestLayout();
-        mExtra = null;
-
-        return false;
     }
 
     @Override
@@ -191,24 +173,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.outlets, menu);
     }
-
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    if (i < 1) i = 1;
-                    adapter.setItemsInRow(i);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-                }
-            };
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -229,6 +193,24 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         return false;
     }
 
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+
+                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
+                    if (i < 1) i = 1;
+                    adapter.setItemsInRow(i);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(adapter);
+                }
+            };
+
     /**
      * Handles clicks on the plus floating button
      *
@@ -244,7 +226,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         PopupMenu popup = new PopupMenu(getActivity(), clickedView);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.outlet_adds, popup.getMenu());
-        popup.getMenu().findItem(R.id.menu_add_items_to_group).setVisible(groupFilter != null);
+        popup.getMenu().findItem(R.id.menu_add_items_to_group).setVisible(filterBySingleGroup.getFilterGroup() != null);
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
@@ -259,8 +241,8 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     case R.id.menu_add_group:
                         GroupUtilities.createGroup(getActivity(), appData.groupCollection, new GroupUtilities.GroupCreatedCallback() {
                             @Override
-                            public void onGroupCreated(int group_index) {
-                                setCurrentGroupByIndex(group_index + 1);
+                            public void onGroupCreated(int group_index, UUID group_uid) {
+                                filterBySingleGroup.setFilterGroup(group_uid);
                             }
                         });
                         return true;
@@ -318,7 +300,9 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                         showGroupPopupMenu(view, appData.groupCollection.get(position - 1).uuid);
                         return true;
                     }
-                    setCurrentGroupByIndex(position);
+                    UUID group_uid = position > 0 ? appData.groupCollection.get(position - 1).uuid : null;
+                    SharedPrefs.getInstance().setLastGroupUid(group_uid);
+                    filterBySingleGroup.setFilterGroup(group_uid);
                     return true;
                 }
             }, null));
@@ -329,7 +313,6 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                 }
             });
             group_list.setAdapter(groupAdapter);
-            //menu.setMenu(group_list);
         }
 
         btnWireless = (FloatingActionButton) view.findViewById(R.id.btnWirelessSettings);
@@ -346,22 +329,22 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         ////////// Adapter and Adapter sources
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
-        adapterSource.setHideNotReachable(SharedPrefs.getInstance().isHideNotReachable());
-        adapterSource.add(new AdapterSourceInputDevicePorts(),
+        adapterSource.addFilter(new FilterByReachable(SharedPrefs.getInstance().isHideNotReachable()));
+        adapterSource.addFilter(filterBySingleGroup);
+        adapterSource.addInput(new AdapterSourceInputDevicePorts(),
                 new AdapterSourceInputGroups(), new AdapterSourceInputScenes());
 
-        adapter = new ExecuteAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
-        adapter.setGroupFilter(groupFilter);
+        adapter = new ExecutablesEditableAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
 
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
-                checkEmpty(adapter.getItemCount(), groupFilter);
+                checkEmpty();
             }
 
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
-                checkEmpty(adapter.getItemCount(), groupFilter);
+                checkEmpty();
             }
         });
 
@@ -399,14 +382,11 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         super.onViewCreated(view, savedInstanceState);
 
         if (savedInstanceState != null) {
-            String groupFilterString = savedInstanceState.getString("groupFilter");
-            if (groupFilterString != null)
-                groupFilter = UUID.fromString(groupFilterString);
-            lastScrolledPosition = savedInstanceState.getInt("lastScrolledPosition", 0);
-            mRecyclerView.scrollToPosition(lastScrolledPosition);
             setEditMode(savedInstanceState.getBoolean("editMode"));
         } else
             setEditMode(false);
+
+        mRecyclerView.scrollToPosition(SharedPrefs.getInstance().getLastScrollIndex());
 
         LoadStoreIconData.iconCacheClearedObserver.register(this);
         AppData.observersStartStopRefresh.register(this);
@@ -415,6 +395,9 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
     @Override
     public void onDestroyView() {
+        View view = mRecyclerView.findChildViewUnder(10, 10);
+        if (view != null)
+            SharedPrefs.getInstance().setLastScrollIndex(mRecyclerView.getChildPosition(view));
         PluginService.observersServiceReady.unregister(this);
         LoadStoreIconData.iconCacheClearedObserver.unregister(this);
         AppData.observersStartStopRefresh.unregister(this);
@@ -425,13 +408,13 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         appData.refreshDeviceData(PluginService.getService(), false);
     }
 
-    public void checkEmpty(int count, UUID groupFilter) {
-        if (count == 0) {
+    public void checkEmpty() {
+        if (adapter.getItemCount() == 0) {
             int resID;
             boolean hasDevices = appData != null && appData.deviceCollection.hasDevices();
             if (!hasDevices) {
                 resID = (R.string.empty_no_outlets_no_devices);
-            } else if (groupFilter != null) {
+            } else if (filterBySingleGroup.getFilterGroup() != null) {
                 resID = (R.string.empty_group);
             } else {
                 resID = (R.string.empty_no_outlets);
@@ -465,8 +448,10 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
                     return true;
                 }
                 // change to overview if the removed group is the current group
-                if (clicked_group_uid.equals(groupFilter))
-                    setCurrentGroupByIndex(0);
+                if (clicked_group_uid.equals(filterBySingleGroup.getFilterGroup())) {
+                    filterBySingleGroup.setFilterGroup(null);
+                    SharedPrefs.getInstance().setLastGroupUid(null);
+                }
                 return true;
             }
             case R.id.menu_renameGroup: {
@@ -477,29 +462,13 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
         return false;
     }
 
-    /**
-     * Change to the given group by position. Position 0 is reserved for the overview
-     * so add 1 to a group_index to get the position.
-     *
-     * @param position The group_index+1 or 0 for the overview.
-     */
-    private void setCurrentGroupByIndex(int position) {
-        //TODO update group list active item
-
-        groupFilter = position == 0 ? null : appData.groupCollection.get(position - 1).uuid;
-        if (adapter != null) {
-            if (adapter.setGroupFilter(groupFilter) || groupFilter == null)
-                adapterSource.updateNow();
-        }
-    }
-
     @Override
     public boolean onItemClick(View view, final int position, boolean isLongClick) {
 //        boolean disableClicks = false;
 //        if (disableClicks)
 //            return false;
 
-        ExecutableAdapterItem item = adapter.getItem(position);
+        ExecutableAdapterItem item = adapterSource.getItem(position);
 
         //////////////// GROUP ////////////////
         if (!(item.groupType() == ExecutableAdapterItem.groupTypeEnum.NOGROUP_TYPE)) {
@@ -509,7 +478,7 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
 
         //////////////// EDIT ITEM ////////////////
         if (editMode) {
-            Executable executable = adapter.getItem(position).getExecutable();
+            Executable executable = adapterSource.getItem(position).getExecutable();
             Intent it = new Intent(getActivity(), EditActivity.class);
             it.putExtra(EditActivity.LOAD_UUID, executable.getUid());
             it.putExtra(EditActivity.LOAD_ADAPTER_POSITION, position);
@@ -581,6 +550,16 @@ public class OutletsViewFragment extends Fragment implements PopupMenu.OnMenuIte
             AnimationController.animateBottomViewOut(btnAdd);
         }
         adapter.setEditMode(editMode);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        switch (s) {
+            case SharedPrefs.PREF_OutletsViewType: {
+                applyViewType();
+                break;
+            }
+        }
     }
 
 

@@ -2,6 +2,8 @@ package oly.netpowerctrl.executables;
 
 import android.support.annotation.NonNull;
 
+import java.util.UUID;
+
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
@@ -21,7 +23,7 @@ public class AdapterSourceInputGroups extends AdapterSourceInput implements onCo
     }
 
     @Override
-    void doUpdateNow(@NonNull ExecutablesBaseAdapter adapter) {
+    void doUpdateNow() {
 
     }
 
@@ -36,17 +38,28 @@ public class AdapterSourceInputGroups extends AdapterSourceInput implements onCo
         if (item == null)
             return true;
 
-        ExecutablesBaseAdapter adapter = adapterSource.getAdapter();
+        ExecutablesAdapter adapter = adapterSource.getAdapter();
         if (adapter == null) {
             return true;
         }
 
         if (action == ObserverUpdateActions.UpdateAction) { // if a group is renamed just update existing items
             Group group = ((Group) item);
-            adapter.updateGroupName(group.uuid, group.name);
+            updateGroupName(group.uuid, group.name);
             adapterSource.sourceChanged();
         } else // make complete update if a group is removed or added or if an item is added to one or more groups.
             adapterSource.updateNow();
         return true;
+    }
+
+
+    public void updateGroupName(UUID uuid, String name) {
+        for (int i = 0; i < adapterSource.mItems.size(); ++i) {
+            if (adapterSource.mItems.get(i).isGroup(uuid)) {
+                adapterSource.mItems.get(i).groupName = name;
+                adapterSource.getAdapter().notifyItemChanged(i);
+                return;
+            }
+        }
     }
 }

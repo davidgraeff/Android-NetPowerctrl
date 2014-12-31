@@ -9,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginService;
@@ -109,7 +110,7 @@ public class DeviceQuery extends DeviceObserverBase {
         int i = 0;
         device.lockDevice();
         for (DeviceConnection ci : device.getDeviceConnections()) {
-            if (ci.isReachable()) {
+            if (ci.reachableState() != ExecutableReachability.NotReachable) {
                 requestAll = false;
                 abstractBasePlugin.requestData(device, i);
                 break;

@@ -97,8 +97,8 @@ public class LoadStoreIconData {
 
     public static void setDefaultFallbackIconSet(String new_theme) {
         defaultFallbackIconSet = new_theme;
-        SharedPrefs.getInstance().setDefaultFallbackIconSet(new_theme);
         iconCache.evictAll();
+        SharedPrefs.getInstance().setDefaultFallbackIconSet(new_theme);
         iconCacheClearedObserver.onIconCacheCleared();
     }
 

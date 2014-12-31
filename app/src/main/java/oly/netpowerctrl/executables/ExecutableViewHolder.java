@@ -17,6 +17,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.main.App;
 
 /**
@@ -41,7 +42,7 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
     private DrawableState state = DrawableState.Off;
     private Executable executable;
     private IconDeferredLoadingThread mIconLoadThread;
-    private boolean showImages;
+    private boolean showImages = true;
 
     ExecutableViewHolder(View convertView, ExecutableAdapterItem.groupTypeEnum groupTypeEnum, IconDeferredLoadingThread iconLoadThread) {
         super(convertView);
@@ -194,7 +195,7 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
         title.setText(executable.getTitle());
         title.setEnabled(executable.isEnabled());
 
-        if (executable.isReachable())
+        if (executable.reachableState() != ExecutableReachability.NotReachable)
             title.setPaintFlags(
                     title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
         else

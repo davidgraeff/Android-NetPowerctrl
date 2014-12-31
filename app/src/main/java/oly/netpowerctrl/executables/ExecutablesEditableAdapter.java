@@ -8,7 +8,7 @@ import oly.netpowerctrl.data.IconDeferredLoadingThread;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.main.App;
 
-public class ExecuteAdapter extends ExecutablesBaseAdapter implements
+public class ExecutablesEditableAdapter extends ExecutablesAdapter implements
         SeekBar.OnSeekBarChangeListener {
 
     // We block updates while moving the range slider
@@ -16,10 +16,9 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
     private final Drawable editModeDrawable;
     private boolean editMode = false;
 
-    public ExecuteAdapter(AdapterSource source,
-                          IconDeferredLoadingThread iconCache) {
-        super(source, iconCache, true);
-        setLayoutRes(R.layout.list_item_executable);
+    public ExecutablesEditableAdapter(AdapterSource source,
+                                      IconDeferredLoadingThread iconCache) {
+        super(source, iconCache, R.layout.list_item_executable);
         editModeDrawable = App.instance.getResources().getDrawable(android.R.drawable.ic_menu_edit);
     }
 
@@ -39,11 +38,11 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
         int position = (Integer) view.getTag();
         if (position == -1)
             return;
-        ExecutableAdapterItem info = mItems.get(position);
+        ExecutableAdapterItem info = mSource.mItems.get(position);
         DevicePort devicePort = (DevicePort) info.getExecutable();
         devicePort.current_value = value + devicePort.min_value;
         info.command_value = devicePort.current_value;
-        getSource().getAppData().execute(devicePort, info.command_value, null);
+        mSource.getAppData().execute(devicePort, info.command_value, null);
     }
 
     @Override
@@ -51,8 +50,8 @@ public class ExecuteAdapter extends ExecutablesBaseAdapter implements
         int position = (Integer) seekBar.getTag();
         if (position == -1)
             return;
-        ExecutableAdapterItem info = mItems.get(position);
-        getSource().ignoreUpdates(info.getExecutable());
+        ExecutableAdapterItem info = mSource.mItems.get(position);
+        mSource.ignoreUpdates(info.getExecutable());
     }
 
     @Override

@@ -33,8 +33,8 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackFragment;
-import oly.netpowerctrl.main.OutletsViewFragment;
-import oly.netpowerctrl.main.OutletsViewTypeDialog;
+import oly.netpowerctrl.main.OutletsFragment;
+import oly.netpowerctrl.main.OutletsViewModeDialog;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.timer.TimerFragment;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
@@ -122,7 +122,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
     public void createDrawerAdapter(final Activity context) {
         mDrawerAdapter = new DrawerAdapter(context);
         mDrawerAdapter.addItem(context.getString(R.string.drawer_overview),
-                OutletsViewFragment.class.getName(), 0, true).bitmap = BitmapFactory.decodeResource(context.getResources(), android.R.drawable.ic_menu_send);
+                OutletsFragment.class.getName(), 0, true).bitmap = BitmapFactory.decodeResource(context.getResources(), android.R.drawable.ic_menu_send);
 
         {
             DrawerAdapter.DrawerItem item = mDrawerAdapter.addItem(context.getString(R.string.drawer_change_view_type),
@@ -133,7 +133,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             item.clickHandler = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    changeToDialog(context, OutletsViewTypeDialog.class.getName());
+                    changeToDialog(context, OutletsViewModeDialog.class.getName());
                 }
             };
         }
@@ -177,7 +177,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
             int pos = SharedPrefs.getInstance().getFirstTabPosition();
 
             if (className == null || className.isEmpty() || pos == -1) {
-                className = OutletsViewFragment.class.getName();
+                className = OutletsFragment.class.getName();
                 pos = mDrawerAdapter.indexOf(className);
                 extra = null;
             }
@@ -328,7 +328,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
                 currentFragment = Fragment.instantiate(context, fragmentClassName);
             } catch (Fragment.InstantiationException ignored) {
                 extra = null;
-                fragmentClassName = OutletsViewFragment.class.getName();
+                fragmentClassName = OutletsFragment.class.getName();
                 currentFragment = Fragment.instantiate(context, fragmentClassName);
             }
 

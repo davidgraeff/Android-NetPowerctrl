@@ -14,8 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.UUID;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.App;
@@ -25,25 +24,25 @@ import oly.netpowerctrl.main.App;
  * also observe some of the preferences and provide listener/observer pattern.
  * This class is a singleton (Initialization on Demand Holder).
  */
-public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeListener {
-    public final static String PREF_widgets = "widgets";
+public class SharedPrefs {
     public final static String PREF_WIDGET_BASENAME = "oly.netpowerctrl.widget";
-    public final static String hide_not_reachable = "hide_not_reachable";
+    public final static String PREF_hide_not_reachable = "hide_not_reachable";
     public final static String PREF_use_dark_theme = "use_dark_theme";
     public final static String PREF_background = "show_background";
     public final static String PREF_fullscreen = "fullscreen";
     public final static String PREF_show_persistent_notification = "show_persistent_notification";
     public final static String PREF_default_fallback_icon_set = "default_fallback_icon_set";
+    public final static String PREF_last_group_uid = "last_group_uid";
+    public final static String PREF_OutletsViewType = "OutletsViewType";
+    public final static String PREF_LastScrollIndex = "LastScrollIndex";
 
     private final static int PREF_CURRENT_VERSION = 4;
     private final static String firstTabExtraFilename = "firstTabExtra";
     private final Context context;
-    private final WeakHashMap<IHideNotReachable, Boolean> observers_HideNotReachable = new WeakHashMap<>();
 
     private SharedPrefs() {
         this.context = App.instance;
         setBackupPassword(getBackupPassword());
-        PreferenceManager.getDefaultSharedPreferences(context).registerOnSharedPreferenceChangeListener(this);
     }
 
     public static SharedPrefs getInstance() {
@@ -260,13 +259,22 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
 
     public int getOutletsViewType() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getInt("OutletsViewType", 0);
+        return prefs.getInt(PREF_OutletsViewType, 0);
     }
 
     public void setOutletsViewType(int type) {
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("OutletsViewType", type).apply();
+        prefs.edit().putInt(PREF_OutletsViewType, type).apply();
+    }
+
+    public int getLastScrollIndex() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt(PREF_LastScrollIndex, 0);
+    }
+
+    public void setLastScrollIndex(int type) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putInt(PREF_LastScrollIndex, type).apply();
     }
 
     public boolean logEnergy() {
@@ -324,7 +332,7 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.hide_not_reachable);
-        return prefs.getBoolean(hide_not_reachable, value);
+        return prefs.getBoolean(PREF_hide_not_reachable, value);
     }
 
     public boolean notifyDeviceNotReachable() {
@@ -369,9 +377,20 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public void setBackupPassword(String password) {
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putString("backup_password", password).apply();
+    }
+
+    public UUID getLastGroupUid() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String uid = prefs.getString(PREF_last_group_uid, null);
+        if (uid == null) return null;
+        return UUID.fromString(uid);
+    }
+
+    public void setLastGroupUid(UUID uid) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putString(PREF_last_group_uid, uid != null ? uid.toString() : null).apply();
     }
 
     public void setOpenIssues(long last_access) {
@@ -382,29 +401,6 @@ public class SharedPrefs implements SharedPreferences.OnSharedPreferenceChangeLi
     public void setOpenAutoIssues(long last_access) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putLong("open_auto_issues_last_access", last_access).apply();
-    }
-
-    public void registerHideNotReachable(IHideNotReachable observer) {
-        observers_HideNotReachable.put(observer, true);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        boolean value;
-        switch (s) {
-            case SharedPrefs.hide_not_reachable: {
-                value = isHideNotReachable();
-                Set<IHideNotReachable> observers = observers_HideNotReachable.keySet();
-                for (IHideNotReachable observer : observers) {
-                    observer.hideNotReachable(value);
-                }
-                break;
-            }
-        }
-    }
-
-    public interface IHideNotReachable {
-        void hideNotReachable(boolean hideNotReachable);
     }
 
     private static class SingletonHolder {

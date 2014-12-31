@@ -19,6 +19,7 @@ import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
@@ -69,11 +70,11 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         TextView title = viewHolder.title;
         title.setText(item.title);
 
-        if (item.reachable) {
+        if (item.reachable == ExecutableReachability.Reachable) {
             title.setPaintFlags(title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
             viewHolder.image.setImageResource(android.R.drawable.presence_online);
         } else {
-            if (item.tested)
+            if (item.reachable == ExecutableReachability.NotReachable)
                 viewHolder.image.setImageResource(android.R.drawable.presence_offline);
             else
                 viewHolder.image.setImageResource(android.R.drawable.presence_away);
@@ -207,8 +208,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         public String subtitle;
         public boolean isDeviceHeader;
         public int connectionID;
-        public boolean reachable;
-        public boolean tested;
+        public ExecutableReachability reachable;
         public boolean enabled = true;
         public boolean isConfigured;
         private String uid;
@@ -226,8 +226,7 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
             this.subtitle = device.getFeatureString();
             this.isDeviceHeader = true;
-            this.reachable = device.isReachable();
-            this.tested = true;
+            this.reachable = device.reachableState();
             this.isConfigured = device.isConfigured();
             this.uid = device.getUniqueDeviceID();
         }
@@ -247,13 +246,11 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
             if (deviceConnection.getDestinationPort() != -1)
                 this.title += ":" + String.valueOf(deviceConnection.getDestinationPort());
 
-            this.tested = true;
-            this.reachable = deviceConnection.isReachable();
+            this.reachable = deviceConnection.reachableState();
 
             this.subtitle = deviceConnection.getNotReachableReason();
             if (this.subtitle == null) {
-                if (!this.reachable) {
-                    this.tested = false;
+                if (this.reachable == ExecutableReachability.MaybeReachable) {
                     this.subtitle = App.getAppString(R.string.device_connection_notTested);
                 } else
                     this.subtitle = App.getAppString(R.string.device_reachable);

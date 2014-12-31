@@ -65,7 +65,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.getNavigationController().changeToFragment(OutletsViewFragment.class.getName());
+                MainActivity.getNavigationController().changeToFragment(OutletsFragment.class.getName());
             }
         });
 

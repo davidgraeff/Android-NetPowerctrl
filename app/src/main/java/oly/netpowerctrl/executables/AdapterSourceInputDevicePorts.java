@@ -18,36 +18,33 @@ import oly.netpowerctrl.devices.DeviceCollection;
  * Created by david on 07.07.14.
  */
 public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements onCollectionUpdated<Object, Device> {
-    private List<DevicePort> mList = new ArrayList<>();
     private DeviceCollection deviceCollection = null;
 
     @Override
-    public void doUpdateNow(@NonNull ExecutablesBaseAdapter adapter) {
-        mList.clear();
-        for (Device device : deviceCollection.getItems()) {
-            if (adapterSource.hideNotReachable && device.getFirstReachableConnection() == null)
-                continue;
+    public void doUpdateNow() {
+        List<DevicePort> devicePortList = new ArrayList<>();
 
+        for (Device device : deviceCollection.getItems()) {
             device.lockDevicePorts();
             Iterator<DevicePort> iterator = device.getDevicePortIterator();
             while (iterator.hasNext()) {
                 DevicePort devicePort = iterator.next();
                 if (devicePort.isHidden())
                     continue;
-                mList.add(devicePort);
+                devicePortList.add(devicePort);
             }
             device.releaseDevicePorts();
         }
 
-        for (DevicePort devicePort : mList)
-            if (!adapterSource.hideNotReachable || devicePort.isReachable())
-                adapter.addItem(devicePort, devicePort.current_value);
+        for (DevicePort devicePort : devicePortList)
+            adapterSource.addItem(devicePort, devicePort.current_value);
     }
 
     @Override
     void onStart(AppData appData) {
         this.deviceCollection = appData.deviceCollection;
         deviceCollection.registerObserver(this);
+        doUpdateNow();
     }
 
     @Override
@@ -62,17 +59,12 @@ public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements
         if (device == null || adapterSource.ignoreUpdatesExecutable == device)
             return true;
 
-        ExecutablesBaseAdapter adapter = adapterSource.getAdapter();
-        if (adapter == null) {
-            return true;
-        }
-
-        if (action == ObserverUpdateActions.RemoveAction || (adapterSource.hideNotReachable && device.getFirstReachableConnection() == null)) {
+        if (action == ObserverUpdateActions.RemoveAction) {
             Log.w("REMOVE source ports", device.getDeviceName());
             device.lockDevicePorts();
             Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
-                adapter.removeAt(findPositionByUUid(adapter, it.next().getUid()));
+                adapterSource.removeAt(adapterSource.findPositionByUUid(it.next().getUid()));
             }
             device.releaseDevicePorts();
 
@@ -84,7 +76,7 @@ public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements
                 DevicePort devicePort = iterator.next();
                 if (devicePort.isHidden())
                     continue;
-                adapter.addItem(devicePort, devicePort.current_value);
+                adapterSource.addItem(devicePort, devicePort.current_value);
             }
             device.releaseDevicePorts();
 
@@ -97,33 +89,5 @@ public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements
         adapterSource.sourceChanged();
 
         return true;
-    }
-
-    private int findPositionByUUid(ExecutablesBaseAdapter adapter, String uuid) {
-        if (uuid == null)
-            return -1;
-
-        int i = -1;
-        for (ExecutableAdapterItem info : adapter.mItems) {
-            ++i;
-            String uid = info.getExecutableUid();
-            if (uid == null) // skip header items
-                continue;
-            if (uid.equals(uuid))
-                return i;
-        }
-
-        return -1;
-    }
-
-    public List<DevicePort> getDevicePortList() {
-        return mList;
-    }
-
-    public int indexOf(DevicePort port) {
-        for (int i = 0; i < mList.size(); ++i)
-            if (mList.get(i) == port)
-                return i;
-        return -1;
     }
 }
