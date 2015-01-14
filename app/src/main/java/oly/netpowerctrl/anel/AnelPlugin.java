@@ -84,6 +84,11 @@ final public class AnelPlugin extends AbstractBasePlugin {
         }
     }
 
+    @Override
+    protected void checkReady() {
+        if (pluginReady != null) pluginReady.onPluginReady(this, false);
+    }
+
     /**
      * Execute multiple port commands for one device (anel supports this as an extra command).
      *
@@ -525,6 +530,11 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     @Override
     public String getPluginID() {
+        return PLUGIN_ID;
+    }
+
+    @Override
+    public String getLocalizedName() {
         return PLUGIN_ID;
     }
 

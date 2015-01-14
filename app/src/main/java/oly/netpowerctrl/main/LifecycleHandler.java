@@ -50,7 +50,7 @@ public class LifecycleHandler implements Application.ActivityLifecycleCallbacks 
     @Override
     public void onActivityStarted(Activity activity) {
         if (started == 0) {
-            PluginService.useService(new WeakReference<Object>(activity));
+            PluginService.useService(new WeakReference<Object>(this));
         }
         ++started;
     }
@@ -62,13 +62,13 @@ public class LifecycleHandler implements Application.ActivityLifecycleCallbacks 
         if (started <= 0) { // pm.isScreenOn() == false
             if (SharedPrefs.getInstance().isMaximumEnergySaving()) {
                 Log.w("EnergySave", "onHide");
-                PluginService.stopUseService(activity);
+                PluginService.stopUseService(this);
             }
         }
     }
 
     public void onBackground() {
-        if (!SharedPrefs.getInstance().isMaximumEnergySaving()) {
+        if (SharedPrefs.getInstance().isMaximumEnergySaving()) {
             Log.w("EnergySave", "onBackground");
             PluginService.stopUseService(this);
         }

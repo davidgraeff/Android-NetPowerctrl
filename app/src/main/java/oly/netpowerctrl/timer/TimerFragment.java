@@ -34,7 +34,7 @@ import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.DividerItemDecoration;
 
 public class TimerFragment extends Fragment implements onCollectionUpdated<TimerCollection, Timer>, SwipeRefreshLayout.OnRefreshListener, PopupMenu.OnMenuItemClickListener, onServiceReady {
-    private final AppData appData;
+    private AppData appData;
     private TimerAdapter timerAdapter;
     private TextView progressText;
     Handler handler = new Handler() {
@@ -47,43 +47,56 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
             }
         }
     };
+    private Button btnChangeToDevices;
     private SwipeRefreshLayout mPullToRefreshLayout;
 
     public TimerFragment() {
-        appData = PluginService.getService().getAppData();
     }
 
     private void refresh(PluginService service) {
-        if (service == null)
-            return;
-
         TimerCollection c = appData.timerCollection;
         if (c.refresh(service))
             AnimationController.animateBottomViewIn(progressText, false);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        PluginService.observersServiceReady.register(this);
-    }
 
     @Override
     public boolean onServiceReady(PluginService service) {
-        refresh(PluginService.getService());
+        appData = service.getAppData();
+        appData.timerCollection.registerObserver(this);
+
+        boolean hasDevices = appData.deviceCollection.hasDevices();
+        btnChangeToDevices.setVisibility(hasDevices ? View.GONE : View.VISIBLE);
+
+        timerAdapter.start(appData.timerCollection);
+
+        refresh(service);
         return false;
     }
 
     @Override
     public void onServiceFinished(PluginService service) {
+        appData = null;
+    }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        PluginService.observersServiceReady.register(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        PluginService.observersServiceReady.unregister(this);
     }
 
     @Override
     public void onPause() {
         progressText.setVisibility(View.GONE);
-        TimerCollection c = appData.timerCollection;
-        c.unregisterObserver(this);
+
+        if (appData != null)
+            appData.timerCollection.unregisterObserver(this);
         if (timerAdapter != null)
             timerAdapter.finish();
         super.onPause();
@@ -95,9 +108,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_alarms, container, false);
 
-        TimerCollection c = appData.timerCollection;
-        timerAdapter = new TimerAdapter(getActivity(), c);
-        timerAdapter.start();
+        timerAdapter = new TimerAdapter(getActivity());
         RecyclerViewWithAdapter<TimerAdapter> recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(getActivity(), null, rootView, timerAdapter, R.string.alarms_no_alarms);
         recyclerViewWithAdapter.setOnItemClickListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
@@ -118,8 +129,6 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         });
         progressText = (TextView) rootView.findViewById(R.id.progressText);
 
-        c.registerObserver(this);
-
         ///// For pull to refresh
         mPullToRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.ptr_layout);
         mPullToRefreshLayout.setOnRefreshListener(this);
@@ -129,10 +138,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                 android.R.color.holo_red_light);
         ///// END: For pull to refresh
 
-        Button btnChangeToDevices = (Button) rootView.findViewById(R.id.btnChangeToDevices);
-        boolean hasDevices = appData.deviceCollection.hasDevices();
-
-        btnChangeToDevices.setVisibility(hasDevices ? View.GONE : View.VISIBLE);
+        btnChangeToDevices = (Button) rootView.findViewById(R.id.btnChangeToDevices);
         btnChangeToDevices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -215,7 +221,9 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
 
     @Override
     public void onRefresh() {
-        refresh(PluginService.getService());
+        PluginService service = PluginService.getService();
+        if (service == null) return;
+        refresh(service);
     }
 
     @Override

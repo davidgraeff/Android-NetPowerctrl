@@ -75,7 +75,7 @@ abstract public class CollectionWithStorableItems<COLLECTION, ITEM extends Stora
         this.storage = storage;
     }
 
-    public void addWithourSave(ITEM item) throws ClassNotFoundException {
+    public void addWithoutSave(ITEM item) throws ClassNotFoundException {
         items.add(item);
     }
 }

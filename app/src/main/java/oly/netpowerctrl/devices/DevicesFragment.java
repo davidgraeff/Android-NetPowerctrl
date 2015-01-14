@@ -56,7 +56,14 @@ public class DevicesFragment extends Fragment
     public void onCreateOptionsMenu(
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.devices, menu);
-        AppData appData = PluginService.getService().getAppData();
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        PluginService pluginService = PluginService.getService();
+        if (pluginService == null) return;
+        AppData appData = pluginService.getAppData();
         //noinspection ConstantConditions
         menu.findItem(R.id.menu_delete_all).setVisible(appData.deviceCollection.hasDevices());
     }
@@ -348,7 +355,7 @@ public class DevicesFragment extends Fragment
     @Override
     public void onRefresh() {
         PluginService service = PluginService.getService();
-        service.showNotificationForNextRefresh(true);
+        service.getAppData().showNotificationForNextRefresh(true);
         service.getAppData().refreshDeviceData(service, true);
     }
 }

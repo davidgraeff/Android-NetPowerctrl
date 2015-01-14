@@ -17,7 +17,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,13 +33,11 @@ import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackFragment;
 import oly.netpowerctrl.main.OutletsFragment;
-import oly.netpowerctrl.main.OutletsViewModeDialog;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.timer.TimerFragment;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.utils.DonateData;
 import oly.netpowerctrl.utils.fragments.onFragmentBackButton;
-import oly.netpowerctrl.utils.fragments.onFragmentChangeArguments;
 
 /**
  * All navigation related functionality used by the main activity
@@ -123,20 +120,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         mDrawerAdapter = new DrawerAdapter(context);
         mDrawerAdapter.addItem(context.getString(R.string.drawer_overview),
                 OutletsFragment.class.getName(), 0, true).bitmap = BitmapFactory.decodeResource(context.getResources(), android.R.drawable.ic_menu_send);
-
-        {
-            DrawerAdapter.DrawerItem item = mDrawerAdapter.addItem(context.getString(R.string.drawer_change_view_type),
-                    null, 1, false);
-            TypedValue value = new TypedValue();
-            context.getTheme().resolveAttribute(R.attr.ic_action_view_as_grid, value, true);
-            item.bitmap = BitmapFactory.decodeResource(context.getResources(), value.resourceId);
-            item.clickHandler = new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    changeToDialog(context, OutletsViewModeDialog.class.getName());
-                }
-            };
-        }
 
         mDrawerAdapter.addItem(context.getString(R.string.drawer_timer),
                 TimerFragment.class.getName(), 0, true).bitmap = BitmapFactory.decodeResource(context.getResources(), android.R.drawable.ic_menu_recent_history);
@@ -369,11 +352,7 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
 
     public void changeArgumentsOfCurrentFragment(Bundle extra) {
         currentExtra = extra;
-        // Deliver arguments to fragment via ChangeArgumentsFragment interface
-        if (currentFragment instanceof onFragmentChangeArguments) {
-            ((onFragmentChangeArguments) currentFragment).changeArguments(extra);
-        } else if (extra != null && !currentFragment.isResumed()) // Old school setArguments call
-            currentFragment.setArguments(extra);
+        currentFragment.setArguments(extra);
     }
 
     public void changeToDialog(Activity context, String fragmentClassName) {

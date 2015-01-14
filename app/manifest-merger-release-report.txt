@@ -72,20 +72,21 @@ ADDED from AndroidManifest.xml:27:5
 uses-sdk
 ADDED from AndroidManifest.xml:31:5
 MERGED from NetPowerctrl.libraries:Donations:unspecified:6:5
-MERGED from com.android.support:support-v13:21.0.0:15:5
-MERGED from com.android.support:support-v4:21.0.0:15:5
+MERGED from com.android.support:support-v13:21.0.3:15:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
 MERGED from NetPowerctrl.libraries:device_base:unspecified:8:5
-MERGED from com.android.support:support-v13:21.0.0:15:5
-MERGED from com.android.support:support-v4:21.0.0:15:5
-MERGED from com.android.support:appcompat-v7:21.0.0:15:5
-MERGED from com.android.support:support-v4:21.0.0:15:5
-MERGED from com.android.support:support-v13:21.0.0:15:5
-MERGED from com.android.support:support-v4:21.0.0:15:5
-MERGED from com.android.support:recyclerview-v7:21.0.0:15:5
-MERGED from com.android.support:support-v4:21.0.0:15:5
-MERGED from com.android.support:palette-v7:21.0.0:15:5
-MERGED from com.android.support:support-v4:21.0.0:15:5
-MERGED from com.android.support:cardview-v7:21.0.0:15:5
+MERGED from com.android.support:support-v13:21.0.3:15:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from com.android.support:appcompat-v7:21.0.3:15:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from com.android.support:support-v13:21.0.3:15:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from com.android.support:recyclerview-v7:21.0.3:15:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from com.android.support:palette-v7:21.0.3:15:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
+MERGED from com.android.support:cardview-v7:21.0.3:15:5
+MERGED from com.jeremyfeinstein.slidingmenu:library:1.3:4:5
 MERGED from com.wefika:flowlayout:0.3.4:2:5
 MERGED from com.github.gabrielemariotti.changeloglib:library:1.5.1:7:5
 	android:targetSdkVersion
@@ -97,20 +98,20 @@ MERGED from com.github.gabrielemariotti.changeloglib:library:1.5.1:7:5
 application
 ADDED from AndroidManifest.xml:34:5
 MERGED from NetPowerctrl.libraries:Donations:unspecified:10:5
-MERGED from com.android.support:support-v13:21.0.0:16:5
-MERGED from com.android.support:support-v4:21.0.0:16:5
+MERGED from com.android.support:support-v13:21.0.3:16:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
 MERGED from NetPowerctrl.libraries:device_base:unspecified:12:5
-MERGED from com.android.support:support-v13:21.0.0:16:5
-MERGED from com.android.support:support-v4:21.0.0:16:5
-MERGED from com.android.support:appcompat-v7:21.0.0:16:5
-MERGED from com.android.support:support-v4:21.0.0:16:5
-MERGED from com.android.support:support-v13:21.0.0:16:5
-MERGED from com.android.support:support-v4:21.0.0:16:5
-MERGED from com.android.support:recyclerview-v7:21.0.0:17:5
-MERGED from com.android.support:support-v4:21.0.0:16:5
-MERGED from com.android.support:palette-v7:21.0.0:16:5
-MERGED from com.android.support:support-v4:21.0.0:16:5
-MERGED from com.android.support:cardview-v7:21.0.0:16:5
+MERGED from com.android.support:support-v13:21.0.3:16:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from com.android.support:appcompat-v7:21.0.3:16:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from com.android.support:support-v13:21.0.3:16:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from com.android.support:recyclerview-v7:21.0.3:17:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from com.android.support:palette-v7:21.0.3:16:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
+MERGED from com.android.support:cardview-v7:21.0.3:16:5
 MERGED from com.wefika:flowlayout:0.3.4:4:5
 MERGED from com.github.gabrielemariotti.changeloglib:library:1.5.1:11:5
 	android:label
@@ -243,7 +244,7 @@ ADDED from AndroidManifest.xml:109:9
 		ADDED from AndroidManifest.xml:115:13
 	android:name
 		ADDED from AndroidManifest.xml:110:13
-activity#oly.netpowerctrl.scenes.EditSceneActivity
+activity#oly.netpowerctrl.main.EditActivity
 ADDED from AndroidManifest.xml:117:9
 	android:label
 		ADDED from AndroidManifest.xml:122:13
@@ -318,8 +319,8 @@ ADDED from AndroidManifest.xml:162:17
 	android:name
 		ADDED from AndroidManifest.xml:162:25
 activity#android.support.v7.widget.TestActivity
-ADDED from com.android.support:recyclerview-v7:21.0.0:18:9
+ADDED from com.android.support:recyclerview-v7:21.0.3:18:9
 	android:label
-		ADDED from com.android.support:recyclerview-v7:21.0.0:18:19
+		ADDED from com.android.support:recyclerview-v7:21.0.3:18:19
 	android:name
-		ADDED from com.android.support:recyclerview-v7:21.0.0:18:60
+		ADDED from com.android.support:recyclerview-v7:21.0.3:18:60

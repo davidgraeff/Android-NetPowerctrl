@@ -7,6 +7,7 @@ import android.content.pm.ResolveInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -21,7 +22,6 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.WakeUpDeviceInterface;
 import oly.netpowerctrl.data.onDataLoaded;
-import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
@@ -33,7 +33,7 @@ import oly.netpowerctrl.utils.Logging;
 /**
  * Look for and load plugins. After network change: Rescan for reachable devices.
  */
-public class PluginService extends Service implements onDataQueryCompleted, onDataLoaded, WakeUpDeviceInterface {
+public class PluginService extends Service implements onDataLoaded, WakeUpDeviceInterface, onPluginsReady {
     public static final ServiceReadyObserver observersServiceReady = new ServiceReadyObserver();
     public static final ServiceModeChangedObserver observersServiceModeChanged = new ServiceModeChangedObserver();
     private static final String TAG = "NetpowerctrlService";
@@ -44,14 +44,12 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     ///////////////// Service start/stop listener /////////////////
     static private WeakHashMap<Object, Boolean> weakHashMap = new WeakHashMap<>();
     static private PluginService mDiscoverService;
-    static private boolean mWaitForService;
     private final Runnable stopRunnable = new Runnable() {
         @Override
         public void run() {
             try {
                 if (mDiscoverService != null)
                     mDiscoverService.stopSelf();
-                mWaitForService = false;
             } catch (IllegalArgumentException ignored) {
             }
         }
@@ -59,17 +57,12 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
     public final PluginsReadyObserver observersPluginsReady = new PluginsReadyObserver(this);
     private final Handler stopServiceHandler = new Handler();
     private final List<AbstractBasePlugin> plugins = new ArrayList<>();
+    private long mStartedByAlarmTime = -1;
     private AppData appData = new AppData(this);
-    private DataQueryFinishedMessageRunnable afterDataQueryFinishedHandler = new DataQueryFinishedMessageRunnable(appData);
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
      */
-
-
-    // Debug
-    private boolean notificationAfterNextRefresh;
-
     public static boolean isWirelessLanConnected(Context context) {
         @SuppressWarnings("ConstantConditions")
         WifiManager cm = (WifiManager) context.getSystemService(android.content.Context.WIFI_SERVICE);
@@ -84,13 +77,9 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      * Call this in onResume if you need any of the service functionality.
      */
     public static void useService(WeakReference<Object> useReference) {
+        boolean emptyUseMap = weakHashMap.isEmpty();
         weakHashMap.put(useReference, true);
-        // Stop delayed stop-service
-        // Service is not running anymore, restart it
-        if (mDiscoverService == null) {
-            if (mWaitForService)
-                return;
-            mWaitForService = true;
+        if (emptyUseMap || mDiscoverService == null) {
             Context context = App.instance;
             // start service
             Intent intent = new Intent(context, PluginService.class);
@@ -127,7 +116,10 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      * then stop the service.
      */
     public void checkStopAfterAlarm() {
-        if (weakHashMap.size() == 0) stopSelf();
+        if (weakHashMap.size() == 0) {
+            service_shutdown_reason = "StopAfterAlarm";
+            stopSelf();
+        }
     }
 
     /**
@@ -141,37 +133,58 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
      */
     @Override
     public int onStartCommand(@Nullable final Intent intent, final int flags, final int startId) {
+        // Determine why the service has been started (Alarm or a service user)
+        boolean startedByAlarm = intent != null && intent.getBooleanExtra("isAlarm", false);
+        mStartedByAlarmTime = -1;
+
+        // If the service is already running, just check the alarms
         if (mDiscoverService != null) {
-            TimerCollection.checkAlarm();
+            // Only check alarms if the service is fully initialised, otherwise alarms will be
+            // checked later.
+            if (startedByAlarm && observersPluginsReady.isLoaded())
+                appData.timerCollection.checkAlarm(System.currentTimeMillis());
             return super.onStartCommand(intent, flags, startId);
         }
 
-        boolean isAlarm = intent != null && intent.getBooleanExtra("isAlarm", false);
-
-        if (isAlarm) {
+        if (startedByAlarm) {
+            mStartedByAlarmTime = System.currentTimeMillis();
             Logging.getInstance().logMain("START by alarm");
-            TimerCollection.checkAlarm();
         } else if (weakHashMap.size() == 0) {
             Logging.getInstance().logMain("ILLEGAL START");
+            service_shutdown_reason = "illegal start";
             stopSelf();
             Log.w(TAG, "cannot be started without useService");
             return START_NOT_STICKY;
-        } else
+        } else {
             Logging.getInstance().logMain("START");
+            // Although the next alarm should be registered to android already,
+            // we do it again, just to be sure.
+            TimerCollection.armAndroidAlarm(this, SharedPrefs.getNextAlarmCheckTimestamp(this));
+        }
 
-        mWaitForService = false;
+        // We are a singleton, set the instance variable now.
         mDiscoverService = this;
-
-        plugins.add(new AnelPlugin(this));
-
-        AppData.observersDataQueryCompleted.register(this);
+        // We want to get notified if data has been loaded
         AppData.addServiceToDataLoadedObserver(this);
 
+        // We load all plugins now. It works like this:
+        // Plugins are either discovered (extensions) or a fixed part of this app (anel).
+        // A plugin counter is increased for every fixed and discovered plugin. The plugin is added
+        // to the observersPluginsReady object via add(..) and its initialisation will start. When
+        // the plugin is ready it notifies observersPluginsReady and the plugin counter is decreased.
+        // As soon as the counter reaches 0, the PluginService (this) is notified via onPluginsReady.
+        // All ready plugins will be added to the this.plugins list.
+        observersPluginsReady.reset();
+        // The following order is important: First increase the counter, then further increase the counter in
+        // discoverExtensions and then add the AnelPlugin.
+        observersPluginsReady.addPluginCount(1);
+        discoverExtensions();
+        observersPluginsReady.add(new AnelPlugin(this));
+
+        // Load all Devices, Scenes etc from disk.
         appData.loadData();
 
-        discoverExtensions();
-
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     public void discoverExtensions() {
@@ -183,7 +196,7 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             //i.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
             i.putExtra(PAYLOAD_SERVICE_NAME, MainActivity.class.getCanonicalName());
             List<ResolveInfo> list = getPackageManager().queryIntentServices(i, 0);
-            observersPluginsReady.setPluginCount(list.size());
+            observersPluginsReady.addPluginCount(list.size());
             for (ResolveInfo resolveInfo : list) {
                 extensionDiscovered(resolveInfo.serviceInfo.name, resolveInfo.loadLabel(getPackageManager()).toString(), resolveInfo.serviceInfo.packageName);
             }
@@ -197,23 +210,21 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
             unregisterReceiver(networkChangedListener);
         }
 
-
         observersServiceReady.onServiceFinished(this);
 
         appData.onDestroy();
         enterNetworkReducedMode();
 
         // Clean up
-        removePluginReferencesInDevices(null);
+        removeAllPluginReferencesInDevices();
         for (AbstractBasePlugin abstractBasePlugin : plugins)
             abstractBasePlugin.onDestroy();
         plugins.clear();
 
         weakHashMap.clear();
         mDiscoverService = null;
-        mWaitForService = false;
 
-        Logging.getInstance().logMain("ENDE");
+        Logging.getInstance().logMain("ENDE: " + service_shutdown_reason);
     }
 
     ///////////////// Service start/stop /////////////////
@@ -269,29 +280,13 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
 
         final PluginRemote plugin = new PluginRemote(this, serviceName, localized_name, packageName);
         Logging.getInstance().logExtensions("Hinzufügen: " + localized_name);
-        plugins.add(plugin);
+        observersPluginsReady.add(plugin);
         plugin.enterFullNetworkState(PluginService.this, null);
 
-        plugin.registerReadyObserver(new onPluginReady() {
+        plugin.registerFinishedObserver(new onPluginFinished() {
             @Override
-            public void onPluginReady(PluginRemote plugin) {
-                Logging.getInstance().logExtensions("Aktiv: " + plugin.serviceName);
-                if (AppData.isDataLoaded())
-                    updatePluginReferencesInDevices(plugin, false);
-                observersPluginsReady.decreasePluginCount();
-            }
-
-            @Override
-            public void onPluginFailedToInit(PluginRemote plugin) {
-                Logging.getInstance().logExtensions("Fehler: " + plugin.serviceName);
-                if (AppData.isDataLoaded())
-                    updatePluginReferencesInDevices(plugin, false);
-                observersPluginsReady.decreasePluginCount();
-            }
-
-            @Override
-            public void onPluginFinished(PluginRemote plugin) {
-                removeExtension(plugin);
+            public void onPluginFinished(AbstractBasePlugin plugin) {
+                removeExtension((PluginRemote) plugin);
             }
         });
     }
@@ -318,22 +313,30 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         return null;
     }
 
-    public void removeExtension(PluginRemote plugin) {
+    public void removeExtension(@NonNull PluginRemote plugin) {
         Logging.getInstance().logExtensions("Entfernen: " + plugin.serviceName);
+        observersPluginsReady.remove(plugin);
         plugins.remove(plugin);
-        removePluginReferencesInDevices(plugin);
-    }
-
-    private void removePluginReferencesInDevices(AbstractBasePlugin plugin) {
         // Remove all references in Device objects.
         DeviceCollection deviceCollection = appData.deviceCollection;
         for (Device device : deviceCollection.getItems()) {
-            if (plugin == null || device.getPluginInterface() == plugin) {
+            if (device.getPluginInterface() == plugin) {
                 device.setPluginInterface(null);
                 device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
                 device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
                 appData.updateExistingDevice(device, true);
             }
+        }
+    }
+
+    private void removeAllPluginReferencesInDevices() {
+        // Remove all references in Device objects.
+        DeviceCollection deviceCollection = appData.deviceCollection;
+        observersPluginsReady.reset();
+        for (Device device : deviceCollection.getItems()) {
+            device.setPluginInterface(null);
+            device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
+            device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
         }
     }
 
@@ -386,38 +389,45 @@ public class PluginService extends Service implements onDataQueryCompleted, onDa
         }
     }
 
-    public void showNotificationForNextRefresh(boolean notificationAfterNextRefresh) {
-        this.notificationAfterNextRefresh = notificationAfterNextRefresh;
-    }
-
     @Override
-    public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
-        if (notificationAfterNextRefresh) {
-            notificationAfterNextRefresh = false;
-            // Show notification 500ms later, to also aggregate new devices for the message
-            DataQueryFinishedMessageRunnable.show(afterDataQueryFinishedHandler);
+    public boolean onPluginsReady(PluginService pluginService, List<AbstractBasePlugin> not_activated_plugins) {
+        if (!AppData.isDataLoaded()) return true;
+
+        for (AbstractBasePlugin newlyAddedPlugin : not_activated_plugins) {
+            Log.w(TAG, "onDataLoaded " + newlyAddedPlugin.getPluginID());
+            plugins.add(newlyAddedPlugin);
+            updatePluginReferencesInDevices(newlyAddedPlugin, false);
         }
+        not_activated_plugins.clear();
+        for (Device device : appData.deviceCollection.getItems()) {
+            if (device.getPluginInterface() == null)
+                throw new RuntimeException("No Plugin for device " + device.getDeviceName());
+        }
+        observersServiceReady.onServiceReady(pluginService);
+        appData.refreshDeviceData(pluginService, false);
         return true;
     }
 
     @Override
     public boolean onDataLoaded() {
-        for (AbstractBasePlugin abstractBasePlugin : plugins)
-            updatePluginReferencesInDevices(abstractBasePlugin, false);
-
-        observersPluginsReady.register(new onPluginsReady() {
-            @Override
-            public boolean onPluginsReady(PluginService pluginService) {
-                observersServiceReady.onServiceReady(pluginService);
-                appData.refreshDeviceData(pluginService, false);
-                return false;
-            }
-        });
-
+        observersPluginsReady.checkIfReady(); // will emit onPluginsReady again if necessary
         return false;
     }
 
     public AppData getAppData() {
         return appData;
+    }
+
+    public boolean isPluginsLoaded() {
+        return observersPluginsReady.isLoaded();
+    }
+
+    /**
+     * Return and reset the flag, if the service has been started by an alarm.
+     *
+     * @return
+     */
+    public long alarmStartedTime() {
+        return mStartedByAlarmTime;
     }
 }

@@ -20,6 +20,8 @@ import oly.netpowerctrl.pluginservice.onServiceReady;
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> implements onCollectionUpdated<GroupCollection, Group>, onServiceReady {
     private int count;
     private GroupCollection groupCollection;
+    private int selectedItemPosition = -1;
+    private int lastSelectedItemPosition = -1;
 
     public GroupAdapter() {
         count = 0;
@@ -33,10 +35,19 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder viewHolder, int position) {
         String t = position == 0 ? App.getAppString(R.string.groups_all) :
                 groupCollection.get(position - 1).name;
-        holder.textView.setText(t);
+        viewHolder.textView.setText(t);
+
+        if (lastSelectedItemPosition == position) {
+            viewHolder.layout_item.setActivated(false);
+            lastSelectedItemPosition = -1;
+        }
+
+        if (selectedItemPosition == position) {
+            viewHolder.layout_item.setActivated(true);
+        }
     }
 
     @Override
@@ -69,11 +80,22 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         groupCollection = null;
     }
 
+    public void setSelectedItem(int pos) {
+        lastSelectedItemPosition = selectedItemPosition;
+        if (lastSelectedItemPosition != -1)
+            notifyItemChanged(lastSelectedItemPosition);
+
+        selectedItemPosition = pos;
+        notifyItemChanged(pos);
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
+        View layout_item;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            layout_item = itemView.findViewById(R.id.list_item);
             textView = (TextView) itemView.findViewById(R.id.title);
         }
     }

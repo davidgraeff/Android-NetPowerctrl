@@ -264,7 +264,7 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             setWidgetState(widgetEntry.widgetID, executable, true);
 
             if (executable.reachableState() == ExecutableReachability.NotReachable) {
-                PluginService.getService().showNotificationForNextRefresh(true);
+                appData.showNotificationForNextRefresh(true);
                 appData.refreshDeviceData(service, false);
                 return;
             }

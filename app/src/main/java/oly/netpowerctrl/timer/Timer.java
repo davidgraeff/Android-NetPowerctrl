@@ -287,6 +287,8 @@ public class Timer implements StorableInterface {
         Calendar calendar_start = Calendar.getInstance();
         calendar_current.setTimeInMillis(currentTime);
         calendar_start.setTimeInMillis(currentTime);
+        calendar_start.set(Calendar.SECOND, 0);
+        calendar_start.set(Calendar.MILLISECOND, 0);
         final int day = calendar_start.get(Calendar.DAY_OF_WEEK) - 1; // start with 1: Sunday
         if (hour_minute != -1) {
             calendar_start.set(Calendar.HOUR_OF_DAY, getHour(hour_minute));

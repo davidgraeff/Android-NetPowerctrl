@@ -22,7 +22,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             PluginService.observersServiceReady.register(new onServiceReady() {
                 @Override
                 public boolean onServiceReady(PluginService service) {
-                    service.getAppData().timerCollection.setupAndroidAlarm(App.instance);
+                    service.getAppData().timerCollection.setupNextAndroidAlarmFromPointInTime(App.instance, System.currentTimeMillis());
                     PluginService.stopUseService(keepServiceAliveObject);
                     return false;
                 }

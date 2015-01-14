@@ -33,7 +33,6 @@ import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onPluginsReady;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
 import oly.netpowerctrl.scenes.SceneItem;
@@ -47,7 +46,7 @@ import oly.netpowerctrl.utils.Logging;
  * are implemented in this class. Those are: executeToggle, rename, countReachable, countNetworkDevices.
  * This class is a singleton (Initialization on Demand Holder).
  */
-public class AppData {
+public class AppData implements onDataQueryCompleted {
     // Observers are static for this singleton class
     public static final DataQueryCompletedObserver observersDataQueryCompleted = new DataQueryCompletedObserver();
     public static final DataQueryRefreshObserver observersStartStopRefresh = new DataQueryRefreshObserver();
@@ -93,18 +92,14 @@ public class AppData {
             isDetecting = false;
         }
     };
-    private onPluginsReady refreshAfterPluginsReady = new onPluginsReady() {
-        @Override
-        public boolean onPluginsReady(PluginService pluginService) {
-            isDetecting = false;
-            refreshDeviceData(pluginService, false);
-            return false;
-        }
-    };
+
     private int temp_success, temp_errors;
+    private boolean notificationAfterNextRefresh;
+    private DataQueryFinishedMessageRunnable afterDataQueryFinishedHandler = new DataQueryFinishedMessageRunnable(this);
 
     public AppData(WakeUpDeviceInterface wakeUpDeviceInterface) {
         this.wakeUpDeviceInterface = wakeUpDeviceInterface;
+        observersDataQueryCompleted.register(this);
     }
 
     public static void addServiceToDataLoadedObserver(PluginService service) {
@@ -581,6 +576,20 @@ public class AppData {
         return list;
     }
 
+    public void showNotificationForNextRefresh(boolean notificationAfterNextRefresh) {
+        this.notificationAfterNextRefresh = notificationAfterNextRefresh;
+    }
+
+    @Override
+    public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+        if (notificationAfterNextRefresh) {
+            notificationAfterNextRefresh = false;
+            // Show notification 500ms later, to also aggregate new devices for the message
+            DataQueryFinishedMessageRunnable.show(afterDataQueryFinishedHandler);
+        }
+        return true;
+    }
+
     public void refreshDeviceData(PluginService pluginService, final boolean refreshKnownExtensions) {
         // The following mechanism allows only one update request within a
         // 1sec timeframe.
@@ -588,9 +597,8 @@ public class AppData {
             return;
         isDetecting = true;
 
-        if (!pluginService.observersPluginsReady.isLoaded()) {
-            pluginService.observersPluginsReady.register(refreshAfterPluginsReady);
-            return;
+        if (!pluginService.isPluginsLoaded()) {
+            throw new RuntimeException("refreshDeviceData before Plugins are ready");
         } else
             restrictDetectingHandler.sendEmptyMessageDelayed(0, 1000);
 
@@ -612,6 +620,7 @@ public class AppData {
 
             @Override
             public void onObserverJobFinished(List<Device> timeout_devices) {
+                timerCollection.checkAlarm(PluginService.getService().alarmStartedTime());
                 Logging.getInstance().logEnergy("Suche Geräte fertig\n" + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " Timeout: " + String.valueOf(timeout_devices.size()));
                 observersDataQueryCompleted.onDataQueryFinished(AppData.this, timeout_devices.size() == countNetworkDevices());
                 observersStartStopRefresh.onRefreshStateChanged(false);

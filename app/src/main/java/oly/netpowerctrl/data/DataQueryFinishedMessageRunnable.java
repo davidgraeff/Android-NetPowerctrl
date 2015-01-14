@@ -1,9 +1,8 @@
-package oly.netpowerctrl.pluginservice;
+package oly.netpowerctrl.data;
 
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.main.App;
 
 /**

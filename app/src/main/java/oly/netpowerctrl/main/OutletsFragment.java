@@ -135,7 +135,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public boolean onServiceReady(PluginService service) {
         appData = service.getAppData();
-        filterBySingleGroup.setFilterGroup(SharedPrefs.getInstance().getLastGroupUid());
+        setGroup(SharedPrefs.getInstance().getLastGroupUid(), false);
         applyViewType();
         return false;
     }
@@ -189,27 +189,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 setEditMode(!editMode);
                 return true;
             }
+            case R.id.menu_view_mode: {
+                MainActivity.getNavigationController().changeToDialog(getActivity(), OutletsViewModeDialog.class.getName());
+            }
         }
         return false;
     }
-
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    if (i < 1) i = 1;
-                    adapter.setItemsInRow(i);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-                }
-            };
 
     /**
      * Handles clicks on the plus floating button
@@ -242,7 +227,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         GroupUtilities.createGroup(getActivity(), appData.groupCollection, new GroupUtilities.GroupCreatedCallback() {
                             @Override
                             public void onGroupCreated(int group_index, UUID group_uid) {
-                                filterBySingleGroup.setFilterGroup(group_uid);
+                                setGroup(group_uid, true);
                             }
                         });
                         return true;
@@ -257,6 +242,24 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         });
         popup.show();
     }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+
+                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
+                    if (i < 1) i = 1;
+                    adapter.setItemsInRow(i);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(adapter);
+                }
+            };
 
     @Override
     public boolean onBackButton() {
@@ -289,6 +292,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 canvas.scale(percentOpen, 1, 0, 0);
             }
         });
+
         {
             RecyclerView group_list = (RecyclerView) view.findViewById(R.id.group_list);
             group_list.setItemAnimator(new DefaultItemAnimator());
@@ -300,9 +304,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         showGroupPopupMenu(view, appData.groupCollection.get(position - 1).uuid);
                         return true;
                     }
-                    UUID group_uid = position > 0 ? appData.groupCollection.get(position - 1).uuid : null;
-                    SharedPrefs.getInstance().setLastGroupUid(group_uid);
-                    filterBySingleGroup.setFilterGroup(group_uid);
+                    setGroup(position > 0 ? appData.groupCollection.get(position - 1).uuid : null, true);
                     return true;
                 }
             }, null));
@@ -449,8 +451,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 }
                 // change to overview if the removed group is the current group
                 if (clicked_group_uid.equals(filterBySingleGroup.getFilterGroup())) {
-                    filterBySingleGroup.setFilterGroup(null);
-                    SharedPrefs.getInstance().setLastGroupUid(null);
+                    setGroup(null, true);
                 }
                 return true;
             }
@@ -460,6 +461,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
         }
         return false;
+    }
+
+    private void setGroup(UUID group_uid, boolean save) {
+        filterBySingleGroup.setFilterGroup(group_uid);
+        if (save) SharedPrefs.getInstance().setLastGroupUid(group_uid);
+        groupAdapter.setSelectedItem(appData.groupCollection.indexOf(group_uid) + 1);
     }
 
     @Override

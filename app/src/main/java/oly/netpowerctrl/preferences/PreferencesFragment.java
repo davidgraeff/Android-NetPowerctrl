@@ -24,6 +24,7 @@ import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.statusbar_and_speech.AndroidStatusBarService;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements LoadStoreIconData.IconSelected {
@@ -65,7 +66,9 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference(SharedPrefs.PREF_background).setOnPreferenceChangeListener(reloadActivity);
 
         //noinspection ConstantConditions
-        findPreference("open_log").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        Preference p = findPreference("open_log");
+        p.setSummary(Logging.getInstance().getLogFileSize());
+        p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 MainActivity.getNavigationController().changeToFragment(LogFragment.class.getName());

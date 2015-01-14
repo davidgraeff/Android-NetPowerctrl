@@ -17,15 +17,13 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.data.onDataQueryCompleted;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
@@ -35,7 +33,6 @@ import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.WakeLocker;
@@ -45,6 +42,7 @@ import oly.netpowerctrl.utils.WakeLocker;
  */
 public class TimerCollection extends CollectionWithStorableItems<TimerCollection, Timer> {
     private static final String TAG = "TimerCollection";
+    private static final long maxDiffMS = 5000;
     public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
         @Override
         public boolean updated(@NonNull DeviceCollection deviceCollection, Device device, @NonNull ObserverUpdateActions action, int position) {
@@ -98,74 +96,14 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         appData.deviceCollection.registerObserver(deviceObserver);
     }
 
-    /**
-     * Check for alarms. The PluginService as well as the AppData object may not be ready at this time.
-     */
-    public static void checkAlarm() {
-        final long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(App.instance);
-
-        { // Check if current time matches somehow the setup next alarm time
-            long maxDiffms = 50000;
-            long current = System.currentTimeMillis();
-            // Do not setup an alarm again, if there is one setup in the future already
-            if (nextAlarmTimestamp > current) return;
-
-            if (nextAlarmTimestamp + maxDiffms < current) {
-                PluginService.observersServiceReady.register(new onServiceReady() {
-                    @Override
-                    public boolean onServiceReady(PluginService service) {
-                        service.getAppData().timerCollection.setupAndroidAlarm(App.instance);
-                        return false;
-                    }
-
-                    @Override
-                    public void onServiceFinished(PluginService service) {
-                    }
-                });
-                return;
-            }
-        } // From here on, we use nextAlarmTimestamp as current
-
-        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
-            @Override
-            public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
-                appData.timerCollection.executeAlarm(appData, nextAlarmTimestamp);
-                return false;
-            }
-        });
+    public static void printAlarm(long time, String name) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Logging.getInstance().logAlarm("Next alarm: " + name + "\nOn: " + sdf.format(calendar.getTime()));
     }
 
-    public void setupAndroidAlarm(Context context) {
-        // We use either the current time or if it the same as the already saved next alarm time, current time + 1
-        long current = System.currentTimeMillis();
-        long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(context);
-        if (current == nextAlarmTimestamp)
-            ++current;
-
-        Timer nextTimer = null;
-
-        List<Timer> timerList = getItems();
-        for (int i = timerList.size() - 1; i >= 0; --i) {
-            Timer timer = timerList.get(i);
-            if (timer.alarmOnDevice != null)
-                continue;
-
-            timer.computeNextAlarmUnixTime(current);
-
-            if (timer.next_execution_unix_time >= current &&
-                    (nextTimer == null || timer.next_execution_unix_time < nextTimer.next_execution_unix_time)) {
-                nextTimer = timer;
-            }
-
-            // Remove old one-time timer
-            if (timer.type == Timer.TYPE_ONCE && timer.next_execution_unix_time < current) {
-                removeAlarmFromDisk(timer);
-            }
-        }
-
-        if (nextTimer != null && nextAlarmTimestamp == nextTimer.next_execution_unix_time)
-            throw new RuntimeException("Same alarm selected for next execution!");
-
+    public static void armAndroidAlarm(Context context, long wakeupTimeInMs) {
         AlarmManager mgr = (AlarmManager) context.getSystemService(android.content.Context.ALARM_SERVICE);
         Intent intent = new Intent(context, PluginService.class);
         intent.putExtra("isAlarm", true);
@@ -173,31 +111,27 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         mgr.cancel(pi);
 
-        if (nextTimer == null) {
-            if (nextAlarmTimestamp > 0) {
-                // Disable the manifest entry for the BootCompletedReceiver. This way the app won't unnecessary wake up after boot.
-                ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
-                PackageManager pm = context.getPackageManager();
-                pm.setComponentEnabledSetting(receiver,
-                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                        PackageManager.DONT_KILL_APP);
-                // Reset next alarm time cache
-                SharedPrefs.setNextAlarmCheckTimestamp(context, 0);
-            }
+        if (wakeupTimeInMs == -1) {
+            // Disable the manifest entry for the BootCompletedReceiver. This way the app won't unnecessary wake up after boot.
+            ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
+            PackageManager pm = context.getPackageManager();
+            pm.setComponentEnabledSetting(receiver,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
             return;
         }
 
-        SharedPrefs.setNextAlarmCheckTimestamp(context, nextTimer.next_execution_unix_time);
+        if (wakeupTimeInMs < System.currentTimeMillis()) {
+            printAlarm(wakeupTimeInMs, SharedPrefs.getNextAlarmName(context));
+            return;
+        }
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(nextTimer.next_execution_unix_time);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Logging.getInstance().logAlarm("Next alarm: " + nextTimer.getTargetName() + "\nOn: " + sdf.format(calendar.getTime()));
+        TimerCollection.printAlarm(wakeupTimeInMs, SharedPrefs.getNextAlarmName(context));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-            mgr.setExact(AlarmManager.RTC_WAKEUP, nextTimer.next_execution_unix_time, pi);
+            mgr.setExact(AlarmManager.RTC_WAKEUP, wakeupTimeInMs, pi);
         else
-            mgr.set(AlarmManager.RTC_WAKEUP, nextTimer.next_execution_unix_time, pi);
+            mgr.set(AlarmManager.RTC_WAKEUP, wakeupTimeInMs, pi);
 
         // Enable the manifest entry for the BootCompletedReceiver. This way alarms are setup again after a reboot.
         ComponentName receiver = new ComponentName(context, BootCompletedReceiver.class);
@@ -207,12 +141,66 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 PackageManager.DONT_KILL_APP);
     }
 
-    private void executeAlarm(AppData appData, long nextAlarmTimestamp) {
+    /**
+     * Check for alarms. If the current time matches (somehow) the next alarm time,
+     * executeAlarm is called as soon as the PluginService is ready. Otherwise the android
+     * alarm is rescheduled.
+     * The PluginService as well as the AppData object may not be ready at this time.
+     */
+    public void checkAlarm(long checkTime) {
+        if (checkTime == -1) return;
+        final long nextAlarmTimestamp = SharedPrefs.getNextAlarmCheckTimestamp(App.instance);
+
+        // Do not try to setup an alarm, if we have cached, that there is no valid alarm available.
+        if (nextAlarmTimestamp == -1) return;
+
+        // Check if current time matches somehow the next alarm time
+        if (checkTime <= nextAlarmTimestamp + maxDiffMS) {
+            if (checkTime >= nextAlarmTimestamp) {
+                appData.timerCollection.executeAlarm(appData, nextAlarmTimestamp);
+            } else
+                TimerCollection.armAndroidAlarm(App.instance, nextAlarmTimestamp);
+        } else
+            setupNextAndroidAlarmFromPointInTime(App.instance, checkTime);
+    }
+
+    public void setupNextAndroidAlarmFromPointInTime(Context context, long earliestPointInTimeInMs) {
+        Timer nextTimer = null;
+
+        for (int i = items.size() - 1; i >= 0; --i) {
+            Timer timer = items.get(i);
+            if (timer.alarmOnDevice != null)
+                continue;
+
+            timer.computeNextAlarmUnixTime(earliestPointInTimeInMs);
+
+            if (timer.next_execution_unix_time >= earliestPointInTimeInMs &&
+                    (nextTimer == null || timer.next_execution_unix_time < nextTimer.next_execution_unix_time)) {
+                nextTimer = timer;
+            }
+
+            // Remove old one-time timer
+            if (timer.type == Timer.TYPE_ONCE && timer.next_execution_unix_time < earliestPointInTimeInMs) {
+                removeAlarmFromDisk(timer);
+            }
+        }
+
+        if (nextTimer == null) {
+            // Reset next alarm time cache
+            SharedPrefs.setNextAlarmCheckTimestamp(context, 0, "");
+            armAndroidAlarm(context, -1);
+        } else {
+            SharedPrefs.setNextAlarmCheckTimestamp(context, nextTimer.next_execution_unix_time, nextTimer.getTargetName());
+            armAndroidAlarm(context, nextTimer.next_execution_unix_time);
+        }
+    }
+
+    private void executeAlarm(AppData appData, final long nextAlarmTimestamp) {
         List<Executable> executables = new ArrayList<>();
         List<Integer> commands = new ArrayList<>();
 
         // Reset the stored nextAlarm time.
-        SharedPrefs.setNextAlarmCheckTimestamp(App.instance, -1);
+        SharedPrefs.setNextAlarmCheckTimestamp(App.instance, -1, "");
 
         // Determine executables for the given alarm time {@link nextAlarmTimestamp}
         for (Timer timer : getItems()) {
@@ -221,7 +209,8 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
             timer.computeNextAlarmUnixTime(nextAlarmTimestamp);
 
-            if (timer.next_execution_unix_time == nextAlarmTimestamp) {
+            if (timer.next_execution_unix_time >= nextAlarmTimestamp &&
+                    timer.next_execution_unix_time < nextAlarmTimestamp + maxDiffMS) {
                 Executable executable = appData.findExecutable(timer.executable_uid);
 
                 if (executable != null)
@@ -238,21 +227,22 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         if (executables.size() == 0) {
             Logging.getInstance().logAlarm("Armed alarm not found!");
-            setupAndroidAlarm(App.instance);
+            setupNextAndroidAlarmFromPointInTime(App.instance, nextAlarmTimestamp + maxDiffMS);
             return;
         }
 
         // Setup executionFinished callback and countDownLatch to release the wavelock, that we will
         // acquire for the duration of the alarm execution.
-        final CountDownLatch countDownLatch = new CountDownLatch(executables.size());
+        final AtomicInteger countDownInteger = new AtomicInteger(executables.size());
+        //final CountDownLatch countDownLatch = new CountDownLatch(executables.size());
         onExecutionFinished executionFinished = new onExecutionFinished() {
             @Override
             public void onExecutionProgress(int success, int errors, int all) {
                 if (success + errors >= all) {
                     Log.w(TAG, "alarm finished");
-                    Thread.dumpStack();
+                    //Thread.dumpStack();
                     Logging.getInstance().logAlarm("Alarm items (OK, FAIL):\n" + String.valueOf(success) + ", " + String.valueOf(errors));
-                    countDownLatch.countDown();
+                    countDownInteger.decrementAndGet();
                 }
             }
         };
@@ -268,15 +258,20 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             }
         }
 
-        try {
-            countDownLatch.await(5000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ignored) {
-        }
+        // Hint: Initially a countDownLatch has been used to finish this method after all
+        // appData.execute finished for every executable (or after 5s). But the main loop
+        // was stopped and no network commands have been handed over to the network thread.
+        App.getMainThreadHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                WakeLocker.release();
+                long nextMinimumAlarmTime = Math.max(nextAlarmTimestamp + maxDiffMS, System.currentTimeMillis());
+                // Setup new alarm if one got executed
+                setupNextAndroidAlarmFromPointInTime(App.instance, nextMinimumAlarmTime);
 
-        WakeLocker.release();
-        PluginService.getService().checkStopAfterAlarm();
-        // Setup new alarm if one got executed
-        setupAndroidAlarm(App.instance);
+                PluginService.getService().checkStopAfterAlarm();
+            }
+        }, 5000);
     }
 
     public boolean isRequestActive() {
@@ -341,7 +336,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         save(alarm);
 
         if (alarm.alarmOnDevice == null)
-            setupAndroidAlarm(App.instance);
+            setupNextAndroidAlarmFromPointInTime(App.instance, System.currentTimeMillis());
     }
 
     void removeDeviceAlarm(final Timer timer, final onHttpRequestResult callback) {
@@ -469,10 +464,11 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     }
 
     @Override
-    public void addWithourSave(Timer timer) throws ClassNotFoundException {
+    public void addWithoutSave(Timer timer) throws ClassNotFoundException {
         Executable executable = appData.findExecutable(timer.executable_uid);
         if (executable == null)
             throw new ClassNotFoundException(toString());
-        super.addWithourSave(timer);
+        timer.executable = executable;
+        super.addWithoutSave(timer);
     }
 }

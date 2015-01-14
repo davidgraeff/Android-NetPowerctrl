@@ -22,16 +22,15 @@ import oly.netpowerctrl.device_base.device.DevicePort;
  * List all alarms of the timer controller
  */
 public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> implements onCollectionUpdated<TimerCollection, Timer> {
-    private final TimerCollection controller;
     private final Context context;
     private final int resImageFromCache;
     private final int resImageOn;
     private final int resImageOff;
     private final int resImageToggle;
+    private TimerCollection controller;
 
-    public TimerAdapter(Context context, TimerCollection timerCollection) {
+    public TimerAdapter(Context context) {
         this.context = context;
-        this.controller = timerCollection;
 
         TypedValue typedvalueattr = new TypedValue();
         context.getTheme().resolveAttribute(R.attr.ic_action_download_themed, typedvalueattr, true);
@@ -44,7 +43,8 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
         resImageToggle = typedvalueattr.resourceId;
     }
 
-    public void start() {
+    public void start(TimerCollection timerCollection) {
+        this.controller = timerCollection;
         controller.registerObserver(this);
     }
 
@@ -59,6 +59,7 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
+        if (controller == null) return 0;
         return controller.size();
     }
 

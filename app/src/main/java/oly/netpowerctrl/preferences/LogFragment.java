@@ -125,11 +125,16 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
     public void onResume() {
         super.onResume();
         listItems.clear();
-        reader = Logging.getInstance().getReader();
-        Logging.getInstance().setLogChangedListener(this);
+        Logging logging = Logging.getInstance();
+        reader = logging.getReader();
+        if (logging.getLogFile().length() > 1024) {
+            try {
+                reader.skip(logging.getLogFile().length() - 1024);
+            } catch (IOException ignored) {
+            }
+        }
+        logging.setLogChangedListener(this);
         onLogChanged();
-        if (adapter.getItemCount() != 0)
-            Toast.makeText(getActivity(), getString(R.string.log_file_size, Logging.getInstance().getLogFile().length() / 1024.0f), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -241,7 +246,6 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
         private String date = "";
         private String time = "";
         private String text;
-        private int typeInt = TYPE_MAIN;
 
         LogItem(String line) {
             String[] strings = line.replace('\t', '\n').split("\\|");
@@ -271,6 +275,8 @@ public class LogFragment extends Fragment implements Logging.LogChanged, SwipeRe
                     break;
             }
         }
+
+        private int typeInt = TYPE_MAIN;
 
 
     }

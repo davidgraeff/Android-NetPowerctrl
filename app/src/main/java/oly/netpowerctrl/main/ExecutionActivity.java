@@ -20,7 +20,6 @@ import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onPluginsReady;
 import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.Scene;
 
@@ -107,13 +106,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
         PluginService.observersServiceReady.register(new onServiceReady() {
             @Override
             public boolean onServiceReady(PluginService service) {
-                service.observersPluginsReady.register(new onPluginsReady() {
-                    @Override
-                    public boolean onPluginsReady(PluginService pluginService) {
-                        pluginService.getAppData().refreshDeviceData(pluginService, true);
-                        return false;
-                    }
-                });
+                service.getAppData().refreshDeviceData(service, true);
                 return false;
             }
 

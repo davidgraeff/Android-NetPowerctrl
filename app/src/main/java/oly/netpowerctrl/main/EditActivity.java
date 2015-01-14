@@ -14,6 +14,9 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -384,6 +387,11 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         } else {
             getSupportActionBar().setSubtitle(getString(R.string.outlet_edit_title, executable.getTitle()));
             findViewById(R.id.items_container).setVisibility(View.GONE);
+            // Workaround: We do not use that this RecyclerView if we edit a DevicePort
+            // but the component will crash (android 4.4.4) if no layout manager is defined on onDestroy.
+            RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.available).findViewById(android.R.id.list);
+            mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             btnAdd.setVisibility(View.GONE);
         }
 

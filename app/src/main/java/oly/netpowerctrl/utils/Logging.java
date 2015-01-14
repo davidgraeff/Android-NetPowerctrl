@@ -17,6 +17,7 @@ import java.io.StringBufferInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.main.App;
 
@@ -187,6 +188,10 @@ public class Logging {
 
     public void setLogChangedListener(LogChanged logChangedListener) {
         this.logChangedListener = logChangedListener;
+    }
+
+    public String getLogFileSize() {
+        return App.instance.getString(R.string.log_file_size, logFile.length() / 1024.0f);
     }
 
     public interface LogChanged {

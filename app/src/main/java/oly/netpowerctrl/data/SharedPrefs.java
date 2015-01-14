@@ -81,9 +81,14 @@ public class SharedPrefs {
         return prefs.getLong("next_alarm_timestamp", -1);
     }
 
-    public static void setNextAlarmCheckTimestamp(Context context, long next_alarm_timestamp) {
+    public static String getNextAlarmName(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putLong("next_alarm_timestamp", next_alarm_timestamp).apply();
+        return prefs.getString("next_alarm_name", "");
+    }
+
+    public static void setNextAlarmCheckTimestamp(Context context, long next_alarm_timestamp, String targetName) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putLong("next_alarm_timestamp", next_alarm_timestamp).putString("next_alarm_name", targetName).apply();
     }
 
     public static boolean isNotification(Context context) {

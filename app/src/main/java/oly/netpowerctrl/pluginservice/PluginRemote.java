@@ -40,9 +40,6 @@ public class PluginRemote extends AbstractBasePlugin {
     private String TAG = "PluginRemote";
     private boolean isInitialized = false;
     private INetPwrCtrlPlugin plugin = null;
-    private int transaction_counter_success = 0;
-    private int transaction_counter_failures = 0;
-    private onPluginReady pluginReady = null;
     private final ServiceConnection svcConn = new ServiceConnection() {
         public void onServiceConnected(ComponentName className,
                                        IBinder binder) {
@@ -50,14 +47,14 @@ public class PluginRemote extends AbstractBasePlugin {
             plugin = INetPwrCtrlPlugin.Stub.asInterface(binder);
             init();
             if (pluginReady != null)
-                pluginReady.onPluginReady(PluginRemote.this);
+                pluginReady.onPluginReady(PluginRemote.this, false);
         }
 
         public void onServiceDisconnected(ComponentName className) {
             plugin = null;
             pluginService.unbindService(this);
-            if (pluginReady != null)
-                pluginReady.onPluginFinished(PluginRemote.this);
+            if (pluginFinished.get() != null)
+                pluginFinished.get().onPluginFinished(PluginRemote.this);
         }
     };
     private final INetPwrCtrlPluginResult.Stub callback = new INetPwrCtrlPluginResult.Stub() {
@@ -139,6 +136,8 @@ public class PluginRemote extends AbstractBasePlugin {
             pluginService.getAppData().updateDeviceFromOtherThread(device);
         }
     };
+    private int transaction_counter_success = 0;
+    private int transaction_counter_failures = 0;
 
     /**
      * Initialize a plugin. Try to load an already configured DeviceInfo for this plugin
@@ -155,6 +154,12 @@ public class PluginRemote extends AbstractBasePlugin {
         this.localized_name = localized_name;
         this.serviceName = serviceName;
         this.packageName = packageName;
+    }
+
+    @Override
+    protected void checkReady() {
+        if (plugin != null && pluginReady != null)
+            pluginReady.onPluginReady(this, false);
     }
 
     @Override
@@ -270,6 +275,11 @@ public class PluginRemote extends AbstractBasePlugin {
     }
 
     @Override
+    public String getLocalizedName() {
+        return serviceName;
+    }
+
+    @Override
     public void enterFullNetworkState(Context context, Device device) {
         if (plugin != null) return;
 
@@ -277,7 +287,7 @@ public class PluginRemote extends AbstractBasePlugin {
         in.setClassName(packageName, serviceName);
         if (!context.bindService(in, svcConn, android.content.Context.BIND_AUTO_CREATE)) {
             InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " BIND");
-            pluginReady.onPluginFailedToInit(this);
+            pluginReady.onPluginReady(this, true);
         }
     }
 
@@ -356,11 +366,5 @@ public class PluginRemote extends AbstractBasePlugin {
     @Override
     public EditDeviceInterface openEditDevice(Device device) {
         return null;
-    }
-
-    public void registerReadyObserver(onPluginReady pluginReady) {
-        this.pluginReady = pluginReady;
-        if (plugin != null && pluginReady != null)
-            pluginReady.onPluginReady(PluginRemote.this);
     }
 }

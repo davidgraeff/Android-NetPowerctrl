@@ -116,7 +116,7 @@ public class LoadStoreJSonData implements onStorageUpdate {
             ITEM item = classType.newInstance();
             try {
                 item.load(new FileInputStream(file));
-                collection.addWithourSave(item);
+                collection.addWithoutSave(item);
             } catch (IOException e) {
                 e.printStackTrace();
                 failedToRead(e, file, item);

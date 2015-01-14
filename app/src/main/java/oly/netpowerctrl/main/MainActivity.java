@@ -146,7 +146,7 @@ public class MainActivity extends ActionBarActivity {
                 v.setBackgroundDrawable(d);
         }
 
-        // enable ActionBar app icon to behave as action to toggle nav drawer
+//        enable ActionBar app icon to behave as action to toggle nav drawer
         boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -155,7 +155,6 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    /* Called whenever we call invalidateOptionsMenu() */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (navigationController.isLoading())

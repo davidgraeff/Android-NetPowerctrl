@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <oly.netpowerctrl.ui.widgets.RelativeLayoutRipple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_item"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="@dimen/list_outer_padding"
-    android:layout_marginRight="@dimen/list_outer_padding"
+    android:background="?android:attr/activatedBackgroundIndicator"
     android:baselineAligned="true"
-    android:padding="5dp">
-
-    <ImageView
-        android:id="@+id/group_image"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="15dp"
-        android:layout_marginRight="15dp"
-        android:visibility="gone" />
+    android:minHeight="?android:attr/listPreferredItemHeight">
 
     <TextView
         android:id="@+id/title"
@@ -23,6 +14,7 @@
         android:layout_centerVertical="true"
         android:layout_toEndOf="@id/device_connection_reachable"
         android:layout_toRightOf="@id/device_connection_reachable"
+        android:padding="5dp"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </oly.netpowerctrl.ui.widgets.RelativeLayoutRipple>

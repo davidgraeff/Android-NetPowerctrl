@@ -370,7 +370,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_timer_android_weekdays">Android Alarm: Wiederholend</string>
     <string name="menu_timer_device_weekdays">Gerätealarm: Wiederholend</string>
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
-    <string name="log_file_size">Logdatei Größe: %1$f kb</string>
+    <string name="log_file_size">Logdatei Größe: %,.2f kb</string>
     <string name="outlets_edit_hint">Bearbeitunsgmodus</string>
     <string name="scene_options_title">Optionen</string>
     <string name="alarm_received">Sychnonisierung abgeschlossen</string>

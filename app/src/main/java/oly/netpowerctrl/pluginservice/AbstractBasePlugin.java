@@ -3,6 +3,8 @@ package oly.netpowerctrl.pluginservice;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
+import java.lang.ref.WeakReference;
+
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.devices.EditDeviceInterface;
@@ -16,9 +18,22 @@ import oly.netpowerctrl.timer.TimerCollection;
  */
 public abstract class AbstractBasePlugin {
     protected final PluginService pluginService;
+    protected onPluginReady pluginReady = null;
+    protected WeakReference<onPluginFinished> pluginFinished = new WeakReference<>(null);
 
     protected AbstractBasePlugin(PluginService pluginService) {
         this.pluginService = pluginService;
+    }
+
+    protected abstract void checkReady();
+
+    protected void registerReadyObserver(onPluginReady pluginReady) {
+        this.pluginReady = pluginReady;
+        checkReady();
+    }
+
+    protected void registerFinishedObserver(onPluginFinished pluginFinished) {
+        this.pluginFinished = new WeakReference<>(pluginFinished);
     }
 
     public PluginService getPluginService() {
@@ -45,6 +60,8 @@ public abstract class AbstractBasePlugin {
 
     ////////////// Auxiliary //////////////
     abstract public String getPluginID();
+
+    abstract public String getLocalizedName();
 
     abstract public void openConfigurationPage(Device device, Context context);
 

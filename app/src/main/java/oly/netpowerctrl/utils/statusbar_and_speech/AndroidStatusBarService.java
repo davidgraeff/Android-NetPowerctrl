@@ -139,7 +139,7 @@ public class AndroidStatusBarService extends Service implements onServiceReady {
     public boolean onServiceReady(PluginService service) {
         createNotification(service.getAppData());
         service.getAppData().favCollection.registerObserver(collectionUpdateListener);
-        return false;
+        return true;
     }
 
     @Override
