@@ -27,7 +27,7 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.executables.ExecutableReachability;
-import oly.netpowerctrl.network.DeviceQuery;
+import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 
 public class DeviceEditDialog extends DialogFragment implements onCreateDeviceResult {

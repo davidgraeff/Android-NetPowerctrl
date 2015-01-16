@@ -35,11 +35,10 @@ import oly.netpowerctrl.utils.Logging;
  */
 public class PluginService extends Service implements onDataLoaded, WakeUpDeviceInterface, onPluginsReady {
     public static final ServiceReadyObserver observersServiceReady = new ServiceReadyObserver();
-    public static final ServiceModeChangedObserver observersServiceModeChanged = new ServiceModeChangedObserver();
     private static final String TAG = "NetpowerctrlService";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private static final String PAYLOAD_SERVICE_NAME = "SERVICE_NAME";
-    private static final NetworkChangedBroadcastReceiver networkChangedListener = new NetworkChangedBroadcastReceiver();
+
     public static String service_shutdown_reason = "";
     ///////////////// Service start/stop listener /////////////////
     static private WeakHashMap<Object, Boolean> weakHashMap = new WeakHashMap<>();
@@ -85,7 +84,6 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
             Intent intent = new Intent(context, PluginService.class);
             context.startService(intent);
         } else { // service already running. if service was going to go down, stop the shutdown task.
-            service_shutdown_reason = "";
             mDiscoverService.stopServiceHandler.removeCallbacks(mDiscoverService.stopRunnable);
         }
     }
@@ -95,6 +93,7 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
     }
 
     public static void stopUseService(Object useReference) {
+        Log.w(TAG, "stopUse");
         weakHashMap.remove(useReference);
         if (weakHashMap.size() == 0 && mDiscoverService != null) {
             service_shutdown_reason = "No use of service!";
@@ -118,7 +117,7 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
     public void checkStopAfterAlarm() {
         if (weakHashMap.size() == 0) {
             service_shutdown_reason = "StopAfterAlarm";
-            stopSelf();
+            mDiscoverService.stopServiceHandler.postDelayed(mDiscoverService.stopRunnable, 2000);
         }
     }
 
@@ -129,7 +128,7 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
      * 2b) Discover devices and extensions
      * 3) If all data loaded and all extensions for all loaded devices are loaded (or timeout):
      * 3.1) updatePluginReferencesInDevices
-     * 3.2) wakeupAllDevices (initiates update for every loaded device, if not updated the last 5sec)
+     * 3.2) resumeAllPlugins (initiates update for every loaded device, if not updated the last 5sec)
      */
     @Override
     public int onStartCommand(@Nullable final Intent intent, final int flags, final int startId) {
@@ -205,15 +204,10 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
 
     @Override
     public void onDestroy() {
-        if (networkChangedListener.isNetworkChangedListener) {
-            networkChangedListener.isNetworkChangedListener = false;
-            unregisterReceiver(networkChangedListener);
-        }
 
         observersServiceReady.onServiceFinished(this);
 
         appData.onDestroy();
-        enterNetworkReducedMode();
 
         // Clean up
         removeAllPluginReferencesInDevices();
@@ -225,39 +219,6 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         mDiscoverService = null;
 
         Logging.getInstance().logMain("ENDE: " + service_shutdown_reason);
-    }
-
-    ///////////////// Service start/stop /////////////////
-    void enterNetworkReducedMode() {
-        observersServiceModeChanged.onServiceModeChanged(true);
-
-        AppData.observersDataQueryCompleted.reset();
-
-        for (AbstractBasePlugin abstractBasePlugin : plugins)
-            if (abstractBasePlugin.isNetworkPlugin())
-                abstractBasePlugin.enterNetworkReducedState(this);
-
-        // Stop listening for network changes
-        if (SharedPrefs.getInstance().isMaximumEnergySaving()) {
-            networkChangedListener.unregister(this);
-            Logging.getInstance().logEnergy("Netzwerkwechsel nicht mehr überwacht!");
-        }
-    }
-
-    /**
-     * Do not use DeviceObserver here!
-     */
-    public void wakeupAllDevices() {
-        observersServiceModeChanged.onServiceModeChanged(false);
-
-        Logging.getInstance().logEnergy("Alle Geräte aufgeweckt");
-
-        for (AbstractBasePlugin abstractBasePlugin : plugins)
-            abstractBasePlugin.enterFullNetworkState(this, null);
-
-        networkChangedListener.registerReceiver(this);
-        if (networkChangedListener.isNetworkChangedListener)
-            Logging.getInstance().logEnergy("Netzwerkwechsel überwacht");
     }
 
     private void extensionDiscovered(String serviceName, String localized_name, String packageName) {
@@ -281,7 +242,7 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         final PluginRemote plugin = new PluginRemote(this, serviceName, localized_name, packageName);
         Logging.getInstance().logExtensions("Hinzufügen: " + localized_name);
         observersPluginsReady.add(plugin);
-        plugin.enterFullNetworkState(PluginService.this, null);
+        plugin.onStart(this);
 
         plugin.registerFinishedObserver(new onPluginFinished() {
             @Override
@@ -321,9 +282,11 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         DeviceCollection deviceCollection = appData.deviceCollection;
         for (Device device : deviceCollection.getItems()) {
             if (device.getPluginInterface() == plugin) {
+                device.lockDevice();
                 device.setPluginInterface(null);
                 device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
                 device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
+                device.releaseDevice();
                 appData.updateExistingDevice(device, true);
             }
         }
@@ -334,9 +297,11 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         DeviceCollection deviceCollection = appData.deviceCollection;
         observersPluginsReady.reset();
         for (Device device : deviceCollection.getItems()) {
+            device.lockDevice();
             device.setPluginInterface(null);
             device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
             device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
+            device.releaseDevice();
         }
     }
 
@@ -351,8 +316,7 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
     public boolean wakeupPlugin(Device device) {
         AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
         if (abstractBasePlugin != null) {
-            if (abstractBasePlugin.isNetworkReducedState())
-                abstractBasePlugin.enterFullNetworkState(this, device);
+            abstractBasePlugin.devicesChanged();
             return true;
         } else {
             return false;
@@ -383,9 +347,9 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         return null;
     }
 
-    public void requestDataAll() {
+    public void requestDataAll(DeviceQuery deviceQueryThread) {
         for (AbstractBasePlugin abstractBasePlugin : plugins) {
-            abstractBasePlugin.requestData();
+            abstractBasePlugin.requestData(deviceQueryThread);
         }
     }
 

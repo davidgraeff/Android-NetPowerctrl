@@ -1,10 +1,7 @@
 package oly.netpowerctrl.anel;
 
-import android.content.Context;
 import android.util.Log;
 
-import java.lang.ref.WeakReference;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -14,47 +11,27 @@ import java.util.Enumeration;
 import java.util.Set;
 
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.network.UDPSending;
-import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.network.UDPErrors;
+import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.utils.Logging;
 
 /**
- * A DeviceSend.Job that provide broadcast sending to anel devices.
+ * Always have to be called from the Thread of the given DeviceQuery.
  */
-public class AnelBroadcastSendJob implements UDPSending.Job {
-    final private WeakReference<UDPSending> udpSendingReference;
+public class AnelBroadcastSendJob {
+    public static void run(DeviceQuery deviceQuery) {
+        Log.w("AnelBroadcastSendJob", "Query");
+        Set<Integer> ports = deviceQuery.getPluginService().getAppData().getAllSendPorts();
 
-    public AnelBroadcastSendJob(UDPSending udpSending) {
-        this.udpSendingReference = new WeakReference<>(udpSending);
-    }
-
-    private void sendPacket(Context context, DatagramSocket datagramSocket, InetAddress ip, int SendPort, byte[] message) {
+        DatagramSocket datagramSocket;
         try {
+            datagramSocket = new DatagramSocket();
             datagramSocket.setBroadcast(true);
-            datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
-            //Log.w("AnelBroadcastSendJob",ip.getHostAddress());
-        } catch (final SocketException e) {
-            if (e.getMessage().contains("ENETUNREACH"))
-                UDPSending.onError(context, UDPSending.NETWORK_UNREACHABLE, ip.getHostAddress(), SendPort, e);
-            else {
-                UDPSending.onError(context, UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
-            }
-        } catch (final Exception e) {
+        } catch (SocketException e) {
             e.printStackTrace();
-            UDPSending.onError(context, UDPSending.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
-        }
-    }
-
-    @Override
-    public void process() {
-        UDPSending udpSending = udpSendingReference.get();
-        if (udpSending == null) {
-            Logging.getInstance().logDetect("UDP AnelBroadcastSendJob: No udp Sending!");
             return;
         }
-        Set<Integer> ports = PluginService.getService().getAppData().getAllSendPorts();
 
-        DatagramSocket datagramSocket = udpSending.datagramSocket;
         boolean logDetect = Logging.getInstance().mLogDetect;
 
         Enumeration list;
@@ -80,7 +57,8 @@ public class AnelBroadcastSendJob implements UDPSending.Job {
                         }
 
                         for (int port : ports)
-                            sendPacket(App.instance, datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
+                            UDPErrors.sendPacketHandleErrors(App.instance,
+                                    datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
                     }
                 }
             }

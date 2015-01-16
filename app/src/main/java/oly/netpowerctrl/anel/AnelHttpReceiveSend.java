@@ -67,7 +67,7 @@ public class AnelHttpReceiveSend {
 
                 }
             }
-            PluginService.getService().getAppData().updateExistingDeviceFromOtherThread(device);
+            PluginService.getService().getAppData().updateExistingDeviceFromOtherThread(device, true);
         }
     };
 
@@ -82,7 +82,7 @@ public class AnelHttpReceiveSend {
                     device.connectionUsed(ci);
                     if (!callback_success) {
                         ci.device.setStatusMessage(ci, response_message, true);
-                        PluginService.getService().getAppData().updateExistingDeviceFromOtherThread(device);
+                        PluginService.getService().getAppData().updateExistingDeviceFromOtherThread(device, true);
                     } else
                         HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));
                 }

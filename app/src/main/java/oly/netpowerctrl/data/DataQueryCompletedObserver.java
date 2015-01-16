@@ -34,7 +34,7 @@ public class DataQueryCompletedObserver extends Observer<onDataQueryCompleted> i
         AppData appData = appDataWeakReference.get();
         if (appData != null) {
             // If the object return false we do not register it for further changes.
-            register = o.onDataQueryFinished(appData, false);
+            register = o.onDataQueryFinished(appData);
         }
 
         if (register)
@@ -42,11 +42,11 @@ public class DataQueryCompletedObserver extends Observer<onDataQueryCompleted> i
     }
 
     @Override
-    public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+    public boolean onDataQueryFinished(AppData appData) {
         appDataWeakReference = new WeakReference<>(appData);
         Iterator<onDataQueryCompleted> iterator = listeners.keySet().iterator();
         while (iterator.hasNext()) {
-            if (!iterator.next().onDataQueryFinished(appData, false))
+            if (!iterator.next().onDataQueryFinished(appData))
                 iterator.remove();
         }
         return true;

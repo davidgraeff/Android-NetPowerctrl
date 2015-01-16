@@ -228,7 +228,7 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
 
 
     @Override
-    public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+    public boolean onDataQueryFinished(AppData appData) {
         start(true, appData);
         return false;
     }

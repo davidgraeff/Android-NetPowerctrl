@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
@@ -35,15 +34,16 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.SendAndObserve;
-import oly.netpowerctrl.network.UDPSending;
+import oly.netpowerctrl.network.UDPErrors;
+import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
+import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerCollection;
-import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -53,9 +53,9 @@ import oly.netpowerctrl.utils.Logging;
 final public class AnelPlugin extends AbstractBasePlugin {
     public static final String PLUGIN_ID = "org.anel.outlets_and_io";
     private static final byte[] requestMessage = "wer da?\r\n".getBytes();
+    private static final NetworkChangedBroadcastReceiver networkChangedListener = new NetworkChangedBroadcastReceiver();
     private final List<AnelUDPReceive> discoveryThreads = new ArrayList<>();
     private final List<Scene.PortAndCommand> command_list = new ArrayList<>();
-    private UDPSending udpSending;
     private AnelAlarm anelAlarm = new AnelAlarm();
 
     public AnelPlugin(PluginService pluginService) {
@@ -108,10 +108,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
             return success;
         } else if (!(deviceConnection instanceof DeviceConnectionUDP)) { // unknown protocol
             Log.e(PLUGIN_ID, "executeDeviceBatch: no known DeviceConnection " + deviceConnection.getProtocol());
-            return 0;
-        }
-
-        if (checkAndStartUDP()) {
             return 0;
         }
 
@@ -186,28 +182,29 @@ final public class AnelPlugin extends AbstractBasePlugin {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            new SendAndObserve(udpSending, App.instance, deviceConnection, data,
-                    requestMessage, UDPSending.INQUERY_REQUEST);
+            new SendAndObserve(pluginService, deviceConnection, data,
+                    requestMessage, UDPErrors.INQUERY_REQUEST);
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            new SendAndObserve(udpSending, App.instance, deviceConnection, data,
-                    requestMessage, UDPSending.INQUERY_REQUEST);
+            new SendAndObserve(pluginService, deviceConnection, data,
+                    requestMessage, UDPErrors.INQUERY_REQUEST);
         }
 
         return command_list.size();
     }
 
-    public void startUDPDiscoveryThreads(Set<Integer> additional_port) {
+    public void startNetworkReceivers(boolean changed) {
         // Get all ports of configured devices and add the additional_port if != 0
         Set<Integer> ports = pluginService.getAppData().getAllReceivePorts();
-        if (additional_port != null)
-            ports.addAll(additional_port);
+
+        if (!changed && discoveryThreads.size() == ports.size()) return;
 
         boolean new_threads_started = false;
         List<AnelUDPReceive> unusedThreads = new ArrayList<>(discoveryThreads);
+
 
         // Go through all ports and start a thread for it if none is running for it so far
         for (int port : ports) {
@@ -250,12 +247,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     public void stopNetwork() {
         synchronized (this) {
-            UDPSending copy = udpSending;
-            udpSending = null;
-            if (copy != null && copy.isRunning()) {
-                copy.interrupt();
-            }
-
             if (discoveryThreads.size() > 0) {
                 for (AnelUDPReceive thr : discoveryThreads)
                     thr.interrupt();
@@ -321,24 +312,19 @@ final public class AnelPlugin extends AbstractBasePlugin {
             }
             return success;
         } else if (deviceConnection instanceof DeviceConnectionUDP) {
-            if (checkAndStartUDP()) {
-                if (callback != null) callback.onExecutionProgress(0, 1, 1);
-                return false;
-            }
-
             byte[] data;
             if (port.id >= 10 && port.id < 20) {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         port.id - 10, device.getUserName(), device.getPassword()).getBytes();
-                new SendAndObserve(udpSending, service, deviceConnection, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                new SendAndObserve(service, deviceConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
                 if (callback != null) callback.onExecutionProgress(1, 0, 1);
                 return true;
             } else if (port.id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         port.id, device.getUserName(), device.getPassword()).getBytes();
-                new SendAndObserve(udpSending, service, deviceConnection, data, requestMessage, UDPSending.INQUERY_REQUEST);
+                new SendAndObserve(service, deviceConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
                 if (callback != null) callback.onExecutionProgress(1, 0, 1);
                 return true;
             } else {
@@ -352,47 +338,30 @@ final public class AnelPlugin extends AbstractBasePlugin {
         }
     }
 
-    /**
-     * @return Return true if no udp sending thread is running
-     */
-    private boolean checkAndStartUDP() {
-        if (udpSending == null) {
-            InAppNotifications.showException(pluginService, new Exception(), "udpSending null");
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public void onDestroy() {
+        networkChangedListener.unregister(pluginService);
         stopNetwork();
     }
 
     @Override
-    public void onStart() {
-
+    public void onStart(Context context) {
+        networkChangedListener.registerReceiver(this);
+        startNetworkReceivers(true);
     }
 
     @Override
-    public void requestData() {
-        // Get necessary objects
-        PluginService service = PluginService.getService();
-        if (service == null)
-            return;
-        if (checkAndStartUDP()) {
-            return;
-        }
+    public boolean isStarted() {
+        return discoveryThreads.size() > 0;
+    }
 
-        udpSending.addJob(new AnelBroadcastSendJob(udpSending));
+    @Override
+    public void requestData(DeviceQuery deviceQuery) {
+        AnelBroadcastSendJob.run(deviceQuery);
     }
 
     @Override
     public void requestData(Device device, int device_connection_id) {
-        // Get necessary objects
-        PluginService service = PluginService.getService();
-        if (service == null)
-            return;
-
         if (!device.isEnabled())
             return;
 
@@ -407,10 +376,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((DeviceConnectionHTTP) ci,
                     "strg.cfg", "", ci, false, AnelHttpReceiveSend.receiveCtrlHtml));
         } else {
-            if (checkAndStartUDP()) {
-                return;
-            }
-            new SendAndObserve(udpSending, service, ci, requestMessage, UDPSending.INQUERY_REQUEST);
+            new SendAndObserve(pluginService, ci, requestMessage, UDPErrors.INQUERY_REQUEST);
         }
     }
 
@@ -421,6 +387,11 @@ final public class AnelPlugin extends AbstractBasePlugin {
         return editDeviceInterface;
     }
 
+    @Override
+    public void devicesChanged() {
+        startNetworkReceivers(true);
+    }
+
     // We assume the MainActivity exist!
     @Override
     public void showConfigureDeviceScreen(Device device) {
@@ -429,7 +400,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
         f.setDevice(device);
         MainActivity.getNavigationController().changeToDialog(MainActivity.instance, f);
     }
-
 
     /**
      * Renaming is done via http and the dd.htm page on the ANEL devices.
@@ -538,36 +508,17 @@ final public class AnelPlugin extends AbstractBasePlugin {
         return PLUGIN_ID;
     }
 
-    @Override
-    public void enterFullNetworkState(Context context, Device device) {
-        Logging.getInstance().logEnergy("Anel: enterFullNetworkState");
+    public void checkDevicesReachabilityAfterNetworkChange() {
+        Logging.getInstance().logEnergy("Anel: check availability");
+        startNetworkReceivers(false);
 
-        // Start send thread
-        if (udpSending == null)
-            udpSending = new UDPSending(false);
-        boolean alreadyRunning = udpSending.isRunning();
-        if (!alreadyRunning) {
-            udpSending.start("AnelUDPSendThread");
-        }
+        AppData appData = pluginService.getAppData();
+        new DeviceQuery(pluginService, new onDeviceObserverResult() {
+            @Override
+            public void onObserverJobFinished(List<Device> timeout_devices) {
 
-        if (device == null) {
-            startUDPDiscoveryThreads(null);
-        } else {
-            // start socket listener on all udp listener ports for the given device
-            Set<Integer> ports = new TreeSet<>();
-            device.lockDevice();
-            for (DeviceConnection ci : device.getDeviceConnections()) {
-                if (ci instanceof DeviceConnectionUDP)
-                    ports.add(((DeviceConnectionUDP) ci).getListenPort());
             }
-            device.releaseDevice();
-            startUDPDiscoveryThreads(ports);
-        }
-    }
-
-    @Override
-    public void enterNetworkReducedState(Context context) {
-        Logging.getInstance().logEnergy("Anel: enterNetworkReducedState");
+        }, appData.findDevices(this).iterator(), false);
 
         new AsyncTask<AnelPlugin, Void, Void>() {
             @Override
@@ -576,19 +527,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
                 return null;
             }
         }.execute(this);
-
-        AppData d = pluginService.getAppData();
-        for (Device di : d.findDevices(this)) {
-            // Mark all devices as changed: If network reduced mode ends all
-            // devices propagate changes then.
-            di.setStatusMessage("UDP", App.getAppString(R.string.device_energysave_mode), true);
-            d.updateExistingDevice(di, true);
-        }
-    }
-
-    @Override
-    public boolean isNetworkReducedState() {
-        return (udpSending == null);
     }
 
     @Override
@@ -612,11 +550,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
         Intent browse = new Intent(Intent.ACTION_VIEW,
                 Uri.parse("http://" + ci.getDestinationHost() + ":" + Integer.valueOf(http_port).toString()));
         context.startActivity(browse);
-    }
-
-    @Override
-    public boolean isNetworkPlugin() {
-        return true;
     }
 
     @Override

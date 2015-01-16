@@ -61,10 +61,12 @@ public class PluginRemote extends AbstractBasePlugin {
         @Override
         public void finished(boolean api_version_missmatch) {
             for (Device device : pluginService.getAppData().findDevices(PluginRemote.this)) {
+                device.lockDevice();
                 if (api_version_missmatch)
                     device.setStatusMessageAllConnections(pluginService.getString(R.string.error_plugin_api_version_missmatch));
                 else
                     device.setStatusMessageAllConnections(pluginService.getString(R.string.error_plugin_no_service_connection));
+                device.releaseDevice();
             }
             if (plugin != null)
                 pluginService.unbindService(svcConn);
@@ -94,8 +96,7 @@ public class PluginRemote extends AbstractBasePlugin {
             }
             device.releaseDevice();
 
-            device.connectionUsed(deviceConnection);
-            pluginService.getAppData().updateExistingDeviceFromOtherThread(device);
+            pluginService.getAppData().updateExistingDeviceFromOtherThread(device, true);
         }
 
         @Override
@@ -120,7 +121,7 @@ public class PluginRemote extends AbstractBasePlugin {
             device.lockDevicePorts();
             device.updatePort(devicePort);
             device.releaseDevicePorts();
-            pluginService.getAppData().updateExistingDeviceFromOtherThread(device);
+            pluginService.getAppData().updateExistingDeviceFromOtherThread(device, true);
         }
 
         @Override
@@ -168,7 +169,15 @@ public class PluginRemote extends AbstractBasePlugin {
     }
 
     @Override
-    public void onStart() {
+    public void onStart(Context context) {
+        if (plugin != null) return;
+
+        Intent in = new Intent();
+        in.setClassName(packageName, serviceName);
+        if (!context.bindService(in, svcConn, android.content.Context.BIND_AUTO_CREATE)) {
+            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " BIND");
+            pluginReady.onPluginReady(this, true);
+        }
     }
 
     /**
@@ -193,9 +202,10 @@ public class PluginRemote extends AbstractBasePlugin {
 
     /**
      * Request new data from plugin
+     * @param deviceQuery
      */
     @Override
-    public void requestData() {
+    public void requestData(DeviceQuery deviceQuery) {
         if (!isInitialized) {
             Log.e(TAG, "requestData: not initialized!");
             return;
@@ -280,28 +290,6 @@ public class PluginRemote extends AbstractBasePlugin {
     }
 
     @Override
-    public void enterFullNetworkState(Context context, Device device) {
-        if (plugin != null) return;
-
-        Intent in = new Intent();
-        in.setClassName(packageName, serviceName);
-        if (!context.bindService(in, svcConn, android.content.Context.BIND_AUTO_CREATE)) {
-            InAppNotifications.FromOtherThread(context, context.getString(R.string.error_plugin_failed, localized_name) + " BIND");
-            pluginReady.onPluginReady(this, true);
-        }
-    }
-
-    @Override
-    public void enterNetworkReducedState(Context context) {
-
-    }
-
-    @Override
-    public boolean isNetworkReducedState() {
-        return false;
-    }
-
-    @Override
     public void openConfigurationPage(Device device, Context context) {
         Intent i;
         PackageManager manager = context.getPackageManager();
@@ -315,11 +303,6 @@ public class PluginRemote extends AbstractBasePlugin {
         } catch (PackageManager.NameNotFoundException ignored) {
 
         }
-    }
-
-    @Override
-    public boolean isNetworkPlugin() {
-        return false;
     }
 
     @Override
@@ -366,5 +349,15 @@ public class PluginRemote extends AbstractBasePlugin {
     @Override
     public EditDeviceInterface openEditDevice(Device device) {
         return null;
+    }
+
+    @Override
+    public void devicesChanged() {
+
+    }
+
+    @Override
+    public boolean isStarted() {
+        return plugin != null;
     }
 }

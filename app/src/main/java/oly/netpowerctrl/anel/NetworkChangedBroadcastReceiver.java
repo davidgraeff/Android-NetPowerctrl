@@ -1,26 +1,28 @@
-package oly.netpowerctrl.pluginservice;
+package oly.netpowerctrl.anel;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 
-import oly.netpowerctrl.utils.Logging;
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Created by david on 23.11.14.
  */
 class NetworkChangedBroadcastReceiver extends BroadcastReceiver {
     boolean isNetworkChangedListener = false;
+    AnelPlugin anelPlugin;
 
-    public void registerReceiver(Service service) {
+    public void registerReceiver(AnelPlugin anelPlugin) {
         if (!isNetworkChangedListener) {
             isNetworkChangedListener = true;
+            this.anelPlugin = anelPlugin;
             IntentFilter filter = new IntentFilter();
             filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
-            service.registerReceiver(this, filter);
+            anelPlugin.getPluginService().registerReceiver(this, filter);
         }
     }
 
@@ -28,18 +30,16 @@ class NetworkChangedBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         PluginService pluginService = PluginService.getService();
         if (pluginService == null) {
+            context.unregisterReceiver(this);
             return;
         }
 
-        @SuppressWarnings("ConstantConditions")
-        ConnectivityManager cm = (ConnectivityManager) pluginService.getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
-        if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
-            Logging.getInstance().logEnergy("Energiesparen aus: Netzwechsel erkannt");
-            pluginService.wakeupAllDevices();
-        } else {
-            Logging.getInstance().logEnergy("Energiesparen an: Kein Netzwerk");
-            pluginService.enterNetworkReducedMode();
-        }
+        App.getMainThreadHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                anelPlugin.checkDevicesReachabilityAfterNetworkChange();
+            }
+        }, 1000);
     }
 
     public void unregister(Service service) {

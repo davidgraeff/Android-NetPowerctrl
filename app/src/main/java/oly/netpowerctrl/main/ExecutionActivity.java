@@ -85,7 +85,7 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
         AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
 
             @Override
-            public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+            public boolean onDataQueryFinished(AppData appData) {
                 final int action_command = extra.getInt(EXECUTE_ACTION_COMMAND);
 
                 // Read data from intent

@@ -1,4 +1,4 @@
-package oly.netpowerctrl.network;
+package oly.netpowerctrl.pluginservice;
 
 import android.content.Context;
 import android.os.Handler;
@@ -15,45 +15,35 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.network.onDeviceObserverResult;
 
 /**
  * This base class is used by the device query and device-resend-command class.
  * It will be registered on the main application to receive device updates and
  * provide the result of a query/a sending action to the DeviceQueryResult object.
  */
-public abstract class DeviceObserverBase {
-    private static final int MSG_REPEAT = 1;
+public abstract class DeviceObserverBase extends Thread {
+    protected static final int MSG_REPEAT = 1;
+    protected static final int MSG_EXIT = 2;
     private static Queue<DeviceObserverBase> globalQueue = new ConcurrentLinkedQueue<>();
+
     protected final Context context;
     protected final List<Device> devices_to_observe = new ArrayList<>();
     protected final List<Device> timeout_devices = new ArrayList<>();
-    private final int repeatTimeout;
-    protected boolean broadcast = false;
-    protected onDeviceObserverResult target;
-    private int repeatCountDown;
-    protected final Handler handler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MSG_REPEAT: {
-                    if (repeatCountDown >= 0)
-                        repeat();
-                    else
-                        finishWithTimeouts();
-                    --repeatCountDown;
-                }
-            }
-        }
-    };
+    protected final int repeatTimeout;
+    protected int repeatCountDown;
+    protected RepeatHandler handler;
+    private onDeviceObserverResult target;
     private AppData appData;
 
-    DeviceObserverBase(Context context, onDeviceObserverResult target, int repeatTimeout, int repeatCount) {
+    protected DeviceObserverBase(Context context, onDeviceObserverResult target, int repeatTimeout, int repeatCount) {
+        super("DeviceObserverBase");
         this.context = context;
         this.repeatTimeout = repeatTimeout;
         this.repeatCountDown = repeatCount;
         setDeviceQueryResult(target);
     }
-
 
     /**
      * Notify observers who are using the DeviceQuery class
@@ -81,33 +71,71 @@ public abstract class DeviceObserverBase {
         }
     }
 
-    /**
-     * Start a query by adding this object to the device updated observer list and calling
-     * doAction for every added device.
-     */
-    public void startQuery() {
-        if ((isEmpty() && !broadcast)) {
-            if (target != null)
-                target.onObserverJobFinished(timeout_devices);
-            return;
+    private void finishThread() {
+        for (Device device : devices_to_observe) {
+            device.lockDevice();
+            device.setStatusMessageAllConnections(context.getString(R.string.error_timeout_device, ""));
+            device.releaseDevice();
+            // Call onConfiguredDeviceUpdated to update device info.
+            appData.updateExistingDeviceFromOtherThread(device, false);
+            timeout_devices.add(device);
         }
-        globalQueue.add(this);
-        handler.sendEmptyMessage(MSG_REPEAT);
+        devices_to_observe.clear();
+
+        if (target != null)
+            App.getMainThreadHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    target.onObserverJobFinished(timeout_devices);
+                }
+            });
+
+        Looper.myLooper().quit();
+    }
+
+    /**
+     * Override this to be informed if the threads main is entered.
+     *
+     * @return Return false if you do not want DeviceObserverBase schedule
+     * doAction(..) for you.
+     * You have to call handler.sendEmptyMessage(MSG_REPEAT) yourself.
+     * <p/>
+     * If you want the thread to exit, return false and call finishWithTimeouts().
+     */
+    protected boolean runStarted() {
+        return true;
+    }
+
+    @Override
+    public void run() {
+        Looper.prepare();
+        handler = new RepeatHandler(Looper.myLooper());
+        boolean callRepeat = runStarted();
+
+        if (!isEmpty()) {
+            globalQueue.add(this);
+            if (callRepeat) handler.sendEmptyMessage(MSG_REPEAT);
+        } else
+            handler.sendEmptyMessage(MSG_EXIT);
+        Looper.loop();
     }
 
     /**
      * Basic implementation. Just call doAction for every added device.
      */
     protected void repeat() {
-        if (broadcast) {
-            doAction(null, repeatCountDown);
+        if (repeatCountDown < 0) {
+            finishWithTimeouts();
             return;
-        } else {
-            List<Device> deviceList = new ArrayList<>(devices_to_observe);
-            for (Device device : deviceList) {
-                doAction(device, repeatCountDown);
-            }
         }
+
+        --repeatCountDown;
+
+        List<Device> deviceList = new ArrayList<>(devices_to_observe);
+        for (Device device : deviceList) {
+            doAction(device, repeatCountDown);
+        }
+
         handler.sendEmptyMessageDelayed(MSG_REPEAT, repeatTimeout);
     }
 
@@ -149,14 +177,10 @@ public abstract class DeviceObserverBase {
                     device_to_observe.releaseDevice();
                     device_to_observe.clearStatusMessageAllConnections();
                     it.remove();
-                    if (target != null)
-                        target.onObserverDeviceUpdated(device);
                     break;
                 }
             } else if (device_to_observe.equalsByUniqueID(device)) {
                 it.remove();
-                if (target != null)
-                    target.onObserverDeviceUpdated(device);
                 break;
             }
         }
@@ -169,8 +193,6 @@ public abstract class DeviceObserverBase {
             Device device = it.next();
             if (device == device_from_observed_devices) {
                 it.remove();
-                if (target != null)
-                    target.onObserverDeviceUpdated(device);
                 break;
             }
         }
@@ -185,11 +207,12 @@ public abstract class DeviceObserverBase {
         return devices_to_observe.isEmpty();
     }
 
-
     public boolean addDevice(AppData appData, final Device device) {
         this.appData = appData;
         if (!device.isEnabled()) {
+            device.lockDevice();
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_disabled));
+            device.releaseDevice();
             timeout_devices.add(device);
             appData.updateExistingDevice(device, false);
             return false;
@@ -228,16 +251,27 @@ public abstract class DeviceObserverBase {
             }
         }
 
-        for (Device device : devices_to_observe) {
-            if (device.getFirstReachableConnection() == null)
-                device.setStatusMessageAllConnections(context.getString(R.string.error_timeout_device, ""));
-            // Call onConfiguredDeviceUpdated to update device info.
-            appData.updateExistingDevice(device, false);
-            timeout_devices.add(device);
-        }
-        devices_to_observe.clear();
+        if (isAlive())
+            handler.sendEmptyMessage(MSG_EXIT);
+        else if (devices_to_observe.size() > 0)
+            throw new RuntimeException("DeviceObserverBase not alive but devices left!");
+    }
 
-        if (target != null)
-            target.onObserverJobFinished(timeout_devices);
+    protected class RepeatHandler extends Handler {
+        RepeatHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_REPEAT: {
+                    repeat();
+                }
+                case MSG_EXIT: {
+                    finishThread();
+                }
+            }
+        }
     }
 }

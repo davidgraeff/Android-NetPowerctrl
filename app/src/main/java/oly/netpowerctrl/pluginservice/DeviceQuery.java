@@ -1,18 +1,18 @@
-package oly.netpowerctrl.network;
+package oly.netpowerctrl.pluginservice;
 
 import android.util.Log;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
-import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.network.onDeviceObserverResult;
 
 /**
  * Use the static sendQuery and sendBroadcastQuery methods to issue a query to one
@@ -24,14 +24,15 @@ public class DeviceQuery extends DeviceObserverBase {
     @SuppressWarnings("unused")
     private static final String TAG = "DeviceQuery";
     private final PluginService pluginService;
-    private ResolveThread resolveThread = new ResolveThread();
+    private boolean broadcastFirst;
 
     public DeviceQuery(PluginService context, onDeviceObserverResult target, Device device_to_observe) {
         super(context, target, 200, 2);
         pluginService = context;
 //        Log.w(TAG, "DeviceQuery");
+        pluginService.wakeupPlugin(device_to_observe);
         addDevice(context.getAppData(), device_to_observe);
-        startQuery();
+        start();
     }
 
     /**
@@ -44,45 +45,45 @@ public class DeviceQuery extends DeviceObserverBase {
     public DeviceQuery(PluginService context, onDeviceObserverResult target, Iterator<Device> devices_to_observe, boolean broadcast) {
         super(context, target, 200, broadcast ? 3 : 2);
         pluginService = context;
-        this.broadcast = broadcast;
-//        Log.w(TAG, "DeviceQuery");
+        broadcastFirst = broadcast;
+
         while (devices_to_observe.hasNext()) {
-            addDevice(context.getAppData(), devices_to_observe.next());
+            Device device = devices_to_observe.next();
+            pluginService.wakeupPlugin(device);
+            addDevice(context.getAppData(), device);
         }
 
-        startQuery();
+        start();
+    }
+
+    public PluginService getPluginService() {
+        return pluginService;
     }
 
     @Override
-    public void startQuery() {
-        resolveThread.start();
-        super.startQuery();
+    protected boolean runStarted() {
+        if (broadcastFirst) {
+            Log.w(TAG, "Broadcast Query");
+            pluginService.requestDataAll(this);
+            handler.sendEmptyMessageDelayed(MSG_REPEAT, repeatTimeout);
+            return false;
+        }
+        return true;
+    }
+
+    private void lookupIP(DeviceConnection connection) {
+        if (!connection.needResolveName()) return;
+
+        try {
+            connection.lookupIPs();
+        } catch (UnknownHostException e) {
+            connection.device.setStatusMessage(connection, e.getLocalizedMessage(), true);
+        }
     }
 
     @Override
     protected void doAction(Device device, int remainingRepeats) {
-        if (broadcast) {
-            broadcast = false;
-            // Send out broadcast
-            pluginService.wakeupAllDevices();
-            pluginService.requestDataAll();
-            return;
-        }
-
-        Log.w(TAG, "redo: " + device.getDeviceName());
-
-        pluginService.wakeupPlugin(device);
-
-        // If the device has connections we have to check now for hostname->ip resolving.
-        // This can only be done in another thread.
-        device.lockDevice();
-        for (final DeviceConnection connection : device.getDeviceConnections()) {
-            if (connection.needResolveName()) {
-                resolveThread.q.add(connection);
-                return;
-            }
-        }
-        device.releaseDevice();
+        Log.w(TAG, "Query " + device.getDeviceName());
 
         AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
         // First try to find the not assigned plugin
@@ -91,69 +92,52 @@ public class DeviceQuery extends DeviceObserverBase {
             device.setPluginInterface(abstractBasePlugin);
         }
         if (abstractBasePlugin == null) {
+            device.lockDevice();
             device.setStatusMessageAllConnections(App.getAppString(R.string.error_plugin_not_installed));
+            device.releaseDevice();
             // remove from list of devices to observe and notify observers
             //notifyObserversInternal(device);
             return;
         }
 
-        if (abstractBasePlugin.isNetworkReducedState()) {
+        if (!abstractBasePlugin.isStarted()) {
+            device.lockDevice();
             device.setStatusMessageAllConnections(App.getAppString(R.string.device_energysave_mode));
+            device.releaseDevice();
             // remove from list of devices to observe and notify observers
             notifyObserversInternal(device);
             return;
         }
 
-        boolean requestAll = true;
         // if this is the first request, we only use the first available connection.
         // If there are no available, we use all.
-        int i = 0;
+        List<Integer> deviceCollectionList = new ArrayList<>();
+
         device.lockDevice();
+        int i = 0;
         for (DeviceConnection ci : device.getDeviceConnections()) {
+            lookupIP(ci);
             if (ci.reachableState() != ExecutableReachability.NotReachable) {
-                requestAll = false;
-                abstractBasePlugin.requestData(device, i);
+                deviceCollectionList.add(i);
                 break;
             }
             ++i;
         }
-        device.releaseDevice();
 
         // If this is a repeated request or if no single device connections
         // was available before, we use all device connections.
-        if (requestAll) {
-            device.lockDevice();
-            int s = device.getDeviceConnections().size();
-            device.releaseDevice();
-            for (i = 0; i < s; ++i) {
-                abstractBasePlugin.requestData(device, i);
+        if (deviceCollectionList.size() == 0) {
+            i = 0;
+            for (DeviceConnection ci : device.getDeviceConnections()) {
+                lookupIP(ci);
+                deviceCollectionList.add(i);
+                ++i;
             }
         }
+        device.releaseDevice();
 
+        for (int deviceConnectionID : deviceCollectionList)
+            abstractBasePlugin.requestData(device, deviceConnectionID);
     }
 
-    class ResolveThread extends Thread {
-        public final LinkedBlockingQueue<DeviceConnection> q = new LinkedBlockingQueue<>();
-
-        public ResolveThread() {
-            super("ResolveThread");
-        }
-
-        @Override
-        public void run() {
-            try {
-                DeviceConnection connection = q.take();
-
-                if (connection.needResolveName()) {
-                    try {
-                        connection.lookupIPs();
-                    } catch (UnknownHostException e) {
-                        connection.device.setStatusMessage(connection, e.getLocalizedMessage(), true);
-                    }
-                }
-
-            } catch (InterruptedException ignored) {
-            }
-        }
-    }
 }

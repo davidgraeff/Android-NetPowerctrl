@@ -39,9 +39,8 @@ import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.ExecutionActivity;
-import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
-import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.Scene;
@@ -262,29 +261,22 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
 
         if (widgetEntry.device != null) {
             setWidgetState(widgetEntry.widgetID, executable, true);
-
-            if (executable.reachableState() == ExecutableReachability.NotReachable) {
-                appData.showNotificationForNextRefresh(true);
-                appData.refreshDeviceData(service, false);
-                return;
-            }
+            // Fail safe: If no response from the device, we set the widget to broken state
+            final long currentTime = System.currentTimeMillis();
+            App.getMainThreadHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (widgetEntry.device.getUpdatedTime() < currentTime)
+                        setWidgetState(widgetEntry.widgetID, widgetEntry.executable, false);
+                }
+            }, 1200);
         }
 
-        final long currentTime = System.currentTimeMillis();
-        appData.executeToggle(executable, new onExecutionFinished() {
-            @Override
-            public void onExecutionProgress(int success, int errors, int all) {
-                // Fail safe: If no response from the device, we set the widget to broken state
-                if (widgetEntry.device != null)
-                    App.getMainThreadHandler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (widgetEntry.device.getUpdatedTime() < currentTime)
-                                setWidgetState(widgetEntry.widgetID, widgetEntry.executable, false);
-                        }
-                    }, 1200);
-            }
-        });
+        if (executable.reachableState() == ExecutableReachability.NotReachable) {
+            appData.showNotificationForNextRefresh(true);
+            appData.refreshDeviceData(service, false);
+        } else
+            appData.executeToggle(executable, null);
     }
 
     private void setWidgetState(final int appWidgetId, final Executable executable, final boolean inProgress) {
@@ -299,12 +291,6 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
             }, 500);
             return;
         }
-
-        Intent clickIntent = new Intent(this, WidgetUpdateService.class);
-        clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_UUID, executable.getUid());
-        clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, DevicePort.TOGGLE);
-        clickIntent.putExtra(DeviceWidgetProvider.EXTRA_WIDGET_COMMAND, CLICK_WIDGET);
-        PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), clickIntent, 0);
 
         // Load preferences
         SharedPreferences widgetPreferences = getSharedPreferences(SharedPrefs.PREF_WIDGET_BASENAME, MODE_PRIVATE);
@@ -345,9 +331,15 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
         views.setTextViewText(R.id.widget_status, this.getString(string_res));
 
         // If the device is not reachable there is no sense in assigning a click event pointing to
-        // the ExecutionActivity. We do that nevertheless here to let the ExecutionActivity
+        // the ExecutionActivity. We do that nevertheless to let the ExecutionActivity
         // figure out if the device is still not reachable
         if (!inProgress) {
+            Intent clickIntent = new Intent(this, WidgetUpdateService.class);
+            clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_UUID, executable.getUid());
+            clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, DevicePort.TOGGLE);
+            clickIntent.putExtra(DeviceWidgetProvider.EXTRA_WIDGET_COMMAND, CLICK_WIDGET);
+            PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), clickIntent, 0);
+
             views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
             views.setOnClickPendingIntent(R.id.widget_name, pendingIntent);
             views.setOnClickPendingIntent(R.id.widget_status, pendingIntent);
@@ -361,11 +353,6 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    @Override
-    public void onObserverDeviceUpdated(Device device) {
-        updated(service.getAppData().deviceCollection, device, ObserverUpdateActions.UpdateAction, -1);
     }
 
     @Override

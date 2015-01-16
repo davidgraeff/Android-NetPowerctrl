@@ -402,8 +402,6 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         List<DevicePort> alarm_ports = new ArrayList<>();
 
-        service.wakeupAllDevices();
-
         DeviceCollection c = service.getAppData().deviceCollection;
         // Put all ports of all devices into the list alarm_ports.
         // If a port is referenced by the alarm_uuids hashSet, it will be put in front of the list

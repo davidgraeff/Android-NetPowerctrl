@@ -94,7 +94,7 @@ public class ScanBroadcast extends AndroidTestCase {
 
         AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
             @Override
-            public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+            public boolean onDataQueryFinished(AppData appData) {
                 signal_receive.countDown();
                 return false;
             }

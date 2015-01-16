@@ -67,7 +67,7 @@ public class InAppNotifications {
         boolean serviceRunning = PluginService.getService() != null;
         ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
         if (serviceRunning) {
-            ACRA.getErrorReporter().putCustomData("plugin_anel_state", PluginService.getService().getPlugin(0).isNetworkReducedState() ? "down" : "running");
+            ACRA.getErrorReporter().putCustomData("plugin_anel_state", PluginService.getService().getPlugin(0).isStarted() ? "down" : "running");
         } else {
             ACRA.getErrorReporter().putCustomData("service_shutdown_reason", PluginService.service_shutdown_reason);
         }

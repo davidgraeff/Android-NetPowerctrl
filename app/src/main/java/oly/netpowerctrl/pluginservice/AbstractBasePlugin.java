@@ -43,10 +43,10 @@ public abstract class AbstractBasePlugin {
     ////////////// Life cycle //////////////
     abstract public void onDestroy();
 
-    abstract public void onStart();
+    abstract public void onStart(Context context);
 
     ////////////// Request data and executeToggle //////////////
-    abstract public void requestData();
+    abstract public void requestData(DeviceQuery deviceQuery);
 
     abstract public void requestData(Device device, int device_connection_id);
 
@@ -70,22 +70,9 @@ public abstract class AbstractBasePlugin {
     @Nullable
     abstract public EditDeviceInterface openEditDevice(Device device);
 
-    ////////////// Reduce power consumption //////////////
+    abstract public void devicesChanged();
 
-    /**
-     * Restart receiving units of the plugin. Necessary for creating/configuring new devices (with
-     * for example changed receive ports)
-     *
-     * @param context
-     * @param device  Maybe null if you want to restart all receiving units of the plugin or name a
-     */
-    abstract public void enterFullNetworkState(Context context, Device device);
-
-    abstract public void enterNetworkReducedState(Context context);
-
-    abstract public boolean isNetworkReducedState();
-
-    abstract public boolean isNetworkPlugin();
+    abstract public boolean isStarted();
 
     ////////////// Alarms //////////////
     abstract public Timer getNextFreeAlarm(DevicePort port, int type, int command);

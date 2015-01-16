@@ -26,12 +26,12 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.network.DeviceObserverBase;
-import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
+import oly.netpowerctrl.pluginservice.DeviceObserverBase;
+import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneCollection;
@@ -64,7 +64,7 @@ public class AppData implements onDataQueryCompleted {
                     updateDevice((Device) msg.obj);
                     break;
                 case UPDATE_MESSAGE_EXISTING_DEVICE:
-                    updateExistingDevice((Device) msg.obj, true);
+                    updateExistingDevice((Device) msg.obj, msg.arg1 > 0);
                     break;
                 case UPDATE_MESSAGE_ADD_DEVICE:
                     addToConfiguredDevices((Device) msg.obj);
@@ -108,11 +108,6 @@ public class AppData implements onDataQueryCompleted {
 
     public static boolean isDataLoaded() {
         return observersOnDataLoaded.isDone();
-    }
-
-    static public boolean isNetworkDevice(Device device) {
-        AbstractBasePlugin pi = (AbstractBasePlugin) device.getPluginInterface();
-        return pi != null && pi.isNetworkPlugin();
     }
 
     /**
@@ -238,8 +233,8 @@ public class AppData implements onDataQueryCompleted {
         updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_NEW_DEVICE, device).sendToTarget();
     }
 
-    public void updateExistingDeviceFromOtherThread(final Device device) {
-        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_EXISTING_DEVICE, device).sendToTarget();
+    public void updateExistingDeviceFromOtherThread(final Device device, boolean notifyDeviceObservers) {
+        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_EXISTING_DEVICE, notifyDeviceObservers ? 1 : 0, 0, device).sendToTarget();
     }
 
     /**
@@ -557,12 +552,6 @@ public class AppData implements onDataQueryCompleted {
         }
     }
 
-    public int countNetworkDevices() {
-        int i = 0;
-        for (Device di : deviceCollection.items)
-            if (isNetworkDevice(di)) ++i;
-        return i;
-    }
 
     public List<Device> findDevices(AbstractBasePlugin abstractBasePlugin) {
         List<Device> list = new ArrayList<>();
@@ -581,7 +570,7 @@ public class AppData implements onDataQueryCompleted {
     }
 
     @Override
-    public boolean onDataQueryFinished(AppData appData, boolean networkDevicesNotReachable) {
+    public boolean onDataQueryFinished(AppData appData) {
         if (notificationAfterNextRefresh) {
             notificationAfterNextRefresh = false;
             // Show notification 500ms later, to also aggregate new devices for the message
@@ -615,14 +604,10 @@ public class AppData implements onDataQueryCompleted {
         clearNewDevices();
         new DeviceQuery(pluginService, new onDeviceObserverResult() {
             @Override
-            public void onObserverDeviceUpdated(Device di) {
-            }
-
-            @Override
             public void onObserverJobFinished(List<Device> timeout_devices) {
                 timerCollection.checkAlarm(PluginService.getService().alarmStartedTime());
                 Logging.getInstance().logEnergy("Suche Geräte fertig\n" + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " Timeout: " + String.valueOf(timeout_devices.size()));
-                observersDataQueryCompleted.onDataQueryFinished(AppData.this, timeout_devices.size() == countNetworkDevices());
+                observersDataQueryCompleted.onDataQueryFinished(AppData.this);
                 observersStartStopRefresh.onRefreshStateChanged(false);
             }
         }, deviceCollection.getItems().iterator(), true);

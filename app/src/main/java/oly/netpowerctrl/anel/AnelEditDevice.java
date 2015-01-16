@@ -15,10 +15,9 @@ import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
-import oly.netpowerctrl.network.DeviceQuery;
 import oly.netpowerctrl.network.onDeviceObserverResult;
+import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
 
 /**
  * Use this class for testing device settings. Results are propagated via the onCreateDeviceResult interface.
@@ -53,23 +52,12 @@ public class AnelEditDevice implements onDeviceObserverResult, onCollectionUpdat
     }
 
     @Override
-    public void onObserverDeviceUpdated(final Device updated_device) {
-        PluginService.observersServiceReady.register(new onServiceReady() {
-            @Override
-            public boolean onServiceReady(PluginService service) {
-                updated(service.getAppData().deviceCollection, updated_device, ObserverUpdateActions.UpdateAction, -1);
-                return false;
-            }
-
-            @Override
-            public void onServiceFinished(PluginService service) {
-
-            }
-        });
-    }
-
-    @Override
     public void onObserverJobFinished(List<Device> timeout_devices) {
+        PluginService service = PluginService.getService();
+        if (service == null) return;
+
+        updated(service.getAppData().deviceCollection, device, ObserverUpdateActions.UpdateAction, -1);
+
         if (test_state != TestStates.TEST_REACHABLE)
             return;
 
