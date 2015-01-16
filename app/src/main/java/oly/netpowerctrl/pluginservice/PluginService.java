@@ -232,9 +232,13 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         /**
          * We received a message from a plugin, we already know: ignore
          */
-        for (AbstractBasePlugin pi : plugins) {
-            if (pi instanceof PluginRemote && ((PluginRemote) pi).serviceName.equals(serviceName)) {
-                observersPluginsReady.decreasePluginCount();
+        for (AbstractBasePlugin existing_plugin : plugins) {
+            if (existing_plugin instanceof PluginRemote && ((PluginRemote) existing_plugin).serviceName.equals(serviceName)) {
+                if (!existing_plugin.isStarted()) {
+                    observersPluginsReady.add(existing_plugin);
+                    existing_plugin.onStart(this);
+                } else
+                    observersPluginsReady.decreasePluginCount();
                 return;
             }
         }
