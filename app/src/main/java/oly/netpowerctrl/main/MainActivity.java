@@ -19,6 +19,7 @@ package oly.netpowerctrl.main;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +32,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
+
+import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 import org.sufficientlysecure.donations.DonationsFragment;
 
@@ -128,13 +131,24 @@ public class MainActivity extends ActionBarActivity {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void assignContentView() {
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
-        setSupportActionBar(toolbar);
-        if (SharedPrefs.getInstance().isFullscreen()) {
-            getSupportActionBar().hide();
-        }
 
-        navigationController.setActivity(this);
+        boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
+
+        SlidingMenu menu = (SlidingMenu) findViewById(R.id.slidingmenulayout);
+        menu.setContent(R.layout.content_frame);
+        menu.setMenu(R.layout.left_drawer_list);
+        menu.setShadowDrawable(R.drawable.shadow);
+        menu.setMode(SlidingMenu.LEFT);
+        menu.setStatic(has_two_panes);
+        menu.setBehindCanvasTransformer(new SlidingMenu.CanvasTransformer() {
+            @Override
+            public void transformCanvas(Canvas canvas, float percentOpen, float xOffset) {
+                if (xOffset == 0)
+                    canvas.scale(percentOpen, 1, 0, 0);
+                else
+                    canvas.translate(xOffset, 0);
+            }
+        });
 
         if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
@@ -146,13 +160,21 @@ public class MainActivity extends ActionBarActivity {
                 v.setBackgroundDrawable(d);
         }
 
-//        enable ActionBar app icon to behave as action to toggle nav drawer
-        boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
+        setSupportActionBar(toolbar);
+        if (SharedPrefs.getInstance().isFullscreen()) {
+            getSupportActionBar().hide();
+        }
+
+        navigationController.setActivity(this);
+
+        //        enable ActionBar app icon to behave as action to toggle nav drawer
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(!has_two_panes);
             actionBar.setHomeButtonEnabled(!has_two_panes);
         }
+
     }
 
     @Override

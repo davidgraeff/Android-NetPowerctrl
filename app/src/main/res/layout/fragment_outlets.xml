@@ -5,21 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.jeremyfeinstein.slidingmenu.lib.SlidingMenu xmlns:sliding="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/slidingmenulayout"
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        sliding:behindScrollScale="1.0"
-        sliding:behindWidth="200dp"
-        sliding:fadeDegree="0.0"
-        sliding:fadeEnabled="false"
-        sliding:mode="right"
-        sliding:shadowDrawable="@drawable/shadowright"
-        sliding:shadowWidth="@dimen/shadow_width"
-        sliding:touchModeAbove="fullscreen"
-        sliding:viewAbove="@layout/fragment_with_list"
-        sliding:viewBehind="@layout/group_list" />
-
     <TextView
         android:id="@+id/edit_hint_big"
         android:layout_width="match_parent"
@@ -34,6 +19,8 @@
         android:text="Bearbeitungsmodus"
         android:textAppearance="@android:style/TextAppearance.Small"
         android:visibility="invisible" />
+
+    <include layout="@layout/fragment_with_list" />
 
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/btnAdd"

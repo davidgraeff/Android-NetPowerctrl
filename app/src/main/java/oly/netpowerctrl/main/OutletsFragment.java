@@ -6,7 +6,6 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Canvas;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -243,6 +242,15 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         popup.show();
     }
 
+    @Override
+    public boolean onBackButton() {
+        if (menu.isMenuShowing()) {
+            menu.showContent();
+            return true;
+        }
+        return false;
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -262,12 +270,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             };
 
     @Override
-    public boolean onBackButton() {
-        if (menu.isMenuShowing()) {
-            menu.showContent();
-            return true;
-        }
-        return false;
+    public void onDetach() {
+        menu.setMode(SlidingMenu.LEFT);
+        menu.setSecondaryMenu(null);
+        super.onDetach();
     }
 
     @Override
@@ -285,16 +291,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         emptyText = (TextView) view.findViewById(R.id.empty_text);
 
         // configure the SlidingMenu
-        menu = (SlidingMenu) view.findViewById(R.id.slidingmenulayout);
-        menu.setBehindCanvasTransformer(new SlidingMenu.CanvasTransformer() {
-            @Override
-            public void transformCanvas(Canvas canvas, float percentOpen) {
-                canvas.scale(percentOpen, 1, 0, 0);
-            }
-        });
+        menu = (SlidingMenu) getActivity().findViewById(R.id.slidingmenulayout);
+        menu.setMode(SlidingMenu.LEFT_RIGHT);
+        menu.setSecondaryMenu(R.layout.group_list);
+        menu.setSecondaryShadowDrawable(R.drawable.shadowright);
+        menu.setMenu(menu.getMenu());
 
         {
-            RecyclerView group_list = (RecyclerView) view.findViewById(R.id.group_list);
+            RecyclerView group_list = (RecyclerView) getActivity().findViewById(R.id.group_list);
             group_list.setItemAnimator(new DefaultItemAnimator());
             group_list.setLayoutManager(new LinearLayoutManager(getActivity()));
             group_list.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {

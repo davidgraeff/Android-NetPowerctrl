@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -99,14 +98,14 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
     public void setActivity(final ActionBarActivity context) {
         mDrawerActivity = new WeakReference<>(context);
         // References for the drawer
-        mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);
+//        mDrawerLayout = (DrawerLayout) context.findViewById(R.id.drawer_layout);
         mRecyclerView = (RecyclerView) context.findViewById(R.id.left_drawer_list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(false);
         // set a custom shadow that overlays the main content when the drawer opens
-        if (mDrawerLayout != null)
-            mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+//        if (mDrawerLayout != null)
+//            mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
         mRecyclerView.setAdapter(mDrawerAdapter);
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(mRecyclerView.getContext(), this, null));

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/outer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/activity_background">
+    android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -24,25 +23,11 @@
         android:visibility="gone"
         app:theme="?attr/toolbar_style" />
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/content_frame"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:layout_above="@id/toolbar_bottom_actionbar"
         android:layout_below="@id/toolbar_actionbar"
-        android:orientation="horizontal">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/left_drawer_list"
-            android:layout_width="240dp"
-            android:layout_height="match_parent"
-            android:background="?attr/drawer_item_background" />
-
-        <FrameLayout
-            android:id="@+id/content_frame"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-    </LinearLayout>
-
+        android:orientation="vertical" />
 </RelativeLayout>
