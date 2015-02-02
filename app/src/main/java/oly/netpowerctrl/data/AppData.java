@@ -53,21 +53,18 @@ public class AppData implements onDataQueryCompleted {
     /**
      * Don't use updateDevice from another thread, but appData.updateDeviceFromOtherThread();
      */
-    public static final int UPDATE_MESSAGE_NEW_DEVICE = 0;
-    public static final int UPDATE_MESSAGE_EXISTING_DEVICE = 1;
+    public static final int UPDATE_MESSAGE_DEVICE = 1;
     public static final int UPDATE_MESSAGE_ADD_DEVICE = 3;
     public android.os.Handler updateDeviceHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
+            Device device = (Device) msg.obj;
             switch (msg.what) {
-                case UPDATE_MESSAGE_NEW_DEVICE:
-                    updateDevice((Device) msg.obj);
-                    break;
-                case UPDATE_MESSAGE_EXISTING_DEVICE:
-                    updateExistingDevice((Device) msg.obj, msg.arg1 > 0);
+                case UPDATE_MESSAGE_DEVICE:
+                    updateDevice(device, true);
                     break;
                 case UPDATE_MESSAGE_ADD_DEVICE:
-                    addToConfiguredDevices((Device) msg.obj);
+                    addToConfiguredDevices(device);
                     break;
             }
         }
@@ -81,7 +78,6 @@ public class AppData implements onDataQueryCompleted {
     final public SceneCollection sceneCollection = new SceneCollection(this);
     final public FavCollection favCollection = new FavCollection(this);
     final public TimerCollection timerCollection = new TimerCollection(this);
-    private final WakeUpDeviceInterface wakeUpDeviceInterface;
     private LoadStoreJSonData loadStoreJSonData = new LoadStoreJSonData();
     /**
      * Detect new devices and check reach-ability of configured devices.
@@ -97,8 +93,7 @@ public class AppData implements onDataQueryCompleted {
     private boolean notificationAfterNextRefresh;
     private DataQueryFinishedMessageRunnable afterDataQueryFinishedHandler = new DataQueryFinishedMessageRunnable(this);
 
-    public AppData(WakeUpDeviceInterface wakeUpDeviceInterface) {
-        this.wakeUpDeviceInterface = wakeUpDeviceInterface;
+    public AppData() {
         observersDataQueryCompleted.register(this);
     }
 
@@ -230,70 +225,47 @@ public class AppData implements onDataQueryCompleted {
      * @param device The changed device
      */
     public void updateDeviceFromOtherThread(final Device device) {
-        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_NEW_DEVICE, device).sendToTarget();
-    }
-
-    public void updateExistingDeviceFromOtherThread(final Device device, boolean notifyDeviceObservers) {
-        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_EXISTING_DEVICE, notifyDeviceObservers ? 1 : 0, 0, device).sendToTarget();
-    }
-
-    /**
-     * Call this by your plugin if a device changed. This method is also called
-     * by the DeviceQuery class if devices are not reachable anymore.
-     *
-     * @param updated_device_info The changed device
-     */
-    public void updateDevice(Device updated_device_info) {
-        // if it matches a configured device, update it's outlet states and exit the method.
-        int position = deviceCollection.getPosition(updated_device_info);
-
-        if (position == -1) {
-            updated_device_info.setConfigured(false);
-            // notify observers who are using the DeviceQuery class (new device)
-            DeviceObserverBase.notifyOfUpdatedDevice(updated_device_info);
-            unconfiguredDeviceCollection.add(updated_device_info);
-            return;
-        }
-
-        Device existing_device = deviceCollection.items.get(position);
-        if (existing_device == updated_device_info) {
-            throw new RuntimeException("Same object not allowed here: " + updated_device_info.getDeviceName());
-        }
-
-        existing_device.lockDevice();
-        existing_device.replaceAutomaticAssignedConnections(updated_device_info.getDeviceConnections());
-        existing_device.copyValuesFromUpdated(updated_device_info);
-        existing_device.releaseDevice();
-
-        // notify observers who are using the DeviceQuery class (existing device)
-        DeviceObserverBase.notifyOfUpdatedDevice(existing_device);
-
-        int flag = existing_device.getAndClearChangedFlag();
-        if (flag != 0) notifyAfterUpdate(existing_device, position, flag);
+        updateDeviceHandler.obtainMessage(UPDATE_MESSAGE_DEVICE, device).sendToTarget();
     }
 
     /**
      * Call this if you have made your changes to the given device and want to propagate those now.
      *
-     * @param existing_device       The existing device (Device has to be an object within deviceCollection!)
-     * @param notifyDeviceObservers Usually you want to inform also the DeviceQueries about updated
-     *                              devices, except if you call this method from a DeviceQuery.
+     * @param device_info           Either an existing device (Device has to be an object within deviceCollection!)
+     *                              or a new device info or a device that will update one of the deviceCollection devices.
+     * @param notifyDeviceObservers Usually you want to inform also the DeviceQueries about updated. This must be false
+     *                              if you call updateDevice from a DeviceObserverBase or DeviceQuery object!
      */
-    public void updateExistingDevice(Device existing_device, boolean notifyDeviceObservers) {
-        int position = deviceCollection.getPosition(existing_device);
+    public void updateDevice(Device device_info, boolean notifyDeviceObservers) {
+        int position = deviceCollection.getPosition(device_info);
+
+        if (device_info.isConfigured() ^ position != -1)
+            throw new RuntimeException("Inconsistent device state: Configured: " + String.valueOf(device_info.isConfigured()) + " position: " + String.valueOf(position));
 
         if (position == -1) {
-            throw new RuntimeException("Call updateExistingDevice only with existing device!");
+            // notify observers who are using the DeviceQuery class (new device)
+            if (notifyDeviceObservers) DeviceObserverBase.notifyOfUpdatedDevice(device_info);
+            unconfiguredDeviceCollection.add(device_info);
+            return;
+        }
+
+        Device existing_device = deviceCollection.items.get(position);
+        if (existing_device != device_info) {
+            existing_device.lockDevice();
+            existing_device.replaceAutomaticAssignedConnections(device_info.getDeviceConnections());
+            existing_device.copyValuesFromUpdated(device_info);
+            existing_device.test_connection_reachable_consistency();
+            existing_device.releaseDevice();
         }
 
         if (notifyDeviceObservers) DeviceObserverBase.notifyOfUpdatedDevice(existing_device);
 
-        int flag = existing_device.getAndClearChangedFlag();
+        int flag = device_info.getAndClearChangedFlag();
         if (flag != 0) notifyAfterUpdate(existing_device, position, flag);
     }
 
     private void notifyAfterUpdate(Device existing_device, int position, int flag) {
-        Log.w(TAG, "device " + existing_device.getDeviceName() + " " + String.valueOf(flag));
+        //Log.w(TAG, "device " + existing_device.getDeviceName() + " " + String.valueOf(flag));
 
         if ((flag & Device.CHANGE_DEVICE) != 0) {
             deviceCollection.save(existing_device);
@@ -425,8 +397,6 @@ public class AppData implements onDataQueryCompleted {
         if (callback != null)
             callback.httpRequestStart(port);
 
-        wakeUpDeviceInterface.wakeupPlugin(port.device);
-
         AbstractBasePlugin remote = (AbstractBasePlugin) port.device.getPluginInterface();
         if (remote != null) {
             remote.rename(port, new_name, callback);
@@ -489,10 +459,6 @@ public class AppData implements onDataQueryCompleted {
                 abstractBasePlugins.add(remote);
         }
 
-        for (Device device : deviceSet) {
-            wakeUpDeviceInterface.wakeupPlugin(device);
-        }
-
         temp_success = 0;
         temp_errors = 0;
         final int finalCountValidSceneItems = countValidSceneItems;
@@ -522,7 +488,6 @@ public class AppData implements onDataQueryCompleted {
             DevicePort devicePort = (DevicePort) executable;
             AbstractBasePlugin remote = (AbstractBasePlugin) devicePort.device.getPluginInterface();
             if (remote != null) {
-                wakeUpDeviceInterface.wakeupPlugin(devicePort.device);
                 remote.execute(devicePort, DevicePort.TOGGLE, callback);
             }
 
@@ -544,14 +509,12 @@ public class AppData implements onDataQueryCompleted {
     public void execute(@NonNull final DevicePort devicePort, final int command, final onExecutionFinished callback) {
         AbstractBasePlugin remote = (AbstractBasePlugin) devicePort.device.getPluginInterface();
         if (remote != null) {
-            wakeUpDeviceInterface.wakeupPlugin(devicePort.device);
             remote.execute(devicePort, command, callback);
             if (callback != null) callback.onExecutionProgress(1, 0, 1);
         } else {
             if (callback != null) callback.onExecutionProgress(0, 1, 1);
         }
     }
-
 
     public List<Device> findDevices(AbstractBasePlugin abstractBasePlugin) {
         List<Device> list = new ArrayList<>();
@@ -604,9 +567,9 @@ public class AppData implements onDataQueryCompleted {
         clearNewDevices();
         new DeviceQuery(pluginService, new onDeviceObserverResult() {
             @Override
-            public void onObserverJobFinished(List<Device> timeout_devices) {
+            public void onObserverJobFinished(DeviceObserverBase deviceObserverBase) {
                 timerCollection.checkAlarm(PluginService.getService().alarmStartedTime());
-                Logging.getInstance().logEnergy("Suche Geräte fertig\n" + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " Timeout: " + String.valueOf(timeout_devices.size()));
+                Logging.getInstance().logEnergy("Suche Geräte fertig\n" + String.valueOf((System.nanoTime() - startTime) / 1000000.0) + " Timeout: " + String.valueOf(deviceObserverBase.timedOutDevices().size()));
                 observersDataQueryCompleted.onDataQueryFinished(AppData.this);
                 observersStartStopRefresh.onRefreshStateChanged(false);
             }

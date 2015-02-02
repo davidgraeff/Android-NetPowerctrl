@@ -342,7 +342,6 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     void removeDeviceAlarm(final Timer timer, final onHttpRequestResult callback) {
         if (timer.executable instanceof DevicePort && timer.alarmOnDevice != null) {
             Device device = ((DevicePort) timer.executable).device;
-            PluginService.getService().wakeupPlugin(device);
             AbstractBasePlugin p = (AbstractBasePlugin) device.getPluginInterface();
             p.removeAlarm(timer, new onHttpRequestResult() {
                 @Override

@@ -17,13 +17,13 @@
 package oly.netpowerctrl.main;
 
 import android.annotation.TargetApi;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -35,26 +35,25 @@ import android.widget.Toast;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
-import org.sufficientlysecure.donations.DonationsFragment;
-
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
-import oly.netpowerctrl.ui.navigation.NavigationController;
+import oly.netpowerctrl.preferences.PreferencesFragment;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClosedListener, SlidingMenu.OnOpenedListener {
     private static final long TIME_INTERVAL_MS = 2000;
     public static MainActivity instance = null;
-    private final NavigationController navigationController = new NavigationController();
     onServiceReady start_after_data_loaded = new onServiceReady() {
         @Override
         public boolean onServiceReady(PluginService service) {
             if (!service.getAppData().deviceCollection.hasDevices() && SharedPrefs.getInstance().getFirstTabPosition() == -1) {
-                navigationController.changeToFragment(IntroductionFragment.class.getName());
+                //navigationController.changeToFragment(IntroductionFragment.class.getName());
+                //TODO call introduction activity
             } else {
                 App.getMainThreadHandler().postDelayed(new Runnable() {
                     @Override
@@ -79,22 +78,11 @@ public class MainActivity extends ActionBarActivity {
         instance = this;
     }
 
-    public static NavigationController getNavigationController() {
-        return instance.navigationController;
-    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         instance = null;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        // Work-a-round
-        if (DonationsFragment.class.equals(navigationController.getCurrentFragment().getClass()))
-            navigationController.getCurrentFragment().onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -118,14 +106,39 @@ public class MainActivity extends ActionBarActivity {
             setTheme(R.style.Theme_CustomLightTheme);
         }
 
-        navigationController.createDrawerAdapter(this);
+        //navigationController.createDrawerAdapter(this);
         assignContentView();
+
+        FragmentManager fm = getFragmentManager();
+        fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                if (getFragmentManager().getBackStackEntryCount() == 0) {
+                    Toast.makeText(MainActivity.this, getString(R.string.press_back_to_exit), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        navigationController.restoreLastOpenedFragment();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_about: {
+                FragmentUtils.changeToFragment(this, FeedbackFragment.class.getName());
+                return true;
+            }
+            case R.id.menu_preferences: {
+                FragmentUtils.changeToFragment(this, PreferencesFragment.class.getName());
+                return true;
+            }
+        }
+        return false;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -135,20 +148,34 @@ public class MainActivity extends ActionBarActivity {
         boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
 
         SlidingMenu menu = (SlidingMenu) findViewById(R.id.slidingmenulayout);
-        menu.setContent(R.layout.content_frame);
-        menu.setMenu(R.layout.left_drawer_list);
+        menu.setMenu(R.layout.devices_fragment);
+        menu.setBehindOffset(150);
         menu.setShadowDrawable(R.drawable.shadow);
-        menu.setMode(SlidingMenu.LEFT);
-        menu.setStatic(has_two_panes);
+        if (!has_two_panes) {
+            menu.setSecondaryMenu(R.layout.group_list_fragment);
+            menu.setSecondaryShadowDrawable(R.drawable.shadowright);
+            menu.setContent(R.layout.content_frame);
+            menu.setMode(SlidingMenu.LEFT_RIGHT);
+        } else {
+            menu.setSecondaryMenu(null);
+            menu.setContent(R.layout.content_frame_with_group_list);
+            menu.setMode(SlidingMenu.LEFT);
+        }
+        FragmentUtils.changeToFragment(this, OutletsFragment.class.getName(), "outlets");
+
+        //menu.setStatic(has_two_vrr.anes);
         menu.setBehindCanvasTransformer(new SlidingMenu.CanvasTransformer() {
             @Override
             public void transformCanvas(Canvas canvas, float percentOpen, float xOffset) {
                 if (xOffset == 0)
                     canvas.scale(percentOpen, 1, 0, 0);
                 else
-                    canvas.translate(xOffset, 0);
+                    canvas.scale(percentOpen, 1, 0, 0);
+                //canvas.translate(xOffset, 0);
             }
         });
+        menu.setOnOpenedListener(this);
+        menu.setOnClosedListener(this);
 
         if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
@@ -162,41 +189,21 @@ public class MainActivity extends ActionBarActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(toolbar);
-        if (SharedPrefs.getInstance().isFullscreen()) {
-            getSupportActionBar().hide();
-        }
-
-        navigationController.setActivity(this);
-
-        //        enable ActionBar app icon to behave as action to toggle nav drawer
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(!has_two_panes);
-            actionBar.setHomeButtonEnabled(!has_two_panes);
-        }
-
     }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        if (navigationController.isLoading())
-            return super.onPrepareOptionsMenu(menu);
-
-        navigationController.onPrepareOptionsMenu(menu);
-        return super.onPrepareOptionsMenu(menu);
-    }
+//
+//    @Override
+//    public boolean onPrepareOptionsMenu(Menu menu) {
+//        if (navigationController.isLoading())
+//            return super.onPrepareOptionsMenu(menu);
+//
+//        navigationController.onPrepareOptionsMenu(menu);
+//        return super.onPrepareOptionsMenu(menu);
+//    }
 
     @Override
     protected void onStart() {
         super.onStart();
         PluginService.observersServiceReady.register(start_after_data_loaded);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        navigationController.saveSelection();
-        navigationController.detachCurrentFragment();
     }
 
     @Override
@@ -206,18 +213,10 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return navigationController.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onConfigurationChanged(Configuration newConfig) {
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT ||
                 newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-            navigationController.detachCurrentFragment();
             assignContentView();
-            navigationController.restoreLastOpenedFragment();
 
         }
         // now the fragments
@@ -225,24 +224,22 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    public void setTitle(CharSequence title) {
-        navigationController.setTitle(title);
-    }
-
-    @Override
     public void onBackPressed() {
-        if (navigationController.onBackPressed())
-            return;
-
-        if (mBackPressed + TIME_INTERVAL_MS > System.currentTimeMillis()) {
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
             finish();
-            return;
-        } else if (getFragmentManager().getBackStackEntryCount() == 0) {
-            Toast.makeText(this, getString(R.string.press_back_to_exit), Toast.LENGTH_SHORT).show();
-            mBackPressed = System.currentTimeMillis();
             return;
         }
 
         super.onBackPressed();
+    }
+
+    @Override
+    public void onClosed() {
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onOpened() {
+        invalidateOptionsMenu();
     }
 }

@@ -6,11 +6,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
@@ -32,16 +31,18 @@ import oly.netpowerctrl.pluginservice.PluginService;
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
 public class IntroductionFragment extends Fragment implements onCreateDeviceResult {
-    Handler takeNextHandler = new Handler(Looper.getMainLooper()) {
+    private Handler takeNextHandler = new Handler(Looper.getMainLooper()) {
         public void handleMessage(Message msg) {
             takeNext();
         }
     };
-    private TextView textView;
+    private LinearLayout found_devices_layout;
+    private TextView find_device_status;
     private List<Device> deviceList;
     private EditDeviceInterface editDevice;
     private int current = 0;
     private AppData appData = null;
+    private View item;
 
     public IntroductionFragment() {
     }
@@ -51,9 +52,10 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.automatic_intro, null);
 
-        textView = (TextView) root.findViewById(R.id.text_automatic);
+        found_devices_layout = (LinearLayout) root.findViewById(R.id.automatic_devices);
+        find_device_status = (TextView) root.findViewById(R.id.automatic_status);
 
-        Button button = (Button) root.findViewById(R.id.btnStart);
+        Button button = (Button) root.findViewById(R.id.btnRefresh);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,15 +67,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.getNavigationController().changeToFragment(OutletsFragment.class.getName());
-            }
-        });
-
-        button = (Button) root.findViewById(R.id.btnDevices);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
+                getActivity().finish();
             }
         });
 
@@ -84,20 +78,19 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     public void onStart() {
         super.onStart();
         MainActivity.instance.getSupportActionBar().hide();
-        if (MainActivity.getNavigationController().getDrawerLayout() != null) // tablet landscape mode
-            MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        start();
     }
 
     @Override
     public void onStop() {
         super.onStop();
         MainActivity.instance.getSupportActionBar().show();
-        if (MainActivity.getNavigationController().getDrawerLayout() != null) // tablet landscape mode
-            MainActivity.getNavigationController().getDrawerLayout().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
     void start() {
-        textView.setText("Waiting for devices...\n");
+        find_device_status.setVisibility(View.VISIBLE);
+        find_device_status.setText("Suche Geräte...");
+        found_devices_layout.removeAllViews();
         appData = PluginService.getService().getAppData();
         if (appData == null) return;
         deviceList = new ArrayList<>(appData.unconfiguredDeviceCollection.getItems());
@@ -105,17 +98,25 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     }
 
     void takeNext() {
+        LayoutInflater l = LayoutInflater.from(getActivity());
+        item = l.inflate(R.layout.list_item_device, found_devices_layout);
+
         if (current >= deviceList.size()) {
-            textView.append("DONE");
+            if (current == 0)
+                find_device_status.setText("Keine Geräte gefunden. Im Gerätebildschirm können Geräte per Hand hinzugefügt werden.");
+            else
+                find_device_status.setVisibility(View.GONE);
             return;
         }
         Device device = deviceList.get(current);
 
+        item.findViewById(R.id.device_connection_reachable).setVisibility(View.GONE);
+
         ++current;
-        textView.append("Check " + device.getDeviceName() + "...\n");
+        ((TextView) item.findViewById(R.id.title)).setText(device.getDeviceName());
 
         if (device.getPluginInterface() == null) {
-            textView.append("\tPlugin not found\n");
+            ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.error_plugin_not_installed));
             editDevice = null;
             takeNextHandler.sendEmptyMessage(0);
             return;
@@ -125,7 +126,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
 
         // If no edit device -> there is no configuration necessary
         if (editDevice == null) {
-            textView.append("\tOK\n");
+            ((TextView) item.findViewById(R.id.subtitle)).append(getString(android.R.string.ok));
             appData.addToConfiguredDevices(device);
             editDevice = null;
             takeNextHandler.sendEmptyMessage(0);
@@ -134,8 +135,10 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
 
         editDevice.setResultListener(this);
 
+        ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.device_connection_testing));
+
         if (!editDevice.startTest(PluginService.getService())) {
-            textView.append("\tPlugin failed\n");
+            ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.error_plugin_failed));
             editDevice = null;
             takeNextHandler.sendEmptyMessage(0);
         }
@@ -144,7 +147,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     @Override
     public void testFinished(boolean success) {
         if (success) {
-            textView.append("\tOK\n");
+            ((TextView) item.findViewById(R.id.subtitle)).append(getString(android.R.string.ok));
             final Device deviceToAdd = editDevice.getDevice();
             App.getMainThreadHandler().post(new Runnable() {
                 @Override
@@ -162,7 +165,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
                 }
             });
         } else {
-            textView.append("\tFAILED\n");
+            ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.error_device_not_found));
         }
         editDevice = null;
         takeNextHandler.sendEmptyMessage(0);
@@ -171,7 +174,7 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     @Override
     public void testDeviceNotReachable() {
         editDevice = null;
-        textView.append("\tLogin data wrong\n");
+        ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.error_device_no_access));
         takeNextHandler.sendEmptyMessage(0);
     }
 }

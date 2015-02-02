@@ -12,6 +12,7 @@ import android.util.Log;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
@@ -73,38 +74,43 @@ public class PluginRemote extends AbstractBasePlugin {
         }
 
         @Override
-        public void deviceConnectionChanged(String device_unique_id, int connection_id, String connection_json) throws RemoteException {
+        public void deviceConnectionChanged(String device_unique_id, int connection_id, String connection_json) {
             final Device device = pluginService.getAppData().findDevice(device_unique_id);
             if (device == null) {
                 Logging.getInstance().logExtensions(serviceName + " stateChanged: no device found!");
-                Log.w(TAG, "devicePortsChanged, no device found for " + device_unique_id);
+                Log.e(TAG, "devicePortsChanged, no device found for " + device_unique_id);
                 return;
             }
+
 
             device.lockDevice();
             DeviceConnection deviceConnection = device.getConnectionByID(connection_id);
             if (deviceConnection == null) {
                 device.releaseDevice();
                 Logging.getInstance().logExtensions(serviceName + " stateChanged: no deviceConnection found!");
-                Log.w(TAG, "stateChanged, no deviceConnection found for " + connection_json);
+                Log.e(TAG, "stateChanged, no deviceConnection found for " + connection_json);
                 return;
             }
+            device.test_connection_reachable_consistency();
+
             try {
                 device.updateConnection(connection_id, DeviceConnectionFabric.fromJSON(JSONHelper.getReader(connection_json), device));
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
+            device.test_connection_reachable_consistency();
+            Log.w(TAG, "deviceConnectionChanged, State: " + device.getConnectionByID(0).reachableState().name());
             device.releaseDevice();
 
-            pluginService.getAppData().updateExistingDeviceFromOtherThread(device, true);
+            pluginService.getAppData().updateDeviceFromOtherThread(device);
         }
 
         @Override
-        public void devicePortChanged(String device_unique_id, String device_port_json) throws RemoteException {
+        public void devicePortChanged(String device_unique_id, String device_port_json) {
             Device device = pluginService.getAppData().findDevice(device_unique_id);
             if (device == null) {
                 Logging.getInstance().logExtensions(serviceName + " devicePortsChanged: no device found!");
-                Log.w(TAG, "devicePortsChanged, no device found for " + device_unique_id);
+                Log.e(TAG, "devicePortsChanged, no device found for " + device_unique_id);
                 return;
             }
             DevicePort devicePort = null;
@@ -115,26 +121,30 @@ public class PluginRemote extends AbstractBasePlugin {
             }
             if (devicePort == null) {
                 Logging.getInstance().logExtensions("Extension " + serviceName + " devicePortsChanged: no device found!");
-                Log.w(TAG, "devicePortsChanged, no device found for " + device_port_json);
+                Log.e(TAG, "devicePortsChanged, no device found for " + device_port_json);
                 return;
             }
             device.lockDevicePorts();
             device.updatePort(devicePort);
             device.releaseDevicePorts();
-            pluginService.getAppData().updateExistingDeviceFromOtherThread(device, true);
+            pluginService.getAppData().updateDeviceFromOtherThread(device);
         }
 
         @Override
-        public void deviceChanged(String device_json) throws RemoteException {
+        public void deviceChanged(String device_json) {
             Device device = new Device(true);
             try {
+                // This will set the configured flag!
                 device.load(JSONHelper.getReader(device_json));
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 return;
             }
             device.setPluginInterface(PluginRemote.this);
-            pluginService.getAppData().updateDeviceFromOtherThread(device);
+            AppData appData = pluginService.getAppData();
+            // Correct configured flag
+            device.setConfigured(appData.deviceCollection.getPosition(device) != -1);
+            appData.updateDeviceFromOtherThread(device);
         }
     };
     private int transaction_counter_success = 0;
@@ -202,6 +212,7 @@ public class PluginRemote extends AbstractBasePlugin {
 
     /**
      * Request new data from plugin
+     *
      * @param deviceQuery
      */
     @Override
@@ -212,7 +223,7 @@ public class PluginRemote extends AbstractBasePlugin {
         }
         try {
             if (plugin != null) {
-                Log.w(TAG, "refresh: devices");
+                //Log.w(TAG, "refresh: devices");
                 plugin.requestData();
             } else
                 InAppNotifications.FromOtherThread(pluginService, pluginService.getString(R.string.error_plugin_no_service_connection, localized_name));
@@ -233,7 +244,7 @@ public class PluginRemote extends AbstractBasePlugin {
         }
         try {
             if (plugin != null) {
-                Log.w(TAG, "refresh: device connection");
+                //Log.w(TAG, "refresh: device connection");
                 plugin.requestDataByConnection(device.getUniqueDeviceID(), device_connection_id);
             } else
                 InAppNotifications.FromOtherThread(pluginService, pluginService.getString(R.string.error_plugin_no_service_connection, localized_name));

@@ -56,4 +56,17 @@
         android:layout_marginRight="16dp"
         app:drawable="@android:drawable/ic_menu_add"
         app:mainColor="?attr/floating_button_color" />
+
+    <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/btnHelp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_toLeftOf="@+id/btnAdd"
+        android:layout_toStartOf="@+id/btnAdd"
+        app:drawable="@android:drawable/ic_menu_help"
+        app:mainColor="?attr/floating_button_color" />
 </RelativeLayout>

@@ -44,22 +44,19 @@ import oly.netpowerctrl.executables.ExecutableViewHolder;
 import oly.netpowerctrl.executables.ExecutablesEditableAdapter;
 import oly.netpowerctrl.executables.FilterByReachable;
 import oly.netpowerctrl.executables.FilterBySingleGroup;
-import oly.netpowerctrl.groups.GroupAdapter;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
-import oly.netpowerctrl.utils.DividerItemDecoration;
-import oly.netpowerctrl.utils.fragments.onFragmentBackButton;
 
 /**
  * This fragment consists of some floating buttons (add + no_wireless) and a view pager. Within the
  * fragments in the view pager is a RecycleView and a placeholder text. The computation for
  */
 public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener,
-        onFragmentBackButton,
         onDataQueryRefreshQuery,
         SwipeRefreshLayout.OnRefreshListener, IconCacheCleared,
         RecyclerItemClickListener.OnItemClickListener, onServiceReady,
@@ -69,20 +66,17 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public static final int VIEW_AS_LIST = 0;
     public static final int VIEW_AS_GRID = 1;
     public static final int VIEW_AS_COMPACT = 2;
-    SlidingMenu menu;
+    // Groups
+    FilterBySingleGroup filterBySingleGroup = new FilterBySingleGroup(null);
     private RecyclerView mRecyclerView;
     private TextView emptyText;
     private View edit_hint_big;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private FloatingActionButton btnWireless;
     private int requestedColumnWidth;
-    private FloatingActionButton btnAdd;
     // Adapter
     private AdapterSource adapterSource;
     private ExecutablesEditableAdapter adapter;
-    // Groups
-    private GroupAdapter groupAdapter = new GroupAdapter();
-    private FilterBySingleGroup filterBySingleGroup = new FilterBySingleGroup(null);
     private UUID clicked_group_uid;
     /**
      * Called by the model data listener
@@ -90,6 +84,10 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private int lastResID = 0;
     private boolean editMode;
     private AppData appData;
+
+    private FloatingActionButton btnAdd;
+    private FloatingActionButton btnHelp;
+    private SlidingMenu slidingMenu;
 
     public OutletsFragment() {
     }
@@ -136,6 +134,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         appData = service.getAppData();
         setGroup(SharedPrefs.getInstance().getLastGroupUid(), false);
         applyViewType();
+        getActivity().invalidateOptionsMenu();
         return false;
     }
 
@@ -174,107 +173,41 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        boolean hasDevices = false;
+        if (appData != null) {
+            hasDevices = appData.deviceCollection.hasDevices();
+        }
+        hasDevices &= !slidingMenu.isMenuShowing();
+        menu.findItem(R.id.menu_edit_mode).setVisible(hasDevices);
+        menu.findItem(R.id.menu_view_mode).setVisible(hasDevices);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_help: {
-                //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.menu_help)
-                        .setMessage(R.string.help_overview_and_groups)
-                        .setIcon(android.R.drawable.ic_menu_help).show();
-                return true;
-            }
             case R.id.menu_edit_mode: {
                 setEditMode(!editMode);
                 return true;
             }
             case R.id.menu_view_mode: {
-                MainActivity.getNavigationController().changeToDialog(getActivity(), OutletsViewModeDialog.class.getName());
+                FragmentUtils.changeToDialog(getActivity(), OutletsViewModeDialog.class.getName());
+                return true;
             }
         }
         return false;
     }
 
-    /**
-     * Handles clicks on the plus floating button
-     *
-     * @param clickedView The clicked view
-     */
-    private void onPlusClicked(View clickedView) {
-        if (!appData.deviceCollection.hasDevices()) {
-            MainActivity.getNavigationController().changeToFragment(IntroductionFragment.class.getName());
-            return;
-        }
-
-        //noinspection ConstantConditions
-        PopupMenu popup = new PopupMenu(getActivity(), clickedView);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.outlet_adds, popup.getMenu());
-        popup.getMenu().findItem(R.id.menu_add_items_to_group).setVisible(filterBySingleGroup.getFilterGroup() != null);
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                switch (menuItem.getItemId()) {
-                    case R.id.menu_add_items_to_group:
-                        //noinspection ConstantConditions
-                        new AlertDialog.Builder(getActivity())
-                                .setTitle(R.string.menu_help)
-                                .setMessage(R.string.help_groups)
-                                .setIcon(android.R.drawable.ic_menu_help).show();
-                        return true;
-                    case R.id.menu_add_group:
-                        GroupUtilities.createGroup(getActivity(), appData.groupCollection, new GroupUtilities.GroupCreatedCallback() {
-                            @Override
-                            public void onGroupCreated(int group_index, UUID group_uid) {
-                                setGroup(group_uid, true);
-                            }
-                        });
-                        return true;
-                    case R.id.menu_add_scene:
-                        Intent it = new Intent(getActivity(), EditActivity.class);
-                        it.putExtra(EditActivity.CREATE_SCENE, true);
-                        startActivityForResult(it, EditActivity.REQUEST_CODE);
-                        return true;
-                }
-                return false;
-            }
-        });
-        popup.show();
-    }
-
-    @Override
-    public boolean onBackButton() {
-        if (menu.isMenuShowing()) {
-            menu.showContent();
-            return true;
-        }
-        return false;
-    }
-
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    if (i < 1) i = 1;
-                    adapter.setItemsInRow(i);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-                }
-            };
-
-    @Override
-    public void onDetach() {
-        menu.setMode(SlidingMenu.LEFT);
-        menu.setSecondaryMenu(null);
-        super.onDetach();
-    }
+//
+//    @Override
+//    public boolean onBackButton() {
+//        if (menu.isMenuShowing()) {
+//            menu.showContent();
+//            return true;
+//        }
+//        return false;
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
@@ -283,43 +216,14 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
         assert view != null;
 
+        slidingMenu = (SlidingMenu) getActivity().findViewById(R.id.slidingmenulayout);
+
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), this, null));
 
         emptyText = (TextView) view.findViewById(R.id.empty_text);
-
-        // configure the SlidingMenu
-        menu = (SlidingMenu) getActivity().findViewById(R.id.slidingmenulayout);
-        menu.setMode(SlidingMenu.LEFT_RIGHT);
-        menu.setSecondaryMenu(R.layout.group_list);
-        menu.setSecondaryShadowDrawable(R.drawable.shadowright);
-        menu.setMenu(menu.getMenu());
-
-        {
-            RecyclerView group_list = (RecyclerView) getActivity().findViewById(R.id.group_list);
-            group_list.setItemAnimator(new DefaultItemAnimator());
-            group_list.setLayoutManager(new LinearLayoutManager(getActivity()));
-            group_list.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public boolean onItemClick(View view, int position, boolean isLongClick) {
-                    if (isLongClick && position > 0) {
-                        showGroupPopupMenu(view, appData.groupCollection.get(position - 1).uuid);
-                        return true;
-                    }
-                    setGroup(position > 0 ? appData.groupCollection.get(position - 1).uuid : null, true);
-                    return true;
-                }
-            }, null));
-            group_list.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL_LIST) {
-                @Override
-                public boolean dividerForPosition(int position) {
-                    return true;
-                }
-            });
-            group_list.setAdapter(groupAdapter);
-        }
 
         btnWireless = (FloatingActionButton) view.findViewById(R.id.btnWirelessSettings);
         if (!PluginService.isWirelessLanConnected(getActivity()))
@@ -372,16 +276,49 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 setEditMode(false);
             }
         });
+
         btnAdd = (FloatingActionButton) view.findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onPlusClicked(btnAdd);
+                Intent it = new Intent(getActivity(), EditActivity.class);
+                it.putExtra(EditActivity.CREATE_SCENE, true);
+                startActivityForResult(it, EditActivity.REQUEST_CODE);
+            }
+        });
+
+        btnHelp = (FloatingActionButton) view.findViewById(R.id.btnHelp);
+        btnHelp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //noinspection ConstantConditions
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.menu_help)
+                        .setMessage(R.string.help_overview_and_groups)
+                        .setIcon(android.R.drawable.ic_menu_help).show();
             }
         });
 
         return view;
     }
+
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+
+                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
+                    if (i < 1) i = 1;
+                    adapter.setItemsInRow(i);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(adapter);
+                }
+            };
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -467,10 +404,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         return false;
     }
 
-    private void setGroup(UUID group_uid, boolean save) {
+    void setGroup(UUID group_uid, boolean save) {
         filterBySingleGroup.setFilterGroup(group_uid);
         if (save) SharedPrefs.getInstance().setLastGroupUid(group_uid);
-        groupAdapter.setSelectedItem(appData.groupCollection.indexOf(group_uid) + 1);
+        GroupListFragment groupListFragment = (GroupListFragment) getFragmentManager().findFragmentByTag("group");
+        if (groupListFragment != null)
+            groupListFragment.getAdapter().setSelectedItem(appData.groupCollection.indexOf(group_uid) + 1);
     }
 
     @Override
@@ -512,7 +451,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         return true;
     }
 
-    private void showGroupPopupMenu(View view, UUID group_uid) {
+    void showGroupPopupMenu(View view, UUID group_uid) {
         this.clicked_group_uid = group_uid;
         //noinspection ConstantConditions
         PopupMenu popup = new PopupMenu(getActivity(), view);
@@ -554,11 +493,13 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private void setEditMode(boolean editMode) {
         this.editMode = editMode;
         if (editMode) {
-            AnimationController.animateBottomViewIn(edit_hint_big, edit_hint_big.getVisibility() == View.VISIBLE);
-            AnimationController.animateBottomViewIn(btnAdd, false);
+            AnimationController.animateViewInOut(edit_hint_big, true, true);
+            AnimationController.animateBottomViewIn(btnAdd, btnAdd.getVisibility() == View.VISIBLE);
+            AnimationController.animateBottomViewIn(btnHelp, btnHelp.getVisibility() == View.VISIBLE);
         } else {
-            AnimationController.animateBottomViewOut(edit_hint_big);
+            AnimationController.animateViewInOut(edit_hint_big, false, true);
             AnimationController.animateBottomViewOut(btnAdd);
+            AnimationController.animateBottomViewOut(btnHelp);
         }
         adapter.setEditMode(editMode);
     }

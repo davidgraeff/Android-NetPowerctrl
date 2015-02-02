@@ -11,7 +11,9 @@ import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -20,10 +22,10 @@ import oly.netpowerctrl.data.ImportExport;
 import oly.netpowerctrl.data.LoadStoreIconData;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.statusbar_and_speech.AndroidStatusBarService;
 
@@ -46,10 +48,11 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             return true;
         }
     };
+    private View rootView;
 
     @Override
     public void onPause() {
-        ListView lv = (ListView) getActivity().findViewById(android.R.id.list);
+        ListView lv = (ListView) rootView.findViewById(android.R.id.list);
         if (lv != null)
             getPreferenceManager().getSharedPreferences().edit().putInt("scroll", lv.getFirstVisiblePosition()).apply();
         super.onPause();
@@ -71,7 +74,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                MainActivity.getNavigationController().changeToFragment(LogFragment.class.getName());
+                FragmentUtils.changeToFragment(getActivity(), LogFragment.class.getName());
                 return false;
             }
         });
@@ -170,9 +173,15 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        rootView = super.onCreateView(inflater, container, savedInstanceState);
+        return rootView;
+    }
+
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final ListView lv = (ListView) getActivity().findViewById(android.R.id.list);
+        final ListView lv = (ListView) rootView.findViewById(android.R.id.list);
         if (lv != null)
             App.getMainThreadHandler().post(new Runnable() {
                 @Override

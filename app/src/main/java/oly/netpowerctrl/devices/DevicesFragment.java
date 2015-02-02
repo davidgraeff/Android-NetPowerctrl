@@ -22,21 +22,21 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.onDataQueryRefreshQuery;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
 import oly.netpowerctrl.pluginservice.PluginRemote;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.preferences.PreferencesFragment;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
-import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.DividerItemDecoration;
 
 /**
@@ -53,22 +53,6 @@ public class DevicesFragment extends Fragment
     }
 
     @Override
-    public void onCreateOptionsMenu(
-            Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.devices, menu);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        PluginService pluginService = PluginService.getService();
-        if (pluginService == null) return;
-        AppData appData = pluginService.getAppData();
-        //noinspection ConstantConditions
-        menu.findItem(R.id.menu_delete_all).setVisible(appData.deviceCollection.hasDevices());
-    }
-
-    @Override
     public void onPause() {
         AppData.observersStartStopRefresh.unregister(this);
         super.onPause();
@@ -82,39 +66,6 @@ public class DevicesFragment extends Fragment
             adapter.onResume();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_help: {
-                //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.menu_help)
-                        .setMessage(R.string.help_devices)
-                        .setIcon(android.R.drawable.ic_menu_help).show();
-                return true;
-            }
-
-            case R.id.menu_delete_all: {
-                //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.delete_all_devices)
-                        .setMessage(R.string.confirmation_delete_all_devices)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                // Delete all scenes
-                                AppData appData = PluginService.getService().getAppData();
-                                appData.deviceCollection.removeAll();
-                                onRefresh();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null).show();
-
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -231,14 +182,17 @@ public class DevicesFragment extends Fragment
                 return true;
             }
         }, null));
+
         assignAdapter();
+
         Button btn = (Button) view.findViewById(R.id.btnChangeToPreferences);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.getNavigationController().changeToFragment(PreferencesFragment.class.getName());
+                FragmentUtils.changeToFragment(getActivity(), PreferencesFragment.class.getName());
             }
         });
+
         mPullToRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
         mPullToRefreshLayout.setOnRefreshListener(this);
         mPullToRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -253,8 +207,18 @@ public class DevicesFragment extends Fragment
                 show_configure_device_dialog(null);
             }
         });
-        fab.setVisibility(View.INVISIBLE);
-        AnimationController.animateBottomViewIn(fab, false);
+
+        fab = (FloatingActionButton) view.findViewById(R.id.btnHelp);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //noinspection ConstantConditions
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.menu_help)
+                        .setMessage(R.string.help_devices)
+                        .setIcon(android.R.drawable.ic_menu_help).show();
+            }
+        });
 
         return view;
     }
@@ -330,13 +294,12 @@ public class DevicesFragment extends Fragment
     private void show_configure_device_dialog(Device device) {
         if (device == null) {
             // new device
-            int selected = 0;
             //String[] plugins = ListenService.getService().pluginIDs();
 
             DevicesWizardNewDialog newFragment = (DevicesWizardNewDialog) Fragment.instantiate(getActivity(), DevicesWizardNewDialog.class.getName());
             //newFragment.setPlugin(ListenService.getService().getPluginByID(plugins[selected]));
-            newFragment.setPlugin(PluginService.getService().getPlugin(selected));
-            MainActivity.getNavigationController().changeToDialog(getActivity(), newFragment);
+            newFragment.setPlugin(PluginService.getService().getPlugin(AnelPlugin.PLUGIN_ID));
+            FragmentUtils.changeToDialog(getActivity(), newFragment);
         } else {
             AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
             if (abstractBasePlugin == null) {

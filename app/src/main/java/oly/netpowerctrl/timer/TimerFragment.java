@@ -24,9 +24,9 @@ import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.devices.DevicesFragment;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
@@ -117,7 +117,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                         Fragment.instantiate(getActivity(), TimerEditFragmentDialog.class.getName());
                 fragment.setParameter(timerAdapter.getAlarm(position));
 
-                MainActivity.getNavigationController().changeToDialog(getActivity(), fragment);
+                FragmentUtils.changeToDialog(getActivity(), fragment);
                 return false;
             }
         }, null));
@@ -142,7 +142,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         btnChangeToDevices.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.getNavigationController().changeToFragment(DevicesFragment.class.getName());
+                FragmentUtils.changeToFragment(getActivity(), DevicesFragment.class.getName());
             }
         });
 
@@ -232,15 +232,15 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         switch (menuItem.getItemId()) {
             case R.id.menu_timer_android_once:
                 fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentBundle(Timer.TYPE_ONCE, true));
-                MainActivity.getNavigationController().changeToDialog(getActivity(), fragmentDialog);
+                FragmentUtils.changeToDialog(getActivity(), fragmentDialog);
                 return true;
             case R.id.menu_timer_android_weekdays:
                 fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentBundle(Timer.TYPE_RANGE_ON_WEEKDAYS, true));
-                MainActivity.getNavigationController().changeToDialog(getActivity(), fragmentDialog);
+                FragmentUtils.changeToDialog(getActivity(), fragmentDialog);
                 return true;
             case R.id.menu_timer_device_weekdays:
                 fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentBundle(Timer.TYPE_RANGE_ON_WEEKDAYS, false));
-                MainActivity.getNavigationController().changeToDialog(getActivity(), fragmentDialog);
+                FragmentUtils.changeToDialog(getActivity(), fragmentDialog);
                 return true;
         }
         throw new RuntimeException("Menu switch missing entry!");

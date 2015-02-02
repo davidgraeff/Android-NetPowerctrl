@@ -83,7 +83,7 @@
     <string name="menu_switch_all_ignore">Alle von Szene entfernen</string>
     <string name="menu_help">Hilfe</string>
     <string name="menu_device_configuration_page">Konfigurationsseite öffnen</string>
-    <string name="devices_not_reachable">Gerät %1$s nicht erreichbar</string>
+    <string name="device_not_reachable">Gerät %1$s nicht erreichbar</string>
     <string name="empty_no_scenes">Keine Szenen gefunden.\n\nMit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
 Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</string>
@@ -299,9 +299,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="error_restart_app">Bitte die App neu starten!</string>
     <string name="preference_fullscreen">Vollbild</string>
     <string name="preference_fullscreen_summary">Verstecke die Android Leiste und die Aktionsleiste</string>
-    <string name="error_not_in_fullscreen_mode">Diese Aktion kann nicht im Vollbildmodus durchgeführt werden!</string>
-    <string name="preference_outlet_editing_enabled">Steckdose/Szene bearbeitebar</string>
-    <string name="preference_outlet_editing_enabled_summary">Das Schraubenschlüssel Icon zur Bearbeitung von Steckdosen/Szenen wird angezeigt/ausgeblendet.</string>
     <string name="menu_view_change">Ansicht wechseln</string>
     <string name="preference_select_background_image">Wähle Hintergrundbild</string>
     <string name="title_scene_no_name">Kein Name!</string>
@@ -375,4 +372,13 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="scene_options_title">Optionen</string>
     <string name="alarm_received">Sychnonisierung abgeschlossen</string>
     <string name="groups_all">Alles zeigen</string>
+    <string name="introduction_welcome">Willkommen</string>
+    <string name="introduction_refresh_devices">Automatische Erkennung wiederholen</string>
+    <string name="error_no_devices">Keine Geräte gefunden!</string>
+    <string name="menu_help_outlets">Hilfe zur Übersicht</string>
+    <string name="menu_help_devices">Hilfe zur Geräteübersicht</string>
+    <string name="feedback_contact_title">Kontakt</string>
+    <string name="app_logo">Logo</string>
+    <string name="app_license_title">Lizenz und Gewährleistung</string>
+    <string name="Mail">E-Mail</string>
 </resources>

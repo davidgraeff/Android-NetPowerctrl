@@ -30,7 +30,6 @@ public class DeviceQuery extends DeviceObserverBase {
         super(context, target, 200, 2);
         pluginService = context;
 //        Log.w(TAG, "DeviceQuery");
-        pluginService.wakeupPlugin(device_to_observe);
         addDevice(context.getAppData(), device_to_observe);
         start();
     }
@@ -49,7 +48,6 @@ public class DeviceQuery extends DeviceObserverBase {
 
         while (devices_to_observe.hasNext()) {
             Device device = devices_to_observe.next();
-            pluginService.wakeupPlugin(device);
             addDevice(context.getAppData(), device);
         }
 
@@ -139,5 +137,4 @@ public class DeviceQuery extends DeviceObserverBase {
         for (int deviceConnectionID : deviceCollectionList)
             abstractBasePlugin.requestData(device, deviceConnectionID);
     }
-
 }

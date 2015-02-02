@@ -83,7 +83,7 @@
     <string name="menu_switch_all_ignore">Remove all from scene</string>
     <string name="menu_help">Help</string>
     <string name="menu_device_configuration_page">Open configuration page</string>
-    <string name="devices_not_reachable">Devices %1$s not reachable</string>
+    <string name="device_not_reachable">Devices %1$s not reachable</string>
     <string name="empty_no_scenes">No scene found.\n\n
 A scene combines multiple actions and execute them at once.</string>
     <string name="empty_no_outlets">No outlets to display.\n\n
@@ -372,4 +372,13 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="scene_options_title">Options</string>
     <string name="alarm_received">Successfully synced</string>
     <string name="groups_all">Show all</string>
+    <string name="introduction_welcome">Willkommen</string>
+    <string name="introduction_refresh_devices">Automatische Erkennung wiederholen</string>
+    <string name="error_no_devices">Keine Geräte gefunden!</string>
+    <string name="menu_help_outlets">Hilfe zur Übersicht</string>
+    <string name="menu_help_devices">Hilfe zur Geräteübersicht</string>
+    <string name="feedback_contact_title">Kontakt</string>
+    <string name="app_logo">Logo</string>
+    <string name="app_license_title">Lizenz und Gewährleistung</string>
+    <string name="Mail">Mail</string>
 </resources>

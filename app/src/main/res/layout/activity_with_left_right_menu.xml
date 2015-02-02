@@ -1,13 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.jeremyfeinstein.slidingmenu.lib.SlidingMenu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:sliding="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/slidingmenulayout"
-        android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/activity_background"
-    sliding:behindScrollScale="1.0"
-    sliding:behindWidth="200dp"
-    sliding:fadeDegree="0.0"
-    sliding:fadeEnabled="false"
-    sliding:shadowWidth="@dimen/shadow_width"
-    sliding:touchModeAbove="fullscreen" />
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/toolbar_actionbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        app:theme="?attr/toolbar_style" />
+
+    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/toolbar_bottom_actionbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:elevation="4dp"
+        android:minHeight="?attr/actionBarSize"
+        android:visibility="gone"
+        app:theme="?attr/toolbar_style" />
+
+    <com.jeremyfeinstein.slidingmenu.lib.SlidingMenu xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:sliding="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/slidingmenulayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/toolbar_bottom_actionbar"
+        android:layout_below="@id/toolbar_actionbar"
+        android:background="?attr/activity_background"
+        sliding:behindScrollScale="1.0"
+        sliding:fadeDegree="0.0"
+        sliding:fadeEnabled="false"
+        sliding:shadowWidth="@dimen/shadow_width"
+        sliding:touchModeAbove="fullscreen" />
+</RelativeLayout>
+
+

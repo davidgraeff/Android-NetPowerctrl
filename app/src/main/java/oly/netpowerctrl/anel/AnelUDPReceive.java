@@ -161,9 +161,6 @@ class AnelUDPReceive extends UDPReceiving {
         device.replaceAutomaticAssignedConnections(deviceConnectionList);
         device.releaseDevice();
 
-        if (isNewDevice)
-            appData.updateDeviceFromOtherThread(device);
-        else
-            appData.updateExistingDeviceFromOtherThread(device, true);
+        appData.updateDeviceFromOtherThread(device);
     }
 }

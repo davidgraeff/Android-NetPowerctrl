@@ -111,13 +111,9 @@ public class AssetDocumentProvider extends DocumentsProvider implements ContentP
 
     @Override
     public boolean onCreate() {
-        Log.w(TAG, "onCreate");
-
-//        mBaseDir = getContext().getFilesDir();
-
+        //Log.w(TAG, "onCreate");
         return true;
     }
-    // END_INCLUDE(query_document)
 
     @Override
     public Cursor queryRoots(String[] projection) throws FileNotFoundException {

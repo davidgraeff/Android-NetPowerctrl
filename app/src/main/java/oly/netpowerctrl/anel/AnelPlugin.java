@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -39,11 +38,13 @@ import oly.netpowerctrl.network.onDeviceObserverResult;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
 import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
+import oly.netpowerctrl.pluginservice.DeviceObserverBase;
 import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerCollection;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -196,7 +197,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         return command_list.size();
     }
 
-    public void startNetworkReceivers(boolean changed) {
+    private void startNetworkReceivers(boolean changed) {
         // Get all ports of configured devices and add the additional_port if != 0
         Set<Integer> ports = pluginService.getAppData().getAllReceivePorts();
 
@@ -205,6 +206,9 @@ final public class AnelPlugin extends AbstractBasePlugin {
         boolean new_threads_started = false;
         List<AnelUDPReceive> unusedThreads = new ArrayList<>(discoveryThreads);
 
+        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+        String methodName = stacktrace[3].getClassName() + ":" + stacktrace[3].getMethodName() + "->" + stacktrace[4].getClassName() + ":" + stacktrace[4].getMethodName();
+        Log.w(PLUGIN_ID, "startNetworkReceivers " + methodName);
 
         // Go through all ports and start a thread for it if none is running for it so far
         for (int port : ports) {
@@ -245,7 +249,11 @@ final public class AnelPlugin extends AbstractBasePlugin {
         HttpThreadPool.startHTTP();
     }
 
-    public void stopNetwork() {
+    private void stopNetwork() {
+        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+        String methodName = stacktrace[3].getClassName() + ":" + stacktrace[3].getMethodName() + "->" + stacktrace[4].getClassName() + ":" + stacktrace[4].getMethodName();
+        Log.w(PLUGIN_ID, "stopNetwork " + methodName);
+
         synchronized (this) {
             if (discoveryThreads.size() > 0) {
                 for (AnelUDPReceive thr : discoveryThreads)
@@ -398,7 +406,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         device.setPluginInterface(this);
         DeviceEditDialog f = (DeviceEditDialog) Fragment.instantiate(MainActivity.instance, DeviceEditDialog.class.getName());
         f.setDevice(device);
-        MainActivity.getNavigationController().changeToDialog(MainActivity.instance, f);
+        FragmentUtils.changeToDialog(MainActivity.instance, f);
     }
 
     /**
@@ -515,18 +523,18 @@ final public class AnelPlugin extends AbstractBasePlugin {
         AppData appData = pluginService.getAppData();
         new DeviceQuery(pluginService, new onDeviceObserverResult() {
             @Override
-            public void onObserverJobFinished(List<Device> timeout_devices) {
-
+            public void onObserverJobFinished(DeviceObserverBase deviceObserverBase) {
+                if (!deviceObserverBase.isAllTimedOut()) return;
+                //TODO
+//                new AsyncTask<AnelPlugin, Void, Void>() {
+//                    @Override
+//                    protected Void doInBackground(AnelPlugin... plugin) {
+//                        plugin[0].stopNetwork();
+//                        return null;
+//                    }
+//                }.execute(AnelPlugin.this);
             }
         }, appData.findDevices(this).iterator(), false);
-
-        new AsyncTask<AnelPlugin, Void, Void>() {
-            @Override
-            protected Void doInBackground(AnelPlugin... plugin) {
-                plugin[0].stopNetwork();
-                return null;
-            }
-        }.execute(this);
     }
 
     @Override

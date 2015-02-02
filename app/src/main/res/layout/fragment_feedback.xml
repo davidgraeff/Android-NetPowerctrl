@@ -14,6 +14,7 @@
             android:id="@+id/logo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/app_logo"
             android:maxHeight="40dp"
             android:scaleType="center"
             android:src="@drawable/store_feature_new" />
@@ -60,6 +61,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/name"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_toEndOf="@id/version_label"
                     android:layout_toRightOf="@id/version_label"
                     android:clickable="true"
                     android:ellipsize="end"
@@ -81,6 +84,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/version"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_toEndOf="@id/bugs_label"
                     android:layout_toRightOf="@id/bugs_label"
                     android:clickable="true"
                     android:ellipsize="end"
@@ -102,6 +107,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
                     android:layout_toRightOf="@id/bugs2_label"
                     android:clickable="true"
                     android:ellipsize="end"
@@ -123,6 +129,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs2"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_toEndOf="@id/bugs3_label"
                     android:layout_toRightOf="@id/bugs3_label"
                     android:clickable="true"
                     android:ellipsize="end"
@@ -144,6 +152,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs3"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_toEndOf="@id/bugs4_label"
                     android:layout_toRightOf="@id/bugs4_label"
                     android:clickable="true"
                     android:ellipsize="end"
@@ -165,6 +175,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs4"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_toEndOf="@id/bugs5_label"
                     android:layout_toRightOf="@id/bugs5_label"
                     android:clickable="true"
                     android:ellipsize="end"
@@ -206,9 +218,10 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
                         android:layout_marginRight="10dp"
                         android:layout_weight="1"
-                        android:text="Mail" />
+                        android:text="@string/Mail" />
 
                     <Button
                         android:id="@+id/beta"
@@ -246,7 +259,7 @@
                     android:ellipsize="end"
                     android:gravity="center"
                     android:singleLine="true"
-                    android:text="Lizenz und Gewährleistung"
+                    android:text="@string/app_license_title"
                     android:textAppearance="@android:style/TextAppearance.Large" />
 
                 <TextView
@@ -257,14 +270,35 @@
                     android:linksClickable="false"
                     android:text="@string/app_name_disclaimer" />
 
-                <Button
-                    android:id="@+id/open_source_license"
-                    style="?android:attr/buttonBarButtonStyle"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    style="?android:attr/buttonBarStyle"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
                     android:layout_marginTop="10dp"
-                    android:text="@string/open_source_licenses" />
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/open_source_license"
+                        style="?android:attr/buttonBarButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="1"
+                        android:text="@string/open_source_licenses" />
+
+                    <Button
+                        android:id="@+id/donate"
+                        style="?android:attr/buttonBarButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:text="@string/drawer_donate" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -293,7 +327,7 @@
                     android:ellipsize="end"
                     android:gravity="center"
                     android:singleLine="true"
-                    android:text="Kontakt"
+                    android:text="@string/feedback_contact_title"
                     android:textAppearance="@android:style/TextAppearance.Large" />
 
                 <TextView
@@ -318,6 +352,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="10dp"
                         android:layout_marginRight="10dp"
                         android:layout_weight="1"
                         android:text="@string/feedback_google_plus" />

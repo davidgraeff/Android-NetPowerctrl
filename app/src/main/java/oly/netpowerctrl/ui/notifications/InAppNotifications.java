@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.utils.AnimationController;
@@ -67,7 +68,7 @@ public class InAppNotifications {
         boolean serviceRunning = PluginService.getService() != null;
         ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
         if (serviceRunning) {
-            ACRA.getErrorReporter().putCustomData("plugin_anel_state", PluginService.getService().getPlugin(0).isStarted() ? "down" : "running");
+            ACRA.getErrorReporter().putCustomData("plugin_anel_state", PluginService.getService().getPlugin(AnelPlugin.PLUGIN_ID).isStarted() ? "down" : "running");
         } else {
             ACRA.getErrorReporter().putCustomData("service_shutdown_reason", PluginService.service_shutdown_reason);
         }

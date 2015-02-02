@@ -258,29 +258,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         return false;
     }
 
-    public void changeToFragment(String fragmentClassName) {
-        changeToFragment(fragmentClassName, null, true, mDrawerAdapter == null ? -1 : mDrawerAdapter.indexOf(fragmentClassName));
-    }
-
-    public void changeToFragment(String fragmentClassName, final Bundle extra) {
-        changeToFragment(fragmentClassName, extra, true, mDrawerAdapter == null ? -1 : mDrawerAdapter.indexOf(fragmentClassName));
-    }
-
-    public void changeToFragment(Fragment fragment, String fragmentClassName) {
-        final Activity context = mDrawerActivity.get();
-        if (context == null || fragmentClassName == null) // should never happen
-            return;
-        currentFragmentClass = fragmentClassName;
-        currentFragment = fragment;
-        FragmentTransaction ft = context.getFragmentManager().beginTransaction();
-        ft.replace(R.id.content_frame, currentFragment);
-        try {
-            ft.commit();
-        } catch (IllegalStateException exception) {
-            ft.commitAllowingStateLoss();
-        }
-    }
-
     private void changeToFragment(String fragmentClassName, Bundle extra, boolean addToBackstack, int position) {
         final Activity context = mDrawerActivity.get();
         if (context == null || fragmentClassName == null) // should never happen
@@ -354,27 +331,6 @@ public class NavigationController implements RecyclerItemClickListener.OnItemCli
         currentFragment.setArguments(extra);
     }
 
-    public void changeToDialog(Activity context, String fragmentClassName) {
-        FragmentManager fragmentManager = context.getFragmentManager();
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        Fragment prev = fragmentManager.findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-        ((DialogFragment) Fragment.instantiate(context, fragmentClassName)).show(ft, "dialog");
-    }
-
-    public void changeToDialog(Activity context, DialogFragment fragment) {
-        FragmentManager fragmentManager = context.getFragmentManager();
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        Fragment prev = fragmentManager.findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-        fragment.show(ft, "dialog");
-    }
 
     @Override
     public boolean onItemClick(View view, int position, boolean isLongClick) {

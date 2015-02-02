@@ -13,6 +13,7 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
 
@@ -20,7 +21,6 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.data.WakeUpDeviceInterface;
 import oly.netpowerctrl.data.onDataLoaded;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.devices.DeviceCollection;
@@ -33,7 +33,7 @@ import oly.netpowerctrl.utils.Logging;
 /**
  * Look for and load plugins. After network change: Rescan for reachable devices.
  */
-public class PluginService extends Service implements onDataLoaded, WakeUpDeviceInterface, onPluginsReady {
+public class PluginService extends Service implements onDataLoaded, onPluginsReady {
     public static final ServiceReadyObserver observersServiceReady = new ServiceReadyObserver();
     private static final String TAG = "NetpowerctrlService";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
@@ -57,7 +57,8 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
     private final Handler stopServiceHandler = new Handler();
     private final List<AbstractBasePlugin> plugins = new ArrayList<>();
     private long mStartedByAlarmTime = -1;
-    private AppData appData = new AppData(this);
+    private AppData appData = new AppData();
+
     /**
      * If the listen and send thread are shutdown because the devices destination networks are
      * not in range, this variable is set to true.
@@ -265,7 +266,7 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
                 device.setPluginInterface(plugin);
                 if (updateChangesFlag)
                     device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
-                appData.updateExistingDevice(device, true);
+                appData.updateDevice(device, true);
             }
         }
         return affectedDevices;
@@ -291,7 +292,7 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
                 device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
                 device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
                 device.releaseDevice();
-                appData.updateExistingDevice(device, true);
+                appData.updateDevice(device, true);
             }
         }
     }
@@ -309,24 +310,6 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         }
     }
 
-    /**
-     * This does nothing if a plugin is already awake.
-     * Wake up a plugin, but will send it to sleep again if the given device didn't get updated within 3s
-     *
-     * @param device The device to wake up.
-     * @return Return true if wake up worked.
-     */
-    @Override
-    public boolean wakeupPlugin(Device device) {
-        AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
-        if (abstractBasePlugin != null) {
-            abstractBasePlugin.devicesChanged();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public String[] pluginIDs() {
         String[] ids = new String[plugins.size()];
         for (int i = 0; i < plugins.size(); ++i)
@@ -336,10 +319,6 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
 
     public EditDeviceInterface openEditDevice(Device device) {
         return getPluginByID(device.pluginID).openEditDevice(device);
-    }
-
-    public AbstractBasePlugin getPlugin(int selected) {
-        return plugins.get(selected);
     }
 
     public AbstractBasePlugin getPlugin(String plugin_id) {
@@ -362,14 +341,19 @@ public class PluginService extends Service implements onDataLoaded, WakeUpDevice
         if (!AppData.isDataLoaded()) return true;
 
         for (AbstractBasePlugin newlyAddedPlugin : not_activated_plugins) {
-            Log.w(TAG, "onDataLoaded " + newlyAddedPlugin.getPluginID());
+            //Log.w(TAG, "onDataLoaded " + newlyAddedPlugin.getPluginID());
             plugins.add(newlyAddedPlugin);
             updatePluginReferencesInDevices(newlyAddedPlugin, false);
+            newlyAddedPlugin.onStart(this);
         }
         not_activated_plugins.clear();
-        for (Device device : appData.deviceCollection.getItems()) {
-            if (device.getPluginInterface() == null)
-                throw new RuntimeException("No Plugin for device " + device.getDeviceName());
+        Iterator<Device> deviceIterator = appData.deviceCollection.getItems().iterator();
+        while (deviceIterator.hasNext()) {
+            Device device = deviceIterator.next();
+            if (device.getPluginInterface() == null) {
+                Log.w(TAG, "Remove but not delete device without installed plugin: " + device.getDeviceName());
+                deviceIterator.remove();
+            }
         }
         observersServiceReady.onServiceReady(pluginService);
         appData.refreshDeviceData(pluginService, false);

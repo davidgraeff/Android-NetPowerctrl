@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_authors_copyright" translatable="false">Copyright © 2013–2014 David Gräff</string>
+    <string name="app_authors_copyright" translatable="false">Copyright © 2013–2015 David Gräff</string>
     <string name="acralyzer_http_url" translatable="false">https://powercontrol.cloudant.com/acra-powercontrol/_design/acra-storage/_update/report</string>
     <string name="acralyzer_http_login" translatable="false">wherentritstallevencendo</string>
     <string name="acralyzer_http_pwd" translatable="false">Ap1xIKwclTDDcU3BiNDtjl5Q</string>

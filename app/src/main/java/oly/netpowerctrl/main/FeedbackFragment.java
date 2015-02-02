@@ -14,11 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.sufficientlysecure.donations.DonationsFragment;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.ui.ChangeLogUtil;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.utils.GithubAndCloudant;
 
 public class FeedbackFragment extends Fragment {
@@ -126,6 +129,13 @@ public class FeedbackFragment extends Fragment {
                 }
                 intent.setType("plain/html");
                 getActivity().startActivity(intent);
+            }
+        });
+
+        view.findViewById(R.id.donate).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentUtils.changeToFragment(getActivity(), DonationsFragment.class.getName());
             }
         });
 

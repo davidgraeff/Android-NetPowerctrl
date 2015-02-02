@@ -74,6 +74,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     // UI widgets
     CheckBox show_mainWindow;
     CheckBox enable_feedback;
+    CheckBox chk_hide;
     boolean[] checked;
     private boolean isChanged = false;
     private FloatingActionButton btnSaveOrTrash;
@@ -144,8 +145,21 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             }
         });
 
+        CompoundButton.OnCheckedChangeListener updateSaveButtonOnChecked = new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                isChanged = true;
+                updateSaveButton();
+            }
+        };
+
         show_mainWindow = (CheckBox) findViewById(R.id.shortcut_show_mainwindow);
+        show_mainWindow.setOnCheckedChangeListener(updateSaveButtonOnChecked);
         enable_feedback = (CheckBox) findViewById(R.id.shortcut_enable_feedback);
+        enable_feedback.setOnCheckedChangeListener(updateSaveButtonOnChecked);
+        chk_hide = (CheckBox) findViewById(R.id.chk_hide);
+        chk_hide.setOnCheckedChangeListener(updateSaveButtonOnChecked);
+
         groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
         Button btnGroupAdd = (Button) findViewById(R.id.btnAddGroup);
         btnGroupAdd.setOnClickListener(new View.OnClickListener() {
@@ -419,23 +433,30 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             show_mainWindow.setVisibility(View.VISIBLE);
             enable_feedback.setVisibility(View.VISIBLE);
             groups_layout.setVisibility(View.GONE);
+            chk_hide.setVisibility(View.GONE);
             checked = null;
         } else {
             updateGroups(appData.groupCollection);
         }
 
+        if (mEditType == EDIT_TYPE_SCENE)
+            chk_hide.setVisibility(View.GONE);
+        else if (mEditType == EDIT_TYPE_DEVICE_PORT)
+            chk_hide.setChecked(((DevicePort) executable).isHidden());
+
         EditText nameEdit = (EditText) findViewById(R.id.scene_name);
         nameEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                isChanged = true;
-                updateSaveButton();
+
             }
 
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             public void afterTextChanged(Editable s) {
+                isChanged = true;
+                updateSaveButton();
             }
         });
 
@@ -464,6 +485,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             return;
         }
 
+        // Save name + scene elements
         if (mEditType != EDIT_TYPE_DEVICE_PORT) {
             if (!sceneElementsAssigning.hasElements()) {
                 Toast.makeText(this, R.string.error_scene_no_actions, Toast.LENGTH_SHORT).show();
@@ -471,6 +493,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             }
             // Generate list of checked items
             sceneElementsAssigning.applyToScene((Scene) executable);
+            ((Scene) executable).sceneName = newName;
         } else {
             // First apply new name, on success save_and_close will be called again.
             if (!executable.getTitle().equals(newName)) {
@@ -495,6 +518,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             return;
         }
 
+        // If loaded: save fav + groups + hidden
         if (isLoaded) {
             appData.favCollection.setFavourite(executable.getUid(), isFavourite);
 
@@ -509,6 +533,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
             if (mEditType == EDIT_TYPE_DEVICE_PORT) {
                 DevicePort devicePort = (DevicePort) executable;
+                devicePort.setHidden(chk_hide.isChecked());
                 appData.deviceCollection.save(devicePort.device);
             }
         }
@@ -549,7 +574,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             btnSaveOrTrash.setDrawable(getResources().getDrawable(android.R.drawable.ic_menu_delete));
             return;
         }
-        boolean en = executable.getTitle().length() > 0;
+        String newName = ((EditText) findViewById(R.id.scene_name)).getText().toString().trim();
+        boolean en = newName.length() > 0;
         if (mEditType != EDIT_TYPE_DEVICE_PORT) en &= sceneElementsAssigning.hasElements();
         Resources r = getResources();
         btnSaveOrTrash.setVisibility(View.VISIBLE);

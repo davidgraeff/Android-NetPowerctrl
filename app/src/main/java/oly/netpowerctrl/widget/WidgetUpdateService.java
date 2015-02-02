@@ -40,6 +40,7 @@ import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.network.onDeviceObserverResult;
+import oly.netpowerctrl.pluginservice.DeviceObserverBase;
 import oly.netpowerctrl.pluginservice.DeviceQuery;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
@@ -356,9 +357,9 @@ public class WidgetUpdateService extends Service implements onDeviceObserverResu
     }
 
     @Override
-    public void onObserverJobFinished(List<Device> timeout_devices) {
+    public void onObserverJobFinished(DeviceObserverBase deviceObserverBase) {
         DeviceCollection deviceCollection = service.getAppData().deviceCollection;
-        for (Device device : timeout_devices) {
+        for (Device device : deviceObserverBase.timedOutDevices()) {
             updated(deviceCollection, device, ObserverUpdateActions.UpdateAction, -1);
         }
     }

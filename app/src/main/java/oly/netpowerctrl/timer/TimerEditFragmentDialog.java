@@ -298,7 +298,6 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             dismiss();
         } else {
             DevicePort devicePort = (DevicePort) timer.executable;
-            PluginService.getService().wakeupPlugin(devicePort.device);
             AbstractBasePlugin plugin = (AbstractBasePlugin) devicePort.device.getPluginInterface();
 
             // Find free device alarm, if not already assigned

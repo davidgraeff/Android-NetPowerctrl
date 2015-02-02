@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:padding="@dimen/list_inner_padding"
-            android:text="Willkommen"
+            android:text="@string/introduction_welcome"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
@@ -28,126 +28,46 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:padding="@dimen/list_inner_padding"
-            android:text="Mit dieser App kannst du Anel Steckdosenleisten steuern. Du kannst direkt in den Gerätebildschirm wechseln um Geräte einzurichten oder fährst mit dieser Einführung fort, um Geräte automatisch einzurichten."
+            android:text="Mit dieser App kannst du die Anel Steckdosenleisten steuern. Alle Geräte im lokalen WLAN mit unveränderten Zugangsdaten und Netzwerkeinstellungen werden nun automatisch eingerichtet."
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <Button
-            android:id="@+id/btnDevices"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_margin="@dimen/list_inner_padding"
-            android:text="Zum Gerätebildschirm" />
-
         <TextView
+            android:id="@+id/automatic_status"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="@dimen/list_inner_padding"
-            android:text="Automatische Einrichtung"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="@dimen/list_inner_padding"
-            android:text="Damit die automatische Einrichtung alle Geräte erkennt, müssen einige Voraussetzungen erfüllt sein. Bei neu erworbenen Geräten entspricht das der Werkseinstellung."
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TableLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:shrinkColumns="1">
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView android:src="@android:drawable/btn_radio" />
-
-                <TextView
-                    android:text="Du dich mit deinen Geräten im selben WLan Netzwerk befinden."
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@android:drawable/btn_radio" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Deine Geräte sollten eine halbwegs aktuelle Firmware installiert haben."
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@android:drawable/btn_radio" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="UDP muss eingeschaltet und der Senden/Empfangen-Port auf 1077 respektive 1075 eingestellt sein."
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@android:drawable/btn_radio" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Die Zugangsdaten müssen unverändert admin/anel lauten."
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </TableRow>
-        </TableLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="@dimen/list_inner_padding"
-            android:text="Ok, los gehts, nutze den Automatische Erkennung-Knopf wenn du bereit bist."
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <Button
-            android:id="@+id/btnStart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_margin="@dimen/list_inner_padding"
-            android:text="Automatische Erkennung" />
-
-        <TextView
-            android:id="@+id/text_automatic"
-            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <LinearLayout
+            android:id="@+id/automatic_devices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:orientation="vertical" />
+
         <Button
-            android:id="@+id/btnClose"
+            android:id="@+id/btnRefresh"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center_horizontal"
             android:layout_margin="@dimen/list_inner_padding"
-            android:text="Schließen" />
+            android:text="@string/introduction_refresh_devices" />
+
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnClose"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_margin="@dimen/list_inner_padding"
+                android:text="Zur Übersicht" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

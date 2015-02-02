@@ -3,11 +3,10 @@ package oly.netpowerctrl.tests;
 import android.test.AndroidTestCase;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.data.LoadStoreJSonData;
-import oly.netpowerctrl.data.WakeUpDeviceInterface;
-import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
@@ -29,13 +28,7 @@ public class AppDataTests extends AndroidTestCase {
     }
 
     public void testMainApp() throws Exception {
-        WakeUpDeviceInterface wakeUpDeviceInterface = new WakeUpDeviceInterface() {
-            @Override
-            public boolean wakeupPlugin(Device device) {
-                return false;
-            }
-        };
-        c = new AppData(wakeUpDeviceInterface);
+        c = new AppData();
         c.setLoadStoreController(new TestObjects.LoadStoreJSonDataTest());
         assertNotNull(c);
 
@@ -49,7 +42,9 @@ public class AppDataTests extends AndroidTestCase {
 
         assertNull(PluginService.getService());
 
-        c.updateDevice(TestObjects.createDevice());
+        Method method = AppData.class.
+                getDeclaredMethod("updateDevice");
+        method.invoke(c, TestObjects.createDevice());
 
         assertEquals(c.deviceCollection.size(), 0);
         assertEquals(c.unconfiguredDeviceCollection.size(), 1);

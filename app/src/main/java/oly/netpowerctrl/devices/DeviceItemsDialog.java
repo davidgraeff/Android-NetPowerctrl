@@ -25,8 +25,8 @@ import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.executables.AdapterSource;
 import oly.netpowerctrl.executables.AdapterSourceInputOneDevicePorts;
 import oly.netpowerctrl.executables.ExecutablesCheckableAdapter;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
 /**
@@ -46,7 +46,7 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
         Bundle bundle = new Bundle();
         bundle.putString("device", device.getUniqueDeviceID());
         newFragment.setArguments(bundle);
-        MainActivity.getNavigationController().changeToDialog(context, newFragment);
+        FragmentUtils.changeToDialog(context, newFragment);
     }
 
 

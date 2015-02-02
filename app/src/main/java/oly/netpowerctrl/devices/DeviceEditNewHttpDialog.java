@@ -21,7 +21,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.ui.FragmentUtils;
 
 /**
  * This dialog allows the user to setup a new
@@ -41,7 +41,7 @@ public class DeviceEditNewHttpDialog extends DialogFragment {
     public static void show(Activity context, Device device) {
         DeviceEditNewHttpDialog dialog = (DeviceEditNewHttpDialog) Fragment.instantiate(context, DeviceEditNewHttpDialog.class.getName());
         dialog.device = device;
-        MainActivity.getNavigationController().changeToDialog(context, dialog);
+        FragmentUtils.changeToDialog(context, dialog);
     }
 
     @Override

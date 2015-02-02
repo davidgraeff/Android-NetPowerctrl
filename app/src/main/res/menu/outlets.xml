@@ -5,18 +5,12 @@
         android:id="@+id/menu_view_mode"
         android:icon="?attr/ic_action_view_as_grid"
         android:title="@string/drawer_change_view_type"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menu_edit_mode"
         android:icon="@android:drawable/ic_menu_edit"
         android:title="@string/outlets_edit_hint"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/menu_help"
-        android:icon="@android:drawable/ic_menu_help"
-        android:title="@string/menu_help"
         app:showAsAction="ifRoom" />
 
 </menu>

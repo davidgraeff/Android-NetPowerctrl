@@ -9,18 +9,32 @@
         android:id="@+id/edit_hint_big"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
         android:background="?attr/colorPrimaryDark"
-        android:clickable="true"
-        android:focusableInTouchMode="true"
-        android:gravity="center"
-        android:paddingEnd="90dp"
-        android:paddingRight="90dp"
+        android:gravity="center_horizontal"
         android:text="Bearbeitungsmodus"
         android:textAppearance="@android:style/TextAppearance.Small"
-        android:visibility="invisible" />
+        android:visibility="gone" />
 
-    <include layout="@layout/fragment_with_list" />
+    <include
+        layout="@layout/fragment_with_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/edit_hint_big" />
+
+    <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/btnWirelessSettings"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:visibility="invisible"
+        app:drawable="@android:drawable/ic_menu_preferences"
+        app:mainColor="?attr/floating_button_color" />
 
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/btnAdd"
@@ -29,24 +43,26 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_toLeftOf="@+id/btnWirelessSettings"
+        android:layout_toStartOf="@+id/btnWirelessSettings"
         android:visibility="invisible"
         app:drawable="@android:drawable/ic_menu_add"
         app:mainColor="?attr/floating_button_color" />
 
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/btnWirelessSettings"
+        android:id="@+id/btnHelp"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_toEndOf="@id/btnAdd"
-        android:layout_toRightOf="@id/btnAdd"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_toLeftOf="@+id/btnAdd"
+        android:layout_toStartOf="@+id/btnAdd"
         android:visibility="invisible"
-        app:drawable="@android:drawable/ic_menu_preferences"
+        app:drawable="@android:drawable/ic_menu_help"
         app:mainColor="?attr/floating_button_color" />
 </RelativeLayout>

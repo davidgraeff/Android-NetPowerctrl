@@ -330,7 +330,6 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     private void saveAndFinish() {
         Device device = editDevice.getDevice();
         PluginService service = PluginService.getService();
-        service.wakeupPlugin(device);
         service.getAppData().addToConfiguredDevices(device);
         // Initiate detect devices, if this added device is not flagged as reachable at the moment.
         if (device.getFirstReachableConnection() == null)

@@ -14,8 +14,8 @@ import android.view.View;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.device.Device;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.ui.FragmentUtils;
 
 /**
  * Share a device to network dialog. This will be shown if a user clicks on a configured device
@@ -33,7 +33,7 @@ public class DeviceShareDialog extends DialogFragment {
         Bundle bundle = new Bundle();
         bundle.putString("device", device.getUniqueDeviceID());
         newFragment.setArguments(bundle);
-        MainActivity.getNavigationController().changeToDialog(context, newFragment);
+        FragmentUtils.changeToDialog(context, newFragment);
     }
 
     @Override

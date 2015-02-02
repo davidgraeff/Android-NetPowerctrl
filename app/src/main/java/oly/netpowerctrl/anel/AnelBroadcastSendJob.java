@@ -20,7 +20,6 @@ import oly.netpowerctrl.utils.Logging;
  */
 public class AnelBroadcastSendJob {
     public static void run(DeviceQuery deviceQuery) {
-        Log.w("AnelBroadcastSendJob", "Query");
         Set<Integer> ports = deviceQuery.getPluginService().getAppData().getAllSendPorts();
 
         DatagramSocket datagramSocket;
@@ -56,9 +55,14 @@ public class AnelBroadcastSendJob {
                             Logging.getInstance().logDetect("UDP Broadcast on " + broadcast.toString() + " Ports: " + portsString);
                         }
 
-                        for (int port : ports)
+                        //String portString = "";
+                        for (int port : ports) {
+                            //portString += " " + String.valueOf(port);
                             UDPErrors.sendPacketHandleErrors(App.instance,
                                     datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
+                        }
+
+                        //Log.w("AnelBroadcastSendJob", "Query " + portString);
                     }
                 }
             }

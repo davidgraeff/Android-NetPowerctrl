@@ -1,12 +1,10 @@
 package oly.netpowerctrl.network;
 
-import java.util.List;
-
-import oly.netpowerctrl.device_base.device.Device;
+import oly.netpowerctrl.pluginservice.DeviceObserverBase;
 
 /**
  * on device error
  */
 public interface onDeviceObserverResult {
-    void onObserverJobFinished(List<Device> timeout_devices);
+    void onObserverJobFinished(DeviceObserverBase deviceObserverBase);
 }

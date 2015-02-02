@@ -1,7 +1,6 @@
 package oly.netpowerctrl.executables;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -60,7 +59,7 @@ public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements
             return true;
 
         if (action == ObserverUpdateActions.RemoveAction) {
-            Log.w("REMOVE source ports", device.getDeviceName());
+            //Log.w("REMOVE source ports", device.getDeviceName());
             device.lockDevicePorts();
             Iterator<DevicePort> it = device.getDevicePortIterator();
             while (it.hasNext()) {
@@ -69,7 +68,7 @@ public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements
             device.releaseDevicePorts();
 
         } else if (action == ObserverUpdateActions.AddAction || action == ObserverUpdateActions.UpdateAction) {
-            Log.w("UPDATE source ports", device.getDeviceName());
+            //Log.w("UPDATE source ports", device.getDeviceName());
             device.lockDevicePorts();
             Iterator<DevicePort> iterator = device.getDevicePortIterator();
             while (iterator.hasNext()) {
@@ -81,7 +80,7 @@ public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements
             device.releaseDevicePorts();
 
         } else if (action == ObserverUpdateActions.ClearAndNewAction || action == ObserverUpdateActions.RemoveAllAction) {
-            Log.w("CLEAR source ports", device.getDeviceName());
+            //Log.w("CLEAR source ports", device.getDeviceName());
             adapterSource.updateNow();
             return true;
         }

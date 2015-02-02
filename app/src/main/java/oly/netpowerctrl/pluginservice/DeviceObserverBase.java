@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ public abstract class DeviceObserverBase extends Thread {
     protected final List<Device> devices_to_observe = new ArrayList<>();
     protected final List<Device> timeout_devices = new ArrayList<>();
     protected final int repeatTimeout;
+    protected int devices_to_obserse_size = 0;
     protected int repeatCountDown;
     protected RepeatHandler handler;
     private onDeviceObserverResult target;
@@ -76,21 +78,30 @@ public abstract class DeviceObserverBase extends Thread {
             device.lockDevice();
             device.setStatusMessageAllConnections(context.getString(R.string.error_timeout_device, ""));
             device.releaseDevice();
-            // Call onConfiguredDeviceUpdated to update device info.
-            appData.updateExistingDeviceFromOtherThread(device, false);
             timeout_devices.add(device);
         }
-        devices_to_observe.clear();
 
-        if (target != null)
-            App.getMainThreadHandler().post(new Runnable() {
-                @Override
-                public void run() {
-                    target.onObserverJobFinished(timeout_devices);
+        App.getMainThreadHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                for (Device device : timeout_devices) {
+                    appData.updateDevice(device, false);
                 }
-            });
+                if (target != null)
+                    target.onObserverJobFinished(DeviceObserverBase.this);
+            }
+        });
 
         Looper.myLooper().quit();
+    }
+
+    public boolean isAllTimedOut() {
+        return devices_to_obserse_size == timeout_devices.size() && timeout_devices.size() > 0;
+    }
+
+
+    public List<Device> timedOutDevices() {
+        return timeout_devices;
     }
 
     /**
@@ -181,6 +192,7 @@ public abstract class DeviceObserverBase extends Thread {
                 }
             } else if (device_to_observe.equalsByUniqueID(device)) {
                 it.remove();
+                Log.w("Query", "remove " + device.getDeviceName());
                 break;
             }
         }
@@ -201,6 +213,7 @@ public abstract class DeviceObserverBase extends Thread {
     public void clearDevicesToObserve() {
         devices_to_observe.clear();
         timeout_devices.clear();
+        devices_to_obserse_size = 0;
     }
 
     protected boolean isEmpty() {
@@ -214,7 +227,7 @@ public abstract class DeviceObserverBase extends Thread {
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_disabled));
             device.releaseDevice();
             timeout_devices.add(device);
-            appData.updateExistingDevice(device, false);
+            appData.updateDevice(device, false);
             return false;
         }
 
@@ -227,10 +240,11 @@ public abstract class DeviceObserverBase extends Thread {
             device.setStatusMessageAllConnections(context.getString(R.string.error_device_incomplete));
             device.releaseDevice();
             timeout_devices.add(device);
-            appData.updateExistingDevice(device, false);
+            appData.updateDevice(device, false);
             return false;
         }
 
+        ++devices_to_obserse_size;
         devices_to_observe.add(device);
         return true;
     }
@@ -256,6 +270,7 @@ public abstract class DeviceObserverBase extends Thread {
         else if (devices_to_observe.size() > 0)
             throw new RuntimeException("DeviceObserverBase not alive but devices left!");
     }
+
 
     protected class RepeatHandler extends Handler {
         RepeatHandler(Looper looper) {
