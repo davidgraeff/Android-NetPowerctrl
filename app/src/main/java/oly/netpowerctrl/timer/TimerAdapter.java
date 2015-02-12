@@ -12,11 +12,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.Executable;
 
 /**
  * List all alarms of the timer controller
@@ -27,8 +30,15 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
     private final int resImageOn;
     private final int resImageOff;
     private final int resImageToggle;
-    private TimerCollection controller;
+    private TimerCollection controller = null;
+    private List<Timer> timers = new ArrayList<>();
+    private Executable executable;
 
+    /**
+     * You need to call {#link start} to start this adapter.
+     *
+     * @param context A context
+     */
     public TimerAdapter(Context context) {
         this.context = context;
 
@@ -43,24 +53,28 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
         resImageToggle = typedvalueattr.resourceId;
     }
 
-    public void start(TimerCollection timerCollection) {
+    public void start(TimerCollection timerCollection, Executable executable) {
         this.controller = timerCollection;
+        this.executable = executable;
         controller.registerObserver(this);
+        controller.fillItems(executable, timers);
+        if (executable instanceof DevicePort)
+            controller.refresh((DevicePort) executable);
     }
 
     public void finish() {
-        controller.unregisterObserver(this);
+        if (controller != null)
+            controller.unregisterObserver(this);
     }
 
     @Override
     public long getItemId(int position) {
-        return controller.get(position).viewID;
+        return timers.get(position).viewID;
     }
 
     @Override
     public int getItemCount() {
-        if (controller == null) return 0;
-        return controller.size();
+        return timers.size();
     }
 
     @Override
@@ -75,7 +89,7 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Timer timer = controller.get(position);
+        Timer timer = timers.get(position);
         holder.target.setText(timer.getTargetName());
 
         if (timer.isFromCache())
@@ -125,16 +139,18 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
 
     @Override
     public int getItemViewType(int position) {
-        Timer data = controller.get(position);
+        Timer data = timers.get(position);
         return data.type;
     }
 
     public Timer getAlarm(int position) {
-        return controller.get(position);
+        return timers.get(position);
     }
 
     @Override
     public boolean updated(@NonNull TimerCollection timerCollection, Timer timer, @NonNull ObserverUpdateActions action, int position) {
+        timers.clear();
+        controller.fillItems(executable, timers);
         notifyDataSetChanged();
         return true;
     }

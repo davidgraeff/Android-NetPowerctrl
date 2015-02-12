@@ -91,7 +91,8 @@ public class DeviceItemsDialog extends DialogFragment implements RecyclerItemCli
                         devicePort.setHidden(!shownExecutableUids.contains(devicePort.getUid()));
                     }
                     device.releaseDevicePorts();
-                    appData.deviceCollection.save(device);
+                    device.setChangesFlag(Device.CHANGED_DEVICE_WILL_STORE);
+                    appData.updateDevice(device, false);
                     dismiss();
                 }
             }).setTitle(R.string.device_shown_actions).setView(rootView).create();

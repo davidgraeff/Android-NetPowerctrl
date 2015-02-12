@@ -13,11 +13,9 @@ public interface EditDeviceInterface {
 
     void setResultListener(onCreateDeviceResult createDeviceResult);
 
-    boolean isTesting();
+    TestStates getTestState();
 
     boolean startTest(PluginService context);
-
-    boolean isTestOK();
 
     enum TestStates {TEST_INIT, TEST_REACHABLE, TEST_ACCESS, TEST_OK}
 }

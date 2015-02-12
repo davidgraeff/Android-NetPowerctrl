@@ -21,13 +21,14 @@
             android:checked="true"
             android:text="@string/alarm_is_switch_on" />
 
-        <Spinner
+        <TextView
             android:id="@+id/alarm_port"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/alarm_is_switch_on"
             android:layout_marginBottom="10dp"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:text="@string/alarm_type_weekdays" />
 
         <!--  start time -->
         <oly.netpowerctrl.ui.CustomTimePicker

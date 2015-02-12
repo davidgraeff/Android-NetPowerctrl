@@ -199,16 +199,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         return false;
     }
 
-//
-//    @Override
-//    public boolean onBackButton() {
-//        if (menu.isMenuShowing()) {
-//            menu.showContent();
-//            return true;
-//        }
-//        return false;
-//    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
@@ -302,6 +292,22 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if (savedInstanceState != null) {
+            setEditMode(savedInstanceState.getBoolean("editMode"));
+        } else
+            setEditMode(false);
+
+        mRecyclerView.scrollToPosition(SharedPrefs.getInstance().getLastScrollIndex());
+
+        LoadStoreIconData.iconCacheClearedObserver.register(this);
+        AppData.observersStartStopRefresh.register(this);
+        PluginService.observersServiceReady.register(this); // Will call onServiceReady and setup current group
+    }
+
     private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -319,22 +325,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     mRecyclerView.setAdapter(adapter);
                 }
             };
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        if (savedInstanceState != null) {
-            setEditMode(savedInstanceState.getBoolean("editMode"));
-        } else
-            setEditMode(false);
-
-        mRecyclerView.scrollToPosition(SharedPrefs.getInstance().getLastScrollIndex());
-
-        LoadStoreIconData.iconCacheClearedObserver.register(this);
-        AppData.observersStartStopRefresh.register(this);
-        PluginService.observersServiceReady.register(this); // Will call onServiceReady and setup current group
-    }
 
     @Override
     public void onDestroyView() {

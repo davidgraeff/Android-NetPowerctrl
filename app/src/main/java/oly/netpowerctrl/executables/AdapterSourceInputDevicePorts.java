@@ -58,31 +58,50 @@ public class AdapterSourceInputDevicePorts extends AdapterSourceInput implements
         if (device == null || adapterSource.ignoreUpdatesExecutable == device)
             return true;
 
-        if (action == ObserverUpdateActions.RemoveAction) {
-            //Log.w("REMOVE source ports", device.getDeviceName());
-            device.lockDevicePorts();
-            Iterator<DevicePort> it = device.getDevicePortIterator();
-            while (it.hasNext()) {
-                adapterSource.removeAt(adapterSource.findPositionByUUid(it.next().getUid()));
-            }
-            device.releaseDevicePorts();
-
-        } else if (action == ObserverUpdateActions.AddAction || action == ObserverUpdateActions.UpdateAction) {
-            //Log.w("UPDATE source ports", device.getDeviceName());
-            device.lockDevicePorts();
-            Iterator<DevicePort> iterator = device.getDevicePortIterator();
-            while (iterator.hasNext()) {
-                DevicePort devicePort = iterator.next();
-                if (devicePort.isHidden())
-                    continue;
-                adapterSource.addItem(devicePort, devicePort.current_value);
-            }
-            device.releaseDevicePorts();
-
-        } else if (action == ObserverUpdateActions.ClearAndNewAction || action == ObserverUpdateActions.RemoveAllAction) {
-            //Log.w("CLEAR source ports", device.getDeviceName());
-            adapterSource.updateNow();
-            return true;
+        switch (action) {
+            case RemoveAction:
+                //Log.w("REMOVE source ports", device.getDeviceName());
+                device.lockDevicePorts();
+                Iterator<DevicePort> it = device.getDevicePortIterator();
+                while (it.hasNext()) {
+                    adapterSource.removeAt(adapterSource.findPositionByUUid(it.next().getUid()));
+                }
+                device.releaseDevicePorts();
+                break;
+            case UpdateAction:
+                //Log.w("UPDATE source ports", device.getDeviceName());
+                device.lockDevicePorts();
+                Iterator<DevicePort> iterator = device.getDevicePortIterator();
+                while (iterator.hasNext()) {
+                    int pos = adapterSource.findPositionByUUid(iterator.next().getUid());
+                    if (pos != -1) adapterSource.getItem(pos).markRemoved();
+                }
+                iterator = device.getDevicePortIterator();
+                while (iterator.hasNext()) {
+                    DevicePort devicePort = iterator.next();
+                    if (devicePort.isHidden())
+                        continue;
+                    adapterSource.addItem(devicePort, devicePort.current_value);
+                }
+                device.releaseDevicePorts();
+                adapterSource.removeAllMarked();
+                break;
+            case AddAction:
+                device.lockDevicePorts();
+                iterator = device.getDevicePortIterator();
+                while (iterator.hasNext()) {
+                    DevicePort devicePort = iterator.next();
+                    if (devicePort.isHidden())
+                        continue;
+                    adapterSource.addItem(devicePort, devicePort.current_value);
+                }
+                device.releaseDevicePorts();
+                break;
+            case ClearAndNewAction:
+            case RemoveAllAction:
+                //Log.w("CLEAR source ports", device.getDeviceName());
+                adapterSource.updateNow();
+                break;
         }
 
         adapterSource.sourceChanged();

@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="floating_button_color" format="color" />
-    <attr name="section_background" format="reference" />
+    <!-- background colors -->
     <attr name="activity_background" format="color" />
     <attr name="cards_background" format="color" />
-    <attr name="drawer_item_background" format="color" />
+    <attr name="transparent_rounded_background" format="reference" />
+    <attr name="list_item_background" format="reference" />
+
+    <attr name="colored_button" format="reference" />
+
+    <!-- window modes -->
     <attr name="toolbar_style_transparent" format="reference" />
     <attr name="toolbar_style" format="reference" />
-    <attr name="preferences_title_light" format="color" />
-    <attr name="text_transparent_background" format="reference" />
-    <attr name="item_selector" format="reference" />
+
+    <!-- segment_button widget -->
     <attr name="segment_button" format="reference" />
     <attr name="segment_radio_left" format="reference" />
     <attr name="segment_radio_middle" format="reference" />
     <attr name="segment_radio_right" format="reference" />
 
-    <attr name="ic_action_view_as_grid" format="reference" />
+    <!-- general app colors -->
     <attr name="textColorPrimary" format="reference" />
     <attr name="colorPrimaryTransparent" format="reference" />
 
+    <!-- icons -->
+    <attr name="ic_action_view_as_grid" format="reference" />
     <attr name="ic_action_download_themed" format="reference" />
     <attr name="ic_action_flash_off_themed" format="reference" />
     <attr name="ic_action_flash_on_themed" format="reference" />
@@ -33,6 +38,4 @@
         <attr name="shadowDy" format="float" />
         <attr name="shadowColor" format="integer" />
     </declare-styleable>
-
-    <attr name="colored_button" format="reference" />
 </resources>

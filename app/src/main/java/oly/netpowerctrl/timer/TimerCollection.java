@@ -382,7 +382,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         }
     }
 
-    public boolean refresh(PluginService service) {
+    public boolean refresh(DevicePort devicePort) {
         if (requestActive)
             return true;
 
@@ -401,28 +401,11 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         List<DevicePort> alarm_ports = new ArrayList<>();
 
-        DeviceCollection c = service.getAppData().deviceCollection;
-        // Put all ports of all devices into the list alarm_ports.
-        // If a port is referenced by the alarm_uuids hashSet, it will be put in front of the list
-        // to refresh that port first.
-        for (Device device : c.getItems()) {
-            // Request all alarm_uuids may be called before all plugins responded
-            if (!device.isEnabled())
-                continue;
 
-            // Request alarm_uuids for every port
-            device.lockDevicePorts();
-            Iterator<DevicePort> it = device.getDevicePortIterator();
-            while (it.hasNext()) {
-                final DevicePort port = it.next();
-
-                if (alarm_uuids.contains(port.getUid()))
-                    alarm_ports.add(0, port); // add in front of all alarm_uuids
-                else
-                    alarm_ports.add(port);
-            }
-            device.releaseDevicePorts();
-        }
+        if (alarm_uuids.contains(devicePort.getUid()))
+            alarm_ports.add(0, devicePort); // add in front of all alarm_uuids
+        else
+            alarm_ports.add(devicePort);
 
         receivedAlarmCount = 0;
         allAlarmCount = 0;
@@ -467,5 +450,18 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             throw new ClassNotFoundException(toString());
         timer.executable = executable;
         super.addWithoutSave(timer);
+    }
+
+    public void fillItems(Executable executable, List<Timer> out_list) {
+        for (Timer timer : items)
+            if (timer.executable_uid.equals(executable.getUid()))
+                out_list.add(timer);
+    }
+
+    public Timer findTimer(String timerUid) {
+        for (Timer timer : items)
+            if (timerUid.equals(timer.uuid))
+                return timer;
+        return null;
     }
 }

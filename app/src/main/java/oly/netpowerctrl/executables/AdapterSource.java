@@ -217,7 +217,7 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
         return removedItems;
     }
 
-    private void removeAllMarked() {
+    void removeAllMarked() {
         for (int index = mItems.size() - 1; index >= 0; ) {
             if (mItems.get(index).isMarkedRemoved()) {
                 index -= removeAt(index);

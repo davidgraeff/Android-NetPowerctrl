@@ -2,73 +2,72 @@
 <resources>
 
     <style name="Theme.CustomLightTheme" parent="Theme.AppCompat.Light">
-        <item name="drawer_item_background">@color/drawer</item>
-        <item name="section_background">@drawable/actionbar_background_textured</item>
+        <!-- background colors -->
         <item name="activity_background">@android:color/background_light</item>
         <item name="cards_background">@android:color/background_light</item>
-        <item name="floating_button_color">@color/floating_button_colorLight</item>
-        <item name="preferences_title_light">#66000000</item>
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="text_transparent_background">@drawable/transparent_text_light</item>
-        <item name="item_selector">@drawable/item_selector_light</item>
-        <item name="segment_button">@drawable/segment_button_light</item>
-        <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
-        <item name="toolbar_style">@style/ToolBarStyle</item>
-        <item name="segment_radio_left">@drawable/segment_radio_left_light</item>
-        <item name="segment_radio_middle">@drawable/segment_radio_middle_light</item>
-        <item name="segment_radio_right">@drawable/segment_radio_right_light</item>
-        <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
-        <item name="colored_button">@style/Colored_Button.Customlighttheme</item>
+        <item name="transparent_rounded_background">@drawable/transparent_text_light</item>
+        <item name="list_item_background">@drawable/list_item_light</item>
 
+        <!-- icons -->
+        <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
         <item name="ic_action_download_themed">@drawable/ic_action_download</item>
         <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off</item>
         <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on</item>
         <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle</item>
 
-        <item name="textColorPrimary">@android:color/white</item>
+        <!-- segment_button widget -->
+        <item name="segment_button">@drawable/segment_button_light</item>
+        <item name="segment_radio_left">@drawable/segment_radio_left_light</item>
+        <item name="segment_radio_middle">@drawable/segment_radio_middle_light</item>
+        <item name="segment_radio_right">@drawable/segment_radio_right_light</item>
+        <item name="colored_button">@style/Colored_Button.light</item>
 
+        <!-- general app colors -->
+        <item name="textColorPrimary">@android:color/white</item>
         <item name="colorPrimaryTransparent">@color/colorPrimaryTransparentLight</item>
         <item name="colorPrimary">@color/colorPrimaryLight</item>
         <item name="colorPrimaryDark">@color/colorSecondaryLight</item>
+        <item name="colorAccent">@color/colorSecondaryLight</item>
 
-        <!--<item name="background">@android:color/background_light</item>
-        <item name="android:background">@android:color/background_light</item>
-        <item name="android:windowBackground">@android:color/background_light</item>
-        <item name="android:colorBackground">@android:color/background_light</item>-->
-
+        <!-- window modes -->
+        <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
+        <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:alertDialogStyle">@style/CustomDialogTheme</item>
     </style>
 
     <style name="Theme.CustomDarkTheme" parent="Theme.AppCompat">
-        <item name="drawer_item_background">#323232</item>
-        <item name="section_background">@drawable/actionbar_background_textured_dark</item>
+        <!-- background colors -->
         <item name="activity_background">@color/colorBackgroundDark</item>
         <item name="cards_background">@color/colorBackgroundCardsDark</item>
-        <item name="floating_button_color">@color/floating_button_colorDark</item>
-        <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
-        <item name="toolbar_style">@style/ToolBarStyle</item>
-        <item name="preferences_title_light">@android:color/secondary_text_dark</item>
-        <item name="text_transparent_background">@drawable/transparent_text_dark</item>
-        <item name="item_selector">@drawable/item_selector_dark</item>
-        <item name="segment_button">@drawable/segment_button_dark</item>
-        <item name="segment_radio_left">@drawable/segment_radio_left_dark</item>
-        <item name="segment_radio_middle">@drawable/segment_radio_middle_dark</item>
-        <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
-        <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_dark</item>
-        <item name="colored_button">@style/Colored_Button.Customlighttheme</item>
+        <item name="transparent_rounded_background">@drawable/transparent_text_dark</item>
+        <item name="list_item_background">@drawable/list_item_dark</item>
 
+        <!-- icons -->
+        <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_dark</item>
         <item name="ic_action_download_themed">@drawable/ic_action_download_light</item>
         <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off_light</item>
         <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on_light</item>
         <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle_light</item>
 
+        <!-- segment_button widget -->
+        <item name="segment_button">@drawable/segment_button_dark</item>
+        <item name="segment_radio_left">@drawable/segment_radio_left_dark</item>
+        <item name="segment_radio_middle">@drawable/segment_radio_middle_dark</item>
+        <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
+        <item name="colored_button">@style/Colored_Button.dark</item>
+
+        <!-- general app colors -->
         <item name="textColorPrimary">@android:color/white</item>
         <item name="colorPrimaryTransparent">@color/colorPrimaryTransparentDark</item>
         <item name="colorPrimary">@color/colorPrimaryDark</item>
         <item name="colorPrimaryDark">@color/colorSecondaryDark</item>
+        <item name="colorAccent">@color/colorSecondaryDark</item>
 
+        <!-- window modes -->
+        <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
+        <item name="toolbar_style">@style/ToolBarStyle</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:alertDialogStyle">@style/CustomDialogTheme</item>
@@ -111,8 +110,18 @@
     <!--<item name="android:progressBarStyle">@style/ProgressBar.Customlighttheme</item>-->
     <!--</style>-->
 
-    <style name="Colored_Button.Customlighttheme" parent="android:Widget.Holo.Light.Button">
-        <item name="android:background">@drawable/colored_button</item>
+    <style name="Colored_Button.light" parent="android:Widget.Holo.Light.Button">
+        <item name="android:background">@drawable/colored_button_light</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textAppearance">?android:textAppearanceLarge</item>
+        <item name="android:shadowRadius">1</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">1</item>
+        <item name="android:shadowColor">@android:color/black</item>
+    </style>
+
+    <style name="Colored_Button.dark" parent="android:Widget.Holo.Light.Button">
+        <item name="android:background">@drawable/colored_button_dark</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textAppearance">?android:textAppearanceLarge</item>
         <item name="android:shadowRadius">1</item>

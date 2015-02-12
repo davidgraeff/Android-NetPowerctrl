@@ -18,14 +18,17 @@ package oly.netpowerctrl.main;
 
 import android.annotation.TargetApi;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,6 +37,8 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
+
+import java.lang.reflect.Method;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.LoadStoreIconData;
@@ -45,8 +50,7 @@ import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
-public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClosedListener, SlidingMenu.OnOpenedListener {
-    private static final long TIME_INTERVAL_MS = 2000;
+public class MainActivity extends ActionBarActivity implements SlidingMenu.OnCloseListener, SlidingMenu.OnOpenListener {
     public static MainActivity instance = null;
     onServiceReady start_after_data_loaded = new onServiceReady() {
         @Override
@@ -72,7 +76,8 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
 
         }
     };
-    private long mBackPressed;
+    private boolean firstFragment = true;
+    private SlidingMenu menu;
 
     public MainActivity() {
         instance = this;
@@ -97,6 +102,16 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
             this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
+        // on android5+ color of system bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            int c = SharedPrefs.getInstance().isDarkTheme() ?
+                    getResources().getColor(R.color.colorSecondaryDark) :
+                    getResources().getColor(R.color.colorSecondaryLight);
+            getWindow().setStatusBarColor(c);
+            getWindow().setNavigationBarColor(c);
+        }
+
         super.onCreate(savedInstanceState);
 
         // Set theme, call super onCreate and set content view
@@ -113,7 +128,11 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
         fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
-                if (getFragmentManager().getBackStackEntryCount() == 0) {
+                if (firstFragment) {
+                    firstFragment = false;
+                    return;
+                }
+                if (getFragmentManager().getBackStackEntryCount() <= 1) {
                     Toast.makeText(MainActivity.this, getString(R.string.press_back_to_exit), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -147,16 +166,31 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
 
         boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
 
-        SlidingMenu menu = (SlidingMenu) findViewById(R.id.slidingmenulayout);
+        menu = (SlidingMenu) findViewById(R.id.slidingmenulayout);
         menu.setMenu(R.layout.devices_fragment);
-        menu.setBehindOffset(150);
         menu.setShadowDrawable(R.drawable.shadow);
         if (!has_two_panes) {
+            menu.setBehindOffset(150);
             menu.setSecondaryMenu(R.layout.group_list_fragment);
             menu.setSecondaryShadowDrawable(R.drawable.shadowright);
             menu.setContent(R.layout.content_frame);
             menu.setMode(SlidingMenu.LEFT_RIGHT);
         } else {
+            int width;
+            Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
+                    .getDefaultDisplay();
+            try {
+                Class<?> cls = Display.class;
+                Class<?>[] parameterTypes = {Point.class};
+                Point parameter = new Point();
+                Method method = cls.getMethod("getSize", parameterTypes);
+                method.invoke(display, parameter);
+                width = parameter.x;
+            } catch (Exception e) {
+                width = display.getWidth();
+            }
+
+            menu.setBehindOffset(width / 2);
             menu.setSecondaryMenu(null);
             menu.setContent(R.layout.content_frame_with_group_list);
             menu.setMode(SlidingMenu.LEFT);
@@ -174,8 +208,9 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
                 //canvas.translate(xOffset, 0);
             }
         });
-        menu.setOnOpenedListener(this);
-        menu.setOnClosedListener(this);
+        menu.setOnOpenListener(this);
+        menu.setSecondaryOnOpenListner(this);
+        menu.setOnCloseListener(this);
 
         if (SharedPrefs.getInstance().isBackground()) {
             View v = findViewById(R.id.content_frame);
@@ -223,10 +258,16 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
         super.onConfigurationChanged(newConfig);
     }
 
+
     @Override
     public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() == 0) {
-            finish();
+        if (menu.isMenuShowing()) {
+            menu.showContent();
+            return;
+        }
+
+        if (getFragmentManager().getBackStackEntryCount() > 1) {
+            getFragmentManager().popBackStack(null, 0);
             return;
         }
 
@@ -234,12 +275,12 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
     }
 
     @Override
-    public void onClosed() {
+    public void onOpen() {
         invalidateOptionsMenu();
     }
 
     @Override
-    public void onOpened() {
+    public void onClose() {
         invalidateOptionsMenu();
     }
 }

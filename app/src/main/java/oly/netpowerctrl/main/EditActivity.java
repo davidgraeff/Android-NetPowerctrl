@@ -1,6 +1,7 @@
 package oly.netpowerctrl.main;
 
 import android.annotation.SuppressLint;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -20,12 +21,15 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,10 +50,17 @@ import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneElementsAssigning;
+import oly.netpowerctrl.timer.Timer;
+import oly.netpowerctrl.timer.TimerAdapter;
+import oly.netpowerctrl.timer.TimerEditFragmentDialog;
+import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
+import oly.netpowerctrl.utils.DividerItemDecoration;
 import oly.netpowerctrl.utils.MutableBoolean;
 
 /**
@@ -76,6 +87,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     CheckBox enable_feedback;
     CheckBox chk_hide;
     boolean[] checked;
+    private View executable_timers;
     private boolean isChanged = false;
     private FloatingActionButton btnSaveOrTrash;
     // If we are editing a scene, sceneElementsAssigning will be set up.
@@ -87,14 +99,19 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     private Bitmap icon_nostate;
     private Bitmap icon_off;
     private Bitmap icon_on;
+    // Options
     private ImageView btnFav;
     private Button btnAddHomescreen;
     private Button btnNFC;
+    private boolean isFavourite;
+    // Groups
     private FlowLayout groups_layout;
+    // Timers
+    private TimerAdapter timerAdapter;
+    // Other
     private Toast toast;
     private boolean iconMenuVisible = false;
     private boolean addMenuVisible = false;
-    private boolean isFavourite;
     private int load_adapter_position = -1;
     private FloatingActionButton btnAdd;
     private ProgressDialog progressDialog;
@@ -159,6 +176,58 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         enable_feedback.setOnCheckedChangeListener(updateSaveButtonOnChecked);
         chk_hide = (CheckBox) findViewById(R.id.chk_hide);
         chk_hide.setOnCheckedChangeListener(updateSaveButtonOnChecked);
+
+        executable_timers = findViewById(R.id.executable_timers);
+        timerAdapter = new TimerAdapter(this);
+        RecyclerViewWithAdapter<TimerAdapter> recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(this, null, executable_timers, timerAdapter, R.string.alarms_no_alarms);
+        recyclerViewWithAdapter.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public boolean onItemClick(View view, int position, boolean isLongClick) {
+                TimerEditFragmentDialog fragment = (TimerEditFragmentDialog)
+                        Fragment.instantiate(EditActivity.this, TimerEditFragmentDialog.class.getName());
+                fragment.setArguments(TimerEditFragmentDialog.createArgumentsLoadTimer(timerAdapter.getAlarm(position)));
+                FragmentUtils.changeToDialog(EditActivity.this, fragment);
+                return false;
+            }
+        }, null));
+        recyclerViewWithAdapter.getRecyclerView().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST) {
+            @Override
+            public boolean dividerForPosition(int position) {
+                return true;
+            }
+        });
+
+        Button btnTimerAdd = (Button) findViewById(R.id.btnAddTimer);
+        btnTimerAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu popup = new PopupMenu(EditActivity.this, view);
+                MenuInflater inflater = popup.getMenuInflater();
+                inflater.inflate(R.menu.timer_add, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        TimerEditFragmentDialog fragmentDialog = (TimerEditFragmentDialog) Fragment.instantiate(EditActivity.this, TimerEditFragmentDialog.class.getName());
+                        switch (menuItem.getItemId()) {
+                            case R.id.menu_timer_android_once:
+                                fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentNewTimer(Timer.TYPE_ONCE, true, executable));
+                                FragmentUtils.changeToDialog(EditActivity.this, fragmentDialog);
+                                return true;
+                            case R.id.menu_timer_android_weekdays:
+                                fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentNewTimer(Timer.TYPE_RANGE_ON_WEEKDAYS, true, executable));
+                                FragmentUtils.changeToDialog(EditActivity.this, fragmentDialog);
+                                return true;
+                            case R.id.menu_timer_device_weekdays:
+                                fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentNewTimer(Timer.TYPE_RANGE_ON_WEEKDAYS, false, executable));
+                                FragmentUtils.changeToDialog(EditActivity.this, fragmentDialog);
+                                return true;
+                        }
+                        throw new RuntimeException("Menu switch missing entry!");
+                    }
+                });
+                popup.show();
+            }
+        });
 
         groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
         Button btnGroupAdd = (Button) findViewById(R.id.btnAddGroup);
@@ -279,6 +348,12 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        timerAdapter.finish();
+        super.onDestroy();
     }
 
     @Override
@@ -407,6 +482,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             btnAdd.setVisibility(View.GONE);
+            executable_timers.setVisibility(View.VISIBLE);
+            timerAdapter.start(appData.timerCollection, executable);
         }
 
         isLoaded = true;

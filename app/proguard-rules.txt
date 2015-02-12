@@ -29,9 +29,11 @@
 -assumenosideeffects class oly.netpowerctrl.plugin.** { *; }
 
 -assumenosideeffects class oly.netpowerctrl.device_base.Device {
-   private void checkLock();
-   private void checkDevicePortLock();
+   private void test_checkLock();
+   private void test_checkDevicePortLock();
 }
+
+-assumenosideeffects class oly.netpowerctrl.consistency_tests.** { *; }
 
 -keepnames class org.acra.sender.HttpSender$** {
     *;

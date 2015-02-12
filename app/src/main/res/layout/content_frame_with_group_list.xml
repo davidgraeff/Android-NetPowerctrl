@@ -14,7 +14,6 @@
         layout="@layout/group_list_fragment"
         android:layout_width="240dp"
         android:layout_height="match_parent"
-        android:background="?attr/drawer_item_background"
         android:paddingLeft="5dp"
         android:paddingRight="5dp" />
 

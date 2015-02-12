@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -48,6 +50,7 @@ public class DevicesFragment extends Fragment
     private SwipeRefreshLayout mPullToRefreshLayout;
     private RecyclerView mRecyclerView;
     private WeakReference<Device> deviceWeakReference = null;
+    private Handler testConnectionHandler = new TestConnectionHandler();
 
     public DevicesFragment() {
     }
@@ -66,6 +69,7 @@ public class DevicesFragment extends Fragment
             adapter.onResume();
     }
 
+    ;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -132,7 +136,7 @@ public class DevicesFragment extends Fragment
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
-                final DevicesAdapter.DeviceAdapterItem item = adapter.getItem(position);
+                DevicesAdapter.DeviceAdapterItem item = adapter.getItem(position);
                 if (!item.enabled)
                     return true;
 
@@ -145,22 +149,14 @@ public class DevicesFragment extends Fragment
                     return true;
 
                 if (!item.isDeviceHeader) {
-                    final AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) device.getPluginInterface();
-                    if (abstractBasePlugin != null) {
-                        item.reachable = ExecutableReachability.MaybeReachable;
-                        item.subtitle = getString(R.string.device_connection_testing);
-                        adapter.notifyItemChanged(position);
-                        item.enabled = false;
-                        device.setChangesFlag(Device.CHANGE_DEVICE_REACHABILITY);
-                        final Device finalDevice = device;
-                        App.getMainThreadHandler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                item.enabled = true;
-                                abstractBasePlugin.requestData(finalDevice, item.connectionID);
-                            }
-                        }, 1000);
-                    }
+                    item.deviceConnection.setStatusMessage(getString(R.string.device_connection_testing),
+                            ExecutableReachability.MaybeReachable);
+                    item.subtitle = getString(R.string.device_connection_testing);
+                    adapter.notifyItemChanged(position);
+                    item.enabled = false;
+                    device.setChangesFlag(Device.CHANGED_DEVICE_CONNECTIONS);
+                    testConnectionHandler.sendMessageDelayed(testConnectionHandler.obtainMessage(0, item), 500);
+                    testConnectionHandler.sendMessageDelayed(testConnectionHandler.obtainMessage(1, item), 1500);
                     return true;
                 }
 
@@ -320,5 +316,30 @@ public class DevicesFragment extends Fragment
         PluginService service = PluginService.getService();
         service.getAppData().showNotificationForNextRefresh(true);
         service.getAppData().refreshDeviceData(service, true);
+    }
+
+    private static class TestConnectionHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            DevicesAdapter.DeviceAdapterItem item = (DevicesAdapter.DeviceAdapterItem) msg.obj;
+            switch (msg.what) {
+                case 0: {
+                    item.enabled = true;
+                    final AbstractBasePlugin abstractBasePlugin = (AbstractBasePlugin) item.device.getPluginInterface();
+                    if (abstractBasePlugin != null) {
+                        abstractBasePlugin.requestData(item.device, item.connectionID);
+                    }
+                    break;
+                }
+                case 1: {
+                    if (item.deviceConnection.reachableState() == ExecutableReachability.MaybeReachable) {
+                        item.deviceConnection.setStatusMessage(
+                                App.getAppString(R.string.device_not_reachable),
+                                ExecutableReachability.NotReachable);
+                    }
+                    break;
+                }
+            }
+        }
     }
 }

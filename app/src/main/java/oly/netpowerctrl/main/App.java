@@ -22,7 +22,7 @@ import oly.netpowerctrl.data.LoadStoreIconData;
  * We keep track of Anel device states via the listener service.
  * Crash management
  */
-@ReportsCrashes(formKey = "")
+@ReportsCrashes()
 public class App extends Application {
     static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     public static App instance;

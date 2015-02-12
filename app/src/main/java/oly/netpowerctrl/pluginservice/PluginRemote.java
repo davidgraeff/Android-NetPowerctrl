@@ -12,6 +12,7 @@ import android.util.Log;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.consistency_tests.device_tests;
 import oly.netpowerctrl.data.AppData;
 import oly.netpowerctrl.device_base.data.JSONHelper;
 import oly.netpowerctrl.device_base.device.Device;
@@ -91,14 +92,14 @@ public class PluginRemote extends AbstractBasePlugin {
                 Log.e(TAG, "stateChanged, no deviceConnection found for " + connection_json);
                 return;
             }
-            device.test_connection_reachable_consistency();
+            device_tests.test_connection_reachable_consistency(device);
 
             try {
                 device.updateConnection(connection_id, DeviceConnectionFabric.fromJSON(JSONHelper.getReader(connection_json), device));
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            device.test_connection_reachable_consistency();
+            device_tests.test_connection_reachable_consistency(device);
             Log.w(TAG, "deviceConnectionChanged, State: " + device.getConnectionByID(0).reachableState().name());
             device.releaseDevice();
 

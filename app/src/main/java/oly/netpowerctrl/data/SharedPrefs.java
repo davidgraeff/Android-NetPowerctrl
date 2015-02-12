@@ -340,13 +340,6 @@ public class SharedPrefs {
         return prefs.getBoolean(PREF_hide_not_reachable, value);
     }
 
-    public boolean notifyDeviceNotReachable() {
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean value = context.getResources().getBoolean(R.bool.notify_on_non_reachable);
-        return prefs.getBoolean("notify_on_non_reachable", value);
-    }
-
     public boolean isBackground() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean value = context.getResources().getBoolean(R.bool.show_background);

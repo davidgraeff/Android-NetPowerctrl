@@ -73,6 +73,10 @@ public abstract class DeviceObserverBase extends Thread {
         }
     }
 
+    /**
+     * Called in the main thread to finish up this object. At this point we should already
+     * be removed or never added to globalQueue.
+     */
     private void finishThread() {
         for (Device device : devices_to_observe) {
             device.lockDevice();
@@ -192,7 +196,7 @@ public abstract class DeviceObserverBase extends Thread {
                 }
             } else if (device_to_observe.equalsByUniqueID(device)) {
                 it.remove();
-                Log.w("Query", "remove " + device.getDeviceName());
+                Log.w("Query", "found " + device.getDeviceName() + ", left: " + String.valueOf(devices_to_observe.size()));
                 break;
             }
         }
@@ -282,9 +286,11 @@ public abstract class DeviceObserverBase extends Thread {
             switch (msg.what) {
                 case MSG_REPEAT: {
                     repeat();
+                    break;
                 }
                 case MSG_EXIT: {
                     finishThread();
+                    break;
                 }
             }
         }

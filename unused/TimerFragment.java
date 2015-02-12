@@ -68,7 +68,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
         boolean hasDevices = appData.deviceCollection.hasDevices();
         btnChangeToDevices.setVisibility(hasDevices ? View.GONE : View.VISIBLE);
 
-        timerAdapter.start(appData.timerCollection);
+        timerAdapter.start(appData.timerCollection, executable);
 
         refresh(service);
         return false;

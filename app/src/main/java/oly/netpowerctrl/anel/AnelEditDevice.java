@@ -1,12 +1,10 @@
 package oly.netpowerctrl.anel;
 
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.devices.EditDeviceInterface;
 import oly.netpowerctrl.devices.onCreateDeviceResult;
 import oly.netpowerctrl.network.onDeviceObserverResult;
@@ -19,19 +17,9 @@ import oly.netpowerctrl.pluginservice.PluginService;
  * The EditDeviceInterface is also implemented so this can be returned by the anel plugin for editing devices.
  */
 public class AnelEditDevice implements onDeviceObserverResult, EditDeviceInterface {
-    TestStates test_state = TestStates.TEST_INIT;
+    private TestStates test_state = TestStates.TEST_INIT;
     private Device device;
     private onCreateDeviceResult listener = null;
-    private Handler timeoutHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            if (test_state == TestStates.TEST_ACCESS || test_state == TestStates.TEST_INIT) {
-                test_state = TestStates.TEST_INIT;
-                if (listener != null)
-                    listener.testDeviceNotReachable();
-            }
-        }
-    };
 
     public AnelEditDevice(String defaultDeviceName, @Nullable Device edit_device) {
         if (edit_device == null) {
@@ -45,15 +33,18 @@ public class AnelEditDevice implements onDeviceObserverResult, EditDeviceInterfa
         }
     }
 
+    // test_state != TestStates.TEST_INIT && test_state != TestStates.TEST_OK
+    public TestStates getTestState() {
+        return test_state;
+    }
+
     @Override
     public void onObserverJobFinished(DeviceObserverBase deviceObserverBase) {
-        if (device.getUniqueDeviceID() == null || !device.equalsByUniqueID(device))
-            return;
-
-        if (device.reachableState() == ExecutableReachability.NotReachable) {
-            test_state = TestStates.TEST_INIT;
+        Log.w("AnelEditDevice", "finished test " + device.reachableState().name() + " " + test_state.name());
+        if (deviceObserverBase.isAllTimedOut()) {
             if (listener != null)
-                listener.testFinished(false);
+                listener.testFinished(test_state);
+            test_state = TestStates.TEST_INIT;
             return;
         }
 
@@ -62,20 +53,18 @@ public class AnelEditDevice implements onDeviceObserverResult, EditDeviceInterfa
             test_state = TestStates.TEST_ACCESS;
             // Just send the current value of the first device port as target value.
             // Should change nothing but we will get a feedback if the credentials are working.
-            new DeviceObserverBase(PluginService.getService(), this, 500, 1) {
+            new DeviceQuery(PluginService.getService(), this, device) {
                 @Override
                 protected void doAction(@Nullable Device device, int remainingRepeats) {
+                    assert device != null;
                     DevicePort oi = device.getFirst();
                     if (oi != null)
                         ((PluginService) context).getAppData().execute(oi, oi.current_value, null);
                 }
             };
-
-            // Timeout is 1,1s
-            timeoutHandler.sendEmptyMessageDelayed(0, 1100);
         } else if (test_state == TestStates.TEST_ACCESS) {
             if (listener != null)
-                listener.testFinished(true);
+                listener.testFinished(TestStates.TEST_OK);
             test_state = TestStates.TEST_OK;
         }
     }
@@ -92,14 +81,6 @@ public class AnelEditDevice implements onDeviceObserverResult, EditDeviceInterfa
         else
             return false;
         return true;
-    }
-
-    public boolean isTesting() {
-        return test_state != TestStates.TEST_INIT && test_state != TestStates.TEST_OK;
-    }
-
-    public boolean isTestOK() {
-        return test_state == TestStates.TEST_OK;
     }
 
     @Override

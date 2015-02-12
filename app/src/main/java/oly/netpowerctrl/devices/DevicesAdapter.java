@@ -70,11 +70,14 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         TextView title = viewHolder.title;
         title.setText(item.title);
 
-        if (item.reachable == ExecutableReachability.Reachable) {
+        viewHolder.updateData(item.device);
+
+        ExecutableReachability state = item.reachableState();
+        if (state == ExecutableReachability.Reachable) {
             title.setPaintFlags(title.getPaintFlags() & ~(Paint.STRIKE_THRU_TEXT_FLAG));
             viewHolder.image.setImageResource(android.R.drawable.presence_online);
         } else {
-            if (item.reachable == ExecutableReachability.NotReachable)
+            if (state == ExecutableReachability.NotReachable)
                 viewHolder.image.setImageResource(android.R.drawable.presence_offline);
             else
                 viewHolder.image.setImageResource(android.R.drawable.presence_away);
@@ -208,7 +211,8 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         public String subtitle;
         public boolean isDeviceHeader;
         public int connectionID;
-        public ExecutableReachability reachable;
+        public Device device;
+        public DeviceConnection deviceConnection;
         public boolean enabled = true;
         public boolean isConfigured;
         private String uid;
@@ -226,7 +230,8 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
             this.subtitle = device.getFeatureString();
             this.isDeviceHeader = true;
-            this.reachable = device.reachableState();
+            this.device = device;
+            this.deviceConnection = null;
             this.isConfigured = device.isConfigured();
             this.uid = device.getUniqueDeviceID();
         }
@@ -246,11 +251,12 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
             if (deviceConnection.getDestinationPort() != -1)
                 this.title += ":" + String.valueOf(deviceConnection.getDestinationPort());
 
-            this.reachable = deviceConnection.reachableState();
+            this.deviceConnection = deviceConnection;
+            this.device = deviceConnection.device;
 
             this.subtitle = deviceConnection.getNotReachableReason();
             if (this.subtitle == null) {
-                if (this.reachable == ExecutableReachability.MaybeReachable) {
+                if (this.deviceConnection.reachableState() == ExecutableReachability.MaybeReachable) {
                     this.subtitle = App.getAppString(R.string.device_connection_notTested);
                 } else
                     this.subtitle = App.getAppString(R.string.device_reachable);
@@ -269,18 +275,29 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
         public boolean matches(Device device) {
             return isConfigured == device.isConfigured() && uid.equals(device.getUniqueDeviceID());
         }
+
+        public ExecutableReachability reachableState() {
+            return deviceConnection != null ? deviceConnection.reachableState() : device.reachableState();
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView title;
         public TextView subtitle;
         public ImageView image;
+        public Device device;
+        public ExecutableReachability lastKnownReachableState;
 
         public ViewHolder(View itemView) {
             super(itemView);
             title = (TextView) itemView.findViewById(R.id.title);
             subtitle = (TextView) itemView.findViewById(R.id.subtitle);
             image = (ImageView) itemView.findViewById(R.id.device_connection_reachable);
+        }
+
+        public void updateData(Device device) {
+            this.device = device;
+            lastKnownReachableState = device.reachableState();
         }
     }
 }

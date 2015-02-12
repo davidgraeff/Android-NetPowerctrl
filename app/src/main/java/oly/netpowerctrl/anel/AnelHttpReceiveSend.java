@@ -15,6 +15,7 @@ import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
 import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.device_base.executables.ExecutableType;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.pluginservice.PluginService;
@@ -33,11 +34,11 @@ public class AnelHttpReceiveSend {
             //Log.w("AnelPluginHttp", "http receive" + response_message);
             final Device device = ci.getDevice();
             if (!callback_success) {
-                ci.device.setStatusMessage(ci, response_message, true);
+                ci.device.setStatusMessage(ci, response_message, ExecutableReachability.NotReachable);
             } else {
                 String[] data = response_message.split(";");
                 if (data.length < 10 || !data[0].startsWith("NET-")) {
-                    ci.device.setStatusMessage(ci, PluginService.getService().getString(R.string.error_packet_received), true);
+                    ci.device.setStatusMessage(ci, PluginService.getService().getString(R.string.error_packet_received), ExecutableReachability.NotReachable);
                 } else {
                     { // Device Lock
                         device.lockDevice();
@@ -81,7 +82,7 @@ public class AnelHttpReceiveSend {
                     final Device device = ci.getDevice();
                     device.connectionUsed(ci);
                     if (!callback_success) {
-                        ci.device.setStatusMessage(ci, response_message, true);
+                        ci.device.setStatusMessage(ci, response_message, ExecutableReachability.NotReachable);
                         PluginService.getService().getAppData().updateDeviceFromOtherThread(device);
                     } else
                         HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ci, "strg.cfg", "", ci, false, receiveCtrlHtml));

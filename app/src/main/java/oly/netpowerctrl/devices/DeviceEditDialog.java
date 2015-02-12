@@ -274,7 +274,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
 
     private void testDevice() {
         storeValues();
-        if (editDevice.isTesting())
+        if (editDevice.getTestState() != EditDeviceInterface.TestStates.TEST_INIT)
             return;
 
         Device device = editDevice.getDevice();
@@ -309,7 +309,7 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
             return;
         }
 
-        if (!editDevice.isTestOK()) {
+        if (editDevice.getTestState() != EditDeviceInterface.TestStates.TEST_OK) {
             //noinspection ConstantConditions
             new AlertDialog.Builder(getActivity())
                     .setTitle(R.string.device_test)
@@ -338,27 +338,24 @@ public class DeviceEditDialog extends DialogFragment implements onCreateDeviceRe
     }
 
     @Override
-    public void testFinished(boolean success) {
-        if (!success) {
+    public void testFinished(EditDeviceInterface.TestStates state) {
+        if (state == EditDeviceInterface.TestStates.TEST_OK) {
+            //noinspection ConstantConditions
+            Toast.makeText(getActivity(), getString(R.string.device_test_ok), Toast.LENGTH_SHORT).show();
+
+            updateConnections();
+        } else if (state == EditDeviceInterface.TestStates.TEST_ACCESS) {
+            //noinspection ConstantConditions
+            Toast.makeText(getActivity(),
+                    getString(R.string.error_device_no_access) + ": " + editDevice.getDevice().getUserName() + " " + editDevice.getDevice().getPassword(),
+                    Toast.LENGTH_SHORT).show();
+        } else if (state == EditDeviceInterface.TestStates.TEST_REACHABLE) {
             //noinspection ConstantConditions
             Toast.makeText(getActivity(),
                     getString(R.string.device_test_not_reachable) + ": " + editDevice.getDevice().getDeviceName() + ":"
                             + Integer.valueOf(0).toString(),
                     Toast.LENGTH_SHORT
             ).show();
-        } else {
-            //noinspection ConstantConditions
-            Toast.makeText(getActivity(), getString(R.string.device_test_ok), Toast.LENGTH_SHORT).show();
-
-            updateConnections();
         }
-    }
-
-    @Override
-    public void testDeviceNotReachable() {
-        //noinspection ConstantConditions
-        Toast.makeText(getActivity(),
-                getString(R.string.error_device_no_access) + ": " + editDevice.getDevice().getUserName() + " " + editDevice.getDevice().getPassword(),
-                Toast.LENGTH_SHORT).show();
     }
 }

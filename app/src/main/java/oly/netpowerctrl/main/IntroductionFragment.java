@@ -145,8 +145,8 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
     }
 
     @Override
-    public void testFinished(boolean success) {
-        if (success) {
+    public void testFinished(EditDeviceInterface.TestStates state) {
+        if (state == EditDeviceInterface.TestStates.TEST_OK) {
             ((TextView) item.findViewById(R.id.subtitle)).append(getString(android.R.string.ok));
             final Device deviceToAdd = editDevice.getDevice();
             App.getMainThreadHandler().post(new Runnable() {
@@ -164,17 +164,12 @@ public class IntroductionFragment extends Fragment implements onCreateDeviceResu
                     appData.addToConfiguredDevices(deviceToAdd);
                 }
             });
-        } else {
+        } else if (state == EditDeviceInterface.TestStates.TEST_ACCESS) {
+            ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.error_device_no_access));
+        } else if (state == EditDeviceInterface.TestStates.TEST_REACHABLE) {
             ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.error_device_not_found));
         }
         editDevice = null;
-        takeNextHandler.sendEmptyMessage(0);
-    }
-
-    @Override
-    public void testDeviceNotReachable() {
-        editDevice = null;
-        ((TextView) item.findViewById(R.id.subtitle)).append(getString(R.string.error_device_no_access));
         takeNextHandler.sendEmptyMessage(0);
     }
 }

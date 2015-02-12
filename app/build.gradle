@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "21.1.2"
 
 //    productFlavors {
 //        //noinspection GroovyMissingReturnStatement
@@ -102,7 +102,7 @@ dependencies {
     compile('com.github.gabrielemariotti.changeloglib:library:1.5.1') {
         exclude group: 'com.google.android'; exclude group: 'com.android.support'
     }
-    compile('ch.acra:acra-mh:5.0.0-SNAPSHOT') {
+    compile('ch.acra:acra:4.6.0RC2') {
         exclude group: 'com.google.android'; exclude group: 'org.json';
         exclude group: 'com.android.support'
     }

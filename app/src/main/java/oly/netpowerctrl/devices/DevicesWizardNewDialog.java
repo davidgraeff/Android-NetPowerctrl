@@ -241,18 +241,14 @@ public class DevicesWizardNewDialog extends DialogFragment implements onCreateDe
     }
 
     @Override
-    public void testFinished(boolean success) {
-        if (success) {
+    public void testFinished(EditDeviceInterface.TestStates state) {
+        if (state == EditDeviceInterface.TestStates.TEST_OK) {
             appData.addToConfiguredDevicesFromOtherThread(editDevice.getDevice());
             dismiss();
-        } else {
+        } else if (state == EditDeviceInterface.TestStates.TEST_ACCESS) {
+            Toast.makeText(getActivity(), R.string.error_device_no_access, Toast.LENGTH_SHORT).show();
+        } else if (state == EditDeviceInterface.TestStates.TEST_REACHABLE) {
             Toast.makeText(getActivity(), R.string.device_test_not_reachable, Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    public void testDeviceNotReachable() {
-        editDevice = null;
-        Toast.makeText(getActivity(), R.string.error_device_no_access, Toast.LENGTH_SHORT).show();
     }
 }

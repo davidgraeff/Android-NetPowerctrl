@@ -265,7 +265,7 @@ public class PluginService extends Service implements onDataLoaded, onPluginsRea
                 affectedDevices = true;
                 device.setPluginInterface(plugin);
                 if (updateChangesFlag)
-                    device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
+                    device.setChangesFlag(Device.CHANGED_DEVICE_PLUGIN);
                 appData.updateDevice(device, true);
             }
         }
@@ -290,7 +290,7 @@ public class PluginService extends Service implements onDataLoaded, onPluginsRea
                 device.lockDevice();
                 device.setPluginInterface(null);
                 device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
-                device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
+                device.setChangesFlag(Device.CHANGED_DEVICE_PLUGIN);
                 device.releaseDevice();
                 appData.updateDevice(device, true);
             }
@@ -305,7 +305,7 @@ public class PluginService extends Service implements onDataLoaded, onPluginsRea
             device.lockDevice();
             device.setPluginInterface(null);
             device.setStatusMessageAllConnections(getString(R.string.error_plugin_removed));
-            device.setChangesFlag(Device.CHANGE_CONNECTION_REACHABILITY);
+            device.setChangesFlag(Device.CHANGED_DEVICE_PLUGIN);
             device.releaseDevice();
         }
     }

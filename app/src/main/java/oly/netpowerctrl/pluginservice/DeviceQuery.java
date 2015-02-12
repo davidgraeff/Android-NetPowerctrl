@@ -29,7 +29,7 @@ public class DeviceQuery extends DeviceObserverBase {
     public DeviceQuery(PluginService context, onDeviceObserverResult target, Device device_to_observe) {
         super(context, target, 200, 2);
         pluginService = context;
-//        Log.w(TAG, "DeviceQuery");
+        broadcastFirst = false;
         addDevice(context.getAppData(), device_to_observe);
         start();
     }
@@ -75,7 +75,7 @@ public class DeviceQuery extends DeviceObserverBase {
         try {
             connection.lookupIPs();
         } catch (UnknownHostException e) {
-            connection.device.setStatusMessage(connection, e.getLocalizedMessage(), true);
+            connection.device.setStatusMessage(connection, e.getLocalizedMessage(), ExecutableReachability.NotReachable);
         }
     }
 

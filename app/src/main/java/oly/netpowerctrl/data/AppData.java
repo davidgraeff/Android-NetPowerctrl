@@ -6,7 +6,6 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,12 +15,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.consistency_tests.device_tests;
 import oly.netpowerctrl.device_base.device.Device;
 import oly.netpowerctrl.device_base.device.DeviceConnection;
 import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
 import oly.netpowerctrl.device_base.device.DevicePort;
 import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.device_base.executables.ExecutableReachability;
 import oly.netpowerctrl.devices.DeviceCollection;
 import oly.netpowerctrl.devices.UnconfiguredDeviceCollection;
 import oly.netpowerctrl.groups.GroupCollection;
@@ -233,59 +232,44 @@ public class AppData implements onDataQueryCompleted {
      *
      * @param device_info           Either an existing device (Device has to be an object within deviceCollection!)
      *                              or a new device info or a device that will update one of the deviceCollection devices.
-     * @param notifyDeviceObservers Usually you want to inform also the DeviceQueries about updated. This must be false
+     * @param notifyDeviceObservers Usually you want to inform also the DeviceQueries about updates. This must be false
      *                              if you call updateDevice from a DeviceObserverBase or DeviceQuery object!
      */
     public void updateDevice(Device device_info, boolean notifyDeviceObservers) {
         int position = deviceCollection.getPosition(device_info);
 
-        if (device_info.isConfigured() ^ position != -1)
+        if (device_info.isConfigured() ^ (position != -1))
             throw new RuntimeException("Inconsistent device state: Configured: " + String.valueOf(device_info.isConfigured()) + " position: " + String.valueOf(position));
 
         if (position == -1) {
-            // notify observers who are using the DeviceQuery class (new device)
-            if (notifyDeviceObservers) DeviceObserverBase.notifyOfUpdatedDevice(device_info);
             unconfiguredDeviceCollection.add(device_info);
-            return;
+        } else {
+            device_tests.test_check_adapters();
+
+            Device existing_device = deviceCollection.items.get(position);
+            if (existing_device != device_info) {
+                existing_device.lockDevice();
+                existing_device.replaceAutomaticAssignedConnections(device_info.getDeviceConnections());
+                existing_device.copyValuesFromUpdated(device_info);
+                device_tests.test_connection_reachable_consistency(existing_device);
+                existing_device.releaseDevice();
+                device_info = existing_device;
+            }
+
+            @Device.ChangesFlag
+            int flag = device_info.getAndClearChangedFlag();
+            if (flag != 0)
+                deviceCollection.notifyObservers(device_info, ObserverUpdateActions.UpdateAction, position);
+            if (flag == Device.CHANGED_DEVICE_WILL_STORE)
+                deviceCollection.save(device_info);
         }
 
-        Device existing_device = deviceCollection.items.get(position);
-        if (existing_device != device_info) {
-            existing_device.lockDevice();
-            existing_device.replaceAutomaticAssignedConnections(device_info.getDeviceConnections());
-            existing_device.copyValuesFromUpdated(device_info);
-            existing_device.test_connection_reachable_consistency();
-            existing_device.releaseDevice();
-        }
+        // notify observers who are using the DeviceQuery class
+        if (notifyDeviceObservers) DeviceObserverBase.notifyOfUpdatedDevice(device_info);
 
-        if (notifyDeviceObservers) DeviceObserverBase.notifyOfUpdatedDevice(existing_device);
-
-        int flag = device_info.getAndClearChangedFlag();
-        if (flag != 0) notifyAfterUpdate(existing_device, position, flag);
+        device_tests.test_check_adapters();
     }
 
-    private void notifyAfterUpdate(Device existing_device, int position, int flag) {
-        //Log.w(TAG, "device " + existing_device.getDeviceName() + " " + String.valueOf(flag));
-
-        if ((flag & Device.CHANGE_DEVICE) != 0) {
-            deviceCollection.save(existing_device);
-            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
-        } else if ((flag & Device.CHANGE_DEVICE_REACHABILITY) != 0) {
-            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.UpdateAction, position);
-        } else if ((flag & Device.CHANGE_CONNECTION_REACHABILITY) != 0) {
-            deviceCollection.notifyObservers(existing_device, ObserverUpdateActions.ConnectionUpdateAction, position);
-        }
-
-        if (existing_device.reachableState() == ExecutableReachability.NotReachable
-                && SharedPrefs.getInstance().notifyDeviceNotReachable()) {
-            long current_time = System.currentTimeMillis();
-            Toast.makeText(App.instance,
-                    App.getAppString(R.string.error_setting_outlet, existing_device.getDeviceName(),
-                            (int) ((current_time - existing_device.getUpdatedTime()) / 1000)),
-                    Toast.LENGTH_LONG
-            ).show();
-        }
-    }
 
     public int getReachableConfiguredDevices() {
         int r = 0;
