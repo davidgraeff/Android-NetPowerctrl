@@ -19,9 +19,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.device_base.device.Device;
-import oly.netpowerctrl.device_base.device.DeviceConnectionHTTP;
-import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.ioconnection.IOConnectionHTTP;
 
 /**
  * All http related stuff
@@ -74,7 +74,7 @@ public class HttpThreadPool {
     }
 
     public static class HTTPRunner<T> implements Runnable {
-        private final DeviceConnectionHTTP deviceConnection;
+        private final IOConnectionHTTP deviceConnection;
         private final String getData;
         private final String postData;
         private final T additional;
@@ -82,7 +82,7 @@ public class HttpThreadPool {
         private final HTTPCallback<T> callback;
         String result_message;
 
-        public HTTPRunner(final DeviceConnectionHTTP deviceConnection, final String getData,
+        public HTTPRunner(final IOConnectionHTTP deviceConnection, final String getData,
                           final String postData, final T additional,
                           final boolean responseInMainThread, final HTTPCallback<T> callback) {
 
@@ -96,15 +96,15 @@ public class HttpThreadPool {
 
         @Override
         public void run() {
-            Context context = PluginService.getService();
+            Context context = DataService.getService();
             if (context == null)
                 return;
 
             URL url;
             boolean success = false;
-            final Device device = deviceConnection.getDevice();
+            final Credentials credentials = deviceConnection.getCredentials();
             try {
-                String cred = device.getUserName() + ":" + device.getPassword();
+                String cred = credentials.userName + ":" + credentials.password;
                 url = new URL("http://" + deviceConnection.getDestinationHost()
                         + ":" + deviceConnection.getDestinationPort() + "/" + getData);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();

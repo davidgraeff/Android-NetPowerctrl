@@ -1,14 +1,15 @@
 package oly.netpowerctrl.data;
 
-import oly.netpowerctrl.device_base.data.StorableInterface;
+import oly.netpowerctrl.data.storage_container.CollectionStorage;
+import oly.netpowerctrl.utils.IOInterface;
 
 /**
  * Created by david on 01.09.14.
  */
 public interface onStorageUpdate {
-    void save(CollectionWithType collection, StorableInterface item);
+    void save(CollectionStorage collection, IOInterface item);
 
-    void remove(CollectionWithType collection, StorableInterface item);
+    void remove(CollectionStorage collection, IOInterface item);
 
-    void clear(CollectionWithType collection);
+    void clear(CollectionStorage collection);
 }

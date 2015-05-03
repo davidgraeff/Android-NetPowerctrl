@@ -15,7 +15,7 @@ import org.acra.sender.HttpSender;
 
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.LoadStoreIconData;
+import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 
 /**
  * Application:
@@ -76,6 +76,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        LoadStoreIconData.onCreate(this);
         if (useErrorReporter) {
             ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
             config.setFormUri(getString(R.string.acralyzer_http_url));

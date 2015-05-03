@@ -30,6 +30,10 @@
             android:key="select_background_image"
             android:title="@string/preference_select_background_image" />
 
+        <PreferenceScreen
+            android:key="icon_theme"
+            android:title="@string/preference_icon_theme" />
+
         <CheckBoxPreference
             android:defaultValue="@bool/smaller_click_execute_area"
             android:key="smaller_click_execute_area"
@@ -48,12 +52,6 @@
             android:key="hide_not_reachable"
             android:summary="@string/preference_hide_not_reachable_summary"
             android:title="@string/preference_hide_not_reachable" />
-
-        <CheckBoxPreference
-            android:defaultValue="@bool/notify_on_non_reachable"
-            android:key="notify_on_non_reachable"
-            android:summary="@string/preference_notify_on_non_reachable_summary"
-            android:title="@string/preference_notify_on_non_reachable" />
 
         <CheckBoxPreference
             android:defaultValue="@bool/fullscreen"
@@ -75,25 +73,6 @@
             android:key="acra.user.email"
             android:summary="@string/pref_acra_user_email_summary"
             android:title="@string/pref_acra_user_email" />
-
-        <PreferenceScreen
-            android:key="issues"
-            android:summary="@string/issues_see_at_feedback"
-            android:title="@string/issues" />
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:key="extensions"
-        android:title="@string/extensions">
-        <CheckBoxPreference
-            android:defaultValue="@bool/load_extensions"
-            android:key="load_extensions"
-            android:summary="@string/preference_load_extensions_summary"
-            android:title="@string/preference_load_extensions" />
-
-        <PreferenceScreen
-            android:key="show_extensions"
-            android:title="@string/show_extensions_in_market" />
     </PreferenceCategory>
 
     <PreferenceCategory

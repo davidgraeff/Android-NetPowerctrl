@@ -59,11 +59,11 @@ class GDriveCreateBackupTask extends AsyncTask<Void, String, Boolean> {
         RuntimeDataController c = RuntimeDataController.getDataController();
 
         // Enter dir
-        DriveFolder appDataDir = GDrive.getAppFolder(mClient);
+        DriveFolder PluginServiceDir = GDrive.getAppFolder(mClient);
 
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                 .setTitle(Utils.getDeviceName() + " " + Utils.getDateTime(context)).build();
-        DriveFolder.DriveFolderResult result = appDataDir.createFolder(mClient, changeSet).await(3, TimeUnit.SECONDS);
+        DriveFolder.DriveFolderResult result = PluginServiceDir.createFolder(mClient, changeSet).await(3, TimeUnit.SECONDS);
         if (!result.getStatus().isSuccess()) {
             // We failed, stop the task and return.
             return false;

@@ -1,11 +1,12 @@
 package oly.netpowerctrl.main;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.drawable.NinePatchDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -14,6 +15,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,36 +23,36 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
-
-import java.util.UUID;
-
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.IconCacheCleared;
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.data.onDataQueryRefreshQuery;
-import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.executables.AdapterSource;
-import oly.netpowerctrl.executables.AdapterSourceInputDevicePorts;
-import oly.netpowerctrl.executables.AdapterSourceInputGroups;
-import oly.netpowerctrl.executables.AdapterSourceInputScenes;
-import oly.netpowerctrl.executables.ExecutableAdapterItem;
-import oly.netpowerctrl.executables.ExecutableViewHolder;
-import oly.netpowerctrl.executables.ExecutablesEditableAdapter;
-import oly.netpowerctrl.executables.FilterByReachable;
-import oly.netpowerctrl.executables.FilterBySingleGroup;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.IconCacheCleared;
+import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.onServiceReady;
+import oly.netpowerctrl.data.query.onDataQueryRefreshQuery;
+import oly.netpowerctrl.devices.AutomaticSetup;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.adapter.AdapterSource;
+import oly.netpowerctrl.executables.adapter.AdapterSourceExecutables;
+import oly.netpowerctrl.executables.adapter.AdapterSourceInputGroups;
+import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
+import oly.netpowerctrl.executables.adapter.ExecutableViewHolder;
+import oly.netpowerctrl.executables.adapter.ExecutablesEditableAdapter;
+import oly.netpowerctrl.executables.adapter.FilterByReachable;
+import oly.netpowerctrl.executables.adapter.FilterBySingleGroup;
 import oly.netpowerctrl.groups.GroupUtilities;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.ItemShadowDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.SimpleListDividerDecoration;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AnimationController;
+
+;
 
 /**
  * This fragment consists of some floating buttons (add + no_wireless) and a view pager. Within the
@@ -69,7 +71,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     // Groups
     FilterBySingleGroup filterBySingleGroup = new FilterBySingleGroup(null);
     private RecyclerView mRecyclerView;
-    private TextView emptyText;
     private View edit_hint_big;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private FloatingActionButton btnWireless;
@@ -77,17 +78,32 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     // Adapter
     private AdapterSource adapterSource;
     private ExecutablesEditableAdapter adapter;
-    private UUID clicked_group_uid;
-    /**
-     * Called by the model data listener
-     */
-    private int lastResID = 0;
-    private boolean editMode;
-    private AppData appData;
+    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    //noinspection deprecation
+                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
 
+                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
+                    if (i < 1) i = 1;
+                    adapter.setItemsInRow(i);
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
+                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
+                    mRecyclerView.setHasFixedSize(false);
+                    mRecyclerView.setLayoutManager(gridLayoutManager);
+                    mRecyclerView.setAdapter(adapter);
+                }
+            };
+    private String clicked_group_uid;
+    private ViewContentState lastViewState = ViewContentState.NotEmpty;
+    // UI
+    private boolean editMode;
+    private SimpleListDividerDecoration listDividerDecoration;
     private FloatingActionButton btnAdd;
-    private FloatingActionButton btnHelp;
-    private SlidingMenu slidingMenu;
+    // Data
+    private DataService dataService;
+    private AutomaticSetup automaticSetup;
 
     public OutletsFragment() {
     }
@@ -126,21 +142,31 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onDestroy() {
         super.onDestroy();
+        automaticSetup.finish();
         PreferenceManager.getDefaultSharedPreferences(App.instance).unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    /**
+     * Called as soon as the plugin service is ready. We will store a reference to DataService here, setup the current
+     * visible group and apply the right view type.
+     */
     @Override
-    public boolean onServiceReady(PluginService service) {
-        appData = service.getAppData();
+    public boolean onServiceReady(DataService service) {
+        dataService = service;
         setGroup(SharedPrefs.getInstance().getLastGroupUid(), false);
         applyViewType();
         getActivity().invalidateOptionsMenu();
+
+        //TODO Introduction
+        // new Introduction(getActivity(), slidingMenu).showNavigationIntro();
         return false;
     }
 
     private void applyViewType() {
         // Set view type
         int viewType = SharedPrefs.getInstance().getOutletsViewType();
+
+        mRecyclerView.removeItemDecoration(listDividerDecoration);
 
         switch (viewType) {
             case VIEW_AS_COMPACT:
@@ -153,6 +179,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 break;
             case VIEW_AS_LIST:
             default:
+                mRecyclerView.addItemDecoration(listDividerDecoration);
                 adapter.setLayoutRes(R.layout.list_item_executable);
                 requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
                 break;
@@ -163,8 +190,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     @Override
-    public void onServiceFinished(PluginService service) {
-        appData = null;
+    public void onServiceFinished(DataService service) {
+        dataService = null;
     }
 
     @Override
@@ -176,10 +203,9 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         boolean hasDevices = false;
-        if (appData != null) {
-            hasDevices = appData.deviceCollection.hasDevices();
+        if (dataService != null) {
+            hasDevices = dataService.credentials.countConfigured() > 0;
         }
-        hasDevices &= !slidingMenu.isMenuShowing();
         menu.findItem(R.id.menu_edit_mode).setVisible(hasDevices);
         menu.findItem(R.id.menu_view_mode).setVisible(hasDevices);
     }
@@ -206,17 +232,22 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
         assert view != null;
 
-        slidingMenu = (SlidingMenu) getActivity().findViewById(R.id.slidingmenulayout);
-
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            mRecyclerView.addItemDecoration(new ItemShadowDecoration((NinePatchDrawable) getResources().getDrawable(R.drawable.material_shadow_z1)));
+        }
+        listDividerDecoration = new SimpleListDividerDecoration(getResources().getDrawable(R.drawable.list_divider), true);
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), this, null));
 
-        emptyText = (TextView) view.findViewById(R.id.empty_text);
+        automaticSetup = new AutomaticSetup(
+                (Button) view.findViewById(R.id.automatic_setup_start),
+                (TextView) view.findViewById(R.id.automatic_status),
+                view.findViewById(R.id.empty_no_outlets_no_devices_text));
 
         btnWireless = (FloatingActionButton) view.findViewById(R.id.btnWirelessSettings);
-        if (!PluginService.isWirelessLanConnected(getActivity()))
+        if (!DataService.isWirelessLanConnected(getActivity()))
             AnimationController.animateBottomViewIn(btnWireless, false);
         btnWireless.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -231,8 +262,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
         adapterSource.addFilter(new FilterByReachable(SharedPrefs.getInstance().isHideNotReachable()));
         adapterSource.addFilter(filterBySingleGroup);
-        adapterSource.addInput(new AdapterSourceInputDevicePorts(),
-                new AdapterSourceInputGroups(), new AdapterSourceInputScenes());
+        adapterSource.addInput(new AdapterSourceExecutables(), new AdapterSourceInputGroups());
 
         adapter = new ExecutablesEditableAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
 
@@ -277,18 +307,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
         });
 
-        btnHelp = (FloatingActionButton) view.findViewById(R.id.btnHelp);
-        btnHelp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.menu_help)
-                        .setMessage(R.string.help_overview_and_groups)
-                        .setIcon(android.R.drawable.ic_menu_help).show();
-            }
-        });
-
         return view;
     }
 
@@ -304,64 +322,63 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         mRecyclerView.scrollToPosition(SharedPrefs.getInstance().getLastScrollIndex());
 
         LoadStoreIconData.iconCacheClearedObserver.register(this);
-        AppData.observersStartStopRefresh.register(this);
-        PluginService.observersServiceReady.register(this); // Will call onServiceReady and setup current group
+        DataService.observersStartStopRefresh.register(this);
+        DataService.observersServiceReady.register(this); // Will call onServiceReady and setup current group
     }
-
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
-
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    if (i < 1) i = 1;
-                    adapter.setItemsInRow(i);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-                }
-            };
 
     @Override
     public void onDestroyView() {
         View view = mRecyclerView.findChildViewUnder(10, 10);
         if (view != null)
             SharedPrefs.getInstance().setLastScrollIndex(mRecyclerView.getChildPosition(view));
-        PluginService.observersServiceReady.unregister(this);
+        DataService.observersServiceReady.unregister(this);
         LoadStoreIconData.iconCacheClearedObserver.unregister(this);
-        AppData.observersStartStopRefresh.unregister(this);
+        DataService.observersStartStopRefresh.unregister(this);
         super.onDestroyView();
     }
 
     public void refreshNow() {
-        appData.refreshDeviceData(PluginService.getService(), false);
+        dataService.refreshDevices();
     }
 
     public void checkEmpty() {
-        if (adapter.getItemCount() == 0) {
-            int resID;
-            boolean hasDevices = appData != null && appData.deviceCollection.hasDevices();
-            if (!hasDevices) {
-                resID = (R.string.empty_no_outlets_no_devices);
-            } else if (filterBySingleGroup.getFilterGroup() != null) {
-                resID = (R.string.empty_group);
-            } else {
-                resID = (R.string.empty_no_outlets);
-            }
-            // Abort if res id is the same as before
-            if (lastResID == resID)
-                return;
+        View view = getView();
+        if (view == null) return;
 
-            lastResID = resID;
-            emptyText.setText(resID);
-            emptyText.setVisibility(View.VISIBLE);
-        } else if (lastResID != 0) {
-            lastResID = 0;
-            emptyText.setVisibility(View.GONE);
+        ViewContentState nextState = lastViewState;
+
+        if (adapter.getItemCount() == 0) {
+            boolean hasDevices = dataService != null && dataService.credentials.countConfigured() > 0;
+            if (!hasDevices) {
+                nextState = ViewContentState.NothingConfigured;
+                view.findViewById(R.id.empty_no_outlets_no_devices).setVisibility(View.VISIBLE);
+            } else if (filterBySingleGroup.getFilterGroup() != null) {
+                nextState = ViewContentState.EmptyGroup;
+                view.findViewById(R.id.empty_group).setVisibility(View.VISIBLE);
+            } else {
+                nextState = ViewContentState.ConfiguredButNothingToShow;
+                view.findViewById(R.id.empty_no_outlets).setVisibility(View.VISIBLE);
+            }
+
+        } else {
+            nextState = ViewContentState.NotEmpty;
+        }
+
+        Log.w("outlets", "checkEmpty: " + (adapter.getItemCount() > 0 ? "filled" : "empty") + " " + nextState.name() + " " + lastViewState.name());
+
+        if (lastViewState != nextState) {
+            switch (nextState) {
+                case ConfiguredButNothingToShow:
+                    view.findViewById(R.id.empty_no_outlets_no_devices).setVisibility(View.GONE);
+                    break;
+                case EmptyGroup:
+                    view.findViewById(R.id.empty_group).setVisibility(View.GONE);
+                    break;
+                case NothingConfigured:
+                    view.findViewById(R.id.empty_no_outlets).setVisibility(View.GONE);
+                    break;
+            }
+            lastViewState = nextState;
         }
     }
 
@@ -377,7 +394,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         switch (menuItem.getItemId()) {
             case R.id.menu_removeGroup: {
-                if (!appData.groupCollection.remove(clicked_group_uid)) {
+                if (!dataService.groups.remove(clicked_group_uid)) {
                     return true;
                 }
                 // change to overview if the removed group is the current group
@@ -387,37 +404,33 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             }
             case R.id.menu_renameGroup: {
-                GroupUtilities.renameGroup(getActivity(), appData.groupCollection, clicked_group_uid);
+                GroupUtilities.renameGroup(getActivity(), dataService.groups, clicked_group_uid);
                 return true;
             }
         }
         return false;
     }
 
-    void setGroup(UUID group_uid, boolean save) {
-        filterBySingleGroup.setFilterGroup(group_uid);
-        if (save) SharedPrefs.getInstance().setLastGroupUid(group_uid);
+    void setGroup(String groupUid, boolean save) {
+        filterBySingleGroup.setFilterGroup(groupUid);
+        if (save) SharedPrefs.getInstance().setLastGroupUID(groupUid);
         GroupListFragment groupListFragment = (GroupListFragment) getFragmentManager().findFragmentByTag("group");
         if (groupListFragment != null)
-            groupListFragment.getAdapter().setSelectedItem(appData.groupCollection.indexOf(group_uid) + 1);
+            groupListFragment.getAdapter().setSelectedItem(groupUid);
     }
 
     @Override
     public boolean onItemClick(View view, final int position, boolean isLongClick) {
-//        boolean disableClicks = false;
-//        if (disableClicks)
-//            return false;
-
         ExecutableAdapterItem item = adapterSource.getItem(position);
 
         //////////////// GROUP ////////////////
         if (!(item.groupType() == ExecutableAdapterItem.groupTypeEnum.NOGROUP_TYPE)) {
-            showGroupPopupMenu(view, item.groupID());
+            showGroupPopupMenu(view, item.groupUID());
             return true;
         }
 
         //////////////// EDIT ITEM ////////////////
-        if (editMode) {
+        if (editMode || isLongClick) {
             Executable executable = adapterSource.getItem(position).getExecutable();
             Intent it = new Intent(getActivity(), EditActivity.class);
             it.putExtra(EditActivity.LOAD_UUID, executable.getUid());
@@ -437,12 +450,12 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         ((ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position)).animate();
         adapter.notifyItemChanged(position);
 
-        appData.executeToggle(item.getExecutable(), null);
+        item.getExecutable().execute(dataService, null);
         return true;
     }
 
-    void showGroupPopupMenu(View view, UUID group_uid) {
-        this.clicked_group_uid = group_uid;
+    void showGroupPopupMenu(View view, String groupUID) {
+        this.clicked_group_uid = groupUID;
         //noinspection ConstantConditions
         PopupMenu popup = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popup.getMenuInflater();
@@ -456,7 +469,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (mPullToRefreshLayout != null)
             mPullToRefreshLayout.setRefreshing(isRefreshing);
 
-        if (!PluginService.isWirelessLanConnected(getActivity()))
+        if (!DataService.isWirelessLanConnected(getActivity()))
             AnimationController.animateBottomViewIn(btnWireless, false);
         else
             AnimationController.animateBottomViewOut(btnWireless);
@@ -468,28 +481,31 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (requestCode == EditActivity.REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 int position = data.getIntExtra(EditActivity.LOAD_ADAPTER_POSITION, -1);
+                adapter.notifyDataSetChanged();
                 if (position == -1) {
                     adapter.notifyDataSetChanged();
-                    return;
+                } else {
+                    ExecutableViewHolder executableViewHolder = (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position);
+                    if (executableViewHolder != null) executableViewHolder.reload();
+                    adapter.notifyItemChanged(position);
                 }
-                //ExecutableViewHolder executableViewHolder = (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position);
-                //if (executableViewHolder != null) executableViewHolder.reload();
-                //updatePositionAfterResume = position; adapter.notifyItemChanged(updatePositionAfterResume);
             }
         } else
             super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void setEditMode(boolean editMode) {
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    void setEditMode(boolean editMode) {
         this.editMode = editMode;
         if (editMode) {
             AnimationController.animateViewInOut(edit_hint_big, true, true);
             AnimationController.animateBottomViewIn(btnAdd, btnAdd.getVisibility() == View.VISIBLE);
-            AnimationController.animateBottomViewIn(btnHelp, btnHelp.getVisibility() == View.VISIBLE);
         } else {
             AnimationController.animateViewInOut(edit_hint_big, false, true);
             AnimationController.animateBottomViewOut(btnAdd);
-            AnimationController.animateBottomViewOut(btnHelp);
         }
         adapter.setEditMode(editMode);
     }
@@ -503,6 +519,8 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
             }
         }
     }
+
+    private enum ViewContentState {NotEmpty, NothingConfigured, ConfiguredButNothingToShow, EmptyGroup}
 
 
 }

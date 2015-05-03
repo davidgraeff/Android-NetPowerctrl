@@ -76,7 +76,7 @@
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true"
-                    android:text="Gemeldete Wünsche/Anregungen:" />
+                    android:text="@string/feedback_posted_wishes" />
 
                 <TextView
                     android:id="@+id/bugs"
@@ -99,7 +99,7 @@
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true"
-                    android:text="Nicht behobene Fehler:" />
+                    android:text="@string/feedback_not_fixed_bugs" />
 
                 <TextView
                     android:id="@+id/bugs2"
@@ -121,7 +121,7 @@
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true"
-                    android:text="Dazu Fehlerberichtmeldungen:" />
+                    android:text="@string/feedback_bug_reports" />
 
                 <TextView
                     android:id="@+id/bugs3"
@@ -144,7 +144,7 @@
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true"
-                    android:text="Behobene Fehler:" />
+                    android:text="@string/feedback_fixed_bugs" />
 
                 <TextView
                     android:id="@+id/bugs4"
@@ -167,7 +167,7 @@
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true"
-                    android:text="Letzter Fehler:" />
+                    android:text="@string/feedback_last_reported_bug" />
 
                 <TextView
                     android:id="@+id/bugs5"

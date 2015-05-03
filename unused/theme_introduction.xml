@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ShowcaseThemeLight" parent="ShowcaseView.Light">
+        <item name="sv_backgroundColor">#3300A621</item>
+        <item name="sv_showcaseColor">#00801A</item>
+        <item name="sv_titleTextAppearance">@style/ShowcaseThemeTitleLight</item>
+    </style>
+
+    <style name="ShowcaseThemeDark" parent="ShowcaseView">
+        <item name="sv_backgroundColor">#330066FF</item>
+        <item name="sv_showcaseColor">#00801A</item>
+        <item name="sv_titleTextAppearance">@style/ShowcaseThemeTitleDark</item>
+    </style>
+
+    <style name="ShowcaseThemeTitleLight" parent="TextAppearance.ShowcaseView.Title">
+        <item name="android:textColor">#ff000000</item>
+        <item name="android:shadowRadius">1</item>
+    </style>
+
+    <style name="ShowcaseThemeTitleDark" parent="TextAppearance.ShowcaseView.Title">
+        <item name="android:textColor">#ffffffff</item>
+    </style>
+
+</resources>

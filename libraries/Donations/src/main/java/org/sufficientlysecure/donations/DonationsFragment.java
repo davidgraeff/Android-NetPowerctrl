@@ -18,6 +18,7 @@ package org.sufficientlysecure.donations;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.ActivityNotFoundException;
@@ -326,14 +327,9 @@ public class DonationsFragment extends Fragment {
                 public boolean onLongClick(View v) {
                     Toast.makeText(getActivity(), R.string.donations__bitcoin_toast_copy, Toast.LENGTH_SHORT).show();
                     // http://stackoverflow.com/a/11012443/832776
-                    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-                        android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(getActivity().CLIPBOARD_SERVICE);
-                        clipboard.setText(mBitcoinAddress);
-                    } else {
-                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(getActivity().CLIPBOARD_SERVICE);
-                        android.content.ClipData clip = android.content.ClipData.newPlainText(mBitcoinAddress, mBitcoinAddress);
-                        clipboard.setPrimaryClip(clip);
-                    }
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData.newPlainText(mBitcoinAddress, mBitcoinAddress);
+                    clipboard.setPrimaryClip(clip);
                     return true;
                 }
             });
@@ -367,7 +363,7 @@ public class DonationsFragment extends Fragment {
     /**
      * Donate button executes donations based on selection in spinner
      *
-     * @param view
+     * @param view The view
      */
     public void donateGoogleOnClick(View view) {
         final int index;
@@ -410,7 +406,7 @@ public class DonationsFragment extends Fragment {
      * Donate button with PP by opening browser with defined URL For possible parameters see:
      * https://developer.PP.com/webapps/developer/docs/classic/PP-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/
      *
-     * @param view
+     * @param view The view
      */
     public void donatePPOnClick(View view) {
         String p1 = mPPDecodedURI;
@@ -425,7 +421,7 @@ public class DonationsFragment extends Fragment {
     /**
      * Donate with bitcoin by opening a bitcoin: intent if available.
      *
-     * @param view
+     * @param view The view
      */
     public void donateBitcoinOnClick(View view) {
         Intent i = new Intent(Intent.ACTION_VIEW);

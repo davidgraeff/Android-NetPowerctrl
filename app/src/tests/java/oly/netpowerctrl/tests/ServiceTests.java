@@ -6,8 +6,8 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.onServiceReady;
 
 /**
  * Testing service start and shutdown
@@ -22,47 +22,47 @@ public class ServiceTests extends AndroidTestCase {
     }
 
     public void testServiceInit() throws Exception {
-        assertNull(PluginService.getService());
-        PluginService.useService(new WeakReference<Object>(this));
+        assertNull(DataService.getService());
+        DataService.useService(new WeakReference<Object>(this));
 
         final CountDownLatch signal = new CountDownLatch(1);
-        PluginService.observersServiceReady.register(new onServiceReady() {
+        DataService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(PluginService service) {
+            public boolean onServiceReady(DataService service) {
                 signal.countDown();
                 return false;
             }
 
             @Override
-            public void onServiceFinished(PluginService service) {
+            public void onServiceFinished(DataService service) {
             }
         });
 
         signal.await(4, TimeUnit.SECONDS);
 
-        PluginService service = PluginService.getService();
+        DataService service = DataService.getService();
         assertNotNull(service);
-        assertEquals(service, PluginService.getService());
+        assertEquals(service, DataService.getService());
 
-        assertEquals(PluginService.isServiceUsed(), true);
+        assertEquals(DataService.isServiceUsed(), true);
 
         final CountDownLatch shutDownSignal = new CountDownLatch(1);
-        PluginService.observersServiceReady.register(new onServiceReady() {
+        DataService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(PluginService service) {
+            public boolean onServiceReady(DataService service) {
                 return false;
             }
 
             @Override
-            public void onServiceFinished(PluginService service) {
+            public void onServiceFinished(DataService service) {
                 shutDownSignal.countDown();
             }
         });
 
-        PluginService.stopUseService(this);
+        DataService.stopUseService(this);
         shutDownSignal.await(4, TimeUnit.SECONDS);
 
-        assertEquals(PluginService.isServiceUsed(), false);
-        assertNull(PluginService.getService());
+        assertEquals(DataService.isServiceUsed(), false);
+        assertNull(DataService.getService());
     }
 }

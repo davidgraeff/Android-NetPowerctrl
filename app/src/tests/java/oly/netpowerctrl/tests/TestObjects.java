@@ -1,37 +1,38 @@
 package oly.netpowerctrl.tests;
 
 import oly.netpowerctrl.anel.AnelPlugin;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.LoadStoreJSonData;
-import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_base.device.Device;
-import oly.netpowerctrl.device_base.device.DeviceConnectionUDP;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.LoadStoreCollections;
+import oly.netpowerctrl.devices.Credentials;
+
+;
 
 /**
  * Mock objects for testing
  */
 public class TestObjects {
-    static Device createDevice() {
-        Device di = new Device(AnelPlugin.PLUGIN_ID, true);
+    static Credentials createDevice() {
+        Credentials di = new Credentials();
+        di.pluginID = AnelPlugin.PLUGIN_ID;
         di.setDeviceName("TestDevice");
-        di.setUniqueDeviceID("aa:bb:cc:dd:ee:ff");
-        di.setUserName("admin");
-        di.setPassword("anel");
-        di.addConnection(new DeviceConnectionUDP(di, "192.168.1.101", 1077, SharedPrefs.getInstance().getDefaultSendPort()));
+        di.deviceUID = ("aa:bb:cc:dd:ee:ff");
+        di.userName = ("admin");
+        di.password = ("anel");
+        //di.putConnection(new IOConnectionUDP(di, "192.168.1.101", 1077, SharedPrefs.getInstance().getDefaultSendPort()));
         return di;
     }
 
     /**
      * Replace the original LoadStoreData class with a stub class.
      */
-    public static class LoadStoreJSonDataTest extends LoadStoreJSonData {
-        public LoadStoreJSonDataTest() {
+    public static class LoadStoreCollectionsTest extends LoadStoreCollections {
+        public LoadStoreCollectionsTest() {
             super();
         }
 
         @Override
-        public void loadData(final AppData appData) {
-            appData.setDataLoadingCompleted();
+        public void loadData(final DataService pluginService) {
+            pluginService.setDataLoadingCompleted();
         }
     }
 }

@@ -31,11 +31,9 @@
 
     <uses-sdk />
 
-    <!-- isNotIceCreamSandwich: bug fix for android 4.0.3 and 4.0.4 -->
     <application
         android:name=".main.App"
         android:allowBackup="true"
-        android:hardwareAccelerated="@bool/isNotIceCreamSandwich"
         android:icon="@drawable/netpowerctrl"
         android:label="@string/app_name"
         android:supportsRtl="true">
@@ -95,13 +93,16 @@
         </activity>
 
         <activity
-            android:name=".widget.WidgetConfigActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
-            android:description="@string/app_name_widget"
-            android:icon="@drawable/netpowerctrl"
-            android:label="@string/app_name"
-            android:noHistory="true"
-            android:theme="@style/Theme.AppCompat.Translucent">
+            android:name="oly.netpowerctrl.widget.ConfigExecutableActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="oly.netpowerctrl.widget.ConfigGroupActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -110,17 +111,28 @@
         <activity
             android:name=".main.NfcTagWriterActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
-            android:description="@string/app_name_widget"
-            android:icon="@drawable/netpowerctrl"
-            android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat.Translucent" />
 
         <activity
             android:name=".main.EditActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
-            android:description="@string/app_name_shortcut_desc"
+            android:description="@string/shortcut_new_scene_desc"
             android:icon="@drawable/netpowerctrl"
-            android:label="@string/app_name_shortcut"
+            android:label="@string/shortcut_new_scene"
+            android:theme="@style/Theme.StartTheme"
+            android:windowSoftInputMode="stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".main.SelectExistingExecutableActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
+            android:description="@string/shortcut_existing_executable_desc"
+            android:icon="@drawable/netpowerctrl"
+            android:label="@string/shortcut_existing_executable"
             android:theme="@style/Theme.StartTheme"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
@@ -131,7 +143,7 @@
 
         <!-- Widget -->
         <receiver
-            android:name="oly.netpowerctrl.widget.DeviceWidgetProvider"
+            android:name=".widget.ProviderExecutable"
             android:icon="@drawable/netpowerctrl"
             android:label="@string/app_name_widget">
             <intent-filter>
@@ -140,20 +152,33 @@
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/appwidget_provider" />
+                android:resource="@xml/widget_executable_provider" />
+        </receiver>
+        <receiver
+            android:name=".widget.ProviderGroup"
+            android:icon="@drawable/netpowerctrl"
+            android:label="@string/app_name_widget_group">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_group_provider" />
         </receiver>
 
         <service
-            android:name=".pluginservice.PluginService"
+            android:name=".data.DataService"
             android:exported="true"
             android:permission="oly.netpowerctrl.permission.PLUGINS" />
 
         <service
             android:name=".widget.WidgetUpdateService"
-            android:exported="false" />
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <service
-            android:name=".utils.statusbar_and_speech.AndroidStatusBarService"
+            android:name=".status_bar.AndroidStatusBarService"
             android:exported="false" />
 
         <receiver

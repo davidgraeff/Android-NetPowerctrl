@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.1'
+        classpath 'com.android.tools.build:gradle:1.1.0'
     }
 }
 
@@ -13,6 +13,8 @@ allprojects {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url 'http://nexus.logicalgrape.com/content/repositories/missionhub/' }
-        maven { url "http://jzaccone.github.io/SlidingMenu-aar" }
+        maven {
+            url "https://jitpack.io"
+        }
     }
 }

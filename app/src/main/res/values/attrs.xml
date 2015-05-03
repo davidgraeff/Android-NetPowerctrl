@@ -20,7 +20,7 @@
 
     <!-- general app colors -->
     <attr name="textColorPrimary" format="reference" />
-    <attr name="colorPrimaryTransparent" format="reference" />
+    <attr name="colorPrimaryTransparent" format="color" />
 
     <!-- icons -->
     <attr name="ic_action_view_as_grid" format="reference" />

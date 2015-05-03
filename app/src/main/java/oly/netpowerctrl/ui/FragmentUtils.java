@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 
 import oly.netpowerctrl.R;
 
@@ -52,6 +53,28 @@ public class FragmentUtils {
         FragmentTransaction ft = context.getFragmentManager().beginTransaction();
         ft.replace(R.id.content_frame, fragment, tag);
         ft.addToBackStack(null);
+        try {
+            ft.commit();
+        } catch (IllegalStateException exception) {
+            ft.commitAllowingStateLoss();
+        }
+    }
+
+    public static void unloadFragment(Activity context, String tag) {
+        Fragment groupFragment = context.getFragmentManager().findFragmentByTag(tag);
+        if (groupFragment != null) {
+            FragmentTransaction ft = context.getFragmentManager().beginTransaction();
+            ft.remove(groupFragment).commitAllowingStateLoss();
+        }
+    }
+
+    public static void loadFragment(Activity context, String fragmentClassName, @IdRes int id, String tag) {
+        loadFragment(context, Fragment.instantiate(context, fragmentClassName), id, tag);
+    }
+
+    public static void loadFragment(Activity context, Fragment fragment, @IdRes int id, String tag) {
+        FragmentTransaction ft = context.getFragmentManager().beginTransaction();
+        ft.replace(id, fragment, tag);
         try {
             ft.commit();
         } catch (IllegalStateException exception) {

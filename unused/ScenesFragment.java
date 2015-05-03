@@ -26,7 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
+;
 import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.devices.DevicesFragment;
 import oly.netpowerctrl.main.App;
@@ -81,7 +81,7 @@ public class ScenesFragment extends Fragment implements
         inflater.inflate(R.menu.scenes, menu);
 
         //noinspection ConstantConditions
-        menu.findItem(R.id.menu_add_scene).setVisible(AppData.getInstance().deviceCollection.hasDevices());
+        menu.findItem(R.id.menu_add_scene).setVisible(PluginService.getInstance().deviceCollection.hasDevices());
 
         if (adapter == null || adapter.getCount() == 0) {
             //noinspection ConstantConditions
@@ -161,7 +161,7 @@ public class ScenesFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        scenes = AppData.getInstance().sceneCollection;
+        scenes = PluginService.getInstance().sceneCollection;
         setHasOptionsMenu(true);
     }
 
@@ -191,7 +191,7 @@ public class ScenesFragment extends Fragment implements
             }
         });
 
-        if (!AppData.getInstance().deviceCollection.hasDevices()) {
+        if (!PluginService.getInstance().deviceCollection.hasDevices()) {
             //noinspection ConstantConditions
             ((TextView) view.findViewById(R.id.empty_text)).setText(getString(R.string.empty_no_scenes_no_devices));
             Button btnEmpty = ((Button) view.findViewById(R.id.btnChangeToDevices));

@@ -4,14 +4,14 @@
     android:layout_height="match_parent"
     android:orientation="horizontal">
 
-    <include
-        layout="@layout/content_frame"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/content_frame"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1" />
 
-    <include
-        layout="@layout/group_list_fragment"
+    <FrameLayout
+        android:id="@+id/group_list_fragment"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:paddingLeft="5dp"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<oly.netpowerctrl.ui.widgets.RelativeLayoutRipple xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="@dimen/list_outer_padding"
@@ -32,4 +32,4 @@
         android:layout_toEndOf="@id/title"
         android:layout_toRightOf="@id/title"
         android:textAppearance="?android:attr/textAppearanceSmall" />
-</oly.netpowerctrl.ui.widgets.RelativeLayoutRipple>
+</RelativeLayout>

@@ -6,17 +6,18 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.onDataQueryCompleted;
-import oly.netpowerctrl.data.onDataQueryRefreshQuery;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.onServiceReady;
+import oly.netpowerctrl.data.query.onDataQueryCompleted;
+import oly.netpowerctrl.data.query.onDataQueryRefreshQuery;
+
+;
 
 /**
  * Created by david on 08.07.14.
  */
 public class ScanBroadcast extends AndroidTestCase {
-    private AppData c;
+    private DataService c;
     private int refreshStartedStopped_signal = 0;
     private final onDataQueryRefreshQuery refreshStartedStopped = new onDataQueryRefreshQuery() {
         @Override
@@ -35,50 +36,50 @@ public class ScanBroadcast extends AndroidTestCase {
 //        assertEquals(getApplication(), NetpowerctrlApplication.instance);
 //        assertNotNull(getApplication());
 
-        assertEquals(PluginService.isServiceUsed(), false);
-        assertNull(PluginService.getService());
-        PluginService.useService(new WeakReference<Object>(this));
-        assertEquals(PluginService.isServiceUsed(), true);
+        assertEquals(DataService.isServiceUsed(), false);
+        assertNull(DataService.getService());
+        DataService.useService(new WeakReference<Object>(this));
+        assertEquals(DataService.isServiceUsed(), true);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        PluginService.observersServiceReady.register(new onServiceReady() {
+        DataService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(PluginService service) {
+            public boolean onServiceReady(DataService service) {
                 signal.countDown();
                 return false;
             }
 
             @Override
-            public void onServiceFinished(PluginService service) {
+            public void onServiceFinished(DataService service) {
                 signal.countDown();
             }
         });
 
         signal.await(4, TimeUnit.SECONDS);
-        assertEquals(PluginService.isServiceUsed(), true);
+        assertEquals(DataService.isServiceUsed(), true);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        assertEquals(PluginService.isServiceUsed(), true);
+        assertEquals(DataService.isServiceUsed(), true);
 
         final CountDownLatch signal = new CountDownLatch(1);
-        PluginService.observersServiceReady.register(new onServiceReady() {
+        DataService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(PluginService service) {
+            public boolean onServiceReady(DataService service) {
                 return false;
             }
 
             @Override
-            public void onServiceFinished(PluginService service) {
+            public void onServiceFinished(DataService service) {
                 signal.countDown();
             }
         });
 
-        PluginService.stopUseService(this);
+        DataService.stopUseService(this);
         signal.await(4, TimeUnit.SECONDS);
 
-        assertNull(PluginService.getService());
+        assertNull(DataService.getService());
 
         c.clear();
 
@@ -86,29 +87,29 @@ public class ScanBroadcast extends AndroidTestCase {
     }
 
     public void testScanBroadcast() throws Exception {
-        PluginService service = PluginService.getService();
+        DataService service = DataService.getService();
         assertNotNull(service);
 
         // DataQueryCompleted should be issued and onObserverJobFinished
         final CountDownLatch signal_receive = new CountDownLatch(1);
 
-        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+        DataService.observersDataQueryCompleted.register(new onDataQueryCompleted() {
             @Override
-            public boolean onDataQueryFinished(AppData appData) {
+            public boolean onDataQueryFinished(DataService dataService) {
                 signal_receive.countDown();
                 return false;
             }
         });
 
-        AppData.observersStartStopRefresh.register(refreshStartedStopped);
+        DataService.observersStartStopRefresh.register(refreshStartedStopped);
 
-        service.getAppData().refreshDeviceData(service, false);
+        service.refreshDevices();
 
-        assertTrue("Timeout of refreshDeviceData", signal_receive.await(4, TimeUnit.SECONDS));
+        assertTrue("Timeout of refreshDevices", signal_receive.await(4, TimeUnit.SECONDS));
 
-        AppData.observersStartStopRefresh.unregister(refreshStartedStopped);
+        DataService.observersStartStopRefresh.unregister(refreshStartedStopped);
         assertEquals("RefreshStartStop count wrong", 0, refreshStartedStopped_signal);
 
-        assertTrue("No devices found!", service.getAppData().unconfiguredDeviceCollection.size() > 0);
+        assertTrue("No devices found!", service.connections.getRecentlyDetectedDevices(true, 1500) > 0);
     }
 }

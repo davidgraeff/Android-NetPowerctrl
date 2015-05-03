@@ -64,10 +64,10 @@ class GDriveRefreshBackupListTask extends AsyncTask<Void, String, MetadataBuffer
             }
 
             // Enter dir
-            DriveFolder appDataDir = GDrive.getAppFolder(mClient);
+            DriveFolder PluginServiceDir = GDrive.getAppFolder(mClient);
 
             // Get childs
-            DriveApi.MetadataBufferResult result = appDataDir.listChildren(mClient).await(5, TimeUnit.SECONDS);
+            DriveApi.MetadataBufferResult result = PluginServiceDir.listChildren(mClient).await(5, TimeUnit.SECONDS);
             if (!result.getStatus().isSuccess()) {
                 if (resultRequestSync.getStatusCode() == CastStatusCodes.TIMEOUT) {
                     errorString = NetpowerctrlApplication.getAppString(R.string.gDrive_error_timeout);

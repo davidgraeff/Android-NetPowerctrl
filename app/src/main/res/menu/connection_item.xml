@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_connection_edit"
+        android:title="@string/device_connections_edit" />
+
+    <item
+        android:id="@+id/menu_connection_test"
+        android:title="@string/device_connection_testing" />
+
+    <item
+        android:id="@+id/menu_connection_delete"
+        android:title="@string/device_connection_delete" />
+
+</menu>

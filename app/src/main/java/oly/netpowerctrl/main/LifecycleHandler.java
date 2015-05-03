@@ -7,10 +7,11 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.utils.statusbar_and_speech.AndroidStatusBarService;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.status_bar.AndroidStatusBarService;
+import oly.netpowerctrl.widget.ProviderExecutable;
+import oly.netpowerctrl.widget.ProviderGroup;
 import oly.netpowerctrl.widget.WidgetUpdateService;
 
 /**
@@ -25,8 +26,8 @@ public class LifecycleHandler implements Application.ActivityLifecycleCallbacks 
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
         if (firstStart) {
             firstStart = false;
-            LoadStoreIconData.onCreate(activity);
-            WidgetUpdateService.ForceUpdateAll(activity);
+            WidgetUpdateService.ForceUpdateAll(activity, ProviderExecutable.class);
+            WidgetUpdateService.ForceUpdateAll(activity, ProviderGroup.class);
             AndroidStatusBarService.startOrStop(App.instance);
         }
     }
@@ -50,7 +51,7 @@ public class LifecycleHandler implements Application.ActivityLifecycleCallbacks 
     @Override
     public void onActivityStarted(Activity activity) {
         if (started == 0) {
-            PluginService.useService(new WeakReference<Object>(this));
+            DataService.useService(new WeakReference<Object>(this));
         }
         ++started;
     }
@@ -62,7 +63,7 @@ public class LifecycleHandler implements Application.ActivityLifecycleCallbacks 
         if (started <= 0) { // pm.isScreenOn() == false
             if (SharedPrefs.getInstance().isMaximumEnergySaving()) {
                 Log.w("EnergySave", "onHide");
-                PluginService.stopUseService(this);
+                DataService.stopUseService(this);
             }
         }
     }
@@ -70,7 +71,7 @@ public class LifecycleHandler implements Application.ActivityLifecycleCallbacks 
     public void onBackground() {
         if (SharedPrefs.getInstance().isMaximumEnergySaving()) {
             Log.w("EnergySave", "onBackground");
-            PluginService.stopUseService(this);
+            DataService.stopUseService(this);
         }
     }
 }

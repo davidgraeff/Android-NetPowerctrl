@@ -6,9 +6,8 @@ import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.scenes.Scene;
 
@@ -28,7 +27,7 @@ public class AndroidShortcuts {
                 return null;
             }
             shortcutIntent.putExtra(ExecutionActivity.EXECUTE_SCENE_JSON, ((Scene) executable).toString());
-        } else if (executable instanceof DevicePort) {
+        } else if (executable instanceof Executable) {
             throw new RuntimeException("Not yet supported!");
         } else {
             return null;
@@ -53,7 +52,7 @@ public class AndroidShortcuts {
         // Create shortcut intent
         Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
         shortcutIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_UUID, executable_uid);
-        shortcutIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, DevicePort.TOGGLE);
+        shortcutIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, Executable.TOGGLE);
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);

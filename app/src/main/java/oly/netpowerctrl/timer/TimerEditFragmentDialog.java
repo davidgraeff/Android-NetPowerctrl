@@ -20,13 +20,12 @@ import java.text.DateFormatSymbols;
 import java.util.Calendar;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
-import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
+
+;
 
 public class TimerEditFragmentDialog extends DialogFragment implements onHttpRequestResult {
     int commandBefore;
@@ -37,7 +36,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     private boolean isNew = true;
     private boolean is_android_alarm;
     private boolean willDelete = false;
-    private AppData appData;
+    private DataService dataService;
 
     public TimerEditFragmentDialog() {
     }
@@ -62,7 +61,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_alarm_edit, null);
-        appData = PluginService.getService().getAppData();
+        dataService = DataService.getService();
 
         toast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
 
@@ -72,9 +71,9 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             is_android_alarm = bundle.getBoolean("is_android_alarm", true);
             timer = Timer.createNewTimer();
             timer.type = bundle.getInt("type");
-            timer.executable = appData.findExecutable(bundle.getString("executable"));
+            timer.executable = dataService.executables.findByUID(bundle.getString("executable"));
         } else {
-            timer = appData.timerCollection.findTimer(bundle.getString("timer"));
+            timer = dataService.timers.getByUID(bundle.getString("timer"));
             is_android_alarm = timer.alarmOnDevice == null;
         }
 
@@ -114,7 +113,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
         {
             final Checkable cp = ((Checkable) rootView.findViewById(R.id.alarm_is_switch_on));
-            cp.setChecked(timer.command == DevicePort.ON);
+            cp.setChecked(timer.command == Executable.ON);
         }
 
         {
@@ -190,7 +189,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
             @Override
             public void onClick(View v) {
                 willDelete = true;
-                appData.timerCollection.removeDeviceAlarm(timer, TimerEditFragmentDialog.this);
+                dataService.timers.removeDeviceAlarm(timer, TimerEditFragmentDialog.this);
             }
         });
     }
@@ -198,7 +197,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     private void saveAlarm() {
         // Fill in data
         commandBefore = timer.command;
-        timer.command = ((Checkable) rootView.findViewById(R.id.alarm_is_switch_on)).isChecked() ? DevicePort.ON : DevicePort.OFF;
+        timer.command = ((Checkable) rootView.findViewById(R.id.alarm_is_switch_on)).isChecked() ? Executable.ON : Executable.OFF;
 
         TimePicker timePicker = ((TimePicker) rootView.findViewById(R.id.alarm_start_time));
         if (timer.type == Timer.TYPE_ONCE) {
@@ -231,16 +230,16 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 
 
         if (is_android_alarm) {
-            appData.timerCollection.addAlarm(timer);
+            dataService.timers.put(timer, false);
             dismiss();
         } else {
-            DevicePort devicePort = (DevicePort) timer.executable;
-            AbstractBasePlugin plugin = (AbstractBasePlugin) devicePort.device.getPluginInterface();
+            //Executable executable = timer.executable;
+            //AbstractBasePlugin plugin = executable.getPlugin();
 
             // Find free device alarm, if not already assigned
             if (timer.alarmOnDevice == null || commandBefore != timer.command) {
                 Timer found_timer;
-                found_timer = plugin.getNextFreeAlarm(devicePort, timer.type, timer.command);
+                found_timer = null; //plugin.getNextFreeAlarm(executable, timer.type, timer.command);
                 if (found_timer == null) {
                     timer.command = commandBefore;
                     Toast.makeText(getActivity(), R.string.alarm_no_device_alarm, Toast.LENGTH_LONG).show();
@@ -250,12 +249,13 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
                 timer.alarmOnDevice = found_timer.alarmOnDevice;
             }
             // Save alarm
-            plugin.saveAlarm(timer, this);
+            //plugin.saveAlarm(timer, this);
+            //TODO
         }
     }
 
     @Override
-    public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
+    public void httpRequestResult(Executable oi, boolean success, String error_message) {
         if (!success) {
             Toast.makeText(getActivity(), error_message, Toast.LENGTH_SHORT).show();
         } else if (!willDelete) {
@@ -265,7 +265,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
 //                timer.command = commandBefore;
 //                willDelete = true;
 //                DevicePort devicePort = (DevicePort) timer.executable;
-//                PluginInterface plugin = (PluginInterface) devicePort.device.getPluginInterface();
+//                PluginInterface plugin = (PluginInterface) devicePort.device.getPlugin();
 //                plugin.removeDeviceAlarm(timer, this);
 //                timer.command = temp;
                 dismiss();
@@ -278,7 +278,7 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
     }
 
     @Override
-    public void httpRequestStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
+    public void httpRequestStart(@SuppressWarnings("UnusedParameters") Executable oi) {
         if (willDelete)
             Toast.makeText(getActivity(), R.string.alarm_wait_remove, Toast.LENGTH_SHORT).show();
         else

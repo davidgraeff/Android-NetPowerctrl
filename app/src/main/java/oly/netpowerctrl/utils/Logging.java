@@ -18,8 +18,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.SharedPrefs;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Created by david on 11.05.14.
@@ -104,7 +104,8 @@ public class Logging {
 
     public void clear() {
         if (logFile.exists())
-            logFile.delete();
+            if (!logFile.delete())
+                Log.e("Logging", "Failed to delete " + logFile.getAbsolutePath());
     }
 
     public File getLogFile() {

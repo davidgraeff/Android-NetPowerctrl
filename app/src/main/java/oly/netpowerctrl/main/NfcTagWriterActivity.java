@@ -15,7 +15,7 @@ import org.ndeftools.externaltype.AndroidApplicationRecord;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 
 /**
@@ -37,7 +37,7 @@ public class NfcTagWriterActivity extends org.ndeftools.util.activity.NfcTagWrit
 
         try {
             if (extra != null)
-                uuid = UUID.fromString(extra.getString("uuid", ""));
+                uuid = UUID.fromString(extra.getString("uid", ""));
             else
                 uuid = null;
         } catch (IllegalArgumentException e) {

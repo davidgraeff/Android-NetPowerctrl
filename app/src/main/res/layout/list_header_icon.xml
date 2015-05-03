@@ -22,13 +22,4 @@
         android:paddingRight="5dp"
         android:textAppearance="@android:style/TextAppearance.Medium" />
 
-    <View
-        android:id="@+id/line"
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="5dp"
-        android:background="?colorPrimaryDark"
-        android:paddingBottom="5dp"
-        android:visibility="invisible" />
-
 </LinearLayout>

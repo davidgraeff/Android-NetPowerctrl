@@ -42,10 +42,10 @@ public class UDPErrors {
         }
     }
 
-    public static void sendPacketHandleErrors(Context context, DatagramSocket datagramSocket, InetAddress ip, int SendPort, byte[] message) {
+    public static boolean sendPacketHandleErrors(Context context, DatagramSocket datagramSocket, InetAddress ip, int SendPort, byte[] message) {
         try {
             datagramSocket.send(new DatagramPacket(message, message.length, ip, SendPort));
-            //Log.w("AnelBroadcastSendJob",ip.getHostAddress());
+            return true;
         } catch (final SocketException e) {
             if (e.getMessage().contains("ENETUNREACH"))
                 UDPErrors.onError(context, UDPErrors.NETWORK_UNREACHABLE, ip.getHostAddress(), SendPort, e);
@@ -56,5 +56,6 @@ public class UDPErrors {
             e.printStackTrace();
             UDPErrors.onError(context, UDPErrors.INQUERY_BROADCAST_REQUEST, ip.getHostAddress(), SendPort, e);
         }
+        return false;
     }
 }

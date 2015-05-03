@@ -15,18 +15,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
-import oly.netpowerctrl.device_base.data.JSONHelper;
-import oly.netpowerctrl.device_base.data.StorableInterface;
-import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.utils.IOInterface;
+import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  * Represents an alarm and is used by TimerCollection.
  */
-public class Timer implements StorableInterface {
+public class Timer implements IOInterface {
     // Alarm type
     public static final int TYPE_RANGE_ON_WEEKDAYS = 1;
-    public int type = TYPE_RANGE_ON_WEEKDAYS;
     public static final int TYPE_RANGE_ON_RANDOM_WEEKDAYS = 2;
     public static final int TYPE_ONCE = 10; // fixed date+time
     public static final int TYPES = 3;
@@ -34,6 +32,7 @@ public class Timer implements StorableInterface {
     // Store days. Start with SUNDAY
     public final boolean[] weekdays = new boolean[7];
     public final long viewID;
+    public int type = TYPE_RANGE_ON_WEEKDAYS;
     // Relative alarm in minutes of the day: hour*60+minute. -1 for disabled
     public int hour_minute = -1;
     // Absolute date and time
@@ -132,7 +131,7 @@ public class Timer implements StorableInterface {
 
     public String getTargetName() {
         if (executable != null)
-            return executable.getDescription(App.instance) + ": " + executable.getTitle();
+            return executable.getDescription() + ": " + executable.getTitle();
         return "";
     }
 
@@ -186,7 +185,7 @@ public class Timer implements StorableInterface {
     }
 
     @Override
-    public String getStorableName() {
+    public String getUid() {
         return uuid;
     }
 
@@ -271,6 +270,16 @@ public class Timer implements StorableInterface {
     @Override
     public void save(@NonNull OutputStream output) throws IOException {
         toJSON(JSONHelper.createWriter(output));
+    }
+
+    @Override
+    public boolean hasChanged() {
+        return true;
+    }
+
+    @Override
+    public void resetChanged() {
+
     }
 
     public void markFromCache() {

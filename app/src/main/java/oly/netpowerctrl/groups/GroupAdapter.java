@@ -7,25 +7,38 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.ObserverUpdateActions;
-import oly.netpowerctrl.data.onCollectionUpdated;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.utils.ObserverUpdateActions;
+import oly.netpowerctrl.utils.onCollectionUpdated;
 
 /**
  *
  */
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> implements onCollectionUpdated<GroupCollection, Group>, onServiceReady {
-    private int count;
     private GroupCollection groupCollection;
     private int selectedItemPosition = -1;
     private int lastSelectedItemPosition = -1;
+    private List<Group> items = new ArrayList<>();
 
     public GroupAdapter() {
-        count = 0;
-        PluginService.observersServiceReady.register(this);
+        DataService.observersServiceReady.register(this);
+    }
+
+    /**
+     * Return the group at the given position. The first entry is the "all" entry and will return null.
+     *
+     * @param position
+     * @return
+     */
+    public Group getGroup(int position) {
+        if (position == 0) return null;
+        return items.get(position);
     }
 
     @Override
@@ -36,9 +49,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        String t = position == 0 ? App.getAppString(R.string.groups_all) :
-                groupCollection.get(position - 1).name;
-        viewHolder.textView.setText(t);
+        viewHolder.textView.setText(items.get(position).name);
 
         if (lastSelectedItemPosition == position) {
             viewHolder.layout_item.setActivated(false);
@@ -52,40 +63,79 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return count;
+        return items.size();
     }
 
     public void onDestroy() {
+        items.clear();
         groupCollection.unregisterObserver(this);
     }
 
-    @Override
-    public boolean updated(@NonNull GroupCollection groupCollection, Group group, @NonNull ObserverUpdateActions action, int position) {
-        count = groupCollection.size() + 1;
+    private void resetItems() {
+        items.clear();
+        items.add(new Group("", App.getAppString(R.string.groups_all)));
+        for (Group group : groupCollection.getItems().values()) {
+            items.add(group);
+        }
         notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean updated(@NonNull GroupCollection groupCollection, Group group, @NonNull ObserverUpdateActions action) {
+        switch (action) {
+            case AddAction:
+                items.add(group);
+                notifyItemInserted(items.size() - 1);
+                break;
+            case RemoveAction:
+                for (int i = 0; i < items.size(); ++i)
+                    if (items.get(i).getUid().equals(group.getUid())) {
+                        items.remove(i);
+                        notifyItemRemoved(i);
+                        break;
+                    }
+                break;
+            case ClearAndNewAction:
+            case RemoveAllAction:
+                resetItems();
+                break;
+            case UpdateAction:
+                for (int i = 0; i < items.size(); ++i)
+                    if (items.get(i).getUid().equals(group.getUid())) {
+                        notifyItemChanged(i);
+                        break;
+                    }
+        }
         return true;
     }
 
     @Override
-    public boolean onServiceReady(PluginService service) {
-        groupCollection = service.getAppData().groupCollection;
-        groupCollection.registerObserver(GroupAdapter.this);
-        count = groupCollection.size() + 1;
-        notifyDataSetChanged();
+    public boolean onServiceReady(DataService service) {
+        groupCollection = service.groups;
+        groupCollection.registerObserver(this);
+        resetItems();
         return true;
     }
 
     @Override
-    public void onServiceFinished(PluginService service) {
+    public void onServiceFinished(DataService service) {
         groupCollection = null;
     }
 
-    public void setSelectedItem(int pos) {
+    public void setSelectedItem(String groupUID) {
         lastSelectedItemPosition = selectedItemPosition;
         if (lastSelectedItemPosition != -1)
             notifyItemChanged(lastSelectedItemPosition);
 
+        int pos = -1;
+        for (int i = 0; i < items.size(); ++i)
+            if (items.get(i).getUid().equals(groupUID)) {
+                pos = i;
+                break;
+            }
+
         selectedItemPosition = pos;
+        if (pos == -1) return;
         notifyItemChanged(pos);
     }
 

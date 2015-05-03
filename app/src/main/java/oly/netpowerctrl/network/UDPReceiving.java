@@ -8,7 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 abstract public class UDPReceiving extends Thread {
@@ -24,7 +24,7 @@ abstract public class UDPReceiving extends Thread {
     }
 
     public void run() {
-        Context context = PluginService.getService();
+        Context context = DataService.getService();
         if (context == null)
             return;
 

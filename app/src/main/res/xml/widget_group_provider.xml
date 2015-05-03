@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:configure="oly.netpowerctrl.widget.ConfigGroupActivity"
+    android:initialLayout="@layout/widget_group"
+    android:minHeight="80dp"
+    android:minResizeHeight="80dp"
+    android:minResizeWidth="80dp"
+    android:minWidth="80dp"
+    android:previewImage="@drawable/netpowerctrl"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen|keyguard"
+    tools:ignore="UnusedAttribute" />

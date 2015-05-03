@@ -5,15 +5,17 @@ import android.test.AndroidTestCase;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.LoadStoreJSonData;
-import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.LoadStoreCollections;
+import oly.netpowerctrl.devices.Credentials;
+
+;
 
 /**
- * Testing AppData class. AppData should be fully independent of PluginService.
+ * Testing DataService class. DataService should be fully independent of DataService.
  */
 public class AppDataTests extends AndroidTestCase {
-    AppData c;
+    DataService c;
 
     @Override
     protected void setUp() throws Exception {
@@ -28,30 +30,30 @@ public class AppDataTests extends AndroidTestCase {
     }
 
     public void testMainApp() throws Exception {
-        c = new AppData();
-        c.setLoadStoreController(new TestObjects.LoadStoreJSonDataTest());
+        c = new DataService();
+        c.setLoadStoreController(new TestObjects.LoadStoreCollectionsTest());
         assertNotNull(c);
 
         // Test if load store is set up.
-        Field privateStringField = AppData.class.
+        Field privateStringField = DataService.class.
                 getDeclaredField("loadStoreJSonData");
         privateStringField.setAccessible(true);
-        LoadStoreJSonData l = (LoadStoreJSonData) privateStringField.get(c);
+        LoadStoreCollections l = (LoadStoreCollections) privateStringField.get(c);
         assertNotNull(l);
-        assertEquals(l instanceof TestObjects.LoadStoreJSonDataTest, true);
+        assertEquals(l instanceof TestObjects.LoadStoreCollectionsTest, true);
 
-        assertNull(PluginService.getService());
+        assertNull(DataService.getService());
 
-        Method method = AppData.class.
-                getDeclaredMethod("updateDevice");
-        method.invoke(c, TestObjects.createDevice());
+        Credentials credentials = TestObjects.createDevice();
 
-        assertEquals(c.deviceCollection.size(), 0);
-        assertEquals(c.unconfiguredDeviceCollection.size(), 1);
+        Method method = DataService.class.
+                getDeclaredMethod("updateCredentials");
+        method.invoke(c, credentials);
 
-        c.addToConfiguredDevices(c.unconfiguredDeviceCollection.get(0));
+        assertEquals(c.credentials.size(), 0);
 
-        assertEquals(c.unconfiguredDeviceCollection.size(), 0);
-        assertEquals(c.deviceCollection.size(), 1);
+        c.addToConfiguredDevices(credentials);
+
+        assertEquals(c.credentials.size(), 1);
     }
 }

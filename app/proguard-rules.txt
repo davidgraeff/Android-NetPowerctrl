@@ -21,17 +21,16 @@
     *;
 }
 
+-keep oly.netpowerctrl.debug {
+    *;
+}
+
 # keep this around for some enums that ACRA needs
 -keep class org.acra.ReportingInteractionMode {
     *;
 }
 
 -assumenosideeffects class oly.netpowerctrl.plugin.** { *; }
-
--assumenosideeffects class oly.netpowerctrl.device_base.Device {
-   private void test_checkLock();
-   private void test_checkDevicePortLock();
-}
 
 -assumenosideeffects class oly.netpowerctrl.consistency_tests.** { *; }
 

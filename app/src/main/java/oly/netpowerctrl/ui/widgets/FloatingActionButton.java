@@ -94,6 +94,7 @@ public class FloatingActionButton extends View {
             display.getSize(size);
             mYHidden = size.y;
         } else mYHidden = display.getHeight();
+        a.recycle();
     }
 
     public static int darkenColor(int color) {

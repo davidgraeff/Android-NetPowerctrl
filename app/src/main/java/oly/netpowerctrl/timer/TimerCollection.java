@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
@@ -17,55 +18,45 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.CollectionWithStorableItems;
-import oly.netpowerctrl.data.ObserverUpdateActions;
-import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.device_base.device.Device;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.devices.DeviceCollection;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.storage_container.CollectionMapItems;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.pluginservice.AbstractBasePlugin;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Logging;
+import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.WakeLocker;
+import oly.netpowerctrl.utils.onCollectionUpdated;
 
 /**
  * Control all configured alarms
  */
-public class TimerCollection extends CollectionWithStorableItems<TimerCollection, Timer> {
+public class TimerCollection extends CollectionMapItems<TimerCollection, Timer> {
     private static final String TAG = "TimerCollection";
     private static final long maxDiffMS = 5000;
-    public onCollectionUpdated<DeviceCollection, Device> deviceObserver = new onCollectionUpdated<DeviceCollection, Device>() {
+    public onCollectionUpdated<ExecutableCollection, Executable> deviceObserver = new onCollectionUpdated<ExecutableCollection, Executable>() {
         @Override
-        public boolean updated(@NonNull DeviceCollection deviceCollection, Device device, @NonNull ObserverUpdateActions action, int position) {
+        public boolean updated(@NonNull ExecutableCollection c, @Nullable Executable executable, @NonNull ObserverUpdateActions action) {
             if (action != ObserverUpdateActions.RemoveAllAction && action != ObserverUpdateActions.RemoveAction)
                 return true;
 
-            if (device == null) {
+            if (executable == null) {
                 removeAll();
                 return true;
             }
 
-            device.lockDevicePorts();
-            Iterator<DevicePort> iterator = device.getDevicePortIterator();
-            while (iterator.hasNext()) {
-                DevicePort devicePort = iterator.next();
-                for (int index = items.size() - 1; index >= 0; --index) {
-                    Timer timer = items.get(index);
-                    if (timer.executable_uid.equals(devicePort.getUid())) {
-                        removeFromCache(index);
-                    }
+            for (Map.Entry<String, Timer> entry : items.entrySet()) {
+                if (entry.getValue().executable_uid.equals(executable.getUid())) {
+                    removeAlarmFromDisk(entry.getValue());
                 }
             }
-            device.releaseDevicePorts();
+
             return true;
         }
     };
@@ -75,25 +66,22 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
     private final Runnable notifyRunnable = new Runnable() {
         @Override
         public void run() {
-            for (int index = items.size() - 1; index >= 0; --index) {
-                Timer timer = items.get(index);
-                if (timer.isFromCache()) {
-                    requestActive = false;
-                    removeFromCache(index);
+            for (Map.Entry<String, Timer> entry : items.entrySet()) {
+                if (entry.getValue().isFromCache()) {
+                    removeAlarmFromDisk(entry.getValue());
                 }
             }
 
             if (requestActive) {
                 requestActive = false;
-                notifyObservers(null, ObserverUpdateActions.ConnectionUpdateAction, -1);
+                //notifyObservers(null, ObserverUpdateActions.ClearAndNewAction);
             }
-            saveAll();
         }
     };
 
-    public TimerCollection(AppData appData) {
-        super(appData);
-        appData.deviceCollection.registerObserver(deviceObserver);
+    public TimerCollection(DataService dataService) {
+        super(dataService, "alarms");
+        dataService.executables.registerObserver(deviceObserver);
     }
 
     public static void printAlarm(long time, String name) {
@@ -105,7 +93,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
     public static void armAndroidAlarm(Context context, long wakeupTimeInMs) {
         AlarmManager mgr = (AlarmManager) context.getSystemService(android.content.Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, PluginService.class);
+        Intent intent = new Intent(context, DataService.class);
         intent.putExtra("isAlarm", true);
         PendingIntent pi = PendingIntent.getService(context, 1191, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -143,9 +131,9 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
     /**
      * Check for alarms. If the current time matches (somehow) the next alarm time,
-     * executeAlarm is called as soon as the PluginService is ready. Otherwise the android
+     * executeAlarm is called as soon as the DataService is ready. Otherwise the android
      * alarm is rescheduled.
-     * The PluginService as well as the AppData object may not be ready at this time.
+     * The DataService as well as the DataService object may not be ready at this time.
      */
     public void checkAlarm(long checkTime) {
         if (checkTime == -1) return;
@@ -157,7 +145,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         // Check if current time matches somehow the next alarm time
         if (checkTime <= nextAlarmTimestamp + maxDiffMS) {
             if (checkTime >= nextAlarmTimestamp) {
-                appData.timerCollection.executeAlarm(appData, nextAlarmTimestamp);
+                dataService.timers.executeAlarm(nextAlarmTimestamp);
             } else
                 TimerCollection.armAndroidAlarm(App.instance, nextAlarmTimestamp);
         } else
@@ -195,7 +183,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         }
     }
 
-    private void executeAlarm(AppData appData, final long nextAlarmTimestamp) {
+    private void executeAlarm(final long nextAlarmTimestamp) {
         List<Executable> executables = new ArrayList<>();
         List<Integer> commands = new ArrayList<>();
 
@@ -203,7 +191,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         SharedPrefs.setNextAlarmCheckTimestamp(App.instance, -1, "");
 
         // Determine executables for the given alarm time {@link nextAlarmTimestamp}
-        for (Timer timer : getItems()) {
+        for (Timer timer : getItems().values()) {
             if (timer.alarmOnDevice != null)
                 continue;
 
@@ -211,7 +199,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
             if (timer.next_execution_unix_time >= nextAlarmTimestamp &&
                     timer.next_execution_unix_time < nextAlarmTimestamp + maxDiffMS) {
-                Executable executable = appData.findExecutable(timer.executable_uid);
+                Executable executable = dataService.executables.findByUID(timer.executable_uid);
 
                 if (executable != null)
                     Logging.getInstance().logAlarm("Alarm: " + executable.getTitle());
@@ -235,10 +223,10 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         // acquire for the duration of the alarm execution.
         final AtomicInteger countDownInteger = new AtomicInteger(executables.size());
         //final CountDownLatch countDownLatch = new CountDownLatch(executables.size());
-        onExecutionFinished executionFinished = new onExecutionFinished() {
+        onExecutionFinished executionFinished = new onExecutionFinished(executables.size()) {
             @Override
-            public void onExecutionProgress(int success, int errors, int all) {
-                if (success + errors >= all) {
+            public void onExecutionProgress() {
+                if (success + errors >= expected) {
                     Log.w(TAG, "alarm finished");
                     //Thread.dumpStack();
                     Logging.getInstance().logAlarm("Alarm items (OK, FAIL):\n" + String.valueOf(success) + ", " + String.valueOf(errors));
@@ -249,17 +237,12 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         Iterator<Integer> command_it = commands.iterator();
         for (Executable executable : executables) {
-            if (executable instanceof DevicePort) {
-                WakeLocker.acquire(App.instance);
-                appData.execute((DevicePort) executable, command_it.next(), executionFinished);
-            } else if (executable instanceof Scene) {
-                WakeLocker.acquire(App.instance);
-                appData.execute((Scene) executable, executionFinished);
-            }
+            WakeLocker.acquire(App.instance);
+            executable.execute(dataService, command_it.next(), executionFinished);
         }
 
         // Hint: Initially a countDownLatch has been used to finish this method after all
-        // appData.execute finished for every executable (or after 5s). But the main loop
+        // dataService.execute finished for every executable (or after 5s). But the main loop
         // was stopped and no network commands have been handed over to the network thread.
         App.getMainThreadHandler().postDelayed(new Runnable() {
             @Override
@@ -269,7 +252,7 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
                 // Setup new alarm if one got executed
                 setupNextAndroidAlarmFromPointInTime(App.instance, nextMinimumAlarmTime);
 
-                PluginService.getService().checkStopAfterAlarm();
+                dataService.checkStopAfterAlarm();
             }
         }, 5000);
     }
@@ -286,18 +269,6 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         return receivedAlarmCount;
     }
 
-    private int replaced_at(Timer timer) {
-        for (int i = 0; i < items.size(); ++i) {
-            Timer a = items.get(i);
-            if (a.equals(timer)) {
-                items.set(i, timer);
-                notifyObservers(timer, ObserverUpdateActions.UpdateAction, i);
-                return i;
-            }
-        }
-        return -1;
-    }
-
     /**
      * Called by plugins to propagate alarms.
      *
@@ -311,78 +282,62 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
             @Override
             public void run() {
                 ++receivedAlarmCount;
-                notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
+                notifyObservers(null, ObserverUpdateActions.UpdateAction);
                 if (new_timers == null) return;
                 for (Timer new_timer : new_timers) {
-                    int i = replaced_at(new_timer);
-                    if (i == -1 && new_timer.executable_uid != null) {
-                        items.add(new_timer);
-                        notifyObservers(null, ObserverUpdateActions.AddAction, items.size() - 1);
-                    }
+                    put(new_timer, false);
                 }
             }
         });
     }
 
-    public void addAlarm(Timer alarm) {
-        int i = replaced_at(alarm);
-        if (i == -1 && alarm.executable_uid != null) {
-            items.add(alarm);
-            i = items.size() - 1;
-            notifyObservers(alarm, ObserverUpdateActions.AddAction, i);
+    public void put(Timer timer, boolean onlyForCache) {
+        Timer existing = items.get(timer.getUid());
+        items.put(timer.getUid(), timer);
+        if (existing != null) {
+            notifyObservers(timer, ObserverUpdateActions.UpdateAction);
         } else {
-            notifyObservers(alarm, ObserverUpdateActions.UpdateAction, i);
+            notifyObservers(timer, ObserverUpdateActions.AddAction);
         }
-        save(alarm);
 
-        if (alarm.alarmOnDevice == null)
+        if (!onlyForCache)
+            storage.save(timer);
+
+        if (timer.alarmOnDevice == null)
             setupNextAndroidAlarmFromPointInTime(App.instance, System.currentTimeMillis());
     }
 
     void removeDeviceAlarm(final Timer timer, final onHttpRequestResult callback) {
-        if (timer.executable instanceof DevicePort && timer.alarmOnDevice != null) {
-            Device device = ((DevicePort) timer.executable).device;
-            AbstractBasePlugin p = (AbstractBasePlugin) device.getPluginInterface();
-            p.removeAlarm(timer, new onHttpRequestResult() {
-                @Override
-                public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
-                    if (success)
-                        removeAlarmFromDisk(timer);
-                    if (callback != null)
-                        callback.httpRequestResult(oi, success, error_message);
-                }
-
-                @Override
-                public void httpRequestStart(@SuppressWarnings("UnusedParameters") DevicePort oi) {
-                    if (callback != null)
-                        callback.httpRequestStart(oi);
-                }
-            });
-        } else {
-            removeAlarmFromDisk(timer);
-        }
+//        if (timer.executable instanceof Executable && timer.alarmOnDevice != null) {
+//            AbstractBasePlugin p = timer.executable.getPlugin();
+        //TODO
+//            p.removeAlarm(timer, new onHttpRequestResult() {
+//                @Override
+//                public void httpRequestResult(Executable oi, boolean success, String error_message) {
+//                    if (success)
+//                        removeAlarmFromDisk(timer);
+//                    if (callback != null)
+//                        callback.httpRequestResult(oi, success, error_message);
+//                }
+//
+//                @Override
+//                public void httpRequestStart(@SuppressWarnings("UnusedParameters") Executable oi) {
+//                    if (callback != null)
+//                        callback.httpRequestStart(oi);
+//                }
+//            });
+//        } else {
+//            removeAlarmFromDisk(timer);
+//        }
     }
 
     void removeAlarmFromDisk(Timer timer) {
-        remove(timer);
-        for (int i = 0; i < items.size(); ++i) {
-            if (items.get(i) == timer) {
-                items.remove(i);
-                notifyObservers(timer, ObserverUpdateActions.RemoveAction, i);
-                break;
-            }
-        }
+        storage.remove(timer);
+        items.remove(timer.getUid());
+        notifyObservers(timer, ObserverUpdateActions.RemoveAction);
     }
 
-    public void removeFromCache(int position) {
-        if (position != -1) {
-            remove(items.get(position));
-            items.remove(position);
-            notifyObservers(null, ObserverUpdateActions.RemoveAction, position);
-        }
-    }
-
-    public boolean refresh(DevicePort devicePort) {
+    public boolean refresh(Executable Executable) {
         if (requestActive)
             return true;
 
@@ -390,34 +345,35 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
 
         // Flag all alarms as from-cache
         HashSet<String> alarm_uuids = new HashSet<>();
-        for (Timer timer : items) {
+        for (Timer timer : items.values()) {
             timer.markFromCache();
             if (timer.alarmOnDevice != null)
                 alarm_uuids.add(timer.executable_uid);
         }
 
         requestActive = true;
-        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
+        notifyObservers(null, ObserverUpdateActions.UpdateAction);
 
-        List<DevicePort> alarm_ports = new ArrayList<>();
+        List<Executable> alarm_ports = new ArrayList<>();
 
 
-        if (alarm_uuids.contains(devicePort.getUid()))
-            alarm_ports.add(0, devicePort); // add in front of all alarm_uuids
+        if (alarm_uuids.contains(Executable.getUid()))
+            alarm_ports.add(0, Executable); // add in front of all alarm_uuids
         else
-            alarm_ports.add(devicePort);
+            alarm_ports.add(Executable);
 
         receivedAlarmCount = 0;
         allAlarmCount = 0;
-        for (DevicePort port : alarm_ports) {
-            AbstractBasePlugin i = (AbstractBasePlugin) port.device.getPluginInterface();
-            //TODO eigentlich sollen alle getPluginInterface() etwas zurückgeben. Jedoch laden Erweiterungen nicht schnell genug für diesen Aufruf hier
-            if (i != null) {
-                ++allAlarmCount;
-                i.requestAlarms(port, this);
-            }
-        }
-        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
+//        for (Executable port : alarm_ports) {
+//            AbstractBasePlugin i = port.getPlugin();
+//            //TODO eigentlich sollen alle getPlugin() etwas zurückgeben. Jedoch laden Erweiterungen nicht schnell genug für diesen Aufruf hier
+//            if (i != null) {
+//                ++allAlarmCount;
+//                //i.requestAlarms(port, this);
+//                //TODO
+//            }
+//        }
+        notifyObservers(null, ObserverUpdateActions.UpdateAction);
 
         return requestActive;
     }
@@ -426,42 +382,25 @@ public class TimerCollection extends CollectionWithStorableItems<TimerCollection
         Handler h = App.getMainThreadHandler();
         h.removeCallbacks(notifyRunnable);
         requestActive = false;
-        notifyObservers(null, ObserverUpdateActions.UpdateAction, -1);
+        notifyObservers(null, ObserverUpdateActions.UpdateAction);
     }
 
     public void removeAll() {
         int b = items.size();
         // Delete all alarms
-        for (Timer timer : getItems())
+        for (Timer timer : items.values())
             removeDeviceAlarm(timer, null);
         items.clear();
-        notifyObservers(null, ObserverUpdateActions.RemoveAllAction, b);
-    }
-
-    @Override
-    public String type() {
-        return "alarms";
-    }
-
-    @Override
-    public void addWithoutSave(Timer timer) throws ClassNotFoundException {
-        Executable executable = appData.findExecutable(timer.executable_uid);
-        if (executable == null)
-            throw new ClassNotFoundException(toString());
-        timer.executable = executable;
-        super.addWithoutSave(timer);
+        notifyObservers(null, ObserverUpdateActions.RemoveAllAction);
     }
 
     public void fillItems(Executable executable, List<Timer> out_list) {
-        for (Timer timer : items)
+        for (Timer timer : items.values())
             if (timer.executable_uid.equals(executable.getUid()))
                 out_list.add(timer);
     }
 
-    public Timer findTimer(String timerUid) {
-        for (Timer timer : items)
-            if (timerUid.equals(timer.uuid))
-                return timer;
-        return null;
+    public Timer getByUID(String timerUid) {
+        return items.get(timerUid);
     }
 }

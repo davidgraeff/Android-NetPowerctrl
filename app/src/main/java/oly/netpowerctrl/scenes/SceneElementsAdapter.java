@@ -13,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.Executable;
-import oly.netpowerctrl.device_base.executables.ExecutableType;
-import oly.netpowerctrl.executables.ExecutableAdapterItem;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableType;
+import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 import oly.netpowerctrl.ui.widgets.SegmentedRadioGroup;
+
+;
 
 public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdapter.ViewHolder> {
     public final List<ExecutableAdapterItem> mItems = new ArrayList<>();
@@ -58,17 +59,17 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
 
             switch (i) {
                 case R.id.radioSwitchOff:
-                    command_value = DevicePort.OFF;
+                    command_value = Executable.OFF;
                     break;
                 case R.id.radioSwitchOn:
-                    command_value = DevicePort.ON;
+                    command_value = Executable.ON;
                     break;
                 case R.id.radioToggleMaster:
                     master = info;
                     masterChanged = true;
                     // no break
                 case R.id.radioToggle:
-                    command_value = DevicePort.TOGGLE;
+                    command_value = Executable.TOGGLE;
                     break;
             }
 
@@ -115,13 +116,13 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         ExecutableAdapterItem item = mItems.get(position);
-        DevicePort port = (DevicePort) item.getExecutable();
+        Executable port = (Executable) item.getExecutable();
 
         viewHolder.title.setText(port.getTitle());
-        viewHolder.title.setEnabled(port.isEnabled());
+        viewHolder.title.setEnabled(!port.executionInProgress());
 
         if (viewHolder.subtitle != null) {
-            viewHolder.subtitle.setText(port.device.getDeviceName());
+            viewHolder.subtitle.setText(port.getDescription());
         }
 
         ExecutableType type = port.getType();
@@ -136,13 +137,13 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
             }
 
             switch (item.getCommand_value()) {
-                case DevicePort.OFF:
+                case Executable.OFF:
                     viewHolder.r0.setChecked(true);
                     break;
-                case DevicePort.ON:
+                case Executable.ON:
                     viewHolder.r1.setChecked(true);
                     break;
-                case DevicePort.TOGGLE:
+                case Executable.TOGGLE:
                     if (item.equals(master))
                         viewHolder.r3.setChecked(true);
                     else
@@ -166,7 +167,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
 
     public void switchAllOn() {
         for (ExecutableAdapterItem item : mItems) {
-            DevicePort port = (DevicePort) item.getExecutable();
+            Executable port = (Executable) item.getExecutable();
             item.setCommand_value(port.max_value);
         }
         notifyDataSetChanged();
@@ -174,7 +175,7 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
 
     public void switchAllOff() {
         for (ExecutableAdapterItem item : mItems) {
-            DevicePort port = (DevicePort) item.getExecutable();
+            Executable port = (Executable) item.getExecutable();
             item.setCommand_value(port.min_value);
         }
         notifyDataSetChanged();
@@ -182,20 +183,20 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
 
     public void toggleAll() {
         for (ExecutableAdapterItem outlet_info : mItems) {
-            outlet_info.setCommand_value(DevicePort.TOGGLE);
+            outlet_info.setCommand_value(Executable.TOGGLE);
         }
         notifyDataSetChanged();
     }
 
-    public DevicePort getMaster() {
+    public Executable getMaster() {
         if (master != null)
-            return (DevicePort) master.getExecutable();
+            return (Executable) master.getExecutable();
         return null;
     }
 
     public void setMasterOfScene(Scene scene) {
         if (scene.isMasterSlave()) {
-            int p = findPositionByUUid(scene.getMasterUUid());
+            int p = findPositionByUUid(scene.getMasterExecutableUid());
             if (p != -1)
                 master = mItems.get(p);
             else
@@ -224,11 +225,11 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementsAdap
      * Call this to load device ports from a scene.
      * This will not update the view.
      *
-     * @param scene
+     * @param scene The scene
      */
-    public void loadItemsOfScene(AppData appData, Scene scene) {
+    public void loadItemsOfScene(DataService dataService, Scene scene) {
         for (SceneItem sceneItem : scene.sceneItems) {
-            DevicePort port = appData.findDevicePort(sceneItem.uuid);
+            Executable port = dataService.executables.findByUID(sceneItem.uuid);
             if (port == null) {
                 continue;
             }

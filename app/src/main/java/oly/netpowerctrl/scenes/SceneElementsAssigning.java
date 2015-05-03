@@ -6,15 +6,17 @@ import android.view.View;
 import com.wefika.flowlayout.FlowLayout;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.executables.AdapterSource;
-import oly.netpowerctrl.executables.AdapterSourceInputDevicePorts;
-import oly.netpowerctrl.executables.ExecutableAdapterItem;
-import oly.netpowerctrl.executables.ExecutablesAdapter;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.adapter.AdapterSource;
+import oly.netpowerctrl.executables.adapter.AdapterSourceExecutables;
+import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
+import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
+
+;
 
 /**
  * Created by david on 23.12.14.
@@ -25,10 +27,10 @@ public class SceneElementsAssigning {
     private AdapterSource availableData;
     private SceneElementsAdapter includedData;
 
-    public SceneElementsAssigning(Context context, final AppData appData, FlowLayout layout_included, View available,
+    public SceneElementsAssigning(Context context, final DataService dataService, FlowLayout layout_included, View available,
                                   final SceneElementsChanged sceneElementsChanged, Scene scene) {
         availableData = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
-        availableData.addInput(new AdapterSourceInputDevicePorts());
+        availableData.addInput(new AdapterSourceExecutables());
         final ExecutablesAdapter adapter_available =
                 new ExecutablesAdapter(availableData, LoadStoreIconData.iconLoadingThread, R.layout.list_item_available_outlet);
         includedData = new SceneElementsAdapter();
@@ -37,12 +39,12 @@ public class SceneElementsAssigning {
                 includedData, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
-                availableData.addItem(includedData.take(position).getExecutable(), DevicePort.TOGGLE);
+                availableData.addItem(includedData.take(position).getExecutable(), Executable.TOGGLE);
                 sceneElementsChanged.onSceneElementsChanged();
                 return true;
             }
         });
-        availableElements = new RecyclerViewWithAdapter<>(context, null,
+        availableElements = new RecyclerViewWithAdapter<>(context,
                 available, adapter_available, R.string.scene_create_helptext_available);
 
 
@@ -51,20 +53,20 @@ public class SceneElementsAssigning {
         availableElements.setOnItemClickListener(new RecyclerItemClickListener(context, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
-                DevicePort devicePort = (DevicePort) availableData.getItem(position).getExecutable();
-                if (devicePort == null)
+                Executable executable = availableData.getItem(position).getExecutable();
+                if (executable == null)
                     return false;
-                if (appData.findDevicePort(devicePort.getUid()) != devicePort) {
+                if (dataService.executables.findByUID(executable.getUid()) != executable) {
                     throw new RuntimeException("DevicePort not equal!");
                 }
                 availableData.removeAt(position);
-                includedData.addItem(devicePort, DevicePort.TOGGLE);
+                includedData.addItem(executable, Executable.TOGGLE);
                 sceneElementsChanged.onSceneElementsChanged();
                 return true;
             }
         }, null));
 
-        includedData.loadItemsOfScene(appData, scene);
+        includedData.loadItemsOfScene(dataService, scene);
         includedData.setMasterOfScene(scene);
         includedData.notifyDataSetChanged();
 

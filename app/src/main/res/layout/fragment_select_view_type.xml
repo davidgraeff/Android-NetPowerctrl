@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="Ansichtsmodus"
+            android:text="@string/view_mode"
             android:textAppearance="@android:style/TextAppearance.Large"
             android:textColor="?attr/editTextColor" />
 
@@ -28,7 +28,7 @@
 
         <oly.netpowerctrl.ui.SoftRadioButton
             android:id="@+id/design1"
-            group="style"
+            groupUID="style"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/outlets_view_type_list" />
@@ -41,7 +41,7 @@
 
         <oly.netpowerctrl.ui.SoftRadioButton
             android:id="@+id/design2"
-            group="style"
+            groupUID="style"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/outlets_view_type_extended" />
@@ -54,7 +54,7 @@
 
         <oly.netpowerctrl.ui.SoftRadioButton
             android:id="@+id/design3"
-            group="style"
+            groupUID="style"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/outlets_view_type_compact" />
@@ -64,74 +64,5 @@
             android:layout_width="fill_parent"
             android:layout_height="160dp"
             android:layout_marginLeft="10dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="Icon Theme"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:textColor="?attr/editTextColor" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="2dip"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="2dp"
-            android:background="?attr/colorPrimaryDark" />
-
-        <oly.netpowerctrl.ui.SoftRadioButton
-            android:id="@+id/theme1"
-            group="icontheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/icon_theme_1" />
-
-        <include
-            android:id="@+id/theme1_preview"
-            layout="@layout/icon_theme"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-
-        <oly.netpowerctrl.ui.SoftRadioButton
-            android:id="@+id/theme2"
-            group="icontheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/icon_theme_2" />
-
-        <include
-            android:id="@+id/theme2_preview"
-            layout="@layout/icon_theme"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-
-        <oly.netpowerctrl.ui.SoftRadioButton
-            android:id="@+id/theme3"
-            group="icontheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/icon_theme_3" />
-
-        <include
-            android:id="@+id/theme3_preview"
-            layout="@layout/icon_theme"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-
-        <oly.netpowerctrl.ui.SoftRadioButton
-            android:id="@+id/theme4"
-            group="icontheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/icon_theme_4" />
-
-        <include
-            android:id="@+id/theme4_preview"
-            layout="@layout/icon_theme"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-
-
     </LinearLayout>
 </ScrollView>

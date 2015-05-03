@@ -1,6 +1,6 @@
 package oly.netpowerctrl.anel;
 
-import oly.netpowerctrl.device_base.device.DevicePort;
+import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.timer.AlarmOnDevice;
 import oly.netpowerctrl.timer.Timer;
 
@@ -19,13 +19,13 @@ public class AnelTimer {
 
     public AlarmOnDevice alarmOnDevice = new AlarmOnDevice(false);
     // Temporary
-    public DevicePort devicePort;
+    public Executable Executable;
     public int type = Timer.TYPE_RANGE_ON_WEEKDAYS;
     boolean enabled;
     private String uniqueTimerID;
 
     public void computeUniqueTimerID() {
-        uniqueTimerID = devicePort.getUid() + "-" + String.valueOf(alarmOnDevice.timerId);
+        uniqueTimerID = Executable.getUid() + "-" + String.valueOf(alarmOnDevice.timerId);
     }
 
     public String getUniqueTimerID(int command) {
@@ -41,9 +41,9 @@ public class AnelTimer {
     }
 
     public boolean isUnused(int command) {
-        if (command == DevicePort.ON)
+        if (command == Executable.ON)
             return hour_minute_start <= 0;
-        else if (command == DevicePort.OFF)
+        else if (command == Executable.OFF)
             return hour_minute_stop == 23 * 60 + 59 || hour_minute_stop == -1;
         return false;
     }
@@ -51,9 +51,9 @@ public class AnelTimer {
     public void updateBy(Timer timer) {
         System.arraycopy(timer.weekdays, 0, weekdays, 0, weekdays.length);
 
-        if (timer.command == DevicePort.ON) {
+        if (timer.command == Executable.ON) {
             hour_minute_start = timer.hour_minute;
-        } else if (timer.command == DevicePort.OFF) {
+        } else if (timer.command == Executable.OFF) {
             hour_minute_stop = timer.hour_minute;
         }
 

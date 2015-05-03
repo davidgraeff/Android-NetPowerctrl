@@ -7,7 +7,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Created by david on 19.09.14.

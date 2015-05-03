@@ -13,24 +13,32 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.onDataQueryCompleted;
-import oly.netpowerctrl.device_base.data.JSONHelper;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.onServiceReady;
+import oly.netpowerctrl.data.query.onDataQueryCompleted;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableFabric;
 import oly.netpowerctrl.network.onExecutionFinished;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
-import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.utils.JSONHelper;
+
+;
 
 /**
  * Will be started on NFC contact, homescreen scene execution, alarm timeout
  */
-public class ExecutionActivity extends NfcReaderActivity implements onExecutionFinished {
+public class ExecutionActivity extends NfcReaderActivity {
     public static final String EXECUTE_ACTION_UUID = "action_uuid";
     public static final String EXECUTE_ACTION_COMMAND = "action_command";
     public static final String EXECUTE_SCENE_JSON = "scene";
     private String destination_uuid;
+
+    private onExecutionFinished executionFinished = new onExecutionFinished(0) {
+        @Override
+        public void onExecutionProgress() {
+            if (success + errors >= expected)
+                finish();
+        }
+    };
 
     @Override
     protected void onNfcFeatureNotFound() {
@@ -78,40 +86,48 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
         }
 
         boolean show_mainwindow = extra.getBoolean("show_mainWindow", false);
-        boolean enable_feedback = extra.getBoolean("enable_feedback", true);
+        //boolean enable_feedback = extra.getBoolean("enable_feedback", true);
 
         // wait for first data to be loaded
-        AppData.observersDataQueryCompleted.reset();
-        AppData.observersDataQueryCompleted.register(new onDataQueryCompleted() {
+        DataService.observersDataQueryCompleted.reset();
+        DataService.observersDataQueryCompleted.register(new onDataQueryCompleted() {
 
             @Override
-            public boolean onDataQueryFinished(AppData appData) {
+            public boolean onDataQueryFinished(DataService dataService) {
                 final int action_command = extra.getInt(EXECUTE_ACTION_COMMAND);
 
                 // Read data from intent
                 destination_uuid = extra.getString(EXECUTE_ACTION_UUID, destination_uuid);
                 String scene_json = extra.getString(EXECUTE_SCENE_JSON);
+
                 if (scene_json != null) {
                     try {
-                        appData.execute(Scene.loadFromJson(JSONHelper.getReader(scene_json)), ExecutionActivity.this);
+                        Executable executable = new ExecutableFabric().newInstance(JSONHelper.getReader(scene_json));
+                        executable.execute(dataService, action_command, executionFinished);
                     } catch (IOException | ClassNotFoundException ignored) {
                     }
-                } else
-                    executeSingleAction(appData, destination_uuid, action_command);
-
+                } else {
+                    final Executable executable = dataService.executables.findByUID(destination_uuid);
+                    executionFinished.addExpected(1);
+                    if (executable == null) {
+                        Toast.makeText(ExecutionActivity.this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else
+                        executable.execute(dataService, action_command, executionFinished);
+                }
                 return false;
             }
         });
 
-        PluginService.observersServiceReady.register(new onServiceReady() {
+        DataService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(PluginService service) {
-                service.getAppData().refreshDeviceData(service, true);
+            public boolean onServiceReady(DataService service) {
+                service.refreshDevices();
                 return false;
             }
 
             @Override
-            public void onServiceFinished(PluginService service) {
+            public void onServiceFinished(DataService service) {
 
             }
         });
@@ -126,26 +142,6 @@ public class ExecutionActivity extends NfcReaderActivity implements onExecutionF
     @Override
     protected void onNfcStateChange(boolean enabled) {
 
-    }
-
-    void executeSingleAction(AppData appData, String executable_uid, final int command) {
-        final Executable executable = appData.findExecutable(executable_uid);
-        if (executable == null) {
-            Toast.makeText(this, getString(R.string.error_shortcut_not_valid), Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-        if (executable instanceof DevicePort)
-            appData.execute((DevicePort) executable, command, ExecutionActivity.this);
-        else if (executable instanceof Scene) {
-            appData.execute((Scene) executable, ExecutionActivity.this);
-        }
-    }
-
-    @Override
-    public void onExecutionProgress(int success, int errors, int all) {
-        if (success >= all)
-            finish();
     }
 
     @Override

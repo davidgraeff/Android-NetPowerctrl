@@ -16,10 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.ObserverUpdateActions;
-import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.utils.ObserverUpdateActions;
+import oly.netpowerctrl.utils.onCollectionUpdated;
 
 /**
  * List all alarms of the timer controller
@@ -58,8 +57,7 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
         this.executable = executable;
         controller.registerObserver(this);
         controller.fillItems(executable, timers);
-        if (executable instanceof DevicePort)
-            controller.refresh((DevicePort) executable);
+        controller.refresh(executable);
     }
 
     public void finish() {
@@ -96,11 +94,11 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
             holder.image.setImageResource(resImageFromCache);
         else if (!timer.enabled)
             holder.image.setImageResource(android.R.drawable.presence_busy);
-        else if (timer.command == DevicePort.ON)
+        else if (timer.command == Executable.ON)
             holder.image.setImageResource(resImageOn);
-        else if (timer.command == DevicePort.OFF)
+        else if (timer.command == Executable.OFF)
             holder.image.setImageResource(resImageOff);
-        else if (timer.command == DevicePort.TOGGLE)
+        else if (timer.command == Executable.TOGGLE)
             holder.image.setImageResource(resImageToggle);
 
         holder.image_android.setVisibility(timer.alarmOnDevice != null ? View.INVISIBLE : View.VISIBLE);
@@ -113,15 +111,15 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
             // Time
             String text;
             switch (timer.command) {
-                case DevicePort.OFF:
+                case Executable.OFF:
                     text = context.getString(R.string.alarm_switch_off,
                             Timer.time(timer.hour_minute));
                     break;
-                case DevicePort.ON:
+                case Executable.ON:
                     text = context.getString(R.string.alarm_switch_on,
                             Timer.time(timer.hour_minute));
                     break;
-                case DevicePort.TOGGLE:
+                case Executable.TOGGLE:
                     text = context.getString(R.string.alarm_toggle_random,
                             Timer.time(timer.hour_minute));
                     break;
@@ -132,7 +130,7 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
 
         } else if (timer.type == Timer.TYPE_ONCE) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            int res = timer.command == DevicePort.ON ? R.string.alarm_switch_on : R.string.alarm_switch_off;
+            int res = timer.command == Executable.ON ? R.string.alarm_switch_on : R.string.alarm_switch_off;
             holder.alarmtime.setText(Html.fromHtml(context.getString(res, sdf.format(timer.absolute_date))));
         }
     }
@@ -148,7 +146,7 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.ViewHolder> 
     }
 
     @Override
-    public boolean updated(@NonNull TimerCollection timerCollection, Timer timer, @NonNull ObserverUpdateActions action, int position) {
+    public boolean updated(@NonNull TimerCollection timerCollection, Timer timer, @NonNull ObserverUpdateActions action) {
         timers.clear();
         controller.fillItems(executable, timers);
         notifyDataSetChanged();

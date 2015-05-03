@@ -9,47 +9,47 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.UUID;
 
-import oly.netpowerctrl.device_base.data.JSONHelper;
-import oly.netpowerctrl.device_base.data.StorableInterface;
+import oly.netpowerctrl.utils.IOInterface;
+import oly.netpowerctrl.utils.JSONHelper;
 
 /**
  * Created by david on 31.08.14.
  */
-public class Group implements StorableInterface {
+public class Group implements IOInterface {
     public final long id = GroupCollection.nextStableID++;
-    public UUID uuid;
+    public String uid;
     public String name;
     public Bitmap bitmap = null;
+    public int last_changeCode = 0;
 
     // Invalid Group
     @SuppressWarnings("unused")
     public Group() {
     }
 
-    public Group(UUID uuid, String name) {
-        this.uuid = uuid;
+    public Group(String uuid, String name) {
+        this.uid = uuid;
         this.name = name;
     }
 
-    public Group setUUID(UUID uuid) {
-        this.uuid = uuid;
+    public Group setUUID(String uuid) {
+        this.uid = uuid;
         return this;
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof Group)
-            return uuid.equals(((Group) other).uuid);
-        else if (other instanceof UUID)
-            return uuid.equals(other);
+            return uid.equals(((Group) other).uid);
+        else if (other instanceof String)
+            return uid.equals(other);
         return false;
     }
 
     @Override
-    public String getStorableName() {
-        return uuid.toString();
+    public String getUid() {
+        return uid;
     }
 
     public void load(@NonNull JsonReader reader) throws IOException, ClassNotFoundException {
@@ -61,8 +61,8 @@ public class Group implements StorableInterface {
                 case "name":
                     this.name = reader.nextString();
                     break;
-                case "uuid":
-                    uuid = UUID.fromString(reader.nextString());
+                case "uid":
+                    uid = reader.nextString();
                     break;
                 default:
                     reader.skipValue();
@@ -71,7 +71,7 @@ public class Group implements StorableInterface {
         }
         reader.endObject();
 
-        if (name == null || uuid == null)
+        if (name == null || uid == null)
             throw new ClassNotFoundException();
     }
 
@@ -85,6 +85,15 @@ public class Group implements StorableInterface {
         toJSON(JSONHelper.createWriter(output));
     }
 
+    @Override
+    public boolean hasChanged() {
+        return last_changeCode != name.hashCode();
+    }
+
+    @Override
+    public void resetChanged() {
+        last_changeCode = name.hashCode();
+    }
 
     /**
      * Return the json representation of this group item
@@ -104,7 +113,7 @@ public class Group implements StorableInterface {
 
     private void toJSON(JsonWriter writer) throws IOException {
         writer.beginObject();
-        writer.name("uuid").value(uuid.toString());
+        writer.name("uid").value(uid);
         writer.name("name").value(name);
         writer.endObject();
 

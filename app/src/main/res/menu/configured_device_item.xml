@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menu_device_configure_network"
-        android:title="@string/device_connections_edit" />
+        android:id="@+id/menu_device_connections_add"
+        android:title="@string/device_connections_add" />
+
     <item
-        android:id="@+id/menu_device_configuration_page"
-        android:title="@string/menu_device_configuration_page" />
+        android:id="@+id/menu_device_edit_credentials"
+        android:title="@string/device_edit_credentials" />
+
     <item
-        android:id="@+id/menu_device_hide_items"
-        android:title="@string/menu_device_hide_items" />
+        android:id="@+id/menu_device_external_configuration_page"
+        android:title="@string/menu_device_external_configuration_page" />
 
     <item
         android:id="@+id/menu_device_createGroup"
         android:title="@string/device_createGroup" />
-
-    <item
-        android:id="@+id/menu_device_share"
-        android:title="@string/menu_device_share" />
 
     <item
         android:id="@+id/menu_device_delete"

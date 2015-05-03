@@ -16,84 +16,43 @@
 
 package oly.netpowerctrl.main;
 
-import android.annotation.TargetApi;
+import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Canvas;
-import android.graphics.Point;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Display;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
-
-import java.lang.reflect.Method;
-
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.executables.ExecutableHideShowDialog;
+import oly.netpowerctrl.ioconnection.IOConnectionsFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
-public class MainActivity extends ActionBarActivity implements SlidingMenu.OnCloseListener, SlidingMenu.OnOpenListener {
-    public static MainActivity instance = null;
-    onServiceReady start_after_data_loaded = new onServiceReady() {
-        @Override
-        public boolean onServiceReady(PluginService service) {
-            if (!service.getAppData().deviceCollection.hasDevices() && SharedPrefs.getInstance().getFirstTabPosition() == -1) {
-                //navigationController.changeToFragment(IntroductionFragment.class.getName());
-                //TODO call introduction activity
-            } else {
-                App.getMainThreadHandler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (SharedPrefs.getInstance().hasBeenUpdated()) {
-                            InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
-                        }
-                    }
-                }, 1500);
-            }
-            return false;
-        }
-
-        @Override
-        public void onServiceFinished(PluginService service) {
-
-        }
-    };
+public class MainActivity extends ActionBarActivity {
     private boolean firstFragment = true;
-    private SlidingMenu menu;
-
-    public MainActivity() {
-        instance = this;
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        instance = null;
-    }
+    private SlidingPaneLayout panes = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        instance = this;
-
         //Remove title bar
         this.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -110,9 +69,11 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
                     getResources().getColor(R.color.colorSecondaryLight);
             getWindow().setStatusBarColor(c);
             getWindow().setNavigationBarColor(c);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = getWindow(); // in Activity's onCreate() for instance
+            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
-
-        super.onCreate(savedInstanceState);
 
         // Set theme, call super onCreate and set content view
         if (SharedPrefs.getInstance().isDarkTheme()) {
@@ -121,7 +82,9 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
             setTheme(R.style.Theme_CustomLightTheme);
         }
 
-        //navigationController.createDrawerAdapter(this);
+
+        super.onCreate(savedInstanceState);
+
         assignContentView();
 
         FragmentManager fm = getFragmentManager();
@@ -156,95 +119,67 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
                 FragmentUtils.changeToFragment(this, PreferencesFragment.class.getName());
                 return true;
             }
+            case R.id.menu_devices: {
+                FragmentUtils.changeToFragment(this, IOConnectionsFragment.class.getName());
+                return true;
+            }
+            case R.id.menu_device_hide_items:
+                FragmentUtils.changeToDialog(this, ExecutableHideShowDialog.class.getName());
+                return true;
+
         }
         return false;
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void assignContentView() {
         setContentView(R.layout.activity_main);
 
         boolean has_two_panes = getResources().getBoolean(R.bool.has_two_panes);
+        LayoutInflater l = LayoutInflater.from(this);
 
-        menu = (SlidingMenu) findViewById(R.id.slidingmenulayout);
-        menu.setMenu(R.layout.devices_fragment);
-        menu.setShadowDrawable(R.drawable.shadow);
-        if (!has_two_panes) {
-            menu.setBehindOffset(150);
-            menu.setSecondaryMenu(R.layout.group_list_fragment);
-            menu.setSecondaryShadowDrawable(R.drawable.shadowright);
-            menu.setContent(R.layout.content_frame);
-            menu.setMode(SlidingMenu.LEFT_RIGHT);
-        } else {
-            int width;
-            Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
-                    .getDefaultDisplay();
-            try {
-                Class<?> cls = Display.class;
-                Class<?>[] parameterTypes = {Point.class};
-                Point parameter = new Point();
-                Method method = cls.getMethod("getSize", parameterTypes);
-                method.invoke(display, parameter);
-                width = parameter.x;
-            } catch (Exception e) {
-                width = display.getWidth();
-            }
+        FragmentUtils.unloadFragment(this, "group");
 
-            menu.setBehindOffset(width / 2);
-            menu.setSecondaryMenu(null);
-            menu.setContent(R.layout.content_frame_with_group_list);
-            menu.setMode(SlidingMenu.LEFT);
-        }
+        FrameLayout layout = (FrameLayout) findViewById(R.id.content);
+        layout.removeAllViews();
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        View v = l.inflate(!has_two_panes ? R.layout.content_frame_with_sliding_group_list : R.layout.content_frame_with_group_list, null);
+        layout.addView(v, lp);
+
+        FragmentUtils.loadFragment(this, GroupListFragment.class.getName(), R.id.group_list_fragment, "group");
         FragmentUtils.changeToFragment(this, OutletsFragment.class.getName(), "outlets");
 
-        //menu.setStatic(has_two_vrr.anes);
-        menu.setBehindCanvasTransformer(new SlidingMenu.CanvasTransformer() {
-            @Override
-            public void transformCanvas(Canvas canvas, float percentOpen, float xOffset) {
-                if (xOffset == 0)
-                    canvas.scale(percentOpen, 1, 0, 0);
-                else
-                    canvas.scale(percentOpen, 1, 0, 0);
-                //canvas.translate(xOffset, 0);
-            }
-        });
-        menu.setOnOpenListener(this);
-        menu.setSecondaryOnOpenListner(this);
-        menu.setOnCloseListener(this);
+        if (!has_two_panes) {
+            panes = (SlidingPaneLayout) findViewById(R.id.drawerLayout);
+            Resources r = getResources();
+            float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, r.getDisplayMetrics());
+            panes.setParallaxDistance((int) px / 2);
+            panes.setCoveredFadeColor(0);
+            panes.setSliderFadeColor(0);
+            panes.setShadowResourceLeft(R.drawable.drawer_shadow_left);
+            panes.setShadowResourceRight(R.drawable.drawer_shadow);
+            //if (panes.isSlideable()) panes.openPane();
+        }
 
         if (SharedPrefs.getInstance().isBackground()) {
-            View v = findViewById(R.id.content_frame);
             Drawable d = LoadStoreIconData.loadBackgroundBitmap();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                v.setBackground(d);
-            else
-                //noinspection deprecation
-                v.setBackgroundDrawable(d);
+            findViewById(android.R.id.content).setBackground(d);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_actionbar);
         setSupportActionBar(toolbar);
     }
-//
-//    @Override
-//    public boolean onPrepareOptionsMenu(Menu menu) {
-//        if (navigationController.isLoading())
-//            return super.onPrepareOptionsMenu(menu);
-//
-//        navigationController.onPrepareOptionsMenu(menu);
-//        return super.onPrepareOptionsMenu(menu);
-//    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        PluginService.observersServiceReady.register(start_after_data_loaded);
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        // onResume gets called after this to handle the intent
-        setIntent(intent);
+        App.getMainThreadHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (SharedPrefs.getInstance().hasBeenUpdated()) {
+                    InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
+                }
+            }
+        }, 1500);
     }
 
     @Override
@@ -258,29 +193,30 @@ public class MainActivity extends ActionBarActivity implements SlidingMenu.OnClo
         super.onConfigurationChanged(newConfig);
     }
 
+    public void closeGroupMenu() {
+        if (panes != null) panes.closePane();
+    }
 
     @Override
     public void onBackPressed() {
-        if (menu.isMenuShowing()) {
-            menu.showContent();
+        if (panes != null && panes.isOpen()) {
+            panes.closePane();
             return;
         }
 
+        // Exit edit mode on back click
+        Fragment fragment = getFragmentManager().findFragmentByTag("outlets");
+        if (fragment != null && ((OutletsFragment) fragment).isEditMode()) {
+            ((OutletsFragment) fragment).setEditMode(false);
+            return;
+        }
+
+        // Change fragment on back click or close app
         if (getFragmentManager().getBackStackEntryCount() > 1) {
             getFragmentManager().popBackStack(null, 0);
             return;
         }
 
         super.onBackPressed();
-    }
-
-    @Override
-    public void onOpen() {
-        invalidateOptionsMenu();
-    }
-
-    @Override
-    public void onClose() {
-        invalidateOptionsMenu();
     }
 }

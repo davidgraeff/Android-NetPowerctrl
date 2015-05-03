@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.pluginservice.PluginService;
 
 /**
  * Created by david on 23.11.14.
@@ -22,14 +22,14 @@ class NetworkChangedBroadcastReceiver extends BroadcastReceiver {
             this.anelPlugin = anelPlugin;
             IntentFilter filter = new IntentFilter();
             filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
-            anelPlugin.getPluginService().registerReceiver(this, filter);
+            anelPlugin.getDataService().registerReceiver(this, filter);
         }
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        PluginService pluginService = PluginService.getService();
-        if (pluginService == null) {
+        DataService dataService = DataService.getService();
+        if (dataService == null) {
             context.unregisterReceiver(this);
             return;
         }

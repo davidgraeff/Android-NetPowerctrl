@@ -20,7 +20,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
+;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
 import oly.netpowerctrl.devices.DevicesFragment;
@@ -34,7 +34,7 @@ import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.DividerItemDecoration;
 
 public class TimerFragment extends Fragment implements onCollectionUpdated<TimerCollection, Timer>, SwipeRefreshLayout.OnRefreshListener, PopupMenu.OnMenuItemClickListener, onServiceReady {
-    private AppData appData;
+    private  PluginService pluginService;
     private TimerAdapter timerAdapter;
     private TextView progressText;
     Handler handler = new Handler() {
@@ -54,7 +54,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     }
 
     private void refresh(PluginService service) {
-        TimerCollection c = appData.timerCollection;
+        TimerCollection c = PluginService.timerCollection;
         if (c.refresh(service))
             AnimationController.animateBottomViewIn(progressText, false);
     }
@@ -62,13 +62,13 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
 
     @Override
     public boolean onServiceReady(PluginService service) {
-        appData = service.getAppData();
-        appData.timerCollection.registerObserver(this);
+        PluginService = service;
+        PluginService.timerCollection.registerObserver(this);
 
-        boolean hasDevices = appData.deviceCollection.hasDevices();
+        boolean hasDevices = PluginService.deviceCollection.hasDevices();
         btnChangeToDevices.setVisibility(hasDevices ? View.GONE : View.VISIBLE);
 
-        timerAdapter.start(appData.timerCollection, executable);
+        timerAdapter.start(PluginService.timerCollection, executable);
 
         refresh(service);
         return false;
@@ -76,7 +76,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
 
     @Override
     public void onServiceFinished(PluginService service) {
-        appData = null;
+        PluginService = null;
     }
 
     @Override
@@ -95,8 +95,8 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
     public void onPause() {
         progressText.setVisibility(View.GONE);
 
-        if (appData != null)
-            appData.timerCollection.unregisterObserver(this);
+        if (PluginService != null)
+            PluginService.timerCollection.unregisterObserver(this);
         if (timerAdapter != null)
             timerAdapter.finish();
         super.onPause();
@@ -180,7 +180,7 @@ public class TimerFragment extends Fragment implements onCollectionUpdated<Timer
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                TimerCollection c = appData.timerCollection;
+                                TimerCollection c = PluginService.timerCollection;
                                 c.removeAll();
                             }
                         })

@@ -11,8 +11,7 @@ import android.widget.RelativeLayout;
 
 import com.wefika.flowlayout.FlowLayout;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 import oly.netpowerctrl.R;
 
@@ -21,27 +20,27 @@ import oly.netpowerctrl.R;
  */
 public class GroupUtilities {
 
-    public static boolean[] addGroupCheckBoxesToLayout(Context context, final GroupCollection groupCollection, FlowLayout layout,
-                                                       List<UUID> listOfGroupsPreChecked,
+    public static void addGroupCheckBoxesToLayout(Context context, GroupCollection groupCollection, FlowLayout layout,
+                                                  Set<String> listOfGroupsPreChecked, final Set<String> checked_groups,
                                                        final CompoundButton.OnCheckedChangeListener checkedChangeListener) {
 
-        CharSequence[] items = groupCollection.getGroupsArray();
-        final boolean checked[] = new boolean[items.length];
-
-        // Sync checked array with items array
-        for (int i = 0; i < checked.length; ++i) {
-            if (groupCollection.equalsAtIndex(i, listOfGroupsPreChecked))
-                checked[i] = true;
+        for (final Group group : groupCollection.getItems().values()) {
+            boolean isContained = listOfGroupsPreChecked.contains(group.getUid());
+            if (isContained)
+                checked_groups.add(group.getUid());
 
             CheckBox p = new TintCheckBox(context);
-            p.setChecked(checked[i]);
+            p.setChecked(isContained);
             // The first entry of weekDays_Strings is an empty string
-            p.setText(items[i]);
-            final int index = i;
+            p.setText(group.name);
             p.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    checked[index] = b;
+                    if (b)
+                        checked_groups.add(group.getUid());
+                    else
+                        checked_groups.remove(group.getUid());
+
                     if (checkedChangeListener != null)
                         checkedChangeListener.onCheckedChanged(compoundButton, b);
                 }
@@ -50,8 +49,6 @@ public class GroupUtilities {
                     RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             layout.addView(p, lp);
         }
-
-        return checked;
     }
 
     /**
@@ -73,9 +70,9 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                int index = groupCollection.add(name);
+                Group group = groupCollection.put(null, name);
                 if (groupCreatedCallback != null)
-                    groupCreatedCallback.onGroupCreated(index, groupCollection.get(index).uuid);
+                    groupCreatedCallback.onGroupCreated(group);
             }
         });
 
@@ -83,8 +80,8 @@ public class GroupUtilities {
         alert.show();
     }
 
-    public static void renameGroup(Context context, final GroupCollection groupCollection, UUID groupFilter) {
-        final Group group = groupCollection.get(groupFilter);
+    public static void renameGroup(Context context, final GroupCollection groupCollection, String groupFilter) {
+        final Group group = groupCollection.getByUID(groupFilter);
         if (group == null)
             return;
 
@@ -102,7 +99,7 @@ public class GroupUtilities {
                 String name = input.getText().toString().trim();
                 if (name.isEmpty())
                     return;
-                groupCollection.edit(group.uuid, name);
+                groupCollection.put(group.uid, name);
             }
         });
 
@@ -111,6 +108,6 @@ public class GroupUtilities {
     }
 
     public interface GroupCreatedCallback {
-        void onGroupCreated(int group_index, UUID group_uid);
+        void onGroupCreated(Group group);
     }
 }

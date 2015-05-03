@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/list_outer_padding"
+        android:paddingRight="@dimen/list_outer_padding">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="@string/icon_theme"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:textColor="?attr/editTextColor" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dip"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="2dp"
+            android:background="?attr/colorPrimaryDark" />
+
+        <oly.netpowerctrl.ui.SoftRadioButton
+            android:id="@+id/theme1"
+            groupUID="icontheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/icon_theme_1" />
+
+        <include
+            android:id="@+id/theme1_preview"
+            layout="@layout/icon_theme"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <oly.netpowerctrl.ui.SoftRadioButton
+            android:id="@+id/theme2"
+            groupUID="icontheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/icon_theme_2" />
+
+        <include
+            android:id="@+id/theme2_preview"
+            layout="@layout/icon_theme"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <oly.netpowerctrl.ui.SoftRadioButton
+            android:id="@+id/theme3"
+            groupUID="icontheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/icon_theme_3" />
+
+        <include
+            android:id="@+id/theme3_preview"
+            layout="@layout/icon_theme"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <oly.netpowerctrl.ui.SoftRadioButton
+            android:id="@+id/theme4"
+            groupUID="icontheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/icon_theme_4" />
+
+        <include
+            android:id="@+id/theme4_preview"
+            layout="@layout/icon_theme"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+
+    </LinearLayout>
+</ScrollView>

@@ -208,7 +208,7 @@ data
 ADDED from AndroidManifest.xml:92:17
 	android:mimeType
 		ADDED from AndroidManifest.xml:92:23
-activity#oly.netpowerctrl.widget.WidgetConfigActivity
+activity#oly.netpowerctrl.widget.ConfigExecutableActivity
 ADDED from AndroidManifest.xml:96:9
 	android:label
 		ADDED from AndroidManifest.xml:101:13
@@ -266,7 +266,7 @@ action#android.intent.action.CREATE_SHORTCUT
 ADDED from AndroidManifest.xml:126:17
 	android:name
 		ADDED from AndroidManifest.xml:126:25
-receiver#oly.netpowerctrl.widget.DeviceWidgetProvider
+receiver#oly.netpowerctrl.widget.ProviderExecutable
 ADDED from AndroidManifest.xml:132:9
 	android:label
 		ADDED from AndroidManifest.xml:135:13

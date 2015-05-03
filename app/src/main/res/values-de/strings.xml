@@ -2,13 +2,14 @@
 <resources>
     <string name="app_name">Power Control</string>
     <string name="app_name_desc">Steuern Sie Netzwerkfähige Steckdosenleisten bequem per App. Bisher werden die folgenden Geräte der ANEL-Elektronik AG (www.anel-elektronik.de) unterstützt: NET-PwrCtrl HUT, NET-PwrCtrl IO, NET-PwrCtrl ADV, NET-PwrCtrl PRO, NET-PwrCtrl HOME</string>
-    <string name="app_name_shortcut">Power-Control Szene</string>
-    <string name="app_name_shortcut_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
+    <string name="shortcut_new_scene">Power-Control Szene</string>
+    <string name="shortcut_new_scene_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
     <string name="app_name_widget">Power-Control Steckdosenzustand</string>
+    <string name="app_name_widget_group">Power-Control Gruppenzustand</string>
 
     <string name="changelog_title">Was ist neu…</string>
 
-    <string name="device_connections_edit">Netzwerkverbindungen bearbeiten</string>
+    <string name="device_connections_edit">Zugangs-/Netzwerkdaten</string>
     <string name="delete_device">Gerät löschen</string>
     <string name="delete_all_devices">Alle löschen</string>
 
@@ -58,13 +59,8 @@
     <string name="drawer_overview_grid">Rasteransicht</string>
     <string name="drawer_overview_compact">Kompakte Ansicht</string>
 
-    <string name="drawer_app_title">App und Geräte</string>
-    <string name="drawer_devices">Geräte</string>
-    <string name="drawer_preferences">Einstellungen</string>
     <string name="drawer_donate">Spenden</string>
 
-    <string name="drawer_open">Öffne Navigationsleiste</string>
-    <string name="drawer_close">Schließe Navigationsleiste</string>
     <string name="show_hidden">Zeige Ausgeblendete</string>
     <string name="hide_hidden">Verstecke Ausgeblendete</string>
     <string name="menu_hide_outlet">Verstecken</string>
@@ -82,7 +78,7 @@
     <string name="menu_switch_all_toogle">Alle auf Umschalten</string>
     <string name="menu_switch_all_ignore">Alle von Szene entfernen</string>
     <string name="menu_help">Hilfe</string>
-    <string name="menu_device_configuration_page">Konfigurationsseite öffnen</string>
+    <string name="menu_device_external_configuration_page">Konfigurationsseite öffnen</string>
     <string name="device_not_reachable">Gerät %1$s nicht erreichbar</string>
     <string name="empty_no_scenes">Keine Szenen gefunden.\n\nMit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen.</string>
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
@@ -98,7 +94,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="error_plugin_failed">Plugin Fehler: %1$s</string>
     <string name="preference_load_extensions">Erlaube Erweiterungen</string>
     <string name="preference_load_extensions_summary">Zeige Kontrollmöglichkeiten unterstützter Anwendungen in dieser App.</string>
-    <string name="error_widget_device_removed">Gerät entfernt!</string>
+    <string name="error_widget_needs_configuration">Einrichtung erforderlich</string>
     <string name="widget_outlet_not_reachable">(nicht erreichbar)</string>
     <string name="error_timeout_device">Gerät %1$s antwortet nicht</string>
     <string name="pref_widgets">Widgets</string>
@@ -131,7 +127,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="group_add">Gruppe erstellen…</string>
     <string name="outlet_added_to_groups">Gehört zu %1$d Gruppen</string>
     <string name="outlet_to_group_title">%1$s in Gruppen…</string>
-    <string name="group_create_dialog_title">Erstelle eine neue Gruppe. Bitte den Namen eingeben.</string>
+    <string name="group_create_dialog_title">Bitte den Namen für die neue Gruppe eingeben.</string>
     <string name="empty_group">Diese Gruppe ist leer! Entweder enthält die Gruppe keine Einträge mehr oder es sind nicht alle relevanten Geräte in Reichweite</string>
     <string name="menu_remove_group">Gruppe entfernen</string>
     <string name="menu_rename_group">Gruppe umbenennen</string>
@@ -142,9 +138,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="renameInProgress">Benenne um…</string>
     <string name="renameFailed">Umbenennung fehlgeschlagen: %1$s</string>
     <string name="device_notReachable">%1$s nicht erreichbar</string>
-    <string name="empty_no_scenes_no_devices">Keine Szenen gefunden. Mit Szenen kannst du mehrere Steckdosen-Aktionen kombiniert ausführen. Zuerst musst du aber Geräte einrichten.</string>
-    <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Nicht eingerichtete erscheinen unter den Titel \"Unbekannte Geräte\". Klicke auf einen Eintrag um den Einrichtungsdialog anzuzeigen.\nDer Aktualisieren-Knopf oben rechts erlaubt dir manuell eine neue Suche durchzuführen. Du musst auf deinen Geräten UDP für die automatische Einrichtung eingeschaltet haben! Benutze den Plus-Button um ein Gerät einzurichten, welches nicht automatisch gefunden wurde.</string>
-    <string name="empty_no_outlets_no_devices">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
+    <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Neue Geräte haben das Prefix "Neu: " vor dem Namen.</string>
+    <string name="welcome_message">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
     <string name="log_screen">Logbuch</string>
     <string name="preference_use_log_energy">Log: Energiesparmodus</string>
     <string name="preference_use_log_energy_summary">Alle Energiespar-Aktivitäten mitloggen</string>
@@ -171,7 +166,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     </string-array>
     <string name="drawer_timer">Zeitschaltungen</string>
     <string name="menu_add_timer">Automatischen Schaltvorgang hinzufügen</string>
-    <string name="help_timers">Hier kannst du Zeitschaltvorgänge einstellen. Jedes eingerichtete Gerät kann unterschiedlich viele und unterschiedlich mächtige Zeitschalter unterstützen.\n\nAnel Geräte bieten i.d.R. 4 kombinierte An/Aus Zeitschaltvorgänge.\n\nDarüber hinaus können auch Zeitschaltungen eingerichtet werden, welche von deinem Android Mobiltelefon oder Tablet ausgelöst werden. Dieses muss zum entsprechendem Zeitpunkt aktiviertes WLan haben und in Reichweite der Steckdosen sein. Die einmaligen sowie Szenen-Zeitschaltungen können nur mit Android Zeitschaltungen realisiert werden.\nOb ein Alarm über Android ausgelöst wird, erkennst du an dem Android-Symbol rechts neben dem Alarm-Eintrag.</string>
     <string name="show_extensions_in_market">Zeige Erweiterungen im Play Store</string>
     <string name="extensions">Erweiterungen</string>
     <string name="device_udp">UDP Verbindungen</string>
@@ -204,7 +198,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="alarm_switch_off">Aus um: &lt;b>%1$s&lt;/b></string>
     <string name="alarm_no_target">Es wurde kein Zielgerät für diesen Alarm ausgewählt!</string>
     <string name="alarm_no_start_no_stop">Es wurden weder Einschalt- noch Ausschaltzeit angegeben!</string>
-    <string name="confirmation_delete_all_alarms">Sollen wirklich alle Alarme zurückgesetzt werden?</string>
     <string name="port_warning_1024">Ein Empfangsport kleiner als 1024 benötigt Root-Rechte und das die App als System-App installiert ist! Soll für den jetzigen Vorgang die Portbeschränkung ignoriert werden?\nBitte die vorherige Aktion nach Bestätigung wiederholen.</string>
     <string name="alarm_receiving">Empfange Alarm %1$d/%2$d</string>
     <string name="alarm_saving_now">Bitte warten. Speichere Alarm…</string>
@@ -246,7 +239,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_debug_toggle_network_reduced">Debug: Toggle network reduced</string>
     <string name="show_additional_connections">Zeige zusätzliche Verbindungen</string>
     <string name="device_additional_connections_summary">Soll das Gerät außerhalb des lokalen Netzwerks verwendet werden, können eine oder mehrere zusätzliche Hostnamen/IP-Adressen angegeben werden.</string>
-    <string name="automaticConfiguration">Automatische Einrichtung</string>
+    <string name="automatic_configuration">Automatische Einrichtung</string>
     <string name="device_unqiue_id">Geräte ID (Mac)</string>
     <string name="device_already_exist">Device with this IP/Hostname already exist!</string>
     <string name="error_device_incomplete">Geräteangaben unvollständig!</string>
@@ -310,14 +303,13 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_timeout">Verbindungszeit überschritten, abgebrochen</string>
     <string name="jump_to_group">Springe zu Gruppe</string>
     <string name="scene">Szene</string>
-    <string name="help_overview_and_groups">Auf diesem Bildschirm siehst du alle eingerichteten Steckdosen aufgelistet. Klicke einen Eintrag an, um einen Zustandswechsel herbeizuführen. Steckdosen können in Ansichtsgruppen zusammengefasst werden. Durch die Gruppen wechselst du durch seitliche Wischbewegungen.\nWenn du die untere Leiste nach oben ziehst wechselst du in den Bearbeitungsmodus: EIn Klick auf einen Eintrag zeigt das Bearbeitungsfenster an. Der Plus-Knopf dient zum Hinzufügen von neuen Ansichtsgruppen und Szenen. Eine Szene kombiniert mehrere Steckdosen-Aktionen und wird ebenfalls in der Liste der Steckdosen aufgeführt.</string>
     <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
     Lege die Kopie einer Szene auf deinem Homescreen ab und führe diese von dort direkt aus.\nMache eine Szene zu einem Favoriten, so wird sie im Navigationsmenü aufgelistet. Wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
     \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
     </string>
     <string name="open_google_market">Google Play</string>
     <string name="app_name_disclaimer">Dies ist eine quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
-    <string name="feedback_contact">Sie haben neben einer E-Mail auch die Möglichkeit Verbesserungsvorschläge und Wünsche in der Google Plus Gruppe zu dieser App zu äußern. Wenn Sie Beta Tester werden, erhalten Sie neuere Versionen der App wesentlich zügiger und Ihr Feedback ist ausdrücklich erwünscht. Bewerten Sie die App auf Google Play um ein Feedback zu hinerlassen.</string>
+    <string name="feedback_contact">Sie können mich einfach per Mail und über die Google Plus Gruppe erreichen und mir Wünsche und Verbesserungsvorschläge zusenden. Bewerten Sie die App im Google Play Store um Ihre Meinung über die App anderen Nutzern und Interessenten darzulegen.</string>
     <string name="drawer_change_view_type">Ansichtsmodus</string>
     <string name="outlet_choose_view_type">Ansichtsmodus auswählen</string>
     <string name="outlets_view_type_list">Als Liste</string>
@@ -330,7 +322,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="feedback_google_plus">Google Plus Gruppe</string>
     <string name="enter_beta">BETA Version</string>
     <string name="group_add_items">Gruppe füllen…</string>
-    <string name="help_groups">Um Elemente einer Gruppe hinzuzufügen, wechsel in die Übersicht und berühre das Werkzeug Symbol. Im folgendem Dialog kannst du dem Element Gruppen zuweisen.</string>
     <string name="label_title"><u>Titel</u></string>
     <string name="groups_assigned">Ansichtsgruppen</string>
     <string name="issues_see_at_feedback">Im Feedback Bildschirm einsehbar</string>
@@ -352,7 +343,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preference_log_detect_summary">Zeichnet alle Ereignisse der Geräteerkennung auf</string>
     <string name="error_plugin_removed">Plugin wurde entfernt!</string>
     <string name="menu_device_share">Gerät ins Netzwerk teilen</string>
-    <string name="menu_device_hide_items">Aktionen des Geräts aus-/einblenden</string>
+    <string name="menu_device_hide_items">Einträge verstecken</string>
     <string name="error_device_not_found">Gerät nicht gefunden!</string>
     <string name="device_share_to_network">Ins Netzwerk teilen</string>
     <string name="alarm_is_switch_on">Ziel Aus-/Einschalten?</string>
@@ -372,13 +363,26 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="scene_options_title">Optionen</string>
     <string name="alarm_received">Sychnonisierung abgeschlossen</string>
     <string name="groups_all">Alles zeigen</string>
-    <string name="introduction_welcome">Willkommen</string>
-    <string name="introduction_refresh_devices">Automatische Erkennung wiederholen</string>
+    <string name="automatic_refresh_devices">Automatische Erkennung wiederholen</string>
     <string name="error_no_devices">Keine Geräte gefunden!</string>
-    <string name="menu_help_outlets">Hilfe zur Übersicht</string>
-    <string name="menu_help_devices">Hilfe zur Geräteübersicht</string>
     <string name="feedback_contact_title">Kontakt</string>
     <string name="app_logo">Logo</string>
     <string name="app_license_title">Lizenz und Gewährleistung</string>
     <string name="Mail">E-Mail</string>
+    <string name="preference_icon_theme">Select icon theme</string>
+    <string name="automatic_found_unconfigured_devices">%1$d unkonfigurierte Geräte gefunden.</string>
+    <string name="automatic_not_found_unconfigured_devices">Keine unkonfigurierten Geräte gefunden.</string>
+    <string name="automatic_finished_result">%1$d erfolgreich eingerichtet. %2$d nicht eingerichtet (Zugangsdaten nicht auf Werkseinstellung).</string>
+    <string name="feedback_posted_wishes">Gemeldete Wünsche/Anregungen:</string>
+    <string name="feedback_not_fixed_bugs">Nicht behobene Fehler:</string>
+    <string name="feedback_bug_reports">Dazu Fehlerberichtmeldungen:</string>
+    <string name="feedback_fixed_bugs">Behobene Fehler:</string>
+    <string name="feedback_last_reported_bug">Letzter Fehler:</string>
+    <string name="icon_theme">Icon Theme</string>
+    <string name="outlets_edit_mode">Bearbeitungsmodus</string>
+    <string name="view_mode">Ansichtsmodus</string>
+    <string name="device_connection_delete">Entferne Verbindung</string>
+    <string name="device_connections_add">Verbindung hinzufügen</string>
+    <string name="device_edit_credentials">Bearbeite Zugangsdaten</string>
+    <string name="select_plugin">Wähle Gerätetyp</string>
 </resources>

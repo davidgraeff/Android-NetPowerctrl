@@ -12,15 +12,119 @@
         android:layout_alignParentTop="true"
         android:background="?attr/colorPrimaryDark"
         android:gravity="center_horizontal"
-        android:text="Bearbeitungsmodus"
+        android:text="@string/outlets_edit_mode"
         android:textAppearance="@android:style/TextAppearance.Small"
         android:visibility="gone" />
 
-    <include
-        layout="@layout/fragment_with_list"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/layout_with_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/edit_hint_big" />
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/edit_hint_big">
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/ptr_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="@dimen/list_inner_padding"
+            android:paddingTop="@dimen/list_inner_padding">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@android:id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="@dimen/list_outer_padding"
+                android:paddingRight="@dimen/list_outer_padding" />
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <LinearLayout
+            android:id="@+id/empty_group"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/cards_background"
+                android:maxWidth="280dp"
+                android:padding="5dp"
+                android:text="@string/empty_group"
+                android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/empty_no_outlets"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/cards_background"
+                android:maxWidth="280dp"
+                android:padding="5dp"
+                android:text="@string/empty_no_outlets"
+                android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/empty_no_outlets_no_devices"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/empty_no_outlets_no_devices_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"
+                android:autoLink="web"
+                android:background="?attr/cards_background"
+                android:maxWidth="280dp"
+                android:padding="5dp"
+                android:text="@string/welcome_message"
+                android:textAppearance="@android:style/TextAppearance.Medium" />
+
+            <TextView
+                android:id="@+id/automatic_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/empty_no_outlets_no_devices_text"
+                android:layout_alignRight="@+id/empty_no_outlets_no_devices_text"
+                android:layout_below="@+id/empty_no_outlets_no_devices_text"
+                android:layout_marginBottom="5dp"
+                android:background="?attr/cards_background"
+                android:maxWidth="280dp"
+                android:padding="5dp" />
+
+            <Button
+                android:id="@+id/automatic_setup_start"
+                style="?attr/colored_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/empty_no_outlets_no_devices_text"
+                android:layout_alignRight="@+id/empty_no_outlets_no_devices_text"
+                android:layout_below="@+id/automatic_status"
+                android:padding="5dp"
+                android:text="@string/automatic_configuration" />
+
+        </RelativeLayout>
+
+    </FrameLayout>
 
     <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/btnWirelessSettings"
@@ -30,8 +134,8 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
         android:visibility="invisible"
         app:drawable="@android:drawable/ic_menu_preferences"
         app:mainColor="?attr/colorPrimaryDark" />
@@ -50,19 +154,5 @@
         android:layout_toStartOf="@+id/btnWirelessSettings"
         android:visibility="invisible"
         app:drawable="@android:drawable/ic_menu_add"
-        app:mainColor="?attr/colorPrimaryDark" />
-
-    <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/btnHelp"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_toLeftOf="@+id/btnAdd"
-        android:layout_toStartOf="@+id/btnAdd"
-        android:visibility="invisible"
-        app:drawable="@android:drawable/ic_menu_help"
         app:mainColor="?attr/colorPrimaryDark" />
 </RelativeLayout>

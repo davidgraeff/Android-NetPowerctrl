@@ -1,128 +1,65 @@
 package oly.netpowerctrl.groups;
 
-import java.util.List;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.util.UUID;
 
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.CollectionWithStorableItems;
-import oly.netpowerctrl.data.ObserverUpdateActions;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.storage_container.CollectionMapItems;
+import oly.netpowerctrl.utils.ObserverUpdateActions;
 
-public class GroupCollection extends CollectionWithStorableItems<GroupCollection, Group> {
+;
+
+public class GroupCollection extends CollectionMapItems<GroupCollection, Group> {
     static long nextStableID = 0;
-    private final Group groupIndexOfHelper = new Group(null, null);
 
-    public GroupCollection(AppData appData) {
-        super(appData);
+    public GroupCollection(DataService dataService) {
+        super(dataService, "groups");
+    }
+
+    public Group getByUID(String groupUID) {
+        return items.get(groupUID);
     }
 
     /**
-     * Add a group with the given name. If a group with this name already exist,
-     * that group id will be returned and no new group will be added.
+     * Edit an exiting groups name or add a new group with the given uid and the given name.
      *
-     * @param name The name of the new group.
-     * @return Return the group_index of the new group or the existing one.
-     * Call {@link #get(int)} to get the group uid.
-     */
-    public int add(String name) {
-        int index = 0;
-        for (Group group : items) {
-            if (group.name.equals(name))
-                return index;
-            ++index;
-        }
-
-        UUID group_uuid = UUID.randomUUID();
-        Group group = new Group(group_uuid, name);
-        items.add(group);
-        index = items.size() - 1;
-        save(group);
-        notifyObservers(group, ObserverUpdateActions.AddAction, index);
-        return index;
-    }
-
-    public Group get(UUID group_uuid) {
-        int index = items.indexOf(groupIndexOfHelper.setUUID(group_uuid));
-        if (index == -1) {
-            return null;
-        }
-        return items.get(index);
-    }
-
-    public int indexOf(UUID group_uuid) {
-        if (group_uuid == null)
-            return -1;
-        return items.indexOf(groupIndexOfHelper.setUUID(group_uuid));
-    }
-
-    /**
-     * Edit an exiting groups name or add a new group with the given uuid and the given name.
-     *
-     * @param group_uuid Either existing uuid or new uuid
+     * @param groupUID Either existing uid or null
      * @param name       New name for the group
+     * @return Return the group uid.
      */
-    public void edit(UUID group_uuid, String name) {
-        int index = items.indexOf(groupIndexOfHelper.setUUID(group_uuid));
-        Group group;
-        if (index == -1) {
-            group = new Group(group_uuid, name);
-            index = items.size();
-            items.add(group);
-
-            notifyObservers(group, ObserverUpdateActions.AddAction, index);
-
+    public Group put(@Nullable String groupUID, @NonNull String name) {
+        Group group = items.get(groupUID);
+        if (group == null) {
+            group = new Group(UUID.randomUUID().toString(), name);
+            items.put(group.getUid(), group);
+            notifyObservers(group, ObserverUpdateActions.AddAction);
         } else {
-            group = items.get(index);
             group.name = name;
-
-            notifyObservers(group, ObserverUpdateActions.UpdateAction, index);
+            notifyObservers(group, ObserverUpdateActions.UpdateAction);
         }
 
-        save(group);
+        storage.save(group);
+        return group;
     }
 
-    public boolean remove(UUID group_uuid) {
-        int index = items.indexOf(groupIndexOfHelper.setUUID(group_uuid));
-        if (index == -1) {
-            return false;
-        }
-        Group group = items.get(index);
-        items.remove(index);
-        if (storage != null)
-            storage.remove(this, group);
+    public boolean remove(String groupUID) {
+        Group group = items.get(groupUID);
+        if (group == null) return false;
 
-        notifyObservers(group, ObserverUpdateActions.RemoveAction, index);
+        items.remove(groupUID);
+        storage.remove(group);
+        notifyObservers(group, ObserverUpdateActions.RemoveAction);
         return true;
     }
 
-    public int length() {
-        return items.size();
-    }
-
-    public String[] getGroupsArray() {
-        String[] a = new String[items.size()];
-        for (int i = 0; i < a.length; ++i)
-            a[i] = items.get(i).name;
-        return a;
-    }
-
-    /**
-     * Return true if the group uuid at index is inside the groupUUids list.
-     *
-     * @param index
-     * @param groupUUids
-     * @return Return true if the group at the given index equals with one of the given uids.
-     */
-    public boolean equalsAtIndex(int index, List<UUID> groupUUids) {
-        Group g = items.get(index);
-        return groupUUids.contains(g.uuid);
-    }
-
-    @Override
-    public String type() {
-        return "groups";
-    }
+//    public boolean equalsAtIndex(int index, List<String> listGroupUID) {
+//        Group g = items.get(index);
+//        return listGroupUID.contains(g.uid);
+//    }
 
     public void executableToGroupAdded() {
-        notifyObservers(null, ObserverUpdateActions.ClearAndNewAction, -1);
+        notifyObservers(null, ObserverUpdateActions.ClearAndNewAction);
     }
 }

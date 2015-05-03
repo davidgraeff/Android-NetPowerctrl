@@ -6,11 +6,11 @@ import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,21 +18,35 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.ImportExport;
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.SharedPrefs;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.importexport.ImportExport;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.pluginservice.PluginService;
+import oly.netpowerctrl.status_bar.AndroidStatusBarService;
 import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.IconThemeDialog;
 import oly.netpowerctrl.utils.Logging;
-import oly.netpowerctrl.utils.statusbar_and_speech.AndroidStatusBarService;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements LoadStoreIconData.IconSelected {
     private static final int REQUEST_CODE_IMPORT = 100;
     private static final int REQUEST_CODE_EXPORT = 101;
-
+    //
+//    private void reloadProcess() {
+//        App.getMainThreadHandler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Intent mStartActivity = new Intent(getActivity(), MainActivity.class);
+//                int mPendingIntentId = 123456;
+//                PendingIntent mPendingIntent = PendingIntent.getActivity(getActivity(), mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+//                AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+//                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+//                System.exit(0);
+//            }
+//        }, 50);
+//    }
+//
     private final Preference.OnPreferenceChangeListener reloadActivity = new Preference.OnPreferenceChangeListener() {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -74,7 +88,16 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                FragmentUtils.changeToFragment(getActivity(), LogFragment.class.getName());
+                FragmentUtils.changeToFragment(getActivity(), LogDialog.class.getName());
+                return false;
+            }
+        });
+
+        //noinspection ConstantConditions
+        findPreference("icon_theme").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                FragmentUtils.changeToDialog(getActivity(), IconThemeDialog.class.getName());
                 return false;
             }
         });
@@ -144,18 +167,6 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             }
         });
 
-        //noinspection ConstantConditions
-        findPreference("show_extensions").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                @SuppressWarnings("ConstantConditions")
-                Intent browse = new Intent(Intent.ACTION_VIEW,
-                        Uri.parse("market://search?q=pub:David Gräff&c=apps"));
-                getActivity().startActivity(browse);
-                return false;
-            }
-        });
-
         if (NfcAdapter.getDefaultAdapter(getActivity()) == null) {
             getPreferenceScreen().removePreference(findPreference("nfc_bind"));
         } else {
@@ -173,7 +184,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = super.onCreateView(inflater, container, savedInstanceState);
         return rootView;
     }
@@ -195,7 +206,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_CODE_IMPORT) {
-                ImportExport.importData(PluginService.getService(), intent.getData());
+                ImportExport.importData(DataService.getService(), intent.getData());
             } else if (requestCode == REQUEST_CODE_EXPORT) {
                 ImportExport.exportData(getActivity(), intent.getData());
             } else

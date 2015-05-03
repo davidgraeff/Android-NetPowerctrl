@@ -35,39 +35,41 @@ import android.widget.Toast;
 
 import com.wefika.flowlayout.FlowLayout;
 
-import java.util.UUID;
+import java.util.Set;
+import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AppData;
-import oly.netpowerctrl.data.LoadStoreIconData;
-import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.device_base.device.DevicePort;
-import oly.netpowerctrl.device_base.executables.Executable;
+import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.onServiceReady;
+import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.onNameChangeResult;
+import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.groups.GroupUtilities;
-import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.pluginservice.PluginService;
-import oly.netpowerctrl.pluginservice.onServiceReady;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneElementsAssigning;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerAdapter;
 import oly.netpowerctrl.timer.TimerEditFragmentDialog;
 import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
-import oly.netpowerctrl.utils.DividerItemDecoration;
 import oly.netpowerctrl.utils.MutableBoolean;
+
+;
 
 /**
  * This activity is responsible for creating a "executable" either for the executable list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditActivity extends ActionBarActivity implements LoadStoreIconData.IconSelected, onHttpRequestResult {
+public class EditActivity extends ActionBarActivity implements LoadStoreIconData.IconSelected, onNameChangeResult {
     /**
      * We pass arguments to this activity via the intent extra bundle und the result is passed via
      * setResult().
@@ -78,7 +80,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     public static final String LOAD_ADAPTER_POSITION = "load_adapter_position";
 
     public static final int EDIT_TYPE_SHORTCUT = 0;
-    private int mEditType = EDIT_TYPE_SHORTCUT;
     public static final int EDIT_TYPE_SCENE = 1;
     public static final int EDIT_TYPE_DEVICE_PORT = 2;
     public static final int REQUEST_CODE = 123123;
@@ -86,7 +87,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     CheckBox show_mainWindow;
     CheckBox enable_feedback;
     CheckBox chk_hide;
-    boolean[] checked;
+    private int mEditType = EDIT_TYPE_SHORTCUT;
+    private Set<String> checked_groups = new TreeSet<>();
     private View executable_timers;
     private boolean isChanged = false;
     private FloatingActionButton btnSaveOrTrash;
@@ -179,7 +181,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         executable_timers = findViewById(R.id.executable_timers);
         timerAdapter = new TimerAdapter(this);
-        RecyclerViewWithAdapter<TimerAdapter> recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(this, null, executable_timers, timerAdapter, R.string.alarms_no_alarms);
+        RecyclerViewWithAdapter<TimerAdapter> recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(this, executable_timers, timerAdapter, R.string.alarms_no_alarms);
         recyclerViewWithAdapter.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
@@ -190,7 +192,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
                 return false;
             }
         }, null));
-        recyclerViewWithAdapter.getRecyclerView().addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST) {
+        recyclerViewWithAdapter.getRecyclerView().addItemDecoration(new LineDividerDecoration(this, LineDividerDecoration.VERTICAL_LIST) {
             @Override
             public boolean dividerForPosition(int position) {
                 return true;
@@ -234,12 +236,12 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         btnGroupAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final AppData appData = PluginService.getService().getAppData();
-                GroupUtilities.createGroup(view.getContext(), appData.groupCollection,
+                final DataService dataService = DataService.getService();
+                GroupUtilities.createGroup(view.getContext(), dataService.groups,
                         new GroupUtilities.GroupCreatedCallback() {
                             @Override
-                            public void onGroupCreated(int group_index, UUID group_uid) {
-                                updateGroups(appData.groupCollection);
+                            public void onGroupCreated(Group group) {
+                                updateGroups(dataService.groups);
                             }
                         });
             }
@@ -279,8 +281,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             public void onClick(View view) {
                 if (isLoaded && !isChanged) {
                     if (mEditType == EDIT_TYPE_SCENE) {
-                        AppData appData = PluginService.getService().getAppData();
-                        appData.sceneCollection.removeScene(executable.getUid());
+                        DataService dataService = DataService.getService();
+                        dataService.executables.remove(executable);
                         setResult(RESULT_CANCELED);
                         finish();
                     }
@@ -294,7 +296,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(EditActivity.this, NfcTagWriterActivity.class);
-                intent.putExtra("uuid", executable.getUid());
+                intent.putExtra("uid", executable.getUid());
                 intent.putExtra("name", executable.getTitle());
                 startActivity(intent);
             }
@@ -323,28 +325,28 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             }
         });
 
-        PluginService.observersServiceReady.register(new onServiceReady() {
+        DataService.observersServiceReady.register(new onServiceReady() {
             @Override
-            public boolean onServiceReady(PluginService service) {
+            public boolean onServiceReady(DataService service) {
                 Intent it = getIntent();
                 if (it != null) {
                     Bundle extra = it.getExtras();
                     if (extra != null) {
                         if (extra.containsKey(LOAD_UUID)) {
-                            loadContent(service.getAppData(), extra);
+                            loadContent(service, extra);
                             return false;
                         } else if (extra.containsKey(CREATE_SCENE)) {
-                            createContent(service.getAppData(), true);
+                            createContent(service, true);
                             return false;
                         }
                     }
                 }
-                createContent(service.getAppData(), false);
+                createContent(service, false);
                 return false;
             }
 
             @Override
-            public void onServiceFinished(PluginService service) {
+            public void onServiceFinished(DataService service) {
 
             }
         });
@@ -431,7 +433,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         super.onStop();
     }
 
-    private void createContent(final AppData appData, boolean createNewScene) {
+    private void createContent(final DataService dataService, boolean createNewScene) {
         executable = Scene.createNewScene();
         btnAddHomescreen.setVisibility(View.GONE);
         btnNFC.setVisibility(View.GONE);
@@ -442,7 +444,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         } else {
             getSupportActionBar().setSubtitle(R.string.title_scene_create);
         }
-        sceneElementsAssigning = new SceneElementsAssigning(this, appData, (FlowLayout) findViewById(R.id.included),
+        sceneElementsAssigning = new SceneElementsAssigning(this, dataService, (FlowLayout) findViewById(R.id.included),
                 findViewById(R.id.available), new SceneElementsAssigning.SceneElementsChanged() {
             @Override
             public void onSceneElementsChanged() {
@@ -450,13 +452,13 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
                 updateSaveButton();
             }
         }, (Scene) executable);
-        prepareInterface(appData);
+        prepareInterface(dataService);
     }
 
-    private void loadContent(final AppData appData, Bundle extra) {
+    private void loadContent(final DataService dataService, Bundle extra) {
         String executable_uuid = extra.getString(LOAD_UUID, null);
         load_adapter_position = extra.getInt(LOAD_ADAPTER_POSITION, -1);
-        executable = appData.findExecutable(executable_uuid);
+        executable = dataService.executables.findByUID(executable_uuid);
         if (executable == null) {
             finish();
             return;
@@ -464,7 +466,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         mEditType = executable instanceof Scene ? EDIT_TYPE_SCENE : EDIT_TYPE_DEVICE_PORT;
 
         if (mEditType == EDIT_TYPE_SCENE) {
-            sceneElementsAssigning = new SceneElementsAssigning(this, appData, (FlowLayout) findViewById(R.id.included),
+            sceneElementsAssigning = new SceneElementsAssigning(this, dataService, (FlowLayout) findViewById(R.id.included),
                     findViewById(R.id.available), new SceneElementsAssigning.SceneElementsChanged() {
                 @Override
                 public void onSceneElementsChanged() {
@@ -483,11 +485,11 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             btnAdd.setVisibility(View.GONE);
             executable_timers.setVisibility(View.VISIBLE);
-            timerAdapter.start(appData.timerCollection, executable);
+            timerAdapter.start(dataService.timers, executable);
         }
 
         isLoaded = true;
-        isFavourite = appData.favCollection.isFavourite(executable.getUid());
+        isFavourite = dataService.favourites.isFavourite(executable.getUid());
 
         setIcon(findViewById(R.id.scene_image), null);
         setIcon(findViewById(R.id.scene_image_off), null);
@@ -501,25 +503,22 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         updateFavButton();
 
-        prepareInterface(appData);
+        prepareInterface(dataService);
     }
 
-    private void prepareInterface(AppData appData) {
+    private void prepareInterface(DataService dataService) {
 
         if (mEditType == EDIT_TYPE_SHORTCUT) {
             show_mainWindow.setVisibility(View.VISIBLE);
             enable_feedback.setVisibility(View.VISIBLE);
             groups_layout.setVisibility(View.GONE);
             chk_hide.setVisibility(View.GONE);
-            checked = null;
         } else {
-            updateGroups(appData.groupCollection);
+            updateGroups(dataService.groups);
         }
 
-        if (mEditType == EDIT_TYPE_SCENE)
-            chk_hide.setVisibility(View.GONE);
-        else if (mEditType == EDIT_TYPE_DEVICE_PORT)
-            chk_hide.setChecked(((DevicePort) executable).isHidden());
+        chk_hide.setVisibility(View.GONE);
+        chk_hide.setChecked(executable.isHidden());
 
         EditText nameEdit = (EditText) findViewById(R.id.scene_name);
         nameEdit.addTextChangedListener(new TextWatcher() {
@@ -543,7 +542,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
     private void updateGroups(GroupCollection groupCollection) {
         groups_layout.removeAllViews();
-        checked = GroupUtilities.addGroupCheckBoxesToLayout(this, groupCollection, groups_layout, executable.getGroups(),
+        GroupUtilities.addGroupCheckBoxesToLayout(this, groupCollection, groups_layout, executable.getGroupUIDs(), checked_groups,
                 new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -554,7 +553,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     }
 
     private void save_and_close() {
-        AppData appData = PluginService.getService().getAppData();
+        DataService dataService = DataService.getService();
         String newName = ((EditText) findViewById(R.id.scene_name)).getText().toString().trim();
 
         if (newName.isEmpty()) {
@@ -570,14 +569,18 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             }
             // Generate list of checked items
             sceneElementsAssigning.applyToScene((Scene) executable);
-            ((Scene) executable).sceneName = newName;
-        } else {
-            // First apply new name, on success save_and_close will be called again.
-            if (!executable.getTitle().equals(newName)) {
-                appData.rename((DevicePort) executable, newName, this);
-                return;
-            }
         }
+
+        if (executable.getCredentials() != null) {
+            if (progressDialog == null)
+                progressDialog = new ProgressDialog(this);
+
+            progressDialog.setTitle(R.string.renameInProgress);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+            executable.setTitle(newName, this);
+        } else executable.title = newName;
 
         if (mEditType == EDIT_TYPE_SHORTCUT) {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditActivity.this,
@@ -597,34 +600,27 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         // If loaded: save fav + groups + hidden
         if (isLoaded) {
-            appData.favCollection.setFavourite(executable.getUid(), isFavourite);
+            dataService.favourites.setFavourite(executable.getUid(), isFavourite);
 
-            GroupCollection groupCollection = appData.groupCollection;
-            executable.getGroups().clear();
-            for (int i = 0; i < checked.length; ++i) {
-                if (!checked[i]) {
-                    continue;
-                }
-                executable.getGroups().add(groupCollection.get(i).uuid);
-            }
-
-            if (mEditType == EDIT_TYPE_DEVICE_PORT) {
-                DevicePort devicePort = (DevicePort) executable;
-                devicePort.setHidden(chk_hide.isChecked());
-                appData.deviceCollection.save(devicePort.device);
+            executable.getGroupUIDs().clear();
+            for (String groupUID : checked_groups) {
+                executable.getGroupUIDs().add(groupUID);
             }
         }
+
+        executable.setHidden(chk_hide.isChecked());
+        dataService.executables.put(executable);
 
         Intent intent = new Intent();
         intent.putExtra(LOAD_ADAPTER_POSITION, load_adapter_position);
 
         if (mEditType == EDIT_TYPE_DEVICE_PORT) {
-            appData.deviceCollection.setDevicePortBitmap(this,
-                    ((DevicePort) executable), icon_nostate, LoadStoreIconData.IconState.OnlyOneState);
-            appData.deviceCollection.setDevicePortBitmap(this,
-                    ((DevicePort) executable), icon_off, LoadStoreIconData.IconState.StateOff);
-            appData.deviceCollection.setDevicePortBitmap(this,
-                    ((DevicePort) executable), icon_on, LoadStoreIconData.IconState.StateOn);
+            dataService.executables.setExecutableBitmap(this,
+                    (executable), icon_nostate, LoadStoreIconData.IconState.OnlyOneState);
+            dataService.executables.setExecutableBitmap(this,
+                    (executable), icon_off, LoadStoreIconData.IconState.StateOff);
+            dataService.executables.setExecutableBitmap(this,
+                    (executable), icon_on, LoadStoreIconData.IconState.StateOn);
         } else {
             // Save all icons that are setup.
             LoadStoreIconData.saveIcon(this, LoadStoreIconData.resizeBitmap(this, icon_nostate, 128, 128),
@@ -635,10 +631,10 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
                     executable.getUid(), LoadStoreIconData.IconState.StateOn);
 
             LoadStoreIconData.clearIconCache();
-            appData.sceneCollection.add((Scene) executable, true);
+            dataService.executables.put(executable);
         }
 
-        appData.groupCollection.executableToGroupAdded();
+        dataService.groups.executableToGroupAdded();
 
         setResult(RESULT_OK, intent);
 
@@ -667,7 +663,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     }
 
     @Override
-    public void httpRequestResult(DevicePort oi, boolean success, String error_message) {
+    public void onNameChangeResult(boolean success, String error_message) {
         if (progressDialog != null) {
             progressDialog.dismiss();
             progressDialog = null;
@@ -677,19 +673,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             //noinspection ConstantConditions
             Toast.makeText(App.instance, App.instance.getString(R.string.renameFailed, error_message), Toast.LENGTH_SHORT).show();
         } else {
-            ((DevicePort) executable).setTitle(((EditText) findViewById(R.id.scene_name)).getText().toString().trim());
-            save_and_close();
+            executable.title = (((EditText) findViewById(R.id.scene_name)).getText().toString().trim());
         }
-    }
-
-    @Override
-    public void httpRequestStart(DevicePort oi) {
-        if (progressDialog == null)
-            progressDialog = new ProgressDialog(this);
-
-        progressDialog.setTitle(R.string.renameInProgress);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setCancelable(false);
-        progressDialog.show();
     }
 }

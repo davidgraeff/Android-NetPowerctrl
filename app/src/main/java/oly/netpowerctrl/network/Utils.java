@@ -179,7 +179,7 @@ public class Utils {
 //                continue;
 //
 //            try {
-//                InetAddress address = InetAddress.getByName(di.mHostName);
+//                InetAddress address = InetAddress.getByName(di.hostName);
 //                linkLocals &= (address.isLinkLocalAddress() || address.isSiteLocalAddress());
 //            } catch (UnknownHostException e) {
 //                // we couldn't resolve the device hostname to an IP address. One reason is, that

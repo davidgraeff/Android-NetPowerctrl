@@ -57,10 +57,10 @@ public class GDrive implements
     private Activity context;
 
     public static DriveFolder getAppFolder(GoogleApiClient mClient) {
-        DriveFolder appDataDir = Drive.DriveApi.getRootFolder(mClient);
-        DriveId id = GDrive.findChild(mClient, "PowerControlApp_Backup", appDataDir);
+        DriveFolder PluginServiceDir = Drive.DriveApi.getRootFolder(mClient);
+        DriveId id = GDrive.findChild(mClient, "PowerControlApp_Backup", PluginServiceDir);
         if (id == null) {
-            DriveFolder.DriveFolderResult result = GDrive.createAppDir(mClient, appDataDir);
+            DriveFolder.DriveFolderResult result = GDrive.createAppDir(mClient, PluginServiceDir);
             if (!result.getStatus().isSuccess()) {
                 // We failed, stop the task and return.
                 return null;
