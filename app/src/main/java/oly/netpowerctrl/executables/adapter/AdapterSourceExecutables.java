@@ -11,8 +11,6 @@ import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 
-;
-
 /**
  * Created by david on 07.07.14.
  */
@@ -22,7 +20,6 @@ public class AdapterSourceExecutables extends AdapterSourceInput implements onCo
     @Override
     public void doUpdateNow() {
         for (Executable executable : executableCollection.getItems().values()) {
-            if (executable.isHidden()) continue;
             adapterSource.addItem(executable, executable.current_value);
         }
     }
@@ -53,18 +50,19 @@ public class AdapterSourceExecutables extends AdapterSourceInput implements onCo
                 break;
             case UpdateReachableAction:
                 int pos = adapterSource.findPositionByUUid(executable.getUid());
-                if (pos != -1) adapterSource.getAdapter().notifyItemChanged(pos);
+                if (pos != -1)
+                    adapterSource.getAdapter().notifyItemChanged(pos);
+                else
+                    adapterSource.addItem(executable, executable.current_value);
                 break;
             case UpdateAction:
                 //Log.w("UPDATE source ports", device.getDeviceName());
                 pos = adapterSource.findPositionByUUid(executable.getUid());
                 if (pos != -1) adapterSource.getItem(pos).markRemoved();
-                if (executable.isHidden()) break;
                 adapterSource.addItem(executable, executable.current_value);
                 adapterSource.removeAllMarked();
                 break;
             case AddAction:
-                if (executable.isHidden()) break;
                 adapterSource.addItem(executable, executable.current_value);
                 break;
             case ClearAndNewAction:

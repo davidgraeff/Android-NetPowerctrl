@@ -41,6 +41,7 @@ import oly.netpowerctrl.executables.adapter.AdapterSourceInputGroups;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.adapter.ExecutableViewHolder;
 import oly.netpowerctrl.executables.adapter.ExecutablesEditableAdapter;
+import oly.netpowerctrl.executables.adapter.FilterByHidden;
 import oly.netpowerctrl.executables.adapter.FilterByReachable;
 import oly.netpowerctrl.executables.adapter.FilterBySingleGroup;
 import oly.netpowerctrl.groups.GroupUtilities;
@@ -119,7 +120,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public void onRefresh() {
-        this.refreshNow();
+        dataService.refreshExistingDevices();
     }
 
     @Override
@@ -261,6 +262,7 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         ////////// Adapter and Adapter sources
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
         adapterSource.addFilter(new FilterByReachable(SharedPrefs.getInstance().isHideNotReachable()));
+        adapterSource.addFilter(new FilterByHidden(true));
         adapterSource.addFilter(filterBySingleGroup);
         adapterSource.addInput(new AdapterSourceExecutables(), new AdapterSourceInputGroups());
 
@@ -335,10 +337,6 @@ public class OutletsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         LoadStoreIconData.iconCacheClearedObserver.unregister(this);
         DataService.observersStartStopRefresh.unregister(this);
         super.onDestroyView();
-    }
-
-    public void refreshNow() {
-        dataService.refreshDevices();
     }
 
     public void checkEmpty() {

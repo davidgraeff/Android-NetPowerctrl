@@ -74,7 +74,7 @@ public class AutomaticSetup implements onTestCredentialsResult, onServiceReady, 
         int n = dataService.credentials.size();
         if (n == 0) {
             dataService.showNotificationForNextRefresh(true);
-            dataService.refreshDevices();
+            dataService.detectDevices();
             return;
         }
 

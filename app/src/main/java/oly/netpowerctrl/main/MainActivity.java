@@ -35,7 +35,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
@@ -95,9 +94,10 @@ public class MainActivity extends ActionBarActivity {
                     firstFragment = false;
                     return;
                 }
-                if (getFragmentManager().getBackStackEntryCount() <= 1) {
-                    Toast.makeText(MainActivity.this, getString(R.string.press_back_to_exit), Toast.LENGTH_SHORT).show();
-                }
+                getSupportActionBar().setDisplayHomeAsUpEnabled(getFragmentManager().getBackStackEntryCount() > 1);
+//                if (getFragmentManager().getBackStackEntryCount() <= 1) {
+//                    Toast.makeText(MainActivity.this, getString(R.string.press_back_to_exit), Toast.LENGTH_SHORT).show();
+//                }
             }
         });
     }
@@ -111,6 +111,9 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
             case R.id.menu_about: {
                 FragmentUtils.changeToFragment(this, FeedbackFragment.class.getName());
                 return true;

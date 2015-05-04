@@ -1,6 +1,7 @@
 package oly.netpowerctrl.devices;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -23,7 +24,7 @@ public class DevicesObserver {
     public List<Credentials> success = new ArrayList<>();
     public List<Credentials> failed = new ArrayList<>();
 
-    public DevicesObserver(List<Credentials> credentialsList, onDevicesObserverFinished callback) {
+    public DevicesObserver(Collection<Credentials> credentialsList, onDevicesObserverFinished callback) {
         this.broadcast = false;
         this.callback = callback;
         for (Credentials c : credentialsList)

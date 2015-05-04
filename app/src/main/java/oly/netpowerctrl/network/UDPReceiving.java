@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
@@ -33,8 +34,9 @@ abstract public class UDPReceiving extends Thread {
             try {
                 byte[] message = new byte[1500];
                 receivedDatagram = new DatagramPacket(message, message.length);
-                socket = new DatagramSocket(receive_port);
+                socket = new DatagramSocket(null);
                 socket.setReuseAddress(true);
+                socket.bind(new InetSocketAddress(receive_port));
                 while (keep_running) {
                     socket.receive(receivedDatagram);
                     parsePacket(message, receivedDatagram.getLength(), receive_port, socket.getLocalAddress(), receivedDatagram.getAddress());

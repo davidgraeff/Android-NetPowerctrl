@@ -16,26 +16,39 @@ import oly.netpowerctrl.utils.onCollectionUpdated;
  */
 public class AdapterItemHeader extends AdapterItem implements onCollectionUpdated<CredentialsCollection, Credentials> {
 
-    public AdapterItemHeader(Credentials credentials, DataService service, IOConnectionAdapter adapter) {
+    public AdapterItemHeader(Credentials credentials, final DataService service, IOConnectionAdapter adapter) {
         super(adapter);
         if (!credentials.isConfigured())
             this.title = App.getAppString(R.string.device_new, credentials.getDeviceName());
         else
             this.title = credentials.getDeviceName();
 
-        this.subtitle = "";
         this.credentials = credentials;
         this.isConfigured = credentials.isConfigured();
         this.deviceUID = credentials.deviceUID;
         this.UID = credentials.getUid();
 
-        service.credentials.registerObserver(this);
+        /**
+         * The following is done in a runnable, because AdapterItemConnection uses IOConnectionCollection.registerObserver and
+         * the update method where that happens is called by the observer list. The result would be a concurrent access to the observer list.
+         */
+        App.getMainThreadHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                service.credentials.registerObserver(AdapterItemHeader.this);
+            }
+        });
 
     }
 
     @Override
     public void destroy() {
         DataService.getService().credentials.unregisterObserver(this);
+    }
+
+    @Override
+    public String getSubtitle() {
+        return "";
     }
 
     @Override

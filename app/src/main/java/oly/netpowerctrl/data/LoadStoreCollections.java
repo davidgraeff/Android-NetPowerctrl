@@ -43,6 +43,8 @@ public class LoadStoreCollections implements onStorageUpdate {
             item.save(f);
             f.flush();
             f.close();
+            if (file.length() == 0)
+                throw new IOException("Storing failed " + file.getPath());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -124,6 +126,12 @@ public class LoadStoreCollections implements onStorageUpdate {
         if (files == null)
             return;
         for (File file : files) {
+            if (file.length() == 0) {
+                if (!file.delete())
+                    throw new RuntimeException();
+                continue;
+            }
+
             ITEM item = classType.newInstance();
             try {
                 item.load(new FileInputStream(file));
@@ -158,6 +166,7 @@ public class LoadStoreCollections implements onStorageUpdate {
                     throw new RuntimeException();
                 continue;
             }
+
             try {
                 ITEM item = factory.newInstance(new FileInputStream(file));
                 item.resetChanged();

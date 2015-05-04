@@ -17,13 +17,14 @@ import oly.netpowerctrl.utils.onCollectionUpdated;
  */
 public class AdapterItemConnection extends AdapterItem implements onCollectionUpdated<IOConnectionsCollection, IOConnection> {
     public IOConnection ioConnection;
+    public String subtitle;
 
     /**
      * Create an entry for a device connection
      *
      * @param ioConnection The connection to get data from.
      */
-    public AdapterItemConnection(IOConnection ioConnection, DataService service, IOConnectionAdapter adapter) {
+    public AdapterItemConnection(IOConnection ioConnection, final DataService service, IOConnectionAdapter adapter) {
         super(adapter);
         this.title = "";
         this.title += ioConnection.getProtocol() + "/" + ioConnection.getDestinationHost();
@@ -34,17 +35,21 @@ public class AdapterItemConnection extends AdapterItem implements onCollectionUp
         this.credentials = ioConnection.credentials;
         this.UID = ioConnection.getUid();
 
-        this.subtitle = ioConnection.getStatusMessage();
-        if (this.subtitle == null) {
-            if (this.ioConnection.reachableState() == ReachabilityStates.MaybeReachable) {
-                this.subtitle = App.getAppString(R.string.device_connection_notTested);
-            } else
-                this.subtitle = App.getAppString(R.string.device_reachable);
-        }
+        updateSubtitle();
 
         this.deviceUID = ioConnection.deviceUID;
         this.isConfigured = ioConnection.credentials.isConfigured();
-        service.connections.registerObserver(this);
+
+        /**
+         * The following is done in a runnable, because AdapterItemConnection uses IOConnectionCollection.registerObserver and
+         * the update method where that happens is called by the observer list. The result would be a concurrent access to the observer list.
+         */
+        App.getMainThreadHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                service.connections.registerObserver(AdapterItemConnection.this);
+            }
+        });
     }
 
     public ReachabilityStates reachableState() {
@@ -56,10 +61,26 @@ public class AdapterItemConnection extends AdapterItem implements onCollectionUp
         DataService.getService().connections.unregisterObserver(this);
     }
 
+    private void updateSubtitle() {
+        subtitle = ioConnection.getStatusMessage();
+        if (subtitle == null) {
+            if (this.ioConnection.reachableState() == ReachabilityStates.MaybeReachable) {
+                subtitle = App.getAppString(R.string.device_connection_notTested);
+            } else
+                subtitle = App.getAppString(R.string.device_reachable);
+        }
+    }
+
+    @Override
+    public String getSubtitle() {
+        return subtitle;
+    }
+
     @Override
     public boolean updated(@NonNull IOConnectionsCollection ioConnectionsCollection, @Nullable IOConnection ioConnection, @NonNull ObserverUpdateActions action) {
         if ((action == ObserverUpdateActions.UpdateAction || action == ObserverUpdateActions.UpdateReachableAction) && this.ioConnection.equals(ioConnection)) {
             this.ioConnection = ioConnection;
+            updateSubtitle();
             last_known_position = adapter.notifyItemChanged(this, last_known_position);
         }
 

@@ -351,7 +351,7 @@ public class DataService extends Service implements onDataLoaded, onPluginsReady
         }
 
         observersServiceReady.onServiceReady(dataService);
-        refreshDevices();
+        refreshExistingDevices();
         return true;
     }
 
@@ -413,8 +413,8 @@ public class DataService extends Service implements onDataLoaded, onPluginsReady
      */
     public void addToConfiguredDevices(Credentials credentials) {
         credentials.setConfigured(true);
-        connections.save(credentials.deviceUID);
         this.credentials.put(credentials);
+        connections.save(credentials.deviceUID);
     }
 
     public void showNotificationForNextRefresh(boolean notificationAfterNextRefresh) {
@@ -432,9 +432,25 @@ public class DataService extends Service implements onDataLoaded, onPluginsReady
     }
 
     /**
+     * Refreshes all configured devices.
+     */
+    public void refreshExistingDevices() {
+        observersStartStopRefresh.onRefreshStateChanged(true);
+        addDeviceObserver(new DevicesObserver(credentials.getItems().values(), new DevicesObserver.onDevicesObserverFinished() {
+            @Override
+            public void onObserverJobFinished(DevicesObserver devicesObserver) {
+                //timers.checkAlarm(DataService.getService().alarmStartedTime());
+                Logging.getInstance().logEnergy("...fertig\n" + " Timeout: " + String.valueOf(devicesObserver.timedOutDevices().size()));
+                observersDataQueryCompleted.onDataQueryFinished(DataService.this);
+                observersStartStopRefresh.onRefreshStateChanged(false);
+            }
+        }));
+    }
+
+    /**
      * Refreshes all configured devices (detect unreachable devices) and detect new un-configured devices.
      */
-    public void refreshDevices() {
+    public void detectDevices() {
         observersStartStopRefresh.onRefreshStateChanged(true);
         addDeviceObserver(new DevicesObserver(new DevicesObserver.onDevicesObserverFinished() {
             @Override

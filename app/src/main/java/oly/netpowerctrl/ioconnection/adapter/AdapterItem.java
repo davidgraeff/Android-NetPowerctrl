@@ -8,7 +8,6 @@ import oly.netpowerctrl.devices.Credentials;
 public abstract class AdapterItem {
     protected final IOConnectionAdapter adapter;
     public String title;
-    public String subtitle;
     public Credentials credentials;
     public boolean enabled = true;
     public boolean isConfigured;
@@ -25,7 +24,7 @@ public abstract class AdapterItem {
     }
 
     public boolean matchesDeviceUID(String deviceUID) {
-        return deviceUID.equals(deviceUID);
+        return this.deviceUID.equals(deviceUID);
     }
 
     public boolean matchesUID(String UID) {
@@ -33,4 +32,6 @@ public abstract class AdapterItem {
     }
 
     public abstract void destroy();
+
+    public abstract String getSubtitle();
 }

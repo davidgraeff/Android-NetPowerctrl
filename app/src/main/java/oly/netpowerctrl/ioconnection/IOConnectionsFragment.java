@@ -103,7 +103,7 @@ public class IOConnectionsFragment extends Fragment
             public void onRefresh() {
                 DataService service = DataService.getService();
                 service.showNotificationForNextRefresh(true);
-                service.refreshDevices();
+                service.detectDevices();
             }
         });
         mPullToRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -174,7 +174,6 @@ public class IOConnectionsFragment extends Fragment
                 return true;
             }
             case R.id.menu_connection_test: {
-                item.subtitle = getString(R.string.device_connection_testing);
                 item.enabled = false;
                 item.ioConnection.setReachability(ReachabilityStates.MaybeReachable);
                 item.ioConnection.setStatusMessage(getString(R.string.device_connection_testing));
@@ -301,7 +300,7 @@ public class IOConnectionsFragment extends Fragment
                 case MSG_TEST_ABORT: {
                     if (item.ioConnection.reachableState() == ReachabilityStates.MaybeReachable) {
                         item.ioConnection.setReachability(ReachabilityStates.NotReachable);
-                        item.ioConnection.setStatusMessage(App.getAppString(R.string.device_not_reachable));
+                        item.ioConnection.setStatusMessage(App.getAppString(R.string.device_timeout));
                         item.credentials.getPlugin().getDataService().connections.put(item.ioConnection);
                     }
                     break;

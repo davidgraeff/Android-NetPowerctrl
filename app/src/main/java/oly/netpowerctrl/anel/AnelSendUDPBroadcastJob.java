@@ -2,7 +2,6 @@ package oly.netpowerctrl.anel;
 
 import android.util.Log;
 
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -11,8 +10,8 @@ import java.util.Enumeration;
 import java.util.Set;
 
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPErrors;
+import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -22,14 +21,14 @@ public class AnelSendUDPBroadcastJob {
     public static void run(DataService dataService) {
         Set<Integer> ports = dataService.connections.getAllSendPorts();
 
-        DatagramSocket datagramSocket;
-        try {
-            datagramSocket = new DatagramSocket();
-            datagramSocket.setBroadcast(true);
-        } catch (SocketException e) {
-            e.printStackTrace();
-            return;
-        }
+//        DatagramSocket datagramSocket;
+//        try {
+//            datagramSocket = new DatagramSocket();
+//            datagramSocket.setBroadcast(true);
+//        } catch (SocketException e) {
+//            e.printStackTrace();
+//            return;
+//        }
 
         boolean logDetect = Logging.getInstance().mLogDetect;
 
@@ -55,11 +54,12 @@ public class AnelSendUDPBroadcastJob {
                             Logging.getInstance().logDetect("UDP Broadcast on " + broadcast.toString() + " Ports: " + portsString);
                         }
 
+                        Log.w("SendUDPBroadcastJob", "Broadcast Query");
+
                         //String portString = "";
                         for (int port : ports) {
+                            new UDPSend(broadcast, port, "wer da?\r\n".getBytes(), UDPErrors.INQUERY_BROADCAST_REQUEST);
                             //portString += " " + String.valueOf(port);
-                            UDPErrors.sendPacketHandleErrors(App.instance,
-                                    datagramSocket, broadcast, port, "wer da?\r\n".getBytes());
                         }
 
                         //Log.w("AnelSendUDPBroadcastJob", "Query " + portString);

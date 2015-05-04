@@ -122,7 +122,7 @@ public class ExecutionActivity extends NfcReaderActivity {
         DataService.observersServiceReady.register(new onServiceReady() {
             @Override
             public boolean onServiceReady(DataService service) {
-                service.refreshDevices();
+                service.refreshExistingDevices();
                 return false;
             }
 

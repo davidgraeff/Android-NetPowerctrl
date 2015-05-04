@@ -59,19 +59,6 @@ public class DeviceQuery {
     }
 
     protected void doAction(Credentials credentials) {
-        if (!credentials.enabled) {
-            // remove from list of devices to observe and notify observers
-            deviceFailed(credentials);
-
-            DeviceIOConnections l = dataService.connections.openDevice(credentials.deviceUID);
-            if (l != null) {
-                l.setStatusMessage(dataService.getString(R.string.error_device_disabled));
-                l.setReachability(ReachabilityStates.NotReachable);
-                dataService.connections.put(l);
-            }
-            return;
-        }
-
         Log.w(TAG, "Query " + credentials.getDeviceName());
 
         AbstractBasePlugin abstractBasePlugin = credentials.getPlugin();
@@ -87,6 +74,16 @@ public class DeviceQuery {
         if (l == null) {
             // remove from list of devices to observe and notify observers
             deviceFailed(credentials);
+            return;
+        }
+
+        if (!credentials.enabled) {
+            // remove from list of devices to observe and notify observers
+            deviceFailed(credentials);
+
+            l.setStatusMessage(dataService.getString(R.string.error_device_disabled));
+            l.setReachability(ReachabilityStates.NotReachable);
+            dataService.connections.put(l);
             return;
         }
 
@@ -176,9 +173,13 @@ public class DeviceQuery {
 
         for (Iterator<Map.Entry<String, Credentials>> iterator = devicesObserver.credentialsList.entrySet().iterator(); iterator.hasNext(); ) {
             Credentials credentials = iterator.next().getValue();
-            handler.removeMessages(MSG_REQUEST, credentials);
             iterator.remove();
             devicesObserver.failed.add(credentials);
+            DeviceIOConnections l = dataService.connections.openDevice(credentials.deviceUID);
+            if (l != null) {
+                l.setStatusMessage(App.getAppString(R.string.device_timeout));
+                dataService.connections.put(l);
+            }
         }
         checkObserverFinished(devicesObserver);
     }
@@ -199,9 +200,16 @@ public class DeviceQuery {
      * You will get notified if the request is finished and the given minimum waiting time is over
      * and either all devices responded or after a given timeout.
      *
+     * This method will do nothing if the given observer is not a broadcast observer and also
+     * has no devices to observe.
+     *
      * @param devicesObserver The observer
      */
     public void addDeviceObserver(DevicesObserver devicesObserver) {
+        if (!devicesObserver.broadcast && devicesObserver.credentialsList.isEmpty()) {
+            devicesObserver.callback.onObserverJobFinished(devicesObserver);
+            return;
+        }
         handler.sendMessage(handler.obtainMessage(DeviceQuery.MSG_ADD_OBSERVER, devicesObserver));
     }
 

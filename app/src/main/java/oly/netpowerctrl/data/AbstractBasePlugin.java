@@ -101,9 +101,5 @@ public abstract class AbstractBasePlugin {
      */
     abstract public void addNewIOConnection(@NonNull Credentials credentials, @NonNull onNewIOConnection callback);
 
-    public abstract long getUpdatedTime(Executable executable);
-
-    public abstract String getDeviceName(Executable executable);
-
     public abstract ReachabilityStates getReachableState(Executable executable);
 }

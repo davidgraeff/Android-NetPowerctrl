@@ -100,10 +100,10 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
             ioConnection.storeReachability();
 
             updateActions = ObserverUpdateActions.UpdateReachableAction;
-            // Make executables aware of the change
-            dataService.executables.notifyReachability(ioConnection.deviceUID);
             // Recompute reachability
             deviceIOConnections.compute_reachability();
+            // Make executables aware of the change
+            dataService.executables.notifyReachability(ioConnection.deviceUID, deviceIOConnections.reachableState());
         }
 
         if (ioConnection.hasChanged()) {

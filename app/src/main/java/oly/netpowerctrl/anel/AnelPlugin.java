@@ -3,7 +3,6 @@ package oly.netpowerctrl.anel;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -25,7 +24,6 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
-import oly.netpowerctrl.devices.DevicesObserver;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableType;
@@ -105,10 +103,10 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     void fillExecutable(Executable executable, Credentials credentials, String uid, int value) {
         executable.ui_type = ExecutableType.TypeToggle;
-        executable.credentials = credentials;
         executable.deviceUID = credentials.getUid();
         executable.setUid(uid);
         executable.current_value = value;
+        executable.setCredentials(credentials);
     }
 
     Credentials createDefaultCredentials(String MacAddress) {
@@ -140,7 +138,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
             int success = 0;
             // Use Http instead of UDP for sending. For each batch command we will send a single http request
             for (ExecutableAndCommand c : command_list) {
-                boolean ok = executeViaHTTP(ioConnection, c.port, c.command);
+                boolean ok = executeViaHTTP(ioConnection, c.executable, c.command);
                 if (ok) ++success;
             }
             return success;
@@ -175,9 +173,9 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
         // Second step: Apply commands
         for (ExecutableAndCommand c : command_list) {
-            c.port.last_command_timecode = System.currentTimeMillis();
+            c.executable.setExecutionInProgress(true);
 
-            int id = extractIDFromExecutableUID(c.port.getUid());
+            int id = extractIDFromExecutableUID(c.executable.getUid());
             if (id >= 10 && id < 20) {
                 containsIO = true;
             } else if (id >= 0) {
@@ -217,13 +215,13 @@ final public class AnelPlugin extends AbstractBasePlugin {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            new UDPSend(dataService, ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+            new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            new UDPSend(dataService, ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+            new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
         }
 
         return command_list.size();
@@ -325,7 +323,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
      */
     @Override
     public boolean execute(@NonNull Executable executable, int command, onExecutionFinished callback) {
-        executable.last_command_timecode = System.currentTimeMillis();
+        executable.setExecutionInProgress(true);
 
         boolean bValue = false;
         if (command == Executable.ON)
@@ -359,14 +357,14 @@ final public class AnelPlugin extends AbstractBasePlugin {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         id - 10, credentials.userName, credentials.password).getBytes();
-                new UDPSend(dataService, ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+                new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
                 if (callback != null) callback.addSuccess();
                 return true;
             } else if (id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         id, credentials.userName, credentials.password).getBytes();
-                new UDPSend(dataService, ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+                new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
                 if (callback != null) callback.addSuccess();
                 return true;
             } else {
@@ -408,29 +406,13 @@ final public class AnelPlugin extends AbstractBasePlugin {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((IOConnectionHTTP) ioConnection,
                     "strg.cfg", "", ioConnection, false, AnelReceiveSendHTTP.receiveCtrlHtml));
         } else {
-            new UDPSend(dataService, ioConnection, requestMessage, UDPErrors.INQUERY_REQUEST);
+            new UDPSend(ioConnection, requestMessage, UDPErrors.INQUERY_REQUEST);
         }
     }
 
     @Override
     public Credentials createNewDefaultCredentials() {
         return createDefaultCredentials(UUID.randomUUID().toString());
-    }
-
-    @Override
-    public long getUpdatedTime(Executable executable) {
-        DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executable.deviceUID);
-        if (deviceIOConnections == null) return 0;
-        IOConnection ioConnection = deviceIOConnections.findReachable();
-        if (ioConnection == null) return 0;
-        return ioConnection.getLastUsed();
-    }
-
-    @Override
-    public String getDeviceName(Executable executable) {
-        Credentials credentials = dataService.credentials.findByUID(executable.deviceUID);
-        if (credentials == null) throw new RuntimeException();
-        return credentials.deviceName;
     }
 
     @Override
@@ -531,7 +513,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
         // add to tree
         for (ExecutableAndCommand executableAndCommand : command_list) {
-            DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executableAndCommand.port.deviceUID);
+            DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executableAndCommand.executable.deviceUID);
             if (deviceIOConnections == null) continue;
             IOConnection connection = deviceIOConnections.findReachable();
             if (connection == null) continue;
@@ -567,22 +549,22 @@ final public class AnelPlugin extends AbstractBasePlugin {
     public void checkDevicesReachabilityAfterNetworkChange() {
         Logging.getInstance().logEnergy("Anel: check availability");
 
-        startNetworkReceivers(false);
-
-        dataService.addDeviceObserver(new DevicesObserver(dataService.credentials.findByPlugin(this), new DevicesObserver.onDevicesObserverFinished() {
-            @Override
-            public void onObserverJobFinished(DevicesObserver devicesObserver) {
-                if (!devicesObserver.isAllTimedOut()) return;
-                //TODO
-                new AsyncTask<AnelPlugin, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(AnelPlugin... plugin) {
-                        plugin[0].stopNetwork();
-                        return null;
-                    }
-                }.execute(AnelPlugin.this);
-            }
-        }));
+//        startNetworkReceivers(false);
+//
+//        dataService.addDeviceObserver(new DevicesObserver(dataService.credentials.findByPlugin(this), new DevicesObserver.onDevicesObserverFinished() {
+//            @Override
+//            public void onObserverJobFinished(DevicesObserver devicesObserver) {
+//                if (!devicesObserver.isAllTimedOut()) return;
+//                //TODO
+//                new AsyncTask<AnelPlugin, Void, Void>() {
+//                    @Override
+//                    protected Void doInBackground(AnelPlugin... plugin) {
+//                        plugin[0].stopNetwork();
+//                        return null;
+//                    }
+//                }.execute(AnelPlugin.this);
+//            }
+//        }));
     }
 
     @Override

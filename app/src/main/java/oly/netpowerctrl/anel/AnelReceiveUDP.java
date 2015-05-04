@@ -60,6 +60,7 @@ class AnelReceiveUDP extends UDPReceiving {
 
         Logging.getInstance().logDetect("UDP Device detected\n" + DeviceName);
 
+        // Create or get the credentials (device) object. It consists of a unique id, device name, username, password.
         DataService dataService = anelPlugin.getDataService();
         Credentials credentials = dataService.credentials.findByUID(MacAddress);
         if (credentials == null) {
@@ -70,9 +71,6 @@ class AnelReceiveUDP extends UDPReceiving {
         // We will filter out any disabled outlets
         int disabledOutlets = 0;
         int numOutlets = 8;
-
-        credentials.setDeviceName(DeviceName);
-
         int httpPort = 80;
 
         // For old firmwares
@@ -97,45 +95,16 @@ class AnelReceiveUDP extends UDPReceiving {
         if (msg.length > 25)
             credentials.version = msg[25].trim();
 
+        // Only update device name if it is empty, we do not want to overwrite the name given by the user.
+        if (credentials.deviceName.isEmpty())
+            credentials.setDeviceName(DeviceName);
+
+        // The order is important: First save the credentials, then save the connections, then save the executables.
+        // Because: connections need the credentials object. Executables need the reachability information of the connections.
+
         dataService.credentials.put(credentials);
 
-        // IO ports
-        if (msg.length > 25) {
-            // 1-based id. IO output range: 11..19, IO input range is 21..29
-            int io_id = 10;
-            for (int i = 16; i <= 23; ++i) {
-                io_id++;
-                List<String> io_port = new ArrayList<>();
-                Streams.splitNonRegex(io_port, msg[i], ",");
-                if (io_port.size() != 3) continue;
-
-                String uid = AnelPlugin.makeExecutableUID(MacAddress, (io_port.get(1).equals("1") ? io_id + 10 : io_id));
-                // input if io_port[1].equals("1") otherwise output
-                Executable executable = dataService.executables.findByUID(uid);
-                if (executable == null) executable = new Executable();
-                anelPlugin.fillExecutable(executable, credentials, uid, io_port.get(2).equals("1") ? Executable.ON : Executable.OFF);
-                executable.title = io_port.get(0);
-                dataService.executables.put(executable);
-            }
-        }
-
-        for (int i = 0; i < numOutlets; i++) {
-            String outlet[] = msg[6 + i].split(",");
-            if (outlet.length < 1)
-                continue;
-            boolean disabled = (disabledOutlets & (1 << i)) != 0;
-            if (disabled) continue;
-
-            String uid = AnelPlugin.makeExecutableUID(MacAddress, i + 1);  // 1-based id
-            Executable executable = dataService.executables.findByUID(uid);
-            if (executable == null) executable = new Executable();
-            anelPlugin.fillExecutable(executable, credentials, uid, 0);
-            executable.title = outlet[0];
-            if (outlet.length > 1)
-                executable.current_value = outlet[1].equals("1") ? Executable.ON : Executable.OFF;
-            dataService.executables.put(executable);
-        }
-
+        // IO Connections
         DeviceIOConnections deviceIOConnections = dataService.connections.openCreateDevice(MacAddress);
 
         {
@@ -162,7 +131,48 @@ class AnelReceiveUDP extends UDPReceiving {
             ioConnection.connectionUID = ioConnection_uid;
             ioConnection.hostName = HostName;
             ioConnection.PortHttp = httpPort;
+            ioConnection.setStatusMessage(null);
             dataService.connections.put(ioConnection);
         }
+
+
+        // IO ports
+        if (msg.length > 25) {
+            // 1-based id. IO output range: 11..19, IO input range is 21..29
+            int io_id = 10;
+            for (int i = 16; i <= 23; ++i) {
+                io_id++;
+                List<String> io_port = new ArrayList<>();
+                Streams.splitNonRegex(io_port, msg[i], ",");
+                if (io_port.size() != 3) continue;
+
+                String uid = AnelPlugin.makeExecutableUID(MacAddress, (io_port.get(1).equals("1") ? io_id + 10 : io_id));
+                // input if io_port[1].equals("1") otherwise output
+                Executable executable = dataService.executables.findByUID(uid);
+                if (executable == null) executable = new Executable();
+                anelPlugin.fillExecutable(executable, credentials, uid, io_port.get(2).equals("1") ? Executable.ON : Executable.OFF);
+                executable.title = io_port.get(0);
+                dataService.executables.put(executable);
+            }
+        }
+
+        // Executables
+        for (int i = 0; i < numOutlets; i++) {
+            String outlet[] = msg[6 + i].split(",");
+            if (outlet.length < 1)
+                continue;
+            boolean disabled = (disabledOutlets & (1 << i)) != 0;
+            if (disabled) continue;
+
+            String uid = AnelPlugin.makeExecutableUID(MacAddress, i + 1);  // 1-based id
+            Executable executable = dataService.executables.findByUID(uid);
+            if (executable == null) executable = new Executable();
+            anelPlugin.fillExecutable(executable, credentials, uid, 0);
+            executable.title = outlet[0];
+            if (outlet.length > 1)
+                executable.current_value = outlet[1].equals("1") ? Executable.ON : Executable.OFF;
+            dataService.executables.put(executable);
+        }
+
     }
 }

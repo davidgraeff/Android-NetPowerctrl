@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -16,13 +17,14 @@ import oly.netpowerctrl.data.storage_container.CollectionMapItems;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPut;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPutHandler;
 import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 
 /**
  * Contains DeviceInfos. Used for NFC and backup transfers
  */
 public class ExecutableCollection extends CollectionMapItems<ExecutableCollection, Executable> implements CollectionOtherThreadPut<Executable> {
-    //private static final String TAG = "DeviceCollection";
+    private static final String TAG = "ExecutableCollection";
 
     public CollectionOtherThreadPutHandler updateDeviceHandler = new CollectionOtherThreadPutHandler<>(new WeakReference<CollectionOtherThreadPut<Executable>>(this));
 
@@ -44,7 +46,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     }
 
     private void put_test(Executable executable) {
-        if (executable.getUid() == null || executable.credentials == null || executable.title.isEmpty())
+        if (executable.getUid() == null || executable.getCredentials() == null || executable.title.isEmpty())
             throw new RuntimeException();
     }
 
@@ -62,9 +64,12 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
             return;
         }
 
+        executable.setExecutionInProgress(false);
+
         Executable existed = items.get(executable.getUid());
         if (existed != null) {
             if (executable == existed && !executable.hasChanged()) return;
+
             items.put(executable.getUid(), executable);
             if (executable.getCredentials().isConfigured())
                 storage.save(executable);
@@ -72,9 +77,10 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
             return;
         }
 
-        items.put(executable.deviceUID, executable);
+        items.put(executable.getUid(), executable);
         notifyObservers(executable, ObserverUpdateActions.AddAction);
-        storage.save(executable);
+        if (executable.getCredentials().isConfigured())
+            storage.save(executable);
     }
 
     public void remove(Executable executable) {
@@ -106,9 +112,10 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
      *
      * @param deviceUID The device unique id
      */
-    public void notifyReachability(String deviceUID) {
+    public void notifyReachability(String deviceUID, ReachabilityStates r) {
+        Log.w(TAG, "notifyReachability");
         for (Executable executable : items.values()) {
-            if (executable.deviceUID.equals(deviceUID))
+            if (executable.deviceUID.equals(deviceUID) && executable.updateCachedReachability(r))
                 notifyObservers(executable, ObserverUpdateActions.UpdateReachableAction);
         }
     }
@@ -116,7 +123,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     public void applyCredentials(Credentials credentials) {
         for (Executable executable : items.values()) {
             if (executable.deviceUID.equals(credentials.getUid())) {
-                executable.credentials = credentials;
+                executable.setCredentials(credentials);
             }
         }
     }

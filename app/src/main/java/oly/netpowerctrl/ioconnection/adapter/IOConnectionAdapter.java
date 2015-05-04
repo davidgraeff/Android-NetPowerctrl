@@ -89,7 +89,7 @@ public class IOConnectionAdapter extends RecyclerView.Adapter<IOConnectionAdapte
         }
 
         TextView subtitle = viewHolder.subtitle;
-        subtitle.setText(item.subtitle);
+        subtitle.setText(item.getSubtitle());
     }
 
     @Override

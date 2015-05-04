@@ -103,9 +103,9 @@ public class ScanBroadcast extends AndroidTestCase {
 
         DataService.observersStartStopRefresh.register(refreshStartedStopped);
 
-        service.refreshDevices();
+        service.detectDevices();
 
-        assertTrue("Timeout of refreshDevices", signal_receive.await(4, TimeUnit.SECONDS));
+        assertTrue("Timeout of refreshExistingDevices", signal_receive.await(4, TimeUnit.SECONDS));
 
         DataService.observersStartStopRefresh.unregister(refreshStartedStopped);
         assertEquals("RefreshStartStop count wrong", 0, refreshStartedStopped_signal);

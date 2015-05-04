@@ -32,7 +32,7 @@ public abstract class IOConnection implements IOInterface {
     // Cache: Hash value for all member variables (except "Cache"). Recomputed after save to disk.
     private int lastChangedCode = 0;
     // Cache: Last reachable state. Updated at call of collection->put(this_connection)
-    private ReachabilityStates lastReachableState = ReachabilityStates.NotReachable;
+    private int lastReachableStateCode = 0;
     private long lastUsed = 0;
 
     public IOConnection(@Nullable Credentials credentials) {
@@ -76,11 +76,11 @@ public abstract class IOConnection implements IOInterface {
     }
 
     public boolean isReachabilityChanged() {
-        return lastReachableState != reachableState();
+        return lastReachableStateCode != reachableState().ordinal() + (statusMessage == null ? 0 : statusMessage.hashCode());
     }
 
     public void storeReachability() {
-        lastReachableState = reachableState();
+        lastReachableStateCode = reachableState().ordinal() + (statusMessage == null ? 0 : statusMessage.hashCode());
     }
 
     public String getStatusMessage() {
@@ -165,6 +165,7 @@ public abstract class IOConnection implements IOInterface {
         writer.name("DUID").value(deviceUID);
         write(writer);
         writer.endObject();
+        writer.close();
     }
 
     /**

@@ -134,6 +134,10 @@ public class DeviceIOConnections {
         }
     }
 
+    public ReachabilityStates reachableState() {
+        return cached_reachable == null ? ReachabilityStates.NotReachable : cached_reachable.reachableState();
+    }
+
 //    public ReachabilityStates reachableState() {
 //        ReachabilityStates r = ReachabilityStates.NotReachable;
 //        return r;
