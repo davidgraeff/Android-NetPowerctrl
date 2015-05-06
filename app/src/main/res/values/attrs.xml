@@ -28,14 +28,4 @@
     <attr name="ic_action_flash_off_themed" format="reference" />
     <attr name="ic_action_flash_on_themed" format="reference" />
     <attr name="ic_action_shuffle_themed" format="reference" />
-
-    <declare-styleable name="FloatingActionButton">
-        <attr name="text" format="string" />
-        <attr name="drawable" format="integer" />
-        <attr name="mainColor" format="color" />
-        <attr name="shadowRadius" format="float" />
-        <attr name="shadowDx" format="float" />
-        <attr name="shadowDy" format="float" />
-        <attr name="shadowColor" format="integer" />
-    </declare-styleable>
 </resources>

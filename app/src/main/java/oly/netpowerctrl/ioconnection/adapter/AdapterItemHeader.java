@@ -43,7 +43,12 @@ public class AdapterItemHeader extends AdapterItem implements onCollectionUpdate
 
     @Override
     public void destroy() {
-        DataService.getService().credentials.unregisterObserver(this);
+        App.getMainThreadHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                DataService.getService().credentials.unregisterObserver(AdapterItemHeader.this);
+            }
+        });
     }
 
     @Override

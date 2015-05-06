@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.executables.adapter.AdapterInput;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
-import oly.netpowerctrl.executables.adapter.AdapterSourceInput;
 import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
 
 /**
@@ -22,7 +22,7 @@ public class SelectFromListFragment extends Fragment implements RecyclerItemClic
     private final onItemClicked onItemClicked;
     private RecyclerView.Adapter<?> adapter;
     private AdapterSource adapterSource;
-    private AdapterSourceInput[] inputs;
+    private AdapterInput[] inputs;
 
     public SelectFromListFragment() {
         onItemClicked = null;
@@ -35,7 +35,7 @@ public class SelectFromListFragment extends Fragment implements RecyclerItemClic
      * @param inputs
      */
     @SuppressLint("ValidFragment")
-    public SelectFromListFragment(onItemClicked onItemClicked, AdapterSourceInput... inputs) {
+    public SelectFromListFragment(onItemClicked onItemClicked, AdapterInput... inputs) {
         this.onItemClicked = onItemClicked;
         this.inputs = inputs;
     }

@@ -1,22 +1,21 @@
 package oly.netpowerctrl.devices;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.text.InputType;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.Toast;
+
+import com.rey.material.app.Dialog;
+import com.rey.material.widget.EditText;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.ui.notifications.InAppNotifications;
-
-;
 
 /**
  * Create/Edit credentials of a device. This can only be done after a first contact to the destination
@@ -24,7 +23,6 @@ import oly.netpowerctrl.ui.notifications.InAppNotifications;
  */
 public class CredentialsDialog extends DialogFragment {
     private Credentials credentials;
-    private Toast toast;
 
     public CredentialsDialog() {
     }
@@ -35,17 +33,14 @@ public class CredentialsDialog extends DialogFragment {
             this.credentials = plugin.createNewDefaultCredentials();
     }
 
-    @SuppressLint("InflateParams")
+    @Nullable
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_credentials, container, false);
         // This should not happen, but could if activity is restored (low_mem etc)
         if (credentials == null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle(R.string.device_add).setPositiveButton(android.R.string.ok, null);
-            return builder.create();
+            return view;
         }
-
-        final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_credentials, null);
 
         EditText textView;
 
@@ -56,59 +51,40 @@ public class CredentialsDialog extends DialogFragment {
         textView.setText(credentials.userName);
 
         textView = (EditText) view.findViewById(R.id.device_password);
+        textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
         textView.setText(credentials.password);
 
-        toast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
-
-        view.findViewById(R.id.device_name_help_icon).setOnClickListener(new View.OnClickListener() {
+        CompoundButton c = (CompoundButton) view.findViewById(R.id.show_password);
+        c.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                toast.setText(R.string.device_name_summary);
-                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
-                toast.show();
-            }
-        });
-        view.findViewById(R.id.device_username_help_icon).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toast.setText(R.string.device_username_summary);
-                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
-                toast.show();
-            }
-        });
-        view.findViewById(R.id.device_password_help_icon).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toast.setText(R.string.device_password_summary);
-                InAppNotifications.moveToastNextToView(toast, getResources(), view, false);
-                toast.show();
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                EditText textView = (EditText) view.findViewById(R.id.device_password);
+                if (b)
+                    textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                else
+                    textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
         });
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(credentials.isConfigured() ? R.string.device_edit_credentials : R.string.device_add)
-                .setView(view)
-                .setPositiveButton(android.R.string.ok, null)
-                .setNegativeButton(android.R.string.cancel, null);
-        return builder.create();
+        return view;
     }
 
     @Override
-    public void onStart() {
-        super.onStart();    //super.onStart() is where dialog.show() is actually called on the underlying dialog, so we have to do it after this point
-        AlertDialog d = (AlertDialog) getDialog();
-        Button button = d.getButton(Dialog.BUTTON_POSITIVE);
-        button.setOnClickListener(new View.OnClickListener() {
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = new com.rey.material.app.Dialog(getActivity());
+        dialog.setTitle(credentials.isConfigured() ? R.string.device_edit_credentials : R.string.device_add);
+        dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.positiveActionClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                TextView textView;
+            public void onClick(View view) {
+                EditText textView;
                 String deviceName, userName, password;
 
-                textView = (TextView) getDialog().findViewById(R.id.device_name);
+                textView = (EditText) getDialog().findViewById(R.id.device_name);
                 deviceName = (textView.getText().toString());
-                textView = (TextView) getDialog().findViewById(R.id.device_username);
+                textView = (EditText) getDialog().findViewById(R.id.device_username);
                 userName = (textView.getText().toString());
-                textView = (TextView) getDialog().findViewById(R.id.device_password);
+                textView = (EditText) getDialog().findViewById(R.id.device_password);
                 password = (textView.getText().toString());
 
                 if (deviceName.trim().length() == 0 || userName.trim().length() == 0 || password.trim().length() == 0) {
@@ -123,6 +99,14 @@ public class CredentialsDialog extends DialogFragment {
                 DataService.getService().addToConfiguredDevices(credentials);
                 dismiss();
             }
-        });
+        }).positiveAction(android.R.string.ok);
+        dialog.negativeActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+            }
+        }).negativeAction(android.R.string.cancel);
+        return dialog;
     }
+
 }

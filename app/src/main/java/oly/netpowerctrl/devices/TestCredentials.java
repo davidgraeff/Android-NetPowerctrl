@@ -74,7 +74,7 @@ public class TestCredentials implements DevicesObserver.onDevicesObserverFinishe
         test_state = TestStates.TEST_REACHABLE;
         this.credentials = credentials;
         listener = createDeviceResult;
-        context.addDeviceObserver(new DevicesObserver(credentials, this));
+        context.refreshExistingDevice(credentials, this);
     }
 
     @Override

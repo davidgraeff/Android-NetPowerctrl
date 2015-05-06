@@ -5,7 +5,7 @@ import oly.netpowerctrl.executables.Executable;
 /**
  * Created by david on 30.12.14.
  */
-public class FilterBySingleGroup extends AdapterSourceFilter {
+public class FilterBySingleGroup extends AdapterFilter {
     private String mFilterGroup;
 
     public FilterBySingleGroup(String group) {

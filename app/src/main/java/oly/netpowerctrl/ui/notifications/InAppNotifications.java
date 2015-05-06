@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.rey.material.widget.SnackBar;
+
 import org.acra.ACRA;
 
 import java.util.ArrayList;
@@ -22,7 +24,6 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.utils.AnimationController;
 
 /**
  * Show a toast message, especially if not within the main thread
@@ -89,7 +90,7 @@ public class InAppNotifications {
     }
 
     public static void updatePermanentNotification(@NonNull Activity activity, @NonNull PermanentNotification newPermanentNotification) {
-        Toolbar toolbar = (Toolbar) activity.findViewById(R.id.toolbar_bottom_actionbar);
+        SnackBar toolbar = (SnackBar) activity.findViewById(R.id.toolbar_bottom_actionbar);
         if (toolbar == null) {
             throw new RuntimeException("No toolbar for notifications found!");
         }
@@ -100,12 +101,11 @@ public class InAppNotifications {
             return;
         }
 
-        AnimationController.animateBottomViewIn(toolbar, false);
-
         doUpdatePermanentNotification(activity, toolbar, newPermanentNotification);
+        toolbar.show();
     }
 
-    private static void doUpdatePermanentNotification(Activity activity, Toolbar toolbar, PermanentNotification newPermanentNotification) {
+    private static void doUpdatePermanentNotification(Activity activity, SnackBar toolbar, PermanentNotification newPermanentNotification) {
         View v = toolbar.findViewWithTag(newPermanentNotification.getID());
         if (v != null) {
             toolbar.removeView(v);
@@ -126,7 +126,7 @@ public class InAppNotifications {
         if (activity == null)
             return;
 
-        Toolbar toolbar = (Toolbar) activity.findViewById(R.id.toolbar_bottom_actionbar);
+        SnackBar toolbar = (SnackBar) activity.findViewById(R.id.toolbar_bottom_actionbar);
         if (toolbar == null) {
             return;
         }
@@ -139,7 +139,7 @@ public class InAppNotifications {
                 doUpdatePermanentNotification(activity, toolbar, it.next());
                 it.remove();
             }
-            AnimationController.animateBottomViewOut(toolbar);
+            toolbar.dismiss();
         }
     }
 

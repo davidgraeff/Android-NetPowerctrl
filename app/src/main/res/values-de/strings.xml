@@ -101,8 +101,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="crash_toast_text">Ich bin leider abgestürzt :( Ein Absturzbericht wird automatisch gesendet</string>
     <string name="scene_rename">Szenenname</string>
     <string name="new_devices">Unbekannte Geräte</string>
-    <string name="devices">Zum Gerätebildschirm</string>
-    <string name="preferences">Zu den Einstellungen</string>
+    <string name="devices">Geräte einrichten</string>
+    <string name="preferences">Einstellungen</string>
     <string name="scene_set_name">Szenenname</string>
     <string name="scene_set_icon">Szenenbild</string>
     <string name="dialog_icon_title">Bild</string>
@@ -139,7 +139,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="renameFailed">Umbenennung fehlgeschlagen: %1$s</string>
     <string name="device_notReachable">%1$s nicht erreichbar</string>
     <string name="help_devices">Auf diesen Bildschirm kannst du alle im Netzwerk gefundenen Geräte sehen. Neue Geräte haben das Prefix "Neu: " vor dem Namen.</string>
-    <string name="welcome_message">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch von links öffnest, kannst du danach zur Steckdosenübersicht zurückkehren.</string>
+    <string name="welcome_message">Willkommen!\nMit dieser App kannst du die Anel Steckdosenleisten steuern. Zuerst musst du aber Geräte einrichten.\nÜber das Menü, welches du mit einem Fingerwisch nach rechts öffnest, kannst du Übersichtsgruppen einrichten und zur Geräteeinrichtung.</string>
     <string name="log_screen">Logbuch</string>
     <string name="preference_use_log_energy">Log: Energiesparmodus</string>
     <string name="preference_use_log_energy_summary">Alle Energiespar-Aktivitäten mitloggen</string>
@@ -225,7 +225,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_energysave_mode">Energiesparmodus</string>
     <string name="device_http_new">Neue HTTP Verbindung</string>
     <string name="device_http_new_summary">HTTP ist langsamer als UDP, eignet sich für die Steuerung aus dem Internet aber besser.</string>
-    <string name="device_http_new_info">Bitte gib den Hostnamen/IP und den Port ein. Bei Eingabe eines Hostnames muss dieser existieren!</string>
+    <string name="device_http_new_info">Bitte gib den Hostnamen/IP und den Port für eine neue HTTP Verbindung ein. Das Ziel muss erreichbar sein.</string>
     <string name="error_reading_alarms">Einlesen der zwischengespeicherten Zeitschaltungen fehlgeschlagen!</string>
     <string name="preference_show_background">Hintergrundbild anzeigen</string>
     <string name="preference_show_background_summary">Statt einer einfarbigen Fläche wird dein Hintergrundbild angezeigt.</string>
@@ -385,4 +385,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_connections_add">Verbindung hinzufügen</string>
     <string name="device_edit_credentials">Bearbeite Zugangsdaten</string>
     <string name="select_plugin">Wähle Gerätetyp</string>
+    <string name="plugin_anel">Anel Gerät</string>
+    <string name="show_password">Zeige Passwort</string>
+    <string name="send_log">Senden</string>
+    <string name="group_name">Name</string>
 </resources>

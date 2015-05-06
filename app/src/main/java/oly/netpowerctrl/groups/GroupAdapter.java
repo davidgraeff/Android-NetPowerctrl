@@ -14,6 +14,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 
@@ -25,6 +26,10 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     private int selectedItemPosition = -1;
     private int lastSelectedItemPosition = -1;
     private List<Group> items = new ArrayList<>();
+    private EmptyListener emptyListener = new EmptyListener() {
+        public void onEmptyListener(boolean empty) {
+        }
+    };
 
     public GroupAdapter() {
         DataService.observersServiceReady.register(this);
@@ -73,25 +78,40 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     private void resetItems() {
         items.clear();
-        items.add(new Group("", App.getAppString(R.string.groups_all)));
-        for (Group group : groupCollection.getItems().values()) {
-            items.add(group);
+        if (groupCollection.getItems().size() > 0) {
+            items.add(new Group("", App.getAppString(R.string.groups_all)));
+            for (Group group : groupCollection.getItems().values()) {
+                items.add(group);
+            }
         }
         notifyDataSetChanged();
+        emptyListener.onEmptyListener(true);
     }
 
     @Override
     public boolean updated(@NonNull GroupCollection groupCollection, Group group, @NonNull ObserverUpdateActions action) {
         switch (action) {
             case AddAction:
+                boolean empty = items.isEmpty();
+                if (items.size() == 0) { // Add "show all" if nothing inside so far
+                    items.add(new Group("", App.getAppString(R.string.groups_all)));
+                    notifyItemInserted(0);
+                }
                 items.add(group);
                 notifyItemInserted(items.size() - 1);
+                if (empty)
+                    emptyListener.onEmptyListener(false);
                 break;
             case RemoveAction:
                 for (int i = 0; i < items.size(); ++i)
                     if (items.get(i).getUid().equals(group.getUid())) {
                         items.remove(i);
                         notifyItemRemoved(i);
+                        if (items.size() == 1) { // remove "show all"
+                            items.remove(0);
+                            notifyItemRemoved(0);
+                            emptyListener.onEmptyListener(true);
+                        }
                         break;
                     }
                 break;
@@ -127,7 +147,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         if (lastSelectedItemPosition != -1)
             notifyItemChanged(lastSelectedItemPosition);
 
-        int pos = -1;
+        int pos = 0;
         for (int i = 0; i < items.size(); ++i)
             if (items.get(i).getUid().equals(groupUID)) {
                 pos = i;
@@ -137,6 +157,10 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         selectedItemPosition = pos;
         if (pos == -1) return;
         notifyItemChanged(pos);
+    }
+
+    public void setEmptyListener(EmptyListener emptyListener) {
+        this.emptyListener = emptyListener;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

@@ -120,11 +120,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
         return di;
     }
 
-    @Override
-    protected void checkReady() {
-        if (pluginReady != null) pluginReady.onPluginReady(this, false);
-    }
-
     /**
      * Execute multiple port commands for one device (anel supports this as an extra command).
      *
@@ -397,7 +392,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     @Override
     public void requestData() {
-        AnelSendUDPBroadcastJob.run(dataService);
+        UDPSend.createBroadcast(dataService, "wer da?\r\n".getBytes(), UDPErrors.INQUERY_BROADCAST_REQUEST);
     }
 
     @Override
@@ -543,7 +538,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     @Override
     public String getLocalizedName() {
-        return PLUGIN_ID;
+        return App.getAppString(R.string.plugin_anel);
     }
 
     public void checkDevicesReachabilityAfterNetworkChange() {

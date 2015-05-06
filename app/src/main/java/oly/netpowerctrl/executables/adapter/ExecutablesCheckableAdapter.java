@@ -1,8 +1,7 @@
 package oly.netpowerctrl.executables.adapter;
 
 import android.support.annotation.NonNull;
-import android.view.View;
-import android.widget.CheckedTextView;
+import android.widget.CompoundButton;
 
 import java.util.Set;
 
@@ -10,7 +9,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.IconDeferredLoadingThread;
 import oly.netpowerctrl.executables.Executable;
 
-public class ExecutablesCheckableAdapter extends ExecutablesAdapter implements View.OnClickListener {
+public class ExecutablesCheckableAdapter extends ExecutablesAdapter implements CompoundButton.OnCheckedChangeListener {
     private Set<String> checked = null;
 
     public ExecutablesCheckableAdapter(@NonNull AdapterSource source,
@@ -29,10 +28,10 @@ public class ExecutablesCheckableAdapter extends ExecutablesAdapter implements V
         if (port == null || checked == null)
             return;
 
-        CheckedTextView t = (CheckedTextView) executableViewHolder.title;
+        CompoundButton t = (CompoundButton) executableViewHolder.title;
         t.setChecked(checked.contains(port.getUid()));
         t.setTag(position);
-        t.setOnClickListener(this);
+        t.setOnCheckedChangeListener(this);
     }
 
     public Set<String> getCheckedItems() {
@@ -44,11 +43,9 @@ public class ExecutablesCheckableAdapter extends ExecutablesAdapter implements V
     }
 
     @Override
-    public void onClick(View view) {
-        CheckedTextView t = (CheckedTextView) view;
-        t.setChecked(!t.isChecked());
-        String executableUid = mSource.mItems.get((Integer) t.getTag()).getExecutable().getUid();
-        if (t.isChecked())
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        String executableUid = mSource.mItems.get((Integer) compoundButton.getTag()).getExecutable().getUid();
+        if (b)
             checked.add(executableUid);
         else
             checked.remove(executableUid);

@@ -1,27 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="10dip">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/device_http_new_summary" />
+    android:orientation="vertical">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/device_http_new_info" />
 
-    <include layout="@layout/fragment_device_list_connection_http" />
 
-    <ProgressBar
-        android:id="@+id/connection_progressbar"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="invisible" />
+        android:orientation="horizontal">
 
+        <com.rey.material.widget.EditText
+            android:id="@+id/device_host"
+            style="@style/EditTextLarge"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="textUri"
+            android:singleLine="true"
+            app:et_supportMode="none" />
+
+        <com.rey.material.widget.EditText
+            android:id="@+id/device_http_port_label"
+            style="@style/EditTextLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text=":"
+            app:et_dividerHeight="0dp"
+            tools:ignore="HardcodedText" />
+
+        <com.rey.material.widget.EditText
+            android:id="@+id/device_http_port"
+            style="@style/EditTextLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:minWidth="60dp"
+            android:singleLine="true"
+            app:et_supportMode="none" />
+
+    </LinearLayout>
+
+    <com.rey.material.widget.ProgressView
+        android:id="@+id/connection_progressbar"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_gravity="center"
+        app:pv_autostart="false"
+        app:pv_circular="false"
+        app:pv_progressMode="indeterminate"
+        app:pv_progressStyle="@style/LinearProgressDrawableStyle" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <ImageView
+            android:id="@+id/connection_reachable"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical" />
+
+        <com.rey.material.widget.Button
+            android:id="@+id/btnTest"
+            style="@style/RaiseWaveButtonRippleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:padding="5dp"
+            android:text="@string/device_test"
+            app:rd_enable="true" />
+
+    </LinearLayout>
 </LinearLayout>

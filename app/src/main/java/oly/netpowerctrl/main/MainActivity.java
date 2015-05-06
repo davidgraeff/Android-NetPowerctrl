@@ -39,6 +39,8 @@ import android.widget.FrameLayout;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.executables.ExecutableHideShowDialog;
+import oly.netpowerctrl.executables.ExecutablesFragment;
+import oly.netpowerctrl.groups.GroupListFragment;
 import oly.netpowerctrl.ioconnection.IOConnectionsFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -149,7 +151,7 @@ public class MainActivity extends ActionBarActivity {
         layout.addView(v, lp);
 
         FragmentUtils.loadFragment(this, GroupListFragment.class.getName(), R.id.group_list_fragment, "group");
-        FragmentUtils.changeToFragment(this, OutletsFragment.class.getName(), "outlets");
+        FragmentUtils.changeToFragment(this, ExecutablesFragment.class.getName(), "outlets");
 
         if (!has_two_panes) {
             panes = (SlidingPaneLayout) findViewById(R.id.drawerLayout);
@@ -209,8 +211,8 @@ public class MainActivity extends ActionBarActivity {
 
         // Exit edit mode on back click
         Fragment fragment = getFragmentManager().findFragmentByTag("outlets");
-        if (fragment != null && ((OutletsFragment) fragment).isEditMode()) {
-            ((OutletsFragment) fragment).setEditMode(false);
+        if (fragment != null && ((ExecutablesFragment) fragment).isEditMode()) {
+            ((ExecutablesFragment) fragment).setEditMode(false);
             return;
         }
 

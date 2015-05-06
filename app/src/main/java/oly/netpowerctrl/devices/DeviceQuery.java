@@ -206,6 +206,11 @@ public class DeviceQuery {
      * @param devicesObserver The observer
      */
     public void addDeviceObserver(DevicesObserver devicesObserver) {
+        if (devicesObserver.addAllExisting)
+            for (Credentials c : dataService.credentials.getItems().values()) {
+                devicesObserver.credentialsList.put(c.deviceUID, c);
+            }
+
         if (!devicesObserver.broadcast && devicesObserver.credentialsList.isEmpty()) {
             devicesObserver.callback.onObserverJobFinished(devicesObserver);
             return;

@@ -1,20 +1,24 @@
 package oly.netpowerctrl.preferences;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.rey.material.app.Dialog;
+import com.rey.material.app.SimpleDialog;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,6 +40,7 @@ public class LogDialog extends DialogFragment implements Logging.LogChanged, Swi
     private static int TYPE_DETECTION = 5;
     private final ArrayList<LogItem> listItems = new ArrayList<>();
     SwipeRefreshLayout mPullToRefreshLayout;
+    boolean isDialog = false;
     private Bitmap[] bitmapsForType = new Bitmap[6];
     private RecyclerView.Adapter<ViewHolder> adapter = new RecyclerView.Adapter<ViewHolder>() {
         @Override
@@ -65,9 +70,10 @@ public class LogDialog extends DialogFragment implements Logging.LogChanged, Swi
     public LogDialog() {
     }
 
+    @Nullable
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_log, null);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_log, container, false);
 
         bitmapsForType[TYPE_MAIN] = BitmapFactory.decodeResource(getResources(), R.drawable.netpowerctrl);
         bitmapsForType[TYPE_ALARM] = BitmapFactory.decodeResource(getResources(), android.R.drawable.ic_menu_recent_history);
@@ -90,6 +96,8 @@ public class LogDialog extends DialogFragment implements Logging.LogChanged, Swi
                 clearLog();
             }
         });
+        if (isDialog)
+            btnRemove.setVisibility(View.GONE);
 
         mPullToRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
         mPullToRefreshLayout.setOnRefreshListener(this);
@@ -98,41 +106,80 @@ public class LogDialog extends DialogFragment implements Logging.LogChanged, Swi
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(view)
-                .setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+        return view;
+    }
 
-                    }
-                }).setNegativeButton(R.string.remove, new DialogInterface.OnClickListener() {
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        isDialog = true;
+        Dialog dialog = new com.rey.material.app.Dialog(getActivity());
+        dialog.setTitle(R.string.device_shown_actions);
+        dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.positiveActionClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+            public void onClick(View view) {
+
+                dismiss();
+            }
+        }).positiveAction(android.R.string.cancel);
+
+        dialog.negativeActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 clearLog();
             }
-        }).setNeutralButton(R.string.menu_log_send_mail, new DialogInterface.OnClickListener() {
+        }).negativeAction(R.string.remove);
+
+        dialog.neutralActionClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.menu_help)
-                        .setMessage(R.string.log_send_mail_confirmation)
-                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                            }
-                        })
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                App.setErrorReportContentLogFile(Logging.getInstance().getLogFile().getAbsolutePath());
-                                InAppNotifications.silentException(null, null);
-                                App.setErrorReportContentCrash();
-                                Toast.makeText(getActivity(), R.string.log_data_send, Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_info).show();
+            public void onClick(View view) {
+                sendMail();
             }
-        });
-        return builder.create();
+        }).neutralAction(R.string.send_log);
+        return dialog;
+    }
+
+    private void sendMail() {
+        SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight) {
+            @Override
+            public void onPositiveActionClicked(com.rey.material.app.DialogFragment fragment) {
+                App.setErrorReportContentLogFile(Logging.getInstance().getLogFile().getAbsolutePath());
+                InAppNotifications.silentException(null, null);
+                App.setErrorReportContentCrash();
+                Toast.makeText(getActivity(), R.string.log_data_send, Toast.LENGTH_SHORT).show();
+                fragment.dismiss();
+            }
+
+            @Override
+            public void onNegativeActionClicked(com.rey.material.app.DialogFragment fragment) {
+                fragment.dismiss();
+            }
+        };
+
+        builder.title(getString(R.string.menu_help)).positiveAction(getString(R.string.send_log))
+                .negativeAction(getString(android.R.string.cancel));
+        builder.message(getString(R.string.log_send_mail_confirmation)).build(getActivity()).show();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.log, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_log_send_mail:
+                sendMail();
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override

@@ -3,6 +3,7 @@ package oly.netpowerctrl.network;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -169,6 +170,16 @@ public class Utils {
         // show it
         alertDialogBuilder.create().show();
         //Toast.makeText(context, R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * If the listen and send thread are shutdown because the devices destination networks are
+     * not in range, this variable is set to true.
+     */
+    public static boolean isWirelessLanConnected(Context context) {
+        @SuppressWarnings("ConstantConditions")
+        WifiManager cm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        return cm.isWifiEnabled() && cm.getConnectionInfo() != null;
     }
 
     //

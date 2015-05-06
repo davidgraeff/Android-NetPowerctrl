@@ -18,6 +18,7 @@ import org.sufficientlysecure.donations.DonationsFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.ui.ChangeLogUtil;
@@ -25,6 +26,26 @@ import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.utils.GithubAndCloudant;
 
 public class FeedbackFragment extends Fragment {
+    GithubAndCloudant.IGithubOpenIssues cloudantIssues = new GithubAndCloudant.IGithubOpenIssues() {
+        @Override
+        public void gitHubOpenIssuesUpdated(GithubAndCloudant.IssuesDetails details, long last_access) {
+            bugs2.setText(String.valueOf(details.open));
+            bugs3.setText(String.valueOf(details.reported_open));
+            bugs4.setText(String.valueOf(details.closed));
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(details.latest);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            bugs5.setText(sdf.format(calendar.getTime()));
+        }
+
+        @Override
+        public void gitHubIssue(int number, String title, String body) {
+
+        }
+    };
+    private GithubAndCloudant githubAndCloudant = new GithubAndCloudant();
+    private TextView bugs, bugs2, bugs3, bugs4, bugs5;
     GithubAndCloudant.IGithubOpenIssues githubIssues = new GithubAndCloudant.IGithubOpenIssues() {
         @Override
         public void gitHubOpenIssuesUpdated(GithubAndCloudant.IssuesDetails details, long last_access) {
@@ -36,26 +57,6 @@ public class FeedbackFragment extends Fragment {
 
         }
     };
-    GithubAndCloudant.IGithubOpenIssues cloudantIssues = new GithubAndCloudant.IGithubOpenIssues() {
-        @Override
-        public void gitHubOpenIssuesUpdated(GithubAndCloudant.IssuesDetails details, long last_access) {
-            bugs2.setText(String.valueOf(details.open));
-            bugs3.setText(String.valueOf(details.reported_open));
-            bugs4.setText(String.valueOf(details.closed));
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(details.latest);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            bugs5.setText(sdf.format(calendar.getTime()));
-        }
-
-        @Override
-        public void gitHubIssue(int number, String title, String body) {
-
-        }
-    };
-    private GithubAndCloudant githubAndCloudant = new GithubAndCloudant();
-    private TextView bugs, bugs2, bugs3, bugs4, bugs5;
 
     public FeedbackFragment() {
     }

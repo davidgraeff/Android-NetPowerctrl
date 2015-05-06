@@ -7,7 +7,7 @@ import oly.netpowerctrl.data.DataService;
 /**
  * Created by david on 07.07.14.
  */
-public abstract class AdapterSourceInput {
+public abstract class AdapterInput {
     protected AdapterSource adapterSource;
 
     abstract void doUpdateNow();

@@ -58,7 +58,12 @@ public class AdapterItemConnection extends AdapterItem implements onCollectionUp
 
     @Override
     public void destroy() {
-        DataService.getService().connections.unregisterObserver(this);
+        App.getMainThreadHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                DataService.getService().connections.unregisterObserver(AdapterItemConnection.this);
+            }
+        });
     }
 
     private void updateSubtitle() {

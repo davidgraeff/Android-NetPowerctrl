@@ -106,6 +106,16 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
         }
     }
 
+    public void removeOrphaned() {
+        for (Iterator<Executable> iterator = items.values().iterator(); iterator.hasNext(); ) {
+            Executable executable = iterator.next();
+            if (executable.getCredentials() == null) {
+                iterator.remove();
+                dataService.favourites.setFavourite(executable.getUid(), false);
+            }
+        }
+    }
+
     /**
      * This is called if IOConnections reachability and therefore device reachability changes. Because
      * Executables contain a member function for reachability we need to notify about reachability changes.

@@ -13,7 +13,7 @@ import oly.netpowerctrl.utils.onCollectionUpdated;
 /**
  * Created by david on 07.07.14.
  */
-public class AdapterSourceInputGroups extends AdapterSourceInput implements onCollectionUpdated<GroupCollection, Group> {
+public class InputGroupChanges extends AdapterInput implements onCollectionUpdated<GroupCollection, Group> {
     private GroupCollection groupCollection = null;
 
     @Override

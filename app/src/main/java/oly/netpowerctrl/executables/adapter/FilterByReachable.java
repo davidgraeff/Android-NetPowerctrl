@@ -7,7 +7,7 @@ import oly.netpowerctrl.scenes.Scene;
 /**
  * Created by david on 30.12.14.
  */
-public class FilterByReachable extends AdapterSourceFilter {
+public class FilterByReachable extends AdapterFilter {
     protected boolean hideNotReachable = false;
     private boolean showNotReachableScenes = true;
 

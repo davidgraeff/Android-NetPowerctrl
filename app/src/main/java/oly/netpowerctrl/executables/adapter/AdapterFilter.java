@@ -5,7 +5,7 @@ import oly.netpowerctrl.executables.Executable;
 /**
  * Created by david on 30.12.14.
  */
-public abstract class AdapterSourceFilter {
+public abstract class AdapterFilter {
     protected AdapterSource adapterSource;
 
     public void setAdapterSource(AdapterSource adapterSource) {

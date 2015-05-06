@@ -4,10 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.onNameChangeResult;
@@ -21,25 +17,8 @@ import oly.netpowerctrl.network.onExecutionFinished;
  */
 public abstract class AbstractBasePlugin {
     protected final DataService dataService;
-    // Connections to the destination device. This is prioritized, the first reachable connection
-    // is preferred before the second reachable etc.
-    private final List<IOConnection> mIOConnections = new ArrayList<>();
-    protected onPluginReady pluginReady = null;
-    protected WeakReference<onPluginFinished> pluginFinished = new WeakReference<>(null);
-
     protected AbstractBasePlugin(DataService dataService) {
         this.dataService = dataService;
-    }
-
-    protected abstract void checkReady();
-
-    protected void registerReadyObserver(onPluginReady pluginReady) {
-        this.pluginReady = pluginReady;
-        checkReady();
-    }
-
-    protected void registerFinishedObserver(onPluginFinished pluginFinished) {
-        this.pluginFinished = new WeakReference<>(pluginFinished);
     }
 
     public DataService getDataService() {

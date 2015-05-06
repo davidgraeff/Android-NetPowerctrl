@@ -14,7 +14,7 @@ import oly.netpowerctrl.utils.onCollectionUpdated;
 /**
  * Created by david on 07.07.14.
  */
-public class AdapterSourceExecutables extends AdapterSourceInput implements onCollectionUpdated<ExecutableCollection, Executable> {
+public class InputExecutables extends AdapterInput implements onCollectionUpdated<ExecutableCollection, Executable> {
     private ExecutableCollection executableCollection = null;
 
     @Override

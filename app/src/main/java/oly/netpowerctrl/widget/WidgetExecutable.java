@@ -71,7 +71,7 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
                 setWidgetState(widgetID, executable, false);
             else if (credentials != null) {
                 setWidgetState(widgetID, executable, true);
-                dataService.addDeviceObserver(new DevicesObserver(credentials, this));
+                dataService.refreshExistingDevice(credentials, this);
             }
         }
 

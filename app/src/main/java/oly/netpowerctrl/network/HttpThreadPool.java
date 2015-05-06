@@ -80,6 +80,7 @@ public class HttpThreadPool {
         private final T additional;
         private final boolean responseInMainThread;
         private final HTTPCallback<T> callback;
+        public int timeout_ms = 1000;
         String result_message;
 
         public HTTPRunner(final IOConnectionHTTP deviceConnection, final String getData,
@@ -108,7 +109,7 @@ public class HttpThreadPool {
                 url = new URL("http://" + deviceConnection.getDestinationHost()
                         + ":" + deviceConnection.getDestinationPort() + "/" + getData);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setConnectTimeout(1000);
+                con.setConnectTimeout(timeout_ms);
                 con.setRequestMethod("POST");
                 con.setRequestProperty("Authorization", "Basic " +
                         Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));

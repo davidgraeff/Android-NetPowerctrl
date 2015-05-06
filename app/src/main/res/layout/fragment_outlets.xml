@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -103,21 +104,21 @@
                 android:id="@+id/automatic_status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/empty_no_outlets_no_devices_text"
-                android:layout_alignRight="@+id/empty_no_outlets_no_devices_text"
+                android:layout_alignEnd="@+id/empty_no_outlets_no_devices_text"
+                android:layout_alignStart="@+id/empty_no_outlets_no_devices_text"
                 android:layout_below="@+id/empty_no_outlets_no_devices_text"
                 android:layout_marginBottom="5dp"
                 android:background="?attr/cards_background"
                 android:maxWidth="280dp"
                 android:padding="5dp" />
 
-            <Button
+            <com.rey.material.widget.Button
                 android:id="@+id/automatic_setup_start"
-                style="?attr/colored_button"
+                style="@style/RaiseColorButtonRippleStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/empty_no_outlets_no_devices_text"
-                android:layout_alignRight="@+id/empty_no_outlets_no_devices_text"
+                android:layout_alignEnd="@+id/empty_no_outlets_no_devices_text"
+                android:layout_alignStart="@+id/empty_no_outlets_no_devices_text"
                 android:layout_below="@+id/automatic_status"
                 android:padding="5dp"
                 android:text="@string/automatic_configuration" />
@@ -126,33 +127,30 @@
 
     </FrameLayout>
 
-    <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+    <com.rey.material.widget.FloatingActionButton
         android:id="@+id/btnWirelessSettings"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
+        style="@style/Material.Widget.FloatingActionButton.Light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
         android:visibility="invisible"
-        app:drawable="@android:drawable/ic_menu_preferences"
-        app:mainColor="?attr/colorPrimaryDark" />
+        app:fab_iconSrc="@android:drawable/ic_menu_preferences" />
 
-    <oly.netpowerctrl.ui.widgets.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+    <com.rey.material.widget.FloatingActionButton
         android:id="@+id/btnAdd"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
+        style="@style/Material.Widget.FloatingActionButton.Light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_toLeftOf="@+id/btnWirelessSettings"
+        android:layout_marginStart="8dp"
         android:layout_toStartOf="@+id/btnWirelessSettings"
         android:visibility="invisible"
-        app:drawable="@android:drawable/ic_menu_add"
-        app:mainColor="?attr/colorPrimaryDark" />
+        app:fab_iconLineMorphing="@style/FloatingActionButtonIcon" />
 </RelativeLayout>

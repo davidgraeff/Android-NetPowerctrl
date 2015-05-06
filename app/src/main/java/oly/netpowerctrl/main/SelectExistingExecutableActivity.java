@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.executables.adapter.AdapterSourceExecutables;
+import oly.netpowerctrl.executables.adapter.InputExecutables;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.SelectFromListFragment;
 import oly.netpowerctrl.utils.AndroidShortcuts;
@@ -29,7 +29,7 @@ public class SelectExistingExecutableActivity extends Activity implements Select
         // Default result
         setResult(RESULT_CANCELED, null);
 
-        s = new SelectFromListFragment(this, new AdapterSourceExecutables());
+        s = new SelectFromListFragment(this, new InputExecutables());
         getFragmentManager().beginTransaction().replace(R.id.content_frame, s).commit();
     }
 

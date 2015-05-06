@@ -4,27 +4,27 @@
     android:id="@+id/item_layout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/list_item_background"
     android:baselineAligned="true"
     android:orientation="vertical"
     android:paddingBottom="5dp"
-    android:paddingLeft="16dip"
-    android:paddingRight="12dip"
+    android:paddingEnd="12dip"
+    android:paddingStart="12dip"
     android:paddingTop="5dp">
 
-    <CheckedTextView
+    <com.rey.material.widget.CheckBox
         android:id="@+id/title"
+        style="@style/CheckBoxDrawable"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
         android:gravity="center_vertical"
-        android:paddingRight="5dp"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
         android:id="@+id/subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingEnd="30dp"
+        android:paddingStart="30dp"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 

@@ -10,9 +10,9 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
-import oly.netpowerctrl.executables.adapter.AdapterSourceExecutables;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
+import oly.netpowerctrl.executables.adapter.InputExecutables;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 
@@ -30,7 +30,7 @@ public class SceneElementsAssigning {
     public SceneElementsAssigning(Context context, final DataService dataService, FlowLayout layout_included, View available,
                                   final SceneElementsChanged sceneElementsChanged, Scene scene) {
         availableData = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
-        availableData.addInput(new AdapterSourceExecutables());
+        availableData.addInput(new InputExecutables());
         final ExecutablesAdapter adapter_available =
                 new ExecutablesAdapter(availableData, LoadStoreIconData.iconLoadingThread, R.layout.list_item_available_outlet);
         includedData = new SceneElementsAdapter();

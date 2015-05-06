@@ -1,4 +1,4 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl.groups;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -14,9 +14,9 @@ import android.widget.Button;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
-import oly.netpowerctrl.groups.Group;
-import oly.netpowerctrl.groups.GroupAdapter;
-import oly.netpowerctrl.groups.GroupUtilities;
+import oly.netpowerctrl.executables.ExecutablesFragment;
+import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
@@ -25,9 +25,10 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
-public class GroupListFragment extends Fragment implements onServiceReady {
+public class GroupListFragment extends Fragment implements onServiceReady, EmptyListener {
     private DataService dataService = null;
     private GroupAdapter groupAdapter = new GroupAdapter();
+    private View group_help;
 
     public GroupListFragment() {
     }
@@ -54,21 +55,23 @@ public class GroupListFragment extends Fragment implements onServiceReady {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_group_list, container, false);
 
+        group_help = root.findViewById(R.id.group_help);
+
         RecyclerView group_list = (RecyclerView) root.findViewById(R.id.group_list);
         group_list.setItemAnimator(new DefaultItemAnimator());
         group_list.setLayoutManager(new LinearLayoutManager(getActivity()));
         group_list.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
-                OutletsFragment outletsFragment = (OutletsFragment) getFragmentManager().findFragmentByTag("outlets");
-                if (outletsFragment == null) return true;
+                ExecutablesFragment executablesFragment = (ExecutablesFragment) getFragmentManager().findFragmentByTag("outlets");
+                if (executablesFragment == null) return true;
 
                 Group group = groupAdapter.getGroup(position);
                 if (isLongClick && position > 0) {
-                    outletsFragment.showGroupPopupMenu(view, group.getUid());
+                    executablesFragment.showGroupPopupMenu(view, group.getUid());
                     return true;
                 }
-                outletsFragment.setGroup(position > 0 ? group.getUid() : null, true);
+                executablesFragment.setGroup(position > 0 ? group.getUid() : null, true);
                 ((MainActivity) getActivity()).closeGroupMenu();
                 return true;
             }
@@ -80,16 +83,18 @@ public class GroupListFragment extends Fragment implements onServiceReady {
             }
         });
         group_list.setAdapter(groupAdapter);
+        groupAdapter.setEmptyListener(this);
+
         Button btnAdd = (Button) root.findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final OutletsFragment outletsFragment = (OutletsFragment) getFragmentManager().findFragmentByTag("outlets");
-                if (outletsFragment == null) return;
+                final ExecutablesFragment executablesFragment = (ExecutablesFragment) getFragmentManager().findFragmentByTag("outlets");
+                if (executablesFragment == null) return;
                 GroupUtilities.createGroup(getActivity(), dataService.groups, new GroupUtilities.GroupCreatedCallback() {
                     @Override
                     public void onGroupCreated(Group group) {
-                        outletsFragment.setGroup(group.getUid(), true);
+                        executablesFragment.setGroup(group.getUid(), true);
                     }
                 });
             }
@@ -100,5 +105,10 @@ public class GroupListFragment extends Fragment implements onServiceReady {
 
     public GroupAdapter getAdapter() {
         return groupAdapter;
+    }
+
+    @Override
+    public void onEmptyListener(boolean empty) {
+        group_help.setVisibility(groupAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
     }
 }

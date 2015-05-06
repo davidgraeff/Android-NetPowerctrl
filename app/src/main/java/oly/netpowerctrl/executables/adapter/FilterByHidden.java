@@ -5,7 +5,7 @@ import oly.netpowerctrl.executables.Executable;
 /**
  * Created by david on 30.12.14.
  */
-public class FilterByHidden extends AdapterSourceFilter {
+public class FilterByHidden extends AdapterFilter {
     protected boolean hideHidden = false;
 
     public FilterByHidden(boolean hideHidden) {

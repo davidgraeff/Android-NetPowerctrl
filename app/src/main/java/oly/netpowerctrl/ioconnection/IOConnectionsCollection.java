@@ -164,6 +164,20 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
         }
     }
 
+    public void removeOrphaned() {
+        for (Iterator<Map.Entry<String, DeviceIOConnections>> iterator = items.entrySet().iterator(); iterator.hasNext(); ) {
+            DeviceIOConnections deviceIOConnections = iterator.next().getValue();
+            for (Iterator<IOConnection> connectionIterator = deviceIOConnections.iterator(); connectionIterator.hasNext(); ) {
+                IOConnection ioConnection = connectionIterator.next();
+                if (ioConnection.getCredentials() != null) continue;
+                storage.remove(ioConnection);
+                connectionIterator.remove();
+            }
+            if (deviceIOConnections.size() == 0)
+                iterator.remove();
+        }
+    }
+
     /**
      * Remove all IOConnections belonging to this deviceUID.
      */

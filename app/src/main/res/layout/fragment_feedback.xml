@@ -212,9 +212,9 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
+                    <com.rey.material.widget.Button
                         android:id="@+id/mail"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -223,9 +223,9 @@
                         android:layout_weight="1"
                         android:text="@string/Mail" />
 
-                    <Button
+                    <com.rey.material.widget.Button
                         android:id="@+id/beta"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -278,9 +278,9 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
+                    <com.rey.material.widget.Button
                         android:id="@+id/open_source_license"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -289,9 +289,9 @@
                         android:layout_weight="1"
                         android:text="@string/open_source_licenses" />
 
-                    <Button
+                    <com.rey.material.widget.Button
                         android:id="@+id/donate"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -346,9 +346,9 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
+                    <com.rey.material.widget.Button
                         android:id="@+id/feedback_google_plus"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -357,9 +357,9 @@
                         android:layout_weight="1"
                         android:text="@string/feedback_google_plus" />
 
-                    <Button
+                    <com.rey.material.widget.Button
                         android:id="@+id/google_market"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"

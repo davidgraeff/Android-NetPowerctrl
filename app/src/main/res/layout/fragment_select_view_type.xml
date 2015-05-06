@@ -11,21 +11,6 @@
         android:paddingLeft="@dimen/list_outer_padding"
         android:paddingRight="@dimen/list_outer_padding">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="@string/view_mode"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:textColor="?attr/editTextColor" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="2dip"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="2dp"
-            android:background="?attr/colorPrimaryDark" />
-
         <oly.netpowerctrl.ui.SoftRadioButton
             android:id="@+id/design1"
             groupUID="style"

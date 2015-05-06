@@ -101,7 +101,7 @@ public class LoadStoreCollections implements onStorageUpdate {
             @Override
             protected void onPostExecute(Boolean success) {
                 SharedPrefs.getInstance().setCurrentPreferenceVersion();
-                DataService.setDataLoadingCompleted();
+                dataService.setDataLoadingCompleted();
             }
         }.execute();
     }

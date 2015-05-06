@@ -25,7 +25,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -33,6 +32,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.rey.material.widget.FloatingActionButton;
 import com.wefika.flowlayout.FlowLayout;
 
 import java.util.Set;
@@ -58,12 +58,9 @@ import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
-import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.MutableBoolean;
-
-;
 
 /**
  * This activity is responsible for creating a "executable" either for the executable list
@@ -84,9 +81,9 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     public static final int EDIT_TYPE_DEVICE_PORT = 2;
     public static final int REQUEST_CODE = 123123;
     // UI widgets
-    CheckBox show_mainWindow;
-    CheckBox enable_feedback;
-    CheckBox chk_hide;
+    CompoundButton show_mainWindow;
+    CompoundButton enable_feedback;
+    CompoundButton chk_hide;
     private int mEditType = EDIT_TYPE_SHORTCUT;
     private Set<String> checked_groups = new TreeSet<>();
     private View executable_timers;
@@ -153,12 +150,11 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             @Override
             public void onClick(View view) {
                 addMenuVisible = !addMenuVisible;
-                Resources r = getResources();
                 if (addMenuVisible) {
-                    btnAdd.setDrawable(r.getDrawable(android.R.drawable.ic_menu_close_clear_cancel));
+                    btnAdd.setLineMorphingState(1, true);
                     AnimationController.animateBottomViewIn(findViewById(R.id.available), false);
                 } else {
-                    btnAdd.setDrawable(r.getDrawable(android.R.drawable.ic_menu_add));
+                    btnAdd.setLineMorphingState(0, true);
                     AnimationController.animateBottomViewOut(findViewById(R.id.available));
                 }
             }
@@ -172,11 +168,11 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             }
         };
 
-        show_mainWindow = (CheckBox) findViewById(R.id.shortcut_show_mainwindow);
+        show_mainWindow = (CompoundButton) findViewById(R.id.shortcut_show_mainwindow);
         show_mainWindow.setOnCheckedChangeListener(updateSaveButtonOnChecked);
-        enable_feedback = (CheckBox) findViewById(R.id.shortcut_enable_feedback);
+        enable_feedback = (CompoundButton) findViewById(R.id.shortcut_enable_feedback);
         enable_feedback.setOnCheckedChangeListener(updateSaveButtonOnChecked);
-        chk_hide = (CheckBox) findViewById(R.id.chk_hide);
+        chk_hide = (CompoundButton) findViewById(R.id.chk_hide);
         chk_hide.setOnCheckedChangeListener(updateSaveButtonOnChecked);
 
         executable_timers = findViewById(R.id.executable_timers);
@@ -237,7 +233,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             @Override
             public void onClick(View view) {
                 final DataService dataService = DataService.getService();
-                GroupUtilities.createGroup(view.getContext(), dataService.groups,
+                GroupUtilities.createGroup(EditActivity.this, dataService.groups,
                         new GroupUtilities.GroupCreatedCallback() {
                             @Override
                             public void onGroupCreated(Group group) {
@@ -644,7 +640,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     private void updateSaveButton() {
         if (isLoaded && !isChanged) {
             btnSaveOrTrash.setVisibility(mEditType == EDIT_TYPE_SCENE ? View.VISIBLE : View.GONE);
-            btnSaveOrTrash.setDrawable(getResources().getDrawable(android.R.drawable.ic_menu_delete));
+            btnSaveOrTrash.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_delete), btnSaveOrTrash.getIcon() != null);
             return;
         }
         String newName = ((EditText) findViewById(R.id.scene_name)).getText().toString().trim();
@@ -652,8 +648,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         if (mEditType != EDIT_TYPE_DEVICE_PORT) en &= sceneElementsAssigning.hasElements();
         Resources r = getResources();
         btnSaveOrTrash.setVisibility(View.VISIBLE);
-        btnSaveOrTrash.setDrawable(en ? r.getDrawable(android.R.drawable.ic_menu_save) :
-                r.getDrawable(R.drawable.btn_save_disabled));
+        btnSaveOrTrash.setIcon(en ? r.getDrawable(android.R.drawable.ic_menu_save) :
+                r.getDrawable(R.drawable.btn_save_disabled), btnSaveOrTrash.getIcon() != null);
     }
 
     @Override

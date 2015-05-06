@@ -24,29 +24,35 @@
             android:text="@string/scene_options_title"
             android:textAppearance="@android:style/TextAppearance.Large" />
 
-        <CheckBox
+        <com.rey.material.widget.CheckBox
             android:id="@+id/shortcut_show_mainwindow"
+            style="@style/CheckBoxDrawable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="5dp"
+            android:gravity="center_vertical"
             android:text="@string/shortcut_show_mainwindow"
             android:visibility="gone" />
 
-        <CheckBox
+        <com.rey.material.widget.CheckBox
             android:id="@+id/shortcut_enable_feedback"
+            style="@style/CheckBoxDrawable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="5dp"
+            android:gravity="center_vertical"
             android:text="@string/shortcut_enable_feedback" />
 
-        <CheckBox
+        <com.rey.material.widget.CheckBox
             android:id="@+id/chk_hide"
+            style="@style/CheckBoxDrawable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="5dp"
+            android:gravity="center_vertical"
             android:text="@string/menu_hide_outlet" />
 
         <LinearLayout

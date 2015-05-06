@@ -1,8 +1,6 @@
 package oly.netpowerctrl.ioconnection;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,6 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
 
+import com.rey.material.app.Dialog;
+import com.rey.material.app.SimpleDialog;
+
 import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
@@ -28,7 +29,7 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.query.onDataQueryRefreshQuery;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.devices.CredentialsDialog;
-import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.ioconnection.adapter.AdapterItem;
 import oly.netpowerctrl.ioconnection.adapter.AdapterItemConnection;
 import oly.netpowerctrl.ioconnection.adapter.AdapterItemHeader;
@@ -38,7 +39,6 @@ import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
-import oly.netpowerctrl.ui.widgets.FloatingActionButton;
 
 ;
 
@@ -111,7 +111,7 @@ public class IOConnectionsFragment extends Fragment
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.btnAdd);
+        View fab = view.findViewById(R.id.btnAdd);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -209,39 +209,31 @@ public class IOConnectionsFragment extends Fragment
             }
 
             case R.id.menu_device_createGroup: {
-                //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.device_createGroup)
-                        .setMessage(R.string.confirmation_device_createGroup)
-                        .setIcon(android.R.drawable.ic_dialog_info)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                DataService dataService = DataService.getService();
-                                String groupUID_derivedByDeviceID = credentials.deviceUID;
-                                for (Executable executable : dataService.executables.filterExecutables(credentials)) {
-                                    executable.addToGroup(groupUID_derivedByDeviceID);
-                                    dataService.executables.put(executable);
-                                }
-                                dataService.groups.put(groupUID_derivedByDeviceID, credentials.getDeviceName());
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null).show();
+                GroupUtilities.askForGroup(getActivity(), credentials);
                 return true;
             }
 
             case R.id.menu_device_delete: {
-                //noinspection ConstantConditions
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.delete_device)
-                        .setMessage(R.string.confirmation_delete_device)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                DataService dataService = DataService.getService();
-                                dataService.remove(credentials);
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null).show();
+                final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+                builder.title(getString(R.string.delete_device));
+                builder.message(getString(R.string.confirmation_delete_device));
+                builder.negativeAction(getString(android.R.string.no)).positiveAction(getString(android.R.string.yes));
+                final Dialog dialog = builder.build(getActivity());
+                dialog.positiveActionClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                        DataService dataService = DataService.getService();
+                        dataService.remove(credentials);
+                    }
+                });
+                dialog.negativeActionClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
                 return true;
             }
 
@@ -258,17 +250,28 @@ public class IOConnectionsFragment extends Fragment
     private void clickNotConfiguredCredentials(@Nullable Credentials credentials) {
         if (credentials == null) {
             String[] plugins = DataService.getService().pluginNames();
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.select_plugin)
-                    .setItems(plugins, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            CredentialsDialog newFragment = (CredentialsDialog) Fragment.instantiate(getActivity(), CredentialsDialog.class.getName());
-                            newFragment.setCredentials(DataService.getService().getPlugin(i), null);
-                            FragmentUtils.changeToDialog(getActivity(), newFragment);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null).show();
+            final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+            builder.title(getString(R.string.select_plugin)).positiveAction(getString(android.R.string.ok))
+                    .negativeAction(getString(android.R.string.cancel));
+            builder.items(plugins, 0);
+            final Dialog dialog = builder.build(getActivity());
+            dialog.positiveActionClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog.dismiss();
+                    int i = builder.getSelectedIndex();
+                    CredentialsDialog newFragment = (CredentialsDialog) Fragment.instantiate(getActivity(), CredentialsDialog.class.getName());
+                    newFragment.setCredentials(DataService.getService().getPlugin(i), null);
+                    FragmentUtils.changeToDialog(getActivity(), newFragment);
+                }
+            });
+            dialog.negativeActionClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
         } else {
             CredentialsDialog newFragment = (CredentialsDialog) Fragment.instantiate(getActivity(), CredentialsDialog.class.getName());
             newFragment.setCredentials(credentials.getPlugin(), credentials);

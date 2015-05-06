@@ -382,5 +382,9 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="device_connection_delete">Remove connection</string>
     <string name="device_connections_add">Add connection</string>
     <string name="device_edit_credentials">Edit credentials</string>
-    <string name="select_plugin">Wähle Gerätetyp</string>
+    <string name="select_plugin">Choose type</string>
+    <string name="plugin_anel">Anel Device</string>
+    <string name="show_password">Show password</string>
+    <string name="send_log">Send</string>
+    <string name="group_name">Name</string>
 </resources>

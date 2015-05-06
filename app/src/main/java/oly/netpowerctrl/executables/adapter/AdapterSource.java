@@ -12,14 +12,15 @@ import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.data.query.onDataQueryCompleted;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.groups.Group;
+import oly.netpowerctrl.ui.EmptyListener;
 
 /**
  * Created by david on 04.11.14.
  */
 public class AdapterSource implements onServiceReady, onDataQueryCompleted {
     public final List<ExecutableAdapterItem> mItems = new ArrayList<>();
-    private final List<AdapterSourceInput> sourceInputs = new ArrayList<>();
-    private final List<AdapterSourceFilter> mFilters = new ArrayList<>();
+    private final List<AdapterInput> sourceInputs = new ArrayList<>();
+    private final List<AdapterFilter> mFilters = new ArrayList<>();
     protected int mNextId = 0; // we need stable IDs
     protected onChange onChangeListener = null;
     Executable ignoreUpdatesExecutable;
@@ -27,7 +28,10 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
     private boolean automaticUpdatesEnabled = false;
     private WeakReference<DataService> PluginServiceWeakReference = new WeakReference<>(null);
     private boolean mShowHeaders = true;
-
+    private EmptyListener emptyListener = new EmptyListener() {
+        public void onEmptyListener(boolean empty) {
+        }
+    };
     public AdapterSource(final AutoStartEnum autoStart) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -39,6 +43,10 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
                 }
             }
         });
+    }
+
+    public void setEmptyListener(EmptyListener emptyListener) {
+        this.emptyListener = emptyListener;
     }
 
     public ExecutableAdapterItem getItem(int position) {
@@ -64,7 +72,9 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
      * @param command_value The command value to issue if clicked or interacted with.
      */
     public void addItem(Executable executable, int command_value) {
-        for (AdapterSourceFilter filter : mFilters)
+        boolean empty = mItems.isEmpty();
+
+        for (AdapterFilter filter : mFilters)
             if (filter.filter(executable)) return;
 
         if (!mShowHeaders || executable.getGroupUIDs().isEmpty())
@@ -81,6 +91,8 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
                 }
             }
         }
+
+        if (empty) emptyListener.onEmptyListener(false);
     }
 
     /**
@@ -162,6 +174,8 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
 
         if (all > 0 && adapter != null)
             adapter.notifyItemRangeRemoved(0, all - 1);
+
+        if (all > 0) emptyListener.onEmptyListener(true);
     }
 
     public int findPositionByUUid(String uuid) {
@@ -212,6 +226,8 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
             }
         }
 
+        if (mItems.isEmpty()) emptyListener.onEmptyListener(true);
+
         return removedItems;
     }
 
@@ -239,7 +255,7 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
 
     @Override
     public void onServiceFinished(DataService service) {
-        for (AdapterSourceInput base : sourceInputs)
+        for (AdapterInput base : sourceInputs)
             base.onFinish();
         PluginServiceWeakReference = new WeakReference<>(null);
     }
@@ -249,7 +265,7 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
     }
 
     /**
-     * Call this from your AdapterSourceInput if you changed data in the adapter.
+     * Call this from your AdapterInput if you changed data in the adapter.
      */
     void sourceChanged() {
         if (onChangeListener != null)
@@ -280,7 +296,7 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
         this.PluginServiceWeakReference = new WeakReference<>(dataService);
         automaticUpdatesEnabled = automaticUpdates;
 
-        for (AdapterSourceInput base : sourceInputs)
+        for (AdapterInput base : sourceInputs)
             base.onStart(dataService);
 
         if (adapter != null)
@@ -311,7 +327,7 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
         for (ExecutableAdapterItem item : mItems)
             item.markRemoved();
 
-        for (AdapterSourceInput base : sourceInputs)
+        for (AdapterInput base : sourceInputs)
             base.doUpdateNow();
 
         removeAllMarked();
@@ -323,17 +339,17 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
             onChangeListener.sourceChanged();
     }
 
-    public void addInput(AdapterSourceInput... inputs) {
+    public void addInput(AdapterInput... inputs) {
         DataService dataService = getPluginService();
-        for (AdapterSourceInput adapterSourceInput : inputs) {
-            sourceInputs.add(adapterSourceInput);
-            adapterSourceInput.setAdapterSource(this);
+        for (AdapterInput adapterInput : inputs) {
+            sourceInputs.add(adapterInput);
+            adapterInput.setAdapterSource(this);
             if (dataService != null)
-                adapterSourceInput.onStart(dataService);
+                adapterInput.onStart(dataService);
         }
     }
 
-    public void addFilter(AdapterSourceFilter filter) {
+    public void addFilter(AdapterFilter filter) {
         mFilters.add(filter);
         filter.setAdapterSource(this);
     }

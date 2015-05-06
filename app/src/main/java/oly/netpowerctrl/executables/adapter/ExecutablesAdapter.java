@@ -38,7 +38,6 @@ public class ExecutablesAdapter extends RecyclerView.Adapter<ExecutableViewHolde
         }
     }
 
-
     public AdapterSource getSource() {
         return mSource;
     }

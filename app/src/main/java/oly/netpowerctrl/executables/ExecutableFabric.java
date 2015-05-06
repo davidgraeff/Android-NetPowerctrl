@@ -35,7 +35,6 @@ public class ExecutableFabric implements FactoryInterface<Executable> {
     }
 
     public Executable newInstance(JsonReader reader) throws IOException, ClassNotFoundException {
-        Log.w("Fabric", "newInstance");
         if (!reader.hasNext()) {
             return null;
         }

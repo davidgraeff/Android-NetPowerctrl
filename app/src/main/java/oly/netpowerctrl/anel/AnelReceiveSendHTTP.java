@@ -49,8 +49,14 @@ public class AnelReceiveSendHTTP {
                 Credentials credentials = ioConnection.getCredentials();
                 AnelPlugin anelPlugin = (AnelPlugin) credentials.getPlugin();
 
-                // The name is the second ";" separated entry of the response_message.
-                credentials.setDeviceName(data[1].trim());
+                // The name is the second ";"-separated entry of the response_message.
+                // Only update device name if it is empty, we do not want to overwrite the name given by the user.
+                if (credentials.deviceName.isEmpty())
+                    credentials.setDeviceName(data[1].trim());
+
+                // The order is important: First save the credentials, then save the connections, then save the executables.
+                // Because: connections need the credentials object. Executables need the reachability information of the connections.
+
                 dataService.credentials.put(credentials);
                 // data[10 + i].trim() credentials deviceUID
 

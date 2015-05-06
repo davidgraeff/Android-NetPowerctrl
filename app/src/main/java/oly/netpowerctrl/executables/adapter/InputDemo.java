@@ -13,10 +13,10 @@ import oly.netpowerctrl.scenes.Scene;
 /**
  * Created by david on 07.07.14.
  */
-public class AdapterSourceInputDemo extends AdapterSourceInput {
+public class InputDemo extends AdapterInput {
     private List<Scene> demoItems = new ArrayList<>();
 
-    public AdapterSourceInputDemo() {
+    public InputDemo() {
         demoItems.add(createScene("Demo 1", ReachabilityStates.Reachable, false));
         demoItems.add(createScene("Demo 2", ReachabilityStates.NotReachable, false));
     }

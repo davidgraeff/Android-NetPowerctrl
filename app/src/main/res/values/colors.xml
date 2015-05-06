@@ -10,4 +10,10 @@
     <color name="colorBackgroundLight">#a0cdff</color>
     <color name="colorBackgroundDark">#000000</color>
     <color name="colorBackgroundCardsDark">#1b3c47</color>
+    <color name="colorControlNormal">#FF78909C</color>
+    <color name="colorControlActivated">#FF03A9F4</color>
+
+    <color name="et_divider_focused">@color/colorControlActivated</color>
+    <color name="et_divider_not_focused">#FF6D6D6D</color>
+    <color name="et_divider_disable">#FFC1C1C1</color>
 </resources>

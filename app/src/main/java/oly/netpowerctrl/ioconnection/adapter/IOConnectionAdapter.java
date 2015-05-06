@@ -23,6 +23,7 @@ import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionsCollection;
 import oly.netpowerctrl.network.ReachabilityStates;
+import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 
@@ -39,11 +40,19 @@ public class IOConnectionAdapter extends RecyclerView.Adapter<IOConnectionAdapte
     CredentialsUpdater credentialsUpdater = new CredentialsUpdater();
     IOConnectionUpdater ioConnectionUpdater = new IOConnectionUpdater();
     private List<AdapterItem> mList = new ArrayList<>();
+    private EmptyListener emptyListener = new EmptyListener() {
+        public void onEmptyListener(boolean empty) {
+        }
+    };
 
     @SuppressWarnings("SameParameterValue")
     public IOConnectionAdapter(boolean showNewDevices, boolean showConnections) {
         this.showNewDevices = showNewDevices;
         this.showConnections = showConnections;
+    }
+
+    public void setEmptyListener(EmptyListener emptyListener) {
+        this.emptyListener = emptyListener;
     }
 
     public void onResume() {
@@ -98,6 +107,7 @@ public class IOConnectionAdapter extends RecyclerView.Adapter<IOConnectionAdapte
     }
 
     private void fullUpdate(DataService dataService) {
+        boolean empty = mList.isEmpty();
         mList.clear();
 
         List<Credentials> credentialsList = new ArrayList<>(dataService.credentials.getItems().values());
@@ -107,6 +117,9 @@ public class IOConnectionAdapter extends RecyclerView.Adapter<IOConnectionAdapte
 
         // Initial data
         notifyDataSetChanged();
+
+        if (empty != mList.isEmpty())
+            emptyListener.onEmptyListener(mList.isEmpty());
     }
 
     /**
@@ -195,7 +208,9 @@ public class IOConnectionAdapter extends RecyclerView.Adapter<IOConnectionAdapte
             switch (action) {
                 case AddAction:
                     if (!showNewDevices && !credentials.isConfigured()) break;
+                    boolean empty = mList.isEmpty();
                     addDeviceToList(credentials, mList.size(), credentialsCollection.dataService);
+                    if (empty) emptyListener.onEmptyListener(false);
                     break;
                 case ClearAndNewAction:
                 case RemoveAllAction:
@@ -208,6 +223,7 @@ public class IOConnectionAdapter extends RecyclerView.Adapter<IOConnectionAdapte
                             item.destroy();
                             mList.remove(i);
                             notifyItemRemoved(i);
+                            if (mList.isEmpty()) emptyListener.onEmptyListener(true);
                         }
                     }
                     break;

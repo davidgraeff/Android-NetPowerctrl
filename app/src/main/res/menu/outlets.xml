@@ -5,7 +5,7 @@
         android:id="@+id/menu_view_mode"
         android:icon="?attr/ic_action_view_as_grid"
         android:title="@string/drawer_change_view_type"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_edit_mode"

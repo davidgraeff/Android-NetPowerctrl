@@ -3,7 +3,6 @@ package oly.netpowerctrl.main;
 import android.app.Application;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 
 import org.acra.ACRA;
 import org.acra.ACRAConfiguration;
@@ -27,7 +26,7 @@ public class App extends Application {
     static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     public static App instance;
     public static boolean useErrorReporter = (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT); // Lollipop acra does not work;
-    private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+    private final GuiThreadHandler mainThreadHandler = new GuiThreadHandler();
     private LifecycleHandler lifecycleHandler;
 
     public App() {

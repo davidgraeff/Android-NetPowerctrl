@@ -6,7 +6,6 @@
         <item name="activity_background">@android:color/background_light</item>
         <item name="cards_background">@android:color/background_light</item>
         <item name="transparent_rounded_background">@drawable/transparent_text_light</item>
-        <item name="list_item_background">@drawable/list_item_light</item>
         <!--<item name="showcaseViewStyle">@style/ShowcaseThemeLight</item>-->
 
         <!-- icons -->
@@ -21,7 +20,6 @@
         <item name="segment_radio_left">@drawable/segment_radio_left_light</item>
         <item name="segment_radio_middle">@drawable/segment_radio_middle_light</item>
         <item name="segment_radio_right">@drawable/segment_radio_right_light</item>
-        <item name="colored_button">@style/Colored_Button.light</item>
 
         <!-- general app colors -->
         <item name="textColorPrimary">@android:color/white</item>
@@ -29,6 +27,8 @@
         <item name="colorPrimary">@color/colorPrimaryLight</item>
         <item name="colorPrimaryDark">@color/colorSecondaryLight</item>
         <item name="colorAccent">@color/colorSecondaryLight</item>
+        <item name="colorControlNormal">@color/colorPrimaryLight</item>
+        <item name="colorControlActivated">@color/colorControlActivated</item>
 
         <!-- window modes -->
         <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
@@ -39,11 +39,10 @@
 
     <style name="Theme.CustomDarkTheme" parent="Theme.AppCompat">
         <!-- background colors -->
-        <item name="android:windowBackground">@drawable/actionbar_background_textured_dark</item>
+        <item name="android:windowBackground">@drawable/background_textured_dark</item>
         <item name="activity_background">@color/colorBackgroundDark</item>
         <item name="cards_background">@color/colorBackgroundCardsDark</item>
         <item name="transparent_rounded_background">@drawable/transparent_text_dark</item>
-        <item name="list_item_background">@drawable/list_item_dark</item>
         <!--<item name="showcaseViewStyle">@style/ShowcaseThemeDark</item>-->
 
         <!-- icons -->
@@ -58,7 +57,6 @@
         <item name="segment_radio_left">@drawable/segment_radio_left_dark</item>
         <item name="segment_radio_middle">@drawable/segment_radio_middle_dark</item>
         <item name="segment_radio_right">@drawable/segment_radio_right_dark</item>
-        <item name="colored_button">@style/Colored_Button.dark</item>
 
         <!-- general app colors -->
         <item name="textColorPrimary">@android:color/white</item>
@@ -66,6 +64,8 @@
         <item name="colorPrimary">@color/colorPrimaryDark</item>
         <item name="colorPrimaryDark">@color/colorSecondaryDark</item>
         <item name="colorAccent">@color/colorSecondaryDark</item>
+        <item name="colorControlNormal">@color/colorControlNormal</item>
+        <item name="colorControlActivated">@color/colorControlActivated</item>
 
         <!-- window modes -->
         <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
@@ -92,26 +92,6 @@
 
     </style>
 
-    <style name="Colored_Button.light" parent="android:Widget.Holo.Light.Button">
-        <item name="android:background">@drawable/colored_button_light</item>
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textAppearance">?android:textAppearanceLarge</item>
-        <item name="android:shadowRadius">1</item>
-        <item name="android:shadowDx">1</item>
-        <item name="android:shadowDy">1</item>
-        <item name="android:shadowColor">@android:color/black</item>
-    </style>
-
-    <style name="Colored_Button.dark" parent="android:Widget.Holo.Light.Button">
-        <item name="android:background">@drawable/colored_button_dark</item>
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textAppearance">?android:textAppearanceLarge</item>
-        <item name="android:shadowRadius">1</item>
-        <item name="android:shadowDx">1</item>
-        <item name="android:shadowDy">1</item>
-        <item name="android:shadowColor">@android:color/black</item>
-    </style>
-
     <style name="Theme.AppCompat.Translucent">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
@@ -124,7 +104,6 @@
     <style name="Theme.StartTheme" parent="Theme.AppCompat">
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
-        action
         <item name="toolbar_style">@style/Base.Widget.AppCompat.ActionBar</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -133,4 +112,65 @@
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
     </style>
 
+    <style name="FloatingActionButtonIcon">
+        <item name="lmd_state">@xml/fab_icon_states</item>
+        <item name="lmd_curState">0</item>
+        <item name="lmd_padding">2dp</item>
+        <item name="lmd_animDuration">400</item>
+        <item name="lmd_interpolator">@android:anim/accelerate_decelerate_interpolator</item>
+        <item name="lmd_strokeSize">3dp</item>
+        <item name="lmd_strokeColor">#FFFFFFFF</item>
+        <item name="lmd_strokeCap">butt</item>
+        <item name="lmd_strokeJoin">miter</item>
+        <item name="lmd_clockwise">true</item>
+    </style>
+
+    <style name="EditTextLarge" parent="Material.Widget.EditText.Light">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Large</item>
+    </style>
+
+    <style name="SimpleDialog" parent="Material.App.Dialog.Simple">
+        <item name="di_inAnimation">@anim/anim_scale_in</item>
+        <item name="di_outAnimation">@anim/anim_scale_out</item>
+    </style>
+
+    <style name="SimpleDialogLight" parent="Material.App.Dialog.Simple.Light">
+        <item name="di_inAnimation">@anim/anim_scale_in</item>
+        <item name="di_outAnimation">@anim/anim_scale_out</item>
+    </style>
+
+    <style name="LinearProgressDrawableStyle" parent="Material.Drawable.LinearProgress">
+        <item name="lpd_strokeSecondaryColor">#00000000</item>
+    </style>
+
+    <style name="FlatButtonRippleStyle" parent="Material.Drawable.Ripple.Touch.Light">
+        <item name="android:background">@null</item>
+        <item name="rd_cornerRadius">4dp</item>
+    </style>
+
+    <style name="FlatColorButtonRippleStyle" parent="Material.Drawable.Ripple.Touch.Light">
+        <item name="android:background">@null</item>
+        <item name="rd_backgroundColor">#33219AFF</item>
+        <item name="rd_rippleColor">#33219AFF</item>
+        <item name="rd_cornerRadius">4dp</item>
+    </style>
+
+    <style name="RaiseWaveButtonRippleStyle" parent="Material.Drawable.Ripple.Wave.Light">
+        <item name="android:background">@drawable/bg_bt_raise</item>
+        <item name="rd_leftPadding">1dp</item>
+        <item name="rd_topPadding">1dp</item>
+        <item name="rd_rightPadding">1dp</item>
+        <item name="rd_bottomPadding">2dp</item>
+    </style>
+
+    <style name="RaiseColorButtonRippleStyle" parent="Material.Drawable.Ripple.Touch.Light">
+        <item name="android:background">@drawable/bg_bt_raise_color</item>
+        <item name="rd_rippleColor">#33000000</item>
+        <item name="rd_leftPadding">1dp</item>
+        <item name="rd_topPadding">1dp</item>
+        <item name="rd_rightPadding">1dp</item>
+        <item name="rd_bottomPadding">2dp</item>
+    </style>
+
+    <style name="CheckBoxDrawable" parent="Material.Drawable.CheckBox" />
 </resources>

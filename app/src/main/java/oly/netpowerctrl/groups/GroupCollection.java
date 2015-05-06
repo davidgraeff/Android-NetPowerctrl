@@ -30,7 +30,7 @@ public class GroupCollection extends CollectionMapItems<GroupCollection, Group> 
      * @return Return the group uid.
      */
     public Group put(@Nullable String groupUID, @NonNull String name) {
-        Group group = items.get(groupUID);
+        Group group = groupUID != null ? items.get(groupUID) : null;
         if (group == null) {
             group = new Group(UUID.randomUUID().toString(), name);
             items.put(group.getUid(), group);

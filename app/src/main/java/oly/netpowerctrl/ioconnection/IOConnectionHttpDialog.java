@@ -1,19 +1,22 @@
 package oly.netpowerctrl.ioconnection;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.rey.material.app.Dialog;
+import com.rey.material.app.SimpleDialog;
+import com.rey.material.widget.EditText;
+import com.rey.material.widget.ProgressView;
 
 import java.net.UnknownHostException;
 import java.util.UUID;
@@ -30,7 +33,8 @@ import oly.netpowerctrl.ui.FragmentUtils;
  * This dialog allows the user to setup a new
  */
 public class IOConnectionHttpDialog extends DialogFragment {
-    private ProgressBar progressBar;
+    private ProgressView progressView;
+    private Button btnTest;
     private EditText newHost;
     private EditText newPort;
     private ImageView connectionStateImage;
@@ -46,62 +50,54 @@ public class IOConnectionHttpDialog extends DialogFragment {
         FragmentUtils.changeToDialog(context, dialog);
     }
 
+    @Nullable
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        @SuppressLint("InflateParams")
-        final View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_device_edit_connection_http, null);
-        rootView.findViewById(R.id.connection_delete).setVisibility(View.GONE);
-
-        //noinspection ConstantConditions
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-        builder.setTitle(getString(R.string.outlet_edit_title, ioConnection.credentials.getDeviceName()));
-        //builder.setMessage(getString(R.string.outlet_rename_message, device.getTitle()));
-
-        progressBar = (ProgressBar) rootView.findViewById(R.id.connection_progressbar);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final View rootView = inflater.inflate(R.layout.fragment_device_edit_connection_http, container, false);
+        progressView = (ProgressView) rootView.findViewById(R.id.connection_progressbar);
+        btnTest = (Button) rootView.findViewById(R.id.btnTest);
         newHost = (EditText) rootView.findViewById(R.id.device_host);
         newPort = (EditText) rootView.findViewById(R.id.device_http_port);
         connectionStateImage = ((ImageView) rootView.findViewById(R.id.connection_reachable));
         connectionStateImage.setVisibility(View.VISIBLE);
         connectionStateImage.setImageResource(android.R.drawable.presence_offline);
 
-        builder.setView(rootView);
-        builder.setPositiveButton(getString(R.string.save), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
-        builder.setNegativeButton(getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
-        builder.setNeutralButton(getString(R.string.device_test), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
-
-        return builder.create();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        AlertDialog d = (AlertDialog) getDialog();
-        d.getButton(Dialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
+        btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 closeIfReachable = false;
                 checkConnectionReachable();
-
             }
         });
-        d.getButton(Dialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+
+        return rootView;
+    }
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+        builder.title(getString(R.string.outlet_edit_title, ioConnection.credentials.getDeviceName()));
+        builder.negativeAction(getString(android.R.string.cancel))
+                .positiveAction(getString(R.string.save));
+
+        final Dialog dialog = builder.build(getActivity());
+        dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.positiveActionClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 closeIfReachable = true;
                 checkConnectionReachable();
             }
         });
+        dialog.negativeActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        return dialog;
     }
+
 
     private void checkConnectionReachable() {
         final String host = newHost.getText().toString().trim();
@@ -131,8 +127,8 @@ public class IOConnectionHttpDialog extends DialogFragment {
 
             @Override
             protected void onPreExecute() {
-                progressBar.setIndeterminate(true);
-                progressBar.setVisibility(View.VISIBLE);
+                progressView.start();
+                btnTest.setEnabled(false);
             }
 
             @Override
@@ -146,6 +142,7 @@ public class IOConnectionHttpDialog extends DialogFragment {
                             error_message = response_message;
                         }
                     });
+                    h.timeout_ms = 3000;
                     h.run();
                 } catch (UnknownHostException e) {
                     error_message = e.getLocalizedMessage();
@@ -156,7 +153,8 @@ public class IOConnectionHttpDialog extends DialogFragment {
 
             @Override
             protected void onPostExecute(IOConnectionHTTP testConnection) {
-                progressBar.setVisibility(View.INVISIBLE);
+                progressView.stop();
+                btnTest.setEnabled(true);
 
                 if (success) {
                     ioConnection.copyFrom(testConnection);

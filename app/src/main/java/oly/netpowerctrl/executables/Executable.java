@@ -300,7 +300,7 @@ public class Executable implements Comparable, IOInterface {
      * <p/>
      * Be aware to call this only after the executable uid has been set.
      *
-     * @param credentials
+     * @param credentials The credentials object that fits to the deviceUID of this executable.
      */
     public void setCredentials(Credentials credentials) {
         this.credentials = credentials;

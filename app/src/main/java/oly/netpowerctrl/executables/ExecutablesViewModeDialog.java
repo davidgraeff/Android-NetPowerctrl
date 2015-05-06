@@ -1,44 +1,49 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl.executables;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RadioButton;
+
+import com.rey.material.app.Dialog;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
-import oly.netpowerctrl.executables.adapter.AdapterSourceInputDemo;
 import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
+import oly.netpowerctrl.executables.adapter.InputDemo;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.SoftRadioGroup;
 
 /**
- * Try to setup all found devices, The dialog shows a short log about the actions.
+ * Set view mode (list/grid/etc) of the executables.
  */
-public class OutletsViewModeDialog extends DialogFragment {
-    public OutletsViewModeDialog() {
+public class ExecutablesViewModeDialog extends DialogFragment {
+    final SoftRadioGroup radioGroupDesign = new SoftRadioGroup();
+
+    public ExecutablesViewModeDialog() {
     }
 
+    @Nullable
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_select_view_type, null);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_select_view_type, null);
 
         RecyclerView recyclerView;
 
-        final SoftRadioGroup radioGroupDesign = new SoftRadioGroup();
         radioGroupDesign.addView((RadioButton) rootView.findViewById(R.id.design1));
         radioGroupDesign.addView((RadioButton) rootView.findViewById(R.id.design2));
         radioGroupDesign.addView((RadioButton) rootView.findViewById(R.id.design3));
+        radioGroupDesign.check(SharedPrefs.getInstance().getOutletsViewType());
 
         ExecutablesAdapter adapter;
         AdapterSource adapterSource;
@@ -47,7 +52,7 @@ public class OutletsViewModeDialog extends DialogFragment {
 
         rows = 1;
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
-        adapterSource.addInput(new AdapterSourceInputDemo());
+        adapterSource.addInput(new InputDemo());
         adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.list_item_executable);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list1);
@@ -75,7 +80,7 @@ public class OutletsViewModeDialog extends DialogFragment {
 
         rows = 2;
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
-        adapterSource.addInput(new AdapterSourceInputDemo());
+        adapterSource.addInput(new InputDemo());
         adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.grid_item_executable);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list2);
@@ -102,7 +107,7 @@ public class OutletsViewModeDialog extends DialogFragment {
         });
 
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
-        adapterSource.addInput(new AdapterSourceInputDemo());
+        adapterSource.addInput(new InputDemo());
         adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.grid_item_compact_executable);
         adapter.setItemsInRow(rows);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list3);
@@ -127,19 +132,30 @@ public class OutletsViewModeDialog extends DialogFragment {
                 return true;
             }
         });
+        return rootView;
+    }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(rootView)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        int index;
-                        index = radioGroupDesign.getCheckedRadioButtonIndex();
-                        if (index != -1) {
-                            SharedPrefs.getInstance().setOutletsViewType(index);
-                        }
-                    }
-                });
-        return builder.create();
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = new Dialog(getActivity());
+        dialog.setTitle(R.string.view_mode);
+        dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.positiveActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int index;
+                index = radioGroupDesign.getCheckedRadioButtonIndex();
+                if (index != -1) {
+                    SharedPrefs.getInstance().setOutletsViewType(index);
+                }
+            }
+        }).positiveAction(android.R.string.ok);
+        dialog.negativeActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dismiss();
+            }
+        }).negativeAction(android.R.string.cancel);
+        return dialog;
     }
 }
