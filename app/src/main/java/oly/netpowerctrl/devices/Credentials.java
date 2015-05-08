@@ -39,14 +39,18 @@ public class Credentials implements Comparable<Credentials>, IOInterface {
         return deviceUID;
     }
 
+    private int computeChangedCode() {
+        return deviceName.hashCode() + version.hashCode() + userName.hashCode() + password.hashCode() + (mConfigured ? 1 : 0);
+    }
+
     @Override
     public boolean hasChanged() {
-        return mLastHashCode != (deviceName.hashCode() + version.hashCode() + userName.hashCode() + password.hashCode());
+        return mLastHashCode != computeChangedCode();
     }
 
     @Override
     public void resetChanged() {
-        mLastHashCode = deviceName.hashCode() + version.hashCode() + userName.hashCode() + password.hashCode();
+        mLastHashCode = computeChangedCode();
     }
 
     public boolean isConfigured() {

@@ -32,6 +32,7 @@ public class DeviceQuery {
     private static final int MSG_RECHECK_MINIMUM_TIME = 5;
     @SuppressWarnings("unused")
     private static final String TAG = "DeviceQuery";
+    private static int instances = 0;
     private final DataService dataService;
     private List<DevicesObserver> devicesObserverList = new ArrayList<>();
     private RepeatHandler handler;
@@ -39,6 +40,9 @@ public class DeviceQuery {
     private Thread thread = new Thread("DeviceObserverBase") {
         @Override
         public void run() {
+            if (++instances != 1)
+                throw new RuntimeException("Only one instance for DeviceQuery allowed!");
+
             Looper.prepare();
             handler = new RepeatHandler(Looper.myLooper());
             Looper.loop();
@@ -46,8 +50,8 @@ public class DeviceQuery {
     };
 
     public DeviceQuery(DataService dataService) {
-        thread.start();
         this.dataService = dataService;
+        thread.start();
     }
 
     /**
@@ -101,6 +105,7 @@ public class DeviceQuery {
             // remove from list of devices to observe and notify observers
             deviceFailed(credentials);
 
+            l.setReachability(ReachabilityStates.NotReachable);
             l.setStatusMessage(App.getAppString(R.string.device_energysave_mode));
             dataService.connections.put(l);
             return;
@@ -125,6 +130,7 @@ public class DeviceQuery {
      * can be removed.
      */
     private void deviceSuccess(Credentials credentials) {
+        if (Thread.currentThread() != thread) throw new RuntimeException();
         handler.removeMessages(MSG_REQUEST, credentials);
         for (DevicesObserver devicesObserver : devicesObserverList) {
             if (!devicesObserver.credentialsList.containsKey(credentials.deviceUID)) continue;
@@ -135,6 +141,7 @@ public class DeviceQuery {
     }
 
     private void checkObserverFinished(DevicesObserver devicesObserver) {
+        if (Thread.currentThread() != thread) throw new RuntimeException();
         if (!devicesObserver.credentialsList.isEmpty()) return;
 
         // Remove timeouts for this observer. We will now either finish or wait for the minimum time
@@ -159,6 +166,7 @@ public class DeviceQuery {
     }
 
     private void deviceFailed(Credentials credentials) {
+        if (Thread.currentThread() != thread) throw new RuntimeException();
         handler.removeMessages(MSG_REQUEST, credentials);
         for (DevicesObserver devicesObserver : devicesObserverList) {
             if (!devicesObserver.credentialsList.containsKey(credentials.deviceUID)) continue;
@@ -169,6 +177,7 @@ public class DeviceQuery {
     }
 
     private void devicesTimeout(DevicesObserver devicesObserver) {
+        if (Thread.currentThread() != thread) throw new RuntimeException();
         handler.removeMessages(MSG_TIMEOUT, devicesObserver);
 
         for (Iterator<Map.Entry<String, Credentials>> iterator = devicesObserver.credentialsList.entrySet().iterator(); iterator.hasNext(); ) {
@@ -178,6 +187,7 @@ public class DeviceQuery {
             DeviceIOConnections l = dataService.connections.openDevice(credentials.deviceUID);
             if (l != null) {
                 l.setStatusMessage(App.getAppString(R.string.device_timeout));
+                l.setReachability(ReachabilityStates.NotReachable);
                 dataService.connections.put(l);
             }
         }

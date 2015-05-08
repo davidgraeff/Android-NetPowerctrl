@@ -76,30 +76,15 @@ public class AnimationController {
             view.setScaleY(0.1f);
         }
 
-        return view.animate().setDuration(duration).alpha(in ? 1.0f : 0.0f).scaleY(1f).setListener(new Animator.AnimatorListener() {
+        return view.animate().setDuration(duration).alpha(in ? 1.0f : 0.0f).scaleY(1f).withEndAction(new Runnable() {
             @Override
-            public void onAnimationStart(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
+            public void run() {
                 if (in)
                     return;
                 if (makeGone)
                     view.setVisibility(View.GONE);
                 else
                     view.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-
             }
         });
     }

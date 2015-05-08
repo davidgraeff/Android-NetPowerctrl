@@ -4,7 +4,6 @@
     android:id="@+id/item_layout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/list_item_background"
     android:baselineAligned="true"
     android:clickable="false"
     android:descendantFocusability="blocksDescendants"

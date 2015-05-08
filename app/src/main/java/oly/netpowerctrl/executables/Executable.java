@@ -3,7 +3,6 @@ package oly.netpowerctrl.executables;
 import android.support.annotation.NonNull;
 import android.util.JsonReader;
 import android.util.JsonWriter;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -315,7 +314,7 @@ public class Executable implements Comparable, IOInterface {
      * @return Return true if the old cached state differs from the new state.
      */
     public boolean updateCachedReachability(ReachabilityStates new_state) {
-        Log.w("executable", "reachability " + new_state.name());
+        //Log.w("executable", "reachability " + new_state.name());
         ReachabilityStates a = cached_reachabilityStates;
         cached_reachabilityStates = new_state;
         return new_state != a;

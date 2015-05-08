@@ -92,10 +92,6 @@ public class SceneElementsAssigning {
         scene.setMaster(includedData.getMaster());
     }
 
-    public boolean hasElements() {
-        return availableData.mItems.size() > 0;
-    }
-
     public interface SceneElementsChanged {
         void onSceneElementsChanged();
     }

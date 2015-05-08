@@ -5,8 +5,11 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.view.Display;
+import android.view.WindowManager;
 
 import oly.netpowerctrl.R;
 
@@ -41,18 +44,14 @@ public class FragmentUtils {
         changeToFragment(context, Fragment.instantiate(context, fragmentClassName), null);
     }
 
-    public static void changeToFragment(Activity context, String fragmentClassName, String tag) {
-        changeToFragment(context, Fragment.instantiate(context, fragmentClassName), tag);
-    }
-
-    public static void changeToFragment(Activity context, String fragmentClassName, final Bundle extra) {
-        changeToFragment(context, Fragment.instantiate(context, fragmentClassName, extra), null);
+    public static void changeToFragment(Activity context, String fragmentClassName, String tag, Bundle extra) {
+        changeToFragment(context, Fragment.instantiate(context, fragmentClassName, extra), tag);
     }
 
     public static void changeToFragment(Activity context, Fragment fragment, String tag) {
         FragmentTransaction ft = context.getFragmentManager().beginTransaction();
         ft.replace(R.id.content_frame, fragment, tag);
-        ft.addToBackStack(null);
+        ft.addToBackStack(tag);
         try {
             ft.commit();
         } catch (IllegalStateException exception) {
@@ -82,4 +81,29 @@ public class FragmentUtils {
         }
     }
 
+    public static void makeActivityDialog(Activity activity) {
+        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+                WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+
+        // Params for the window.
+        // You can easily set the alpha and the dim behind the window from here
+        WindowManager.LayoutParams params = activity.getWindow().getAttributes();
+        params.alpha = 1f;    // lower than one makes it more transparent
+        params.dimAmount = 0.2f;  // set it higher if you want to dim behind the window
+        activity.getWindow().setAttributes(params);
+
+        // Gets the display size so that you can set the window to a percent of that
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        // You could also easily used an integer value from the shared preferences to set the percent
+        if (height > width) {
+            activity.getWindow().setLayout((int) (width * .8), (int) (height * .6));
+        } else {
+            activity.getWindow().setLayout((int) (width * .7), (int) (height * .8));
+        }
+    }
 }

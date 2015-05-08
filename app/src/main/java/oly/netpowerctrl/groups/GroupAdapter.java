@@ -22,6 +22,7 @@ import oly.netpowerctrl.utils.onCollectionUpdated;
  *
  */
 public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> implements onCollectionUpdated<GroupCollection, Group>, onServiceReady {
+    private final boolean showAllEntry;
     private GroupCollection groupCollection;
     private int selectedItemPosition = -1;
     private int lastSelectedItemPosition = -1;
@@ -31,7 +32,8 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         }
     };
 
-    public GroupAdapter() {
+    public GroupAdapter(boolean showAllEntry) {
+        this.showAllEntry = showAllEntry;
         DataService.observersServiceReady.register(this);
     }
 
@@ -42,7 +44,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
      * @return
      */
     public Group getGroup(int position) {
-        if (position == 0) return null;
+        if (showAllEntry && position == 0) return null;
         return items.get(position);
     }
 
@@ -79,13 +81,14 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     private void resetItems() {
         items.clear();
         if (groupCollection.getItems().size() > 0) {
-            items.add(new Group("", App.getAppString(R.string.groups_all)));
+            if (showAllEntry)
+                items.add(new Group("", App.getAppString(R.string.groups_all)));
             for (Group group : groupCollection.getItems().values()) {
                 items.add(group);
             }
         }
         notifyDataSetChanged();
-        emptyListener.onEmptyListener(true);
+        emptyListener.onEmptyListener(items.isEmpty());
     }
 
     @Override
@@ -93,7 +96,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         switch (action) {
             case AddAction:
                 boolean empty = items.isEmpty();
-                if (items.size() == 0) { // Add "show all" if nothing inside so far
+                if (showAllEntry && items.size() == 0) { // Add "show all" if nothing inside so far
                     items.add(new Group("", App.getAppString(R.string.groups_all)));
                     notifyItemInserted(0);
                 }
@@ -107,7 +110,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
                     if (items.get(i).getUid().equals(group.getUid())) {
                         items.remove(i);
                         notifyItemRemoved(i);
-                        if (items.size() == 1) { // remove "show all"
+                        if (showAllEntry && items.size() == 1) { // remove "show all"
                             items.remove(0);
                             notifyItemRemoved(0);
                             emptyListener.onEmptyListener(true);

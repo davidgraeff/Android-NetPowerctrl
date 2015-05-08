@@ -354,6 +354,10 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
         filter.setAdapterSource(this);
     }
 
+    public boolean isEmpty() {
+        return mItems.isEmpty();
+    }
+
     public enum AutoStartEnum {
         AutoStartOnServiceReady, AutoStartAfterFirstQuery, ManualCallToStart
     }

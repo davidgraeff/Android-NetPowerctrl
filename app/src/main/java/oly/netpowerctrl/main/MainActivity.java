@@ -28,7 +28,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,11 +37,8 @@ import android.widget.FrameLayout;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
-import oly.netpowerctrl.executables.ExecutableHideShowDialog;
 import oly.netpowerctrl.executables.ExecutablesFragment;
 import oly.netpowerctrl.groups.GroupListFragment;
-import oly.netpowerctrl.ioconnection.IOConnectionsFragment;
-import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
@@ -105,33 +101,11 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
                 return true;
-            case R.id.menu_about: {
-                FragmentUtils.changeToFragment(this, FeedbackFragment.class.getName());
-                return true;
-            }
-            case R.id.menu_preferences: {
-                FragmentUtils.changeToFragment(this, PreferencesFragment.class.getName());
-                return true;
-            }
-            case R.id.menu_devices: {
-                FragmentUtils.changeToFragment(this, IOConnectionsFragment.class.getName());
-                return true;
-            }
-            case R.id.menu_device_hide_items:
-                FragmentUtils.changeToDialog(this, ExecutableHideShowDialog.class.getName());
-                return true;
-
         }
         return false;
     }
@@ -151,7 +125,7 @@ public class MainActivity extends ActionBarActivity {
         layout.addView(v, lp);
 
         FragmentUtils.loadFragment(this, GroupListFragment.class.getName(), R.id.group_list_fragment, "group");
-        FragmentUtils.changeToFragment(this, ExecutablesFragment.class.getName(), "outlets");
+        FragmentUtils.changeToFragment(this, ExecutablesFragment.class.getName(), "outlets", null);
 
         if (!has_two_panes) {
             panes = (SlidingPaneLayout) findViewById(R.id.drawerLayout);
@@ -181,7 +155,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void run() {
                 if (SharedPrefs.getInstance().hasBeenUpdated()) {
-                    InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification());
+                    InAppNotifications.updatePermanentNotification(MainActivity.this, new ChangeLogNotification(MainActivity.this));
                 }
             }
         }, 1500);

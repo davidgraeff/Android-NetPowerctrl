@@ -24,6 +24,8 @@ import android.text.TextWatcher;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -114,6 +116,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     private int load_adapter_position = -1;
     private FloatingActionButton btnAdd;
     private ProgressDialog progressDialog;
+    private View scene_items_view;
 
     @SuppressLint("ShowToast")
     @Override
@@ -145,17 +148,29 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             }
         });
 
+        scene_items_view = findViewById(R.id.items_container);
+
         btnAdd = (FloatingActionButton) findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 addMenuVisible = !addMenuVisible;
+                View available_view = findViewById(R.id.available);
                 if (addMenuVisible) {
+                    scene_items_view.setTag(scene_items_view.getHeight());
                     btnAdd.setLineMorphingState(1, true);
-                    AnimationController.animateBottomViewIn(findViewById(R.id.available), false);
+                    ResizeAnimation resizeAnimation = new ResizeAnimation(scene_items_view, available_view.getHeight());
+                    resizeAnimation.setDuration(600);
+                    scene_items_view.startAnimation(resizeAnimation);
+                    AnimationController.animateBottomViewIn(available_view, false);
                 } else {
+                    scene_items_view.setTranslationY(0);
+                    ResizeAnimation resizeAnimation = new ResizeAnimation(scene_items_view, (Integer) scene_items_view.getTag());
+                    resizeAnimation.setDuration(600);
+                    scene_items_view.startAnimation(resizeAnimation);
+
                     btnAdd.setLineMorphingState(0, true);
-                    AnimationController.animateBottomViewOut(findViewById(R.id.available));
+                    AnimationController.animateBottomViewOut(available_view);
                 }
             }
         });
@@ -448,6 +463,11 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
                 updateSaveButton();
             }
         }, (Scene) executable);
+
+        setIcon(findViewById(R.id.scene_image), null);
+        setIcon(findViewById(R.id.scene_image_off), null);
+        setIcon(findViewById(R.id.scene_image_on), null);
+
         prepareInterface(dataService);
     }
 
@@ -473,7 +493,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             getSupportActionBar().setSubtitle(R.string.title_scene_edit);
         } else {
             getSupportActionBar().setSubtitle(getString(R.string.outlet_edit_title, executable.getTitle()));
-            findViewById(R.id.items_container).setVisibility(View.GONE);
+            scene_items_view.setVisibility(View.GONE);
             // Workaround: We do not use that this RecyclerView if we edit a DevicePort
             // but the component will crash (android 4.4.4) if no layout manager is defined on onDestroy.
             RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.available).findViewById(android.R.id.list);
@@ -559,7 +579,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         // Save name + scene elements
         if (mEditType != EDIT_TYPE_DEVICE_PORT) {
-            if (!sceneElementsAssigning.hasElements()) {
+            Scene scene = (Scene) executable;
+            if (scene.length() == 0) {
                 Toast.makeText(this, R.string.error_scene_no_actions, Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -645,7 +666,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         }
         String newName = ((EditText) findViewById(R.id.scene_name)).getText().toString().trim();
         boolean en = newName.length() > 0;
-        if (mEditType != EDIT_TYPE_DEVICE_PORT) en &= sceneElementsAssigning.hasElements();
+        if (mEditType != EDIT_TYPE_DEVICE_PORT) en &= ((Scene) executable).length() > 0;
         Resources r = getResources();
         btnSaveOrTrash.setVisibility(View.VISIBLE);
         btnSaveOrTrash.setIcon(en ? r.getDrawable(android.R.drawable.ic_menu_save) :
@@ -670,6 +691,36 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             Toast.makeText(App.instance, App.instance.getString(R.string.renameFailed, error_message), Toast.LENGTH_SHORT).show();
         } else {
             executable.title = (((EditText) findViewById(R.id.scene_name)).getText().toString().trim());
+        }
+    }
+
+    public class ResizeAnimation extends Animation {
+        final int startHeight;
+        final int targetHeight;
+        View view;
+
+        public ResizeAnimation(View view, int targetHeight) {
+            this.view = view;
+            this.targetHeight = targetHeight;
+            startHeight = view.getHeight();
+        }
+
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            float diff = (targetHeight - startHeight) * interpolatedTime;
+            view.getLayoutParams().height = (int) (startHeight + diff);
+            view.requestLayout();
+            view.setTranslationY(-diff);
+        }
+
+        @Override
+        public void initialize(int width, int height, int parentWidth, int parentHeight) {
+            super.initialize(width, height, parentWidth, parentHeight);
+        }
+
+        @Override
+        public boolean willChangeBounds() {
+            return true;
         }
     }
 }

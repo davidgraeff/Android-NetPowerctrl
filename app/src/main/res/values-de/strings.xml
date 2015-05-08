@@ -84,7 +84,7 @@
     <string name="empty_no_outlets">Keine Steckdosen zum Anzeigen gefunden.\n\n
 Wenn du neue Geräte einrichten möchtest, wechsel zum Geräte Bildschirm.</string>
     <string name="empty_no_devices">Die automatische Suche hat keine Geräte gefunden.\n\n
-Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Geräte und solltest die Netzwerk-Ports der App noch einmal kontrollieren.\n\nIm Notfall kannst du über das (+) Icon oben rechts ein Gerät erstellen.</string>
+Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Geräte und solltest die Netzwerk-Ports des Geräts (1077/1075) noch einmal kontrollieren.\n\nIm Notfall kannst du über den (+) Button unten rechts ein Gerät erstellen.</string>
     <string name="devices_refreshed">Es wurden %1$d bekannte und %2$d unbekannte Geräte gefunden</string>
     <string name="error_not_in_range">Zielnetzwerk %1$s nicht in Reichweite</string>
     <string name="scene_executed">Szene %1$s ausgeführt</string>
@@ -101,7 +101,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="crash_toast_text">Ich bin leider abgestürzt :( Ein Absturzbericht wird automatisch gesendet</string>
     <string name="scene_rename">Szenenname</string>
     <string name="new_devices">Unbekannte Geräte</string>
-    <string name="devices">Geräte einrichten</string>
+    <string name="devices">Geräte</string>
     <string name="preferences">Einstellungen</string>
     <string name="scene_set_name">Szenenname</string>
     <string name="scene_set_icon">Szenenbild</string>
@@ -359,7 +359,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="menu_timer_device_weekdays">Gerätealarm: Wiederholend</string>
     <string name="alarm_start_date_summary">Startdatum für den Alarm</string>
     <string name="log_file_size">Logdatei Größe: %,.2f kb</string>
-    <string name="outlets_edit_hint">Bearbeitunsgmodus</string>
+    <string name="outlets_edit_hint">Editmodus</string>
     <string name="scene_options_title">Optionen</string>
     <string name="alarm_received">Sychnonisierung abgeschlossen</string>
     <string name="groups_all">Alles zeigen</string>
@@ -389,4 +389,5 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="show_password">Zeige Passwort</string>
     <string name="send_log">Senden</string>
     <string name="group_name">Name</string>
+    <string name="widget_group_no_group">Bisher keine Gruppe erstellt! Erstelle in der App eine und versuche es noch einmal.</string>
 </resources>

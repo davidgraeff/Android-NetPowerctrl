@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="mcab_title" format="string" />
+    <attr name="mcab_popup_theme" format="reference" />
+    <attr name="mcab_contentinset_start" format="dimension" />
+    <attr name="mcab_menu" format="reference" />
+    <attr name="mcab_background_color" format="color" />
+    <attr name="mcab_close_drawable" format="reference" />
+
+    <dimen name="toolbar_elevation">4dp</dimen>
+    <dimen name="mcab_default_content_inset">72dp</dimen>
+
+    <item name="mcab_toolbar" type="id" />
+</resources>

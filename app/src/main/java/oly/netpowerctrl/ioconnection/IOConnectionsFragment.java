@@ -36,6 +36,7 @@ import oly.netpowerctrl.ioconnection.adapter.AdapterItemHeader;
 import oly.netpowerctrl.ioconnection.adapter.IOConnectionAdapter;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.ReachabilityStates;
+import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
@@ -46,10 +47,11 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
  * List of all Credentials and IOConnections.
  */
 public class IOConnectionsFragment extends Fragment
-        implements onDataQueryRefreshQuery, RecyclerItemClickListener.OnItemClickListener {
+        implements onDataQueryRefreshQuery, RecyclerItemClickListener.OnItemClickListener, EmptyListener {
     private IOConnectionAdapter adapter;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private RecyclerView mRecyclerView;
+    private View empty;
     private Handler testConnectionHandler = new TestConnectionHandler();
 
     public IOConnectionsFragment() {
@@ -72,6 +74,7 @@ public class IOConnectionsFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         adapter = new IOConnectionAdapter(true, true);
+        adapter.setEmptyListener(this);
     }
 
     private void assignAdapter() {
@@ -83,6 +86,9 @@ public class IOConnectionsFragment extends Fragment
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_devices, container, false);
         assert view != null;
+
+        empty = view.findViewById(R.id.empty);
+
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -282,6 +288,12 @@ public class IOConnectionsFragment extends Fragment
     @Override
     public void onRefreshStateChanged(boolean isRefreshing) {
         mPullToRefreshLayout.setRefreshing(isRefreshing);
+    }
+
+    @Override
+    public void onEmptyListener(boolean empty) {
+        if (this.empty == null) return;
+        this.empty.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
 
     private static class TestConnectionHandler extends Handler {

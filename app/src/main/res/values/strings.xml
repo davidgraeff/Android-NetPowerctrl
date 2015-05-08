@@ -387,4 +387,5 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="show_password">Show password</string>
     <string name="send_log">Send</string>
     <string name="group_name">Name</string>
+    <string name="widget_group_no_group">No group created so far. Create one within the app and try again.</string>
 </resources>

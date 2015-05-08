@@ -4,17 +4,15 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.0'
+        classpath 'com.android.tools.build:gradle:1.2.2'
     }
 }
 
 allprojects {
     repositories {
         mavenCentral()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url 'http://nexus.logicalgrape.com/content/repositories/missionhub/' }
-        maven {
-            url "https://jitpack.io"
-        }
+        maven { url 'https://dl.bintray.com/drummer-aidan/maven' }
+        maven { url "https://jitpack.io" }
     }
 }

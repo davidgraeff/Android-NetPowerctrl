@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/menu_view_mode"
-        android:icon="?attr/ic_action_view_as_grid"
-        android:title="@string/drawer_change_view_type"
-        app:showAsAction="never" />
 
     <item
-        android:id="@+id/menu_edit_mode"
-        android:icon="@android:drawable/ic_menu_edit"
-        android:title="@string/outlets_edit_hint"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/menu_preferences"
+        android:icon="?attr/ic_action_settings"
+        android:title="@string/preferences"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menu_about"
+        android:icon="?attr/ic_action_good"
+        android:title="@string/drawer_feedback"
+        app:showAsAction="always" />
 
 </menu>

@@ -1,22 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/toolbar_actionbar"
+    <FrameLayout
+        android:id="@+id/toolbar_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
-        app:theme="?attr/toolbar_style">
+        android:layout_height="wrap_content">
 
-    </android.support.v7.widget.Toolbar>
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar_actionbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="@dimen/toolbar_elevation"
+            android:minHeight="?attr/actionBarSize"
+            app:theme="?attr/toolbar_style" />
+
+        <ViewStub
+            android:id="@+id/cab_stub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:theme="?attr/toolbar_style" />
+    </FrameLayout>
 
     <com.rey.material.widget.SnackBar
         android:id="@+id/toolbar_bottom_actionbar"
+        style="@style/SnackBarMultiLine"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_gravity="bottom"
@@ -27,8 +40,19 @@
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:layout_above="@id/toolbar_bottom_actionbar"
-        android:layout_below="@id/toolbar_actionbar"
+        android:layout_below="@id/toolbar_container"
         android:background="?attr/activity_background" />
+
+    <com.rey.material.widget.FloatingActionButton
+        android:id="@+id/btnEdit"
+        style="@style/Material.Widget.FloatingActionButton.Light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:fab_iconSrc="@android:drawable/ic_menu_edit"
+        tools:ignore="RelativeOverlap" />
+
 </RelativeLayout>
-
-

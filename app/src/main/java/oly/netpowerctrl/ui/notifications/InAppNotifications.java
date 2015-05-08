@@ -5,11 +5,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.rey.material.widget.SnackBar;
@@ -17,7 +15,6 @@ import com.rey.material.widget.SnackBar;
 import org.acra.ACRA;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
@@ -31,6 +28,22 @@ import oly.netpowerctrl.main.App;
  */
 public class InAppNotifications {
     private static List<PermanentNotification> permanentNotifications = new ArrayList<>();
+    private static SnackBar.OnStateChangeListener stateChangeListener = new SnackBar.OnStateChangeListener() {
+        @Override
+        public void onStateChange(SnackBar snackBar, int oldState, int newState) {
+            if (newState == SnackBar.STATE_DISMISSED) {
+                PermanentNotification current = (PermanentNotification) snackBar.getTag();
+                current.onDismiss();
+                if (permanentNotifications.isEmpty()) return;
+                PermanentNotification n = permanentNotifications.get(0);
+                permanentNotifications.remove(0);
+
+                Activity activity = current.activityWeakReference.get();
+                if (activity != null)
+                    doUpdatePermanentNotification(activity, snackBar, n);
+            }
+        }
+    };
 
     public static void FromOtherThread(final Context ctx, final String message) {
         App.getMainThreadHandler().post(new Runnable() {
@@ -95,52 +108,38 @@ public class InAppNotifications {
             throw new RuntimeException("No toolbar for notifications found!");
         }
 
+        toolbar.stateChangeListener(stateChangeListener);
+
         // If toolbar is visible -> there is still a notification shown. Add this new one to a backlog list.
-        if (toolbar.getVisibility() == View.VISIBLE) {
+        if (toolbar.getState() == SnackBar.STATE_SHOWED) {
             permanentNotifications.add(newPermanentNotification);
             return;
         }
 
         doUpdatePermanentNotification(activity, toolbar, newPermanentNotification);
+    }
+
+    private static void doUpdatePermanentNotification(Activity activity, final SnackBar toolbar, final PermanentNotification newPermanentNotification) {
+        if (newPermanentNotification.hasCloseButton())
+            toolbar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    toolbar.dismiss();
+                }
+            });
+        toolbar.text(newPermanentNotification.getText());
+        String actionText = newPermanentNotification.getActionButtonText();
+        if (actionText != null) {
+            toolbar.actionText(actionText);
+            toolbar.actionClickListener(new SnackBar.OnActionClickListener() {
+                @Override
+                public void onActionClick(SnackBar snackBar, int i) {
+                    newPermanentNotification.action(snackBar);
+                }
+            });
+        }
+        toolbar.setTag(newPermanentNotification);
         toolbar.show();
-    }
-
-    private static void doUpdatePermanentNotification(Activity activity, SnackBar toolbar, PermanentNotification newPermanentNotification) {
-        View v = toolbar.findViewWithTag(newPermanentNotification.getID());
-        if (v != null) {
-            toolbar.removeView(v);
-        }
-        v = newPermanentNotification.getView(activity, toolbar);
-        v.setTag(newPermanentNotification.getID());
-        Toolbar.LayoutParams lp = new Toolbar.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        toolbar.addView(v, lp);
-    }
-
-    public static void closePermanentNotification(Activity activity, String id) {
-        Iterator<PermanentNotification> it = permanentNotifications.iterator();
-        while (it.hasNext())
-            if (it.next().getID().equals(id))
-                it.remove();
-
-        if (activity == null)
-            return;
-
-        SnackBar toolbar = (SnackBar) activity.findViewById(R.id.toolbar_bottom_actionbar);
-        if (toolbar == null) {
-            return;
-        }
-
-        View v = toolbar.findViewWithTag(id);
-        if (v != null) {
-            toolbar.removeView(v);
-            if (permanentNotifications.size() > 0) {
-                it = permanentNotifications.iterator();
-                doUpdatePermanentNotification(activity, toolbar, it.next());
-                it.remove();
-            }
-            toolbar.dismiss();
-        }
     }
 
     public static void moveToastNextToView(Toast toast, Resources resources, View view, boolean anchorRightOnView) {
@@ -153,6 +152,6 @@ public class InAppNotifications {
 
         int coordinates[] = new int[2];
         view.getLocationInWindow(coordinates);
-        toast.setGravity(Gravity.LEFT | Gravity.TOP | Gravity.CENTER_VERTICAL, (int) view.getX() - toastWidth, coordinates[1]);
+        toast.setGravity(Gravity.START | Gravity.TOP | Gravity.CENTER_VERTICAL, (int) view.getX() - toastWidth, coordinates[1]);
     }
 }

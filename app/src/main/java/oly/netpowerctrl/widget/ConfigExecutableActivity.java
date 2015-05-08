@@ -9,9 +9,10 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.executables.adapter.InputExecutables;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
-import oly.netpowerctrl.ui.SelectFromListFragment;
+import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.SelectFromExecutableListFragment;
 
-public class ConfigExecutableActivity extends Activity implements SelectFromListFragment.onItemClicked {
+public class ConfigExecutableActivity extends Activity implements SelectFromExecutableListFragment.onItemClicked {
     private int widgetId;
 
     @Override
@@ -21,10 +22,11 @@ public class ConfigExecutableActivity extends Activity implements SelectFromList
 
         // Set theme, call super onCreate and set content view
         if (SharedPrefs.getInstance().isDarkTheme()) {
-            setTheme(R.style.Theme_CustomDarkTheme);
+            setTheme(R.style.Theme_CustomDarkThemeDialog);
         } else {
-            setTheme(R.style.Theme_CustomLightTheme);
+            setTheme(R.style.Theme_CustomLightThemeDialog);
         }
+        FragmentUtils.makeActivityDialog(this);
         setContentView(R.layout.activity_content_only);
 
         Bundle extras = getIntent().getExtras();
@@ -38,7 +40,7 @@ public class ConfigExecutableActivity extends Activity implements SelectFromList
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
             throw new RuntimeException();
 
-        SelectFromListFragment s = new SelectFromListFragment(this,
+        SelectFromExecutableListFragment s = new SelectFromExecutableListFragment(this,
                 new InputExecutables());
         getFragmentManager().beginTransaction().replace(R.id.content_frame, s).commit();
     }

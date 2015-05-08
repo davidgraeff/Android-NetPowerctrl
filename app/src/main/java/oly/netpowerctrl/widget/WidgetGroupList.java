@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -159,7 +158,7 @@ public class WidgetGroupList extends AbstractWidget implements RemoteViewsServic
 
     @Override
     public RemoteViews getViewAt(int position) {
-        Log.w("WIDGET_GROUP", "update " + String.valueOf(position));
+        //Log.w("WIDGET_GROUP", "update " + String.valueOf(position));
 
         // Get current item, extract executable, sync cache with current value.
         // If a cached value equals the known current value of an executable, it will not issue an update

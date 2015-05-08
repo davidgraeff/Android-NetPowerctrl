@@ -15,8 +15,11 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.ExecutablesFragment;
+import oly.netpowerctrl.ioconnection.IOConnectionsFragment;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.EmptyListener;
+import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 
@@ -27,7 +30,7 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
  */
 public class GroupListFragment extends Fragment implements onServiceReady, EmptyListener {
     private DataService dataService = null;
-    private GroupAdapter groupAdapter = new GroupAdapter();
+    private GroupAdapter groupAdapter = new GroupAdapter(true);
     private View group_help;
 
     public GroupListFragment() {
@@ -63,10 +66,17 @@ public class GroupListFragment extends Fragment implements onServiceReady, Empty
         group_list.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public boolean onItemClick(View view, int position, boolean isLongClick) {
-                ExecutablesFragment executablesFragment = (ExecutablesFragment) getFragmentManager().findFragmentByTag("outlets");
-                if (executablesFragment == null) return true;
-
                 Group group = groupAdapter.getGroup(position);
+
+                ExecutablesFragment executablesFragment = (ExecutablesFragment) getFragmentManager().findFragmentByTag("outlets");
+                if (executablesFragment == null) {
+                    SharedPrefs.getInstance().setLastGroupUID(position > 0 ? group.getUid() : null);
+                    FragmentUtils.changeToFragment(getActivity(), ExecutablesFragment.class.getName(), "outlets", null);
+                    return true;
+                }
+                if (!executablesFragment.isAdded())
+                    getFragmentManager().popBackStack("outlets", 0);
+
                 if (isLongClick && position > 0) {
                     executablesFragment.showGroupPopupMenu(view, group.getUid());
                     return true;
@@ -84,9 +94,10 @@ public class GroupListFragment extends Fragment implements onServiceReady, Empty
         });
         group_list.setAdapter(groupAdapter);
         groupAdapter.setEmptyListener(this);
+        onEmptyListener(false);
 
-        Button btnAdd = (Button) root.findViewById(R.id.btnAdd);
-        btnAdd.setOnClickListener(new View.OnClickListener() {
+        Button button = (Button) root.findViewById(R.id.btnAdd);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final ExecutablesFragment executablesFragment = (ExecutablesFragment) getFragmentManager().findFragmentByTag("outlets");
@@ -97,6 +108,15 @@ public class GroupListFragment extends Fragment implements onServiceReady, Empty
                         executablesFragment.setGroup(group.getUid(), true);
                     }
                 });
+            }
+        });
+
+        button = (Button) root.findViewById(R.id.btnDevices);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentUtils.changeToFragment(getActivity(), IOConnectionsFragment.class.getName());
+                ((MainActivity) getActivity()).closeGroupMenu();
             }
         });
 

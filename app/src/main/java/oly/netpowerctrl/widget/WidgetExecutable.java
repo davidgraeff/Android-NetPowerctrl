@@ -47,6 +47,10 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
     public WidgetExecutable(WidgetUpdateService widgetUpdateService, int widgetID, DataService dataService) {
         super(widgetUpdateService, widgetID, ProviderExecutable.getTypeString());
         init(widgetUpdateService);
+        loadExecutable(dataService);
+    }
+
+    private void loadExecutable(DataService dataService) {
         String executableID = SharedPrefs.getInstance().loadWidget(widgetID, ProviderExecutable.getTypeString());
 
         if (executableID != null) {
@@ -82,7 +86,7 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
     @Override
     void forceUpdate(DataService dataService) {
         if (executable == null)
-            setWidgetStateBroken(widgetID);
+            loadExecutable(dataService);
         else
             setWidgetState(widgetID, executable, false);
     }

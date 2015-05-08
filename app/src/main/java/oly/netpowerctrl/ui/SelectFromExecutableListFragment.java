@@ -18,13 +18,13 @@ import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
 /**
 * Created by david on 15.01.15.
 */
-public class SelectFromListFragment extends Fragment implements RecyclerItemClickListener.OnItemClickListener {
+public class SelectFromExecutableListFragment extends Fragment implements RecyclerItemClickListener.OnItemClickListener {
     private final onItemClicked onItemClicked;
     private RecyclerView.Adapter<?> adapter;
     private AdapterSource adapterSource;
     private AdapterInput[] inputs;
 
-    public SelectFromListFragment() {
+    public SelectFromExecutableListFragment() {
         onItemClicked = null;
     }
 
@@ -35,7 +35,7 @@ public class SelectFromListFragment extends Fragment implements RecyclerItemClic
      * @param inputs
      */
     @SuppressLint("ValidFragment")
-    public SelectFromListFragment(onItemClicked onItemClicked, AdapterInput... inputs) {
+    public SelectFromExecutableListFragment(onItemClicked onItemClicked, AdapterInput... inputs) {
         this.onItemClicked = onItemClicked;
         this.inputs = inputs;
     }

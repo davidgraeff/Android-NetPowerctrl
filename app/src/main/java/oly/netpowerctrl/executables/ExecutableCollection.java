@@ -18,6 +18,7 @@ import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPut;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPutHandler;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.network.ReachabilityStates;
+import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 
 /**
@@ -46,7 +47,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     }
 
     private void put_test(Executable executable) {
-        if (executable.getUid() == null || executable.getCredentials() == null || executable.title.isEmpty())
+        if (executable.getUid() == null || (!(executable instanceof Scene) && executable.getCredentials() == null) || executable.title.isEmpty())
             throw new RuntimeException();
     }
 

@@ -1,49 +1,48 @@
 package oly.netpowerctrl.ui.notifications;
 
 import android.app.Activity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.TextView;
+
+import com.rey.material.widget.SnackBar;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.ChangeLogUtil;
 
 /**
- * Created by david on 19.09.14.
+ * Change log notification
  */
 public class ChangeLogNotification extends PermanentNotification {
-    public ChangeLogNotification() {
-        super("changelog");
+    public ChangeLogNotification(Activity activity) {
+        super("changelog", activity);
     }
 
     @Override
-    public View getView(final Activity context, ViewGroup parent) {
-        View v = context.getLayoutInflater().inflate(R.layout.notification_changelog, parent, false);
-        TextView title = (TextView) v.findViewById(R.id.notification_title);
-        title.setText(context.getString(R.string.notification_title_changelog, SharedPrefs.getVersionName(context)));
+    public String getText() {
+        return App.getAppString(R.string.notification_title_changelog, SharedPrefs.getVersionName(App.instance));
+    }
 
-        ImageButton closeBtn = (ImageButton) v.findViewById(R.id.notification_close);
-        closeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SharedPrefs.getInstance().acceptUpdatedVersion();
-                InAppNotifications.closePermanentNotification(context, getID());
-            }
-        });
+    @Override
+    public boolean hasCloseButton() {
+        return true;
+    }
 
-        Button btn = (Button) v.findViewById(R.id.btnShowChangelog);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SharedPrefs.getInstance().acceptUpdatedVersion();
-                InAppNotifications.closePermanentNotification(context, getID());
-                ChangeLogUtil.showChangeLog(context);
-            }
-        });
+    @Override
+    public void onDismiss() {
+        SharedPrefs.getInstance().acceptUpdatedVersion();
+    }
 
-        return v;
+    @Override
+    public void action(SnackBar snackBar) {
+        Activity activity = activityWeakReference.get();
+        if (activity != null) {
+            ChangeLogUtil.showChangeLog(activity);
+        }
+        snackBar.dismiss();
+    }
+
+    @Override
+    public String getActionButtonText() {
+        return App.getAppString(R.string.changelog_title);
     }
 }

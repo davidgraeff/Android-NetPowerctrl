@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.ActionMenuView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -46,11 +47,15 @@ import oly.netpowerctrl.groups.GroupListFragment;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.EditActivity;
+import oly.netpowerctrl.main.FeedbackFragment;
+import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.Utils;
+import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.ItemShadowDecoration;
+import oly.netpowerctrl.ui.MaterialCab;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.SimpleListDividerDecoration;
 import oly.netpowerctrl.utils.AnimationController;
@@ -65,7 +70,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         onDataQueryRefreshQuery,
         SwipeRefreshLayout.OnRefreshListener, IconCacheCleared,
         RecyclerItemClickListener.OnItemClickListener, onServiceReady,
-        SharedPreferences.OnSharedPreferenceChangeListener, EmptyListener {
+        SharedPreferences.OnSharedPreferenceChangeListener, EmptyListener, MaterialCab.Callback {
 
     // Column computations
     public static final int VIEW_AS_LIST = 0;
@@ -74,7 +79,6 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     // Groups
     FilterBySingleGroup filterBySingleGroup = new FilterBySingleGroup(null);
     private RecyclerView mRecyclerView;
-    private View edit_hint_big;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private View btnWireless;
     private int requestedColumnWidth;
@@ -103,9 +107,12 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     private boolean editMode;
     private SimpleListDividerDecoration listDividerDecoration;
     private View btnAdd;
+    private ActionMenuView menu;
+    private View btnEdit;
     // Data
     private DataService dataService;
     private AutomaticSetup automaticSetup;
+    private MaterialCab cab = null;
 
     public ExecutablesFragment() {
     }
@@ -138,7 +145,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         PreferenceManager.getDefaultSharedPreferences(App.instance).registerOnSharedPreferenceChangeListener(this);
-        setHasOptionsMenu(true);
+        setHasOptionsMenu(false);
     }
 
     @Override
@@ -195,30 +202,16 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.outlets, menu);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        boolean hasDevices = false;
-        if (dataService != null) {
-            hasDevices = dataService.credentials.countConfigured() > 0;
-        }
-        menu.findItem(R.id.menu_edit_mode).setVisible(hasDevices);
-        menu.findItem(R.id.menu_view_mode).setVisible(hasDevices);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_edit_mode: {
-                setEditMode(!editMode);
+            case R.id.menu_about: {
+                FragmentUtils.changeToFragment(getActivity(), FeedbackFragment.class.getName());
+                ((MainActivity) getActivity()).closeGroupMenu();
                 return true;
             }
-            case R.id.menu_view_mode: {
-                FragmentUtils.changeToDialog(getActivity(), ExecutablesViewModeDialog.class.getName());
+            case R.id.menu_preferences: {
+                FragmentUtils.changeToFragment(getActivity(), PreferencesFragment.class.getName());
+                ((MainActivity) getActivity()).closeGroupMenu();
                 return true;
             }
         }
@@ -231,6 +224,28 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
 
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
         assert view != null;
+
+        cab = new MaterialCab(getActivity(), R.id.cab_stub);
+        cab.setMenu(R.menu.outlets_editmode);
+        cab.setTitleRes(R.string.outlets_edit_mode);
+
+        btnEdit = getActivity().findViewById(R.id.btnEdit);
+        btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setEditMode(!editMode);
+            }
+        });
+
+        menu = ((ActionMenuView) getActivity().findViewById(R.id.amvMenu));
+        menu.setOnMenuItemClickListener(new ActionMenuView.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                return onOptionsItemSelected(menuItem);
+            }
+        });
+        this.menu.getMenu().clear();
+        getActivity().getMenuInflater().inflate(R.menu.outlets, this.menu.getMenu());
 
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -280,14 +295,6 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
 
         mRecyclerView.setAdapter(adapter);
 
-        // Edit Mode
-        edit_hint_big = view.findViewById(R.id.edit_hint_big);
-        edit_hint_big.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                setEditMode(false);
-            }
-        });
-
         btnAdd = view.findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -302,15 +309,20 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (savedInstanceState != null) {
-            setEditMode(savedInstanceState.getBoolean("editMode"));
-        } else
-            setEditMode(false);
-
-        mRecyclerView.scrollToPosition(SharedPrefs.getInstance().getLastScrollIndex());
+        view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                v.removeOnLayoutChangeListener(this);
+                if (savedInstanceState != null) {
+                    setEditMode(savedInstanceState.getBoolean("editMode"));
+                } else
+                    setEditMode(false);
+                mRecyclerView.scrollToPosition(SharedPrefs.getInstance().getLastScrollIndex());
+            }
+        });
 
         LoadStoreIconData.iconCacheClearedObserver.register(this);
         DataService.observersStartStopRefresh.register(this);
@@ -446,14 +458,20 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
 
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
+        updateEditButtonVisibility();
         if (editMode) {
-            AnimationController.animateViewInOut(edit_hint_big, true, true);
             AnimationController.animateBottomViewIn(btnAdd, btnAdd.getVisibility() == View.VISIBLE);
+            cab.start(this);
         } else {
-            AnimationController.animateViewInOut(edit_hint_big, false, true);
             AnimationController.animateBottomViewOut(btnAdd);
+            if (cab.isActive()) cab.finish();
         }
         adapter.setEditMode(editMode);
+    }
+
+    private void updateEditButtonVisibility() {
+        boolean visible = !adapterSource.isEmpty() && !editMode;
+        AnimationController.animateViewInOutWithoutCheck(btnEdit, visible, true, 500);
     }
 
     @Override
@@ -485,9 +503,31 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
                 view.findViewById(R.id.empty_no_outlets).setVisibility(View.VISIBLE);
             }
         }
+
+        updateEditButtonVisibility();
     }
 
-    private enum ViewContentState {NotEmpty, NothingConfigured, ConfiguredButNothingToShow, EmptyGroup}
+    @Override
+    public boolean onCabCreated(MaterialCab cab, Menu menu) {
+        return true;
+    }
 
+    @Override
+    public boolean onCabItemClicked(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_view_mode: {
+                FragmentUtils.changeToDialog(getActivity(), ExecutablesViewModeDialog.class.getName());
+                return true;
+            }
+            case R.id.menu_device_hide_items:
+                FragmentUtils.changeToDialog(getActivity(), ExecutableHideShowDialog.class.getName());
+                return true;
+        }
+        return false;
+    }
 
+    @Override
+    public void onCabFinished(MaterialCab cab) {
+        setEditMode(false);
+    }
 }
