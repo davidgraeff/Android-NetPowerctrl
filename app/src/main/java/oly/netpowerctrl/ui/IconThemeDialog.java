@@ -1,13 +1,15 @@
 package oly.netpowerctrl.ui;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RadioButton;
+
+import com.rey.material.app.Dialog;
 
 import java.io.IOException;
 
@@ -18,14 +20,16 @@ import oly.netpowerctrl.data.graphic.LoadStoreIconData;
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
 public class IconThemeDialog extends DialogFragment {
+    private SoftRadioGroup radioGroupTheme;
     public IconThemeDialog() {
     }
 
+    @Nullable
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        View rootView = getActivity().getLayoutInflater().inflate(R.layout.fragment_icon_theme, null, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_icon_theme, container, false);
 
-        final SoftRadioGroup radioGroupTheme = new SoftRadioGroup();
+        radioGroupTheme = new SoftRadioGroup();
         radioGroupTheme.addView((RadioButton) rootView.findViewById(R.id.theme1));
         radioGroupTheme.addView((RadioButton) rootView.findViewById(R.id.theme2));
         radioGroupTheme.addView((RadioButton) rootView.findViewById(R.id.theme3));
@@ -55,18 +59,24 @@ public class IconThemeDialog extends DialogFragment {
             }
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(rootView)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        int index = radioGroupTheme.getCheckedRadioButtonIndex();
-                        if (index != -1) {
-                            String[] icon_themes = getResources().getStringArray(R.array.default_fallback_icon_set_keys);
-                            LoadStoreIconData.setDefaultFallbackIconSet(icon_themes[index]);
-                        }
-                    }
-                });
-        return builder.create();
+        return rootView;
+    }
+
+    @Override
+    public com.rey.material.app.Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = new com.rey.material.app.Dialog(getActivity());
+        dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.positiveActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int index = radioGroupTheme.getCheckedRadioButtonIndex();
+                if (index != -1) {
+                    String[] icon_themes = getResources().getStringArray(R.array.default_fallback_icon_set_keys);
+                    LoadStoreIconData.setDefaultFallbackIconSet(icon_themes[index]);
+                }
+                dismiss();
+            }
+        }).positiveAction(android.R.string.ok);
+        return dialog;
     }
 }

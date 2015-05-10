@@ -296,6 +296,13 @@ public class SharedPrefs {
         prefs.edit().putLong("open_auto_issues_last_access", last_access).apply();
     }
 
+    public boolean isFirstTimeSceneAdd() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean first = prefs.getBoolean("isFirstTimeSceneAdd2", true);
+        prefs.edit().putBoolean("isFirstTimeSceneAdd2", false).apply();
+        return first;
+    }
+
     private static class SingletonHolder {
         public static final SharedPrefs instance = new SharedPrefs();
     }

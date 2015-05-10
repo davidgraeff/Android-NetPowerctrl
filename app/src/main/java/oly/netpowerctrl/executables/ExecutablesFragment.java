@@ -53,6 +53,7 @@ import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.scenes.SceneHelp;
 import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.ItemShadowDecoration;
@@ -297,9 +298,13 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent it = new Intent(getActivity(), EditActivity.class);
-                it.putExtra(EditActivity.CREATE_SCENE, true);
-                startActivityForResult(it, EditActivity.REQUEST_CODE);
+                if (SharedPrefs.getInstance().isFirstTimeSceneAdd()) {
+                    SceneHelp.showHelp(getActivity());
+                } else {
+                    Intent it = new Intent(getActivity(), EditActivity.class);
+                    it.putExtra(EditActivity.CREATE_SCENE, true);
+                    startActivityForResult(it, EditActivity.REQUEST_CODE);
+                }
             }
         });
 

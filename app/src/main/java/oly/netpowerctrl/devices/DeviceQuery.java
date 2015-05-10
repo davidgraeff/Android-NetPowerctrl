@@ -3,6 +3,7 @@ package oly.netpowerctrl.devices;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -134,15 +135,16 @@ public class DeviceQuery {
         if (Thread.currentThread() != thread) throw new RuntimeException();
         Log.w(TAG, "Response " + credentials.deviceName);
         handler.removeMessages(MSG_REQUEST, credentials);
-        for (DevicesObserver devicesObserver : devicesObserverList) {
+        for (Iterator<DevicesObserver> iterator = devicesObserverList.iterator(); iterator.hasNext(); ) {
+            DevicesObserver devicesObserver = iterator.next();
             if (!devicesObserver.credentialsList.containsKey(credentials.deviceUID)) continue;
             devicesObserver.credentialsList.remove(credentials.deviceUID);
             devicesObserver.success.add(credentials);
-            checkObserverFinished(devicesObserver);
+            checkObserverFinished(iterator, devicesObserver);
         }
     }
 
-    private void checkObserverFinished(DevicesObserver devicesObserver) {
+    private void checkObserverFinished(@NonNull Iterator<DevicesObserver> iterator, @NonNull DevicesObserver devicesObserver) {
         if (Thread.currentThread() != thread) throw new RuntimeException();
         if (!devicesObserver.credentialsList.isEmpty()) return;
 
@@ -157,25 +159,21 @@ public class DeviceQuery {
             handler.sendMessageDelayed(handler.obtainMessage(MSG_RECHECK_MINIMUM_TIME, devicesObserver), devicesObserver.minimumTimeInMS - runtimeMS);
             return;
         }
-        // Finished
-        for (Iterator<DevicesObserver> iterator = devicesObserverList.iterator(); iterator.hasNext(); ) {
-            if (iterator.next() == devicesObserver) {
-                iterator.remove();
-                mainHandler.sendMessage(mainHandler.obtainMessage(0, devicesObserver));
-                break;
-            }
-        }
+
+        iterator.remove();
+        mainHandler.sendMessage(mainHandler.obtainMessage(0, devicesObserver));
     }
 
     private void deviceFailed(Credentials credentials) {
         Log.w(TAG, "Query failed " + credentials.getDeviceName());
         if (Thread.currentThread() != thread) throw new RuntimeException();
         handler.removeMessages(MSG_REQUEST, credentials);
-        for (DevicesObserver devicesObserver : devicesObserverList) {
+        for (Iterator<DevicesObserver> iterator = devicesObserverList.iterator(); iterator.hasNext(); ) {
+            DevicesObserver devicesObserver = iterator.next();
             if (!devicesObserver.credentialsList.containsKey(credentials.deviceUID)) continue;
             devicesObserver.credentialsList.remove(credentials.deviceUID);
             devicesObserver.failed.add(credentials);
-            checkObserverFinished(devicesObserver);
+            checkObserverFinished(iterator, devicesObserver);
         }
     }
 
@@ -194,7 +192,13 @@ public class DeviceQuery {
                 dataService.connections.put(l);
             }
         }
-        checkObserverFinished(devicesObserver);
+
+        for (Iterator<DevicesObserver> iterator = devicesObserverList.iterator(); iterator.hasNext(); ) {
+            if (iterator.next() == devicesObserver) {
+                checkObserverFinished(iterator, devicesObserver);
+                break;
+            }
+        }
     }
 
     /**
@@ -287,7 +291,12 @@ public class DeviceQuery {
                 }
                 case MSG_RECHECK_MINIMUM_TIME: {
                     DevicesObserver devicesObserver = (DevicesObserver) msg.obj;
-                    checkObserverFinished(devicesObserver);
+                    for (Iterator<DevicesObserver> iterator = devicesObserverList.iterator(); iterator.hasNext(); ) {
+                        if (iterator.next() == devicesObserver) {
+                            checkObserverFinished(iterator, devicesObserver);
+                            break;
+                        }
+                    }
                     break;
                 }
                 case MSG_RESPONSE: {

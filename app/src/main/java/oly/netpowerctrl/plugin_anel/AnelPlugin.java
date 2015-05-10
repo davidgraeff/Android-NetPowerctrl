@@ -155,7 +155,8 @@ final public class AnelPlugin extends AbstractBasePlugin {
         for (int id = 1; id <= 8; ++id) {
             Executable oi = dataService.executables.findByUID(makeExecutableUID(credentials.deviceUID, id));
             if (oi == null) {
-                Log.e(getPluginID(), "executeDeviceBatch. Did not find " + makeExecutableUID(credentials.deviceUID, id) + " " + credentials.getDeviceName());
+                // For Anel devices with only 3 outputs we will run into this case
+                //Log.e(getPluginID(), "executeDeviceBatch. Did not find " + makeExecutableUID(credentials.deviceUID, id) + " " + credentials.getDeviceName());
                 continue;
             }
             if (oi.current_value == 0) // Only take "ON" commands into account for the bulk change byte

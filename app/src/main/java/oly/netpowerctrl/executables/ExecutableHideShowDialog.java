@@ -70,7 +70,7 @@ public class ExecutableHideShowDialog extends DialogFragment implements Recycler
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         dataService = DataService.getService();
 
-        Dialog dialog = new com.rey.material.app.Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity());
         dialog.setTitle(R.string.device_shown_actions);
         dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.positiveActionClickListener(new View.OnClickListener() {

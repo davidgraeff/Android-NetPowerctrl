@@ -48,6 +48,7 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneElementsAddDialog;
 import oly.netpowerctrl.scenes.SceneElementsAssigning;
+import oly.netpowerctrl.scenes.SceneHelp;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerAdapter;
 import oly.netpowerctrl.timer.TimerEditFragmentDialog;
@@ -279,6 +280,14 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
                     }
                 } else
                     save_and_close();
+            }
+        });
+
+        View btnHelp = findViewById(R.id.btnHelp);
+        btnHelp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SceneHelp.showHelp(EditActivity.this);
             }
         });
 

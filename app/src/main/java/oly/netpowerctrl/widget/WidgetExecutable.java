@@ -57,14 +57,14 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
             executable = dataService.executables.findByUID(executableID);
         }
         Credentials credentials = null;
-        if (executable != null) {
-            credentials = dataService.credentials.findByUID(executable.deviceUID);
 
+        if (executable != null) {
             if (executable instanceof Scene) {
                 Executable master = dataService.executables.findByUID(((Scene) executable).getMasterExecutableUid());
                 if (master != null)
                     credentials = dataService.credentials.findByUID(master.deviceUID);
-            }
+            } else
+                credentials = dataService.credentials.findByUID(executable.deviceUID);
         }
 
         if (executable == null) {

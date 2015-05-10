@@ -112,7 +112,7 @@ public class LogDialog extends DialogFragment implements Logging.LogChanged, Swi
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         isDialog = true;
-        Dialog dialog = new com.rey.material.app.Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity());
         dialog.setTitle(R.string.device_shown_actions);
         dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.positiveActionClickListener(new View.OnClickListener() {

@@ -302,8 +302,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="device_timeout">Verbindungszeit überschritten, abgebrochen</string>
     <string name="jump_to_group">Springe zu Gruppe</string>
     <string name="scene">Szene</string>
-    <string name="help_scene">Eine Szene kombiniert mehrere Aktionen und kann mit einem Namen und einem Icon versehen werden.
-    Lege die Kopie einer Szene auf deinem Homescreen ab und führe diese von dort direkt aus.\nMache eine Szene zu einem Favoriten, so wird sie im Navigationsmenü aufgelistet. Wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
+    <string name="help_scene">Diese Hilfe erreichst du auch im Szenendialog.\n\nDie App bietet dir die Möglichkeit mehrere Schaltaktionen zugleich auszuführen. Diese Bündelung wird hier Szene genannt. Eine Schaltaktion kann das Einschalten, Ausschalten oder Umschalten einer Steckdose etc sein.
+    \n\nAuf dem Homescreen:\nLege die Kopie oder Verknüpfung einer Szene auf deinem Launcher ab und führe die Szene von dort direkt aus.\n\nSchnellzugriff:\nMache eine Szene zu einem Favoriten und wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
     \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
     </string>
     <string name="open_google_market">Google Play</string>
