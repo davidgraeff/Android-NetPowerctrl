@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
+import oly.netpowerctrl.scenes.adapter.SceneElementsAdapter;
 
 /**
  * Created by david on 22.10.14.
@@ -19,7 +20,7 @@ public class SceneFactory {
         for (ExecutableAdapterItem info : adapter.mItems) {
             if (info.getExecutable() == null) // skip header items
                 continue;
-            list_of_scene_items.add(new SceneItem(info.getExecutableUid(), info.getCommand_value()));
+            list_of_scene_items.add(new SceneItem(info.getExecutableUid(), info.getCommandValue()));
         }
         return list_of_scene_items;
     }

@@ -27,7 +27,7 @@
             android:text="@string/groups_assigned"
             android:textAppearance="@android:style/TextAppearance.Large" />
 
-        <com.wefika.flowlayout.FlowLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <com.wefika.flowlayout.FlowLayout
             android:id="@+id/groups_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -1,74 +1,43 @@
 package oly.netpowerctrl.scenes;
 
-import android.content.Context;
 import android.view.View;
 
 import com.wefika.flowlayout.FlowLayout;
 
-import oly.netpowerctrl.R;
+import java.util.Set;
+
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
-import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
 import oly.netpowerctrl.executables.adapter.InputExecutables;
+import oly.netpowerctrl.scenes.adapter.SceneElementsAdapter;
+import oly.netpowerctrl.scenes.adapter.SceneElementsInFlowLayout;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
-import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
-
-;
 
 /**
- * Created by david on 23.12.14.
+ * For all scene element related functionality. The SceneElementsAddDialog is used for selecting
+ * elements that are not part of the given Scene and uses the availableData and includedData
+ * objects for that purpose.
+ * Already included scene elements are shown by a flow layout encapsulated in SceneElementsInFlowLayout.
+ *
  */
-public class SceneElementsAssigning {
-    private RecyclerViewWithAdapter<ExecutablesAdapter> availableElements;
+public class SceneElementsAssigning implements RecyclerItemClickListener.OnItemClickListener {
+    private final SceneElementsChanged sceneElementsChanged;
     private SceneElementsInFlowLayout sceneElements;
     private AdapterSource availableData;
     private SceneElementsAdapter includedData;
 
-    public SceneElementsAssigning(Context context, final DataService dataService, FlowLayout layout_included, View available,
-                                  final SceneElementsChanged sceneElementsChanged, Scene scene) {
+    public SceneElementsAssigning(final DataService dataService, FlowLayout layout_included,
+                                  SceneElementsChanged sceneElementsChanged, Scene scene) {
+        this.sceneElementsChanged = sceneElementsChanged;
         availableData = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
         availableData.addInput(new InputExecutables());
-        final ExecutablesAdapter adapter_available =
-                new ExecutablesAdapter(availableData, LoadStoreIconData.iconLoadingThread, R.layout.list_item_available_outlet);
         includedData = new SceneElementsAdapter();
 
-        sceneElements = new SceneElementsInFlowLayout(layout_included,
-                includedData, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public boolean onItemClick(View view, int position, boolean isLongClick) {
-                availableData.addItem(includedData.take(position).getExecutable(), Executable.TOGGLE);
-                sceneElementsChanged.onSceneElementsChanged();
-                return true;
-            }
-        });
-        availableElements = new RecyclerViewWithAdapter<>(context,
-                available, adapter_available, R.string.scene_create_helptext_available);
-
-
-        // Add click listener to available list to move the clicked action
-        // to the included list.
-        availableElements.setOnItemClickListener(new RecyclerItemClickListener(context, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public boolean onItemClick(View view, int position, boolean isLongClick) {
-                Executable executable = availableData.getItem(position).getExecutable();
-                if (executable == null)
-                    return false;
-                if (dataService.executables.findByUID(executable.getUid()) != executable) {
-                    throw new RuntimeException("DevicePort not equal!");
-                }
-                availableData.removeAt(position);
-                includedData.addItem(executable, Executable.TOGGLE);
-                sceneElementsChanged.onSceneElementsChanged();
-                return true;
-            }
-        }, null));
+        sceneElements = new SceneElementsInFlowLayout(layout_included, includedData, this);
 
         includedData.loadItemsOfScene(dataService, scene);
-        includedData.setMasterOfScene(scene);
-        includedData.notifyDataSetChanged();
 
         // ToBeRemoved will be an ordered list of indecies to be removed
         int[] toBeRemoved = new int[availableData.mItems.size()];
@@ -87,9 +56,34 @@ public class SceneElementsAssigning {
             availableData.removeAt(toBeRemoved[i]);
     }
 
+    @Override
+    public boolean onItemClick(View view, int position, boolean isLongClick) {
+        availableData.addItem(includedData.take(position).getExecutable(), Executable.TOGGLE);
+        sceneElementsChanged.onSceneElementsChanged();
+        return true;
+    }
+
     public void applyToScene(Scene scene) {
         scene.sceneItems = SceneFactory.sceneItemsFromList(includedData);
-        scene.setMaster(includedData.getMaster());
+        scene.setMaster(includedData.getMasterExecutable());
+    }
+
+    public AdapterSource getAdaperSourceAvailable() {
+        return availableData;
+    }
+
+    public void addToScene(Set<String> executableUIDSet) {
+        for (String executableUID : executableUIDSet) {
+            int pos = availableData.findPositionByUUid(executableUID);
+            Executable executable = availableData.getItem(pos).getExecutable();
+            availableData.removeAt(pos);
+            includedData.addItem(executable, Executable.TOGGLE);
+            sceneElementsChanged.onSceneElementsChanged();
+        }
+    }
+
+    public boolean hasElements() {
+        return includedData.getItemCount() > 0;
     }
 
     public interface SceneElementsChanged {

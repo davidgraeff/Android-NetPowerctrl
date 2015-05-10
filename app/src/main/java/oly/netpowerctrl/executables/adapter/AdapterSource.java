@@ -22,7 +22,6 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
     private final List<AdapterInput> sourceInputs = new ArrayList<>();
     private final List<AdapterFilter> mFilters = new ArrayList<>();
     protected int mNextId = 0; // we need stable IDs
-    protected onChange onChangeListener = null;
     Executable ignoreUpdatesExecutable;
     private ExecutablesAdapter adapter;
     private boolean automaticUpdatesEnabled = false;
@@ -74,8 +73,7 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
     public void addItem(Executable executable, int command_value) {
         boolean empty = mItems.isEmpty();
 
-        for (AdapterFilter filter : mFilters)
-            if (filter.filter(executable)) return;
+        if (filtered(executable)) return;
 
         if (!mShowHeaders || executable.getGroupUIDs().isEmpty())
             addItemToGroup(executable, command_value, 0);
@@ -93,6 +91,17 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
         }
 
         if (empty) emptyListener.onEmptyListener(false);
+    }
+
+    /**
+     * Return true if the given item would be filtered out.
+     * @param executable The executable
+     * @return True if filtered
+     */
+    public boolean filtered(Executable executable) {
+        for (AdapterFilter filter : mFilters)
+            if (filter.filter(executable)) return true;
+        return false;
     }
 
     /**
@@ -264,24 +273,12 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
         ignoreUpdatesExecutable = executable;
     }
 
-    /**
-     * Call this from your AdapterInput if you changed data in the adapter.
-     */
-    void sourceChanged() {
-        if (onChangeListener != null)
-            onChangeListener.sourceChanged();
-    }
-
     public DataService getPluginService() {
         return PluginServiceWeakReference.get();
     }
 
     public ExecutablesAdapter getAdapter() {
         return adapter;
-    }
-
-    final public void setOnChangeListener(onChange onChangeListener) {
-        this.onChangeListener = onChangeListener;
     }
 
     /**
@@ -332,11 +329,10 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
 
         removeAllMarked();
 
-        if (adapter.getItemCount() == 0)
+        if (mItems.isEmpty()) {
             adapter.notifyDataSetChanged();
-
-        if (onChangeListener != null)
-            onChangeListener.sourceChanged();
+            emptyListener.onEmptyListener(true);
+        }
     }
 
     public void addInput(AdapterInput... inputs) {
@@ -360,9 +356,5 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
 
     public enum AutoStartEnum {
         AutoStartOnServiceReady, AutoStartAfterFirstQuery, ManualCallToStart
-    }
-
-    public interface onChange {
-        void sourceChanged();
     }
 }

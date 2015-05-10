@@ -1,4 +1,4 @@
-package oly.netpowerctrl.anel;
+package oly.netpowerctrl.plugin_anel;
 
 import android.util.Log;
 

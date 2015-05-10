@@ -1,9 +1,9 @@
 package oly.netpowerctrl.tests;
 
-import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.LoadStoreCollections;
 import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.plugin_anel.AnelPlugin;
 
 ;
 

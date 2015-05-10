@@ -10,7 +10,7 @@ public abstract class WakeLocker {
         if (wakeLock != null) wakeLock.release();
 
         PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK |
                 PowerManager.ACQUIRE_CAUSES_WAKEUP |
                 PowerManager.ON_AFTER_RELEASE, "smart_power_control");
         wakeLock.acquire();

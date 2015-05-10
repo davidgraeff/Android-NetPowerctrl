@@ -15,7 +15,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
-import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Logging;
@@ -59,9 +58,10 @@ public class UDPSend extends Thread {
         start();
     }
 
-    public static void createBroadcast(DataService dataService, byte[] message, int errorID) {
+    public static void createBroadcast(Set<Integer> ports, byte[] message, int errorID) {
+        if (ports.isEmpty()) return;
         UDPSend udpSend = new UDPSend(message, errorID);
-        udpSend.ports = dataService.connections.getAllSendPorts();
+        udpSend.ports = ports;
         udpSend.broadcast = true;
         udpSend.start();
     }

@@ -54,7 +54,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                                     _child.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                                 else
                                     _child.playSoundEffect(SoundEffectConstants.CLICK);
-                                return mListenerClick.onItemClick(_child, view.getChildPosition(cView), isLongClick);
+                                return mListenerClick.onItemClick(_child, view.getChildAdapterPosition(cView), isLongClick);
                             }
                         }
                     }
@@ -64,7 +64,7 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                         childView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                     else
                         childView.playSoundEffect(SoundEffectConstants.CLICK);
-                    return mListenerClick.onItemClick(childView, view.getChildPosition(childView), isLongClick);
+                    return mListenerClick.onItemClick(childView, view.getChildAdapterPosition(childView), isLongClick);
                 }
                 return false;
             }
@@ -76,16 +76,12 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
                         && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                     View cView = view.findChildViewUnder(e1.getX(), e1.getY());
                     if (cView == null) return false;
-                    mListenerFling.onFling(cView, view.getChildPosition(cView), distance);
+                    mListenerFling.onFling(cView, view.getChildAdapterPosition(cView), distance);
                     return true;
                 }
                 return false;
             }
         });
-    }
-
-    public RecyclerView getRecyclerView() {
-        return view;
     }
 
     @Override
@@ -103,10 +99,10 @@ public class RecyclerItemClickListener implements RecyclerView.OnItemTouchListen
     }
 
     public interface OnItemClickListener {
-        public boolean onItemClick(View view, int position, boolean isLongClick);
+        boolean onItemClick(View view, int position, boolean isLongClick);
     }
 
     public interface OnItemFlingListener {
-        public void onFling(View view, int position, float distance);
+        void onFling(View view, int position, float distance);
     }
 }

@@ -1,6 +1,7 @@
 package oly.netpowerctrl.executables.adapter;
 
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.widget.SeekBar;
 
 import oly.netpowerctrl.R;
@@ -12,6 +13,7 @@ public class ExecutablesEditableAdapter extends ExecutablesAdapter implements
         SeekBar.OnSeekBarChangeListener {
 
     // We block updates while moving the range slider
+    @SuppressWarnings("unused")
     private static final String TAG = "ExecuteAdapter";
     private final Drawable editModeDrawable;
     private boolean editMode = false;
@@ -19,7 +21,7 @@ public class ExecutablesEditableAdapter extends ExecutablesAdapter implements
     public ExecutablesEditableAdapter(AdapterSource source,
                                       IconDeferredLoadingThread iconCache) {
         super(source, iconCache, R.layout.list_item_executable);
-        editModeDrawable = App.instance.getResources().getDrawable(android.R.drawable.ic_menu_edit);
+        editModeDrawable = ContextCompat.getDrawable(App.instance, android.R.drawable.ic_menu_edit);
     }
 
     @Override

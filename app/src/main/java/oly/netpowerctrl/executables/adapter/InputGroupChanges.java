@@ -44,9 +44,7 @@ public class InputGroupChanges extends AdapterInput implements onCollectionUpdat
         }
 
         if (action == ObserverUpdateActions.UpdateAction) { // if a group is renamed just update existing items
-            Group group = (item);
-            updateGroupName(group.uid, group.name);
-            adapterSource.sourceChanged();
+            updateGroupName(item.uid, item.name);
         } else // make complete update if a group is removed or added or if an item is added to one or more groups.
             adapterSource.updateNow();
         return true;

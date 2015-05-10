@@ -15,6 +15,8 @@ import java.util.UUID;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.onServiceReady;
+import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.executables.ExecutableType;
@@ -25,26 +27,43 @@ import oly.netpowerctrl.utils.IOInterface;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 
-;
-
 public class Scene extends Executable implements IOInterface {
     private static final String TAG = "SCENE";
-    private static long nextStableID = 0;
-    //public Bitmap bitmap = null;
-    public final long id = nextStableID++;
     public List<SceneItem> sceneItems = new ArrayList<>();
     private String uuid_master = null;
     private ReachabilityStates reachable = ReachabilityStates.MaybeReachable;
+    private int last_hash_code_master = 0;
 
     public onCollectionUpdated<ExecutableCollection, Executable> executableObserver = new onCollectionUpdated<ExecutableCollection, Executable>() {
         @Override
         public boolean updated(@NonNull ExecutableCollection c, @Nullable Executable executable, @NonNull ObserverUpdateActions action) {
-            if (executable == null || (action != ObserverUpdateActions.UpdateAction && action != ObserverUpdateActions.UpdateReachableAction))
-                return true;
+            if (executable == null || !uuid_master.equals(executable.getUid())) return true;
 
-            if (getMasterExecutableUid().equals(executable.getUid()) && reachable != executable.reachableState()) {
-                reachable = executable.reachableState();
-                c.put(Scene.this);
+            switch (action) {
+                case UpdateAction:
+                    reachable = executable.reachableState();
+                    current_value = executable.current_value;
+                    max_value = executable.max_value;
+                    min_value = executable.min_value;
+                    last_hash_code_master = executable.computeChangedCode();
+                    c.put(Scene.this);
+                    break;
+                case UpdateReachableAction:
+                    if (reachable != executable.reachableState()) {
+                        reachable = executable.reachableState();
+                        c.notifyReachability(Scene.this, reachable);
+                    }
+                    break;
+                case RemoveAction:
+                    // set master:=null if master executable is removed.
+                    App.getMainThreadHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // do this out of the updated(...) context, because we will call unregisterObserver
+                            updateMaster(null);
+                        }
+                    });
+                    break;
             }
             return true;
         }
@@ -64,13 +83,18 @@ public class Scene extends Executable implements IOInterface {
         return scene;
     }
 
+    @Override
+    public int computeChangedCode() {
+        return super.computeChangedCode() + last_hash_code_master;
+    }
+
     /**
      * Notice: Only call this method if the NetpowerctrlService service is running!
      *
      * @param dataService DataService
      * @param callback    The callback for the execution-done messages
      */
-    public void execute(@NonNull final DataService dataService, final onExecutionFinished callback) {
+    public void execute(@NonNull final DataService dataService, @Nullable final onExecutionFinished callback) {
         List<AbstractBasePlugin> abstractBasePlugins = new ArrayList<>();
 
         // Master/Slave
@@ -83,11 +107,11 @@ public class Scene extends Executable implements IOInterface {
                 master_command = masterItem.command;
             } else {
                 // If the command is toggle, we have to find out the final command.
-                Executable port = dataService.executables.findByUID(masterItem.uuid);
-                if (port == null)
+                Executable masterExecutable = dataService.executables.findByUID(masterItem.uuid);
+                if (masterExecutable == null)
                     master_command = Executable.INVALID;
                 else
-                    master_command = port.getCurrentValueToggled();
+                    master_command = masterExecutable.getCurrentValueToggled();
             }
         }
 
@@ -101,7 +125,13 @@ public class Scene extends Executable implements IOInterface {
 
             ++countValidSceneItems;
 
-            AbstractBasePlugin remote = executable.getCredentials().getPlugin();
+            Credentials credentials = executable.getCredentials();
+            if (credentials == null) {
+                Log.e(TAG, "Execute scene, credentials not found " + item.uuid);
+                continue;
+            }
+
+            AbstractBasePlugin remote = credentials.getPlugin();
             if (remote == null) {
                 Log.e(TAG, "Execute scene, PluginInterface not found " + item.uuid);
                 continue;
@@ -117,7 +147,8 @@ public class Scene extends Executable implements IOInterface {
                 abstractBasePlugins.add(remote);
         }
 
-        callback.addExpected(countValidSceneItems);
+        if (callback != null)
+            callback.addExpected(countValidSceneItems);
 
         for (AbstractBasePlugin p : abstractBasePlugins) {
             p.executeTransaction(callback);
@@ -137,10 +168,43 @@ public class Scene extends Executable implements IOInterface {
         this.uuid_master = uuid_master;
         if (isMasterSlave()) {
             ui_type = ExecutableType.TypeToggle;
-            DataService.getService().executables.registerObserver(executableObserver);
+            DataService.observersServiceReady.register(new onServiceReady() {
+                @Override
+                public boolean onServiceReady(DataService dataService) {
+                    dataService.executables.registerObserver(executableObserver);
+                    Executable masterExecutable = dataService.executables.findByUID(Scene.this.uuid_master);
+                    if (masterExecutable == null)
+                        updateMaster(null);
+                    else {
+                        reachable = masterExecutable.reachableState();
+                        current_value = masterExecutable.current_value;
+                        max_value = masterExecutable.max_value;
+                        min_value = masterExecutable.min_value;
+                        last_hash_code_master = masterExecutable.computeChangedCode();
+                    }
+                    return false;
+                }
+
+                @Override
+                public void onServiceFinished(DataService service) {
+
+                }
+            });
         } else {
+            last_hash_code_master = 0;
             ui_type = ExecutableType.TypeStateless;
-            DataService.getService().executables.unregisterObserver(executableObserver);
+            DataService.observersServiceReady.register(new onServiceReady() {
+                @Override
+                public boolean onServiceReady(DataService service) {
+                    service.executables.unregisterObserver(executableObserver);
+                    return false;
+                }
+
+                @Override
+                public void onServiceFinished(DataService service) {
+
+                }
+            });
         }
     }
 
@@ -176,11 +240,11 @@ public class Scene extends Executable implements IOInterface {
         if (getSceneItem(uuid_master) != null)
             writer.name("uuid_master").value(uuid_master);
 
-        writer.name("groupItems").beginArray();
+        writer.name("items").beginArray();
         for (SceneItem c : sceneItems) {
             writer.beginObject();
             writer.name("uid").value(c.uuid);
-            writer.name("name").value(c.command);
+            writer.name("command").value(c.command);
             writer.endObject();
         }
         writer.endArray();
@@ -201,7 +265,7 @@ public class Scene extends Executable implements IOInterface {
             case "uuid_master":
                 updateMaster(reader.nextString());
                 break;
-            case "groupItems":
+            case "items":
                 reader.beginArray();
                 while (reader.hasNext()) {
                     reader.beginObject();
@@ -210,7 +274,7 @@ public class Scene extends Executable implements IOInterface {
                         String nameSceneItem = reader.nextName();
                         assert nameSceneItem != null;
                         switch (nameSceneItem) {
-                            case "name":
+                            case "command":
                                 item.command = reader.nextInt();
                                 break;
                             case "uid":
@@ -247,4 +311,7 @@ public class Scene extends Executable implements IOInterface {
         return reachable;
     }
 
+    public boolean needCredentials() {
+        return false;
+    }
 }

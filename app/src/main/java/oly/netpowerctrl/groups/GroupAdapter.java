@@ -32,8 +32,12 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         }
     };
 
-    public GroupAdapter(boolean showAllEntry) {
+    public GroupAdapter(boolean showAllEntry, EmptyListener emptyListener) {
+        this.emptyListener = emptyListener;
         this.showAllEntry = showAllEntry;
+    }
+
+    public void start() {
         DataService.observersServiceReady.register(this);
     }
 
@@ -160,10 +164,6 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         selectedItemPosition = pos;
         if (pos == -1) return;
         notifyItemChanged(pos);
-    }
-
-    public void setEmptyListener(EmptyListener emptyListener) {
-        this.emptyListener = emptyListener;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

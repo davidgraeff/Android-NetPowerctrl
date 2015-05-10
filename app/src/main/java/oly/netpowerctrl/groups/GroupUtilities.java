@@ -2,9 +2,9 @@ package oly.netpowerctrl.groups;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.RelativeLayout;
 
 import com.rey.material.app.Dialog;
 import com.rey.material.app.SimpleDialog;
@@ -24,16 +24,18 @@ import oly.netpowerctrl.ui.FragmentUtils;
  */
 public class GroupUtilities {
 
-    public static void addGroupCheckBoxesToLayout(Context context, GroupCollection groupCollection, FlowLayout layout,
+    public static void addGroupCheckBoxesToLayout(GroupCollection groupCollection, FlowLayout layout,
                                                   Set<String> listOfGroupsPreChecked, final Set<String> checked_groups,
-                                                       final CompoundButton.OnCheckedChangeListener checkedChangeListener) {
+                                                  final CompoundButton.OnCheckedChangeListener checkedChangeListener) {
+
+        LayoutInflater l = LayoutInflater.from(layout.getContext());
 
         for (final Group group : groupCollection.getItems().values()) {
             boolean isContained = listOfGroupsPreChecked.contains(group.getUid());
             if (isContained)
                 checked_groups.add(group.getUid());
 
-            CheckBox p = new CheckBox(context);
+            CheckBox p = (CheckBox) l.inflate(R.layout.executable_group, layout, false);
             p.setChecked(isContained);
             // The first entry of weekDays_Strings is an empty string
             p.setText(group.name);
@@ -49,9 +51,7 @@ public class GroupUtilities {
                         checkedChangeListener.onCheckedChanged(compoundButton, b);
                 }
             });
-            FlowLayout.LayoutParams lp = new FlowLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            layout.addView(p, lp);
+            layout.addView(p);
         }
     }
 

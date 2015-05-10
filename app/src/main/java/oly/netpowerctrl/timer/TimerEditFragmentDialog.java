@@ -124,8 +124,10 @@ public class TimerEditFragmentDialog extends DialogFragment implements onHttpReq
                 sp.setCurrentHour(Timer.getHour(timer.hour_minute));
                 sp.setCurrentMinute(Timer.getMinute(timer.hour_minute));
             } else if (timer.absolute_date != null) {
-                sp.setCurrentHour(timer.absolute_date.getHours());
-                sp.setCurrentMinute(timer.absolute_date.getMinutes());
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(timer.absolute_date);
+                sp.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
+                sp.setCurrentMinute(calendar.get(Calendar.MINUTE));
             }
         }
 

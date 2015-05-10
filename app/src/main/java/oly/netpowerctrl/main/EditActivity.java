@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -12,20 +11,16 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -51,6 +46,7 @@ import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.Scene;
+import oly.netpowerctrl.scenes.SceneElementsAddDialog;
 import oly.netpowerctrl.scenes.SceneElementsAssigning;
 import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.timer.TimerAdapter;
@@ -112,9 +108,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     // Other
     private Toast toast;
     private boolean iconMenuVisible = false;
-    private boolean addMenuVisible = false;
     private int load_adapter_position = -1;
-    private FloatingActionButton btnAdd;
+    private View btnAdd;
     private ProgressDialog progressDialog;
     private View scene_items_view;
 
@@ -150,28 +145,13 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         scene_items_view = findViewById(R.id.items_container);
 
-        btnAdd = (FloatingActionButton) findViewById(R.id.btnAdd);
+        btnAdd = findViewById(R.id.btnAdd);
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addMenuVisible = !addMenuVisible;
-                View available_view = findViewById(R.id.available);
-                if (addMenuVisible) {
-                    scene_items_view.setTag(scene_items_view.getHeight());
-                    btnAdd.setLineMorphingState(1, true);
-                    ResizeAnimation resizeAnimation = new ResizeAnimation(scene_items_view, available_view.getHeight());
-                    resizeAnimation.setDuration(600);
-                    scene_items_view.startAnimation(resizeAnimation);
-                    AnimationController.animateBottomViewIn(available_view, false);
-                } else {
-                    scene_items_view.setTranslationY(0);
-                    ResizeAnimation resizeAnimation = new ResizeAnimation(scene_items_view, (Integer) scene_items_view.getTag());
-                    resizeAnimation.setDuration(600);
-                    scene_items_view.startAnimation(resizeAnimation);
-
-                    btnAdd.setLineMorphingState(0, true);
-                    AnimationController.animateBottomViewOut(available_view);
-                }
+                SceneElementsAddDialog dialog = new SceneElementsAddDialog();
+                dialog.setSceneElementsAssigning(sceneElementsAssigning);
+                FragmentUtils.changeToDialog(EditActivity.this, dialog);
             }
         });
 
@@ -375,9 +355,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     }
 
     private void updateFavButton() {
-        Resources r = getResources();
-        btnFav.setImageDrawable(isFavourite ? r.getDrawable(android.R.drawable.btn_star_big_on)
-                : r.getDrawable(android.R.drawable.btn_star_big_off));
+        btnFav.setImageDrawable(isFavourite ? ContextCompat.getDrawable(this, android.R.drawable.btn_star_big_on)
+                : ContextCompat.getDrawable(this, android.R.drawable.btn_star_big_off));
     }
 
     @Override
@@ -455,8 +434,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         } else {
             getSupportActionBar().setSubtitle(R.string.title_scene_create);
         }
-        sceneElementsAssigning = new SceneElementsAssigning(this, dataService, (FlowLayout) findViewById(R.id.included),
-                findViewById(R.id.available), new SceneElementsAssigning.SceneElementsChanged() {
+        sceneElementsAssigning = new SceneElementsAssigning(dataService, (FlowLayout) findViewById(R.id.included),
+                new SceneElementsAssigning.SceneElementsChanged() {
             @Override
             public void onSceneElementsChanged() {
                 isChanged = true;
@@ -482,8 +461,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         mEditType = executable instanceof Scene ? EDIT_TYPE_SCENE : EDIT_TYPE_DEVICE_PORT;
 
         if (mEditType == EDIT_TYPE_SCENE) {
-            sceneElementsAssigning = new SceneElementsAssigning(this, dataService, (FlowLayout) findViewById(R.id.included),
-                    findViewById(R.id.available), new SceneElementsAssigning.SceneElementsChanged() {
+            sceneElementsAssigning = new SceneElementsAssigning(dataService, (FlowLayout) findViewById(R.id.included),
+                    new SceneElementsAssigning.SceneElementsChanged() {
                 @Override
                 public void onSceneElementsChanged() {
                     isChanged = true;
@@ -494,11 +473,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         } else {
             getSupportActionBar().setSubtitle(getString(R.string.outlet_edit_title, executable.getTitle()));
             scene_items_view.setVisibility(View.GONE);
-            // Workaround: We do not use that this RecyclerView if we edit a DevicePort
-            // but the component will crash (android 4.4.4) if no layout manager is defined on onDestroy.
-            RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.available).findViewById(android.R.id.list);
-            mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             btnAdd.setVisibility(View.GONE);
             executable_timers.setVisibility(View.VISIBLE);
             timerAdapter.start(dataService.timers, executable);
@@ -558,7 +532,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
     private void updateGroups(GroupCollection groupCollection) {
         groups_layout.removeAllViews();
-        GroupUtilities.addGroupCheckBoxesToLayout(this, groupCollection, groups_layout, executable.getGroupUIDs(), checked_groups,
+        GroupUtilities.addGroupCheckBoxesToLayout(groupCollection, groups_layout, executable.getGroupUIDs(), checked_groups,
                 new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -579,25 +553,23 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         // Save name + scene elements
         if (mEditType != EDIT_TYPE_DEVICE_PORT) {
+            if (!sceneElementsAssigning.hasElements()) {
+                Toast.makeText(this, R.string.error_scene_no_actions, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             Scene scene = (Scene) executable;
+
+            // Generate list of checked items
+            sceneElementsAssigning.applyToScene(scene);
+
             if (scene.length() == 0) {
                 Toast.makeText(this, R.string.error_scene_no_actions, Toast.LENGTH_SHORT).show();
                 return;
             }
-            // Generate list of checked items
-            sceneElementsAssigning.applyToScene((Scene) executable);
         }
 
-        if (executable.getCredentials() != null) {
-            if (progressDialog == null)
-                progressDialog = new ProgressDialog(this);
-
-            progressDialog.setTitle(R.string.renameInProgress);
-            progressDialog.setIndeterminate(true);
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-            executable.setTitle(newName, this);
-        } else executable.title = newName;
+        executable.setTitle(newName, this);
 
         if (mEditType == EDIT_TYPE_SHORTCUT) {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditActivity.this,
@@ -661,16 +633,16 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     private void updateSaveButton() {
         if (isLoaded && !isChanged) {
             btnSaveOrTrash.setVisibility(mEditType == EDIT_TYPE_SCENE ? View.VISIBLE : View.GONE);
-            btnSaveOrTrash.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_delete), btnSaveOrTrash.getIcon() != null);
+            btnSaveOrTrash.setIcon(ContextCompat.getDrawable(this, android.R.drawable.ic_menu_delete), btnSaveOrTrash.getIcon() != null);
             return;
         }
         String newName = ((EditText) findViewById(R.id.scene_name)).getText().toString().trim();
         boolean en = newName.length() > 0;
-        if (mEditType != EDIT_TYPE_DEVICE_PORT) en &= ((Scene) executable).length() > 0;
-        Resources r = getResources();
+        if (mEditType != EDIT_TYPE_DEVICE_PORT) en &= sceneElementsAssigning.hasElements();
+
         btnSaveOrTrash.setVisibility(View.VISIBLE);
-        btnSaveOrTrash.setIcon(en ? r.getDrawable(android.R.drawable.ic_menu_save) :
-                r.getDrawable(R.drawable.btn_save_disabled), btnSaveOrTrash.getIcon() != null);
+        btnSaveOrTrash.setIcon(en ? ContextCompat.getDrawable(this, android.R.drawable.ic_menu_save) :
+                ContextCompat.getDrawable(this, R.drawable.btn_save_disabled), btnSaveOrTrash.getIcon() != null);
     }
 
     @Override
@@ -694,33 +666,14 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         }
     }
 
-    public class ResizeAnimation extends Animation {
-        final int startHeight;
-        final int targetHeight;
-        View view;
+    @Override
+    public void onNameChangeStart(Executable executable) {
+        if (progressDialog == null)
+            progressDialog = new ProgressDialog(this);
 
-        public ResizeAnimation(View view, int targetHeight) {
-            this.view = view;
-            this.targetHeight = targetHeight;
-            startHeight = view.getHeight();
-        }
-
-        @Override
-        protected void applyTransformation(float interpolatedTime, Transformation t) {
-            float diff = (targetHeight - startHeight) * interpolatedTime;
-            view.getLayoutParams().height = (int) (startHeight + diff);
-            view.requestLayout();
-            view.setTranslationY(-diff);
-        }
-
-        @Override
-        public void initialize(int width, int height, int parentWidth, int parentHeight) {
-            super.initialize(width, height, parentWidth, parentHeight);
-        }
-
-        @Override
-        public boolean willChangeBounds() {
-            return true;
-        }
+        progressDialog.setTitle(R.string.renameInProgress);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setCancelable(false);
+        progressDialog.show();
     }
 }

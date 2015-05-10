@@ -150,8 +150,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="toggleSlave">Wie Master</string>
     <string name="menu_outlet_master_slave">Als Master für…</string>
     <string name="outlet_master_slave_title">Slaves für %1$s setzen</string>
-    <string name="scene_create_available">Verfügbar</string>
-    <string name="scene_create_added">Zugewiesene Aktionen</string>
+    <string name="scene_available">Verfügbare Aktionen</string>
     <string name="preference_maximum_energy_saving_mode">Maximal Energie sparen</string>
     <string name="preference_maximum_energy_saving_mode_summary">Geräte werden nach einem Netzwechsel nicht mehr automatisch aktualisiert. Wird die App in den Hintergrund geschickt (Bild aus/Homescreen Knopf) werden umgehend alle Erweiterungen/Netzwerkkomponenten entladen. Für Mobiltelefone empfohlen.</string>
     <string name="scene_remove_item">Entferne von Szene</string>
@@ -390,4 +389,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="send_log">Senden</string>
     <string name="group_name">Name</string>
     <string name="widget_group_no_group">Bisher keine Gruppe erstellt! Erstelle in der App eine und versuche es noch einmal.</string>
+    <string name="plugin_simpleudp">SimpleUDP</string>
+    <string name="scene_add_item">Element hinzufügen</string>
 </resources>

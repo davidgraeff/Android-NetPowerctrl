@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.storage_container.CollectionManipulation;
 import oly.netpowerctrl.data.storage_container.CollectionMapItems;
@@ -20,8 +21,9 @@ import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPut;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPutHandler;
 import oly.netpowerctrl.data.storage_container.CollectionStorage;
 import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.preferences.SharedPrefs;
+import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 
 /**
@@ -97,13 +99,15 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
         ObserverUpdateActions updateActions = null;
 
         if (ioConnection.isReachabilityChanged()) {
+            // Store new reachability, reset isReachabilityChanged flag
             ioConnection.storeReachability();
-
+            // First compute reachability while isReachabilityChanged is still set to true.
+            boolean reachabilityChanged = deviceIOConnections.compute_reachability();
+            // This is at least an UpdateReachableAction now
             updateActions = ObserverUpdateActions.UpdateReachableAction;
-            // Recompute reachability
-            deviceIOConnections.compute_reachability();
             // Make executables aware of the change
-            dataService.executables.notifyReachability(ioConnection.deviceUID, deviceIOConnections.reachableState());
+            if (reachabilityChanged)
+                dataService.executables.notifyReachability(ioConnection.deviceUID, deviceIOConnections.reachableState());
         }
 
         if (ioConnection.hasChanged()) {
@@ -115,9 +119,12 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
             updateActions = deviceIOConnections.putConnection(ioConnection);
         }
 
+        // This is for notifying the DeviceQuery. We always have to do that regardless of a
+        // connectivity change of the connection.
+        dataService.notifyOfUpdatedDevice(ioConnection);
+
         if (updateActions != null) {
             notifyObservers(ioConnection, updateActions);
-            dataService.notifyOfUpdatedDevice(ioConnection);
         }
     }
 
@@ -238,15 +245,22 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
         return s.size();
     }
 
+    public ReachabilityStates getReachableState(Executable executable) {
+        DeviceIOConnections deviceIOConnections = openDevice(executable.deviceUID);
+        if (deviceIOConnections == null) return ReachabilityStates.NotReachable;
+        IOConnection ioConnection = deviceIOConnections.findReachable();
+        if (ioConnection == null) return ReachabilityStates.NotReachable;
+        return ioConnection.reachableState();
+    }
+
     //! get a list of all send ports of all configured devices plus the default send port
-    public Set<Integer> getAllSendPorts() {
+    public Set<Integer> getAllUDPSendPorts(AbstractBasePlugin plugin) {
         HashSet<Integer> ports = new HashSet<>();
-        ports.add(SharedPrefs.getInstance().getDefaultSendPort());
 
         for (DeviceIOConnections deviceIOConnections : items.values()) {
             for (Iterator<IOConnection> iterator = deviceIOConnections.iterator(); iterator.hasNext(); ) {
                 IOConnection ci = iterator.next();
-                if (ci instanceof IOConnectionUDP)
+                if (ci.credentials.getPlugin() == plugin && ci instanceof IOConnectionUDP)
                     ports.add(ci.getDestinationPort());
             }
         }
@@ -254,14 +268,13 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
     }
 
     //! get a list of all receive ports of all configured devices plus the default receive port
-    public Set<Integer> getAllReceivePorts() {
-        HashSet<Integer> ports = new HashSet<>();
-        ports.add(SharedPrefs.getInstance().getDefaultReceivePort());
+    public Set<Integer> getAllUDPReceivePorts(AbstractBasePlugin plugin) {
+        Set<Integer> ports = new HashSet<>();
 
         for (DeviceIOConnections deviceIOConnections : items.values()) {
             for (Iterator<IOConnection> iterator = deviceIOConnections.iterator(); iterator.hasNext(); ) {
                 IOConnection ci = iterator.next();
-                if (ci instanceof IOConnectionUDP)
+                if (ci.credentials.getPlugin() == plugin && ci instanceof IOConnectionUDP)
                     ports.add(((IOConnectionUDP) ci).getListenPort());
             }
         }

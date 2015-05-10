@@ -5,4 +5,6 @@ package oly.netpowerctrl.executables;
  */
 public interface onNameChangeResult {
     void onNameChangeResult(boolean success, String error_message);
+
+    void onNameChangeStart(Executable executable);
 }

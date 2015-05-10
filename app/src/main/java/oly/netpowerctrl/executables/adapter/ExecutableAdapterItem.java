@@ -34,11 +34,11 @@ public class ExecutableAdapterItem {
         this.groupType = groupTypeEnum.GROUP_TYPE;
     }
 
-    public int getCommand_value() {
+    public int getCommandValue() {
         return command_value;
     }
 
-    public void setCommand_value(int command_value) {
+    public void setCommandValue(int command_value) {
         this.command_value = command_value;
     }
 

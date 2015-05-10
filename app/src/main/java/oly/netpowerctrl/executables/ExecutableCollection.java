@@ -18,7 +18,6 @@ import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPut;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPutHandler;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.network.ReachabilityStates;
-import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 
 /**
@@ -47,7 +46,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     }
 
     private void put_test(Executable executable) {
-        if (executable.getUid() == null || (!(executable instanceof Scene) && executable.getCredentials() == null) || executable.title.isEmpty())
+        if (executable.getUid() == null || (executable.needCredentials() && executable.getCredentials() == null) || executable.title.isEmpty())
             throw new RuntimeException();
     }
 
@@ -72,7 +71,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
             if (executable == existed && !executable.hasChanged()) return;
 
             items.put(executable.getUid(), executable);
-            if (executable.getCredentials().isConfigured())
+            if (!executable.needCredentials() || executable.getCredentials().isConfigured())
                 storage.save(executable);
             notifyObservers(executable, ObserverUpdateActions.UpdateAction);
             return;
@@ -80,7 +79,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
 
         items.put(executable.getUid(), executable);
         notifyObservers(executable, ObserverUpdateActions.AddAction);
-        if (executable.getCredentials().isConfigured())
+        if (!executable.needCredentials() || executable.getCredentials().isConfigured())
             storage.save(executable);
     }
 
@@ -110,7 +109,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     public void removeOrphaned() {
         for (Iterator<Executable> iterator = items.values().iterator(); iterator.hasNext(); ) {
             Executable executable = iterator.next();
-            if (executable.getCredentials() == null) {
+            if (executable.needCredentials() && executable.getCredentials() == null) {
                 iterator.remove();
                 dataService.favourites.setFavourite(executable.getUid(), false);
             }
@@ -124,17 +123,22 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
      * @param deviceUID The device unique id
      */
     public void notifyReachability(String deviceUID, ReachabilityStates r) {
-        Log.w(TAG, "notifyReachability");
+        Log.w(TAG, "Reachability: " + r.name() + " " + deviceUID);
         for (Executable executable : items.values()) {
-            if (executable.deviceUID.equals(deviceUID) && executable.updateCachedReachability(r))
+            if (executable.needCredentials() &&
+                    executable.deviceUID.equals(deviceUID) && executable.updateCachedReachability(r))
                 notifyObservers(executable, ObserverUpdateActions.UpdateReachableAction);
         }
     }
 
+    public void notifyReachability(Executable executable, ReachabilityStates r) {
+        notifyObservers(executable, ObserverUpdateActions.UpdateReachableAction);
+    }
+
     public void applyCredentials(Credentials credentials) {
         for (Executable executable : items.values()) {
-            if (executable.deviceUID.equals(credentials.getUid())) {
-                executable.setCredentials(credentials);
+            if (executable.needCredentials() && executable.deviceUID.equals(credentials.getUid())) {
+                executable.setCredentials(credentials, dataService.connections);
             }
         }
     }

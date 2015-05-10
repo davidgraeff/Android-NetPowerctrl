@@ -1,6 +1,7 @@
 package oly.netpowerctrl.executables;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 
@@ -13,6 +14,7 @@ import java.util.TreeSet;
 
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.ioconnection.IOConnectionsCollection;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.utils.IOInterface;
@@ -48,7 +50,7 @@ public class Executable implements Comparable, IOInterface {
     protected boolean hidden = false;
 
     ////// Cached values
-    private int last_hash_code = 0;
+    protected int last_hash_code = 0;
     // Used to disable control in list until ack from device has been received.
     private boolean cached_executionInProgress;
     private Credentials credentials;
@@ -64,7 +66,7 @@ public class Executable implements Comparable, IOInterface {
      * @param command     The command to executeToggle
      * @param callback    The callback for the execution-done messages
      */
-    public void execute(@NonNull final DataService dataService, final int command, final onExecutionFinished callback) {
+    public void execute(@NonNull final DataService dataService, final int command, @Nullable final onExecutionFinished callback) {
         if (credentials != null) {
             credentials.getPlugin().execute(this, command, callback);
         } else {
@@ -74,7 +76,7 @@ public class Executable implements Comparable, IOInterface {
         }
     }
 
-    public void execute(@NonNull final DataService dataService, final onExecutionFinished callback) {
+    public void execute(@NonNull final DataService dataService, @Nullable final onExecutionFinished callback) {
         execute(dataService, TOGGLE, callback);
     }
 
@@ -125,11 +127,13 @@ public class Executable implements Comparable, IOInterface {
      */
     public void setTitle(String title, @NonNull onNameChangeResult callback) {
         if (title.equals(this.title)) return;
+
         this.title = title;
-        if (credentials != null)
+
+        if (credentials != null) {
+            callback.onNameChangeStart(this);
             credentials.getPlugin().setTitle(this, title, callback);
-        else
-            callback.onNameChangeResult(false, "");
+        }
     }
 
     public boolean isHidden() {
@@ -159,7 +163,7 @@ public class Executable implements Comparable, IOInterface {
                 case "UID":
                     uid = reader.nextString();
                     break;
-                case "DeviceUID":
+                case "DeviceUID": // Optional, only if needCredentials()==true
                     deviceUID = reader.nextString();
                     break;
                 case "Title":
@@ -192,6 +196,9 @@ public class Executable implements Comparable, IOInterface {
         }
 
         reader.endObject();
+
+        if (title.isEmpty())
+            throw new ClassNotFoundException();
     }
 
     protected void loadValue(String name, JsonReader reader) throws IOException {
@@ -208,14 +215,18 @@ public class Executable implements Comparable, IOInterface {
         toJSON(JSONHelper.createWriter(output));
     }
 
+    public int computeChangedCode() {
+        return (ui_type.hashCode() + uid.hashCode() + current_value + max_value + min_value + (hidden ? 1 : 0) + group_uids.hashCode());
+    }
+
     @Override
     public boolean hasChanged() {
-        return last_hash_code != (ui_type.hashCode() + uid.hashCode() + current_value + max_value + min_value + (hidden ? 1 : 0) + group_uids.hashCode());
+        return last_hash_code != computeChangedCode();
     }
 
     @Override
     public void resetChanged() {
-        last_hash_code = ui_type.hashCode() + uid.hashCode() + current_value + max_value + min_value + (hidden ? 1 : 0) + group_uids.hashCode();
+        last_hash_code = computeChangedCode();
     }
 
     /**
@@ -258,13 +269,17 @@ public class Executable implements Comparable, IOInterface {
         writer.beginObject();
         writer.name("ObjectType").value(getClass().getName());
         writer.name("Type").value(ui_type.ordinal());
-        writer.name("Description").value(title);
+        writer.name("Title").value(title);
         writer.name("Value").value(current_value);
         writer.name("max_value").value(max_value);
         writer.name("min_value").value(min_value);
         writer.name("Hidden").value(hidden);
         writer.name("UID").value(uid);
-        writer.name("DeviceUID").value(deviceUID);
+        if (needCredentials()) {
+            if (deviceUID == null)
+                throw new RuntimeException();
+            writer.name("DeviceUID").value(deviceUID);
+        }
         saveValue(writer);
         writer.name("Groups").beginArray();
         for (String groupUID : group_uids)
@@ -289,6 +304,11 @@ public class Executable implements Comparable, IOInterface {
         group_uids.add(groupUID);
     }
 
+    public boolean needCredentials() {
+        return true;
+    }
+
+    @Nullable
     public Credentials getCredentials() {
         return credentials;
     }
@@ -301,9 +321,9 @@ public class Executable implements Comparable, IOInterface {
      *
      * @param credentials The credentials object that fits to the deviceUID of this executable.
      */
-    public void setCredentials(Credentials credentials) {
+    public void setCredentials(Credentials credentials, IOConnectionsCollection connectionsCollection) {
         this.credentials = credentials;
-        updateCachedReachability(credentials.getPlugin().getReachableState(this));
+        updateCachedReachability(connectionsCollection.getReachableState(this));
     }
 
     /**

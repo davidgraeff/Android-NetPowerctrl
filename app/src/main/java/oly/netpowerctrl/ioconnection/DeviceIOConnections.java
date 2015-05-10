@@ -19,6 +19,7 @@ public class DeviceIOConnections {
     final String deviceUID;
     private Map<String, IOConnection> connections = new TreeMap<>();
     private IOConnection cached_reachable = null;
+    private ReachabilityStates cached_last_state = ReachabilityStates.NotReachable;
 
     public DeviceIOConnections(String deviceUID) {
         this.deviceUID = deviceUID;
@@ -49,6 +50,10 @@ public class DeviceIOConnections {
 
     public Iterator<IOConnection> iterator() {
         return connections.values().iterator();
+    }
+
+    public IOConnection getConnectionByPositionModulo(int pos) {
+        return (IOConnection) connections.values().toArray()[pos % (connections.size())];
     }
 
     /**
@@ -88,16 +93,27 @@ public class DeviceIOConnections {
         return connections.get(uid);
     }
 
-    void compute_reachability() {
-        if (cached_reachable != null && cached_reachable.reachableState() != ReachabilityStates.NotReachable)
-            return;
+    /**
+     * Check each ioconnection if it is reachable. Take the first reachable connection as the
+     * devices primary connection ("cached connection").
+     *
+     * @return Return true if reachability changed.
+     */
+    boolean compute_reachability() {
+        boolean was_reachable = cached_last_state == ReachabilityStates.Reachable;
+        if (reachableState() == ReachabilityStates.Reachable && was_reachable) return false;
 
         for (IOConnection existing : connections.values()) {
             if (existing.reachableState() != ReachabilityStates.NotReachable) {
                 cached_reachable = existing;
-                return;
+                cached_last_state = cached_reachable.reachableState();
+                return true; // Before: not reachable, now: reachable
             }
         }
+
+        cached_reachable = null;
+        cached_last_state = ReachabilityStates.NotReachable;
+        return was_reachable; // Return true if was reachable before
     }
 
     @Nullable
@@ -137,10 +153,4 @@ public class DeviceIOConnections {
     public ReachabilityStates reachableState() {
         return cached_reachable == null ? ReachabilityStates.NotReachable : cached_reachable.reachableState();
     }
-
-//    public ReachabilityStates reachableState() {
-//        ReachabilityStates r = ReachabilityStates.NotReachable;
-//        return r;
-//    }
-
 }

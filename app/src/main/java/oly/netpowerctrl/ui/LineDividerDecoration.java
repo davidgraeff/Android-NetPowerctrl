@@ -66,7 +66,7 @@ public abstract class LineDividerDecoration extends RecyclerView.ItemDecoration 
         for (int i = 0; i < childCount; i++) {
             final View child = parent.getChildAt(i);
             final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
-            if (!dividerForPosition(params.getViewPosition()))
+            if (!dividerForPosition(params.getViewAdapterPosition()))
                 continue;
             final int top = child.getBottom() + params.bottomMargin;
             final int bottom = top + mDivider.getIntrinsicHeight();
@@ -83,7 +83,7 @@ public abstract class LineDividerDecoration extends RecyclerView.ItemDecoration 
         for (int i = 0; i < childCount; i++) {
             final View child = parent.getChildAt(i);
             final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
-            if (!dividerForPosition(params.getViewPosition()))
+            if (!dividerForPosition(params.getViewAdapterPosition()))
                 continue;
             final int left = child.getRight() + params.rightMargin;
             final int right = left + mDivider.getIntrinsicHeight();
@@ -95,7 +95,7 @@ public abstract class LineDividerDecoration extends RecyclerView.ItemDecoration 
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
         final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) view.getLayoutParams();
-        if (!dividerForPosition(params.getViewPosition())) {
+        if (!dividerForPosition(params.getViewAdapterPosition())) {
             outRect.set(0, 0, 0, 0);
             return;
         }

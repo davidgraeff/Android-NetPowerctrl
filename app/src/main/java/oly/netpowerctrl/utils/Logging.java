@@ -1,11 +1,13 @@
 package oly.netpowerctrl.utils;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,7 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringBufferInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -22,7 +23,7 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
- * Created by david on 11.05.14.
+ * Singleton Logging class
  */
 public class Logging {
     private final File logFile;
@@ -50,6 +51,7 @@ public class Logging {
     };
     private LogChanged logChangedListener;
 
+    @SuppressLint("SimpleDateFormat")
     private Logging() {
         SharedPrefs sharedPrefs = SharedPrefs.getInstance();
         mLogEnergy = sharedPrefs.logEnergy();
@@ -85,9 +87,6 @@ public class Logging {
         }
     }
 
-    /**
-     * Singleton
-     */
     public static Logging getInstance() {
         return SingletonHolder.instance;
     }
@@ -99,7 +98,7 @@ public class Logging {
             return new BufferedReader(inputReader);
         } catch (FileNotFoundException ignored) {
         }
-        return new BufferedReader(new InputStreamReader(new StringBufferInputStream("")));
+        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(new byte[0])));
     }
 
     public void clear() {

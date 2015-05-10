@@ -62,9 +62,7 @@ public class DeviceQuery {
         Looper.myLooper().quit();
     }
 
-    protected void doAction(Credentials credentials) {
-        Log.w(TAG, "Query " + credentials.getDeviceName());
-
+    protected void doAction(Credentials credentials, int attempt) {
         AbstractBasePlugin abstractBasePlugin = credentials.getPlugin();
         // First try to find the not assigned plugin
         if (abstractBasePlugin == null) {
@@ -118,11 +116,14 @@ public class DeviceQuery {
             dataService.connections.put(l);
         }
 
-        for (Iterator<IOConnection> iterator = l.iterator(); iterator.hasNext(); ) {
-            IOConnection connection = iterator.next();
-            abstractBasePlugin.requestData(connection);
-            if (connection.reachableState() == ReachabilityStates.Reachable) break;
-        }
+        IOConnection connection = l.getConnectionByPositionModulo(attempt);
+        abstractBasePlugin.requestData(connection);
+
+//        for (Iterator<IOConnection> iterator = l.iterator(); iterator.hasNext(); ) {
+//            IOConnection connection = iterator.next();
+//            abstractBasePlugin.requestData(connection);
+//            //if (connection.reachableState() == ReachabilityStates.Reachable) break;
+//        }
     }
 
     /**
@@ -131,6 +132,7 @@ public class DeviceQuery {
      */
     private void deviceSuccess(Credentials credentials) {
         if (Thread.currentThread() != thread) throw new RuntimeException();
+        Log.w(TAG, "Response " + credentials.deviceName);
         handler.removeMessages(MSG_REQUEST, credentials);
         for (DevicesObserver devicesObserver : devicesObserverList) {
             if (!devicesObserver.credentialsList.containsKey(credentials.deviceUID)) continue;
@@ -166,6 +168,7 @@ public class DeviceQuery {
     }
 
     private void deviceFailed(Credentials credentials) {
+        Log.w(TAG, "Query failed " + credentials.getDeviceName());
         if (Thread.currentThread() != thread) throw new RuntimeException();
         handler.removeMessages(MSG_REQUEST, credentials);
         for (DevicesObserver devicesObserver : devicesObserverList) {
@@ -266,14 +269,15 @@ public class DeviceQuery {
                     // Add devices
                     for (Credentials credentials : devicesObserver.credentialsList.values()) {
                         removeMessages(MSG_REQUEST, credentials);
-                        sendMessageDelayed(obtainMessage(MSG_REQUEST, credentials), 10);
-                        sendMessageDelayed(obtainMessage(MSG_REQUEST, credentials), 200);
-                        sendMessageDelayed(obtainMessage(MSG_REQUEST, credentials), 400);
+                        sendMessageDelayed(obtainMessage(MSG_REQUEST, 0, 0, credentials), 10);
+                        sendMessageDelayed(obtainMessage(MSG_REQUEST, 1, 0, credentials), 100);
+                        sendMessageDelayed(obtainMessage(MSG_REQUEST, 2, 0, credentials), 200);
+                        sendMessageDelayed(obtainMessage(MSG_REQUEST, 3, 0, credentials), 300);
                     }
                     break;
                 }
                 case MSG_REQUEST: {
-                    doAction((Credentials) msg.obj);
+                    doAction((Credentials) msg.obj, msg.arg1);
                     break;
                 }
                 case MSG_TIMEOUT: {

@@ -152,7 +152,7 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="toggleSlave">Like Master</string>
     <string name="menu_outlet_master_slave">Master for…</string>
     <string name="outlet_master_slave_title">Slaves for %1$s</string>
-    <string name="scene_create_available">Available</string>
+    <string name="scene_available">Available</string>
     <string name="scene_create_added">Attachted actions</string>
     <string name="preference_maximum_energy_saving_mode">Maximum energy save</string>
     <string name="preference_maximum_energy_saving_mode_summary">Devices won\'t be refreshed again after a network change. Sending the app to the background (Screen off, Homescreen button) will immediately cause all extensions and network code to be unloaded. Recommended for phones only.</string>
@@ -388,4 +388,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="send_log">Send</string>
     <string name="group_name">Name</string>
     <string name="widget_group_no_group">No group created so far. Create one within the app and try again.</string>
+    <string name="plugin_simpleudp">SimpleUDP</string>
+    <string name="scene_add_item">Element hinzufügen</string>
 </resources>

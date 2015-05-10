@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,6 +58,9 @@ public class SelectFromExecutableListFragment extends Fragment implements Recycl
         RecyclerViewWithAdapter<?> recyclerViewWithAdapter =
                 new RecyclerViewWithAdapter<>(getActivity(), rootView, adapter, 0);
         recyclerViewWithAdapter.setOnItemClickListener(new RecyclerItemClickListener(getActivity(), this, null));
+
+        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.ptr_layout);
+        swipeRefreshLayout.setEnabled(false);
         return rootView;
     }
 

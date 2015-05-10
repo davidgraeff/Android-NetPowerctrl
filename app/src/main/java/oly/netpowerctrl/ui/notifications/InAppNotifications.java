@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.main.App;
+import oly.netpowerctrl.plugin_anel.AnelPlugin;
 
 /**
  * Show a toast message, especially if not within the main thread

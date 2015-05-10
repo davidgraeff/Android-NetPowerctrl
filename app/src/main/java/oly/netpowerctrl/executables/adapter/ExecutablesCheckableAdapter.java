@@ -4,13 +4,14 @@ import android.support.annotation.NonNull;
 import android.widget.CompoundButton;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.IconDeferredLoadingThread;
 import oly.netpowerctrl.executables.Executable;
 
 public class ExecutablesCheckableAdapter extends ExecutablesAdapter implements CompoundButton.OnCheckedChangeListener {
-    private Set<String> checked = null;
+    private Set<String> checked = new TreeSet<>();
 
     public ExecutablesCheckableAdapter(@NonNull AdapterSource source,
                                        @NonNull IconDeferredLoadingThread iconCache) {

@@ -1,4 +1,4 @@
-package oly.netpowerctrl.anel;
+package oly.netpowerctrl.plugin_anel;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -99,42 +99,10 @@ class AnelReceiveUDP extends UDPReceiving {
         if (credentials.deviceName.isEmpty())
             credentials.setDeviceName(DeviceName);
 
-        // The order is important: First save the credentials, then save the connections, then save the executables.
-        // Because: connections need the credentials object. Executables need the reachability information of the connections.
+        // The order is important: First save the credentials, then save the executables, then save the connections.
+        // Because: connections need the credentials object. Executables get the reachability information from the updated connections.
 
         dataService.credentials.put(credentials);
-
-        // IO Connections
-        DeviceIOConnections deviceIOConnections = dataService.connections.openCreateDevice(MacAddress);
-
-        {
-            String ioConnection_uid = MacAddress + "UDP";
-            IOConnectionUDP ioConnection = (IOConnectionUDP) deviceIOConnections.findByUID(ioConnection_uid);
-            if (ioConnection == null)
-                ioConnection = new IOConnectionUDP(credentials);
-            ioConnection.setReceiveAddress(peer);
-            ioConnection.connectionUID = ioConnection_uid;
-            ioConnection.hostName = HostName;
-            ioConnection.PortUDPSend = SharedPrefs.getInstance().getDefaultSendPort();
-            ioConnection.PortUDPReceive = receive_port;
-            ioConnection.setStatusMessage(null);
-            ioConnection.incReceivedPackets();
-            dataService.connections.put(ioConnection);
-        }
-
-        {
-            String ioConnection_uid = MacAddress + "HTTP";
-            IOConnectionHTTP ioConnection = (IOConnectionHTTP) deviceIOConnections.findByUID(ioConnection_uid);
-            if (ioConnection == null)
-                ioConnection = new IOConnectionHTTP(credentials);
-            ioConnection.setReceiveAddress(peer);
-            ioConnection.connectionUID = ioConnection_uid;
-            ioConnection.hostName = HostName;
-            ioConnection.PortHttp = httpPort;
-            ioConnection.setStatusMessage(null);
-            dataService.connections.put(ioConnection);
-        }
-
 
         // IO ports
         if (msg.length > 25) {
@@ -173,6 +141,39 @@ class AnelReceiveUDP extends UDPReceiving {
                 executable.current_value = outlet[1].equals("1") ? Executable.ON : Executable.OFF;
             dataService.executables.put(executable);
         }
+
+
+        // IO Connections
+        DeviceIOConnections deviceIOConnections = dataService.connections.openCreateDevice(MacAddress);
+
+        {
+            String ioConnection_uid = MacAddress + "UDP";
+            IOConnectionUDP ioConnection = (IOConnectionUDP) deviceIOConnections.findByUID(ioConnection_uid);
+            if (ioConnection == null)
+                ioConnection = new IOConnectionUDP(credentials);
+            ioConnection.setReceiveAddress(peer);
+            ioConnection.connectionUID = ioConnection_uid;
+            ioConnection.hostName = HostName;
+            ioConnection.PortUDPSend = SharedPrefs.getInstance().getDefaultSendPort();
+            ioConnection.PortUDPReceive = receive_port;
+            ioConnection.setStatusMessage(null);
+            ioConnection.incReceivedPackets();
+            dataService.connections.put(ioConnection);
+        }
+
+        {
+            String ioConnection_uid = MacAddress + "HTTP";
+            IOConnectionHTTP ioConnection = (IOConnectionHTTP) deviceIOConnections.findByUID(ioConnection_uid);
+            if (ioConnection == null)
+                ioConnection = new IOConnectionHTTP(credentials);
+            ioConnection.setReceiveAddress(peer);
+            ioConnection.connectionUID = ioConnection_uid;
+            ioConnection.hostName = HostName;
+            ioConnection.PortHttp = httpPort;
+            ioConnection.setStatusMessage(null);
+            dataService.connections.put(ioConnection);
+        }
+
 
     }
 }

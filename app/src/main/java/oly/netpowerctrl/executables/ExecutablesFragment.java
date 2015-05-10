@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.ActionMenuView;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -60,8 +61,6 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.SimpleListDividerDecoration;
 import oly.netpowerctrl.utils.AnimationController;
 
-;
-
 /**
  * This fragment consists of some floating buttons (add + no_wireless) and a view pager. Within the
  * fragments in the view pager is a RecycleView and a placeholder text. The computation for
@@ -90,7 +89,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
                 @Override
                 public void onGlobalLayout() {
                     //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeGlobalOnLayoutListener(mListViewNumColumnsChangeListener);
+                    mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
 
                     int i = mRecyclerView.getWidth() / requestedColumnWidth;
                     if (i < 1) i = 1;
@@ -107,7 +106,6 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     private boolean editMode;
     private SimpleListDividerDecoration listDividerDecoration;
     private View btnAdd;
-    private ActionMenuView menu;
     private View btnEdit;
     // Data
     private DataService dataService;
@@ -237,23 +235,23 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
             }
         });
 
-        menu = ((ActionMenuView) getActivity().findViewById(R.id.amvMenu));
+        ActionMenuView menu = ((ActionMenuView) getActivity().findViewById(R.id.amvMenu));
         menu.setOnMenuItemClickListener(new ActionMenuView.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
                 return onOptionsItemSelected(menuItem);
             }
         });
-        this.menu.getMenu().clear();
-        getActivity().getMenuInflater().inflate(R.menu.outlets, this.menu.getMenu());
+        menu.getMenu().clear();
+        getActivity().getMenuInflater().inflate(R.menu.outlets, menu.getMenu());
 
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            mRecyclerView.addItemDecoration(new ItemShadowDecoration((NinePatchDrawable) getResources().getDrawable(R.drawable.material_shadow_z1)));
+            mRecyclerView.addItemDecoration(new ItemShadowDecoration((NinePatchDrawable) ContextCompat.getDrawable(getActivity(), R.drawable.material_shadow_z1)));
         }
-        listDividerDecoration = new SimpleListDividerDecoration(getResources().getDrawable(R.drawable.list_divider), true);
+        listDividerDecoration = new SimpleListDividerDecoration(ContextCompat.getDrawable(getActivity(), R.drawable.list_divider), true);
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), this, null));
 
         automaticSetup = new AutomaticSetup(
@@ -333,7 +331,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     public void onDestroyView() {
         View view = mRecyclerView.findChildViewUnder(10, 10);
         if (view != null)
-            SharedPrefs.getInstance().setLastScrollIndex(mRecyclerView.getChildPosition(view));
+            SharedPrefs.getInstance().setLastScrollIndex(mRecyclerView.getChildAdapterPosition(view));
         DataService.observersServiceReady.unregister(this);
         LoadStoreIconData.iconCacheClearedObserver.unregister(this);
         DataService.observersStartStopRefresh.unregister(this);
@@ -405,7 +403,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
 
         // We animate the click event. This is done by calling animate on the
         // viewHolder of the current position.
-        ((ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position)).animate();
+        ((ExecutableViewHolder) mRecyclerView.findViewHolderForAdapterPosition(position)).animate();
         adapter.notifyItemChanged(position);
 
         item.getExecutable().execute(dataService, null);
@@ -443,7 +441,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
                 if (position == -1) {
                     adapter.notifyDataSetChanged();
                 } else {
-                    ExecutableViewHolder executableViewHolder = (ExecutableViewHolder) mRecyclerView.findViewHolderForPosition(position);
+                    ExecutableViewHolder executableViewHolder = (ExecutableViewHolder) mRecyclerView.findViewHolderForAdapterPosition(position);
                     if (executableViewHolder != null) executableViewHolder.reload();
                     adapter.notifyItemChanged(position);
                 }

@@ -12,7 +12,9 @@ import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 
 /**
- * Created by david on 07.07.14.
+ * For AdapterSource which can be used for a recyclerview Adapter if wrapped in ExecutablesAdapter etc.
+ * This input will provide all executable items and update them accordingly to the DataService.executable collection
+ * changes.
  */
 public class InputExecutables extends AdapterInput implements onCollectionUpdated<ExecutableCollection, Executable> {
     private ExecutableCollection executableCollection = null;
@@ -50,9 +52,12 @@ public class InputExecutables extends AdapterInput implements onCollectionUpdate
                 break;
             case UpdateReachableAction:
                 int pos = adapterSource.findPositionByUUid(executable.getUid());
-                if (pos != -1)
-                    adapterSource.getAdapter().notifyItemChanged(pos);
-                else
+                if (pos != -1) {
+                    if (adapterSource.filtered(executable))
+                        adapterSource.removeAt(pos);
+                    else
+                        adapterSource.getAdapter().notifyItemChanged(pos);
+                } else
                     adapterSource.addItem(executable, executable.current_value);
                 break;
             case UpdateAction:
@@ -71,9 +76,6 @@ public class InputExecutables extends AdapterInput implements onCollectionUpdate
                 adapterSource.updateNow();
                 break;
         }
-
-        adapterSource.sourceChanged();
-
         return true;
     }
 

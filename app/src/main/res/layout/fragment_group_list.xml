@@ -1,70 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
+        android:id="@+id/topbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:theme="?attr/toolbar_style">
 
         <RelativeLayout
-        android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/image"
-                android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:scaleType="fitXY"
-                android:src="@drawable/store_feature_new" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
 
             <android.support.v7.widget.ActionMenuView
                 android:id="@+id/amvMenu"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/image" />
+                android:layout_alignParentEnd="true" />
 
             <com.rey.material.widget.Button
                 android:id="@+id/btnDevices"
-                style="@style/FlatColorButtonRippleStyle"
+                style="@style/FlatButtonRippleStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/image"
                 android:layout_toStartOf="@id/amvMenu"
                 android:gravity="center"
-                android:text="@string/devices" />
+                android:text="@string/devices"
+                android:textColor="?attr/textColorPrimary" />
         </RelativeLayout>
+    </android.support.v7.widget.Toolbar>
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/bottombar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:theme="?attr/toolbar_style">
+
+        <com.rey.material.widget.Button
+            android:id="@+id/btnAdd"
+            style="@style/FlatButtonRippleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:padding="5dp"
+            android:text="@string/group_add"
+            android:textColor="?attr/textColorPrimary" />
+
     </android.support.v7.widget.Toolbar>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/group_list"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
-        android:paddingTop="10dp" />
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottombar"
+        android:layout_below="@+id/topbar"
+        android:padding="5dp" />
 
     <TextView
         android:id="@+id/group_help"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottombar"
+        android:layout_below="@+id/topbar"
         android:gravity="center_vertical"
         android:padding="5dp"
         android:text="Bisher sind keine Gruppen eingerichtet. Gruppen dienen der Übersicht, dadurch das nur ausgewählte Aktionen in der Aktionsliste rechts angezeigt werden." />
 
-    <com.rey.material.widget.Button
-        android:id="@+id/btnAdd"
-        style="@style/RaiseWaveButtonRippleStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:gravity="center"
-        android:text="@string/group_add" />
-</LinearLayout>
+</RelativeLayout>

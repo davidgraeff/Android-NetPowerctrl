@@ -4,12 +4,15 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.onNewIOConnection;
-import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.onExecutionFinished;
 
 /**
@@ -17,6 +20,7 @@ import oly.netpowerctrl.network.onExecutionFinished;
  */
 public abstract class AbstractBasePlugin {
     protected final DataService dataService;
+    protected final List<ExecutableAndCommand> command_list = new ArrayList<>();
     protected AbstractBasePlugin(DataService dataService) {
         this.dataService = dataService;
     }
@@ -32,16 +36,25 @@ public abstract class AbstractBasePlugin {
 
     abstract public boolean isStarted();
 
-    ////////////// Request data and executeToggle //////////////
+    ////////////// Request data and execute //////////////
     abstract public void requestData();
 
     abstract public void requestData(@NonNull IOConnection ioConnection);
 
     abstract public boolean execute(@NonNull Executable executable, final int command, @Nullable onExecutionFinished callback);
 
-    abstract public void addToTransaction(@NonNull Executable executable, final int command);
+    public void addToTransaction(@NonNull Executable port, int command) {
+        command_list.add(new ExecutableAndCommand(port, command));
+    }
 
-    abstract public void executeTransaction(@Nullable onExecutionFinished callback);
+    public void executeTransaction(@Nullable onExecutionFinished callback) {
+        if (callback != null)
+            callback.addExpected(command_list.size());
+        for (ExecutableAndCommand executableAndCommand : command_list) {
+            execute(executableAndCommand.executable, executableAndCommand.command, callback);
+        }
+        command_list.clear();
+    }
 
     abstract public void setTitle(@NonNull Executable executable, @NonNull final String new_name, @Nullable onNameChangeResult callback);
 
@@ -55,7 +68,8 @@ public abstract class AbstractBasePlugin {
      *
      * @param credentials The device, identified by the credentials.
      */
-    abstract public void openConfigurationPage(Credentials credentials);
+    public void openConfigurationPage(Credentials credentials) {
+    }
 
     /**
      * Start editing an existing device by existing credentials (where configured==true) or edit
@@ -64,9 +78,13 @@ public abstract class AbstractBasePlugin {
     @Nullable
     abstract public Credentials createNewDefaultCredentials();
 
-    abstract public boolean hasEditableCredentials();
+    public boolean hasEditableCredentials() {
+        return false;
+    }
 
-    abstract public boolean isNewIOConnectionAllowed(Credentials credentials);
+    public boolean isNewIOConnectionAllowed(Credentials credentials) {
+        return false;
+    }
 
     /**
      * Provide credentials and then the plugin will call you back asynchronously with a new connection.
@@ -78,7 +96,6 @@ public abstract class AbstractBasePlugin {
      * @param credentials Credentials that identify a device.
      * @param callback    The callback method with the new IOConnection.
      */
-    abstract public void addNewIOConnection(@NonNull Credentials credentials, @NonNull onNewIOConnection callback);
-
-    public abstract ReachabilityStates getReachableState(Executable executable);
+    public void addNewIOConnection(@NonNull Credentials credentials, @NonNull onNewIOConnection callback) {
+    }
 }

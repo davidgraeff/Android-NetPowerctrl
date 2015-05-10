@@ -1,4 +1,4 @@
-package oly.netpowerctrl.scenes;
+package oly.netpowerctrl.scenes.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -18,7 +18,7 @@ public class SceneElementsInFlowLayout extends RecyclerView.AdapterDataObserver 
     private final FlowLayout flowLayout;
     private final SceneElementsAdapter adapter_included;
     private RecyclerItemClickListener.OnItemClickListener onCloseClickListener;
-    private List<SceneElementsAdapter.ViewHolder> elements = new ArrayList<>();
+    private List<SceneElementViewHolder> elements = new ArrayList<>();
 
     public SceneElementsInFlowLayout(FlowLayout flowLayout,
                                      SceneElementsAdapter adapter_included,
@@ -31,16 +31,40 @@ public class SceneElementsInFlowLayout extends RecyclerView.AdapterDataObserver 
     }
 
     @Override
+    public void onChanged() {
+        int max = adapter_included.mItems.size();
+        int elements_before = elements.size();
+
+        if (max > elements_before) {
+            onItemRangeInserted(elements_before, max - elements_before);
+            max = elements_before;
+        } else if (max > 0 && max < elements_before) {
+            onItemRangeRemoved(max - 1, elements_before - max);
+        }
+
+        for (int i = 0; i < max; ++i) {
+            adapter_included.onBindViewHolder(elements.get(i), i);
+        }
+    }
+
+    @Override
+    public void onItemRangeChanged(int positionStart, int itemCount) {
+        for (int i = positionStart; i < positionStart + itemCount; ++i) {
+            adapter_included.onBindViewHolder(elements.get(i), i);
+        }
+    }
+
+    @Override
     public void onItemRangeRemoved(int positionStart, int itemCount) {
         for (int i = positionStart + itemCount - 1; i >= positionStart; --i) {
-            SceneElementsAdapter.ViewHolder vh = elements.get(positionStart);
+            SceneElementViewHolder vh = elements.get(positionStart);
             elements.remove(i);
             flowLayout.removeView(vh.itemView);
             adapter_included.onViewDetachedFromWindow(vh);
             adapter_included.onViewRecycled(vh);
         }
         for (int i = positionStart; i < adapter_included.getItemCount(); ++i) {
-            SceneElementsAdapter.ViewHolder vh = elements.get(i);
+            SceneElementViewHolder vh = elements.get(i);
             vh.position = i;
         }
     }
@@ -48,7 +72,7 @@ public class SceneElementsInFlowLayout extends RecyclerView.AdapterDataObserver 
     @Override
     public void onItemRangeInserted(int positionStart, int itemCount) {
         for (int i = positionStart; i < positionStart + itemCount; ++i) {
-            final SceneElementsAdapter.ViewHolder vh = adapter_included.createViewHolder(flowLayout,
+            final SceneElementViewHolder vh = adapter_included.createViewHolder(flowLayout,
                     adapter_included.mItems.get(i).getItemViewType());
             vh.position = i;
             adapter_included.onBindViewHolder(vh, i);

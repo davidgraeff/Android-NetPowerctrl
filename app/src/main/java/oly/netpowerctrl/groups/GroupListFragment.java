@@ -30,7 +30,7 @@ import oly.netpowerctrl.ui.RecyclerItemClickListener;
  */
 public class GroupListFragment extends Fragment implements onServiceReady, EmptyListener {
     private DataService dataService = null;
-    private GroupAdapter groupAdapter = new GroupAdapter(true);
+    private GroupAdapter groupAdapter = new GroupAdapter(true, this);
     private View group_help;
 
     public GroupListFragment() {
@@ -93,8 +93,8 @@ public class GroupListFragment extends Fragment implements onServiceReady, Empty
             }
         });
         group_list.setAdapter(groupAdapter);
-        groupAdapter.setEmptyListener(this);
-        onEmptyListener(false);
+
+        groupAdapter.start();
 
         Button button = (Button) root.findViewById(R.id.btnAdd);
         button.setOnClickListener(new View.OnClickListener() {

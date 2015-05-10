@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import oly.netpowerctrl.anel.AnelPlugin;
 import oly.netpowerctrl.data.query.DataQueryCompletedObserver;
 import oly.netpowerctrl.data.query.DataQueryRefreshObserver;
 import oly.netpowerctrl.data.query.onDataQueryCompleted;
@@ -31,6 +30,9 @@ import oly.netpowerctrl.ioconnection.IOConnectionsCollection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.GuiThreadHandler;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.network.NetworkChangedBroadcastReceiver;
+import oly.netpowerctrl.plugin_anel.AnelPlugin;
+import oly.netpowerctrl.plugin_simpleudp.SimpleUDPPlugin;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.status_bar.FavCollection;
 import oly.netpowerctrl.timer.TimerCollection;
@@ -47,6 +49,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     private static final String TAG = "DataService";
     private static final String PLUGIN_QUERY_ACTION = "oly.netpowerctrl.plugins.INetPwrCtrlPlugin";
     private static final String PAYLOAD_SERVICE_NAME = "SERVICE_NAME";
+    private static final NetworkChangedBroadcastReceiver networkChangedListener = new NetworkChangedBroadcastReceiver();
     public static String service_shutdown_reason = "";
     ///////////////// Service start/stop /////////////////
     static private WeakHashMap<Object, Boolean> weakHashMap = new WeakHashMap<>();
@@ -185,6 +188,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
 
         discoverExtensions();
         plugins.add(new AnelPlugin(this));
+        plugins.add(new SimpleUDPPlugin(this));
 
         // Load all Devices, Scenes etc from disk.
         /**
@@ -192,6 +196,8 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
          * If data is already loaded or is loading is in progress, nothing will happen.
          */
         loadStoreCollections.loadData(this);
+
+        networkChangedListener.registerReceiver(this);
 
         return START_STICKY;
     }
@@ -220,6 +226,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
 
     @Override
     public void onDestroy() {
+        networkChangedListener.unregister(this);
 
         observersServiceReady.onServiceFinished(this);
 
@@ -264,7 +271,6 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
                     credentials.setPlugin(newlyAddedPlugin);
                 }
             }
-            newlyAddedPlugin.onStart(this);
         }
         // Check all credentials for a plugin and set up IOConnections
         Iterator<Map.Entry<String, Credentials>> deviceIterator = credentials.getItems().entrySet().iterator();
@@ -284,6 +290,9 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         }
         connections.removeOrphaned();
         executables.removeOrphaned();
+
+        for (AbstractBasePlugin newlyAddedPlugin : plugins)
+            newlyAddedPlugin.onStart(this);
     }
 
     @Override
@@ -364,6 +373,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
      * Refreshes all configured devices.
      */
     public void refreshExistingDevices() {
+        if (observersStartStopRefresh.isRefreshing()) return;
         observersStartStopRefresh.onRefreshStateChanged(true);
         deviceQuery.addDeviceObserver(new DevicesObserver(credentials.getItems().values(), new DevicesObserver.onDevicesObserverFinished() {
             @Override
@@ -379,6 +389,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
      * Refreshes all configured devices (detect unreachable devices) and detect new un-configured devices.
      */
     public void detectDevices() {
+        if (observersStartStopRefresh.isRefreshing()) return;
         observersStartStopRefresh.onRefreshStateChanged(true);
         deviceQuery.addDeviceObserver(new DevicesObserver(new DevicesObserver.onDevicesObserverFinished() {
             @Override

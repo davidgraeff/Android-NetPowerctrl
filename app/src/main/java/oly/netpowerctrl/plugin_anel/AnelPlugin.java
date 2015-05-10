@@ -1,4 +1,4 @@
-package oly.netpowerctrl.anel;
+package oly.netpowerctrl.plugin_anel;
 
 import android.content.Context;
 import android.content.Intent;
@@ -35,12 +35,11 @@ import oly.netpowerctrl.ioconnection.IOConnectionUDP;
 import oly.netpowerctrl.ioconnection.onNewIOConnection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
-import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.UDPErrors;
 import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
-import oly.netpowerctrl.utils.Logging;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
@@ -49,9 +48,8 @@ import oly.netpowerctrl.utils.Logging;
 final public class AnelPlugin extends AbstractBasePlugin {
     public static final String PLUGIN_ID = "org.anel.outlets_and_io";
     private static final byte[] requestMessage = "wer da?\r\n".getBytes();
-    private static final NetworkChangedBroadcastReceiver networkChangedListener = new NetworkChangedBroadcastReceiver();
+
     private final List<AnelReceiveUDP> discoveryThreads = new ArrayList<>();
-    private final List<ExecutableAndCommand> command_list = new ArrayList<>();
     //private AnelAlarm anelAlarm = new AnelAlarm();
 
     public AnelPlugin(DataService dataService) {
@@ -106,7 +104,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         executable.deviceUID = credentials.getUid();
         executable.setUid(uid);
         executable.current_value = value;
-        executable.setCredentials(credentials);
+        executable.setCredentials(credentials, dataService.connections);
     }
 
     Credentials createDefaultCredentials(String MacAddress) {
@@ -156,7 +154,10 @@ final public class AnelPlugin extends AbstractBasePlugin {
         Credentials credentials = ioConnection.credentials;
         for (int id = 1; id <= 8; ++id) {
             Executable oi = dataService.executables.findByUID(makeExecutableUID(credentials.deviceUID, id));
-            if (oi == null) throw new RuntimeException();
+            if (oi == null) {
+                Log.e(getPluginID(), "executeDeviceBatch. Did not find " + makeExecutableUID(credentials.deviceUID, id) + " " + credentials.getDeviceName());
+                continue;
+            }
             if (oi.current_value == 0) // Only take "ON" commands into account for the bulk change byte
                 continue;
             if (id >= 10 && id < 20) {
@@ -224,7 +225,8 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     private void startNetworkReceivers(boolean changed) {
         // Get all ports of configured devices and add the additional_port if != 0
-        Set<Integer> ports = dataService.connections.getAllReceivePorts();
+        Set<Integer> ports = dataService.connections.getAllUDPReceivePorts(this);
+        ports.add(SharedPrefs.getInstance().getDefaultReceivePort());
 
         if (!changed && discoveryThreads.size() == ports.size()) return;
 
@@ -375,13 +377,11 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     @Override
     public void onDestroy() {
-        networkChangedListener.unregister(dataService);
         stopNetwork();
     }
 
     @Override
     public void onStart(Context context) {
-        networkChangedListener.registerReceiver(this);
         startNetworkReceivers(true);
     }
 
@@ -392,11 +392,15 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     @Override
     public void requestData() {
-        UDPSend.createBroadcast(dataService, "wer da?\r\n".getBytes(), UDPErrors.INQUERY_BROADCAST_REQUEST);
+        Set<Integer> ports = dataService.connections.getAllUDPSendPorts(this);
+        ports.add(SharedPrefs.getInstance().getDefaultSendPort());
+        UDPSend.createBroadcast(ports, requestMessage, UDPErrors.INQUERY_BROADCAST_REQUEST);
     }
 
     @Override
     public void requestData(@NonNull IOConnection ioConnection) {
+        Log.w("Anel", "Query " + ioConnection.credentials.getDeviceName() + " " + ioConnection.getProtocol());
+
         if (ioConnection instanceof IOConnectionHTTP) {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((IOConnectionHTTP) ioConnection,
                     "strg.cfg", "", ioConnection, false, AnelReceiveSendHTTP.receiveCtrlHtml));
@@ -408,15 +412,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
     @Override
     public Credentials createNewDefaultCredentials() {
         return createDefaultCredentials(UUID.randomUUID().toString());
-    }
-
-    @Override
-    public ReachabilityStates getReachableState(Executable executable) {
-        DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executable.deviceUID);
-        if (deviceIOConnections == null) return ReachabilityStates.NotReachable;
-        IOConnection ioConnection = deviceIOConnections.findReachable();
-        if (ioConnection == null) return ReachabilityStates.NotReachable;
-        return ioConnection.reachableState();
     }
 
     /**
@@ -493,14 +488,12 @@ final public class AnelPlugin extends AbstractBasePlugin {
     }
 
     @Override
-    public void addToTransaction(@NonNull Executable port, int command) {
-        command_list.add(new ExecutableAndCommand(port, command));
-    }
-
-    @Override
     public void executeTransaction(onExecutionFinished callback) {
-        TreeMap<IOConnection, List<ExecutableAndCommand>> commands_grouped_by_devices =
-                new TreeMap<>();
+        class Entry {
+            public List<ExecutableAndCommand> list = new ArrayList<>();
+            public IOConnection connection;
+        }
+        TreeMap<String, Entry> commands_grouped_by_devices = new TreeMap<>();
 
         if (callback != null)
             callback.addExpected(command_list.size());
@@ -513,16 +506,16 @@ final public class AnelPlugin extends AbstractBasePlugin {
             IOConnection connection = deviceIOConnections.findReachable();
             if (connection == null) continue;
 
-            if (!commands_grouped_by_devices.containsKey(connection)) {
-                commands_grouped_by_devices.put(connection, new ArrayList<ExecutableAndCommand>());
-            }
-            commands_grouped_by_devices.get(connection).add(executableAndCommand);
+            Entry entry = commands_grouped_by_devices.get(connection.getUid());
+            if (entry == null) entry = new Entry();
+            entry.list.add(executableAndCommand);
+            entry.connection = connection;
+            commands_grouped_by_devices.put(connection.getUid(), entry);
         }
 
         // executeToggle by device
-        for (TreeMap.Entry<IOConnection, List<ExecutableAndCommand>> entry : commands_grouped_by_devices.entrySet()) {
-            IOConnection ioConnection = entry.getKey();
-            success += executeDeviceBatch(ioConnection, entry.getValue());
+        for (Entry entry : commands_grouped_by_devices.values()) {
+            success += executeDeviceBatch(entry.connection, entry.list);
         }
 
         command_list.clear();
@@ -539,27 +532,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
     @Override
     public String getLocalizedName() {
         return App.getAppString(R.string.plugin_anel);
-    }
-
-    public void checkDevicesReachabilityAfterNetworkChange() {
-        Logging.getInstance().logEnergy("Anel: check availability");
-
-//        startNetworkReceivers(false);
-//
-//        dataService.addDeviceObserver(new DevicesObserver(dataService.credentials.findByPlugin(this), new DevicesObserver.onDevicesObserverFinished() {
-//            @Override
-//            public void onObserverJobFinished(DevicesObserver devicesObserver) {
-//                if (!devicesObserver.isAllTimedOut()) return;
-//                //TODO
-//                new AsyncTask<AnelPlugin, Void, Void>() {
-//                    @Override
-//                    protected Void doInBackground(AnelPlugin... plugin) {
-//                        plugin[0].stopNetwork();
-//                        return null;
-//                    }
-//                }.execute(AnelPlugin.this);
-//            }
-//        }));
     }
 
     @Override

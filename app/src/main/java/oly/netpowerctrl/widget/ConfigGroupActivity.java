@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.widget.TextView;
 
@@ -35,6 +36,9 @@ public class ConfigGroupActivity extends Activity implements RecyclerItemClickLi
 
         setContentView(R.layout.fragment_with_list);
 
+        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.ptr_layout);
+        swipeRefreshLayout.setEnabled(false);
+
         Bundle extras = getIntent().getExtras();
         widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
         if (extras != null) {
@@ -46,11 +50,11 @@ public class ConfigGroupActivity extends Activity implements RecyclerItemClickLi
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID)
             throw new RuntimeException();
 
-        adapter = new GroupAdapter(false);
-        adapter.setEmptyListener(this);
+        adapter = new GroupAdapter(false, this);
         RecyclerViewWithAdapter<?> recyclerViewWithAdapter =
                 new RecyclerViewWithAdapter<>(this, findViewById(R.id.layout_with_list), adapter, 0);
         recyclerViewWithAdapter.setOnItemClickListener(new RecyclerItemClickListener(this, ConfigGroupActivity.this, null));
+        adapter.start();
     }
 
     @Override
