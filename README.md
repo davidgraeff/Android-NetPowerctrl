@@ -44,7 +44,7 @@ Cool examples:
 To compile, you need the [Android SDK](http://developer.android.com/sdk)
 and [Android Studio](http://developer.android.com/sdk/installing/studio.html).
 This project is not for the old eclipse based SDK! It depends on the
-support libraries (v13), additional support library extensions (v7.RecyclerView) and need at least android 4.0 (sdk version 14, released 19. Oct 2011). Parts of the app (import/export/backgrounds) are only usuable with Android 4.4 (DocumentProvider class).
+support libraries (v13), additional support library extensions (v7.RecyclerView) and need at least android 4.2 (sdk version 17, released 13. Nov 2012). Parts of the app (import/export/backgrounds) are only usuable with Android 4.4 (DocumentProvider class).
 
 ### Plugin Development
 All you need to develop a plugin is described in detail at the [Plugin Developer Documentation](https://github.com/davidgraeff/Android-NetPowerctrl-Shared#plugin-developer-documentation).
