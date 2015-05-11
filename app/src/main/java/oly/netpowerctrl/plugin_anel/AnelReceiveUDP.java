@@ -17,19 +17,17 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Logging;
 import oly.netpowerctrl.utils.Streams;
 
-;
-
 class AnelReceiveUDP extends UDPReceiving {
     public static AnelPlugin anelPlugin;
 
     public AnelReceiveUDP(AnelPlugin anelPlugin, int port) {
         super(port, "AnelDeviceDiscoveryThread");
         AnelReceiveUDP.anelPlugin = anelPlugin;
-        Logging.getInstance().logDetect("UDP Listen " + String.valueOf(port));
+        Logging.getInstance().logDetect("Anel UDP Listen " + String.valueOf(port));
     }
 
     @Override
-    public void parsePacket(final byte[] message, int length, int receive_port, InetAddress local, InetAddress peer) {
+    public void parsePacket(final byte[] message, int length, InetAddress local, InetAddress peer) {
         final String msg[];
         final String incoming;
         try {
@@ -41,7 +39,7 @@ class AnelReceiveUDP extends UDPReceiving {
         }
 
         if (msg.length < 3) {
-            Logging.getInstance().logDetect("UDP Receive Error\n" + incoming);
+            Logging.getInstance().logDetect("Anel UDP Receive Error\n" + incoming);
             return;
         }
 
@@ -50,21 +48,21 @@ class AnelReceiveUDP extends UDPReceiving {
             String errMessage = msg[2].trim();
             if (errMessage.trim().equals("NoPass"))
                 errMessage = DataService.getService().getString(R.string.error_nopass);
-            Logging.getInstance().logDetect("UDP Device Error\n" + name + " " + errMessage);
+            Logging.getInstance().logDetect("Anel UDP Device Error\n" + name + " " + errMessage);
             return;
         }
 
         final String HostName = msg[2];
         final String DeviceName = msg[1].trim();
-        final String MacAddress = msg[5].trim();
+        final String DeviceUniqueID = msg[5].trim(); // MacAddress
 
-        Logging.getInstance().logDetect("UDP Device detected\n" + DeviceName);
+        Logging.getInstance().logDetect("Anel UDP Device detected\n" + DeviceName);
 
         // Create or get the credentials (device) object. It consists of a unique id, device name, username, password.
         DataService dataService = anelPlugin.getDataService();
-        Credentials credentials = dataService.credentials.findByUID(MacAddress);
+        Credentials credentials = dataService.credentials.findByUID(DeviceUniqueID);
         if (credentials == null) {
-            credentials = anelPlugin.createDefaultCredentials(MacAddress);
+            credentials = anelPlugin.createDefaultCredentials(DeviceUniqueID);
         }
 
         // Normally, the device sends info for 8 outlets no matter how many are actually equipped.
@@ -114,7 +112,7 @@ class AnelReceiveUDP extends UDPReceiving {
                 Streams.splitNonRegex(io_port, msg[i], ",");
                 if (io_port.size() != 3) continue;
 
-                String uid = AnelPlugin.makeExecutableUID(MacAddress, (io_port.get(1).equals("1") ? io_id + 10 : io_id));
+                String uid = AnelPlugin.makeExecutableUID(DeviceUniqueID, (io_port.get(1).equals("1") ? io_id + 10 : io_id));
                 // input if io_port[1].equals("1") otherwise output
                 Executable executable = dataService.executables.findByUID(uid);
                 if (executable == null) executable = new Executable();
@@ -132,7 +130,7 @@ class AnelReceiveUDP extends UDPReceiving {
             boolean disabled = (disabledOutlets & (1 << i)) != 0;
             if (disabled) continue;
 
-            String uid = AnelPlugin.makeExecutableUID(MacAddress, i + 1);  // 1-based id
+            String uid = AnelPlugin.makeExecutableUID(DeviceUniqueID, i + 1);  // 1-based id
             Executable executable = dataService.executables.findByUID(uid);
             if (executable == null) executable = new Executable();
             anelPlugin.fillExecutable(executable, credentials, uid, 0);
@@ -144,10 +142,10 @@ class AnelReceiveUDP extends UDPReceiving {
 
 
         // IO Connections
-        DeviceIOConnections deviceIOConnections = dataService.connections.openCreateDevice(MacAddress);
+        DeviceIOConnections deviceIOConnections = dataService.connections.openCreateDevice(DeviceUniqueID);
 
         {
-            String ioConnection_uid = MacAddress + "UDP";
+            String ioConnection_uid = DeviceUniqueID + "UDP";
             IOConnectionUDP ioConnection = (IOConnectionUDP) deviceIOConnections.findByUID(ioConnection_uid);
             if (ioConnection == null)
                 ioConnection = new IOConnectionUDP(credentials);
@@ -162,7 +160,7 @@ class AnelReceiveUDP extends UDPReceiving {
         }
 
         {
-            String ioConnection_uid = MacAddress + "HTTP";
+            String ioConnection_uid = DeviceUniqueID + "HTTP";
             IOConnectionHTTP ioConnection = (IOConnectionHTTP) deviceIOConnections.findByUID(ioConnection_uid);
             if (ioConnection == null)
                 ioConnection = new IOConnectionHTTP(credentials);

@@ -55,9 +55,19 @@ public class Executable implements Comparable, IOInterface {
     private boolean cached_executionInProgress;
     private Credentials credentials;
     private ReachabilityStates cached_reachabilityStates = ReachabilityStates.NotReachable;
+    private boolean isSaveable = true;
 
     public Executable() {
     }
+
+    public boolean isSaveable() {
+        return this.isSaveable;
+    }
+
+    public void setIsSaveable(boolean isSaveable) {
+        this.isSaveable = isSaveable;
+    }
+
 
     /**
      * Notice: Only call this method if the NetpowerctrlService service is running!
@@ -219,9 +229,14 @@ public class Executable implements Comparable, IOInterface {
         return (ui_type.hashCode() + uid.hashCode() + current_value + max_value + min_value + (hidden ? 1 : 0) + group_uids.hashCode());
     }
 
+    /**
+     * An executable may not always be safeable, for example if it is a homescreen icon for execution.
+     *
+     * @return
+     */
     @Override
     public boolean hasChanged() {
-        return last_hash_code != computeChangedCode();
+        return isSaveable && last_hash_code != computeChangedCode();
     }
 
     @Override
@@ -338,5 +353,10 @@ public class Executable implements Comparable, IOInterface {
         ReachabilityStates a = cached_reachabilityStates;
         cached_reachabilityStates = new_state;
         return new_state != a;
+    }
+
+    public void destroy(DataService dataService) {
+        credentials = null;
+        //uid = null;
     }
 }

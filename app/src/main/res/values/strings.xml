@@ -153,7 +153,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="menu_outlet_master_slave">Master for…</string>
     <string name="outlet_master_slave_title">Slaves for %1$s</string>
     <string name="scene_available">Available</string>
-    <string name="scene_create_added">Attachted actions</string>
     <string name="preference_maximum_energy_saving_mode">Maximum energy save</string>
     <string name="preference_maximum_energy_saving_mode_summary">Devices won\'t be refreshed again after a network change. Sending the app to the background (Screen off, Homescreen button) will immediately cause all extensions and network code to be unloaded. Recommended for phones only.</string>
     <string name="scene_remove_item">Remove item from scene</string>

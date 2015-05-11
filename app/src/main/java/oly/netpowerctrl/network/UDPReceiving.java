@@ -13,7 +13,7 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 abstract public class UDPReceiving extends Thread {
-    private final int receive_port;
+    protected final int receive_port;
     protected DatagramPacket receivedDatagram;
     private boolean keep_running;
     private DatagramSocket socket;
@@ -39,7 +39,7 @@ abstract public class UDPReceiving extends Thread {
                 socket.bind(new InetSocketAddress(receive_port));
                 while (keep_running) {
                     socket.receive(receivedDatagram);
-                    parsePacket(message, receivedDatagram.getLength(), receive_port, socket.getLocalAddress(), receivedDatagram.getAddress());
+                    parsePacket(message, receivedDatagram.getLength(), socket.getLocalAddress(), receivedDatagram.getAddress());
                     //NetworkInterface.getByInetAddress(socket.getLocalAddress()));
                 }
                 socket.close();
@@ -66,7 +66,7 @@ abstract public class UDPReceiving extends Thread {
     }
 
     protected abstract void parsePacket(final byte[] message, int length,
-                                        int receive_port, InetAddress local, InetAddress peer);
+                                        InetAddress local, InetAddress peer);
 
     /**
      * @return Return the receive port of this thread

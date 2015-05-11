@@ -224,59 +224,6 @@ final public class AnelPlugin extends AbstractBasePlugin {
         return command_list.size();
     }
 
-    private void startNetworkReceivers(boolean changed) {
-        // Get all ports of configured devices and add the additional_port if != 0
-        Set<Integer> ports = dataService.connections.getAllUDPReceivePorts(this);
-        ports.add(SharedPrefs.getInstance().getDefaultReceivePort());
-
-        if (!changed && discoveryThreads.size() == ports.size()) return;
-
-        boolean new_threads_started = false;
-        List<AnelReceiveUDP> unusedThreads = new ArrayList<>(discoveryThreads);
-
-        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-        String methodName = stacktrace[3].getClassName() + ":" + stacktrace[3].getMethodName() + "->" + stacktrace[4].getClassName() + ":" + stacktrace[4].getMethodName();
-        Log.w(PLUGIN_ID, "startNetworkReceivers " + methodName);
-
-        // Go through all ports and start a thread for it if none is running for it so far
-        for (int port : ports) {
-            boolean already_running = false;
-            for (AnelReceiveUDP running_thread : discoveryThreads) {
-                if (running_thread.getPort() == port) {
-                    already_running = true;
-                    unusedThreads.remove(running_thread);
-                    break;
-                }
-            }
-
-            if (already_running) {
-                continue;
-            }
-
-            new_threads_started = true;
-            AnelReceiveUDP thr = new AnelReceiveUDP(this, port);
-            thr.start();
-            discoveryThreads.add(thr);
-        }
-
-        if (unusedThreads.size() > 0) {
-            for (AnelReceiveUDP thr : unusedThreads) {
-                thr.interrupt();
-                discoveryThreads.remove(thr);
-            }
-        }
-
-        if (new_threads_started) {
-            // give the threads a chance to start
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ignored) {
-            }
-        }
-
-        HttpThreadPool.startHTTP();
-    }
-
     private void stopNetwork() {
         StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
         String methodName = stacktrace[3].getClassName() + ":" + stacktrace[3].getMethodName() + "->" + stacktrace[4].getClassName() + ":" + stacktrace[4].getMethodName();
@@ -343,7 +290,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
             }
             return success;
         } else if (ioConnection instanceof IOConnectionUDP) {
-            final Credentials credentials = dataService.credentials.findByUID(executable.deviceUID);
+            final Credentials credentials = ioConnection.credentials;
             if (credentials == null) {
                 Log.e(PLUGIN_ID, "execute. No credentials found!");
                 if (callback != null) callback.addFail();
@@ -383,7 +330,56 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
     @Override
     public void onStart(Context context) {
-        startNetworkReceivers(true);
+        // Get all ports of configured devices and add the additional_port if != 0
+        Set<Integer> ports = dataService.connections.getAllUDPReceivePorts(this);
+        ports.add(SharedPrefs.getInstance().getDefaultReceivePort());
+
+        if (discoveryThreads.size() == ports.size()) return;
+
+        boolean new_threads_started = false;
+        List<AnelReceiveUDP> unusedThreads = new ArrayList<>(discoveryThreads);
+
+        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+        String methodName = stacktrace[3].getClassName() + ":" + stacktrace[3].getMethodName() + "->" + stacktrace[4].getClassName() + ":" + stacktrace[4].getMethodName();
+        Log.w(PLUGIN_ID, "startNetworkReceivers " + methodName);
+
+        // Go through all ports and start a thread for it if none is running for it so far
+        for (int port : ports) {
+            boolean already_running = false;
+            for (AnelReceiveUDP running_thread : discoveryThreads) {
+                if (running_thread.getPort() == port) {
+                    already_running = true;
+                    unusedThreads.remove(running_thread);
+                    break;
+                }
+            }
+
+            if (already_running) {
+                continue;
+            }
+
+            new_threads_started = true;
+            AnelReceiveUDP thr = new AnelReceiveUDP(this, port);
+            thr.start();
+            discoveryThreads.add(thr);
+        }
+
+        if (unusedThreads.size() > 0) {
+            for (AnelReceiveUDP thr : unusedThreads) {
+                thr.interrupt();
+                discoveryThreads.remove(thr);
+            }
+        }
+
+        if (new_threads_started) {
+            // give the threads a chance to start
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ignored) {
+            }
+        }
+
+        HttpThreadPool.startHTTP();
     }
 
     @Override

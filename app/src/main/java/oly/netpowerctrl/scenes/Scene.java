@@ -51,7 +51,7 @@ public class Scene extends Executable implements IOInterface {
                 case UpdateReachableAction:
                     if (reachable != executable.reachableState()) {
                         reachable = executable.reachableState();
-                        c.notifyReachability(Scene.this, reachable);
+                        c.notifyReachability(Scene.this);
                     }
                     break;
                 case RemoveAction:
@@ -81,6 +81,12 @@ public class Scene extends Executable implements IOInterface {
         Scene scene = new Scene();
         scene.uid = UUID.randomUUID().toString();
         return scene;
+    }
+
+    @Override
+    public void destroy(DataService dataService) {
+        dataService.executables.unregisterObserver(executableObserver);
+        super.destroy(dataService);
     }
 
     @Override

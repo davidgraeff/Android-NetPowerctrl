@@ -21,18 +21,10 @@
     *;
 }
 
--keep oly.netpowerctrl.debug {
-    *;
-}
-
 # keep this around for some enums that ACRA needs
 -keep class org.acra.ReportingInteractionMode {
     *;
 }
-
--assumenosideeffects class oly.netpowerctrl.plugin.** { *; }
-
--assumenosideeffects class oly.netpowerctrl.consistency_tests.** { *; }
 
 -keepnames class org.acra.sender.HttpSender$** {
     *;

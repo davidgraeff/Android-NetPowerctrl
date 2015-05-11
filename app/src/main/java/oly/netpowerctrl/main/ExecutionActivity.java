@@ -98,11 +98,12 @@ public class ExecutionActivity extends NfcReaderActivity {
 
                 // Read data from intent
                 destination_uuid = extra.getString(EXECUTE_ACTION_UUID, destination_uuid);
-                String scene_json = extra.getString(EXECUTE_SCENE_JSON);
+                String execution_json = extra.getString(EXECUTE_SCENE_JSON);
 
-                if (scene_json != null) {
+                if (execution_json != null) {
                     try {
-                        Executable executable = new ExecutableFabric().newInstance(JSONHelper.getReader(scene_json));
+                        Executable executable = new ExecutableFabric().newInstance(JSONHelper.getReader(execution_json));
+                        executable.setIsSaveable(false);
                         executable.execute(dataService, action_command, executionFinished);
                     } catch (IOException | ClassNotFoundException ignored) {
                     }

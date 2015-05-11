@@ -16,7 +16,7 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 22
-        versionCode 119
+        versionCode 120
         versionName "8.0"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
@@ -26,6 +26,7 @@ android {
 
     lintOptions {
         abortOnError false
+        warning "MissingTranslation"
     }
 
     compileOptions {

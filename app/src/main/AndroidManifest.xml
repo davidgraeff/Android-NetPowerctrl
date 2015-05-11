@@ -21,8 +21,6 @@
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
 
     <uses-feature
@@ -41,7 +39,7 @@
         <!--android:permission="android.permission.MANAGE_DOCUMENTS"-->
         <provider
             android:name=".utils.AssetDocumentProvider"
-            android:authorities="@string/authority"
+            android:authorities="oly.netpowerctrl.utils.AssetDocumentProvider"
             android:enabled="@bool/atLeastKitKat"
             android:exported="true"
             android:grantUriPermissions="true"

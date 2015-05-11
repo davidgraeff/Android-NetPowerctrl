@@ -1,11 +1,14 @@
 package oly.netpowerctrl.plugin_simpleudp;
 
 import android.content.Context;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.R;
@@ -13,7 +16,6 @@ import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
-import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
@@ -28,7 +30,11 @@ import oly.netpowerctrl.network.onExecutionFinished;
  */
 final public class SimpleUDPPlugin extends AbstractBasePlugin {
     public static final String PLUGIN_ID = "org.custom.simpleudp";
-    private static final byte[] requestMessage = "DETECT\n".getBytes();
+    static final int PORT_SEND = 3338; // 12345 rollo
+    static final int PORT_RECEIVE = 3339;
+    private static final String OWN_ID = Settings.Secure.ANDROID_ID;
+    private static final byte[] requestMessage = ("SimpleUDP_detect\n" + OWN_ID).getBytes();
+    private SimpleUDPReceiveUDP simpleUDPReceiveUDP;
 
     public SimpleUDPPlugin(DataService dataService) {
         super(dataService);
@@ -37,31 +43,17 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
 
     /**
      * @param deviceUID The device unique id
-     * @param id        From 1..8 (using the UDP numbering)
+     * @param actionID  The action id
      * @return Return a unique id for an executable where {@link #extractIDFromExecutableUID(String)} can extract the id back.
      */
-    public static String makeExecutableUID(String deviceUID, char id) {
-        return deviceUID + "-" + String.valueOf(id);
+    public static String makeExecutableUID(String deviceUID, String actionID) {
+        return deviceUID + "-" + actionID;
     }
 
-    public static char extractIDFromExecutableUID(String uid) {
-        int i = uid.lastIndexOf('-');
-        if (i == -1) throw new RuntimeException("Could not extract device port id from UID");
-        return uid.charAt(i + 1);
-    }
-
-    public static String extractIDFromExecutableUID_s(String uid) {
+    public static String extractIDFromExecutableUID(String uid) {
         int i = uid.lastIndexOf('-');
         if (i == -1) throw new RuntimeException("Could not extract device port id from UID");
         return uid.substring(i + 1);
-    }
-
-    void fillExecutable(Executable executable, Credentials credentials, String uid, int value) {
-        executable.ui_type = ExecutableType.TypeToggle;
-        executable.deviceUID = credentials.getUid();
-        executable.setUid(uid);
-        executable.current_value = value;
-        executable.setCredentials(credentials, dataService.connections);
     }
 
     Credentials createDefaultCredentials(String MacAddress) {
@@ -86,23 +78,8 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
     public boolean execute(@NonNull Executable executable, int command, onExecutionFinished callback) {
         executable.setExecutionInProgress(true);
 
-        boolean bValue = false;
-        if (command == Executable.ON)
-            bValue = true;
-        else if (command == Executable.OFF)
-            bValue = false;
-        else if (command == Executable.TOGGLE)
-            bValue = executable.current_value <= 0;
-
         DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executable.deviceUID);
         final IOConnection ioConnection = deviceIOConnections != null ? deviceIOConnections.findReachable() : null;
-        final Credentials credentials = dataService.credentials.findByUID(executable.deviceUID);
-
-        if (credentials == null) {
-            Log.e(PLUGIN_ID, "execute. No credentials found!");
-            if (callback != null) callback.addFail();
-            return false;
-        }
 
         if (ioConnection == null) {
             Log.e(PLUGIN_ID, "execute. No reachable DeviceConnection found!");
@@ -110,32 +87,50 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
             return false;
         }
 
-        char id = extractIDFromExecutableUID(executable.getUid());
-        byte[] data = String.format(Locale.US, "%s%c%s%s", bValue ? "IO_on" : "IO_off",
-                id, credentials.userName, credentials.password).getBytes();
-        new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+        final Credentials credentials = ioConnection.credentials;
+
+        if (credentials == null) {
+            Log.e(PLUGIN_ID, "execute. No credentials found!");
+            if (callback != null) callback.addFail();
+            return false;
+        }
+
+        String type = "SWITCH";
+        String actionID = extractIDFromExecutableUID(executable.getUid());
+
+        byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s", OWN_ID, type, actionID, String.valueOf(executable.current_value)).getBytes();
+        new UDPSend(ioConnection, data, UDPErrors.INQUERY_REQUEST);
+
+        if (callback != null) callback.addSuccess();
 
         return true;
     }
 
     @Override
     public void onDestroy() {
-
+        try {
+            simpleUDPReceiveUDP.join(500);
+            simpleUDPReceiveUDP.interrupt();
+        } catch (InterruptedException ignore) {
+        }
     }
 
     @Override
     public void onStart(Context context) {
-
+        simpleUDPReceiveUDP = new SimpleUDPReceiveUDP(this, PORT_RECEIVE);
+        simpleUDPReceiveUDP.start();
     }
 
     @Override
     public boolean isStarted() {
-        return false;
+        return simpleUDPReceiveUDP.isAlive();
     }
 
     @Override
     public void requestData() {
-        UDPSend.createBroadcast(dataService.connections.getAllUDPSendPorts(this), requestMessage, UDPErrors.INQUERY_BROADCAST_REQUEST);
+        Set<Integer> ports = new TreeSet<>();
+        ports.add(PORT_SEND);
+        UDPSend.createBroadcast(ports, requestMessage, UDPErrors.INQUERY_BROADCAST_REQUEST);
     }
 
     @Override
@@ -157,7 +152,32 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
      */
     @Override
     public void setTitle(@NonNull final Executable executable, @NonNull final String new_name, @Nullable final onNameChangeResult callback) {
+        executable.setExecutionInProgress(true);
 
+        DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executable.deviceUID);
+        final IOConnection ioConnection = deviceIOConnections != null ? deviceIOConnections.findReachable() : null;
+
+        if (ioConnection == null) {
+            Log.e(PLUGIN_ID, "execute. No reachable DeviceConnection found!");
+            if (callback != null) callback.onNameChangeResult(false, "No Connection");
+            return;
+        }
+
+        final Credentials credentials = ioConnection.credentials;
+
+        if (credentials == null) {
+            Log.e(PLUGIN_ID, "execute. No credentials found!");
+            if (callback != null) callback.onNameChangeResult(false, "No credentials");
+            return;
+        }
+
+        String type = "RENAME";
+        String actionID = extractIDFromExecutableUID(executable.getUid());
+
+        byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s", OWN_ID, type, actionID, executable.getTitle()).getBytes();
+        new UDPSend(ioConnection, data, UDPErrors.INQUERY_REQUEST);
+
+        if (callback != null) callback.onNameChangeResult(true, null);
     }
 
     @Override

@@ -77,16 +77,20 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
             return;
         }
 
-        items.put(executable.getUid(), executable);
-        notifyObservers(executable, ObserverUpdateActions.AddAction);
-        if (!executable.needCredentials() || executable.getCredentials().isConfigured())
-            storage.save(executable);
+        if (executable.isSaveable()) {
+            items.put(executable.getUid(), executable);
+            notifyObservers(executable, ObserverUpdateActions.AddAction);
+            if (!executable.needCredentials() || executable.getCredentials().isConfigured())
+                storage.save(executable);
+        }
     }
 
     public void remove(Executable executable) {
-        items.remove(executable.deviceUID);
+        items.remove(executable.getUid());
+        dataService.favourites.setFavourite(executable.getUid(), false);
         storage.remove(executable);
         notifyObservers(executable, ObserverUpdateActions.RemoveAction);
+        executable.destroy(dataService);
     }
 
     /**
@@ -100,8 +104,10 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
             Executable executable = iterator.next();
             if (executable.deviceUID.equals(credentials.deviceUID)) {
                 iterator.remove();
-                notifyObservers(executable, ObserverUpdateActions.RemoveAction);
+                storage.remove(executable);
                 dataService.favourites.setFavourite(executable.getUid(), false);
+                notifyObservers(executable, ObserverUpdateActions.RemoveAction);
+                executable.destroy(dataService);
             }
         }
     }
@@ -131,7 +137,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
         }
     }
 
-    public void notifyReachability(Executable executable, ReachabilityStates r) {
+    public void notifyReachability(Executable executable) {
         notifyObservers(executable, ObserverUpdateActions.UpdateReachableAction);
     }
 

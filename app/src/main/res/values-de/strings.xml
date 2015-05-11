@@ -4,6 +4,8 @@
     <string name="app_name_desc">Steuern Sie Netzwerkfähige Steckdosenleisten bequem per App. Bisher werden die folgenden Geräte der ANEL-Elektronik AG (www.anel-elektronik.de) unterstützt: NET-PwrCtrl HUT, NET-PwrCtrl IO, NET-PwrCtrl ADV, NET-PwrCtrl PRO, NET-PwrCtrl HOME</string>
     <string name="shortcut_new_scene">Power-Control Szene</string>
     <string name="shortcut_new_scene_desc">Löse eine Szene direkt von deinem Homescreen aus</string>
+    <string name="shortcut_existing_executable">Existierende Power-Control Szene</string>
+    <string name="shortcut_existing_executable_desc">Lege eine Verknüpfung zu einer existierende Szene an</string>
     <string name="app_name_widget">Power-Control Steckdosenzustand</string>
     <string name="app_name_widget_group">Power-Control Gruppenzustand</string>
 
