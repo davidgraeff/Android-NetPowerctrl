@@ -35,7 +35,6 @@ import oly.netpowerctrl.ioconnection.IOConnectionUDP;
 import oly.netpowerctrl.ioconnection.onNewIOConnection;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
-import oly.netpowerctrl.network.UDPErrors;
 import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.network.onHttpRequestResult;
@@ -212,13 +211,15 @@ final public class AnelPlugin extends AbstractBasePlugin {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+            UDPSend.sendMessage(ioConnection, data);
+            UDPSend.sendMessage(ioConnection, requestMessage);
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+            UDPSend.sendMessage(ioConnection, data);
+            UDPSend.sendMessage(ioConnection, requestMessage);
         }
 
         return command_list.size();
@@ -302,14 +303,16 @@ final public class AnelPlugin extends AbstractBasePlugin {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         id - 10, credentials.userName, credentials.password).getBytes();
-                new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+                UDPSend.sendMessage(ioConnection, data);
+                UDPSend.sendMessage(ioConnection, requestMessage);
                 if (callback != null) callback.addSuccess();
                 return true;
             } else if (id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         id, credentials.userName, credentials.password).getBytes();
-                new UDPSend(ioConnection, data, requestMessage, UDPErrors.INQUERY_REQUEST);
+                UDPSend.sendMessage(ioConnection, data);
+                UDPSend.sendMessage(ioConnection, requestMessage);
                 if (callback != null) callback.addSuccess();
                 return true;
             } else {
@@ -391,7 +394,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
     public void requestData() {
         Set<Integer> ports = dataService.connections.getAllUDPSendPorts(this);
         ports.add(SharedPrefs.getInstance().getDefaultSendPort());
-        UDPSend.createBroadcast(ports, requestMessage, UDPErrors.INQUERY_BROADCAST_REQUEST);
+        UDPSend.sendBroadcast(ports, requestMessage);
     }
 
     @Override
@@ -402,7 +405,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((IOConnectionHTTP) ioConnection,
                     "strg.cfg", "", ioConnection, false, AnelReceiveSendHTTP.receiveCtrlHtml));
         } else {
-            new UDPSend(ioConnection, requestMessage, UDPErrors.INQUERY_REQUEST);
+            UDPSend.sendMessage(ioConnection, requestMessage);
         }
     }
 
@@ -453,7 +456,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
                 String postData;
                 // Parse received web page
                 try {
-                    postData = AnelReceiveSendHTTP.createHTTP_Post_byHTTP_response(response_message, new_name, new AnelTimer[5]);
+                    postData = AnelReceiveSendHTTP.createHTTP_Post_byHTTP_response(response_message, new_name, null);
                 } catch (UnsupportedEncodingException e) {
                     httpRequestResult.httpRequestResult(port, false, "url_encode failed");
                     return;
@@ -569,6 +572,11 @@ final public class AnelPlugin extends AbstractBasePlugin {
         IOConnectionHTTP ioConnectionHTTP = new IOConnectionHTTP(credentials);
         ioConnectionHTTP.connectionUID = UUID.randomUUID().toString();
         callback.newIOConnection(ioConnectionHTTP);
+    }
+
+    @Override
+    public boolean supportsRemoteRename() {
+        return true;
     }
 
 //

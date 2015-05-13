@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
 
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.GuiThreadHandler;
@@ -39,9 +40,9 @@ public class NetworkChangedBroadcastReceiver extends BroadcastReceiver {
         if (activeNetInfo == newNetInfo) return;
         activeNetInfo = newNetInfo;
 
-        App.getMainThreadHandler().removeMessages(GuiThreadHandler.SERVICE_DELAYED_CHECK_REACHABILITY);
-        App.getMainThreadHandler().sendMessageDelayed(
-                App.getMainThreadHandler().obtainMessage(GuiThreadHandler.SERVICE_DELAYED_CHECK_REACHABILITY, 0), 2000);
+        Handler h = App.getMainThreadHandler();
+        h.removeMessages(GuiThreadHandler.SERVICE_DELAYED_CHECK_REACHABILITY);
+        h.sendMessageDelayed(h.obtainMessage(GuiThreadHandler.SERVICE_DELAYED_CHECK_REACHABILITY, newNetInfo, 0), 2000);
     }
 
     public void unregister(Service service) {

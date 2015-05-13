@@ -92,7 +92,6 @@ android {
 dependencies {
     //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08 5.0.89
     //compile 'com.google.android.gms:play-services:5.2.08'
-    compile project(':libraries:Donations')
     //noinspection GradleDependency
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.android.support:support-v13:22.0.0'

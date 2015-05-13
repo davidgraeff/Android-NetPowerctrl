@@ -83,6 +83,7 @@ public class App extends Application {
             config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));
             config.setReportType(HttpSender.Type.JSON);
             config.setResToastText(R.string.crash_toast_text);
+            config.setBuildConfigClass(BuildConfig.class);
             try {
                 config.setMode(ReportingInteractionMode.TOAST);
             } catch (ACRAConfigurationException e) {

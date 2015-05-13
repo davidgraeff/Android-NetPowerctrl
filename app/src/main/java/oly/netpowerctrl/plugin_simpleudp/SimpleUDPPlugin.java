@@ -20,17 +20,31 @@ import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.main.App;
-import oly.netpowerctrl.network.UDPErrors;
 import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.network.onExecutionFinished;
 
+
 /**
- * For executing a name on a DevicePort or commands for multiple DevicePorts (bulk).
- * This is a specialized class for Anel devices.
+ * SimpleUDP Packet Format (command type)
+ * * All ascii based, two characters not allowed in names and ids: newline (\n) and tabulator (\t).
+ * <p/>
+ * General structure (lines are separated by newlines)
+ * ---------------------------------------------------
+ * Header (always SimpleUDP_cmd)
+ * UniqueID (we use the android device unique id)
+ * CMD_TYPE \t actionID \t optional value
+ * <p/>
+ * CMD_TYPE is one of (SET,TOGGLE,RENAME), the actionID has been received before and is known.
+ * <p/>
+ * Example packet:
+ * <p/>
+ * SimpleUDP_cmd\n
+ * NFKAJELAFBAGAHD\n
+ * SET\tACTION2\t1
  */
 final public class SimpleUDPPlugin extends AbstractBasePlugin {
     public static final String PLUGIN_ID = "org.custom.simpleudp";
-    static final int PORT_SEND = 3338; // 12345 rollo
+    static final int PORT_SEND = 3338;
     static final int PORT_RECEIVE = 3339;
     private static final String OWN_ID = Settings.Secure.ANDROID_ID;
     private static final byte[] requestMessage = ("SimpleUDP_detect\n" + OWN_ID).getBytes();
@@ -95,11 +109,11 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
             return false;
         }
 
-        String type = "SWITCH";
+        String type = command == Executable.TOGGLE ? "TOGGLE" : "SET";
         String actionID = extractIDFromExecutableUID(executable.getUid());
 
         byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s", OWN_ID, type, actionID, String.valueOf(executable.current_value)).getBytes();
-        new UDPSend(ioConnection, data, UDPErrors.INQUERY_REQUEST);
+        UDPSend.sendMessage(ioConnection, data);
 
         if (callback != null) callback.addSuccess();
 
@@ -130,17 +144,22 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
     public void requestData() {
         Set<Integer> ports = new TreeSet<>();
         ports.add(PORT_SEND);
-        UDPSend.createBroadcast(ports, requestMessage, UDPErrors.INQUERY_BROADCAST_REQUEST);
+        UDPSend.sendBroadcast(ports, requestMessage);
     }
 
     @Override
     public void requestData(@NonNull IOConnection ioConnection) {
-        new UDPSend(ioConnection, requestMessage, UDPErrors.INQUERY_REQUEST);
+        UDPSend.sendMessage(ioConnection, requestMessage);
     }
 
     @Override
     public Credentials createNewDefaultCredentials() {
         return createDefaultCredentials(UUID.randomUUID().toString());
+    }
+
+    @Override
+    public boolean supportsRemoteRename() {
+        return false;
     }
 
     /**
@@ -175,7 +194,7 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
         String actionID = extractIDFromExecutableUID(executable.getUid());
 
         byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s", OWN_ID, type, actionID, executable.getTitle()).getBytes();
-        new UDPSend(ioConnection, data, UDPErrors.INQUERY_REQUEST);
+        UDPSend.sendMessage(ioConnection, data);
 
         if (callback != null) callback.onNameChangeResult(true, null);
     }

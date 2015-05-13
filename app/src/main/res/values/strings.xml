@@ -136,7 +136,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="drawer_feedback">Feedback</string>
     <string name="scene_make_favourite">Make favorite</string>
     <string name="scene_remove_favourite">No favorite anymore</string>
-    <string name="help_scene">A scene combines multiple actions. A scene can have a name and an icon. You may add a copy of a scene to your homescreen for fast access. If a scene is a favorite, it appears in the left navigation menu.</string>
+    <string name="help_scene">A scene combines multiple actions like switch on/off or toggle. You may add a copy of a scene to your home screen for fast access. If a scene is a favorite, it appears in the android top navigation bar, if enabled in the settings.</string>
+    <string name="help_shortcut">Create a scene now. An icon will be created for it on your home screen / app launcher for fast access.</string>
     <string name="error_plugin_not_installed">Plugin not installed!</string>
     <string name="renameInProgress">Renaming in progress…</string>
     <string name="renameFailed">Renaming failed: %1$s</string>
@@ -361,13 +362,13 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="groups_all">Show all</string>
     <string name="automatic_refresh_devices">Refresh device list.</string>
     <string name="error_no_devices">Keine Geräte gefunden!</string>
-    <string name="feedback_contact_title">Contact</string>
+    <string name="feedback_contact_title">Community</string>
     <string name="app_logo">Logo</string>
     <string name="app_license_title">Lizenz und Gewährleistung</string>
     <string name="Mail">Mail</string>
     <string name="preference_icon_theme">Select icon theme</string>
     <string name="automatic_found_unconfigured_devices">%1$d newly detected devices found.</string>
-    <string name="automatic_finished_result">%1$d sucessfully configured. %2$d not configured (No default access data).</string>
+    <string name="automatic_finished_result">%1$d successfully configured. %2$d not configured (No default access data).</string>
     <string name="automatic_not_found_unconfigured_devices">No unconfigured devices found.</string>
     <string name="help_devices">This part of the app shows you a list of configured and newly detected devices close to you. A newly detected devices name is prefixed with "New: ". </string>
     <string name="feedback_posted_wishes">Reported wishes/improvements:</string>
@@ -389,4 +390,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="widget_group_no_group">No group created so far. Create one within the app and try again.</string>
     <string name="plugin_simpleudp">SimpleUDP</string>
     <string name="scene_add_item">Element hinzufügen</string>
+    <string name="help_edit_outlet_title">Edit outlet</string>
+    <string name="help_edit_outlet">Edit the name of this element, change the icons for each state or set the element as favourite in this screen.</string>
 </resources>

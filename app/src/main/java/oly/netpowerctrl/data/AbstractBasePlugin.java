@@ -98,4 +98,6 @@ public abstract class AbstractBasePlugin {
      */
     public void addNewIOConnection(@NonNull Credentials credentials, @NonNull onNewIOConnection callback) {
     }
+
+    public abstract boolean supportsRemoteRename();
 }

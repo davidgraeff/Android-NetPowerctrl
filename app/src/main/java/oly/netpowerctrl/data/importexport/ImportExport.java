@@ -35,7 +35,6 @@ public class ImportExport {
         loadStoreCollections.clear(dataService.connections.getStorage());
         loadStoreCollections.clear(dataService.executables.getStorage());
         loadStoreCollections.clear(dataService.credentials.getStorage());
-        loadStoreCollections.clear(dataService.timers.getStorage());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

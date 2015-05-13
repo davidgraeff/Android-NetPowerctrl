@@ -17,7 +17,6 @@ import oly.netpowerctrl.ioconnection.IOConnectionFabric;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.status_bar.FavItem;
-import oly.netpowerctrl.timer.Timer;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.FactoryInterface;
 import oly.netpowerctrl.utils.IOInterface;
@@ -80,7 +79,6 @@ public class LoadStoreCollections implements onStorageUpdate {
         dataService.connections.getStorage().setStorage(this);
         dataService.executables.getStorage().setStorage(this);
         dataService.groups.getStorage().setStorage(this);
-        dataService.timers.getStorage().setStorage(this);
         dataService.favourites.getStorage().setStorage(this);
 
         new AsyncTask<Void, Void, Boolean>() {
@@ -111,7 +109,6 @@ public class LoadStoreCollections implements onStorageUpdate {
         dataService.connections.getStorage().setStorage(null);
         dataService.executables.getStorage().setStorage(null);
         dataService.groups.getStorage().setStorage(null);
-        dataService.timers.getStorage().setStorage(null);
         dataService.favourites.getStorage().setStorage(null);
     }
 
@@ -219,12 +216,6 @@ public class LoadStoreCollections implements onStorageUpdate {
 
         try {
             readOtherThreadCollection(dataService.groups.getStorage(), Group.class, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            readOtherThreadCollection(dataService.timers.getStorage(), Timer.class, false);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,5 +1,7 @@
 package oly.netpowerctrl.plugin_anel;
 
+import android.support.annotation.Nullable;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -19,7 +21,6 @@ import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionHTTP;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.ReachabilityStates;
-import oly.netpowerctrl.timer.Timer;
 
 /**
  * Handles all http traffic between anel and the app. Including receiving alerts.
@@ -111,113 +112,76 @@ public class AnelReceiveSendHTTP {
      * @throws java.io.IOException
      */
     static String createHTTP_Post_byHTTP_response(String response_message,
-                                                  final String newName, final AnelTimer[] newTimer)
+                                                  final String newName, @Nullable AnelTimer[] newTimer)
             throws SAXException, IOException {
 
-        final String[] complete_post_data = {""};
-
         XMLReader parser = XMLReaderFactory.createXMLReader("org.ccil.cowan.tagsoup.Parser");
-        org.xml.sax.ContentHandler handler = new DefaultHandler() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public void startElement(String uri,
-                                     String localName,
-                                     String qName,
-                                     org.xml.sax.Attributes attributes) throws SAXException {
-                if (!qName.equals("input"))
-                    return;
-                String name = attributes.getValue("name");
-                String value = attributes.getValue("value");
-                String checked = attributes.getValue("checked");
-
-                if (name == null)
-                    return;
-
-                if (checked != null && (
-                        (name.equals("T00") && newTimer[0] == null) ||
-                                (name.equals("T01") && newTimer[1] == null) ||
-                                (name.equals("T02") && newTimer[2] == null) ||
-                                (name.equals("T03") && newTimer[3] == null) ||
-                                (name.equals("T04") && newTimer[4] == null))) {
-                    complete_post_data[0] += name + "on" + "&";
-                    return;
-                }
-
-                if (value == null)
-                    return;
-
-                if (checked != null && name.equals("TF")) {
-                    complete_post_data[0] += name + "=" + value + "&";
-                    return;
-                }
-
-                if (name.equals("T4") ||
-                        (name.equals("TN") && newName == null) ||
-                        (name.equals("T10") || name.equals("T20") || name.equals("T30") && newTimer[0] == null) ||
-                        (name.equals("T11") || name.equals("T21") || name.equals("T31") && newTimer[1] == null) ||
-                        (name.equals("T12") || name.equals("T22") || name.equals("T32") && newTimer[2] == null) ||
-                        (name.equals("T13") || name.equals("T23") || name.equals("T33") && newTimer[3] == null) ||
-                        (name.equals("T14") || name.equals("T24") || name.equals("T34") && newTimer[4] == null)
-                        )
-                    complete_post_data[0] += name + "=" + URLEncoder.encode(value) + "&";
-            }
-        };
+        XMLParser handler = new XMLParser("", newName);
         parser.setContentHandler(handler);
         parser.parse(new InputSource(new StringReader(response_message)));
+        String complete_post_data = handler.getComplete_post_data();
 
         if (newName != null)
-            complete_post_data[0] += "TN=" + URLEncoder.encode(newName, "utf-8") + "&";
+            complete_post_data += "TN=" + URLEncoder.encode(newName, "utf-8") + "&";
 
-        for (int i = 0; i < newTimer.length; ++i) {
-            AnelTimer current = newTimer[i];
-            if (current == null)
-                continue;
+        return complete_post_data + "TS=Speichern";
+    }
 
-            String timer = String.valueOf(i);
+    private static class XMLParser extends DefaultHandler {
+        private String complete_post_data;
+        private String newName;
 
-            //  T10=1234567 & T20=00:00 & T30=23:59
-
-            if (current.enabled)
-                complete_post_data[0] += "T0" + timer + "=on&";
-
-            // Weekdays
-            complete_post_data[0] += "T1" + timer + "=";
-            for (int w = 0; w < current.weekdays.length; ++w)
-                if (current.weekdays[w])
-                    complete_post_data[0] += String.valueOf(w + 1);
-            complete_post_data[0] += "&";
-
-            if (current.hour_minute_random_interval == -1)
-                current.hour_minute_random_interval = 99 * 60 + 99;
-
-            // on-time
-            complete_post_data[0] += "T2" + timer + "=";
-            if (current.hour_minute_start == -1)
-                complete_post_data[0] += "99:99";
-            else
-                complete_post_data[0] += URLEncoder.encode(Timer.time(current.hour_minute_start), "utf-8");
-            complete_post_data[0] += "&";
-
-            // off-time
-            complete_post_data[0] += "T3" + timer + "=";
-            if (current.hour_minute_stop == -1)
-                complete_post_data[0] += "99:99";
-            else
-                complete_post_data[0] += URLEncoder.encode(Timer.time(current.hour_minute_stop), "utf-8");
-            complete_post_data[0] += "&";
-
-            if (i == 4) {
-                // random-time
-                complete_post_data[0] += "T4=";
-                if (current.hour_minute_random_interval == -1)
-                    complete_post_data[0] += "99:99";
-                else
-                    complete_post_data[0] += URLEncoder.encode(Timer.time(current.hour_minute_random_interval), "utf-8");
-                complete_post_data[0] += "&";
-            }
+        public XMLParser(String complete_post_data, String newName) {
+            this.complete_post_data = complete_post_data;
+            this.newName = newName;
         }
 
+        @SuppressWarnings("deprecation")
+        @Override
+        public void startElement(String uri,
+                                 String localName,
+                                 String qName,
+                                 org.xml.sax.Attributes attributes) throws SAXException {
+            if (!qName.equals("input"))
+                return;
+            String name = attributes.getValue("name");
+            String value = attributes.getValue("value");
+            String checked = attributes.getValue("checked");
 
-        return complete_post_data[0] + "TS=Speichern";
+            if (name == null)
+                return;
+
+            if (checked != null && (
+                    (name.equals("T00")) ||
+                            (name.equals("T01")) ||
+                            (name.equals("T02")) ||
+                            (name.equals("T03")) ||
+                            (name.equals("T04")))) {
+                complete_post_data += name + "=on" + "&";
+                return;
+            }
+
+            if (value == null)
+                return;
+
+            if (checked != null && name.equals("TF")) {
+                complete_post_data += name + "=" + value + "&";
+                return;
+            }
+
+            if (name.equals("T4") ||
+                    (name.equals("TN") && newName == null) ||
+                    (name.equals("T10") || name.equals("T20") || name.equals("T30")) ||
+                    (name.equals("T11") || name.equals("T21") || name.equals("T31")) ||
+                    (name.equals("T12") || name.equals("T22") || name.equals("T32")) ||
+                    (name.equals("T13") || name.equals("T23") || name.equals("T33")) ||
+                    (name.equals("T14") || name.equals("T24") || name.equals("T34"))
+                    )
+                complete_post_data += name + "=" + URLEncoder.encode(value) + "&";
+        }
+
+        public String getComplete_post_data() {
+            return complete_post_data;
+        }
     }
 }

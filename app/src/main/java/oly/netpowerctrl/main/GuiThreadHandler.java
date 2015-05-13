@@ -11,7 +11,8 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.utils.Logging;
 
 /**
- * Created by david on 04.05.15.
+ * The main gui thread handler for delayed service exit and delayed reaction to network changes
+ * as well as for showing Toasts delayed.
  */
 public class GuiThreadHandler extends Handler {
     public static final int SERVICE_DELAYED_EXIT = 1816;
@@ -42,8 +43,13 @@ public class GuiThreadHandler extends Handler {
             case SERVICE_DELAYED_CHECK_REACHABILITY:
                 dataService = DataService.getService();
                 Log.w(TAG, "SERVICE_DELAYED_CHECK_REACHABILITY");
-                Logging.getInstance().logEnergy("Network changed. check availability");
-                dataService.refreshExistingDevices();
+                if (msg.arg1 == 0) {
+                    Logging.getInstance().logEnergy("Network offline");
+                    dataService.makeAllOffline();
+                } else {
+                    Logging.getInstance().logEnergy("Network changed. check availability");
+                    dataService.refreshExistingDevices();
+                }
                 break;
             default:
                 super.handleMessage(msg);

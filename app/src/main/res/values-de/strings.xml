@@ -308,6 +308,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     \n\nAuf dem Homescreen:\nLege die Kopie oder Verknüpfung einer Szene auf deinem Launcher ab und führe die Szene von dort direkt aus.\n\nSchnellzugriff:\nMache eine Szene zu einem Favoriten und wenn in den Einstellungen "In Statusbar anzeigen" aktiv ist, werden bis zu drei Favoriten-Szenen auch in der Android-Statusbar aufgelistet.
     \n\nMaster/Slave-Szenen:\nAlle Steckdosen/IOs in solch einer Szene richten sich in Ihrem Zustand nach einer ausgewählten.
     </string>
+    <string name="help_shortcut">Erstelle hier eine Szene welche auf deinem Launcher als Icon abgelegt wird und führe die Szene von dort direkt aus.</string>
     <string name="open_google_market">Google Play</string>
     <string name="app_name_disclaimer">Dies ist eine quelloffene, freie Software ohne Gewährleistung auf Funktionalität. Der Code ist zu finden unter www.github.com/davidgraeff</string>
     <string name="feedback_contact">Sie können mich einfach per Mail und über die Google Plus Gruppe erreichen und mir Wünsche und Verbesserungsvorschläge zusenden. Bewerten Sie die App im Google Play Store um Ihre Meinung über die App anderen Nutzern und Interessenten darzulegen.</string>
@@ -366,7 +367,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="groups_all">Alles zeigen</string>
     <string name="automatic_refresh_devices">Automatische Erkennung wiederholen</string>
     <string name="error_no_devices">Keine Geräte gefunden!</string>
-    <string name="feedback_contact_title">Kontakt</string>
+    <string name="feedback_contact_title">Community</string>
     <string name="app_logo">Logo</string>
     <string name="app_license_title">Lizenz und Gewährleistung</string>
     <string name="Mail">E-Mail</string>
@@ -393,4 +394,6 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="widget_group_no_group">Bisher keine Gruppe erstellt! Erstelle in der App eine und versuche es noch einmal.</string>
     <string name="plugin_simpleudp">SimpleUDP</string>
     <string name="scene_add_item">Element hinzufügen</string>
+    <string name="help_edit_outlet_title">Bearbeite Element</string>
+    <string name="help_edit_outlet">Stelle den Namen um, setzte Icons für die verschiedenen Zustände or mache dieses Element zu einem Favouriten.</string>
 </resources>

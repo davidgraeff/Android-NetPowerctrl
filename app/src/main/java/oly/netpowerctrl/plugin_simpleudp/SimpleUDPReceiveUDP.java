@@ -18,7 +18,7 @@ import oly.netpowerctrl.utils.Logging;
  * <p/>
  * General structure (lines are separated by newlines)
  * ---------------------------------------------------
- * Header (always SimpleUDP_info or SimpleUDP_info_ack)
+ * Header (always SimpleUDP_info or SimpleUDP_info_ack or SimpleUDP_info_fail)
  * DeviceUniqueID (often Mac address of peer)
  * Name of device (english name of device, user may rename it within the app)
  * Version string (no special formatting)
@@ -32,9 +32,10 @@ import oly.netpowerctrl.utils.Logging;
  * ----------------------
  * TYPE \t actionID string \t action name \t optional value
  * <p/>
- * TYPE is one of (STATELESS,TOGGLE,RANGE), the actionID may be any string but have to be unique among
+ * TYPE is one of (STATELESS,TOGGLE,RANGE,NOTEXIST), the actionID may be any string but have to be unique among
  * all actions. The action name can be any string as long as it does not contain \n and \t. The
- * value is only necessary if the type is TOGGLE or RANGE.
+ * value is only necessary if the type is TOGGLE or RANGE. If the Header is equal to SimpleUDP_info_fail
+ * the TYPE may be NOTEXIST if you requested a command on a non existing action.
  * <p/>
  * Example packet:
  * <p/>
@@ -97,6 +98,7 @@ class SimpleUDPReceiveUDP extends UDPReceiving {
         dataService.credentials.put(credentials);
 
         for (int i = action_start_index; i < msg.length; ++i) {
+            if (msg[i].length() == 0) continue;
             String outlet[] = msg[i].split("\t");
             if (outlet.length < 3) {
                 Logging.getInstance().logDetect("SimpleUDP Receive Error outlet too short\n" + msg[i]);
@@ -121,8 +123,11 @@ class SimpleUDPReceiveUDP extends UDPReceiving {
                     executable.min_value = 0;
                     executable.current_value = Integer.valueOf(outlet[3]);
                     break;
+                case "NOTEXISTS":
+                    Logging.getInstance().logDetect("SimpleUDP: Action does not exist\n" + outlet[1]);
+                    continue;
                 default:
-                    Logging.getInstance().logDetect("SimpleUDP Receive Error outlet type\n" + outlet[0]);
+                    Logging.getInstance().logDetect("SimpleUDP Receive Error outlet type\n" + outlet[1]);
                     continue;
             }
 

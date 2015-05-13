@@ -31,11 +31,11 @@ import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.GuiThreadHandler;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.NetworkChangedBroadcastReceiver;
+import oly.netpowerctrl.network.ReachabilityStates;
+import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.plugin_anel.AnelPlugin;
 import oly.netpowerctrl.plugin_simpleudp.SimpleUDPPlugin;
-import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.status_bar.FavCollection;
-import oly.netpowerctrl.timer.TimerCollection;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -59,7 +59,6 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     final public CredentialsCollection credentials = new CredentialsCollection(this);
     final public GroupCollection groups = new GroupCollection(this);
     final public FavCollection favourites = new FavCollection(this);
-    final public TimerCollection timers = new TimerCollection(this);
     final public IOConnectionsCollection connections = new IOConnectionsCollection(this);
     private final DataLoadedObserver observersOnDataLoaded = new DataLoadedObserver();
     private final List<AbstractBasePlugin> plugins = new ArrayList<>();
@@ -173,9 +172,6 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
             return START_NOT_STICKY;
         } else {
             Logging.getInstance().logMain("START");
-            // Although the next alarm should be registered to android already,
-            // we do it again, just to be sure.
-            TimerCollection.armAndroidAlarm(this, SharedPrefs.getNextAlarmCheckTimestamp(this));
         }
 
         // We are a singleton, set the instance variable now.
@@ -232,6 +228,8 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
 
         loadStoreCollections.finish(this);
         loadStoreCollections = null;
+
+        UDPSend.killSendThread();
 
         // Clean up
         for (AbstractBasePlugin abstractBasePlugin : plugins)
@@ -332,7 +330,6 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         connections.storage.clear();
         credentials.storage.clear();
         groups.storage.clear();
-        timers.storage.clear();
         executables.storage.clear();
         observersOnDataLoaded.reset();
     }
@@ -404,6 +401,14 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         for (AbstractBasePlugin abstractBasePlugin : plugins) {
             abstractBasePlugin.requestData();
         }
+    }
+
+    /**
+     * This is issued by the network observer if no network connection is active (no wlan, no mobile network)
+     */
+    public void makeAllOffline() {
+        connections.clearNotConfigured();
+        connections.applyStateToAll(ReachabilityStates.NotReachable);
     }
 
     public void remove(Credentials credentials) {

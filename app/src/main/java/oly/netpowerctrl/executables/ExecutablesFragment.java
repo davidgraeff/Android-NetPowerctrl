@@ -299,7 +299,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
             @Override
             public void onClick(View view) {
                 if (SharedPrefs.getInstance().isFirstTimeSceneAdd()) {
-                    SceneHelp.showHelp(getActivity());
+                    SceneHelp.showHelp(getActivity(), R.string.scene_add, R.string.help_scene);
                 } else {
                     Intent it = new Intent(getActivity(), EditActivity.class);
                     it.putExtra(EditActivity.CREATE_SCENE, true);

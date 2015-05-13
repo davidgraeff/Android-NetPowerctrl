@@ -138,12 +138,11 @@ public class Executable implements Comparable, IOInterface {
     public void setTitle(String title, @NonNull onNameChangeResult callback) {
         if (title.equals(this.title)) return;
 
-        this.title = title;
-
-        if (credentials != null) {
+        if (credentials != null && credentials.getPlugin().supportsRemoteRename()) {
             callback.onNameChangeStart(this);
             credentials.getPlugin().setTitle(this, title, callback);
-        }
+        } else
+            this.title = title;
     }
 
     public boolean isHidden() {

@@ -60,10 +60,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/name"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_toEndOf="@id/version_label"
-                    android:layout_toRightOf="@id/version_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -83,10 +81,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/version"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_toEndOf="@id/bugs_label"
-                    android:layout_toRightOf="@id/bugs_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -106,9 +102,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
-                    android:layout_toRightOf="@id/bugs2_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -128,10 +122,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs2"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_toEndOf="@id/bugs3_label"
-                    android:layout_toRightOf="@id/bugs3_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -151,10 +143,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs3"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_toEndOf="@id/bugs4_label"
-                    android:layout_toRightOf="@id/bugs4_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -174,10 +164,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs4"
-                    android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_toEndOf="@id/bugs5_label"
-                    android:layout_toRightOf="@id/bugs5_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -219,18 +207,17 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginEnd="10dp"
-                        android:layout_marginRight="10dp"
                         android:layout_weight="1"
                         android:text="@string/Mail" />
 
                     <com.rey.material.widget.Button
-                        android:id="@+id/beta"
+                        android:id="@+id/google_market"
                         style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:text="@string/enter_beta" />
+                        android:text="@string/open_google_market" />
 
                 </LinearLayout>
             </RelativeLayout>
@@ -285,7 +272,6 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginEnd="10dp"
-                        android:layout_marginRight="10dp"
                         android:layout_weight="1"
                         android:text="@string/open_source_licenses" />
 
@@ -353,18 +339,17 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginEnd="10dp"
-                        android:layout_marginRight="10dp"
                         android:layout_weight="1"
                         android:text="@string/feedback_google_plus" />
 
                     <com.rey.material.widget.Button
-                        android:id="@+id/google_market"
+                        android:id="@+id/beta"
                         style="@style/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:text="@string/open_google_market" />
+                        android:text="@string/enter_beta" />
 
                 </LinearLayout>
 

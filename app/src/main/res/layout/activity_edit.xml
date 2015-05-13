@@ -26,8 +26,6 @@
 
             <include layout="@layout/executable_options" />
 
-            <include layout="@layout/executable_timers" />
-
             <!-- bottom space to make all options viewable -->
             <View
                 android:layout_width="match_parent"

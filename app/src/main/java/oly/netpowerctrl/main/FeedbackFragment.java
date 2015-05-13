@@ -9,20 +9,19 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.sufficientlysecure.donations.DonationsFragment;
-
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.ui.ChangeLogUtil;
-import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.utils.GithubAndCloudant;
 
 public class FeedbackFragment extends Fragment {
@@ -136,7 +135,13 @@ public class FeedbackFragment extends Fragment {
         view.findViewById(R.id.donate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentUtils.changeToFragment(getActivity(), DonationsFragment.class.getName());
+                String p1 = "aHR0cHM6Ly93d3cucGF5cGFsLmNvbS9jZ2ktYmluL3dlYnNjcj9jbWQ9X3MteGNsaWNrJmhvc3RlZF9idXR0b25faWQ9OTNUQUFUSkIzV0pGMg==";
+                try {
+                    String text = new String(Base64.decode(p1, Base64.DEFAULT), "UTF-8");
+                    Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(text));
+                    getActivity().startActivity(browse);
+                } catch (UnsupportedEncodingException ignored) {
+                }
             }
         });
 

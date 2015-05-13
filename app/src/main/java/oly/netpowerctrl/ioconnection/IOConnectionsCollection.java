@@ -280,4 +280,15 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
         }
         return ports;
     }
+
+    public void applyStateToAll(ReachabilityStates state) {
+        for (DeviceIOConnections deviceIOConnections : items.values()) {
+            for (Iterator<IOConnection> iterator = deviceIOConnections.iterator(); iterator.hasNext(); ) {
+                IOConnection ioConnection = iterator.next();
+                ioConnection.resetChanged();
+                ioConnection.setReachability(state);
+                putInternal(deviceIOConnections, ioConnection);
+            }
+        }
+    }
 }

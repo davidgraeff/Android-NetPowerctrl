@@ -1,8 +1,10 @@
 package oly.netpowerctrl.main;
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -18,14 +20,11 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,13 +48,7 @@ import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.scenes.SceneElementsAddDialog;
 import oly.netpowerctrl.scenes.SceneElementsAssigning;
 import oly.netpowerctrl.scenes.SceneHelp;
-import oly.netpowerctrl.timer.Timer;
-import oly.netpowerctrl.timer.TimerAdapter;
-import oly.netpowerctrl.timer.TimerEditFragmentDialog;
 import oly.netpowerctrl.ui.FragmentUtils;
-import oly.netpowerctrl.ui.LineDividerDecoration;
-import oly.netpowerctrl.ui.RecyclerItemClickListener;
-import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
@@ -85,7 +78,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     CompoundButton chk_hide;
     private int mEditType = EDIT_TYPE_SHORTCUT;
     private Set<String> checked_groups = new TreeSet<>();
-    private View executable_timers;
     private boolean isChanged = false;
     private FloatingActionButton btnSaveOrTrash;
     // If we are editing a scene, sceneElementsAssigning will be set up.
@@ -104,8 +96,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     private boolean isFavourite;
     // Groups
     private FlowLayout groups_layout;
-    // Timers
-    private TimerAdapter timerAdapter;
     // Other
     private Toast toast;
     private boolean iconMenuVisible = false;
@@ -171,58 +161,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         chk_hide = (CompoundButton) findViewById(R.id.chk_hide);
         chk_hide.setOnCheckedChangeListener(updateSaveButtonOnChecked);
 
-        executable_timers = findViewById(R.id.executable_timers);
-        timerAdapter = new TimerAdapter(this);
-        RecyclerViewWithAdapter<TimerAdapter> recyclerViewWithAdapter = new RecyclerViewWithAdapter<>(this, executable_timers, timerAdapter, R.string.alarms_no_alarms);
-        recyclerViewWithAdapter.setOnItemClickListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public boolean onItemClick(View view, int position, boolean isLongClick) {
-                TimerEditFragmentDialog fragment = (TimerEditFragmentDialog)
-                        Fragment.instantiate(EditActivity.this, TimerEditFragmentDialog.class.getName());
-                fragment.setArguments(TimerEditFragmentDialog.createArgumentsLoadTimer(timerAdapter.getAlarm(position)));
-                FragmentUtils.changeToDialog(EditActivity.this, fragment);
-                return false;
-            }
-        }, null));
-        recyclerViewWithAdapter.getRecyclerView().addItemDecoration(new LineDividerDecoration(this, LineDividerDecoration.VERTICAL_LIST) {
-            @Override
-            public boolean dividerForPosition(int position) {
-                return true;
-            }
-        });
-
-        Button btnTimerAdd = (Button) findViewById(R.id.btnAddTimer);
-        btnTimerAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                PopupMenu popup = new PopupMenu(EditActivity.this, view);
-                MenuInflater inflater = popup.getMenuInflater();
-                inflater.inflate(R.menu.timer_add, popup.getMenu());
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        TimerEditFragmentDialog fragmentDialog = (TimerEditFragmentDialog) Fragment.instantiate(EditActivity.this, TimerEditFragmentDialog.class.getName());
-                        switch (menuItem.getItemId()) {
-                            case R.id.menu_timer_android_once:
-                                fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentNewTimer(Timer.TYPE_ONCE, true, executable));
-                                FragmentUtils.changeToDialog(EditActivity.this, fragmentDialog);
-                                return true;
-                            case R.id.menu_timer_android_weekdays:
-                                fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentNewTimer(Timer.TYPE_RANGE_ON_WEEKDAYS, true, executable));
-                                FragmentUtils.changeToDialog(EditActivity.this, fragmentDialog);
-                                return true;
-                            case R.id.menu_timer_device_weekdays:
-                                fragmentDialog.setArguments(TimerEditFragmentDialog.createArgumentNewTimer(Timer.TYPE_RANGE_ON_WEEKDAYS, false, executable));
-                                FragmentUtils.changeToDialog(EditActivity.this, fragmentDialog);
-                                return true;
-                        }
-                        throw new RuntimeException("Menu switch missing entry!");
-                    }
-                });
-                popup.show();
-            }
-        });
-
         groups_layout = (FlowLayout) findViewById(R.id.groups_layout);
         Button btnGroupAdd = (Button) findViewById(R.id.btnAddGroup);
         btnGroupAdd.setOnClickListener(new View.OnClickListener() {
@@ -280,14 +218,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
                     }
                 } else
                     save_and_close();
-            }
-        });
-
-        View btnHelp = findViewById(R.id.btnHelp);
-        btnHelp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SceneHelp.showHelp(EditActivity.this);
             }
         });
 
@@ -354,7 +284,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
     @Override
     protected void onDestroy() {
-        timerAdapter.finish();
         super.onDestroy();
     }
 
@@ -483,8 +412,6 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             getSupportActionBar().setSubtitle(getString(R.string.outlet_edit_title, executable.getTitle()));
             scene_items_view.setVisibility(View.GONE);
             btnAdd.setVisibility(View.GONE);
-            executable_timers.setVisibility(View.VISIBLE);
-            timerAdapter.start(dataService.timers, executable);
         }
 
         isLoaded = true;
@@ -507,14 +434,28 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
     private void prepareInterface(DataService dataService) {
 
+        View btnHelp = findViewById(R.id.btnHelp);
+        final int help_res;
+        final int help_title_res;
         if (mEditType == EDIT_TYPE_SHORTCUT) {
             show_mainWindow.setVisibility(View.VISIBLE);
             enable_feedback.setVisibility(View.VISIBLE);
             groups_layout.setVisibility(View.GONE);
             chk_hide.setVisibility(View.GONE);
+            help_res = R.string.help_shortcut;
+            help_title_res = R.string.shortcut_new_scene;
         } else {
             updateGroups(dataService.groups);
+            help_res = mEditType == EDIT_TYPE_SCENE ? R.string.help_scene : R.string.help_edit_outlet;
+            help_title_res = mEditType == EDIT_TYPE_SCENE ? R.string.scene_add : R.string.help_edit_outlet_title;
         }
+
+        btnHelp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SceneHelp.showHelp(EditActivity.this, help_title_res, help_res);
+            }
+        });
 
         chk_hide.setVisibility(View.GONE);
         chk_hide.setChecked(executable.isHidden());
@@ -579,6 +520,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         }
 
         executable.setTitle(newName, this);
+        if (progressDialog != null) return;
 
         if (mEditType == EDIT_TYPE_SHORTCUT) {
             Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditActivity.this,
@@ -663,7 +605,18 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     @Override
     public void onNameChangeResult(boolean success, String error_message) {
         if (progressDialog != null) {
-            progressDialog.dismiss();
+            if (progressDialog.isShowing()) {
+                //get the Context object that was used to great the dialog
+                Context context = ((ContextWrapper) progressDialog.getContext()).getBaseContext();
+
+                //if the Context used here was an activity AND it hasn't been finished or destroyed
+                //then dismiss it
+                if (context instanceof Activity) {
+                    if (!((Activity) context).isFinishing() && !((Activity) context).isDestroyed())
+                        progressDialog.dismiss();
+                } else //if the Context used wasnt an Activity, then dismiss it too
+                    progressDialog.dismiss();
+            }
             progressDialog = null;
         }
 
@@ -672,6 +625,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             Toast.makeText(App.instance, App.instance.getString(R.string.renameFailed, error_message), Toast.LENGTH_SHORT).show();
         } else {
             executable.title = (((EditText) findViewById(R.id.scene_name)).getText().toString().trim());
+            save_and_close();
         }
     }
 
