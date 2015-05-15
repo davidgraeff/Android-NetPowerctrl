@@ -8,9 +8,9 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.widget.TextView;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.groups.GroupAdapter;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;
@@ -26,12 +26,6 @@ public class ConfigGroupActivity extends Activity implements RecyclerItemClickLi
         super.onCreate(savedInstanceState);
         setResult(RESULT_CANCELED);
 
-//         Set theme, call super onCreate and set content view
-        if (SharedPrefs.getInstance().isDarkTheme()) {
-            setTheme(R.style.Theme_CustomDarkThemeDialog);
-        } else {
-            setTheme(R.style.Theme_CustomLightThemeDialog);
-        }
         FragmentUtils.makeActivityDialog(this);
 
         setContentView(R.layout.fragment_with_list);

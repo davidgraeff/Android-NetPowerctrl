@@ -7,6 +7,7 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.status_bar.AndroidStatusBarService;

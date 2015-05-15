@@ -5,10 +5,10 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableCollection;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 

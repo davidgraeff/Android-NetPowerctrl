@@ -45,6 +45,8 @@
         <item name="EditTextLarge">@style/EditTextLargeLight</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
 
         <item name="mcab_background_color">?colorPrimaryDark</item>
         <item name="mcab_close_drawable">@drawable/abc_ic_ab_back_mtrl_am_alpha</item>
@@ -52,11 +54,14 @@
     </style>
 
     <style name="Theme.CustomLightThemeDialog" parent="Theme.CustomLightTheme">
+        <item name="activity_background">@android:color/background_light</item>
+        <item name="android:windowBackground">@android:color/background_light</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
     </style>
@@ -116,15 +121,6 @@
         <item name="mcab_popup_theme">@style/ThemeOverlay.AppCompat.Dark</item>
     </style>
 
-    <style name="Theme.CustomDarkThemeDialog" parent="Theme.CustomDarkTheme">
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:windowCloseOnTouchOutside">true</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
-    </style>
-
-
     <style name="ToolBarStyleTransparent" parent="@style/Base.Widget.AppCompat.ActionBar">
         <item name="android:background">#66000000</item>
         <item name="android:textColorPrimary">@android:color/white</item>
@@ -145,9 +141,9 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
     </style>
 
     <style name="Theme.StartTheme" parent="Theme.AppCompat">

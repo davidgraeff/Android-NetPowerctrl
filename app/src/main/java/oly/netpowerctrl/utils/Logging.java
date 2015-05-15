@@ -18,8 +18,8 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**

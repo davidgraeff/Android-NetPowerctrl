@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.IconCacheCleared;
@@ -46,7 +47,6 @@ import oly.netpowerctrl.executables.adapter.InputExecutables;
 import oly.netpowerctrl.executables.adapter.InputGroupChanges;
 import oly.netpowerctrl.groups.GroupListFragment;
 import oly.netpowerctrl.groups.GroupUtilities;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.EditActivity;
 import oly.netpowerctrl.main.FeedbackFragment;
 import oly.netpowerctrl.main.MainActivity;

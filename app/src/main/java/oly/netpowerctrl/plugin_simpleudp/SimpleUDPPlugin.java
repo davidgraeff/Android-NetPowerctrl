@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
@@ -19,7 +20,6 @@ import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.network.onExecutionFinished;
 

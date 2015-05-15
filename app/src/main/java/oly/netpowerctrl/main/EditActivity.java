@@ -35,6 +35,7 @@ import com.wefika.flowlayout.FlowLayout;
 import java.util.Set;
 import java.util.TreeSet;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.IconSelected;

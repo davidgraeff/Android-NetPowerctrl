@@ -8,8 +8,8 @@ import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.App;
 
 /**
  * Access to preferences stored in the android preference manager. An object of this class

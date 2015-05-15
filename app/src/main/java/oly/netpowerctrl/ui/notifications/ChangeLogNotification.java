@@ -4,8 +4,8 @@ import android.app.Activity;
 
 import com.rey.material.widget.SnackBar;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.ChangeLogUtil;
 

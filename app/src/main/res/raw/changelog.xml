@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
+    <changelogversion changeDate="16. Mai 2015" versionName="8.2">
+        <changelogimprovement>Beide Arten von Widgets haben jetzt eigene Vorschaubilder. Viele
+            Android Launcher zeigen diese bei der Auswahl von verfügbaren Widgets an.
+        </changelogimprovement>
+        <changelogbug>Einen gelegentlichen Absturz bei der Widget-Erstellung behoben</changelogbug>
+        <changelogbug>Bei der Widget-Erstellung wurde der Dialog auf einigen Geräten mit schwarzem
+            Hintergrund statt Transparenz dargestellt.
+        </changelogbug>
+    </changelogversion>
     <changelogversion changeDate="15. Mai 2015" versionName="8.1">
         <changelogimprovement>Dunkler Theme in Material Design</changelogimprovement>
         <changelogbug>Einige Hilfetexte angepasst und verbliebene ungenutzte Funktionen entfernt

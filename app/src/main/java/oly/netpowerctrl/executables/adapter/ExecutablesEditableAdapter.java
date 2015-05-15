@@ -4,10 +4,10 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.widget.SeekBar;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.IconDeferredLoadingThread;
 import oly.netpowerctrl.executables.Executable;
-import oly.netpowerctrl.main.App;
 
 public class ExecutablesEditableAdapter extends ExecutablesAdapter implements
         SeekBar.OnSeekBarChangeListener {

@@ -25,7 +25,7 @@ public class AppDataTests extends AndroidTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        c.clear();
+        c.clearDataStorage();
         super.tearDown();
     }
 

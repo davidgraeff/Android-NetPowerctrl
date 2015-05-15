@@ -5,7 +5,7 @@
     android:initialLayout="@layout/widget_executable"
     android:minHeight="40dp"
     android:minWidth="40dp"
-    android:previewImage="@drawable/netpowerctrl"
+    android:previewImage="@drawable/widget_executable"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen|keyguard"
     tools:ignore="UnusedAttribute" />

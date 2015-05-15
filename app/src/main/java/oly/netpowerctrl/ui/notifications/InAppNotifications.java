@@ -17,9 +17,9 @@ import org.acra.ACRA;
 import java.util.ArrayList;
 import java.util.List;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.plugin_anel.AnelPlugin;
 
 /**

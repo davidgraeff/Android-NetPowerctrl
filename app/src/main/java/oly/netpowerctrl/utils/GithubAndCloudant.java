@@ -14,8 +14,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.preferences.SharedPrefs;
 

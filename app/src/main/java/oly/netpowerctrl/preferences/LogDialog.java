@@ -24,8 +24,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
 import oly.netpowerctrl.ui.ThemeHelper;

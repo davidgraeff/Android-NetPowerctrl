@@ -23,6 +23,7 @@ import com.rey.material.app.SimpleDialog;
 
 import java.lang.ref.WeakReference;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
@@ -34,7 +35,6 @@ import oly.netpowerctrl.ioconnection.adapter.AdapterItem;
 import oly.netpowerctrl.ioconnection.adapter.AdapterItemConnection;
 import oly.netpowerctrl.ioconnection.adapter.AdapterItemHeader;
 import oly.netpowerctrl.ioconnection.adapter.IOConnectionAdapter;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;

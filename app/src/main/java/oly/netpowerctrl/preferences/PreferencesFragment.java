@@ -18,13 +18,13 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.IconSelected;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.data.graphic.SelectDrawableDialog;
 import oly.netpowerctrl.data.importexport.ImportExport;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.status_bar.AndroidStatusBarService;

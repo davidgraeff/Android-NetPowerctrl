@@ -21,9 +21,9 @@ import com.rey.material.widget.ProgressView;
 import java.net.UnknownHostException;
 import java.util.UUID;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.ThemeHelper;

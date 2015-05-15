@@ -5,9 +5,9 @@ import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.os.Bundle;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.executables.adapter.InputExecutables;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.SelectFromExecutableListFragment;
@@ -20,12 +20,6 @@ public class ConfigExecutableActivity extends Activity implements SelectFromExec
         super.onCreate(savedInstanceState);
         setResult(RESULT_CANCELED);
 
-        // Set theme, call super onCreate and set content view
-        if (SharedPrefs.getInstance().isDarkTheme()) {
-            setTheme(R.style.Theme_CustomDarkThemeDialog);
-        } else {
-            setTheme(R.style.Theme_CustomLightThemeDialog);
-        }
         FragmentUtils.makeActivityDialog(this);
         setContentView(R.layout.activity_content_only);
 

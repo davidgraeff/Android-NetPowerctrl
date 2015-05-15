@@ -11,12 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.ReachabilityStates;
 
 /**
@@ -31,6 +31,7 @@ public class DeviceQuery {
     private static final int MSG_RESPONSE = 3;
     private static final int MSG_ADD_OBSERVER = 4;
     private static final int MSG_RECHECK_MINIMUM_TIME = 5;
+    private static final int MSG_EXIT = 6;
     @SuppressWarnings("unused")
     private static final String TAG = "DeviceQuery";
     private static int instances = 0;
@@ -47,6 +48,7 @@ public class DeviceQuery {
             Looper.prepare();
             handler = new RepeatHandler(Looper.myLooper());
             Looper.loop();
+            --instances;
         }
     };
 
@@ -60,7 +62,14 @@ public class DeviceQuery {
      * Will call onObserverJobFinished in the gui thread.
      */
     public void finish() {
-        Looper.myLooper().quit();
+        if (thread.isAlive()) {
+            handler.sendEmptyMessage(MSG_EXIT);
+        }
+        try {
+            thread.join(2000);
+            thread.interrupt();
+        } catch (InterruptedException ignored) {
+        }
     }
 
     protected void doAction(Credentials credentials, int attempt) {
@@ -302,6 +311,10 @@ public class DeviceQuery {
                 case MSG_RESPONSE: {
                     Credentials credentials = (Credentials) msg.obj;
                     deviceSuccess(credentials);
+                    break;
+                }
+                case MSG_EXIT: {
+                    Looper.myLooper().quit();
                     break;
                 }
             }

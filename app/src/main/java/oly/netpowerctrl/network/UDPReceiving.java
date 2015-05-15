@@ -6,8 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
 abstract public class UDPReceiving extends Thread {

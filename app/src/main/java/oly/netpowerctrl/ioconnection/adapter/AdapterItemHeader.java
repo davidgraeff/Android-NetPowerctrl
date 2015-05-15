@@ -3,11 +3,11 @@ package oly.netpowerctrl.ioconnection.adapter;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.devices.CredentialsCollection;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 

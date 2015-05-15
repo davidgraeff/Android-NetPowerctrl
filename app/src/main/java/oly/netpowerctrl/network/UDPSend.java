@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.ioconnection.IOConnection;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.Logging;
 
 /**

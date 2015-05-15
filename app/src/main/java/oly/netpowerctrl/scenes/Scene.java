@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
@@ -20,7 +21,6 @@ import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.executables.ExecutableType;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.utils.IOInterface;

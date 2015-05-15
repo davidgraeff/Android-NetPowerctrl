@@ -14,10 +14,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableType;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**

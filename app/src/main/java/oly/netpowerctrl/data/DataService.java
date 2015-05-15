@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.data.query.DataQueryCompletedObserver;
 import oly.netpowerctrl.data.query.DataQueryRefreshObserver;
 import oly.netpowerctrl.data.query.onDataQueryCompleted;
@@ -27,7 +28,6 @@ import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionsCollection;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.GuiThreadHandler;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.NetworkChangedBroadcastReceiver;
@@ -229,12 +229,15 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         loadStoreCollections.finish(this);
         loadStoreCollections = null;
 
+        deviceQuery.finish();
         UDPSend.killSendThread();
 
         // Clean up
         for (AbstractBasePlugin abstractBasePlugin : plugins)
             abstractBasePlugin.onDestroy();
         plugins.clear();
+
+        clearDataStorage();
 
         weakHashMap.clear();
         mDiscoverService = null;
@@ -323,10 +326,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     /**
      * Tidy up all lists and references.
      */
-    public void clear() {
-        // There shouldn't be any device-listen observers anymore,
-        // but we clear the list here nevertheless.
-        deviceQuery.finish();
+    public void clearDataStorage() {
         connections.storage.clear();
         credentials.storage.clear();
         groups.storage.clear();

@@ -6,6 +6,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.utils.Logging;
@@ -20,7 +21,7 @@ public class GuiThreadHandler extends Handler {
     public static final int SERVICE_DELAYED_CHECK_REACHABILITY = 1818;
     private static final String TAG = "GuiThreadHandler";
 
-    GuiThreadHandler() {
+    public GuiThreadHandler() {
         super(Looper.getMainLooper());
     }
 

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.storage_container.CollectionManipulation;
@@ -22,7 +23,6 @@ import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPutHandler;
 import oly.netpowerctrl.data.storage_container.CollectionStorage;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 

@@ -33,7 +33,6 @@
             android:id="@+id/empty_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?attr/cards_background"
             android:maxWidth="280dp"
             android:padding="5dp"
             android:textAppearance="@android:style/TextAppearance.Medium" />

@@ -9,12 +9,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.data.storage_container.CollectionStorage;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.ExecutableFabric;
 import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.ioconnection.IOConnectionFabric;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.status_bar.FavItem;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;

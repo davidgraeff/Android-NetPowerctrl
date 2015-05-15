@@ -13,7 +13,7 @@ public abstract class CollectionStorage<ITEM extends IOInterface> {
 //        if (storage == null)
 //            return;
 //
-//        storage.clear(this);
+//        storage.clearDataStorage(this);
 //        for (ITEM item : items.values())
 //            storage.save(this, item);
 //    }

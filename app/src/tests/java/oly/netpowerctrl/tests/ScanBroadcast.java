@@ -81,7 +81,7 @@ public class ScanBroadcast extends AndroidTestCase {
 
         assertNull(DataService.getService());
 
-        c.clear();
+        c.clearDataStorage();
 
         super.tearDown();
     }

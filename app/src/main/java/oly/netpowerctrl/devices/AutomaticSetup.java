@@ -12,13 +12,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.groups.Group;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;

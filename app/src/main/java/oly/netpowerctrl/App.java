@@ -1,4 +1,4 @@
-package oly.netpowerctrl.main;
+package oly.netpowerctrl;
 
 import android.app.Application;
 import android.os.Build;
@@ -12,9 +12,9 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
 
-import oly.netpowerctrl.BuildConfig;
-import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.main.GuiThreadHandler;
+import oly.netpowerctrl.main.LifecycleHandler;
 
 /**
  * Application:

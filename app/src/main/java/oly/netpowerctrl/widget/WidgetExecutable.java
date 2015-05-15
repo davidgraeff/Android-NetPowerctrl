@@ -14,6 +14,7 @@ import android.widget.RemoteViews;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.IconState;
@@ -23,7 +24,6 @@ import oly.netpowerctrl.devices.DevicesObserver;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.executables.ExecutableType;
-import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.preferences.SharedPrefs;
@@ -72,6 +72,9 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
             Log.e(TAG, "Loading widget failed: " + String.valueOf(widgetID) + " " + executableID);
             setWidgetStateBroken(widgetID);
         } else {
+            DataService.useService(new WeakReference<Object>(this));
+            dataService.executables.registerObserver(this);
+
             if (executable.reachableState() == ReachabilityStates.Reachable)
                 setWidgetState(widgetID, executable, false);
             else if (credentials != null) {
@@ -79,9 +82,6 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
                 dataService.refreshExistingDevice(credentials, this);
             }
         }
-
-        DataService.useService(new WeakReference<Object>(this));
-        dataService.executables.registerObserver(this);
     }
 
     @Override
@@ -97,7 +97,6 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
         if (DataService.isServiceReady()) {
             widgetUpdateService.service.executables.unregisterObserver(this);
         }
-
         DataService.stopUseService(this);
         super.destroy();
     }
@@ -119,7 +118,14 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
         //Log.w("widget", di != null ? di.DeviceName : "empty di");
 
         if (executable.getCurrentValue() == cached_last_state || executable.equals(item)) {
-            setWidgetState(widgetID, executable, false);
+            if (action == ObserverUpdateActions.RemoveAction) {
+                if (DataService.isServiceReady()) {
+                    widgetUpdateService.service.executables.unregisterObserver(this);
+                }
+                DataService.stopUseService(this);
+                setWidgetStateBroken(widgetID);
+            } else
+                setWidgetState(widgetID, executable, false);
         }
 
         return true;
