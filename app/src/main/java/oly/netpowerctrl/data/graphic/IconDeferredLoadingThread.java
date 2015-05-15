@@ -61,12 +61,12 @@ public class IconDeferredLoadingThread extends Thread {
      * ViewHolder and the bitmap index.
      */
     public static class IconItem {
-        private final LoadStoreIconData.IconState state;
+        private final IconState state;
         private final WeakReference<IconLoaded> target;
         private final int position;
         private Drawable drawable;
 
-        public IconItem(LoadStoreIconData.IconState state, int position, IconLoaded target) {
+        public IconItem(IconState state, int position, IconLoaded target) {
             this.state = state;
             this.position = position;
             this.target = new WeakReference<>(target);

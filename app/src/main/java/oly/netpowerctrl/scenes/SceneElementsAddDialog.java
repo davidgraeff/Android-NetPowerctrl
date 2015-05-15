@@ -19,6 +19,7 @@ import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.executables.adapter.ExecutablesCheckableAdapter;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.SimpleListDividerDecoration;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * Presents a list of all DevicePorts/Items of a device each with a checkbox to show/hide the item.
@@ -62,7 +63,7 @@ public class SceneElementsAddDialog extends DialogFragment implements RecyclerIt
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity(), ThemeHelper.getDialogRes(getActivity()));
         dialog.setTitle(R.string.scene_available);
         dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.positiveActionClickListener(new View.OnClickListener() {

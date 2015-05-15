@@ -12,7 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.graphic.Utils;
 import oly.netpowerctrl.data.storage_container.CollectionMapItems;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPut;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPutHandler;
@@ -32,11 +34,11 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
         super(dataService, "executables");
     }
 
-    public void setExecutableBitmap(Context context, Executable executable, Bitmap bitmap, LoadStoreIconData.IconState state) {
+    public void setExecutableBitmap(Context context, Executable executable, Bitmap bitmap, IconState state) {
         if (executable == null)
             return;
 
-        LoadStoreIconData.saveIcon(context, LoadStoreIconData.resizeBitmap(context, bitmap, 128, 128), executable.getUid(), state);
+        LoadStoreIconData.saveIcon(context, Utils.resizeBitmap(context, bitmap, 128, 128), executable.getUid(), state);
         notifyObservers(executable, ObserverUpdateActions.UpdateAction);
     }
 

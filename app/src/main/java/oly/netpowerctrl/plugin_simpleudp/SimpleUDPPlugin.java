@@ -159,7 +159,7 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
 
     @Override
     public boolean supportsRemoteRename() {
-        return false;
+        return true;
     }
 
     /**

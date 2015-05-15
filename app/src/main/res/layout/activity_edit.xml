@@ -33,7 +33,7 @@
 
             <com.rey.material.widget.Button
                 android:id="@+id/btnHelp"
-                style="@style/FlatColorButtonRippleStyle"
+                style="?attr/FlatColorButtonRippleStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"

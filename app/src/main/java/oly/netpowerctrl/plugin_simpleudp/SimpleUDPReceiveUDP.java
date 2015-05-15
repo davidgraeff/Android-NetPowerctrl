@@ -123,7 +123,13 @@ class SimpleUDPReceiveUDP extends UDPReceiving {
                     executable.min_value = 0;
                     executable.current_value = Integer.valueOf(outlet[3]);
                     break;
-                case "NOTEXISTS":
+                case "FAIL_UNKNOWN_CMD":
+                    Logging.getInstance().logDetect("SimpleUDP: Unknown command\n" + outlet[1]);
+                    continue;
+                case "FAIL_SYNTAX":
+                    Logging.getInstance().logDetect("SimpleUDP: Wrong action syntax");
+                    continue;
+                case "FAIL_NOTEXIST":
                     Logging.getInstance().logDetect("SimpleUDP: Action does not exist\n" + outlet[1]);
                     continue;
                 default:

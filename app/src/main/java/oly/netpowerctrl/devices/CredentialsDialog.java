@@ -16,6 +16,7 @@ import com.rey.material.widget.EditText;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * Create/Edit credentials of a device. This can only be done after a first contact to the destination
@@ -71,7 +72,7 @@ public class CredentialsDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new com.rey.material.app.Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity(), ThemeHelper.getDialogRes(getActivity()));
         dialog.setTitle(credentials.isConfigured() ? R.string.device_edit_credentials : R.string.device_add);
         dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.positiveActionClickListener(new View.OnClickListener() {

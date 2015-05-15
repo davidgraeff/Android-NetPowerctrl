@@ -2,6 +2,7 @@ package oly.netpowerctrl.main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -36,7 +37,11 @@ import java.util.TreeSet;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.IconSelected;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.graphic.SelectDrawableDialog;
+import oly.netpowerctrl.data.graphic.Utils;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.onNameChangeResult;
@@ -58,7 +63,7 @@ import oly.netpowerctrl.utils.MutableBoolean;
  * This activity is responsible for creating a "executable" either for the executable list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditActivity extends ActionBarActivity implements LoadStoreIconData.IconSelected, onNameChangeResult {
+public class EditActivity extends ActionBarActivity implements IconSelected, onNameChangeResult {
     /**
      * We pass arguments to this activity via the intent extra bundle und the result is passed via
      * setResult().
@@ -91,7 +96,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     private Bitmap icon_on;
     // Options
     private ImageView btnFav;
-    private Button btnAddHomescreen;
+    private Button btnSceneCopyHomescreen;
+    private Button btnSceneLinkHomescreen;
     private Button btnNFC;
     private boolean isFavourite;
     // Groups
@@ -183,7 +189,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             public void onClick(final View view) {
                 if (iconMenuVisible || mEditType == EDIT_TYPE_SHORTCUT) {
                     AnimationController.animatePress(view);
-                    LoadStoreIconData.show_select_icon_dialog(EditActivity.this, "scene_icons", EditActivity.this, view);
+                    DialogFragment f = SelectDrawableDialog.createSelectDrawableDialog("widget_icons", EditActivity.this, view);
+                    FragmentUtils.changeToDialog(EditActivity.this, f);
                     return;
                 }
 
@@ -245,12 +252,24 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
             }
         });
 
-        btnAddHomescreen = (Button) findViewById(R.id.btnSceneAddHomescreen);
-        btnAddHomescreen.setOnClickListener(new View.OnClickListener() {
+        btnSceneCopyHomescreen = (Button) findViewById(R.id.btnSceneCopyHomescreen);
+        btnSceneCopyHomescreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //noinspection ConstantConditions
-                AndroidShortcuts.createHomeIcon(EditActivity.this, executable);
+                Intent extra = AndroidShortcuts.createExecutionCopyIntent(EditActivity.this, executable, false, false);
+                AndroidShortcuts.createHomeIcon(EditActivity.this, executable, extra);
+                Toast.makeText(EditActivity.this, R.string.scene_add_homescreen_success, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnSceneLinkHomescreen = (Button) findViewById(R.id.btnSceneLinkHomescreen);
+        btnSceneLinkHomescreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //noinspection ConstantConditions
+                Intent extra = AndroidShortcuts.createExecutionLinkIntent(EditActivity.this, executable.getUid(), false, false);
+                AndroidShortcuts.createHomeIcon(EditActivity.this, executable, extra);
                 Toast.makeText(EditActivity.this, R.string.scene_add_homescreen_success, Toast.LENGTH_SHORT).show();
             }
         });
@@ -303,17 +322,17 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         switch (((View) context_object).getId()) {
             case R.id.scene_image:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, executable, LoadStoreIconData.IconState.OnlyOneState, isDefault);
+                    icon = LoadStoreIconData.loadBitmap(this, executable, IconState.OnlyOneState, isDefault);
                 icon_nostate = isDefault.value ? null : icon;
                 break;
             case R.id.scene_image_off:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, executable, LoadStoreIconData.IconState.StateOff, isDefault);
+                    icon = LoadStoreIconData.loadBitmap(this, executable, IconState.StateOff, isDefault);
                 icon_off = isDefault.value ? null : icon;
                 break;
             case R.id.scene_image_on:
                 if (icon == null)
-                    icon = LoadStoreIconData.loadBitmap(this, executable, LoadStoreIconData.IconState.StateOn, isDefault);
+                    icon = LoadStoreIconData.loadBitmap(this, executable, IconState.StateOn, isDefault);
                 icon_on = isDefault.value ? null : icon;
                 break;
         }
@@ -363,7 +382,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
     private void createContent(final DataService dataService, boolean createNewScene) {
         executable = Scene.createNewScene();
-        btnAddHomescreen.setVisibility(View.GONE);
+        btnSceneCopyHomescreen.setVisibility(View.GONE);
+        btnSceneLinkHomescreen.setVisibility(View.GONE);
         btnNFC.setVisibility(View.GONE);
         btnFav.setVisibility(View.GONE);
         mEditType = createNewScene ? EDIT_TYPE_SCENE : EDIT_TYPE_SHORTCUT;
@@ -421,7 +441,8 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         setIcon(findViewById(R.id.scene_image_off), null);
         setIcon(findViewById(R.id.scene_image_on), null);
 
-        btnAddHomescreen.setVisibility(View.VISIBLE);
+        btnSceneCopyHomescreen.setVisibility(View.VISIBLE);
+        btnSceneLinkHomescreen.setVisibility(View.VISIBLE);
         btnNFC.setVisibility(View.VISIBLE);
 
         TextView textView = (TextView) findViewById(R.id.scene_name);
@@ -523,13 +544,13 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
         if (progressDialog != null) return;
 
         if (mEditType == EDIT_TYPE_SHORTCUT) {
-            Intent extra = AndroidShortcuts.createShortcutExecutionIntent(EditActivity.this,
+            Intent extra = AndroidShortcuts.createExecutionCopyIntent(EditActivity.this,
                     executable, show_mainWindow.isChecked(), enable_feedback.isChecked());
             // Return result
             Intent shortcut;
             if (icon_nostate != null) {
                 shortcut = AndroidShortcuts.createShortcut(extra, executable.getTitle(),
-                        LoadStoreIconData.resizeBitmap(this, icon_nostate));
+                        Utils.resizeBitmap(this, icon_nostate));
             } else
                 shortcut = AndroidShortcuts.createShortcut(extra, executable.getTitle(),
                         EditActivity.this);
@@ -556,19 +577,19 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
 
         if (mEditType == EDIT_TYPE_DEVICE_PORT) {
             dataService.executables.setExecutableBitmap(this,
-                    (executable), icon_nostate, LoadStoreIconData.IconState.OnlyOneState);
+                    (executable), icon_nostate, IconState.OnlyOneState);
             dataService.executables.setExecutableBitmap(this,
-                    (executable), icon_off, LoadStoreIconData.IconState.StateOff);
+                    (executable), icon_off, IconState.StateOff);
             dataService.executables.setExecutableBitmap(this,
-                    (executable), icon_on, LoadStoreIconData.IconState.StateOn);
+                    (executable), icon_on, IconState.StateOn);
         } else {
             // Save all icons that are setup.
-            LoadStoreIconData.saveIcon(this, LoadStoreIconData.resizeBitmap(this, icon_nostate, 128, 128),
-                    executable.getUid(), LoadStoreIconData.IconState.OnlyOneState);
-            LoadStoreIconData.saveIcon(this, LoadStoreIconData.resizeBitmap(this, icon_off, 128, 128),
-                    executable.getUid(), LoadStoreIconData.IconState.StateOff);
-            LoadStoreIconData.saveIcon(this, LoadStoreIconData.resizeBitmap(this, icon_on, 128, 128),
-                    executable.getUid(), LoadStoreIconData.IconState.StateOn);
+            LoadStoreIconData.saveIcon(this, Utils.resizeBitmap(this, icon_nostate, 128, 128),
+                    executable.getUid(), IconState.OnlyOneState);
+            LoadStoreIconData.saveIcon(this, Utils.resizeBitmap(this, icon_off, 128, 128),
+                    executable.getUid(), IconState.StateOff);
+            LoadStoreIconData.saveIcon(this, Utils.resizeBitmap(this, icon_on, 128, 128),
+                    executable.getUid(), IconState.StateOn);
 
             LoadStoreIconData.clearIconCache();
             dataService.executables.put(executable);
@@ -599,7 +620,7 @@ public class EditActivity extends ActionBarActivity implements LoadStoreIconData
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-        LoadStoreIconData.activityCheckForPickedImage(this, this, requestCode, resultCode, imageReturnedIntent);
+        SelectDrawableDialog.activityCheckForPickedImage(this, this, requestCode, resultCode, imageReturnedIntent);
     }
 
     @Override

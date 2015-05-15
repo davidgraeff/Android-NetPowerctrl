@@ -37,12 +37,18 @@
         <!-- window modes -->
         <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
         <item name="toolbar_style">@style/ToolBarStyle</item>
+        <item name="dialogTheme">@style/SimpleDialogLight</item>
+        <item name="FlatButtonRippleStyle">@style/FlatButtonRippleStyleLight</item>
+        <item name="FlatColorButtonRippleStyle">@style/FlatColorButtonRippleStyleLight</item>
+        <item name="RaiseColorButtonRippleStyle">@style/RaiseColorButtonRippleStyleLight</item>
+        <item name="RaiseWaveButtonRippleStyle">@style/RaiseWaveButtonRippleStyleLight</item>
+        <item name="EditTextLarge">@style/EditTextLargeLight</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
 
         <item name="mcab_background_color">?colorPrimaryDark</item>
         <item name="mcab_close_drawable">@drawable/abc_ic_ab_back_mtrl_am_alpha</item>
-        <item name="mcab_popup_theme">@style/ThemeOverlay.AppCompat.Dark</item>
+        <item name="mcab_popup_theme">@style/ThemeOverlay.AppCompat</item>
     </style>
 
     <style name="Theme.CustomLightThemeDialog" parent="Theme.CustomLightTheme">
@@ -64,16 +70,16 @@
         <!--<item name="showcaseViewStyle">@style/ShowcaseThemeDark</item>-->
 
         <!-- icons -->
-        <item name="ic_action_good">@drawable/ic_action_good_light</item>
-        <item name="ic_action_settings">@drawable/ic_action_settings_light</item>
+        <item name="ic_action_good">@drawable/ic_action_good</item>
+        <item name="ic_action_settings">@drawable/ic_action_settings</item>
         <item name="ic_action_make_available_offline">
-            @drawable/ic_action_make_available_offline_light
+            @drawable/ic_action_make_available_offline
         </item>
-        <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid_light</item>
-        <item name="ic_action_download_themed">@drawable/ic_action_download_light</item>
-        <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off_light</item>
-        <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on_light</item>
-        <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle_light</item>
+        <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
+        <item name="ic_action_download_themed">@drawable/ic_action_download</item>
+        <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off</item>
+        <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on</item>
+        <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle</item>
 
         <!-- segment_button widget -->
         <item name="segment_button">@drawable/segment_button_dark</item>
@@ -93,11 +99,21 @@
         <!-- window modes -->
         <item name="toolbar_style_transparent">@style/ToolBarStyleTransparent</item>
         <item name="toolbar_style">@style/ToolBarStyle</item>
+        <item name="dialogTheme">@style/SimpleDialog</item>
+        <item name="FlatButtonRippleStyle">@style/FlatButtonRippleStyle</item>
+        <item name="FlatColorButtonRippleStyle">@style/FlatColorButtonRippleStyle</item>
+        <item name="RaiseColorButtonRippleStyle">@style/RaiseColorButtonRippleStyle</item>
+        <item name="RaiseWaveButtonRippleStyle">@style/RaiseWaveButtonRippleStyle</item>
+        <item name="EditTextLarge">@style/EditTextLarge</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
+
+        <item name="mcab_background_color">?colorPrimaryDark</item>
+        <item name="mcab_close_drawable">@drawable/abc_ic_ab_back_mtrl_am_alpha</item>
+        <item name="mcab_popup_theme">@style/ThemeOverlay.AppCompat.Dark</item>
     </style>
 
     <style name="Theme.CustomDarkThemeDialog" parent="Theme.CustomDarkTheme">
@@ -158,7 +174,11 @@
         <item name="lmd_clockwise">true</item>
     </style>
 
-    <style name="EditTextLarge" parent="Material.Widget.EditText.Light">
+    <style name="EditTextLarge" parent="Material.Widget.EditText">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Large</item>
+    </style>
+
+    <style name="EditTextLargeLight" parent="Material.Widget.EditText.Light">
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Large</item>
     </style>
 
@@ -180,19 +200,39 @@
         <item name="lpd_strokeSecondaryColor">#00000000</item>
     </style>
 
-    <style name="FlatButtonRippleStyle" parent="Material.Drawable.Ripple.Touch.Light">
+    <style name="FlatButtonRippleStyle" parent="Material.Drawable.Ripple.Touch">
         <item name="android:background">@null</item>
         <item name="rd_cornerRadius">4dp</item>
     </style>
 
-    <style name="FlatColorButtonRippleStyle" parent="Material.Drawable.Ripple.Touch.Light">
+    <style name="FlatButtonRippleStyleLight" parent="Material.Drawable.Ripple.Touch.Light">
+        <item name="android:background">@null</item>
+        <item name="rd_cornerRadius">4dp</item>
+    </style>
+
+    <style name="FlatColorButtonRippleStyle" parent="Material.Drawable.Ripple.Touch">
         <item name="android:background">@null</item>
         <item name="rd_backgroundColor">#33219AFF</item>
         <item name="rd_rippleColor">#33219AFF</item>
         <item name="rd_cornerRadius">4dp</item>
     </style>
 
-    <style name="RaiseWaveButtonRippleStyle" parent="Material.Drawable.Ripple.Wave.Light">
+    <style name="FlatColorButtonRippleStyleLight" parent="Material.Drawable.Ripple.Touch.Light">
+        <item name="android:background">@null</item>
+        <item name="rd_backgroundColor">#33219AFF</item>
+        <item name="rd_rippleColor">#33219AFF</item>
+        <item name="rd_cornerRadius">4dp</item>
+    </style>
+
+    <style name="RaiseWaveButtonRippleStyle" parent="Material.Drawable.Ripple.Wave">
+        <item name="android:background">@drawable/background_textured_dark</item>
+        <item name="rd_leftPadding">1dp</item>
+        <item name="rd_topPadding">1dp</item>
+        <item name="rd_rightPadding">1dp</item>
+        <item name="rd_bottomPadding">2dp</item>
+    </style>
+
+    <style name="RaiseWaveButtonRippleStyleLight" parent="Material.Drawable.Ripple.Wave.Light">
         <item name="android:background">@drawable/bg_bt_raise</item>
         <item name="rd_leftPadding">1dp</item>
         <item name="rd_topPadding">1dp</item>
@@ -200,7 +240,16 @@
         <item name="rd_bottomPadding">2dp</item>
     </style>
 
-    <style name="RaiseColorButtonRippleStyle" parent="Material.Drawable.Ripple.Touch.Light">
+    <style name="RaiseColorButtonRippleStyle" parent="Material.Drawable.Ripple.Touch">
+        <item name="android:background">@drawable/bg_bt_raise_color</item>
+        <item name="rd_rippleColor">#33000000</item>
+        <item name="rd_leftPadding">1dp</item>
+        <item name="rd_topPadding">1dp</item>
+        <item name="rd_rightPadding">1dp</item>
+        <item name="rd_bottomPadding">2dp</item>
+    </style>
+
+    <style name="RaiseColorButtonRippleStyleLight" parent="Material.Drawable.Ripple.Touch.Light">
         <item name="android:background">@drawable/bg_bt_raise_color</item>
         <item name="rd_rippleColor">#33000000</item>
         <item name="rd_leftPadding">1dp</item>

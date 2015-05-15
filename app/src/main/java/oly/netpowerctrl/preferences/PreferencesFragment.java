@@ -2,6 +2,7 @@ package oly.netpowerctrl.preferences;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -19,7 +20,9 @@ import android.widget.Toast;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.IconSelected;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.graphic.SelectDrawableDialog;
 import oly.netpowerctrl.data.importexport.ImportExport;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.NfcTagWriterActivity;
@@ -29,7 +32,7 @@ import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.IconThemeDialog;
 import oly.netpowerctrl.utils.Logging;
 
-public class PreferencesFragment extends PreferencesWithValuesFragment implements LoadStoreIconData.IconSelected {
+public class PreferencesFragment extends PreferencesWithValuesFragment implements IconSelected {
     private static final int REQUEST_CODE_IMPORT = 100;
     private static final int REQUEST_CODE_EXPORT = 101;
     //
@@ -152,7 +155,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
         findPreference("select_background_image").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                LoadStoreIconData.show_select_icon_dialog(getActivity(), "backgrounds", new LoadStoreIconData.IconSelected() {
+                IconSelected s = new IconSelected() {
                     @Override
                     public void setIcon(Object context_object, Bitmap bitmap) {
                         PreferencesFragment.this.setIcon(context_object, bitmap);
@@ -162,7 +165,10 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
                     public void startActivityForResult(Intent intent, int requestCode) {
                         PreferencesFragment.this.startActivityForResult(intent, requestCode);
                     }
-                }, null);
+                };
+
+                DialogFragment f = SelectDrawableDialog.createSelectDrawableDialog("backgrounds", s, null);
+                FragmentUtils.changeToDialog(getActivity(), f);
                 return false;
             }
         });
@@ -210,7 +216,7 @@ public class PreferencesFragment extends PreferencesWithValuesFragment implement
             } else if (requestCode == REQUEST_CODE_EXPORT) {
                 ImportExport.exportData(getActivity(), intent.getData());
             } else
-                LoadStoreIconData.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, intent);
+                SelectDrawableDialog.activityCheckForPickedImage(getActivity(), this, requestCode, resultCode, intent);
         }
     }
 

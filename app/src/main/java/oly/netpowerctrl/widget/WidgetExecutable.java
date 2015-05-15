@@ -16,6 +16,7 @@ import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.devices.DevicesObserver;
@@ -128,7 +129,7 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
         this.context = context;
         appWidgetManager = AppWidgetManager.getInstance(context);
         try {
-            image_broken = LoadStoreIconData.loadDefaultBitmap(context, LoadStoreIconData.IconState.StateUnknown,
+            image_broken = LoadStoreIconData.loadDefaultBitmap(context, IconState.StateUnknown,
                     SharedPrefs.getDefaultFallbackIconSet(context));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -185,17 +186,17 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
         views.setViewVisibility(R.id.widget_inProgress, inProgress ? View.VISIBLE : View.GONE);
         //views.setFloat(R.id.widget_inProgress,"setAlpha",1.0f);
 
-        LoadStoreIconData.IconState iconState;
+        IconState iconState;
         int string_res;
         if (executable.reachableState() == ReachabilityStates.NotReachable) { // unreachable
             string_res = R.string.widget_outlet_not_reachable;
-            iconState = LoadStoreIconData.IconState.StateUnknown;
+            iconState = IconState.StateUnknown;
         } else if (executable.getCurrentValue() > 0) { // On
             string_res = R.string.widget_on;
-            iconState = LoadStoreIconData.IconState.StateOn;
+            iconState = IconState.StateOn;
         } else {
             string_res = R.string.widget_off;
-            iconState = LoadStoreIconData.IconState.StateOff;
+            iconState = IconState.StateOff;
         }
 
         if (inProgress) {

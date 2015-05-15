@@ -6,32 +6,24 @@ import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.graphic.Utils;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.main.ExecutionActivity;
-import oly.netpowerctrl.scenes.Scene;
 
 /**
  * Shortcut Utility class
  */
 public class AndroidShortcuts {
     @Nullable
-    static public Intent createShortcutExecutionIntent(Context context,
-                                                       Executable executable,
-                                                       boolean show_mainWindow,
-                                                       boolean enable_feedback) {
+    static public Intent createExecutionCopyIntent(Context context,
+                                                   Executable executable,
+                                                   boolean show_mainWindow,
+                                                   boolean enable_feedback) {
         // Create shortcut intent
         Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
-        if (executable instanceof Scene) {
-            if (((Scene) executable).length() == 0) {
-                return null;
-            }
-            shortcutIntent.putExtra(ExecutionActivity.EXECUTE_SCENE_JSON, ((Scene) executable).toString());
-        } else if (executable instanceof Executable) {
-            throw new RuntimeException("Not yet supported!");
-        } else {
-            return null;
-        }
+        shortcutIntent.putExtra(ExecutionActivity.EXECUTE_SCENE_JSON, executable.toString());
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);
@@ -45,10 +37,10 @@ public class AndroidShortcuts {
     }
 
 
-    public static Intent createShortcutExecutionIntent(Context context,
-                                                       String executable_uid,
-                                                       boolean show_mainWindow,
-                                                       boolean enable_feedback) {
+    public static Intent createExecutionLinkIntent(Context context,
+                                                   String executable_uid,
+                                                   boolean show_mainWindow,
+                                                   boolean enable_feedback) {
         // Create shortcut intent
         Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
         shortcutIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_UUID, executable_uid);
@@ -84,16 +76,15 @@ public class AndroidShortcuts {
         return intent;
     }
 
-    public static void createHomeIcon(Context context, Executable scene) {
-        Intent extra = AndroidShortcuts.createShortcutExecutionIntent(context, scene, false, false);
-        Bitmap bitmap = LoadStoreIconData.loadBitmap(context, scene,
-                LoadStoreIconData.IconState.OnlyOneState, null);
+    public static void createHomeIcon(Context context, Executable executable, Intent extra) {
+        Bitmap bitmap = LoadStoreIconData.loadBitmap(context, executable,
+                IconState.OnlyOneState, null);
         Intent shortcutIntent;
         if (bitmap != null) {
-            shortcutIntent = AndroidShortcuts.createShortcut(extra, scene.getTitle(),
-                    LoadStoreIconData.resizeBitmap(context, bitmap));
+            shortcutIntent = AndroidShortcuts.createShortcut(extra, executable.getTitle(),
+                    Utils.resizeBitmap(context, bitmap));
         } else
-            shortcutIntent = AndroidShortcuts.createShortcut(extra, scene.getTitle(), context);
+            shortcutIntent = AndroidShortcuts.createShortcut(extra, executable.getTitle(), context);
 
         shortcutIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
         assert context != null;

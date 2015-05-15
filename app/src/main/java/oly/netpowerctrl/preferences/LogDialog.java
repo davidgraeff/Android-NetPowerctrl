@@ -28,6 +28,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerViewWithAdapter;
+import oly.netpowerctrl.ui.ThemeHelper;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.Logging;
 
@@ -112,7 +113,7 @@ public class LogDialog extends DialogFragment implements Logging.LogChanged, Swi
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         isDialog = true;
-        Dialog dialog = new Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity(), ThemeHelper.getDialogRes(getActivity()));
         dialog.setTitle(R.string.device_shown_actions);
         dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.positiveActionClickListener(new View.OnClickListener() {
@@ -140,7 +141,7 @@ public class LogDialog extends DialogFragment implements Logging.LogChanged, Swi
     }
 
     private void sendMail() {
-        SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight) {
+        SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(getActivity())) {
             @Override
             public void onPositiveActionClicked(com.rey.material.app.DialogFragment fragment) {
                 App.setErrorReportContentLogFile(Logging.getInstance().getLogFile().getAbsolutePath());

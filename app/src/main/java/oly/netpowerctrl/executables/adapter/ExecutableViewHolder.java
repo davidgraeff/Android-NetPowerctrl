@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.IconDeferredLoadingThread;
-import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.network.ReachabilityStates;
 
@@ -67,7 +67,7 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
     }
 
     @SuppressWarnings("SameParameterValue")
-    private void loadIcon(LoadStoreIconData.IconState state, int bitmapPosition) {
+    private void loadIcon(IconState state, int bitmapPosition) {
         if (imageIcon == null || !showImages) return;
         mIconLoadThread.loadIcon(new IconDeferredLoadingThread.IconItem(state, bitmapPosition, this));
     }
@@ -203,20 +203,20 @@ public class ExecutableViewHolder extends RecyclerView.ViewHolder implements Ico
                 case TypeToggle: {
                     if (seekBar != null)
                         seekBar.setVisibility(View.GONE);
-                    loadIcon(LoadStoreIconData.IconState.StateOff, 0);
-                    loadIcon(LoadStoreIconData.IconState.StateOn, 1);
+                    loadIcon(IconState.StateOff, 0);
+                    loadIcon(IconState.StateOn, 1);
                     break;
                 }
                 case TypeStateless: {
-                    loadIcon(LoadStoreIconData.IconState.OnlyOneState, 0);
+                    loadIcon(IconState.OnlyOneState, 0);
                     if (seekBar != null)
                         seekBar.setVisibility(View.GONE);
                     setBitmapOff();
                     break;
                 }
                 case TypeRangedValue:
-                    loadIcon(LoadStoreIconData.IconState.StateOff, 0);
-                    loadIcon(LoadStoreIconData.IconState.StateOn, 1);
+                    loadIcon(IconState.StateOff, 0);
+                    loadIcon(IconState.StateOn, 1);
                     if (seekBar != null) {
                         seekBar.setVisibility(View.VISIBLE);
                         seekBar.setTag(-1);

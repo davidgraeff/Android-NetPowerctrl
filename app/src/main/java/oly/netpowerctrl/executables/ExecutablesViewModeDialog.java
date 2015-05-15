@@ -23,6 +23,7 @@ import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
 import oly.netpowerctrl.executables.adapter.InputDemo;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.SoftRadioGroup;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * Set view mode (list/grid/etc) of the executables.
@@ -137,7 +138,7 @@ public class ExecutablesViewModeDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity(), ThemeHelper.getDialogRes(getActivity()));
         dialog.setTitle(R.string.view_mode);
         dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.positiveActionClickListener(new View.OnClickListener() {

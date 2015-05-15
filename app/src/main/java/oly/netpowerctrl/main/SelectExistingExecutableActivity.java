@@ -35,7 +35,7 @@ public class SelectExistingExecutableActivity extends Activity implements Select
 
     @Override
     public void onExecutableSelected(String uid, int position) {
-        Intent extra = AndroidShortcuts.createShortcutExecutionIntent(this, uid, false, false);
+        Intent extra = AndroidShortcuts.createExecutionLinkIntent(this, uid, false, false);
         s.getAdapterSource().getItem(position).getExecutable();
         setResult(RESULT_OK, AndroidShortcuts.createShortcut(extra, s.getAdapterSource().getItem(position).getExecutable().getTitle(), this));
         finish();

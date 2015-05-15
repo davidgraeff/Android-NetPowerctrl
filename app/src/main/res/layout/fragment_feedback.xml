@@ -103,6 +103,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/bugs"
                     android:layout_marginStart="5dp"
+                    android:layout_toEndOf="@id/bugs2_label"
                     android:clickable="true"
                     android:ellipsize="end"
                     android:singleLine="true" />
@@ -202,7 +203,7 @@
 
                     <com.rey.material.widget.Button
                         android:id="@+id/mail"
-                        style="@style/FlatButtonRippleStyle"
+                        style="?attr/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -212,7 +213,7 @@
 
                     <com.rey.material.widget.Button
                         android:id="@+id/google_market"
-                        style="@style/FlatButtonRippleStyle"
+                        style="?attr/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -267,7 +268,7 @@
 
                     <com.rey.material.widget.Button
                         android:id="@+id/open_source_license"
-                        style="@style/FlatButtonRippleStyle"
+                        style="?attr/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -277,7 +278,7 @@
 
                     <com.rey.material.widget.Button
                         android:id="@+id/donate"
-                        style="@style/FlatButtonRippleStyle"
+                        style="?attr/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -334,7 +335,7 @@
 
                     <com.rey.material.widget.Button
                         android:id="@+id/feedback_google_plus"
-                        style="@style/FlatButtonRippleStyle"
+                        style="?attr/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
@@ -344,7 +345,7 @@
 
                     <com.rey.material.widget.Button
                         android:id="@+id/beta"
-                        style="@style/FlatButtonRippleStyle"
+                        style="?attr/FlatButtonRippleStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"

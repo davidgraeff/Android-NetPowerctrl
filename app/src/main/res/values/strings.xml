@@ -70,7 +70,8 @@
     <string name="error_shortcut_not_valid">Shortcut not valid!</string>
     <string name="device_save_without_test">Your configuration is not tested. Testing before saving is recommended. Should I save nevertheless?</string>
     <string name="Version">Version:</string>
-    <string name="scene_add_homescreen">Add to homescreen</string>
+    <string name="scene_copy_homescreen">Add copy to homescreen</string>
+    <string name="scene_link_homescreen">Add link to homescreen</string>
     <string name="error_reading_scenes">Error reading scenes</string>
     <string name="device_test_not_reachable">Test reachable failed</string>
     <string name="error_device_no_access">Test access failed</string>
@@ -107,9 +108,9 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="preferences">Change to Preferences screen</string>
     <string name="scene_set_name">Set name</string>
     <string name="scene_set_icon">Set icon</string>
-    <string name="dialog_icon_title">Icon</string>
-    <string name="dialog_icon_default">Default Icon</string>
-    <string name="dialog_icon_select">Select Icon…</string>
+    <string name="dialog_icon_title">Picture selection</string>
+    <string name="dialog_icon_default">Default</string>
+    <string name="dialog_icon_select">Select file…</string>
     <string name="error_icon">Failed to set icon</string>
     <string name="scene_create_include_onepane">No actions so far! Swipe the screen to the right to unveil available actions. Click on one of them to add it to the scene.</string>
     <string name="scene_create_include_twopane">No actions so far! Click on one of the right actions to add it to the scene.</string>
@@ -392,4 +393,5 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="scene_add_item">Element hinzufügen</string>
     <string name="help_edit_outlet_title">Edit outlet</string>
     <string name="help_edit_outlet">Edit the name of this element, change the icons for each state or set the element as favourite in this screen.</string>
+    <string name="no_asset_found">Keine mitgelieferten Bilder zur Auswahl gefunden.</string>
 </resources>

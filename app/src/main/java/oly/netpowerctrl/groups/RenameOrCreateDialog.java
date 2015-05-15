@@ -14,6 +14,7 @@ import com.rey.material.app.SimpleDialog;
 import com.rey.material.widget.EditText;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * Created by david on 05.05.15.
@@ -53,7 +54,7 @@ public class RenameOrCreateDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+        final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(getActivity()));
         if (group != null)
             builder.title(getString(R.string.menu_rename_group));
         else

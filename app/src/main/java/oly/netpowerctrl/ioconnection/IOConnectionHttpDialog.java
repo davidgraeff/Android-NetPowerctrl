@@ -26,6 +26,7 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 ;
 
@@ -75,7 +76,7 @@ public class IOConnectionHttpDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+        final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(getActivity()));
         builder.title(getString(R.string.outlet_edit_title, ioConnection.credentials.getDeviceName()));
         builder.negativeAction(getString(android.R.string.cancel))
                 .positiveAction(getString(R.string.save));

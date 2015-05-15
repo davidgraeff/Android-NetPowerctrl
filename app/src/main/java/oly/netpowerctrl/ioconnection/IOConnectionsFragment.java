@@ -40,6 +40,7 @@ import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.LineDividerDecoration;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 ;
 
@@ -220,7 +221,7 @@ public class IOConnectionsFragment extends Fragment
             }
 
             case R.id.menu_device_delete: {
-                final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+                final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(getActivity()));
                 builder.title(getString(R.string.delete_device));
                 builder.message(getString(R.string.confirmation_delete_device));
                 builder.negativeAction(getString(android.R.string.no)).positiveAction(getString(android.R.string.yes));
@@ -256,7 +257,7 @@ public class IOConnectionsFragment extends Fragment
     private void clickNotConfiguredCredentials(@Nullable Credentials credentials) {
         if (credentials == null) {
             String[] plugins = DataService.getService().pluginNames();
-            final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+            final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(getActivity()));
             builder.title(getString(R.string.select_plugin)).positiveAction(getString(android.R.string.ok))
                     .negativeAction(getString(android.R.string.cancel));
             builder.items(plugins, 0);

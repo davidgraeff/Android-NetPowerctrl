@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
+    <changelogversion changeDate="15. Mai 2015" versionName="8.1">
+        <changelogimprovement>Dunkler Theme in Material Design</changelogimprovement>
+        <changelogbug>Einige Hilfetexte angepasst und verbliebene ungenutzte Funktionen entfernt
+        </changelogbug>
+        <changelogbug>Bei der automatischen Einrichtung werden (nach Möglichkeit) keine
+            Schaltaktionen ausgelöst
+        </changelogbug>
+    </changelogversion>
     <changelogversion changeDate="11. Mai 2015" versionName="8.0">
         <changelogimprovement>Umgestaltung der App</changelogimprovement>
         <changelogimprovement>Android 4.2 ist minimal Voraussetzung</changelogimprovement>

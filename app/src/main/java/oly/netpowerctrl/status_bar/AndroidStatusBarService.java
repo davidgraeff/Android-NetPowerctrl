@@ -17,6 +17,7 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.Executable;
@@ -87,13 +88,13 @@ public class AndroidStatusBarService extends Service implements onServiceReady {
                 ++maxLength;
 
                 // This intent will be executed by a click on the widget
-                Intent clickIntent = AndroidShortcuts.createShortcutExecutionIntent(context, favItem.getUid(), false, true);
+                Intent clickIntent = AndroidShortcuts.createExecutionLinkIntent(context, favItem.getUid(), false, true);
                 if (clickIntent == null)
                     continue;
                 clickIntent.setAction(Intent.ACTION_MAIN);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
-                Bitmap bitmap = LoadStoreIconData.loadBitmap(context, executable, LoadStoreIconData.IconState.OnlyOneState, null);
+                Bitmap bitmap = LoadStoreIconData.loadBitmap(context, executable, IconState.OnlyOneState, null);
                 RemoteViews remoteViewsWidget = new RemoteViews(context.getPackageName(), R.layout.widget_executable);
                 remoteViewsWidget.setTextViewText(R.id.widget_name, executable.getTitle());
                 remoteViewsWidget.setImageViewBitmap(R.id.widget_image, bitmap);

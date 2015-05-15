@@ -49,6 +49,10 @@ public class TestCredentials implements DevicesObserver.onDevicesObserverFinishe
                         testTimeout(dataService);
                     }
                 }, 2000);
+                // We first toggle the current value manually and then issue a toggle request to the device.
+                // This should not change the actual device state, but will cause an update signal of the
+                // received and "changed" executable (in updated(...)).
+                observedExecutable.current_value = observedExecutable.getCurrentValueToggled();
                 observedExecutable.execute(dataService, Executable.TOGGLE, null);
             } else {
                 test_state = TestStates.TEST_INIT;

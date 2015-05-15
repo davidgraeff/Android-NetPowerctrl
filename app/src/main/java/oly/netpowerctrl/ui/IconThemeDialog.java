@@ -14,6 +14,7 @@ import com.rey.material.app.Dialog;
 import java.io.IOException;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 
 /**
@@ -42,11 +43,11 @@ public class IconThemeDialog extends DialogFragment {
             try {
                 View view = rootView.findViewById(icon_theme_layouts[i]);
                 ((ImageView) view.findViewById(R.id.image_off)).setImageBitmap(
-                        LoadStoreIconData.loadDefaultBitmap(getActivity(), LoadStoreIconData.IconState.StateOff, icon_themes[i]));
+                        LoadStoreIconData.loadDefaultBitmap(getActivity(), IconState.StateOff, icon_themes[i]));
                 ((ImageView) view.findViewById(R.id.image_on)).setImageBitmap(
-                        LoadStoreIconData.loadDefaultBitmap(getActivity(), LoadStoreIconData.IconState.StateOn, icon_themes[i]));
+                        LoadStoreIconData.loadDefaultBitmap(getActivity(), IconState.StateOn, icon_themes[i]));
                 ((ImageView) view.findViewById(R.id.image_unknown)).setImageBitmap(
-                        LoadStoreIconData.loadDefaultBitmap(getActivity(), LoadStoreIconData.IconState.StateUnknown, icon_themes[i]));
+                        LoadStoreIconData.loadDefaultBitmap(getActivity(), IconState.StateUnknown, icon_themes[i]));
                 final int finalI = i;
                 view.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -64,8 +65,9 @@ public class IconThemeDialog extends DialogFragment {
 
     @Override
     public com.rey.material.app.Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new com.rey.material.app.Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivity(), ThemeHelper.getDialogRes(getActivity()));
         dialog.layoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.setTitle(R.string.icon_theme);
         dialog.positiveActionClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

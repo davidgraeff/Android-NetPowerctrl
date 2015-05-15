@@ -74,7 +74,7 @@
 
         <com.rey.material.widget.Button
             android:id="@+id/btnTest"
-            style="@style/RaiseWaveButtonRippleStyle"
+            style="?attr/RaiseWaveButtonRippleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"

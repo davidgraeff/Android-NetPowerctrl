@@ -16,6 +16,7 @@ import java.util.List;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.Executable;
@@ -170,13 +171,13 @@ public class WidgetGroupList extends AbstractWidget implements RemoteViewsServic
         RemoteViews rv = new RemoteViews(widgetUpdateService.getPackageName(), R.layout.widget_group_item);
         rv.setTextViewText(R.id.title, executable.getTitle());
 
-        LoadStoreIconData.IconState iconState;
+        IconState iconState;
         if (executable.reachableState() == ReachabilityStates.NotReachable) { // unreachable
-            iconState = LoadStoreIconData.IconState.StateUnknown;
+            iconState = IconState.StateUnknown;
         } else if (executable.getCurrentValue() > 0) { // On
-            iconState = LoadStoreIconData.IconState.StateOn;
+            iconState = IconState.StateOn;
         } else {
-            iconState = LoadStoreIconData.IconState.StateOff;
+            iconState = IconState.StateOff;
         }
 
         Bitmap bitmap = LoadStoreIconData.loadBitmap(widgetUpdateService, executable, iconState, null);

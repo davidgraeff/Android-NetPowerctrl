@@ -71,7 +71,8 @@
     <string name="outlet_rename_title">Steckdose Umbenennen</string>
     <string name="outlet_rename_message">Der neue Name wird direkt auf dem Gerät gespeichert. Vorsicht mit Sonderzeichen.</string>
     <string name="Version">Version:</string>
-    <string name="scene_add_homescreen">Zum Startbildschirm hinzufügen</string>
+    <string name="scene_copy_homescreen">Kopie auf Startbildschirm ablegen</string>
+    <string name="scene_link_homescreen">Verknüpfung auf Startbildschirm ablegen</string>
     <string name="device_test_not_reachable">Gerät nicht erreichbar. IP/Port richtig?</string>
     <string name="error_device_no_access">Gerätezugriff verweigert. Benutzername/Passwort richtig?</string>
     <string name="device_test_ok">Test OK</string>
@@ -107,9 +108,9 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="preferences">Einstellungen</string>
     <string name="scene_set_name">Szenenname</string>
     <string name="scene_set_icon">Szenenbild</string>
-    <string name="dialog_icon_title">Bild</string>
-    <string name="dialog_icon_default">Bild zurücksetzen</string>
-    <string name="dialog_icon_select">Wähle Bild aus…</string>
+    <string name="dialog_icon_title">Bildauswahl treffen</string>
+    <string name="dialog_icon_default">Zurücksetzen</string>
+    <string name="dialog_icon_select">Datei…</string>
     <string name="error_icon">Bild konnte nicht genutzt werden</string>
     <string name="scene_create_include_onepane">Noch keine Aktionen. Ziehe den Bildschirm nach rechts um die verfügbaren Aktionen zu sehen. Klicke eine an um diese der Szene hinzuzufügen.</string>
     <string name="scene_create_include_twopane">Noch keine Aktionen. Klicke eine auf der rechten Seiten an um diese der Szene hinzuzufügen.</string>
@@ -396,4 +397,5 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="scene_add_item">Element hinzufügen</string>
     <string name="help_edit_outlet_title">Bearbeite Element</string>
     <string name="help_edit_outlet">Stelle den Namen um, setzte Icons für die verschiedenen Zustände or mache dieses Element zu einem Favouriten.</string>
+    <string name="no_asset_found">Keine mitgelieferten Bilder zur Auswahl gefunden.</string>
 </resources>

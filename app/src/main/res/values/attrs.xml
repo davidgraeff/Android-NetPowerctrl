@@ -20,6 +20,12 @@
     <!-- general app colors -->
     <attr name="textColorPrimary" format="reference" />
     <attr name="colorPrimaryTransparent" format="color" />
+    <attr name="dialogTheme" format="reference" />
+    <attr name="FlatButtonRippleStyle" format="reference" />
+    <attr name="FlatColorButtonRippleStyle" format="reference" />
+    <attr name="RaiseColorButtonRippleStyle" format="reference" />
+    <attr name="RaiseWaveButtonRippleStyle" format="reference" />
+    <attr name="EditTextLarge" format="reference" />
 
     <!-- icons -->
     <attr name="ic_action_good" format="reference" />

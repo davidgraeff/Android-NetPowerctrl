@@ -6,14 +6,14 @@ import android.view.View;
 import com.rey.material.app.Dialog;
 import com.rey.material.app.SimpleDialog;
 
-import oly.netpowerctrl.R;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * Show help for scene dialog
  */
 public class SceneHelp {
     public static void showHelp(Context context, int title_res, int help_res) {
-        final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+        final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(context));
         builder.title(context.getString(title_res));
         builder.message(context.getString(help_res));
         builder.positiveAction(context.getString(android.R.string.ok));

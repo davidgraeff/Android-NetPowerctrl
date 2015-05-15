@@ -18,6 +18,7 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * Utility methods for groups
@@ -76,7 +77,7 @@ public class GroupUtilities {
     }
 
     public static void askForGroup(Context context, final Credentials credentials) {
-        final SimpleDialog.Builder builder = new SimpleDialog.Builder(R.style.SimpleDialogLight);
+        final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(context));
         builder.title(context.getString(R.string.device_createGroup));
         builder.message(context.getString(R.string.confirmation_device_createGroup));
         builder.negativeAction(context.getString(android.R.string.no)).positiveAction(context.getString(android.R.string.yes));
