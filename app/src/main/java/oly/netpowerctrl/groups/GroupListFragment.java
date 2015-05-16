@@ -9,14 +9,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.ExecutablesFragment;
 import oly.netpowerctrl.ioconnection.IOConnectionsFragment;
+import oly.netpowerctrl.main.FeedbackFragment;
 import oly.netpowerctrl.main.MainActivity;
+import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;
@@ -96,7 +97,7 @@ public class GroupListFragment extends Fragment implements onServiceReady, Empty
 
         groupAdapter.start();
 
-        Button button = (Button) root.findViewById(R.id.btnAdd);
+        View button = root.findViewById(R.id.btnAdd);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -111,11 +112,29 @@ public class GroupListFragment extends Fragment implements onServiceReady, Empty
             }
         });
 
-        button = (Button) root.findViewById(R.id.btnDevices);
+        button = root.findViewById(R.id.btnDevices);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FragmentUtils.changeToFragment(getActivity(), IOConnectionsFragment.class.getName());
+                ((MainActivity) getActivity()).closeGroupMenu();
+            }
+        });
+
+        button = root.findViewById(R.id.btnPreferences);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentUtils.changeToFragment(getActivity(), PreferencesFragment.class.getName());
+                ((MainActivity) getActivity()).closeGroupMenu();
+            }
+        });
+
+        button = root.findViewById(R.id.btnFeedback);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentUtils.changeToFragment(getActivity(), FeedbackFragment.class.getName());
                 ((MainActivity) getActivity()).closeGroupMenu();
             }
         });

@@ -26,8 +26,6 @@ import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.preferences.SharedPrefs;
 
-;
-
 /**
  * Represents
  */

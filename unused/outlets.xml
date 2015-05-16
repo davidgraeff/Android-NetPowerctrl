@@ -5,13 +5,11 @@
     <item
         android:id="@+id/menu_preferences"
         android:icon="?attr/ic_action_settings"
-        android:title="@string/preferences"
-        app:showAsAction="always" />
+        android:title="@string/preferences" app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menu_about"
         android:icon="?attr/ic_action_good"
-        android:title="@string/drawer_feedback"
-        app:showAsAction="always" />
+        android:title="@string/drawer_feedback" app:showAsAction="ifRoom" />
 
 </menu>

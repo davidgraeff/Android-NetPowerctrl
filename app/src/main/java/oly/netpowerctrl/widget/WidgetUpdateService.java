@@ -20,8 +20,6 @@ import oly.netpowerctrl.main.ExecutionActivity;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.Logging;
 
-;
-
 /**
  * Widget Update Service for all types of widgets.
  */

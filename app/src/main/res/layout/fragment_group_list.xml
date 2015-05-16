@@ -11,27 +11,39 @@
         android:layout_height="wrap_content"
         app:theme="?attr/toolbar_style">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center">
-
-            <android.support.v7.widget.ActionMenuView
-                android:id="@+id/amvMenu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true" />
 
             <com.rey.material.widget.Button
                 android:id="@+id/btnDevices"
                 style="@style/FlatButtonRippleStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/amvMenu"
-                android:gravity="center"
                 android:text="@string/devices"
                 android:textColor="?attr/textColorPrimary" />
-        </RelativeLayout>
+
+            <com.rey.material.widget.ImageButton
+                android:id="@+id/btnPreferences"
+                style="@style/FlatButtonRippleStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/preferences"
+                android:paddingEnd="5dp"
+                android:paddingStart="5dp"
+                android:src="?attr/ic_action_settings" />
+
+            <com.rey.material.widget.ImageButton
+                android:id="@+id/btnFeedback"
+                style="@style/FlatButtonRippleStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/drawer_feedback"
+                android:paddingEnd="5dp"
+                android:paddingStart="5dp"
+                android:src="?attr/ic_action_good" />
+        </LinearLayout>
     </android.support.v7.widget.Toolbar>
 
     <android.support.v7.widget.Toolbar

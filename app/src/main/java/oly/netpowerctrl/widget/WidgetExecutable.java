@@ -31,8 +31,6 @@ import oly.netpowerctrl.scenes.Scene;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 
-;
-
 /**
  * Created by david on 15.04.15.
  */

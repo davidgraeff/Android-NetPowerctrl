@@ -12,7 +12,6 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.ActionMenuView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -48,10 +47,7 @@ import oly.netpowerctrl.executables.adapter.InputGroupChanges;
 import oly.netpowerctrl.groups.GroupListFragment;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.main.EditActivity;
-import oly.netpowerctrl.main.FeedbackFragment;
-import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.network.Utils;
-import oly.netpowerctrl.preferences.PreferencesFragment;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.scenes.SceneHelp;
 import oly.netpowerctrl.ui.EmptyListener;
@@ -201,23 +197,6 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_about: {
-                FragmentUtils.changeToFragment(getActivity(), FeedbackFragment.class.getName());
-                ((MainActivity) getActivity()).closeGroupMenu();
-                return true;
-            }
-            case R.id.menu_preferences: {
-                FragmentUtils.changeToFragment(getActivity(), PreferencesFragment.class.getName());
-                ((MainActivity) getActivity()).closeGroupMenu();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
 
@@ -235,16 +214,6 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
                 setEditMode(!editMode);
             }
         });
-
-        ActionMenuView menu = ((ActionMenuView) getActivity().findViewById(R.id.amvMenu));
-        menu.setOnMenuItemClickListener(new ActionMenuView.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                return onOptionsItemSelected(menuItem);
-            }
-        });
-        menu.getMenu().clear();
-        getActivity().getMenuInflater().inflate(R.menu.outlets, menu.getMenu());
 
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
