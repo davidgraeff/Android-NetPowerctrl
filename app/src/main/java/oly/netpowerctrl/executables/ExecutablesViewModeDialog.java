@@ -49,18 +49,21 @@ public class ExecutablesViewModeDialog extends DialogFragment {
         ExecutablesAdapter adapter;
         AdapterSource adapterSource;
         GridLayoutManager gridLayoutManager;
-        int rows;
 
-        rows = 1;
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
         adapterSource.addInput(new InputDemo());
         adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.list_item_executable);
-        adapter.setItemsInRow(rows);
+        adapter.setItemsInRow(new ExecutablesAdapter.ItemsInRow() {
+            @Override
+            public int getItemsInRow() {
+                return 1;
+            }
+        });
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list1);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(adapter);
-        gridLayoutManager = new GridLayoutManager(getActivity(), rows);
+        gridLayoutManager = new GridLayoutManager(getActivity(), 1);
         gridLayoutManager.setSpanSizeLookup(adapter.getSpanSizeLookup());
         recyclerView.setHasFixedSize(false);
         recyclerView.setLayoutManager(gridLayoutManager);
@@ -79,16 +82,20 @@ public class ExecutablesViewModeDialog extends DialogFragment {
             }
         });
 
-        rows = 2;
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
         adapterSource.addInput(new InputDemo());
         adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.grid_item_executable);
-        adapter.setItemsInRow(rows);
+        adapter.setItemsInRow(new ExecutablesAdapter.ItemsInRow() {
+            @Override
+            public int getItemsInRow() {
+                return 2;
+            }
+        });
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list2);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(adapter);
-        gridLayoutManager = new GridLayoutManager(getActivity(), rows);
+        gridLayoutManager = new GridLayoutManager(getActivity(), 2);
         gridLayoutManager.setSpanSizeLookup(adapter.getSpanSizeLookup());
         recyclerView.setHasFixedSize(false);
         recyclerView.setLayoutManager(gridLayoutManager);
@@ -110,12 +117,17 @@ public class ExecutablesViewModeDialog extends DialogFragment {
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartOnServiceReady);
         adapterSource.addInput(new InputDemo());
         adapter = new ExecutablesAdapter(adapterSource, LoadStoreIconData.iconLoadingThread, R.layout.grid_item_compact_executable);
-        adapter.setItemsInRow(rows);
+        adapter.setItemsInRow(new ExecutablesAdapter.ItemsInRow() {
+            @Override
+            public int getItemsInRow() {
+                return 2;
+            }
+        });
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list3);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(adapter);
-        gridLayoutManager = new GridLayoutManager(getActivity(), rows);
+        gridLayoutManager = new GridLayoutManager(getActivity(), 2);
         gridLayoutManager.setSpanSizeLookup(adapter.getSpanSizeLookup());
         recyclerView.setHasFixedSize(false);
         recyclerView.setLayoutManager(gridLayoutManager);

@@ -2,11 +2,9 @@
 <resources>
     <style name="Theme.CustomLightTheme" parent="Theme.AppCompat.Light">
         <!-- background colors -->
-        <item name="android:windowBackground">@color/colorSecondaryLight</item>
-        <item name="activity_background">@android:color/background_light</item>
+        <item name="android:windowBackground">@android:color/background_light</item>
         <item name="cards_background">@android:color/background_light</item>
         <item name="transparent_rounded_background">@drawable/transparent_text_light</item>
-        <!--<item name="showcaseViewStyle">@style/ShowcaseThemeLight</item>-->
 
         <!-- icons -->
         <item name="ic_action_good">@drawable/ic_action_good</item>
@@ -68,11 +66,9 @@
 
     <style name="Theme.CustomDarkTheme" parent="Theme.AppCompat">
         <!-- background colors -->
-        <item name="android:windowBackground">@drawable/background_textured_dark</item>
-        <item name="activity_background">@color/colorBackgroundDark</item>
+        <item name="android:windowBackground">@color/colorBackgroundDark</item>
         <item name="cards_background">@color/colorBackgroundCardsDark</item>
         <item name="transparent_rounded_background">@drawable/transparent_text_dark</item>
-        <!--<item name="showcaseViewStyle">@style/ShowcaseThemeDark</item>-->
 
         <!-- icons -->
         <item name="ic_action_good">@drawable/ic_action_good</item>

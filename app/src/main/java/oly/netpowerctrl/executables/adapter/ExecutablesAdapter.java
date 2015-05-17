@@ -14,17 +14,20 @@ public class ExecutablesAdapter extends RecyclerView.Adapter<ExecutableViewHolde
     protected final AdapterSource mSource;
     private final IconDeferredLoadingThread mIconLoadThread;
     protected int mItemsResourceId = 0;
-
-    private int mItemsInRow = 1;
+    private ItemsInRow itemsInRow = new ItemsInRow() {
+        @Override
+        public int getItemsInRow() {
+            return 1;
+        }
+    };
     GridLayoutManager.SpanSizeLookup spanSizeLookup = new GridLayoutManager.SpanSizeLookup() {
         @Override
         public int getSpanSize(int position) {
             final ExecutableAdapterItem item = mSource.mItems.get(position);
-            final Executable executable = item.getExecutable();
-            if (executable == null)
-                return mItemsInRow;
+            if (item.getExecutable() == null)
+                return itemsInRow.getItemsInRow(); // Only one header per row -> span full row
             else
-                return 1; // Only one header per row
+                return 1;
         }
     };
 
@@ -44,6 +47,9 @@ public class ExecutablesAdapter extends RecyclerView.Adapter<ExecutableViewHolde
 
     public void setLayoutRes(int layout_res) {
         this.mItemsResourceId = layout_res;
+        // viewholder have to be recreated
+        notifyItemRangeRemoved(0, mSource.mItems.size());
+        notifyItemRangeInserted(0, mSource.mItems.size());
     }
 
     @Override
@@ -103,14 +109,13 @@ public class ExecutablesAdapter extends RecyclerView.Adapter<ExecutableViewHolde
         return mSource.mItems.size();
     }
 
+    public void setItemsInRow(ItemsInRow itemsInRow) {
+        this.itemsInRow = itemsInRow;
+    }
+
     //////////////// Group Spans //////////////
 
-    public void setItemsInRow(int itemsInRow) {
-        if (itemsInRow == this.mItemsInRow)
-            return;
-
-        this.mItemsInRow = itemsInRow;
-
-        notifyDataSetChanged();
+    public interface ItemsInRow {
+        int getItemsInRow();
     }
 }

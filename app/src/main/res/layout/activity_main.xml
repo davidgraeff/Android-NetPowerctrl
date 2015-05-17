@@ -40,8 +40,7 @@
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:layout_above="@id/toolbar_bottom_actionbar"
-        android:layout_below="@id/toolbar_container"
-        android:background="?attr/activity_background" />
+        android:layout_below="@id/toolbar_container" />
 
     <com.rey.material.widget.FloatingActionButton
         android:id="@+id/btnEdit"

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- background colors -->
-    <attr name="activity_background" format="color" />
     <attr name="cards_background" format="color" />
     <attr name="transparent_rounded_background" format="reference" />
 

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,7 +13,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,7 +20,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -38,6 +35,7 @@ import oly.netpowerctrl.devices.AutomaticSetup;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.adapter.ExecutableViewHolder;
+import oly.netpowerctrl.executables.adapter.ExecutablesAdapter;
 import oly.netpowerctrl.executables.adapter.ExecutablesEditableAdapter;
 import oly.netpowerctrl.executables.adapter.FilterByHidden;
 import oly.netpowerctrl.executables.adapter.FilterByReachable;
@@ -77,31 +75,15 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     private RecyclerView mRecyclerView;
     private SwipeRefreshLayout mPullToRefreshLayout;
     private View btnWireless;
-    private int requestedColumnWidth;
     // Adapter
     private AdapterSource adapterSource;
     private ExecutablesEditableAdapter adapter;
-    private final ViewTreeObserver.OnGlobalLayoutListener mListViewNumColumnsChangeListener =
-            new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    //noinspection deprecation
-                    mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
-
-                    int i = mRecyclerView.getWidth() / requestedColumnWidth;
-                    if (i < 1) i = 1;
-                    adapter.setItemsInRow(i);
-                    GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), i);
-                    gridLayoutManager.setSpanSizeLookup(getAdapter().getSpanSizeLookup());
-                    mRecyclerView.setHasFixedSize(false);
-                    mRecyclerView.setLayoutManager(gridLayoutManager);
-                    mRecyclerView.setAdapter(adapter);
-                }
-            };
     private String clicked_group_uid;
     // UI
     private boolean editMode;
     private SimpleListDividerDecoration listDividerDecoration;
+    private GridLayoutManager gridLayoutManager;
+    private int requestedColumnWidth = 0;
     private View btnAdd;
     private View btnEdit;
     // Data
@@ -110,15 +92,6 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     private MaterialCab cab = null;
 
     public ExecutablesFragment() {
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        if (mRecyclerView != null) {
-            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
-        }
     }
 
     @Override
@@ -169,26 +142,30 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         int viewType = SharedPrefs.getInstance().getOutletsViewType();
 
         mRecyclerView.removeItemDecoration(listDividerDecoration);
+        int columns;
 
         switch (viewType) {
             case VIEW_AS_COMPACT:
-                adapter.setLayoutRes(R.layout.grid_item_compact_executable);
                 requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
+                columns = Math.max(mRecyclerView.getWidth() / requestedColumnWidth, 1);
+                gridLayoutManager.setSpanCount(columns);
+                adapter.setLayoutRes(R.layout.grid_item_compact_executable);
                 break;
             case VIEW_AS_GRID:
-                adapter.setLayoutRes(R.layout.grid_item_executable);
                 requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_grid_item_width);
+                columns = Math.max(mRecyclerView.getWidth() / requestedColumnWidth, 1);
+                gridLayoutManager.setSpanCount(columns);
+                adapter.setLayoutRes(R.layout.grid_item_executable);
                 break;
             case VIEW_AS_LIST:
             default:
                 mRecyclerView.addItemDecoration(listDividerDecoration);
-                adapter.setLayoutRes(R.layout.list_item_executable);
                 requestedColumnWidth = (int) getResources().getDimension(R.dimen.min_list_item_width);
+                columns = Math.max(mRecyclerView.getWidth() / requestedColumnWidth, 1);
+                gridLayoutManager.setSpanCount(columns);
+                adapter.setLayoutRes(R.layout.list_item_executable);
                 break;
         }
-
-        mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mListViewNumColumnsChangeListener);
-        mRecyclerView.requestLayout();
     }
 
     @Override
@@ -217,12 +194,14 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
 
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             mRecyclerView.addItemDecoration(new ItemShadowDecoration((NinePatchDrawable) ContextCompat.getDrawable(getActivity(), R.drawable.material_shadow_z1)));
         }
         listDividerDecoration = new SimpleListDividerDecoration(ContextCompat.getDrawable(getActivity(), R.drawable.list_divider), true);
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), this, null));
+        gridLayoutManager = new GridLayoutManager(getActivity(), 1);
+        mRecyclerView.setHasFixedSize(false);
+        mRecyclerView.setLayoutManager(gridLayoutManager);
 
         automaticSetup = new AutomaticSetup(
                 (Button) view.findViewById(R.id.automatic_setup_start),
@@ -249,7 +228,13 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         adapterSource.addInput(new InputExecutables(), new InputGroupChanges());
 
         adapter = new ExecutablesEditableAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
-
+        adapter.setItemsInRow(new ExecutablesAdapter.ItemsInRow() {
+            @Override
+            public int getItemsInRow() {
+                return gridLayoutManager.getSpanCount();
+            }
+        });
+        gridLayoutManager.setSpanSizeLookup(adapter.getSpanSizeLookup());
         adapter.getSource().setEmptyListener(this);
 
         ///// For pull to refresh
@@ -293,6 +278,18 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
                 } else
                     setEditMode(false);
                 mRecyclerView.scrollToPosition(SharedPrefs.getInstance().getLastScrollIndex());
+            }
+        });
+
+        mRecyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            int lastWidth = 0;
+
+            @Override
+            public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
+                if (requestedColumnWidth == 0 || mRecyclerView.getWidth() == lastWidth) return;
+                lastWidth = mRecyclerView.getWidth();
+                int columns = Math.max(lastWidth / requestedColumnWidth, 1);
+                gridLayoutManager.setSpanCount(columns);
             }
         });
 
