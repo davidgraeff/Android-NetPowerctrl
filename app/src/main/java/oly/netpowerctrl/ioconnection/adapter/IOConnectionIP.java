@@ -1,4 +1,4 @@
-package oly.netpowerctrl.ioconnection;
+package oly.netpowerctrl.ioconnection.adapter;
 
 import android.support.annotation.NonNull;
 import android.util.JsonReader;
@@ -7,42 +7,38 @@ import android.util.JsonWriter;
 import java.io.IOException;
 
 import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.ioconnection.IOConnection;
 
 /**
- * A device connection for http
+ * A device connection for udp
  */
-public class IOConnectionHTTP extends IOConnection {
-    public static final String PROTOCOL = "HTTP";
-    public int PortHttp = -1;
+public class IOConnectionIP extends IOConnection {
+    public static final String PROTOCOL = "IP";
+    public String additional = "";
 
-    public IOConnectionHTTP(@NonNull Credentials credentials) {
+    public IOConnectionIP(@NonNull Credentials credentials) {
         super(credentials);
     }
 
-    public IOConnectionHTTP() {
+    public IOConnectionIP() {
         super(null);
     }
 
-
     @Override
     protected void write(JsonWriter writer) throws IOException {
-        writer.name("HttpPort").value(PortHttp);
+        writer.name("additional").value(additional);
     }
 
     @Override
     protected void read(@NonNull JsonReader reader, String name) throws IOException {
         switch (name) {
-            case "HttpPort":
-                PortHttp = reader.nextInt();
+            case "additional":
+                additional = reader.nextString();
                 break;
             default:
                 reader.skipValue();
                 break;
         }
-    }
-
-    public int getDestinationPort() {
-        return PortHttp;
     }
 
     @Override
@@ -52,18 +48,14 @@ public class IOConnectionHTTP extends IOConnection {
 
     @Override
     public int computeHash() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(PROTOCOL);
-        builder.append(PortHttp);
-        builder.append(hostName);
-        return builder.toString().hashCode();
+        return (PROTOCOL + additional + hostName).hashCode();
     }
 
-    public void copyFrom(IOConnectionHTTP ioConnection) {
+    public void copyFrom(IOConnectionIP ioConnection) {
         receivedPackets = ioConnection.receivedPackets;
         credentials = ioConnection.credentials;
         deviceUID = ioConnection.deviceUID;
         hostName = ioConnection.hostName;
-        PortHttp = ioConnection.PortHttp;
+        additional = ioConnection.additional;
     }
 }

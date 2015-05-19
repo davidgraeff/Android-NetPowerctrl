@@ -1,4 +1,4 @@
-package oly.netpowerctrl.ui;
+package oly.netpowerctrl.preferences;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
@@ -16,6 +16,8 @@ import java.io.IOException;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
+import oly.netpowerctrl.ui.SoftRadioGroup;
+import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.

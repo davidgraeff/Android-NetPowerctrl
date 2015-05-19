@@ -112,7 +112,7 @@
             android:name=".main.EditActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
             android:description="@string/shortcut_new_scene_desc"
-            android:icon="@drawable/netpowerctrl"
+            android:icon="@drawable/netpowerctrl_new"
             android:label="@string/shortcut_new_scene"
             android:theme="@style/Theme.StartTheme"
             android:windowSoftInputMode="stateHidden">
@@ -126,7 +126,7 @@
             android:name=".main.SelectExistingExecutableActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|layoutDirection"
             android:description="@string/shortcut_existing_executable_desc"
-            android:icon="@drawable/netpowerctrl"
+            android:icon="@drawable/netpowerctrl_existing"
             android:label="@string/shortcut_existing_executable"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.CustomLightThemeDialog"

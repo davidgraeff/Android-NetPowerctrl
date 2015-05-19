@@ -1,7 +1,6 @@
 package oly.netpowerctrl.plugin_simpleudp;
 
 import android.content.Context;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -20,8 +19,10 @@ import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
+import oly.netpowerctrl.ioconnection.IOConnectionUDP;
 import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.network.onExecutionFinished;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 
 /**
@@ -46,14 +47,13 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
     public static final String PLUGIN_ID = "org.custom.simpleudp";
     static final int PORT_SEND = 3338;
     static final int PORT_RECEIVE = 3339;
-    private static final String OWN_ID = Settings.Secure.ANDROID_ID;
+    private static final String OWN_ID = SharedPrefs.getAndroidID();
     private static final byte[] requestMessage = ("SimpleUDP_detect\n" + OWN_ID).getBytes();
     private SimpleUDPReceiveUDP simpleUDPReceiveUDP;
 
     public SimpleUDPPlugin(DataService dataService) {
         super(dataService);
     }
-
 
     /**
      * @param deviceUID The device unique id
@@ -113,7 +113,7 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
         String actionID = extractIDFromExecutableUID(executable.getUid());
 
         byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s", OWN_ID, type, actionID, String.valueOf(executable.current_value)).getBytes();
-        UDPSend.sendMessage(ioConnection, data);
+        UDPSend.sendMessage((IOConnectionUDP) ioConnection, data);
 
         if (callback != null) callback.addSuccess();
 
@@ -149,7 +149,7 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
 
     @Override
     public void requestData(@NonNull IOConnection ioConnection) {
-        UDPSend.sendMessage(ioConnection, requestMessage);
+        UDPSend.sendMessage((IOConnectionUDP) ioConnection, requestMessage);
     }
 
     @Override
@@ -158,9 +158,26 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
     }
 
     @Override
-    public boolean supportsRemoteRename() {
-        return true;
+    public boolean isNewIOConnectionAllowed(Credentials credentials) {
+        return false;
     }
+
+    @Override
+    public boolean supportProperty(Properties property) {
+        switch (property) {
+            case RemoteRename:
+                return true;
+            case EditableUsername:
+                return false;
+            case EditablePassword:
+                return false;
+            case ManuallyAddDevice:
+                return false;
+            default:
+                return false;
+        }
+    }
+
 
     /**
      * Renaming is done via http and the dd.htm page on the ANEL devices.
@@ -194,7 +211,7 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
         String actionID = extractIDFromExecutableUID(executable.getUid());
 
         byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s", OWN_ID, type, actionID, executable.getTitle()).getBytes();
-        UDPSend.sendMessage(ioConnection, data);
+        UDPSend.sendMessage((IOConnectionUDP) ioConnection, data);
 
         if (callback != null) callback.onNameChangeResult(true, null);
     }

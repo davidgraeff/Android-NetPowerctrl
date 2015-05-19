@@ -28,8 +28,6 @@ public class AdapterItemConnection extends AdapterItem implements onCollectionUp
         super(adapter);
         this.title = "";
         this.title += ioConnection.getProtocol() + "/" + ioConnection.getDestinationHost();
-        if (ioConnection.getDestinationPort() != -1)
-            this.title += ":" + String.valueOf(ioConnection.getDestinationPort());
 
         this.ioConnection = ioConnection;
         this.credentials = ioConnection.credentials;

@@ -76,8 +76,8 @@ public class InAppNotifications {
 
     public static void showException(Context context, Throwable exception, String message) {
         FromOtherThread(context, message + "\n" + context.getString(R.string.error_restart_app));
-        if (!App.useErrorReporter)
-            return;
+//        if (!App.useErrorReporter)
+//            return;
         ACRA.getErrorReporter().putCustomData("misc", message);
         boolean serviceRunning = DataService.getService() != null;
         ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
@@ -95,7 +95,7 @@ public class InAppNotifications {
     }
 
     public static void silentException(Throwable exception, String additionalData) {
-        if (!App.useErrorReporter) return;
+//        if (!App.useErrorReporter) return;
 
         if (additionalData != null)
             ACRA.getErrorReporter().putCustomData("data", additionalData);

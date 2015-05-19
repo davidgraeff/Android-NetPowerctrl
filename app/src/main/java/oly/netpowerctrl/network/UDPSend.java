@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import oly.netpowerctrl.App;
-import oly.netpowerctrl.ioconnection.IOConnection;
+import oly.netpowerctrl.ioconnection.IOConnectionUDP;
 import oly.netpowerctrl.utils.Logging;
 
 /**
@@ -46,7 +46,7 @@ public class UDPSend extends Thread {
         udpSend.q.add(command);
     }
 
-    public static void sendMessage(@NonNull IOConnection ioConnection, byte[] message) {
+    public static void sendMessage(@NonNull IOConnectionUDP ioConnection, byte[] message) {
         UDPCommand command = new UDPCommand();
         command.messages.add(message);
         command.errorID = UDPErrors.INQUERY_REQUEST;

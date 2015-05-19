@@ -18,33 +18,32 @@ import com.rey.material.app.SimpleDialog;
 import com.rey.material.widget.EditText;
 import com.rey.material.widget.ProgressView;
 
-import java.net.UnknownHostException;
 import java.util.UUID;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.network.HttpThreadPool;
+import oly.netpowerctrl.ioconnection.adapter.IOConnectionIP;
+import oly.netpowerctrl.plugin_wol.MagicPacket;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.ThemeHelper;
 
 /**
  * This dialog allows the user to setup a new
  */
-public class IOConnectionHttpDialog extends DialogFragment {
+public class IOConnectionIPDialog extends DialogFragment {
     private ProgressView progressView;
     private Button btnTest;
     private EditText newHost;
-    private EditText newPort;
     private ImageView connectionStateImage;
     private boolean closeIfReachable = false;
-    private IOConnectionHTTP ioConnection = null;
+    private IOConnectionIP ioConnection = null;
 
-    public IOConnectionHttpDialog() {
+    public IOConnectionIPDialog() {
     }
 
-    public static void show(Activity context, IOConnectionHTTP ioConnection) {
-        IOConnectionHttpDialog dialog = (IOConnectionHttpDialog) Fragment.instantiate(context, IOConnectionHttpDialog.class.getName());
+    public static void show(Activity context, IOConnectionIP ioConnection) {
+        IOConnectionIPDialog dialog = (IOConnectionIPDialog) Fragment.instantiate(context, IOConnectionIPDialog.class.getName());
         dialog.ioConnection = ioConnection;
         FragmentUtils.changeToDialog(context, dialog);
     }
@@ -52,14 +51,11 @@ public class IOConnectionHttpDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.fragment_device_edit_connection_http, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_device_edit_connection_ip, container, false);
         progressView = (ProgressView) rootView.findViewById(R.id.connection_progressbar);
         btnTest = (Button) rootView.findViewById(R.id.btnTest);
         newHost = (EditText) rootView.findViewById(R.id.device_host);
         newHost.setText(ioConnection.hostName);
-        newPort = (EditText) rootView.findViewById(R.id.device_http_port);
-        if (ioConnection.getDestinationPort() != -1)
-            newPort.setText(String.valueOf(ioConnection.getDestinationPort()));
         connectionStateImage = ((ImageView) rootView.findViewById(R.id.connection_reachable));
         connectionStateImage.setVisibility(View.VISIBLE);
         connectionStateImage.setImageResource(android.R.drawable.presence_offline);
@@ -104,26 +100,17 @@ public class IOConnectionHttpDialog extends DialogFragment {
     private void checkConnectionReachable() {
         final String host = newHost.getText().toString().trim();
 
-        final int port;
-        try {
-            port = Integer.valueOf(newPort.getText().toString());
-        } catch (NumberFormatException e) {
-            Toast.makeText(getActivity(), R.string.error_invalid_port, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         if (host.trim().isEmpty()) {
             Toast.makeText(getActivity(), R.string.error_invalid_host, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        IOConnectionHTTP test_connection = new IOConnectionHTTP();
+        IOConnectionIP test_connection = new IOConnectionIP();
         test_connection.copyFrom(ioConnection);
         test_connection.connectionUID = UUID.randomUUID().toString();
         test_connection.hostName = host;
-        test_connection.PortHttp = port;
 
-        new AsyncTask<IOConnectionHTTP, Void, IOConnectionHTTP>() {
+        new AsyncTask<IOConnectionIP, Void, IOConnectionIP>() {
             private String error_message = null;
             private boolean success = false;
 
@@ -134,27 +121,17 @@ public class IOConnectionHttpDialog extends DialogFragment {
             }
 
             @Override
-            protected IOConnectionHTTP doInBackground(IOConnectionHTTP... connections) {
-                try {
-                    connections[0].lookupIPs();
-                    HttpThreadPool.HTTPRunner<Void> h = new HttpThreadPool.HTTPRunner<>(connections[0], "", "", null, false, new HttpThreadPool.HTTPCallback<Void>() {
-                        @Override
-                        public void httpResponse(Void additional, boolean callback_success, String response_message) {
-                            success = callback_success;
-                            error_message = response_message;
-                        }
-                    });
-                    h.timeout_ms = 3000;
-                    h.run();
-                } catch (UnknownHostException e) {
-                    error_message = e.getLocalizedMessage();
-                    return null;
-                }
+            protected IOConnectionIP doInBackground(IOConnectionIP... connections) {
+                if (!MagicPacket.doPing(connections[0].getDestinationHost())) return null;
+                String mac = MagicPacket.getMacFromArpCache(connections[0].getDestinationHost());
+                if (mac == null) return null;
+                connections[0].additional = mac;
+                success = true;
                 return connections[0];
             }
 
             @Override
-            protected void onPostExecute(IOConnectionHTTP testConnection) {
+            protected void onPostExecute(IOConnectionIP testConnection) {
                 progressView.stop();
                 btnTest.setEnabled(true);
 

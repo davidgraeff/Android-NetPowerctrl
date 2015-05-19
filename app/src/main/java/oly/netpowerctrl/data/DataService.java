@@ -35,6 +35,7 @@ import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.plugin_anel.AnelPlugin;
 import oly.netpowerctrl.plugin_simpleudp.SimpleUDPPlugin;
+import oly.netpowerctrl.plugin_wol.WOLPlugin;
 import oly.netpowerctrl.status_bar.FavCollection;
 import oly.netpowerctrl.utils.Logging;
 
@@ -112,10 +113,6 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         return mDiscoverService;
     }
 
-    public boolean isDataLoaded() {
-        return observersOnDataLoaded.isDone();
-    }
-
     /**
      * Called by the asynchronous loading process after loading is done.
      */
@@ -135,17 +132,6 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    /**
-     * Called after an alarm is executed. If the service is not used anymore (weakHashMap empty),
-     * then stop the service.
-     */
-    public void checkStopAfterAlarm() {
-        if (weakHashMap.size() == 0) {
-            service_shutdown_reason = "StopAfterAlarm";
-            App.getMainThreadHandler().sendEmptyMessageDelayed(GuiThreadHandler.SERVICE_DELAYED_EXIT, 2000);
-        }
     }
 
     /**
@@ -185,6 +171,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         discoverExtensions();
         plugins.add(new AnelPlugin(this));
         plugins.add(new SimpleUDPPlugin(this));
+        plugins.add(new WOLPlugin(this));
 
         // Load all Devices, Scenes etc from disk.
         /**
@@ -249,11 +236,16 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         return plugins.get(position);
     }
 
-    public String[] pluginNames() {
-        String[] ids = new String[plugins.size()];
+    public String[] pluginNames(List<String> pluginIDs, FilterPlugin filterPlugin) {
+        List<String> names = new ArrayList<>();
         for (int i = 0; i < plugins.size(); ++i)
-            ids[i] = plugins.get(i).getLocalizedName();
-        return ids;
+            if (filterPlugin.accept(plugins.get(i))) {
+                names.add(plugins.get(i).getLocalizedName());
+                pluginIDs.add(plugins.get(i).getPluginID());
+            }
+        String[] t = new String[names.size()];
+        names.toArray(t);
+        return t;
     }
 
     public AbstractBasePlugin getPlugin(String plugin_id) {
@@ -415,5 +407,9 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         this.executables.remove(credentials);
         this.connections.remove(credentials);
         this.credentials.remove(credentials);
+    }
+
+    public interface FilterPlugin {
+        boolean accept(AbstractBasePlugin plugin);
     }
 }

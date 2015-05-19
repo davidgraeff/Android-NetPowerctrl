@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import oly.netpowerctrl.ioconnection.adapter.IOConnectionIP;
 import oly.netpowerctrl.utils.FactoryInterface;
 
 /**
@@ -38,6 +39,9 @@ public class IOConnectionFabric implements FactoryInterface<IOConnection> {
                 break;
             case IOConnectionHTTP.PROTOCOL:
                 ioConnection = new IOConnectionHTTP();
+                break;
+            case IOConnectionIP.PROTOCOL:
+                ioConnection = new IOConnectionIP();
                 break;
             default:
                 throw new ClassNotFoundException("Unexpected connection_type: " + name);

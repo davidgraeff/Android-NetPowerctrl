@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.TreeSet;
 
+import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.ioconnection.IOConnectionsCollection;
@@ -138,7 +139,7 @@ public class Executable implements Comparable, IOInterface {
     public void setTitle(String title, @NonNull onNameChangeResult callback) {
         if (title.equals(this.title)) return;
 
-        if (credentials != null && credentials.getPlugin().supportsRemoteRename()) {
+        if (credentials != null && credentials.getPlugin().supportProperty(AbstractBasePlugin.Properties.RemoteRename)) {
             callback.onNameChangeStart(this);
             credentials.getPlugin().setTitle(this, title, callback);
         } else
@@ -337,6 +338,7 @@ public class Executable implements Comparable, IOInterface {
      */
     public void setCredentials(Credentials credentials, IOConnectionsCollection connectionsCollection) {
         this.credentials = credentials;
+        this.deviceUID = credentials.getUid();
         updateCachedReachability(connectionsCollection.getReachableState(this));
     }
 

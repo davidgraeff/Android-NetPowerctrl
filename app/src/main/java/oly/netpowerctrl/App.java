@@ -1,7 +1,6 @@
 package oly.netpowerctrl;
 
 import android.app.Application;
-import android.os.Build;
 import android.os.Handler;
 
 import org.acra.ACRA;
@@ -25,7 +24,7 @@ import oly.netpowerctrl.main.LifecycleHandler;
 public class App extends Application {
     static final boolean isDebugFlag = BuildConfig.BUILD_TYPE.equals("debug");
     public static App instance;
-    public static boolean useErrorReporter = (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT); // Lollipop acra does not work;
+    //public static boolean useErrorReporter = (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT); // Lollipop acra does not work;
     private final GuiThreadHandler mainThreadHandler = new GuiThreadHandler();
     private LifecycleHandler lifecycleHandler;
 
@@ -76,23 +75,22 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         LoadStoreIconData.onCreate(this);
-        if (useErrorReporter) {
-            ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
-            config.setFormUri(getString(R.string.acralyzer_http_url));
-            config.setFormUriBasicAuthLogin(getString(R.string.acralyzer_http_login));
-            config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));
-            config.setReportType(HttpSender.Type.JSON);
-            config.setResToastText(R.string.crash_toast_text);
-            config.setBuildConfigClass(BuildConfig.class);
-            try {
-                config.setMode(ReportingInteractionMode.TOAST);
-            } catch (ACRAConfigurationException e) {
-                e.printStackTrace();
-            }
-            config.setCustomReportContent(new ReportField[]{ReportField.REPORT_ID, ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.PACKAGE_NAME, ReportField.PHONE_MODEL, ReportField.ANDROID_VERSION, ReportField.BUILD, ReportField.BRAND, ReportField.PRODUCT, ReportField.TOTAL_MEM_SIZE, ReportField.AVAILABLE_MEM_SIZE, ReportField.CUSTOM_DATA, ReportField.STACK_TRACE, ReportField.USER_COMMENT, ReportField.USER_APP_START_DATE, ReportField.USER_CRASH_DATE, ReportField.USER_EMAIL, ReportField.IS_SILENT, ReportField.DEVICE_FEATURES, ReportField.SHARED_PREFERENCES, ReportField.THREAD_DETAILS});
-            ACRA.setConfig(config);
-            ACRA.init(this);
+
+        ACRAConfiguration config = ACRA.getNewDefaultConfig(this);
+        config.setFormUri(getString(R.string.acralyzer_http_url));
+        config.setFormUriBasicAuthLogin(getString(R.string.acralyzer_http_login));
+        config.setFormUriBasicAuthPassword(getString(R.string.acralyzer_http_pwd));
+        config.setReportType(HttpSender.Type.JSON);
+        config.setResToastText(R.string.crash_toast_text);
+        config.setBuildConfigClass(BuildConfig.class);
+        try {
+            config.setMode(ReportingInteractionMode.TOAST);
+        } catch (ACRAConfigurationException e) {
+            e.printStackTrace();
         }
+        config.setCustomReportContent(new ReportField[]{ReportField.REPORT_ID, ReportField.APP_VERSION_CODE, ReportField.APP_VERSION_NAME, ReportField.PACKAGE_NAME, ReportField.PHONE_MODEL, ReportField.ANDROID_VERSION, ReportField.BUILD, ReportField.BRAND, ReportField.PRODUCT, ReportField.TOTAL_MEM_SIZE, ReportField.AVAILABLE_MEM_SIZE, ReportField.CUSTOM_DATA, ReportField.STACK_TRACE, ReportField.USER_COMMENT, ReportField.USER_APP_START_DATE, ReportField.USER_CRASH_DATE, ReportField.USER_EMAIL, ReportField.IS_SILENT, ReportField.DEVICE_FEATURES, ReportField.SHARED_PREFERENCES, ReportField.THREAD_DETAILS});
+        ACRA.setConfig(config);
+        ACRA.init(this);
 
         lifecycleHandler = new LifecycleHandler();
         registerActivityLifecycleCallbacks(lifecycleHandler);

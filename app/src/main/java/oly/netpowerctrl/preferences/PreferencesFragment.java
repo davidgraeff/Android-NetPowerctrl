@@ -29,7 +29,6 @@ import oly.netpowerctrl.main.NfcTagWriterActivity;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.status_bar.AndroidStatusBarService;
 import oly.netpowerctrl.ui.FragmentUtils;
-import oly.netpowerctrl.ui.IconThemeDialog;
 import oly.netpowerctrl.utils.Logging;
 
 public class PreferencesFragment extends PreferencesWithValuesFragment implements IconSelected {

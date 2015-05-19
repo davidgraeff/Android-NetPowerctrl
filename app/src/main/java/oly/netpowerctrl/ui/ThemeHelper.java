@@ -16,4 +16,11 @@ public class ThemeHelper {
         theme.resolveAttribute(R.attr.dialogTheme, typedValue, true);
         return typedValue.resourceId;
     }
+
+    public static int getDrawableRes(Context context, int res) {
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = context.getTheme();
+        theme.resolveAttribute(res, typedValue, true);
+        return typedValue.resourceId;
+    }
 }

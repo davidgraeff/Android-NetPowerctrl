@@ -51,7 +51,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        app:fab_iconSrc="@android:drawable/ic_menu_edit"
+        app:fab_iconSrc="?attr/ic_action_edit"
         tools:ignore="RelativeOverlap" />
 
 </RelativeLayout>

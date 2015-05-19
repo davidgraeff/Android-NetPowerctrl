@@ -162,14 +162,14 @@ class AnelReceiveUDP extends UDPReceiving {
         {
             String ioConnection_uid = DeviceUniqueID + "HTTP";
             IOConnectionHTTP ioConnection = (IOConnectionHTTP) deviceIOConnections.findByUID(ioConnection_uid);
-            if (ioConnection == null)
+            if (ioConnection == null) {
                 ioConnection = new IOConnectionHTTP(credentials);
-            ioConnection.setReceiveAddress(peer);
-            ioConnection.connectionUID = ioConnection_uid;
-            ioConnection.hostName = HostName;
-            ioConnection.PortHttp = httpPort;
-            ioConnection.setStatusMessage(null);
-            dataService.connections.put(ioConnection);
+                ioConnection.connectionUID = ioConnection_uid;
+                ioConnection.hostName = HostName;
+                ioConnection.PortHttp = httpPort;
+                ioConnection.setReceiveAddress(peer);
+                dataService.connections.put(ioConnection);
+            }
         }
 
 

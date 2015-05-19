@@ -394,4 +394,8 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="help_edit_outlet_title">Edit outlet</string>
     <string name="help_edit_outlet">Edit the name of this element, change the icons for each state or set the element as favourite in this screen.</string>
     <string name="no_asset_found">Keine mitgelieferten Bilder zur Auswahl gefunden.</string>
+    <string name="plugin_wol">Wakeup on LAN</string>
+    <string name="energy_save_mode">Energiesparmodus wählen</string>
+    <string name="connection_ip_new_info">Bitte gib den Hostnamen/IP des Ziels ein. Das Ziel muss erreichbar sein.</string>
+    <string name="plugin_wol_new_device_name">WakeUpOnLan</string>
 </resources>

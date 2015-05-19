@@ -372,7 +372,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="app_logo">Logo</string>
     <string name="app_license_title">Lizenz und Gewährleistung</string>
     <string name="Mail">E-Mail</string>
-    <string name="preference_icon_theme">Select icon theme</string>
+    <string name="preference_icon_theme">Wähle Icon-Set</string>
     <string name="automatic_found_unconfigured_devices">%1$d unkonfigurierte Geräte gefunden.</string>
     <string name="automatic_not_found_unconfigured_devices">Keine unkonfigurierten Geräte gefunden.</string>
     <string name="automatic_finished_result">%1$d erfolgreich eingerichtet. %2$d nicht eingerichtet (Zugangsdaten nicht auf Werkseinstellung).</string>
@@ -381,7 +381,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="feedback_bug_reports">Dazu Fehlerberichtmeldungen:</string>
     <string name="feedback_fixed_bugs">Behobene Fehler:</string>
     <string name="feedback_last_reported_bug">Letzter Fehler:</string>
-    <string name="icon_theme">Icon Theme</string>
+    <string name="icon_theme">Icon-Set</string>
     <string name="outlets_edit_mode">Bearbeitungsmodus</string>
     <string name="view_mode">Ansichtsmodus</string>
     <string name="device_connection_delete">Entferne Verbindung</string>
@@ -398,4 +398,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="help_edit_outlet_title">Bearbeite Element</string>
     <string name="help_edit_outlet">Stelle den Namen um, setzte Icons für die verschiedenen Zustände or mache dieses Element zu einem Favouriten.</string>
     <string name="no_asset_found">Keine mitgelieferten Bilder zur Auswahl gefunden.</string>
+    <string name="plugin_wol">Wakeup on LAN</string>
+    <string name="energy_save_mode">Energiesparmodus wählen</string>
+    <string name="connection_ip_new_info">Bitte gib den Hostnamen/IP des Ziels ein. Das Ziel muss erreichbar sein.</string>
+    <string name="plugin_wol_new_device_name">WakeUpOnLan</string>
 </resources>

@@ -50,7 +50,6 @@ public class IOConnectionUDP extends IOConnection {
         return PortUDPReceive;
     }
 
-    @Override
     public int getDestinationPort() {
         return PortUDPSend;
     }

@@ -50,6 +50,9 @@ public class CredentialsDialog extends DialogFragment {
 
         textView = (EditText) view.findViewById(R.id.device_username);
         textView.setText(credentials.userName);
+        if (!credentials.getPlugin().supportProperty(AbstractBasePlugin.Properties.EditableUsername)) {
+            textView.setVisibility(View.GONE);
+        }
 
         textView = (EditText) view.findViewById(R.id.device_password);
         textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
@@ -66,6 +69,11 @@ public class CredentialsDialog extends DialogFragment {
                     textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
         });
+
+        if (!credentials.getPlugin().supportProperty(AbstractBasePlugin.Properties.EditablePassword)) {
+            textView.setVisibility(View.GONE);
+            c.setVisibility(View.GONE);
+        }
 
         return view;
     }
@@ -88,14 +96,25 @@ public class CredentialsDialog extends DialogFragment {
                 textView = (EditText) getDialog().findViewById(R.id.device_password);
                 password = (textView.getText().toString());
 
-                if (deviceName.trim().length() == 0 || userName.trim().length() == 0 || password.trim().length() == 0) {
+                if (!credentials.getPlugin().supportProperty(AbstractBasePlugin.Properties.EditableUsername)) {
+                    textView.setVisibility(View.GONE);
+                }
+
+                boolean needUser = credentials.getPlugin().supportProperty(AbstractBasePlugin.Properties.EditableUsername);
+                boolean needPwd = credentials.getPlugin().supportProperty(AbstractBasePlugin.Properties.EditablePassword);
+
+                if (deviceName.trim().length() == 0 ||
+                        (needUser && userName.trim().length() == 0) ||
+                        (needPwd && password.trim().length() == 0)) {
                     Toast.makeText(getActivity(), R.string.error_device_incomplete, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 credentials.deviceName = deviceName;
-                credentials.userName = userName;
-                credentials.password = password;
+                if (needUser)
+                    credentials.userName = userName;
+                if (needPwd)
+                    credentials.password = password;
 
                 DataService.getService().addToConfiguredDevices(credentials);
                 dismiss();
@@ -109,5 +128,4 @@ public class CredentialsDialog extends DialogFragment {
         }).negativeAction(android.R.string.cancel);
         return dialog;
     }
-
 }

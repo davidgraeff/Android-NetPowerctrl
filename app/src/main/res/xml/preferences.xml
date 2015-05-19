@@ -2,11 +2,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="Settings">
 
-    <CheckBoxPreference
-        android:defaultValue="@bool/maximum_energy_saving_mode"
-        android:key="maximum_energy_saving_mode"
-        android:summary="@string/preference_maximum_energy_saving_mode_summary"
-        android:title="@string/preference_maximum_energy_saving_mode" />
+    <PreferenceScreen
+        android:key="energy_save_mode"
+        android:title="@string/energy_save_mode" />
 
     <PreferenceScreen
         android:key="nfc_bind"

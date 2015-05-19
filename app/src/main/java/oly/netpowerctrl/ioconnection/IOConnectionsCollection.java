@@ -261,7 +261,7 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
             for (Iterator<IOConnection> iterator = deviceIOConnections.iterator(); iterator.hasNext(); ) {
                 IOConnection ci = iterator.next();
                 if (ci.credentials.getPlugin() == plugin && ci instanceof IOConnectionUDP)
-                    ports.add(ci.getDestinationPort());
+                    ports.add(((IOConnectionUDP) ci).getDestinationPort());
             }
         }
         return ports;

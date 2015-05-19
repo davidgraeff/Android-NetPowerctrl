@@ -1,5 +1,6 @@
 package oly.netpowerctrl.data;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,7 +13,6 @@ import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.IOConnection;
-import oly.netpowerctrl.ioconnection.onNewIOConnection;
 import oly.netpowerctrl.network.onExecutionFinished;
 
 /**
@@ -78,13 +78,7 @@ public abstract class AbstractBasePlugin {
     @Nullable
     abstract public Credentials createNewDefaultCredentials();
 
-    public boolean hasEditableCredentials() {
-        return false;
-    }
-
-    public boolean isNewIOConnectionAllowed(Credentials credentials) {
-        return false;
-    }
+    public abstract boolean isNewIOConnectionAllowed(Credentials credentials);
 
     /**
      * Provide credentials and then the plugin will call you back asynchronously with a new connection.
@@ -94,10 +88,14 @@ public abstract class AbstractBasePlugin {
      * implementation. Otherwise you may show a dialog to the user and make him select the type of connection to create.
      *
      * @param credentials Credentials that identify a device.
-     * @param callback    The callback method with the new IOConnection.
+     * @param activity The activity on which dialogs etc can be shown to select/create a connection.
      */
-    public void addNewIOConnection(@NonNull Credentials credentials, @NonNull onNewIOConnection callback) {
+    public void addNewIOConnection(@NonNull Credentials credentials, @NonNull Activity activity) {
     }
 
-    public abstract boolean supportsRemoteRename();
+    public abstract boolean supportProperty(Properties property);
+
+    public enum Properties {
+        RemoteRename, EditableUsername, EditablePassword, ManuallyAddDevice
+    }
 }

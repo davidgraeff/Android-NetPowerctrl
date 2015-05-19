@@ -22,6 +22,8 @@ import com.rey.material.app.Dialog;
 import com.rey.material.app.SimpleDialog;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
@@ -156,7 +158,6 @@ public class IOConnectionsFragment extends Fragment
             MenuInflater inflater = popup.getMenuInflater();
             inflater.inflate(R.menu.configured_device_item, popup.getMenu());
             Menu menu = popup.getMenu();
-            menu.findItem(R.id.menu_device_edit_credentials).setVisible(item.credentials.getPlugin().hasEditableCredentials());
             menu.findItem(R.id.menu_device_connections_add).setVisible(item.credentials.getPlugin().isNewIOConnectionAllowed(item.credentials));
             popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
@@ -201,12 +202,7 @@ public class IOConnectionsFragment extends Fragment
     private boolean clickConfiguredCredentials(int click_id, @NonNull final Credentials credentials) {
         switch (click_id) {
             case R.id.menu_device_connections_add: {
-                credentials.getPlugin().addNewIOConnection(credentials, new onNewIOConnection() {
-                    @Override
-                    public void newIOConnection(IOConnection ioConnection) {
-                        IOConnectionHttpDialog.show(getActivity(), (IOConnectionHTTP) ioConnection);
-                    }
-                });
+                credentials.getPlugin().addNewIOConnection(credentials, getActivity());
                 return true;
             }
 
@@ -256,7 +252,13 @@ public class IOConnectionsFragment extends Fragment
 
     private void clickNotConfiguredCredentials(@Nullable Credentials credentials) {
         if (credentials == null) {
-            String[] plugins = DataService.getService().pluginNames();
+            final List<String> pluginIDs = new ArrayList<>();
+            final String[] plugins = DataService.getService().pluginNames(pluginIDs, new DataService.FilterPlugin() {
+                @Override
+                public boolean accept(AbstractBasePlugin plugin) {
+                    return plugin.supportProperty(AbstractBasePlugin.Properties.ManuallyAddDevice);
+                }
+            });
             final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(getActivity()));
             builder.title(getString(R.string.select_plugin)).positiveAction(getString(android.R.string.ok))
                     .negativeAction(getString(android.R.string.cancel));
@@ -268,7 +270,7 @@ public class IOConnectionsFragment extends Fragment
                     dialog.dismiss();
                     int i = builder.getSelectedIndex();
                     CredentialsDialog newFragment = (CredentialsDialog) Fragment.instantiate(getActivity(), CredentialsDialog.class.getName());
-                    newFragment.setCredentials(DataService.getService().getPlugin(i), null);
+                    newFragment.setCredentials(DataService.getService().getPlugin(pluginIDs.get(i)), null);
                     FragmentUtils.changeToDialog(getActivity(), newFragment);
                 }
             });

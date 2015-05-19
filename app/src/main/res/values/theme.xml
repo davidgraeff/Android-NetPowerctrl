@@ -12,10 +12,8 @@
         <item name="ic_action_make_available_offline">@drawable/ic_action_make_available_offline
         </item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
-        <item name="ic_action_download_themed">@drawable/ic_action_download</item>
-        <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off</item>
-        <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on</item>
-        <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle</item>
+        <item name="ic_action_edit">@drawable/ic_action_edit</item>
+        <item name="ic_action_discard">@drawable/ic_action_discard</item>
 
         <!-- segment_button widget -->
         <item name="segment_button">@drawable/segment_button_light</item>
@@ -52,7 +50,6 @@
     </style>
 
     <style name="Theme.CustomLightThemeDialog" parent="Theme.CustomLightTheme">
-        <item name="activity_background">@android:color/background_light</item>
         <item name="android:windowBackground">@android:color/background_light</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
@@ -77,10 +74,8 @@
             @drawable/ic_action_make_available_offline
         </item>
         <item name="ic_action_view_as_grid">@drawable/ic_action_view_as_grid</item>
-        <item name="ic_action_download_themed">@drawable/ic_action_download</item>
-        <item name="ic_action_flash_off_themed">@drawable/ic_action_flash_off</item>
-        <item name="ic_action_flash_on_themed">@drawable/ic_action_flash_on</item>
-        <item name="ic_action_shuffle_themed">@drawable/ic_action_shuffle</item>
+        <item name="ic_action_edit">@drawable/ic_action_edit</item>
+        <item name="ic_action_discard">@drawable/ic_action_discard</item>
 
         <!-- segment_button widget -->
         <item name="segment_button">@drawable/segment_button_dark</item>
@@ -217,7 +212,7 @@
     </style>
 
     <style name="RaiseWaveButtonRippleStyle" parent="Material.Drawable.Ripple.Wave">
-        <item name="android:background">@drawable/background_textured_dark</item>
+        <item name="android:background">@drawable/appwidget_dark_bg</item>
         <item name="rd_leftPadding">1dp</item>
         <item name="rd_topPadding">1dp</item>
         <item name="rd_rightPadding">1dp</item>

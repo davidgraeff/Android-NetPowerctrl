@@ -236,8 +236,6 @@ public abstract class IOConnection implements IOInterface {
         lastUsed = System.currentTimeMillis();
     }
 
-    public abstract int getDestinationPort();
-
     public abstract String getProtocol();
 
     public final boolean equals(IOConnection otherConnection) {

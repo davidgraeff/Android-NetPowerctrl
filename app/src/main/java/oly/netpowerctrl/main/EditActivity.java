@@ -55,6 +55,7 @@ import oly.netpowerctrl.scenes.SceneElementsAddDialog;
 import oly.netpowerctrl.scenes.SceneElementsAssigning;
 import oly.netpowerctrl.scenes.SceneHelp;
 import oly.netpowerctrl.ui.FragmentUtils;
+import oly.netpowerctrl.ui.ThemeHelper;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 import oly.netpowerctrl.utils.AndroidShortcuts;
 import oly.netpowerctrl.utils.AnimationController;
@@ -606,7 +607,8 @@ public class EditActivity extends ActionBarActivity implements IconSelected, onN
     private void updateSaveButton() {
         if (isLoaded && !isChanged) {
             btnSaveOrTrash.setVisibility(mEditType == EDIT_TYPE_SCENE ? View.VISIBLE : View.GONE);
-            btnSaveOrTrash.setIcon(ContextCompat.getDrawable(this, android.R.drawable.ic_menu_delete), btnSaveOrTrash.getIcon() != null);
+            int res = ThemeHelper.getDrawableRes(this, R.attr.ic_action_discard);
+            btnSaveOrTrash.setIcon(ContextCompat.getDrawable(this, res), btnSaveOrTrash.getIcon() != null);
             return;
         }
         String newName = ((EditText) findViewById(R.id.scene_name)).getText().toString().trim();

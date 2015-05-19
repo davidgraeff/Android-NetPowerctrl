@@ -1,5 +1,6 @@
 package oly.netpowerctrl.plugin_anel;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -32,8 +33,8 @@ import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionHTTP;
+import oly.netpowerctrl.ioconnection.IOConnectionHttpDialog;
 import oly.netpowerctrl.ioconnection.IOConnectionUDP;
-import oly.netpowerctrl.ioconnection.onNewIOConnection;
 import oly.netpowerctrl.network.HttpThreadPool;
 import oly.netpowerctrl.network.UDPSend;
 import oly.netpowerctrl.network.onExecutionFinished;
@@ -130,7 +131,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
             int success = 0;
             // Use Http instead of UDP for sending. For each batch command we will send a single http request
             for (ExecutableAndCommand c : command_list) {
-                boolean ok = executeViaHTTP(ioConnection, c.executable, c.command);
+                boolean ok = executeViaHTTP((IOConnectionHTTP) ioConnection, c.executable, c.command);
                 if (ok) ++success;
             }
             return success;
@@ -138,6 +139,8 @@ final public class AnelPlugin extends AbstractBasePlugin {
             Log.e(PLUGIN_ID, "executeDeviceBatch: no known DeviceConnection " + ioConnection.getProtocol());
             return 0;
         }
+
+        IOConnectionUDP udpioConnection = (IOConnectionUDP) ioConnection;
 
         // build bulk change byte, see: www.anel-elektronik.de/forum_neu/viewtopic.php?f=16&t=207
         // “Sw” + Steckdosen + User + Passwort
@@ -150,7 +153,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         boolean containsIO = false;
 
         // First step: Setup data byte (outlet, io) to reflect the current state of the device ports.
-        Credentials credentials = ioConnection.credentials;
+        Credentials credentials = udpioConnection.credentials;
         for (int id = 1; id <= 8; ++id) {
             Executable oi = dataService.executables.findByUID(makeExecutableUID(credentials.deviceUID, id));
             if (oi == null) {
@@ -211,15 +214,15 @@ final public class AnelPlugin extends AbstractBasePlugin {
             data[0] = 'S';
             data[1] = 'w';
             data[2] = data_outlet;
-            UDPSend.sendMessage(ioConnection, data);
-            UDPSend.sendMessage(ioConnection, requestMessage);
+            UDPSend.sendMessage(udpioConnection, data);
+            UDPSend.sendMessage(udpioConnection, requestMessage);
         }
         if (containsIO) {
             data[0] = 'I';
             data[1] = 'O';
             data[2] = data_io;
-            UDPSend.sendMessage(ioConnection, data);
-            UDPSend.sendMessage(ioConnection, requestMessage);
+            UDPSend.sendMessage(udpioConnection, data);
+            UDPSend.sendMessage(udpioConnection, requestMessage);
         }
 
         return command_list.size();
@@ -241,7 +244,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         }
     }
 
-    public boolean executeViaHTTP(IOConnection ioConnection, Executable port, int command) {
+    public boolean executeViaHTTP(IOConnectionHTTP ioConnection, Executable port, int command) {
         if (ioConnection.getDestinationPort() < 0) {
             Toast.makeText(App.instance, R.string.error_device_no_network_connections, Toast.LENGTH_SHORT).show();
             return false;
@@ -249,13 +252,13 @@ final public class AnelPlugin extends AbstractBasePlugin {
         // The http interface can only toggle. If the current state is the same as the command state
         // then we request values instead of sending a command.
         if (command == Executable.TOGGLE && port.current_value == command)
-            HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((IOConnectionHTTP) ioConnection, "strg.cfg",
+            HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ioConnection, "strg.cfg",
                     "", ioConnection, false, AnelReceiveSendHTTP.receiveCtrlHtml));
         else {
             // Important: For UDP the id is 1-based. For Http the id is 0 based!
             String f_id = String.valueOf(extractIDFromExecutableUID(port.getUid()) - 1);
-            HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((IOConnectionHTTP) ioConnection, "ctrl.htm",
-                    "F" + f_id + "=s", (IOConnectionHTTP) ioConnection, false, AnelReceiveSendHTTP.receiveSwitchResponseHtml));
+            HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ioConnection, "ctrl.htm",
+                    "F" + f_id + "=s", ioConnection, false, AnelReceiveSendHTTP.receiveSwitchResponseHtml));
         }
         return true;
     }
@@ -284,14 +287,15 @@ final public class AnelPlugin extends AbstractBasePlugin {
 
         // Use Http instead of UDP for sending. For each command we will send a single http request
         if (ioConnection instanceof IOConnectionHTTP) {
-            boolean success = executeViaHTTP(ioConnection, executable, command);
+            boolean success = executeViaHTTP((IOConnectionHTTP) ioConnection, executable, command);
             if (callback != null) {
                 if (success) callback.addSuccess();
                 else callback.addFail();
             }
             return success;
         } else if (ioConnection instanceof IOConnectionUDP) {
-            final Credentials credentials = ioConnection.credentials;
+            IOConnectionUDP connectionUDP = (IOConnectionUDP) ioConnection;
+            final Credentials credentials = connectionUDP.credentials;
             if (credentials == null) {
                 Log.e(PLUGIN_ID, "execute. No credentials found!");
                 if (callback != null) callback.addFail();
@@ -303,16 +307,16 @@ final public class AnelPlugin extends AbstractBasePlugin {
                 // IOS
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
                         id - 10, credentials.userName, credentials.password).getBytes();
-                UDPSend.sendMessage(ioConnection, data);
-                UDPSend.sendMessage(ioConnection, requestMessage);
+                UDPSend.sendMessage(connectionUDP, data);
+                UDPSend.sendMessage(connectionUDP, requestMessage);
                 if (callback != null) callback.addSuccess();
                 return true;
             } else if (id >= 0) {
                 // Outlets
                 data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
                         id, credentials.userName, credentials.password).getBytes();
-                UDPSend.sendMessage(ioConnection, data);
-                UDPSend.sendMessage(ioConnection, requestMessage);
+                UDPSend.sendMessage(connectionUDP, data);
+                UDPSend.sendMessage(connectionUDP, requestMessage);
                 if (callback != null) callback.addSuccess();
                 return true;
             } else {
@@ -404,9 +408,10 @@ final public class AnelPlugin extends AbstractBasePlugin {
         if (ioConnection instanceof IOConnectionHTTP) {
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>((IOConnectionHTTP) ioConnection,
                     "strg.cfg", "", ioConnection, false, AnelReceiveSendHTTP.receiveCtrlHtml));
-        } else {
-            UDPSend.sendMessage(ioConnection, requestMessage);
-        }
+        } else if (ioConnection instanceof IOConnectionUDP) {
+            UDPSend.sendMessage((IOConnectionUDP) ioConnection, requestMessage);
+        } else
+            throw new RuntimeException();
     }
 
     @Override
@@ -547,7 +552,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         for (Iterator<IOConnection> iterator = deviceIOConnections.iterator(); iterator.hasNext(); ) {
             IOConnection ioConnection = iterator.next();
             if (ioConnection instanceof IOConnectionHTTP) {
-                http_port = ioConnection.getDestinationPort();
+                http_port = ((IOConnectionHTTP) ioConnection).getDestinationPort();
                 break;
             }
         }
@@ -558,25 +563,31 @@ final public class AnelPlugin extends AbstractBasePlugin {
     }
 
     @Override
-    public boolean hasEditableCredentials() {
-        return true;
-    }
-
-    @Override
     public boolean isNewIOConnectionAllowed(Credentials credentials) {
         return true;
     }
 
     @Override
-    public void addNewIOConnection(@NonNull Credentials credentials, @NonNull onNewIOConnection callback) {
+    public void addNewIOConnection(@NonNull Credentials credentials, @NonNull Activity activity) {
         IOConnectionHTTP ioConnectionHTTP = new IOConnectionHTTP(credentials);
         ioConnectionHTTP.connectionUID = UUID.randomUUID().toString();
-        callback.newIOConnection(ioConnectionHTTP);
+        IOConnectionHttpDialog.show(activity, ioConnectionHTTP);
     }
 
     @Override
-    public boolean supportsRemoteRename() {
-        return true;
+    public boolean supportProperty(Properties property) {
+        switch (property) {
+            case RemoteRename:
+                return true;
+            case EditableUsername:
+                return true;
+            case EditablePassword:
+                return true;
+            case ManuallyAddDevice:
+                return true;
+            default:
+                return false;
+        }
     }
 
 //

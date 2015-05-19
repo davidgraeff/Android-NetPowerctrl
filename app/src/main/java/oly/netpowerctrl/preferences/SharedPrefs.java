@@ -87,6 +87,10 @@ public class SharedPrefs {
         return prefs.getBoolean(PREF_show_persistent_notification, value);
     }
 
+    public static String getAndroidID() {
+        return Settings.Secure.getString(App.instance.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
     public void setDefaultFallbackIconSet(String new_theme) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putString(PREF_default_fallback_icon_set, new_theme).apply();
@@ -267,8 +271,7 @@ public class SharedPrefs {
 
     public String getBackupPassword() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String value = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        return prefs.getString("backup_password", value);
+        return prefs.getString("backup_password", getAndroidID());
     }
 
     public void setBackupPassword(String password) {
