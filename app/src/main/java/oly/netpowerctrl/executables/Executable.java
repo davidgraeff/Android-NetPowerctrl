@@ -29,14 +29,10 @@ import oly.netpowerctrl.utils.JSONHelper;
  */
 public class Executable implements Comparable, IOInterface {
     // Some value constants
-    public static final int OFF = 0;
-    public static final int ON = 1;
-    public static final int TOGGLE = -1;
-    public static final int INVALID = -2;
 
     // Values
-    public int min_value = OFF;
-    public int max_value = ON;
+    public int min_value = 0;
+    public int max_value = 0;
     public int current_value = 0;
     // The device this port belongs to.
     public String deviceUID;
@@ -87,10 +83,6 @@ public class Executable implements Comparable, IOInterface {
         }
     }
 
-    public void execute(@NonNull final DataService dataService, @Nullable final onExecutionFinished callback) {
-        execute(dataService, TOGGLE, callback);
-    }
-
     public final Set<String> getGroupUIDs() {
         return group_uids;
     }
@@ -124,7 +116,9 @@ public class Executable implements Comparable, IOInterface {
     }
 
     public int getCurrentValueToggled() {
-        return current_value > min_value ? min_value : max_value;
+        int c = (current_value + 1) % (max_value + 1);
+        if (c < min_value) c = min_value;
+        return c;
     }
 
     /**
@@ -237,6 +231,11 @@ public class Executable implements Comparable, IOInterface {
     @Override
     public boolean hasChanged() {
         return isSaveable && last_hash_code != computeChangedCode();
+    }
+
+    @Override
+    public void setHasChanged() {
+        last_hash_code = 0;
     }
 
     @Override

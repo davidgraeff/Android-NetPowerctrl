@@ -3,7 +3,7 @@ package oly.netpowerctrl.scenes.adapter;
 import android.widget.RadioGroup;
 
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 
 /**
@@ -27,19 +27,19 @@ class CheckChangeListener implements RadioGroup.OnCheckedChangeListener {
         switch (i) {
             case R.id.radioSwitchOff:
                 if (item == master) master = null;
-                command_value = Executable.OFF;
+                command_value = ExecutableAndCommand.OFF;
                 break;
             case R.id.radioSwitchOn:
                 if (item == master) master = null;
-                command_value = Executable.ON;
+                command_value = ExecutableAndCommand.ON;
                 break;
             case R.id.radioToggleMaster:
                 master = item;
-                command_value = Executable.TOGGLE;
+                command_value = ExecutableAndCommand.TOGGLE;
                 break;
             case R.id.radioToggle:
                 if (item == master) master = null;
-                command_value = Executable.TOGGLE;
+                command_value = ExecutableAndCommand.TOGGLE;
                 break;
         }
 

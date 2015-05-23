@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.scenes.Scene;
 
-;
-
 /**
- * Created by david on 07.07.14.
+ * Adapter with some demo executables.
  */
 public class InputDemo extends AdapterInput {
     private List<Scene> demoItems = new ArrayList<>();
@@ -24,7 +22,8 @@ public class InputDemo extends AdapterInput {
     private Scene createScene(String name, ReachabilityStates isReachable, boolean isOn) {
         Scene scene = Scene.createNewScene();
         scene.title = name;
-        scene.max_value = (1);
+        scene.min_value = 0;
+        scene.max_value = 1;
         scene.current_value = (isOn ? 1 : 0);
         scene.setReachable(isReachable);
         return scene;
@@ -33,7 +32,7 @@ public class InputDemo extends AdapterInput {
     @Override
     public void doUpdateNow() {
         for (Scene scene : demoItems)
-            adapterSource.addItem(scene, Executable.TOGGLE);
+            adapterSource.addItem(scene, ExecutableAndCommand.TOGGLE);
     }
 
     @Override

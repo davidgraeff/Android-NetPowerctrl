@@ -52,7 +52,8 @@ public class CredentialsCollection extends CollectionMapItems<CredentialsCollect
             changed |= credentials.hasChanged();
             if (!changed) return;
             items.put(credentials.getUid(), credentials);
-            storage.save(credentials);
+            if (credentials.isConfigured())
+                storage.save(credentials);
             notifyObservers(credentials, ObserverUpdateActions.UpdateAction);
             return;
         }

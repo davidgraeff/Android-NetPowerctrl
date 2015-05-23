@@ -8,6 +8,7 @@ import java.util.List;
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
@@ -53,7 +54,7 @@ public class TestCredentials implements DevicesObserver.onDevicesObserverFinishe
                 // This should not change the actual device state, but will cause an update signal of the
                 // received and "changed" executable (in updated(...)).
                 observedExecutable.current_value = observedExecutable.getCurrentValueToggled();
-                observedExecutable.execute(dataService, Executable.TOGGLE, null);
+                observedExecutable.execute(dataService, ExecutableAndCommand.TOGGLE, null);
             } else {
                 test_state = TestStates.TEST_INIT;
                 if (listener != null)

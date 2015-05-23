@@ -11,6 +11,7 @@ import java.util.List;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 import oly.netpowerctrl.scenes.Scene;
@@ -77,13 +78,13 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementViewH
             }
 
             switch (item.getCommandValue()) {
-                case Executable.OFF:
+                case ExecutableAndCommand.OFF:
                     viewHolder.r0.setChecked(true);
                     break;
-                case Executable.ON:
+                case ExecutableAndCommand.ON:
                     viewHolder.r1.setChecked(true);
                     break;
-                case Executable.TOGGLE:
+                case ExecutableAndCommand.TOGGLE:
                     if (item == master)
                         viewHolder.r3.setChecked(true);
                     else
@@ -114,15 +115,15 @@ public class SceneElementsAdapter extends RecyclerView.Adapter<SceneElementViewH
 
     public void switchAllOff() {
         for (ExecutableAdapterItem item : mItems) {
-            Executable port = (Executable) item.getExecutable();
-            item.setCommandValue(port.min_value);
+            Executable executable = item.getExecutable();
+            item.setCommandValue(executable.min_value);
         }
         notifyDataSetChanged();
     }
 
     public void toggleAll() {
         for (ExecutableAdapterItem outlet_info : mItems) {
-            outlet_info.setCommandValue(Executable.TOGGLE);
+            outlet_info.setCommandValue(ExecutableAndCommand.TOGGLE);
         }
         notifyDataSetChanged();
     }

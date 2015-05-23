@@ -91,6 +91,11 @@ public class Group implements IOInterface {
     }
 
     @Override
+    public void setHasChanged() {
+        last_changeCode = 0;
+    }
+
+    @Override
     public void resetChanged() {
         last_changeCode = name.hashCode();
     }

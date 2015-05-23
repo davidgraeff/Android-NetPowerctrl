@@ -19,6 +19,7 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.network.ReachabilityStates;
@@ -105,17 +106,17 @@ public class Scene extends Executable implements IOInterface {
 
         // Master/Slave
         SceneItem masterItem = getMasterSceneItem();
-        int master_command = Executable.INVALID;
+        int master_command = ExecutableAndCommand.INVALID;
         if (masterItem != null) {
             // If the command is not toggle, we return it now. It can be applied to slaves
             // directly.
-            if (masterItem.command != Executable.TOGGLE) {
+            if (masterItem.command != ExecutableAndCommand.TOGGLE) {
                 master_command = masterItem.command;
             } else {
                 // If the command is toggle, we have to find out the final command.
                 Executable masterExecutable = dataService.executables.findByUID(masterItem.uuid);
                 if (masterExecutable == null)
-                    master_command = Executable.INVALID;
+                    master_command = ExecutableAndCommand.INVALID;
                 else
                     master_command = masterExecutable.getCurrentValueToggled();
             }
@@ -145,7 +146,7 @@ public class Scene extends Executable implements IOInterface {
 
             int command = item.command;
             // Replace toggle by master command if master is set
-            if (master_command != Executable.INVALID && item.command == Executable.TOGGLE)
+            if (master_command != ExecutableAndCommand.INVALID && item.command == ExecutableAndCommand.TOGGLE)
                 command = master_command;
 
             remote.addToTransaction(executable, command);
@@ -159,11 +160,6 @@ public class Scene extends Executable implements IOInterface {
         for (AbstractBasePlugin p : abstractBasePlugins) {
             p.executeTransaction(callback);
         }
-    }
-
-    @Override
-    public void execute(@NonNull DataService dataService, int command, onExecutionFinished callback) {
-        execute(dataService, callback);
     }
 
     public void setMaster(Executable master) {

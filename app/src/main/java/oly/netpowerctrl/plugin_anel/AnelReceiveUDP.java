@@ -9,6 +9,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnectionHTTP;
 import oly.netpowerctrl.ioconnection.IOConnectionUDP;
@@ -116,7 +117,7 @@ class AnelReceiveUDP extends UDPReceiving {
                 // input if io_port[1].equals("1") otherwise output
                 Executable executable = dataService.executables.findByUID(uid);
                 if (executable == null) executable = new Executable();
-                anelPlugin.fillExecutable(executable, credentials, uid, io_port.get(2).equals("1") ? Executable.ON : Executable.OFF);
+                anelPlugin.fillExecutable(executable, credentials, uid, io_port.get(2).equals("1") ? ExecutableAndCommand.ON : ExecutableAndCommand.OFF);
                 executable.title = io_port.get(0);
                 dataService.executables.put(executable);
             }
@@ -136,7 +137,7 @@ class AnelReceiveUDP extends UDPReceiving {
             anelPlugin.fillExecutable(executable, credentials, uid, 0);
             executable.title = outlet[0];
             if (outlet.length > 1)
-                executable.current_value = outlet[1].equals("1") ? Executable.ON : Executable.OFF;
+                executable.current_value = outlet[1].equals("1") ? ExecutableAndCommand.ON : ExecutableAndCommand.OFF;
             dataService.executables.put(executable);
         }
 

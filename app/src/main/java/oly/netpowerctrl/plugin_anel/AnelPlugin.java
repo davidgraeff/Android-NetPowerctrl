@@ -103,6 +103,8 @@ final public class AnelPlugin extends AbstractBasePlugin {
         executable.ui_type = ExecutableType.TypeToggle;
         executable.deviceUID = credentials.getUid();
         executable.setUid(uid);
+        executable.min_value = 0;
+        executable.max_value = 1;
         executable.current_value = value;
         executable.setCredentials(credentials, dataService.connections);
     }
@@ -181,21 +183,21 @@ final public class AnelPlugin extends AbstractBasePlugin {
                 containsOutlets = true;
             }
             switch (c.command) {
-                case Executable.OFF:
+                case ExecutableAndCommand.OFF:
                     if (id >= 10 && id < 20) {
                         data_io = switchOff(data_io, id - 10);
                     } else if (id >= 0) {
                         data_outlet = switchOff(data_outlet, id);
                     }
                     break;
-                case Executable.ON:
+                case ExecutableAndCommand.ON:
                     if (id >= 10 && id < 20) {
                         data_io = switchOn(data_io, id - 10);
                     } else if (id >= 0) {
                         data_outlet = switchOn(data_outlet, id);
                     }
                     break;
-                case Executable.TOGGLE:
+                case ExecutableAndCommand.TOGGLE:
                     if (id >= 10 && id < 20) {
                         data_io = toggle(data_io, id - 10);
                     } else if (id >= 0) {
@@ -251,7 +253,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         }
         // The http interface can only toggle. If the current state is the same as the command state
         // then we request values instead of sending a command.
-        if (command == Executable.TOGGLE && port.current_value == command)
+        if (command == ExecutableAndCommand.TOGGLE && port.current_value == command)
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ioConnection, "strg.cfg",
                     "", ioConnection, false, AnelReceiveSendHTTP.receiveCtrlHtml));
         else {
@@ -274,13 +276,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
     public boolean execute(@NonNull Executable executable, int command, onExecutionFinished callback) {
         executable.setExecutionInProgress(true);
 
-        boolean bValue = false;
-        if (command == Executable.ON)
-            bValue = true;
-        else if (command == Executable.OFF)
-            bValue = false;
-        else if (command == Executable.TOGGLE)
-            bValue = executable.current_value <= 0;
+        int value = (command == ExecutableAndCommand.TOGGLE) ? executable.getCurrentValueToggled() : command;
 
         DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executable.deviceUID);
         final IOConnection ioConnection = deviceIOConnections != null ? deviceIOConnections.findReachable() : null;
@@ -305,7 +301,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
             byte[] data;
             if (id >= 10 && id < 20) {
                 // IOS
-                data = String.format(Locale.US, "%s%d%s%s", bValue ? "IO_on" : "IO_off",
+                data = String.format(Locale.US, "%s%d%s%s", value > 0 ? "IO_on" : "IO_off",
                         id - 10, credentials.userName, credentials.password).getBytes();
                 UDPSend.sendMessage(connectionUDP, data);
                 UDPSend.sendMessage(connectionUDP, requestMessage);
@@ -313,7 +309,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
                 return true;
             } else if (id >= 0) {
                 // Outlets
-                data = String.format(Locale.US, "%s%d%s%s", bValue ? "Sw_on" : "Sw_off",
+                data = String.format(Locale.US, "%s%d%s%s", value > 0 ? "Sw_on" : "Sw_off",
                         id, credentials.userName, credentials.password).getBytes();
                 UDPSend.sendMessage(connectionUDP, data);
                 UDPSend.sendMessage(connectionUDP, requestMessage);

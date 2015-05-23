@@ -20,6 +20,7 @@ import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.main.ExecutionActivity;
@@ -186,7 +187,7 @@ public class WidgetGroupList extends AbstractWidget implements RemoteViewsServic
         Bundle extras = new Bundle();
         extras.putInt(WidgetUpdateService.EXTRA_WIDGET_CLICK_POSITION, position);
         extras.putString(ExecutionActivity.EXECUTE_ACTION_UUID, executable.getUid());
-        extras.putInt(ExecutionActivity.EXECUTE_ACTION_COMMAND, Executable.TOGGLE);
+        extras.putInt(ExecutionActivity.EXECUTE_ACTION_COMMAND, ExecutableAndCommand.TOGGLE);
 
         Intent fillInIntent = new Intent();
         fillInIntent.putExtras(extras);

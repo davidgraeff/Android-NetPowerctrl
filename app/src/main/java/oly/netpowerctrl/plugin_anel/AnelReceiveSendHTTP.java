@@ -16,7 +16,7 @@ import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
-import oly.netpowerctrl.executables.ExecutableType;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionHTTP;
 import oly.netpowerctrl.network.HttpThreadPool;
@@ -67,17 +67,18 @@ public class AnelReceiveSendHTTP {
 
                 // Update executables
                 for (int i = 0; i < 8; ++i) {
+                    boolean disabled = data[30 + i].equals("1");
+                    if (disabled)
+                        continue;
+
                     String executable_uid = AnelPlugin.makeExecutableUID(ioConnection.deviceUID, i + 1);
                     Executable executable = dataService.executables.findByUID(executable_uid);
                     if (executable == null) {
                         executable = new Executable();
-                        executable.ui_type = ExecutableType.TypeToggle;
                     }
-                    anelPlugin.fillExecutable(executable, credentials, executable_uid, data[20 + i].equals("1") ? Executable.ON : Executable.OFF);
+                    anelPlugin.fillExecutable(executable, credentials, executable_uid, data[20 + i].equals("1") ? ExecutableAndCommand.ON : ExecutableAndCommand.OFF);
                     executable.title = data[10 + i];
-                    boolean disabled = data[30 + i].equals("1");
-                    if (!disabled)
-                        dataService.executables.put(executable);
+                    dataService.executables.put(executable);
                 }
             }
         }

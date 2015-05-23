@@ -20,5 +20,6 @@ public interface IOInterface {
 
     boolean hasChanged();
 
+    void setHasChanged();
     void resetChanged();
 }

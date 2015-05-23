@@ -66,18 +66,20 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
             return;
         }
 
-        executable.setExecutionInProgress(false);
-
         Executable existed = items.get(executable.getUid());
         if (existed != null) {
-            if (executable == existed && !executable.hasChanged()) return;
+            if (executable == existed && !executable.hasChanged() && !executable.executionInProgress())
+                return;
+
+            executable.setExecutionInProgress(false);
 
             items.put(executable.getUid(), executable);
             if (!executable.needCredentials() || executable.getCredentials().isConfigured())
                 storage.save(executable);
             notifyObservers(executable, ObserverUpdateActions.UpdateAction);
             return;
-        }
+        } else
+            executable.setExecutionInProgress(false);
 
         if (executable.isSaveable()) {
             items.put(executable.getUid(), executable);
@@ -167,6 +169,18 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
         }
 
         return list;
+    }
+
+    /**
+     * Save all connections that belong to the same device ID as the given credential object.
+     * This will not issue updated notifications even if the objects have changed since last save.
+     */
+    public void save(String deviceUID) {
+        for (Executable executable : items.values()) {
+            if (!executable.deviceUID.equals(deviceUID)) continue;
+            executable.setHasChanged();
+            put(executable);
+        }
     }
 
     public interface PredicateExecutable {

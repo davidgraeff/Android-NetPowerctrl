@@ -10,6 +10,7 @@ import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.data.graphic.Utils;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.main.ExecutionActivity;
 
 /**
@@ -44,7 +45,7 @@ public class AndroidShortcuts {
         // Create shortcut intent
         Intent shortcutIntent = new Intent(context, ExecutionActivity.class);
         shortcutIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_UUID, executable_uid);
-        shortcutIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, Executable.TOGGLE);
+        shortcutIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, ExecutableAndCommand.TOGGLE);
 
         if (show_mainWindow) {
             shortcutIntent.putExtra("show_mainWindow", true);

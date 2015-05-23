@@ -98,8 +98,8 @@ class SimpleUDPReceiveUDP extends UDPReceiving {
         dataService.credentials.put(credentials);
 
         for (int i = action_start_index; i < msg.length; ++i) {
-            if (msg[i].length() == 0) continue;
-            String outlet[] = msg[i].split("\t");
+            if (msg[i].trim().length() == 0) continue;
+            String outlet[] = msg[i].trim().split("\t");
             if (outlet.length < 3) {
                 Logging.getInstance().logDetect("SimpleUDP Receive Error outlet too short\n" + msg[i]);
                 continue;
@@ -113,15 +113,25 @@ class SimpleUDPReceiveUDP extends UDPReceiving {
                 case "STATELESS":
                     executable.ui_type = ExecutableType.TypeStateless;
                     break;
+                case "VALUE":
+                    if (outlet.length <= 5) {
+                        Logging.getInstance().logDetect("SimpleUDP Error. Entry to short\n" + msg[i]);
+                        continue;
+                    }
+                    executable.ui_type = ExecutableType.TypeRangedValue;
+                    executable.current_value = Integer.valueOf(outlet[3]);
+                    executable.min_value = Integer.valueOf(outlet[4]);
+                    executable.max_value = Integer.valueOf(outlet[5]);
+                    break;
                 case "TOGGLE":
-                    if (outlet.length < 4) {
-                        Logging.getInstance().logDetect("SimpleUDP Receive Error outlet too short\n" + msg[i]);
+                    if (outlet.length <= 5) {
+                        Logging.getInstance().logDetect("SimpleUDP Error. Entry to short\n" + msg[i]);
                         continue;
                     }
                     executable.ui_type = ExecutableType.TypeToggle;
-                    executable.max_value = 1;
-                    executable.min_value = 0;
                     executable.current_value = Integer.valueOf(outlet[3]);
+                    executable.min_value = Integer.valueOf(outlet[4]);
+                    executable.max_value = Integer.valueOf(outlet[5]);
                     break;
                 case "FAIL_UNKNOWN_CMD":
                     Logging.getInstance().logDetect("SimpleUDP: Unknown command\n" + outlet[1]);

@@ -60,6 +60,10 @@ public class FavItem implements IOInterface {
     }
 
     @Override
+    public void setHasChanged() {
+    }
+
+    @Override
     public void resetChanged() {
 
     }

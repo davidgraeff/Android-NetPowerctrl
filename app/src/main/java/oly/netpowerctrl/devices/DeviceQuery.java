@@ -83,7 +83,7 @@ public class DeviceQuery {
         DeviceIOConnections l = dataService.connections.openDevice(credentials.deviceUID);
 
         // No connections for this device. Nothing to do.
-        if (l == null) {
+        if (l == null || l.size() == 0) {
             // remove from list of devices to observe and notify observers
             deviceFailed(credentials);
             return;

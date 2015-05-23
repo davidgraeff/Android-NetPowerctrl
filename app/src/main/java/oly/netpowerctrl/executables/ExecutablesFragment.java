@@ -377,7 +377,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         ((ExecutableViewHolder) mRecyclerView.findViewHolderForAdapterPosition(position)).animate();
         adapter.notifyItemChanged(position);
 
-        item.getExecutable().execute(dataService, null);
+        item.getExecutable().execute(dataService, ExecutableAndCommand.TOGGLE, null);
         return true;
     }
 

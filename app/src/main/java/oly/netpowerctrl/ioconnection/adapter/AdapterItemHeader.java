@@ -18,15 +18,12 @@ public class AdapterItemHeader extends AdapterItem implements onCollectionUpdate
 
     public AdapterItemHeader(Credentials credentials, final DataService service, IOConnectionAdapter adapter) {
         super(adapter);
-        if (!credentials.isConfigured())
-            this.title = App.getAppString(R.string.device_new, credentials.getDeviceName());
-        else
-            this.title = credentials.getDeviceName();
 
         this.credentials = credentials;
         this.isConfigured = credentials.isConfigured();
         this.deviceUID = credentials.deviceUID;
         this.UID = credentials.getUid();
+        updateTitle();
 
         /**
          * The following is done in a runnable, because AdapterItemConnection uses IOConnectionCollection.registerObserver and
@@ -39,6 +36,13 @@ public class AdapterItemHeader extends AdapterItem implements onCollectionUpdate
             }
         });
 
+    }
+
+    private void updateTitle() {
+        if (!credentials.isConfigured())
+            this.title = App.getAppString(R.string.device_new, credentials.getDeviceName());
+        else
+            this.title = credentials.getDeviceName();
     }
 
     @Override
@@ -60,6 +64,7 @@ public class AdapterItemHeader extends AdapterItem implements onCollectionUpdate
     public boolean updated(@NonNull CredentialsCollection credentialsCollection, @Nullable Credentials credentials, @NonNull ObserverUpdateActions action) {
         if ((action == ObserverUpdateActions.UpdateAction || action == ObserverUpdateActions.UpdateReachableAction) && this.credentials.equals(credentials)) {
             this.credentials = credentials;
+            updateTitle();
             last_known_position = adapter.notifyItemChanged(this, last_known_position);
         }
 

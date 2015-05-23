@@ -16,6 +16,7 @@ import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
@@ -109,10 +110,10 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
             return false;
         }
 
-        String type = command == Executable.TOGGLE ? "TOGGLE" : "SET";
+        String type = command == ExecutableAndCommand.TOGGLE ? "TOGGLE" : "SET";
         String actionID = extractIDFromExecutableUID(executable.getUid());
 
-        byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s", OWN_ID, type, actionID, String.valueOf(executable.current_value)).getBytes();
+        byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s\t", OWN_ID, type, actionID, String.valueOf(executable.current_value)).getBytes();
         UDPSend.sendMessage((IOConnectionUDP) ioConnection, data);
 
         if (callback != null) callback.addSuccess();

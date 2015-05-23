@@ -8,6 +8,7 @@ import java.util.Set;
 
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.adapter.InputExecutables;
@@ -58,7 +59,7 @@ public class SceneElementsAssigning implements RecyclerItemClickListener.OnItemC
 
     @Override
     public boolean onItemClick(View view, int position, boolean isLongClick) {
-        availableData.addItem(includedData.take(position).getExecutable(), Executable.TOGGLE);
+        availableData.addItem(includedData.take(position).getExecutable(), ExecutableAndCommand.TOGGLE);
         sceneElementsChanged.onSceneElementsChanged();
         return true;
     }
@@ -77,7 +78,7 @@ public class SceneElementsAssigning implements RecyclerItemClickListener.OnItemC
             int pos = availableData.findPositionByUUid(executableUID);
             Executable executable = availableData.getItem(pos).getExecutable();
             availableData.removeAt(pos);
-            includedData.addItem(executable, Executable.TOGGLE);
+            includedData.addItem(executable, ExecutableAndCommand.TOGGLE);
             sceneElementsChanged.onSceneElementsChanged();
         }
     }

@@ -231,6 +231,11 @@ public abstract class IOConnection implements IOInterface {
     }
 
     @Override
+    public void setHasChanged() {
+        lastChangedCode = 0;
+    }
+
+    @Override
     public void resetChanged() {
         lastChangedCode = computeHash();
         lastUsed = System.currentTimeMillis();

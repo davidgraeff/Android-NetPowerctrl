@@ -335,6 +335,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
         credentials.setConfigured(true);
         this.credentials.put(credentials);
         connections.save(credentials.deviceUID);
+        executables.save(credentials.deviceUID);
     }
 
     public void showNotificationForNextRefresh(boolean notificationAfterNextRefresh) {

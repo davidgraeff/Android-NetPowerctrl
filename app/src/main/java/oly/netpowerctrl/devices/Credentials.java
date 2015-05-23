@@ -53,6 +53,10 @@ public class Credentials implements Comparable<Credentials>, IOInterface {
         mLastHashCode = computeChangedCode();
     }
 
+    public void setHasChanged() {
+        mLastHashCode = 0;
+    }
+
     public boolean isConfigured() {
         return mConfigured;
     }
@@ -61,7 +65,6 @@ public class Credentials implements Comparable<Credentials>, IOInterface {
         if (configured && deviceUID == null)
             throw new RuntimeException("Credential cannot be set to configured without an UID!");
         this.mConfigured = configured;
-        resetChanged();
     }
 
     @Override
@@ -179,4 +182,5 @@ public class Credentials implements Comparable<Credentials>, IOInterface {
     public void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
     }
+
 }

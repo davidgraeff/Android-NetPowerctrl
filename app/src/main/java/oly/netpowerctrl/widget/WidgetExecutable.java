@@ -22,6 +22,7 @@ import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.devices.DevicesObserver;
 import oly.netpowerctrl.executables.Executable;
+import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.main.ExecutionActivity;
@@ -220,7 +221,7 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
             clickIntent.putExtra(WidgetUpdateService.EXTRA_WIDGET_TYPE, ProviderExecutable.getTypeString());
             clickIntent.putExtra(WidgetUpdateService.EXTRA_WIDGET_COMMAND, WidgetUpdateService.CLICK_WIDGET);
             clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_UUID, executable.getUid());
-            clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, Executable.TOGGLE);
+            clickIntent.putExtra(ExecutionActivity.EXECUTE_ACTION_COMMAND, ExecutableAndCommand.TOGGLE);
             PendingIntent pendingIntent = PendingIntent.getService(context, (int) System.currentTimeMillis(), clickIntent, 0);
 
             views.setOnClickPendingIntent(R.id.widget_image, pendingIntent);
