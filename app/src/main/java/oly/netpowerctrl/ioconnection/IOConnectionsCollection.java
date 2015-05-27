@@ -107,7 +107,7 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
             updateActions = ObserverUpdateActions.UpdateReachableAction;
             // Make executables aware of the change
             if (reachabilityChanged)
-                dataService.executables.notifyReachability(ioConnection.deviceUID, deviceIOConnections.reachableState());
+                dataService.executables.notifyReachability(ioConnection.deviceUID, deviceIOConnections.reachableState(), false);
         }
 
         if (ioConnection.hasChanged()) {
@@ -149,9 +149,9 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
      * Save all connections that belong to the same device ID as the given credential object.
      * This will not issue updated notifications even if the objects have changed since last save.
      */
-    public void save(String deviceUID) {
+    public ReachabilityStates save(String deviceUID) {
         DeviceIOConnections deviceIOConnections = openDevice(deviceUID);
-        if (deviceIOConnections == null) return;
+        if (deviceIOConnections == null) return ReachabilityStates.NotReachable;
 
         for (Iterator<IOConnection> iterator = deviceIOConnections.iterator(); iterator.hasNext(); ) {
             IOConnection ioConnection = iterator.next();
@@ -159,6 +159,7 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
                 storage.save(ioConnection);
             }
         }
+        return deviceIOConnections.reachableState();
     }
 
     public void remove(IOConnection ioConnection) {
@@ -199,21 +200,6 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
         }
 
         items.remove(credentials.deviceUID);
-    }
-
-    /**
-     * Clwar all connections where the credentials object is in the non-configured state.
-     * Connections are removed from disk, too if applicable.
-     */
-    public void clearNotConfigured() {
-        for (DeviceIOConnections deviceIOConnections : items.values())
-            for (Iterator<IOConnection> iterator = deviceIOConnections.iterator(); iterator.hasNext(); ) {
-                IOConnection ioConnection = iterator.next();
-                if (!ioConnection.credentials.isConfigured()) {
-                    iterator.remove();
-                    notifyObservers(ioConnection, ObserverUpdateActions.RemoveAction);
-                }
-            }
     }
 
     @Nullable

@@ -60,7 +60,7 @@ class SimpleUDPReceiveUDP extends UDPReceiving {
         final String msg[];
         final String incoming;
         try {
-            incoming = new String(message, 0, length, "iso8859-1");
+            incoming = new String(message, 0, length, "utf-8");
             msg = incoming.split("\n");
         } catch (UnsupportedEncodingException e) { // Will not happen
             e.printStackTrace();

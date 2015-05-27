@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.data.AbstractBasePlugin;
@@ -65,8 +66,8 @@ public class CredentialsCollection extends CollectionMapItems<CredentialsCollect
     }
 
     public void remove(Credentials credentials) {
-        items.remove(credentials.getUid());
         storage.remove(credentials);
+        items.remove(credentials.getUid());
         notifyObservers(credentials, ObserverUpdateActions.RemoveAction);
     }
 
@@ -110,4 +111,18 @@ public class CredentialsCollection extends CollectionMapItems<CredentialsCollect
         return i;
     }
 
+    /**
+     * Clear all credentials where the object is in the non-configured state.
+     */
+    public void clearNotConfigured() {
+        for (Iterator<Credentials> iterator = items.values().iterator(); iterator.hasNext(); ) {
+            Credentials credentials = iterator.next();
+            if (!credentials.isConfigured()) {
+                dataService.connections.remove(credentials);
+                dataService.executables.remove(credentials);
+                iterator.remove();
+                notifyObservers(credentials, ObserverUpdateActions.RemoveAction);
+            }
+        }
+    }
 }

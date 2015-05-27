@@ -131,13 +131,16 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
      * Executables contain a member function for reachability we need to notify about reachability changes.
      *
      * @param deviceUID The device unique id
+     * @param save
      */
-    public void notifyReachability(String deviceUID, ReachabilityStates r) {
+    public void notifyReachability(String deviceUID, ReachabilityStates r, boolean save) {
         Log.w(TAG, "Reachability: " + r.name() + " " + deviceUID);
         for (Executable executable : items.values()) {
-            if (executable.needCredentials() &&
-                    executable.deviceUID.equals(deviceUID) && executable.updateCachedReachability(r))
+            if (!executable.deviceUID.equals(deviceUID)) continue;
+            if (executable.needCredentials() && executable.updateCachedReachability(r))
                 notifyObservers(executable, ObserverUpdateActions.UpdateReachableAction);
+            if (save)
+                storage.save(executable);
         }
     }
 
@@ -169,18 +172,6 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
         }
 
         return list;
-    }
-
-    /**
-     * Save all connections that belong to the same device ID as the given credential object.
-     * This will not issue updated notifications even if the objects have changed since last save.
-     */
-    public void save(String deviceUID) {
-        for (Executable executable : items.values()) {
-            if (!executable.deviceUID.equals(deviceUID)) continue;
-            executable.setHasChanged();
-            put(executable);
-        }
     }
 
     public interface PredicateExecutable {

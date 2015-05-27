@@ -42,6 +42,7 @@ public class NetworkChangedBroadcastReceiver extends BroadcastReceiver {
 
         Handler h = App.getMainThreadHandler();
         h.removeMessages(GuiThreadHandler.SERVICE_DELAYED_CHECK_REACHABILITY);
+        // Argument1: 0 if no network at all, !=0 if another network
         h.sendMessageDelayed(h.obtainMessage(GuiThreadHandler.SERVICE_DELAYED_CHECK_REACHABILITY, newNetInfo, 0), 2000);
     }
 

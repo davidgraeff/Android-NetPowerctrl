@@ -334,8 +334,8 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     public void addToConfiguredDevices(Credentials credentials) {
         credentials.setConfigured(true);
         this.credentials.put(credentials);
-        connections.save(credentials.deviceUID);
-        executables.save(credentials.deviceUID);
+        ReachabilityStates r = connections.save(credentials.deviceUID);
+        executables.notifyReachability(credentials.deviceUID, r, true);
     }
 
     public void showNotificationForNextRefresh(boolean notificationAfterNextRefresh) {
@@ -381,6 +381,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     public void detectDevices() {
         if (observersStartStopRefresh.isRefreshing()) return;
         observersStartStopRefresh.onRefreshStateChanged(true);
+        credentials.clearNotConfigured();
         deviceQuery.addDeviceObserver(new DevicesObserver(new DevicesObserver.onDevicesObserverFinished() {
             @Override
             public void onObserverJobFinished(DevicesObserver devicesObserver) {
@@ -389,7 +390,6 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
                 observersStartStopRefresh.onRefreshStateChanged(false);
             }
         }));
-        connections.clearNotConfigured();
         discoverExtensions();
         for (AbstractBasePlugin abstractBasePlugin : plugins) {
             abstractBasePlugin.requestData();
@@ -400,7 +400,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
      * This is issued by the network observer if no network connection is active (no wlan, no mobile network)
      */
     public void makeAllOffline() {
-        connections.clearNotConfigured();
+        credentials.clearNotConfigured();
         connections.applyStateToAll(ReachabilityStates.NotReachable);
     }
 

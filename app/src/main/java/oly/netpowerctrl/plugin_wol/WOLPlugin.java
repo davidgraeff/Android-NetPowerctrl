@@ -25,8 +25,9 @@ import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionIPDialog;
 import oly.netpowerctrl.ioconnection.adapter.IOConnectionIP;
+import oly.netpowerctrl.network.ReachabilityStates;
+import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.network.onExecutionFinished;
-import oly.netpowerctrl.preferences.SharedPrefs;
 
 
 /**
@@ -49,7 +50,6 @@ import oly.netpowerctrl.preferences.SharedPrefs;
  */
 final public class WOLPlugin extends AbstractBasePlugin {
     public static final String PLUGIN_ID = "org.custom.wol";
-    private static final String OWN_ID = SharedPrefs.getAndroidID();
 
     public WOLPlugin(DataService dataService) {
         super(dataService);
@@ -114,35 +114,17 @@ final public class WOLPlugin extends AbstractBasePlugin {
         return true;
     }
 
-    private void requestDevice(DeviceIOConnections deviceIOConnections, Credentials credentials) {
-        if (deviceIOConnections == null) return;
-        Iterator<IOConnection> it = deviceIOConnections.iterator();
-        while (it.hasNext()) {
-            IOConnection ioConnection = it.next();
-            ioConnection.incReceivedPackets();
-            Executable executable = dataService.executables.findByUID(ioConnection.getUid());
-            if (executable == null) {
-                executable = new Executable();
-                executable.setUid(ioConnection.getUid());
-                executable.setCredentials(credentials, dataService.connections);
-                executable.ui_type = ExecutableType.TypeStateless;
-                executable.title = ioConnection.getDestinationHost();
-                dataService.executables.put(executable);
-            }
-            dataService.connections.put(ioConnection);
-        }
-    }
-
     @Override
     public void requestData() {
         List<Credentials> credentialsList = dataService.credentials.findByPlugin(this);
-        for (Credentials credentials : credentialsList)
-            requestDevice(dataService.connections.openDevice(credentials.getUid()), credentials);
+        Credentials c[] = new Credentials[credentialsList.size()];
+        credentialsList.toArray(c);
+        new RequestData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (c));
     }
 
     @Override
     public void requestData(@NonNull IOConnection connection) {
-        requestDevice(dataService.connections.openDevice(connection.deviceUID), connection.credentials);
+        new RequestData().execute(connection.credentials);
     }
 
     @Override
@@ -185,7 +167,6 @@ final public class WOLPlugin extends AbstractBasePlugin {
         }
     }
 
-
     /**
      * Renaming is done via http and the dd.htm page on the ANEL devices.
      *
@@ -205,5 +186,40 @@ final public class WOLPlugin extends AbstractBasePlugin {
     @Override
     public String getLocalizedName() {
         return App.getAppString(R.string.plugin_wol);
+    }
+
+    class RequestData extends AsyncTask<Credentials, Void, Void> {
+        @Override
+        protected Void doInBackground(Credentials... credentialsList) {
+            for (Credentials credentials : credentialsList) {
+                DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(credentials.getUid());
+                if (deviceIOConnections == null) continue;
+                Iterator<IOConnection> it = deviceIOConnections.iterator();
+                while (it.hasNext()) {
+                    IOConnection ioConnection = it.next();
+                    boolean reachable = false;
+                    try {
+                        reachable = Utils.addressIsInCurrentNetwork(InetAddress.getByName(ioConnection.getDestinationHost()));
+                    } catch (IOException ignored) {
+                    }
+
+                    if (reachable)
+                        ioConnection.incReceivedPackets();
+                    else
+                        ioConnection.setReachability(ReachabilityStates.NotReachable);
+                    Executable executable = dataService.executables.findByUID(ioConnection.getUid());
+                    if (executable == null) {
+                        executable = new Executable();
+                        executable.setUid(ioConnection.getUid());
+                        executable.setCredentials(credentials, dataService.connections);
+                        executable.ui_type = ExecutableType.TypeStateless;
+                        executable.title = ioConnection.getDestinationHost();
+                        dataService.executables.put(executable);
+                    }
+                    dataService.connections.put(ioConnection);
+                }
+            }
+            return null;
+        }
     }
 }

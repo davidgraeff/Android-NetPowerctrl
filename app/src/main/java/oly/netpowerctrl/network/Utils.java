@@ -1,14 +1,12 @@
 package oly.netpowerctrl.network;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -16,8 +14,6 @@ import java.net.SocketException;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
-
-import oly.netpowerctrl.R;
 
 /**
  * Get network address, get broadcast address
@@ -52,38 +48,49 @@ public class Utils {
     }
 
     /**
-     * Return first valid ip address
-     *
-     * @return First valid ip address
+     * Return true if the given address is presumably in the same network
+     * @param otherAddress Other address
+     * @return True if in current network
      */
-    public static InetAddress getIpv4Address() {
+    public static boolean addressIsInCurrentNetwork(@Nullable InetAddress otherAddress) {
+        if (otherAddress == null) return false;
+
         try {
+            for (Enumeration<NetworkInterface> networkInterfaceEnumerator = NetworkInterface.getNetworkInterfaces();
+                 networkInterfaceEnumerator.hasMoreElements(); ) {
 
-            InetAddress inetAddress;
-            InetAddress myAddress;
+                NetworkInterface networkInterface = networkInterfaceEnumerator.nextElement();
+                List<InterfaceAddress> interfaceAddressList = networkInterface.getInterfaceAddresses();
 
-            for (Enumeration<NetworkInterface> networkInterface = NetworkInterface.getNetworkInterfaces();
-                 networkInterface.hasMoreElements(); ) {
+                for (InterfaceAddress interfaceAddress : interfaceAddressList) {
+                    InetAddress inetAddress = interfaceAddress.getAddress();
+                    if (inetAddress.isLoopbackAddress()) continue;
 
-                NetworkInterface singleInterface = networkInterface.nextElement();
+                    byte[] otherOctets = otherAddress.getAddress();
+                    byte[] currentOctets = inetAddress.getAddress();
+                    if (otherOctets.length != currentOctets.length) continue;
 
-                for (Enumeration<InetAddress> IpAddresses = singleInterface.getInetAddresses(); IpAddresses.hasMoreElements(); ) {
-                    inetAddress = IpAddresses.nextElement();
 
-                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address &&
-                            (singleInterface.getDisplayName().contains("wlan") ||
-                                    singleInterface.getDisplayName().contains("eth"))) {
+                    // Only compare host part of address
 
-                        myAddress = inetAddress;
-                        return myAddress;
+                    final int octetsHostPart = interfaceAddress.getNetworkPrefixLength() / 8;
+                    boolean ok = true;
+                    for (int i = 0; i < octetsHostPart; ++i) {
+                        if (otherOctets[i] != currentOctets[i]) {
+                            ok = false;
+                            break;
+                        }
                     }
+                    if (!ok) continue;
+                    return true;
                 }
             }
 
         } catch (SocketException ex) {
             Log.e(TAG, ex.toString());
         }
-        return null;
+
+        return false;
     }
 
     public static String getDeviceName() {
@@ -121,55 +128,28 @@ public class Utils {
     }
 
     public static long getMacAsLong() {
-        NetworkInterface ni;
         try {
-            InetAddress address = getIpv4Address();
-            if (address == null)
-                return 0;
-            ni = NetworkInterface.getByInetAddress(address);
-            if (ni == null)
-                return 0;
-            ni.getHardwareAddress();
-            return Utils.MacToLong(ni.getHardwareAddress());
+            for (Enumeration<NetworkInterface> networkInterface = NetworkInterface.getNetworkInterfaces();
+                 networkInterface.hasMoreElements(); ) {
+
+                NetworkInterface singleInterface = networkInterface.nextElement();
+
+                for (Enumeration<InetAddress> IpAddresses = singleInterface.getInetAddresses(); IpAddresses.hasMoreElements(); ) {
+                    InetAddress inetAddress = IpAddresses.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        return Utils.MacToLong(singleInterface.getHardwareAddress());
+                    }
+                }
+            }
         } catch (SocketException ignored) {
-            return 0;
         }
+        return 0;
     }
 
     public static String getDateTime(Context context) {
         Calendar t = Calendar.getInstance();
         return DateFormat.getMediumDateFormat(context).format(t.getTime()).replace(".", "_") +
                 " - " + DateFormat.getTimeFormat(context).format(t.getTime()).replace(":", "_");
-    }
-
-    public static boolean checkPortInvalid(int port) {
-        if (root_port_allowed)
-            return (port < 1) || port > 65555;
-        else
-            return (port < 1024) || port > 65555;
-    }
-
-    public static void askForRootPorts(Context context) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                context);
-        alertDialogBuilder
-                .setTitle(R.string.port_warning_1024_title)
-                .setMessage(R.string.port_warning_1024)
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        root_port_allowed = true;
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        root_port_allowed = false;
-                    }
-                });
-
-        // show it
-        alertDialogBuilder.create().show();
-        //Toast.makeText(context, R.string.port_warning_1024, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -180,6 +160,13 @@ public class Utils {
         @SuppressWarnings("ConstantConditions")
         WifiManager cm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         return cm.isWifiEnabled() && cm.getConnectionInfo() != null;
+    }
+
+    public String intToIp(int address) {
+        return ((address & 0xFF) + "." +
+                ((address >>>= 8) & 0xFF) + "." +
+                ((address >>>= 8) & 0xFF) + "." +
+                ((address >>> 8) & 0xFF));
     }
 
     //

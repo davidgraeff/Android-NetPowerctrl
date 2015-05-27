@@ -24,7 +24,7 @@ import oly.netpowerctrl.utils.Logging;
  * For sending udp packets
  */
 public class UDPSend extends Thread {
-    private static UDPSend udpSend = new UDPSend();
+    private static UDPSend udpSend = null;
     private LinkedBlockingQueue<UDPCommand> q = new LinkedBlockingQueue<>();
 
     private UDPSend() {
@@ -33,6 +33,8 @@ public class UDPSend extends Thread {
     }
 
     public static void killSendThread() {
+        if (udpSend == null || udpSend.q == null) return;
+        Log.w("UDPSEND", "killSendThread");
         UDPCommand command = new UDPCommand();
         udpSend.q.add(command);
     }
@@ -43,6 +45,7 @@ public class UDPSend extends Thread {
         command.messages.add(message);
         command.errorID = UDPErrors.INQUERY_BROADCAST_REQUEST;
         command.ports = ports;
+        if (udpSend == null) udpSend = new UDPSend();
         udpSend.q.add(command);
     }
 
@@ -52,6 +55,7 @@ public class UDPSend extends Thread {
         command.errorID = UDPErrors.INQUERY_REQUEST;
         command.host = ioConnection.getDestinationHost();
         command.destPort = ioConnection.getDestinationPort();
+        if (udpSend == null) udpSend = new UDPSend();
         udpSend.q.add(command);
     }
 
@@ -141,7 +145,7 @@ public class UDPSend extends Thread {
                 j = q.take();
                 if (j.messages.isEmpty()) return;
             } catch (InterruptedException e) {
-                return;
+                break;
             }
 
             if (j.ports != null)
@@ -149,6 +153,8 @@ public class UDPSend extends Thread {
             else
                 send(datagramSocket, j);
         }
+
+        udpSend = null;
     }
 
     private static class UDPCommand {
