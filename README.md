@@ -47,7 +47,8 @@ This project is not for the old eclipse based SDK! It depends on the
 support libraries (v13), additional support library extensions (v7.RecyclerView) and need at least android 4.2 (sdk version 17, released 13. Nov 2012). Parts of the app (import/export/backgrounds) are only usuable with Android 4.4 (DocumentProvider class).
 
 ### Plugin Development
-All you need to develop a plugin is described in detail at the [Plugin Developer Documentation](https://github.com/davidgraeff/Android-NetPowerctrl-Shared#plugin-developer-documentation).
+In ealier versions plugins via the android IPC were supported. This is no longer the case. Your app will be started by NetPowerCtrl via a Broadcast, from this point on, use the simpleUDP protocol for communication.
+All you need to develop a plugin is described in detail at the [Plugin Developer Documentation](https://github.com/davidgraeff/Android-NetPowerctrl/blob/master/doc/simpleudp.md). Sample implementations are available here: https://github.com/davidgraeff/esp8266_dev/tree/master/app_pc
 
 ### Authors
 * david.graeff(at)web_de
