@@ -53,5 +53,14 @@ All you need to develop a plugin is described in detail at the [Plugin Developer
 * david.graeff(at)web_de
 * Some icons from http://www.clker.com/
 
+### Used external libraries
+* com.github.rey5137:material:1.1.0 (Apache License, Version 2.0)
+* com.wefika:flowlayout:0.3.4 (Apache License, Version 2.0)
+* jp.wasabeef:recyclerview-animators:1.2.0@aar (Apache License, Version 2.0)
+* com.github.gabrielemariotti.changeloglib:library:1.5.2 (Apache License, Version 2.0)
+* ch.acra:acra:4.6.2 (Apache License, Version 2.0)
+* net.lingala.zip4j:zip4j:1.3.2 (Apache License, Version 2.0)
+* com.google.code.ndef-tools-for-android:ndeftools:1.2.4 (Apache License, Version 2.0)
+    
 ### License
 Dual licensed: GPLv2+GPLv3
