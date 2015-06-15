@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnectionHTTP;
 import oly.netpowerctrl.ioconnection.IOConnectionUDP;
+import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.utils.Logging;
@@ -113,12 +114,13 @@ class AnelReceiveUDP extends UDPReceiving {
                 Streams.splitNonRegex(io_port, msg[i], ",");
                 if (io_port.size() != 3) continue;
 
-                String uid = AnelPlugin.makeExecutableUID(DeviceUniqueID, (io_port.get(1).equals("1") ? io_id + 10 : io_id));
+                String uid = AnelSendUDP.makeExecutableUID(DeviceUniqueID, (io_port.get(1).equals("1") ? io_id + 10 : io_id));
                 // input if io_port[1].equals("1") otherwise output
                 Executable executable = dataService.executables.findByUID(uid);
                 if (executable == null) executable = new Executable();
                 anelPlugin.fillExecutable(executable, credentials, uid, io_port.get(2).equals("1") ? ExecutableAndCommand.ON : ExecutableAndCommand.OFF);
                 executable.title = io_port.get(0);
+                executable.updateCachedReachability(ReachabilityStates.Reachable);
                 dataService.executables.put(executable);
             }
         }
@@ -131,10 +133,11 @@ class AnelReceiveUDP extends UDPReceiving {
             boolean disabled = (disabledOutlets & (1 << i)) != 0;
             if (disabled) continue;
 
-            String uid = AnelPlugin.makeExecutableUID(DeviceUniqueID, i + 1);  // 1-based id
+            String uid = AnelSendUDP.makeExecutableUID(DeviceUniqueID, i + 1);  // 1-based id
             Executable executable = dataService.executables.findByUID(uid);
             if (executable == null) executable = new Executable();
             anelPlugin.fillExecutable(executable, credentials, uid, 0);
+            executable.updateCachedReachability(ReachabilityStates.Reachable);
             executable.title = outlet[0];
             if (outlet.length > 1)
                 executable.current_value = outlet[1].equals("1") ? ExecutableAndCommand.ON : ExecutableAndCommand.OFF;

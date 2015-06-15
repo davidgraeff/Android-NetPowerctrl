@@ -402,4 +402,8 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="energy_save_mode">Energiesparmodus wählen</string>
     <string name="connection_ip_new_info">Bitte gib den Hostnamen/IP des Ziels ein. Das Ziel muss erreichbar sein.</string>
     <string name="plugin_wol_new_device_name">WakeUpOnLan</string>
+    <string name="automatic_refreshing_devices">Suche Geräte…</string>
+    <string name="group_list_empty">Bisher sind keine Gruppen eingerichtet. Gruppen dienen der Übersicht, dadurch das nur ausgewählte Aktionen in der Aktionsliste angezeigt werden.</string>
+    <string name="drawer_buy">Steckdosen kaufen</string>
+    <string name="buy_notice">Sollte diese App eine Möglichkeit anbieten, um unterstützte, netzwerkfähige Steckdosen sowie kompatible Do-It-Yourself Bausätze Händler- und Herstellerneutral aufzulisten?\n\nDeine Meinung ist wichtig. Bitte wechsel in den Feedback-Bildschirm und schreib mir via Google+ oder E-Mail.</string>
 </resources>

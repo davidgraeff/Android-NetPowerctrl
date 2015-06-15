@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.credentials;
 
 import android.os.Looper;
 import android.support.annotation.NonNull;

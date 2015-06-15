@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.data;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -14,9 +14,11 @@ import java.util.List;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.data.AbstractBasePlugin;
-import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.data.onServiceReady;
+import oly.netpowerctrl.credentials.Credentials;
+import oly.netpowerctrl.credentials.CredentialsCollection;
+import oly.netpowerctrl.credentials.TestCredentials;
+import oly.netpowerctrl.credentials.TestStates;
+import oly.netpowerctrl.credentials.onTestCredentialsResult;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.groups.Group;
 import oly.netpowerctrl.utils.AnimationController;
@@ -51,6 +53,7 @@ public class AutomaticSetup implements onTestCredentialsResult, onServiceReady, 
         }
     };
     //private View item;
+    private boolean isRefreshing = false;
 
     public AutomaticSetup(Button button, TextView find_device_status, View welcome_text) {
         this.button = button;
@@ -194,5 +197,19 @@ public class AutomaticSetup implements onTestCredentialsResult, onServiceReady, 
             find_device_status.setText(App.getAppString(R.string.automatic_found_unconfigured_devices, n));
             button.setText(App.getAppString(R.string.automatic_configuration));
         }
+    }
+
+    public void refresh() {
+        if (isRunning || isRefreshing) return;
+        isRefreshing = true;
+        find_device_status.setText(App.getAppString(R.string.automatic_refreshing_devices));
+        App.getMainThreadHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isRefreshing = false;
+                updateStatusTextWithUnconfiguredNumber();
+            }
+        }, 3000);
+        dataService.detectDevices();
     }
 }

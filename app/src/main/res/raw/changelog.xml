@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
+    <changelogversion changeDate="15. Juni 2015" versionName="8.5">
+        <changelogbug>Szenen können wieder ausgeführt werden</changelogbug>
+        <changelogbug>Ersteinrichtung funktioniert nun besser und speichert Geräte nun auch ab
+        </changelogbug>
+        <changelogimprovement>Einige Designanpassungen für Android 5</changelogimprovement>
+        <changelogimprovement>Umfrage: Soll eine Händler- und Herstellerneutrale Auflistung von
+            erwerbbaren, unterstützten Geräten und kompatiblen Do-It-Yourself Bastelsätzen angeboten
+            werden?
+        </changelogimprovement>
+    </changelogversion>
+    <changelogversion changeDate="08. Juni 2015" versionName="8.3">
+        <changelogbug>Verstecken von Steckdosen repariert</changelogbug>
+        <changelogbug>WakeUpOnLan Probleme behoben</changelogbug>
+        <changelogbug>Bei der automatischen Einrichtung werden (nach Möglichkeit) keine
+            Schaltaktionen ausgelöst (Versuch 2)
+        </changelogbug>
+    </changelogversion>
     <changelogversion changeDate="16. Mai 2015" versionName="8.2">
         <changelogimprovement>Beide Arten von Widgets haben jetzt eigene Vorschaubilder. Viele
             Android Launcher zeigen diese bei der Auswahl von verfügbaren Widgets an.

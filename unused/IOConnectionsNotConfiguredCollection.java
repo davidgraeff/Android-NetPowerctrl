@@ -3,7 +3,7 @@ package oly.netpowerctrl.ioconnection;
 ;
 import oly.netpowerctrl.data.CollectionWithStorableItems;
 import oly.netpowerctrl.data.ObserverUpdateActions;
-import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.credentials.Credentials;
 
 /**
  * Contains DeviceInfos. Used for NFC and backup transfers

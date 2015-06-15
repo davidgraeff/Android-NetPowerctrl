@@ -15,6 +15,7 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.executables.ExecutablesFragment;
 import oly.netpowerctrl.ioconnection.IOConnectionsFragment;
+import oly.netpowerctrl.main.BuyFragment;
 import oly.netpowerctrl.main.FeedbackFragment;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.preferences.PreferencesFragment;
@@ -126,6 +127,15 @@ public class GroupListFragment extends Fragment implements onServiceReady, Empty
             @Override
             public void onClick(View view) {
                 FragmentUtils.changeToFragment(getActivity(), PreferencesFragment.class.getName());
+                ((MainActivity) getActivity()).closeGroupMenu();
+            }
+        });
+
+        button = root.findViewById(R.id.btnBuy);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentUtils.changeToFragment(getActivity(), BuyFragment.class.getName());
                 ((MainActivity) getActivity()).closeGroupMenu();
             }
         });

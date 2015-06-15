@@ -165,5 +165,4 @@ public class UDPSend extends Thread {
         int errorID;
         InetAddress ip = null;
     }
-
 }

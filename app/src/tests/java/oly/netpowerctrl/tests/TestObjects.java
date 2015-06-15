@@ -1,9 +1,9 @@
 package oly.netpowerctrl.tests;
 
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.LoadStoreCollections;
-import oly.netpowerctrl.devices.Credentials;
-import oly.netpowerctrl.plugin_anel.AnelPlugin;
+import oly.netpowerctrl.plugin_anel.AnelSendUDP;
 
 ;
 
@@ -13,7 +13,7 @@ import oly.netpowerctrl.plugin_anel.AnelPlugin;
 public class TestObjects {
     static Credentials createDevice() {
         Credentials di = new Credentials();
-        di.pluginID = AnelPlugin.PLUGIN_ID;
+        di.pluginID = AnelSendUDP.PLUGIN_ID;
         di.setDeviceName("TestDevice");
         di.deviceUID = ("aa:bb:cc:dd:ee:ff");
         di.userName = ("admin");

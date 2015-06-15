@@ -15,10 +15,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
+import oly.netpowerctrl.credentials.CredentialsCollection;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
-import oly.netpowerctrl.devices.Credentials;
-import oly.netpowerctrl.devices.CredentialsCollection;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionsCollection;

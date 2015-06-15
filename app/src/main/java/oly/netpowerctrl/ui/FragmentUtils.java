@@ -6,12 +6,16 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Display;
+import android.view.Window;
 import android.view.WindowManager;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.preferences.SharedPrefs;
 
 /**
  * Created by david on 31.01.15.
@@ -104,6 +108,36 @@ public class FragmentUtils {
             activity.getWindow().setLayout((int) (width * .8), (int) (height * .6));
         } else {
             activity.getWindow().setLayout((int) (width * .7), (int) (height * .8));
+        }
+    }
+
+    public static void applyActivityFlags(ActionBarActivity activity) {
+        //Remove title bar
+        activity.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        if (SharedPrefs.getInstance().isFullscreen()) {
+            //Remove notification bar
+            activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
+        // on android5+ color of system bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            int c = SharedPrefs.getInstance().isDarkTheme() ?
+                    activity.getResources().getColor(R.color.colorSecondaryDark) :
+                    activity.getResources().getColor(R.color.colorSecondaryLight);
+            activity.getWindow().setStatusBarColor(c);
+            activity.getWindow().setNavigationBarColor(c);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Window w = activity.getWindow(); // in Activity's onCreate() for instance
+            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        }
+
+        if (SharedPrefs.getInstance().isDarkTheme()) {
+            activity.setTheme(R.style.Theme_CustomDarkTheme);
+        } else {
+            activity.setTheme(R.style.Theme_CustomLightTheme);
         }
     }
 }

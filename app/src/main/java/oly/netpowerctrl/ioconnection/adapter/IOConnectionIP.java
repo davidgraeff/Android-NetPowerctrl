@@ -6,7 +6,7 @@ import android.util.JsonWriter;
 
 import java.io.IOException;
 
-import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.ioconnection.IOConnection;
 
 /**

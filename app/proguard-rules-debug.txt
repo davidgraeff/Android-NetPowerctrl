@@ -4,8 +4,7 @@
 -dontobfuscate
 -verbose
 
--assumenosideeffects class oly.netpowerctrl.plugin.** { *; }
-
 -keep class oly.netpowerctrl.debug.* {
     *;
 }
+-dontwarn android.support.v4.**

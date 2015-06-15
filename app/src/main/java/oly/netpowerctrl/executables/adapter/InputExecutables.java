@@ -22,7 +22,8 @@ public class InputExecutables extends AdapterInput implements onCollectionUpdate
     @Override
     public void doUpdateNow() {
         for (Executable executable : executableCollection.getItems().values()) {
-            adapterSource.addItem(executable, executable.current_value);
+            if (executable.getCredentials() == null || executable.getCredentials().isConfigured())
+                adapterSource.addItem(executable, executable.current_value);
         }
     }
 
@@ -57,18 +58,20 @@ public class InputExecutables extends AdapterInput implements onCollectionUpdate
                         adapterSource.removeAt(pos);
                     else
                         adapterSource.getAdapter().notifyItemChanged(pos);
-                } else
+                } else if (executable.getCredentials() == null || executable.getCredentials().isConfigured())
                     adapterSource.addItem(executable, executable.current_value);
                 break;
             case UpdateAction:
                 //Log.w("UPDATE source ports", device.getDeviceName());
                 pos = adapterSource.findPositionByUUid(executable.getUid());
                 if (pos != -1) adapterSource.getItem(pos).markRemoved();
-                adapterSource.addItem(executable, executable.current_value);
+                if (executable.getCredentials() == null || executable.getCredentials().isConfigured())
+                    adapterSource.addItem(executable, executable.current_value);
                 adapterSource.removeAllMarked();
                 break;
             case AddAction:
-                adapterSource.addItem(executable, executable.current_value);
+                if (executable.getCredentials() == null || executable.getCredentials().isConfigured())
+                    adapterSource.addItem(executable, executable.current_value);
                 break;
             case ClearAndNewAction:
             case RemoveAllAction:

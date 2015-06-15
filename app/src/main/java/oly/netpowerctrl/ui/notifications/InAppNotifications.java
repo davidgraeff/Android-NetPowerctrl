@@ -20,7 +20,7 @@ import java.util.List;
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.plugin_anel.AnelPlugin;
+import oly.netpowerctrl.plugin_anel.AnelSendUDP;
 
 /**
  * Show a toast message, especially if not within the main thread
@@ -82,7 +82,7 @@ public class InAppNotifications {
         boolean serviceRunning = DataService.getService() != null;
         ACRA.getErrorReporter().putCustomData("service_state", serviceRunning ? "running" : "down");
         if (serviceRunning) {
-            ACRA.getErrorReporter().putCustomData("plugin_anel_state", DataService.getService().getPlugin(AnelPlugin.PLUGIN_ID).isStarted() ? "down" : "running");
+            ACRA.getErrorReporter().putCustomData("plugin_anel_state", DataService.getService().getPlugin(AnelSendUDP.PLUGIN_ID).isStarted() ? "down" : "running");
         } else {
             ACRA.getErrorReporter().putCustomData("service_shutdown_reason", DataService.service_shutdown_reason);
         }

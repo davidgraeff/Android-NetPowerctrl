@@ -7,6 +7,7 @@
         <item name="transparent_rounded_background">@drawable/transparent_text_light</item>
 
         <!-- icons -->
+        <item name="ic_action_dock">@drawable/ic_action_dock</item>
         <item name="ic_action_good">@drawable/ic_action_good</item>
         <item name="ic_action_settings">@drawable/ic_action_settings</item>
         <item name="ic_action_make_available_offline">@drawable/ic_action_make_available_offline
@@ -41,8 +42,6 @@
         <item name="EditTextLarge">@style/EditTextLargeLight</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
 
         <item name="mcab_background_color">?colorPrimaryDark</item>
         <item name="mcab_close_drawable">@drawable/abc_ic_ab_back_mtrl_am_alpha</item>
@@ -68,6 +67,7 @@
         <item name="transparent_rounded_background">@drawable/transparent_text_dark</item>
 
         <!-- icons -->
+        <item name="ic_action_dock">@drawable/ic_action_dock</item>
         <item name="ic_action_good">@drawable/ic_action_good</item>
         <item name="ic_action_settings">@drawable/ic_action_settings</item>
         <item name="ic_action_make_available_offline">
@@ -104,8 +104,6 @@
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
 
         <item name="mcab_background_color">?colorPrimaryDark</item>
         <item name="mcab_close_drawable">@drawable/abc_ic_ab_back_mtrl_am_alpha</item>

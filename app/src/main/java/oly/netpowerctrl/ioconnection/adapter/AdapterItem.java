@@ -1,6 +1,6 @@
 package oly.netpowerctrl.ioconnection.adapter;
 
-import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.credentials.Credentials;
 
 /**
  * Created by david on 25.04.15.

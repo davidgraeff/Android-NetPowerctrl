@@ -3,12 +3,13 @@ package oly.netpowerctrl.plugin_simpleudp;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnectionUDP;
+import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.UDPReceiving;
 import oly.netpowerctrl.utils.Logging;
 
@@ -149,7 +150,8 @@ class SimpleUDPReceiveUDP extends UDPReceiving {
 
             executable.deviceUID = credentials.getUid();
             executable.setUid(uid);
-            executable.setCredentials(credentials, dataService.connections);
+            executable.setCredentials(credentials);
+            executable.updateCachedReachability(ReachabilityStates.Reachable);
             executable.title = outlet[2];
             dataService.executables.put(executable);
         }

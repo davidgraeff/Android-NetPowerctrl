@@ -6,15 +6,17 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.Locale;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.data.query.ExecuteQueryUDPDevice;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.onNameChangeResult;
@@ -34,9 +36,13 @@ import oly.netpowerctrl.preferences.SharedPrefs;
  * ---------------------------------------------------
  * Header (always SimpleUDP_cmd)
  * UniqueID (we use the android device unique id)
- * CMD_TYPE \t actionID \t optional value
+ * CMD_TYPE \t actionID \t VALUE \t RANDOM_REQUEST_NO
  * <p/>
  * CMD_TYPE is one of (SET,TOGGLE,RENAME), the actionID has been received before and is known.
+ * VALUE: if CMD_TYPE is SET,RENAME a value is necessary else just set it to 0.
+ * RANDOM_REQUEST_NO: A random request number. This is for duplicate detection. The receiver has
+ * to check the current commands request number against the last ~3 requests and ignore (but still
+ * ack) the received but already executed command.
  * <p/>
  * Example packet:
  * <p/>
@@ -51,6 +57,7 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
     private static final String OWN_ID = SharedPrefs.getAndroidID();
     private static final byte[] requestMessage = ("SimpleUDP_detect\n" + OWN_ID).getBytes();
     private SimpleUDPReceiveUDP simpleUDPReceiveUDP;
+    private Random random = new Random();
 
     public SimpleUDPPlugin(DataService dataService) {
         super(dataService);
@@ -90,7 +97,7 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
      * @param callback   This callback will be called when the execution finished
      */
     @Override
-    public boolean execute(@NonNull Executable executable, int command, onExecutionFinished callback) {
+    public boolean execute(@NonNull Executable executable, int command, final onExecutionFinished callback) {
         executable.setExecutionInProgress(true);
 
         DeviceIOConnections deviceIOConnections = dataService.connections.openDevice(executable.deviceUID);
@@ -113,10 +120,20 @@ final public class SimpleUDPPlugin extends AbstractBasePlugin {
         String type = command == ExecutableAndCommand.TOGGLE ? "TOGGLE" : "SET";
         String actionID = extractIDFromExecutableUID(executable.getUid());
 
-        byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s\t", OWN_ID, type, actionID, String.valueOf(executable.current_value)).getBytes();
-        UDPSend.sendMessage((IOConnectionUDP) ioConnection, data);
+        byte[] data = String.format(Locale.US, "SimpleUDP_cmd\n%s\n%s\t%s\t%s\t%s\t", OWN_ID, type, actionID,
+                String.valueOf(executable.current_value), String.valueOf(random.nextInt())).getBytes();
 
-        if (callback != null) callback.addSuccess();
+        DataService.getService().sendAndObserve(new ExecuteQueryUDPDevice(credentials, (IOConnectionUDP) ioConnection, data) {
+            @Override
+            public void finish() {
+                if (callback != null) {
+                    if (mIsSuccess)
+                        callback.addSuccess();
+                    else
+                        callback.addFail();
+                }
+            }
+        });
 
         return true;
     }

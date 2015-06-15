@@ -23,6 +23,8 @@ public class ExecutablesAdapter extends RecyclerView.Adapter<ExecutableViewHolde
     GridLayoutManager.SpanSizeLookup spanSizeLookup = new GridLayoutManager.SpanSizeLookup() {
         @Override
         public int getSpanSize(int position) {
+            if (mSource.mItems.size() <= position) return 1;
+
             final ExecutableAdapterItem item = mSource.mItems.get(position);
             if (item.getExecutable() == null)
                 return itemsInRow.getItemsInRow(); // Only one header per row -> span full row

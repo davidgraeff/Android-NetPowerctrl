@@ -27,11 +27,11 @@ import java.util.List;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
+import oly.netpowerctrl.credentials.CredentialsDialog;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.query.onDataQueryRefreshQuery;
-import oly.netpowerctrl.devices.Credentials;
-import oly.netpowerctrl.devices.CredentialsDialog;
 import oly.netpowerctrl.groups.GroupUtilities;
 import oly.netpowerctrl.ioconnection.adapter.AdapterItem;
 import oly.netpowerctrl.ioconnection.adapter.AdapterItemConnection;

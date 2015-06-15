@@ -8,6 +8,7 @@ public class ExecutableAndCommand {
     public static final int ON = 1;
     public static final int TOGGLE = -1;
     public static final int INVALID = -2;
+    public static final int NOOP = -3;
 
     public final Executable executable;
     public final Integer command;

@@ -16,13 +16,14 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import oly.netpowerctrl.App;
+import oly.netpowerctrl.credentials.Credentials;
+import oly.netpowerctrl.credentials.CredentialsCollection;
 import oly.netpowerctrl.data.query.DataQueryCompletedObserver;
 import oly.netpowerctrl.data.query.DataQueryRefreshObserver;
+import oly.netpowerctrl.data.query.DeviceQuery;
+import oly.netpowerctrl.data.query.DeviceQueryInterface;
+import oly.netpowerctrl.data.query.JustQueryDevice;
 import oly.netpowerctrl.data.query.onDataQueryCompleted;
-import oly.netpowerctrl.devices.Credentials;
-import oly.netpowerctrl.devices.CredentialsCollection;
-import oly.netpowerctrl.devices.DeviceQuery;
-import oly.netpowerctrl.devices.DevicesObserver;
 import oly.netpowerctrl.executables.ExecutableCollection;
 import oly.netpowerctrl.groups.GroupCollection;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
@@ -333,6 +334,7 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
      */
     public void addToConfiguredDevices(Credentials credentials) {
         credentials.setConfigured(true);
+        credentials.setHasChanged();
         this.credentials.put(credentials);
         ReachabilityStates r = connections.save(credentials.deviceUID);
         executables.notifyReachability(credentials.deviceUID, r, true);
@@ -355,8 +357,12 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     /**
      * Refreshes given device.
      */
-    public void refreshExistingDevice(Credentials credentials, DevicesObserver.onDevicesObserverFinished callback) {
-        deviceQuery.addDeviceObserver(new DevicesObserver(credentials, callback));
+    public void refreshExistingDevice(Credentials credentials, JustQueryDevice.onDevicesObserverFinished callback) {
+        deviceQuery.addDeviceObserver(new JustQueryDevice(credentials, callback));
+    }
+
+    public void sendAndObserve(DeviceQueryInterface deviceQueryInterface) {
+        deviceQuery.addDeviceObserver(deviceQueryInterface);
     }
 
     /**
@@ -365,14 +371,14 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     public void refreshExistingDevices() {
         if (observersStartStopRefresh.isRefreshing()) return;
         observersStartStopRefresh.onRefreshStateChanged(true);
-        deviceQuery.addDeviceObserver(new DevicesObserver(credentials.getItems().values(), new DevicesObserver.onDevicesObserverFinished() {
+        deviceQuery.addDeviceObserver(new JustQueryDevice(credentials.getItems().values(), new JustQueryDevice.onDevicesObserverFinished() {
             @Override
-            public void onObserverJobFinished(DevicesObserver devicesObserver) {
-                Logging.getInstance().logEnergy("...fertig\n" + " Timeout: " + String.valueOf(devicesObserver.timedOutDevices().size()));
+            public void onObserverJobFinished(JustQueryDevice justQueryDevice) {
+                Logging.getInstance().logEnergy("...fertig\n" + " Timeout: " + String.valueOf(justQueryDevice.timedOutDevices().size()));
                 observersDataQueryCompleted.onDataQueryFinished(DataService.this);
                 observersStartStopRefresh.onRefreshStateChanged(false);
             }
-        }));
+        }, false));
     }
 
     /**
@@ -381,16 +387,18 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     public void detectDevices() {
         if (observersStartStopRefresh.isRefreshing()) return;
         observersStartStopRefresh.onRefreshStateChanged(true);
+
+        discoverExtensions();
+
         credentials.clearNotConfigured();
-        deviceQuery.addDeviceObserver(new DevicesObserver(new DevicesObserver.onDevicesObserverFinished() {
+        deviceQuery.addDeviceObserver(new JustQueryDevice(credentials.getItems().values(), new JustQueryDevice.onDevicesObserverFinished() {
             @Override
-            public void onObserverJobFinished(DevicesObserver devicesObserver) {
-                Logging.getInstance().logEnergy("...fertig\n" + " Timeout: " + String.valueOf(devicesObserver.timedOutDevices().size()));
+            public void onObserverJobFinished(JustQueryDevice justQueryDevice) {
+                Logging.getInstance().logEnergy("...fertig\n" + " Timeout: " + String.valueOf(justQueryDevice.timedOutDevices().size()));
                 observersDataQueryCompleted.onDataQueryFinished(DataService.this);
                 observersStartStopRefresh.onRefreshStateChanged(false);
             }
-        }));
-        discoverExtensions();
+        }, true));
         for (AbstractBasePlugin abstractBasePlugin : plugins) {
             abstractBasePlugin.requestData();
         }

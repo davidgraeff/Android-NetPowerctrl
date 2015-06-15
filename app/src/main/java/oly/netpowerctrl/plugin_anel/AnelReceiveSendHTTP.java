@@ -13,8 +13,8 @@ import java.io.StringReader;
 import java.net.URLEncoder;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.ioconnection.IOConnection;
@@ -71,13 +71,14 @@ public class AnelReceiveSendHTTP {
                     if (disabled)
                         continue;
 
-                    String executable_uid = AnelPlugin.makeExecutableUID(ioConnection.deviceUID, i + 1);
+                    String executable_uid = AnelSendUDP.makeExecutableUID(ioConnection.deviceUID, i + 1);
                     Executable executable = dataService.executables.findByUID(executable_uid);
                     if (executable == null) {
                         executable = new Executable();
                     }
                     anelPlugin.fillExecutable(executable, credentials, executable_uid, data[20 + i].equals("1") ? ExecutableAndCommand.ON : ExecutableAndCommand.OFF);
                     executable.title = data[10 + i];
+                    executable.updateCachedReachability(ReachabilityStates.Reachable);
                     dataService.executables.put(executable);
                 }
             }

@@ -29,7 +29,7 @@ import java.util.List;
 import oly.netpowerctrl.BuildConfig;
 import oly.netpowerctrl.R;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.devices.DevicesFragment;
+import oly.netpowerctrl.credentials.DevicesFragment;
 import oly.netpowerctrl.main.FeedbackFragment;
 import oly.netpowerctrl.main.OutletsFragment;
 import oly.netpowerctrl.preferences.PreferencesFragment;

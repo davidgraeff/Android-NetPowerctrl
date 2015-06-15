@@ -28,7 +28,7 @@ import android.widget.Toast;
 import oly.netpowerctrl.R;
 ;
 import oly.netpowerctrl.data.SharedPrefs;
-import oly.netpowerctrl.devices.DevicesFragment;
+import oly.netpowerctrl.credentials.DevicesFragment;
 import oly.netpowerctrl.main.App;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.utils.AnimationController;

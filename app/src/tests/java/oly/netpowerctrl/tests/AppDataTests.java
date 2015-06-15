@@ -5,9 +5,9 @@ import android.test.AndroidTestCase;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.LoadStoreCollections;
-import oly.netpowerctrl.devices.Credentials;
 
 ;
 

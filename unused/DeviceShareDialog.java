@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.credentials;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -13,7 +13,7 @@ import android.view.View;
 
 import oly.netpowerctrl.R;
 ;
-import oly.netpowerctrl.devices.device.Device;
+import oly.netpowerctrl.credentials.device.Device;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.ui.FragmentUtils;
 

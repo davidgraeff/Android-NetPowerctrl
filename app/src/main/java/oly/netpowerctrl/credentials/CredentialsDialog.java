@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.credentials;
 
 import android.app.DialogFragment;
 import android.os.Bundle;

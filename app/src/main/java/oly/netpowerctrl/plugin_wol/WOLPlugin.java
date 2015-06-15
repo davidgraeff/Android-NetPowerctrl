@@ -15,9 +15,9 @@ import java.util.UUID;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableType;
 import oly.netpowerctrl.executables.onNameChangeResult;
@@ -119,12 +119,12 @@ final public class WOLPlugin extends AbstractBasePlugin {
         List<Credentials> credentialsList = dataService.credentials.findByPlugin(this);
         Credentials c[] = new Credentials[credentialsList.size()];
         credentialsList.toArray(c);
-        new RequestData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (c));
+        new RequestData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, c);
     }
 
     @Override
     public void requestData(@NonNull IOConnection connection) {
-        new RequestData().execute(connection.credentials);
+        new RequestData().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, connection.credentials);
     }
 
     @Override
@@ -211,7 +211,8 @@ final public class WOLPlugin extends AbstractBasePlugin {
                     if (executable == null) {
                         executable = new Executable();
                         executable.setUid(ioConnection.getUid());
-                        executable.setCredentials(credentials, dataService.connections);
+                        executable.setCredentials(credentials);
+                        executable.updateCachedReachability(ReachabilityStates.Reachable);
                         executable.ui_type = ExecutableType.TypeStateless;
                         executable.title = ioConnection.getDestinationHost();
                         dataService.executables.put(executable);

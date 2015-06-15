@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.credentials;
 
 /**
  * Created by david on 05.09.14.

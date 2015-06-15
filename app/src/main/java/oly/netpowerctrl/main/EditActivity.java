@@ -115,13 +115,9 @@ public class EditActivity extends ActionBarActivity implements IconSelected, onN
     @SuppressLint("ShowToast")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        FragmentUtils.applyActivityFlags(this);
+
         super.onCreate(savedInstanceState);
-        // set theme based on user preference
-        if (SharedPrefs.getInstance().isDarkTheme()) {
-            setTheme(R.style.Theme_CustomDarkTheme);
-        } else {
-            setTheme(R.style.Theme_CustomLightTheme);
-        }
 
         // Default result
         setResult(RESULT_CANCELED, null);
@@ -361,9 +357,9 @@ public class EditActivity extends ActionBarActivity implements IconSelected, onN
 
         int backColor;
         if (SharedPrefs.getInstance().isDarkTheme())
-            backColor = Palette.generate(icon).getDarkVibrantColor(getResources().getColor(R.color.colorBackgroundDark));
+            backColor = new Palette.Builder(icon).generate().getDarkVibrantColor(getResources().getColor(R.color.colorBackgroundDark));
         else
-            backColor = Palette.generate(icon).getVibrantColor(getResources().getColor(R.color.colorBackgroundLight));
+            backColor = new Palette.Builder(icon).generate().getVibrantColor(getResources().getColor(R.color.colorBackgroundLight));
 
         Paint mButtonPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mButtonPaint.setStyle(Paint.Style.FILL);
@@ -616,8 +612,11 @@ public class EditActivity extends ActionBarActivity implements IconSelected, onN
         if (mEditType != EDIT_TYPE_DEVICE_PORT) en &= sceneElementsAssigning.hasElements();
 
         btnSaveOrTrash.setVisibility(View.VISIBLE);
-        btnSaveOrTrash.setIcon(en ? ContextCompat.getDrawable(this, android.R.drawable.ic_menu_save) :
-                ContextCompat.getDrawable(this, R.drawable.btn_save_disabled), btnSaveOrTrash.getIcon() != null);
+        if (btnSaveOrTrash.getTag() == null || !btnSaveOrTrash.getTag().equals(en)) {
+            btnSaveOrTrash.setTag(en);
+            btnSaveOrTrash.setIcon(en ? ContextCompat.getDrawable(this, android.R.drawable.ic_menu_save) :
+                    ContextCompat.getDrawable(this, R.drawable.btn_save_disabled), btnSaveOrTrash.getIcon() != null);
+        }
     }
 
     @Override

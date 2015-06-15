@@ -14,10 +14,10 @@ import java.util.UUID;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.onServiceReady;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableCollection;
@@ -101,7 +101,7 @@ public class Scene extends Executable implements IOInterface {
      * @param dataService DataService
      * @param callback    The callback for the execution-done messages
      */
-    public void execute(@NonNull final DataService dataService, @Nullable final onExecutionFinished callback) {
+    public void execute(@NonNull final DataService dataService, final int c, @Nullable final onExecutionFinished callback) {
         List<AbstractBasePlugin> abstractBasePlugins = new ArrayList<>();
 
         // Master/Slave

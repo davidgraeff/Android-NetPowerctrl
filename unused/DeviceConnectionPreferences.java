@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.credentials;
 
 import android.app.Activity;
 import android.os.Bundle;

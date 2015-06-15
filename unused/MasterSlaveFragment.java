@@ -17,7 +17,7 @@ import oly.netpowerctrl.executables.DevicePort;
 import oly.netpowerctrl.executables.DevicePortSourceConfigured;
 import oly.netpowerctrl.executables.DevicePortSourceInterface;
 import oly.netpowerctrl.executables.DevicePortsListAdapter;
-import oly.netpowerctrl.devices.Device;
+import oly.netpowerctrl.credentials.Device;
 import oly.netpowerctrl.main.MainActivity;
 import oly.netpowerctrl.utils.actionbar.ActionBarDoneCancel;
 import oly.netpowerctrl.utils.controls.ActivityWithIconCache;

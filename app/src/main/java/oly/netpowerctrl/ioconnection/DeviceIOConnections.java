@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 

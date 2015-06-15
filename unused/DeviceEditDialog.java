@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.credentials;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;

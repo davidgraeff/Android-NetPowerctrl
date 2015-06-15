@@ -26,12 +26,12 @@ import android.widget.TextView;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.data.AutomaticSetup;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.IconCacheCleared;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.data.onServiceReady;
 import oly.netpowerctrl.data.query.onDataQueryRefreshQuery;
-import oly.netpowerctrl.devices.AutomaticSetup;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
 import oly.netpowerctrl.executables.adapter.ExecutableViewHolder;
@@ -444,6 +444,12 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
+    public void onStop() {
+        AnimationController.animateViewInOutWithoutCheck(btnEdit, false, true, 500);
+        super.onStop();
+    }
+
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         switch (s) {
             case SharedPrefs.PREF_OutletsViewType: {
@@ -466,6 +472,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
             boolean hasDevices = dataService != null && dataService.credentials.countConfigured() > 0;
             if (!hasDevices) {
                 view.findViewById(R.id.empty_no_outlets_no_devices).setVisibility(View.VISIBLE);
+                automaticSetup.refresh();
             } else if (filterBySingleGroup.getFilterGroup() != null) {
                 view.findViewById(R.id.empty_group).setVisibility(View.VISIBLE);
             } else {

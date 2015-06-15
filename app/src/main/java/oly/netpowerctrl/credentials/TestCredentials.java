@@ -1,4 +1,4 @@
-package oly.netpowerctrl.devices;
+package oly.netpowerctrl.credentials;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -7,6 +7,7 @@ import java.util.List;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.data.DataService;
+import oly.netpowerctrl.data.query.JustQueryDevice;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableCollection;
@@ -19,17 +20,17 @@ import oly.netpowerctrl.utils.onCollectionUpdated;
  * Use this class for testing device settings. Results are propagated via the onTestCredentialsResult interface.
  * The EditDeviceInterface is also implemented so this can be returned by the anel plugin for editing devices.
  */
-public class TestCredentials implements DevicesObserver.onDevicesObserverFinished, onCollectionUpdated<ExecutableCollection, Executable> {
+public class TestCredentials implements JustQueryDevice.onDevicesObserverFinished, onCollectionUpdated<ExecutableCollection, Executable> {
     private TestStates test_state = TestStates.TEST_INIT;
     private Credentials credentials;
     private Executable observedExecutable = null;
     private onTestCredentialsResult listener = null;
 
     @Override
-    public void onObserverJobFinished(DevicesObserver devicesObserver) {
+    public void onObserverJobFinished(JustQueryDevice justQueryDevice) {
         final DataService dataService = DataService.getService();
         //Log.w("TestCredentials", "finished test " + credentials.reachableState().name() + " " + test_state.name());
-        if (devicesObserver.isAllTimedOut()) {
+        if (justQueryDevice.isAllTimedOut()) {
             if (listener != null)
                 listener.testFinished(test_state, credentials);
             test_state = TestStates.TEST_INIT;
@@ -50,11 +51,10 @@ public class TestCredentials implements DevicesObserver.onDevicesObserverFinishe
                         testTimeout(dataService);
                     }
                 }, 2000);
-                // We first toggle the current value manually and then issue a toggle request to the device.
-                // This should not change the actual device state, but will cause an update signal of the
+                // setHasChanged should not change the actual device state, but will cause an update signal of the
                 // received and "changed" executable (in updated(...)).
-                observedExecutable.current_value = observedExecutable.getCurrentValueToggled();
-                observedExecutable.execute(dataService, ExecutableAndCommand.TOGGLE, null);
+                observedExecutable.setHasChanged();
+                observedExecutable.execute(dataService, ExecutableAndCommand.NOOP, null);
             } else {
                 test_state = TestStates.TEST_INIT;
                 if (listener != null)

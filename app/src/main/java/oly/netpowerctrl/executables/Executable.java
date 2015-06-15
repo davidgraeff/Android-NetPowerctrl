@@ -12,10 +12,9 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.TreeSet;
 
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.AbstractBasePlugin;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
-import oly.netpowerctrl.ioconnection.IOConnectionsCollection;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.utils.IOInterface;
@@ -49,10 +48,11 @@ public class Executable implements Comparable, IOInterface {
     ////// Cached values
     protected int last_hash_code = 0;
     // Used to disable control in list until ack from device has been received.
-    private boolean cached_executionInProgress;
-    private Credentials credentials;
-    private ReachabilityStates cached_reachabilityStates = ReachabilityStates.NotReachable;
     private boolean isSaveable = true;
+    private Credentials credentials;
+    private boolean cached_executionInProgress;
+    private ReachabilityStates cached_reachabilityStates = ReachabilityStates.NotReachable;
+    private boolean cached_ReachabilityHasChanged = false;
 
     public Executable() {
     }
@@ -335,10 +335,9 @@ public class Executable implements Comparable, IOInterface {
      *
      * @param credentials The credentials object that fits to the deviceUID of this executable.
      */
-    public void setCredentials(Credentials credentials, IOConnectionsCollection connectionsCollection) {
+    public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
         this.deviceUID = credentials.getUid();
-        updateCachedReachability(connectionsCollection.getReachableState(this));
     }
 
     /**
@@ -346,17 +345,20 @@ public class Executable implements Comparable, IOInterface {
      * which is called by the ioConnectionCollection.
      *
      * @param new_state The new reachability state
-     * @return Return true if the old cached state differs from the new state.
      */
-    public boolean updateCachedReachability(ReachabilityStates new_state) {
+    public void updateCachedReachability(ReachabilityStates new_state) {
         //Log.w("executable", "reachability " + new_state.name());
         ReachabilityStates a = cached_reachabilityStates;
         cached_reachabilityStates = new_state;
-        return new_state != a;
+        cached_ReachabilityHasChanged |= new_state != a;
     }
 
     public void destroy(DataService dataService) {
         credentials = null;
         //uid = null;
+    }
+
+    public boolean hasReachabilityChanged() {
+        return cached_ReachabilityHasChanged;
     }
 }

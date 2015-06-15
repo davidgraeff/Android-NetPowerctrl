@@ -16,11 +16,11 @@ import java.lang.ref.WeakReference;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
-import oly.netpowerctrl.devices.Credentials;
-import oly.netpowerctrl.devices.DevicesObserver;
+import oly.netpowerctrl.data.query.JustQueryDevice;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.ExecutableCollection;
@@ -35,7 +35,7 @@ import oly.netpowerctrl.utils.onCollectionUpdated;
 /**
  * Created by david on 15.04.15.
  */
-public class WidgetExecutable extends AbstractWidget implements onCollectionUpdated<ExecutableCollection, Executable>, DevicesObserver.onDevicesObserverFinished {
+public class WidgetExecutable extends AbstractWidget implements onCollectionUpdated<ExecutableCollection, Executable>, JustQueryDevice.onDevicesObserverFinished {
     private static final String TAG = "WidgetEntryExecutable";
     int cached_last_state = -1000;
     private Executable executable = null;
@@ -106,8 +106,8 @@ public class WidgetExecutable extends AbstractWidget implements onCollectionUpda
     }
 
     @Override
-    public void onObserverJobFinished(DevicesObserver devicesObserver) {
-        if (devicesObserver.timedOutDevices().size() > 0)
+    public void onObserverJobFinished(JustQueryDevice justQueryDevice) {
+        if (justQueryDevice.timedOutDevices().size() > 0)
             setWidgetStateBroken(widgetID);
     }
 

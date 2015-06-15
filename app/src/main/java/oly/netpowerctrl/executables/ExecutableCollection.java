@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.IconState;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
@@ -18,7 +19,6 @@ import oly.netpowerctrl.data.graphic.Utils;
 import oly.netpowerctrl.data.storage_container.CollectionMapItems;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPut;
 import oly.netpowerctrl.data.storage_container.CollectionOtherThreadPutHandler;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 
@@ -135,9 +135,11 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
      */
     public void notifyReachability(String deviceUID, ReachabilityStates r, boolean save) {
         Log.w(TAG, "Reachability: " + r.name() + " " + deviceUID);
+        // Filter scenes
         for (Executable executable : items.values()) {
-            if (!executable.deviceUID.equals(deviceUID)) continue;
-            if (executable.needCredentials() && executable.updateCachedReachability(r))
+            if (!executable.needCredentials() || !executable.deviceUID.equals(deviceUID)) continue;
+            executable.updateCachedReachability(r);
+            if (executable.hasReachabilityChanged())
                 notifyObservers(executable, ObserverUpdateActions.UpdateReachableAction);
             if (save)
                 storage.save(executable);
@@ -151,7 +153,8 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     public void applyCredentials(Credentials credentials) {
         for (Executable executable : items.values()) {
             if (executable.needCredentials() && executable.deviceUID.equals(credentials.getUid())) {
-                executable.setCredentials(credentials, dataService.connections);
+                executable.setCredentials(credentials);
+                executable.updateCachedReachability(dataService.connections.getReachableState(executable));
             }
         }
     }

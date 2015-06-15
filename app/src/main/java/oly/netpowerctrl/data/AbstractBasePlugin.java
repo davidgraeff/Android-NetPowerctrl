@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.onNameChangeResult;

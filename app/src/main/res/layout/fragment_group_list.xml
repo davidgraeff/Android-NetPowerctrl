@@ -14,35 +14,43 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center">
+            android:layout_gravity="start"
+            android:orientation="vertical"
+            android:paddingEnd="5dp"
+            android:paddingStart="5dp">
 
             <com.rey.material.widget.Button
                 android:id="@+id/btnDevices"
                 style="@style/FlatButtonRippleStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:drawableStart="?attr/ic_action_dock"
                 android:text="@string/devices"
                 android:textColor="?attr/textColorPrimary" />
 
-            <com.rey.material.widget.ImageButton
+            <com.rey.material.widget.Button
                 android:id="@+id/btnPreferences"
                 style="@style/FlatButtonRippleStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/preferences"
-                android:paddingEnd="5dp"
-                android:paddingStart="5dp"
-                android:src="?attr/ic_action_settings" />
+                android:drawableStart="?attr/ic_action_settings"
+                android:text="@string/preferences" />
 
-            <com.rey.material.widget.ImageButton
+            <com.rey.material.widget.Button
+                android:id="@+id/btnBuy"
+                style="@style/FlatButtonRippleStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@android:drawable/ic_menu_add"
+                android:text="@string/drawer_buy" />
+
+            <com.rey.material.widget.Button
                 android:id="@+id/btnFeedback"
                 style="@style/FlatButtonRippleStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/drawer_feedback"
-                android:paddingEnd="5dp"
-                android:paddingStart="5dp"
-                android:src="?attr/ic_action_good" />
+                android:drawableStart="?attr/ic_action_good"
+                android:text="@string/drawer_feedback" />
         </LinearLayout>
     </android.support.v7.widget.Toolbar>
 
@@ -81,6 +89,7 @@
         android:layout_below="@+id/topbar"
         android:gravity="center_vertical"
         android:padding="5dp"
-        android:text="Bisher sind keine Gruppen eingerichtet. Gruppen dienen der Übersicht, dadurch das nur ausgewählte Aktionen in der Aktionsliste rechts angezeigt werden." />
+        android:text="@string/group_list_empty"
+        android:textAppearance="?android:textAppearanceMedium" />
 
 </RelativeLayout>

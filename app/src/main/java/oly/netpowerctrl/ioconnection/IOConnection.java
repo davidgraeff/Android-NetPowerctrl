@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import oly.netpowerctrl.devices.Credentials;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.utils.IOInterface;
 import oly.netpowerctrl.utils.JSONHelper;

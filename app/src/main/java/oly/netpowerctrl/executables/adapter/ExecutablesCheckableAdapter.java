@@ -30,8 +30,9 @@ public class ExecutablesCheckableAdapter extends ExecutablesAdapter implements C
             return;
 
         CompoundButton t = (CompoundButton) executableViewHolder.title;
+        t.setOnCheckedChangeListener(null);
         t.setChecked(checked.contains(port.getUid()));
-        t.setTag(position);
+        t.setTag(port.getUid());
         t.setOnCheckedChangeListener(this);
     }
 
@@ -45,7 +46,7 @@ public class ExecutablesCheckableAdapter extends ExecutablesAdapter implements C
 
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-        String executableUid = mSource.mItems.get((Integer) compoundButton.getTag()).getExecutable().getUid();
+        String executableUid = (String) compoundButton.getTag();
         if (b)
             checked.add(executableUid);
         else

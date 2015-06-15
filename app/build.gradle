@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 22
-        versionCode 123
-        versionName "8.3"
+        versionCode 125
+        versionName "8.5"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -94,10 +94,10 @@ dependencies {
     //compile 'com.google.android.gms:play-services:5.2.08'
     //noinspection GradleDependency
     compile 'com.android.support:appcompat-v7:22.0.0'
-    compile 'com.android.support:support-v13:22.0.0'
-    compile 'com.android.support:recyclerview-v7:22.0.0'
-    compile 'com.android.support:palette-v7:22.0.0'
-    compile 'com.android.support:cardview-v7:22.0.0'
+    compile 'com.android.support:support-v13:22.2.0'
+    compile 'com.android.support:recyclerview-v7:22.2.0'
+    compile 'com.android.support:palette-v7:22.2.0'
+    compile 'com.android.support:cardview-v7:22.2.0'
     compile('com.github.rey5137:material:1.1.0') {
         exclude group: 'com.google.android'
         exclude group: 'com.android.support'
@@ -110,7 +110,7 @@ dependencies {
         exclude group: 'com.google.android'
         exclude group: 'com.android.support'
     }
-    compile('com.github.gabrielemariotti.changeloglib:library:1.5.1') {
+    compile('com.github.gabrielemariotti.changeloglib:library:1.5.2') {
         exclude group: 'com.google.android'; exclude group: 'com.android.support'
     }
     compile('ch.acra:acra:4.6.2') {

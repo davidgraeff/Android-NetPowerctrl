@@ -19,8 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.ioconnection.IOConnectionHTTP;
 
 /**

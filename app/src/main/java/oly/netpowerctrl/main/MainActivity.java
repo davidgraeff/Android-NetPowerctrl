@@ -21,7 +21,6 @@ import android.app.FragmentManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -31,8 +30,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import oly.netpowerctrl.App;
@@ -51,35 +48,7 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //Remove title bar
-        this.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        if (SharedPrefs.getInstance().isFullscreen()) {
-            //Remove notification bar
-            this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
-
-        // on android5+ color of system bar
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            int c = SharedPrefs.getInstance().isDarkTheme() ?
-                    getResources().getColor(R.color.colorSecondaryDark) :
-                    getResources().getColor(R.color.colorSecondaryLight);
-            getWindow().setStatusBarColor(c);
-            getWindow().setNavigationBarColor(c);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Window w = getWindow(); // in Activity's onCreate() for instance
-            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            w.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        }
-
-        // Set theme, call super onCreate and set content view
-        if (SharedPrefs.getInstance().isDarkTheme()) {
-            setTheme(R.style.Theme_CustomDarkTheme);
-        } else {
-            setTheme(R.style.Theme_CustomLightTheme);
-        }
-
+        FragmentUtils.applyActivityFlags(this);
 
         super.onCreate(savedInstanceState);
 

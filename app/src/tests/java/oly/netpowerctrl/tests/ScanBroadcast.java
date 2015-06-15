@@ -90,7 +90,7 @@ public class ScanBroadcast extends AndroidTestCase {
         DataService service = DataService.getService();
         assertNotNull(service);
 
-        // DataQueryCompleted should be issued and onObserverJobFinished
+        // DataQueryCompleted should be issued and finish
         final CountDownLatch signal_receive = new CountDownLatch(1);
 
         DataService.observersDataQueryCompleted.register(new onDataQueryCompleted() {

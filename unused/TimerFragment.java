@@ -23,7 +23,7 @@ import oly.netpowerctrl.R;
 ;
 import oly.netpowerctrl.data.ObserverUpdateActions;
 import oly.netpowerctrl.data.onCollectionUpdated;
-import oly.netpowerctrl.devices.DevicesFragment;
+import oly.netpowerctrl.credentials.DevicesFragment;
 import oly.netpowerctrl.pluginservice.PluginService;
 import oly.netpowerctrl.pluginservice.onServiceReady;
 import oly.netpowerctrl.ui.FragmentUtils;

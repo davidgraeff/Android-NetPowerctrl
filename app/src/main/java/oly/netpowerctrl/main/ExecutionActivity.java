@@ -21,8 +21,6 @@ import oly.netpowerctrl.executables.ExecutableFabric;
 import oly.netpowerctrl.network.onExecutionFinished;
 import oly.netpowerctrl.utils.JSONHelper;
 
-;
-
 /**
  * Will be started on NFC contact, homescreen scene execution, alarm timeout
  */

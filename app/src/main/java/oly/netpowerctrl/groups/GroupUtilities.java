@@ -14,8 +14,8 @@ import com.wefika.flowlayout.FlowLayout;
 import java.util.Set;
 
 import oly.netpowerctrl.R;
+import oly.netpowerctrl.credentials.Credentials;
 import oly.netpowerctrl.data.DataService;
-import oly.netpowerctrl.devices.Credentials;
 import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.ThemeHelper;
