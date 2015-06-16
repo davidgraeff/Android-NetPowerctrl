@@ -16,8 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 22
-        versionCode 125
-        versionName "8.5"
+        versionCode 126
+        versionName "8.6"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
@@ -102,6 +102,7 @@ dependencies {
         exclude group: 'com.google.android'
         exclude group: 'com.android.support'
     }
+    compile 'com.google.code.gson:gson:2.3.1'
     compile('com.wefika:flowlayout:0.3.4') {
         exclude group: 'com.google.android'
         exclude group: 'com.android.support'

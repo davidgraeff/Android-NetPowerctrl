@@ -6,13 +6,17 @@ import android.util.Base64;
 import android.util.JsonReader;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
@@ -25,6 +29,45 @@ import oly.netpowerctrl.preferences.SharedPrefs;
 public class GithubAndCloudant {
     private boolean isAlreadyRunningOpenAutomaticIssues = false;
     private boolean isAlreadyRunningGithub = false;
+    private boolean isAlreadyRunningPollDetails = false;
+
+    private static PollDetails parsePoll(InputStream con) throws IOException {
+        PollDetails issuesDetails = new PollDetails();
+        JsonReader reader = new JsonReader(new InputStreamReader(con));
+        if (!reader.hasNext()) return null;
+        reader.beginObject();
+        if (!reader.hasNext()) return null;
+        final String lang = "name_" + Locale.getDefault().getLanguage();
+
+        while (reader.hasNext()) {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                String name = reader.nextName();
+                if (name.equals(lang)) {
+                    issuesDetails.name = reader.nextString();
+                    continue;
+                }
+                switch (name) {
+                    case "name":
+                        if (issuesDetails.name.isEmpty())
+                            issuesDetails.name = reader.nextString();
+                        break;
+                    case "yes":
+                        issuesDetails.yes = reader.nextInt();
+                        break;
+                    case "no":
+                        issuesDetails.no = reader.nextInt();
+                        break;
+                    default:
+                        reader.skipValue();
+                        break;
+                }
+            }
+            reader.endObject();
+        }
+        reader.endObject();
+        return issuesDetails;
+    }
 
     private static IssuesDetails parseAutoIssues(InputStream con) throws IOException {
         IssuesDetails issuesDetails = new IssuesDetails();
@@ -122,6 +165,98 @@ public class GithubAndCloudant {
         }
         reader.endArray();
         return issuesDetails;
+    }
+
+    public void getPollData(final IPollDetails callback, final String poll_name) {
+        if (isAlreadyRunningPollDetails)
+            return;
+
+        isAlreadyRunningPollDetails = true;
+
+        final Handler handler = new Handler(Looper.getMainLooper());
+
+        HttpThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                PollDetails issuesDetails = null;
+                try {
+                    String addr = App.getAppString(R.string.poll_http_url) + poll_name;
+                    final URL url = new URL(addr);
+                    final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setConnectTimeout(1500);
+                    con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
+                    String cred = App.getAppString(R.string.poll_http_login) + ":" + App.getAppString(R.string.poll_http_pwd);
+                    con.setRequestProperty("Authorization", "Basic " +
+                            Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));
+
+                    switch (con.getResponseCode()) {
+                        case 200:
+                            InputStream inputStream = con.getInputStream();
+                            issuesDetails = new Gson().fromJson(new InputStreamReader(inputStream), PollDetails.class);
+                            inputStream.close();
+                            break;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                isAlreadyRunningPollDetails = false;
+                final PollDetails issuesDetails_final = issuesDetails;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onPollDetails(issuesDetails_final);
+                    }
+                });
+            }
+        });
+    }
+
+    public void writePollData(final IPollDetails callback, final String poll_name, final PollDetails pollDetails) {
+        if (isAlreadyRunningPollDetails)
+            return;
+
+        isAlreadyRunningPollDetails = true;
+
+        final Handler handler = new Handler(Looper.getMainLooper());
+
+        HttpThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String addr = App.getAppString(R.string.poll_http_url) + poll_name;
+                    final URL url = new URL(addr);
+                    final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("PUT");
+                    con.setConnectTimeout(1500);
+                    con.setRequestProperty("User-Agent", "Android.NetPowerctrl/1.0");
+                    String cred = App.getAppString(R.string.poll_http_login) + ":" + App.getAppString(R.string.poll_http_pwd);
+                    con.setRequestProperty("Authorization", "Basic " +
+                            Base64.encodeToString(cred.getBytes(), Base64.URL_SAFE | Base64.NO_WRAP));
+                    String data = new Gson().toJson(pollDetails);
+                    OutputStreamWriter out = new OutputStreamWriter(con.getOutputStream());
+                    out.write(data);
+                    out.close();
+
+                    int result = con.getResponseCode();
+                    switch (result) {
+                        case 200:
+                        case 201:
+                            isAlreadyRunningPollDetails = false;
+                            getPollData(callback, poll_name);
+                            break;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                isAlreadyRunningPollDetails = false;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onPollDetails(null);
+                    }
+                });
+            }
+        });
     }
 
     public void getACRAIssues(final IGithubOpenIssues callback, boolean force) {
@@ -308,8 +443,11 @@ public class GithubAndCloudant {
 
     public interface IGithubOpenIssues {
         void gitHubOpenIssuesUpdated(IssuesDetails details, long last_access);
-
         void gitHubIssue(int number, String title, String body);
+    }
+
+    public interface IPollDetails {
+        void onPollDetails(PollDetails pollDetails);
     }
 
     public static class IssuesDetails {
@@ -321,5 +459,14 @@ public class GithubAndCloudant {
         void setLatest(long latest) {
             if (latest > this.latest) this.latest = latest;
         }
+    }
+
+    public static class PollDetails {
+        public String _id;
+        public String _rev;
+        public String name;
+        public String name_de;
+        public int yes;
+        public int no;
     }
 }

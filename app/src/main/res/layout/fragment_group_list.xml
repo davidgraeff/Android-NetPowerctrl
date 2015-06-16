@@ -1,95 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="?attr/toolbar_style"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/topbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:theme="?attr/toolbar_style">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:orientation="vertical"
-            android:paddingEnd="5dp"
-            android:paddingStart="5dp">
-
-            <com.rey.material.widget.Button
-                android:id="@+id/btnDevices"
-                style="@style/FlatButtonRippleStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="?attr/ic_action_dock"
-                android:text="@string/devices"
-                android:textColor="?attr/textColorPrimary" />
-
-            <com.rey.material.widget.Button
-                android:id="@+id/btnPreferences"
-                style="@style/FlatButtonRippleStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="?attr/ic_action_settings"
-                android:text="@string/preferences" />
-
-            <com.rey.material.widget.Button
-                android:id="@+id/btnBuy"
-                style="@style/FlatButtonRippleStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="@android:drawable/ic_menu_add"
-                android:text="@string/drawer_buy" />
-
-            <com.rey.material.widget.Button
-                android:id="@+id/btnFeedback"
-                style="@style/FlatButtonRippleStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="?attr/ic_action_good"
-                android:text="@string/drawer_feedback" />
-        </LinearLayout>
-    </android.support.v7.widget.Toolbar>
-
-    <android.support.v7.widget.Toolbar
+    <LinearLayout
         android:id="@+id/bottombar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        app:theme="?attr/toolbar_style">
+        android:orientation="horizontal">
 
-        <com.rey.material.widget.Button
+        <com.rey.material.widget.TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:padding="5dp"
+            android:text="Filter" />
+
+        <com.rey.material.widget.ImageButton
             android:id="@+id/btnAdd"
             style="@style/FlatButtonRippleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|center_horizontal"
+            android:hint="@string/group_add"
             android:padding="5dp"
-            android:text="@string/group_add"
-            android:textColor="?attr/textColorPrimary" />
+            android:src="@android:drawable/ic_menu_add" />
+    </LinearLayout>
 
-    </android.support.v7.widget.Toolbar>
+    <View
+        android:id="@+id/divider"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_above="@id/bottombar"
+        android:background="?attr/colorButtonNormal" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/group_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottombar"
-        android:layout_below="@+id/topbar"
         android:padding="5dp" />
-
-    <TextView
-        android:id="@+id/group_help"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/bottombar"
-        android:layout_below="@+id/topbar"
-        android:gravity="center_vertical"
-        android:padding="5dp"
-        android:text="@string/group_list_empty"
-        android:textAppearance="?android:textAppearanceMedium" />
-
 </RelativeLayout>

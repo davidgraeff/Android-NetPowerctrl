@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -189,6 +190,10 @@ public class AutomaticSetup implements onTestCredentialsResult, onServiceReady, 
     }
 
     private void updateStatusTextWithUnconfiguredNumber() {
+        if (find_device_status == null) {
+            Log.e("AutomaticSetup", "Binding to textfield lost");
+            return;
+        }
         int n = dataService != null ? dataService.credentials.countNotConfigured() : 0;
         if (n == 0) {
             find_device_status.setText(App.getAppString(R.string.automatic_not_found_unconfigured_devices));

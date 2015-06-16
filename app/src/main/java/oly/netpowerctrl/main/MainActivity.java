@@ -106,6 +106,23 @@ public class MainActivity extends ActionBarActivity {
             panes.setSliderFadeColor(0);
             panes.setShadowResourceLeft(R.drawable.drawer_shadow_left);
             panes.setShadowResourceRight(R.drawable.drawer_shadow);
+            panes.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+
+                @Override
+                public void onPanelSlide(View panel, float slideOffset) {
+
+                }
+
+                @Override
+                public void onPanelOpened(View panel) {
+
+                }
+
+                @Override
+                public void onPanelClosed(View panel) {
+
+                }
+            });
             //if (panes.isSlideable()) panes.openPane();
         }
 

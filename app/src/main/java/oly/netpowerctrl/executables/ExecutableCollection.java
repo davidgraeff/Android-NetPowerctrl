@@ -106,7 +106,7 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     public void remove(Credentials credentials) {
         for (Iterator<Executable> iterator = items.values().iterator(); iterator.hasNext(); ) {
             Executable executable = iterator.next();
-            if (executable.deviceUID.equals(credentials.deviceUID)) {
+            if (executable.needCredentials() && executable.deviceUID.equals(credentials.deviceUID)) {
                 iterator.remove();
                 storage.remove(executable);
                 dataService.favourites.setFavourite(executable.getUid(), false);
@@ -171,7 +171,8 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
     public List<Executable> filterExecutables(Credentials credentials) {
         List<Executable> list = new ArrayList<>();
         for (Executable executable : items.values()) {
-            if (executable.deviceUID.equals(credentials.deviceUID)) list.add(executable);
+            if (executable.needCredentials() && executable.deviceUID.equals(credentials.deviceUID))
+                list.add(executable);
         }
 
         return list;

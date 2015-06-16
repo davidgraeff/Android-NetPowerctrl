@@ -49,7 +49,12 @@ public class FragmentUtils {
     }
 
     public static void changeToFragment(Activity context, String fragmentClassName, String tag, Bundle extra) {
-        changeToFragment(context, Fragment.instantiate(context, fragmentClassName, extra), tag);
+        Fragment fragment = context.getFragmentManager().findFragmentByTag(tag);
+        if (fragment != null) {
+            context.getFragmentManager().popBackStack(tag, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        fragment = Fragment.instantiate(context, fragmentClassName, extra);
+        changeToFragment(context, fragment, tag);
     }
 
     public static void changeToFragment(Activity context, Fragment fragment, String tag) {

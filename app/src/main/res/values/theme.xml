@@ -7,6 +7,7 @@
         <item name="transparent_rounded_background">@drawable/transparent_text_light</item>
 
         <!-- icons -->
+        <item name="ic_action_buy">@drawable/shop_cart_icon</item>
         <item name="ic_action_dock">@drawable/ic_action_dock</item>
         <item name="ic_action_good">@drawable/ic_action_good</item>
         <item name="ic_action_settings">@drawable/ic_action_settings</item>
@@ -67,6 +68,7 @@
         <item name="transparent_rounded_background">@drawable/transparent_text_dark</item>
 
         <!-- icons -->
+        <item name="ic_action_buy">@drawable/shop_cart_icon</item>
         <item name="ic_action_dock">@drawable/ic_action_dock</item>
         <item name="ic_action_good">@drawable/ic_action_good</item>
         <item name="ic_action_settings">@drawable/ic_action_settings</item>

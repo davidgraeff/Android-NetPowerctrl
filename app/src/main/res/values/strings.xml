@@ -402,4 +402,6 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="group_list_empty">You did not setup any groups yet. Grouping items allows you to show only subsets of all available sockets.</string>
     <string name="drawer_buy">Buy outlets</string>
     <string name="buy_notice">Should this app include a section to buy supported network controllable sockets? Your feedback is welcome. Please go to the feedback screen and write me a message via google+ or mail.</string>
+    <string name="poll_no">Not OK (%1$d)</string>
+    <string name="poll_yes">OK (%1$d)</string>
 </resources>

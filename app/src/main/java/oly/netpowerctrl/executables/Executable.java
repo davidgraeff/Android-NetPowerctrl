@@ -34,6 +34,7 @@ public class Executable implements Comparable, IOInterface {
     public int max_value = 0;
     public int current_value = 0;
     // The device this port belongs to.
+    @Nullable
     public String deviceUID;
     // Type of this executable
     public ExecutableType ui_type = ExecutableType.TypeUnknown;
@@ -316,6 +317,7 @@ public class Executable implements Comparable, IOInterface {
 
     public void addToGroup(String groupUID) {
         group_uids.add(groupUID);
+        setHasChanged();
     }
 
     public boolean needCredentials() {

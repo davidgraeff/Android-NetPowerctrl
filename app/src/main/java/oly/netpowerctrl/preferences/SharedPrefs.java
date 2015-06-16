@@ -306,6 +306,16 @@ public class SharedPrefs {
         return first;
     }
 
+    public boolean isVoted(String name) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean("vote_" + name, false);
+    }
+
+    public void vote(String name) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putBoolean("vote_" + name, true).apply();
+    }
+
     private static class SingletonHolder {
         public static final SharedPrefs instance = new SharedPrefs();
     }

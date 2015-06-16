@@ -27,6 +27,7 @@
     <attr name="EditTextLarge" format="reference" />
 
     <!-- icons -->
+    <attr name="ic_action_buy" format="reference" />
     <attr name="ic_action_good" format="reference" />
     <attr name="ic_action_dock" format="reference" />
     <attr name="ic_action_settings" format="reference" />

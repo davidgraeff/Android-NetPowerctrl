@@ -1,20 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/list_item"
+<com.rey.material.widget.Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/title"
+    style="@style/FlatButtonRippleStyle"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="?android:attr/activatedBackgroundIndicator"
-    android:baselineAligned="true"
-    android:minHeight="?android:attr/listPreferredItemHeight">
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toEndOf="@id/device_connection_reachable"
-        android:layout_toRightOf="@id/device_connection_reachable"
-        android:padding="5dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-</RelativeLayout>
+    android:drawablePadding="5dp"
+    android:drawableStart="?attr/ic_action_view_as_grid"
+    android:gravity="start|center_vertical" />

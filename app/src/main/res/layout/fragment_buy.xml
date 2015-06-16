@@ -1,20 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
     android:padding="@dimen/list_inner_padding">
 
     <TextView
         android:id="@+id/source"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:autoLink="web"
         android:linksClickable="false"
         android:text="@string/buy_notice"
         android:textAppearance="@android:style/TextAppearance.Medium" />
 
-</LinearLayout>
+    <com.rey.material.widget.Button
+        android:id="@+id/btnNo"
+        style="?attr/RaiseWaveButtonRippleStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/source"
+        android:layout_below="@id/source"
+        android:layout_margin="16dp"
+        android:padding="5dp"
+        app:rd_enable="true" />
+
+    <com.rey.material.widget.Button
+        android:id="@+id/btnYes"
+        style="?attr/RaiseWaveButtonRippleStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/source"
+        android:layout_margin="16dp"
+        android:layout_toStartOf="@id/btnNo"
+        android:padding="5dp"
+        app:rd_enable="true" />
+
+</RelativeLayout>
