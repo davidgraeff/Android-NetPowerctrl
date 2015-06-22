@@ -23,7 +23,7 @@ import oly.netpowerctrl.data.DataService;
 import oly.netpowerctrl.data.graphic.LoadStoreIconData;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
 import oly.netpowerctrl.executables.adapter.ExecutablesCheckableAdapter;
-import oly.netpowerctrl.executables.adapter.InputExecutables;
+import oly.netpowerctrl.executables.adapter.InputConfiguredExecutables;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.SimpleListDividerDecoration;
 import oly.netpowerctrl.ui.ThemeHelper;
@@ -56,7 +56,7 @@ public class ExecutableHideShowDialog extends DialogFragment implements Recycler
         onItemClickListener = new RecyclerItemClickListener(getActivity(), this, null);
         mRecyclerView.addOnItemTouchListener(onItemClickListener);
         // Adapter (Checkable list) and Adapter Source (DevicePorts of one Device)
-        InputExecutables inputOneDevicePorts = new InputExecutables();
+        InputConfiguredExecutables inputOneDevicePorts = new InputConfiguredExecutables();
         adapterSource = new AdapterSource(AdapterSource.AutoStartEnum.ManualCallToStart);
         adapterSource.addInput(inputOneDevicePorts);
         adapterSource.setShowHeaders(false);

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="false">
+    <changelogversion changeDate="22. Juni 2015" versionName="8.6">
+        <changelogbug>Fehler mit HTTP Backend behoben. Statt Ein/Aus wurde immer ein umschalten
+            ausgelöst.
+        </changelogbug>
+    </changelogversion>
     <changelogversion changeDate="15. Juni 2015" versionName="8.5">
         <changelogbug>Szenen können wieder ausgeführt werden</changelogbug>
         <changelogbug>Ersteinrichtung funktioniert nun besser und speichert Geräte nun auch ab

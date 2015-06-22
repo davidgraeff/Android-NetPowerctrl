@@ -7,7 +7,7 @@ import android.os.Bundle;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
-import oly.netpowerctrl.executables.adapter.InputExecutables;
+import oly.netpowerctrl.executables.adapter.InputConfiguredExecutables;
 import oly.netpowerctrl.preferences.SharedPrefs;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.SelectFromExecutableListFragment;
@@ -35,7 +35,7 @@ public class ConfigExecutableActivity extends Activity implements SelectFromExec
             throw new RuntimeException();
 
         SelectFromExecutableListFragment s = new SelectFromExecutableListFragment(this,
-                new InputExecutables());
+                new InputConfiguredExecutables());
         getFragmentManager().beginTransaction().replace(R.id.content_frame, s).commit();
     }
 

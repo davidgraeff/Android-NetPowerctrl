@@ -3,6 +3,7 @@ package oly.netpowerctrl.ioconnection;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
@@ -103,6 +104,9 @@ public class IOConnectionsCollection extends CollectionObserver<IOConnectionsCol
             ioConnection.storeReachability();
             // First compute reachability while isReachabilityChanged is still set to true.
             boolean reachabilityChanged = deviceIOConnections.compute_reachability();
+            if (reachabilityChanged) {
+                Log.w("t", "t");
+            }
             // This is at least an UpdateReachableAction now
             updateActions = ObserverUpdateActions.UpdateReachableAction;
             // Make executables aware of the change

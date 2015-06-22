@@ -371,14 +371,16 @@ public class DataService extends Service implements onDataLoaded, onDataQueryCom
     public void refreshExistingDevices() {
         if (observersStartStopRefresh.isRefreshing()) return;
         observersStartStopRefresh.onRefreshStateChanged(true);
-        deviceQuery.addDeviceObserver(new JustQueryDevice(credentials.getItems().values(), new JustQueryDevice.onDevicesObserverFinished() {
+        JustQueryDevice justQueryDevice = new JustQueryDevice(credentials.getItems().values(), new JustQueryDevice.onDevicesObserverFinished() {
             @Override
             public void onObserverJobFinished(JustQueryDevice justQueryDevice) {
                 Logging.getInstance().logEnergy("...fertig\n" + " Timeout: " + String.valueOf(justQueryDevice.timedOutDevices().size()));
                 observersDataQueryCompleted.onDataQueryFinished(DataService.this);
                 observersStartStopRefresh.onRefreshStateChanged(false);
             }
-        }, false));
+        }, false);
+        justQueryDevice.setTimeoutMS(500);
+        deviceQuery.addDeviceObserver(justQueryDevice);
     }
 
     /**

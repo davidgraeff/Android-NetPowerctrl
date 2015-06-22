@@ -4,6 +4,8 @@ import android.view.View;
 
 import com.wefika.flowlayout.FlowLayout;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import oly.netpowerctrl.data.DataService;
@@ -11,7 +13,7 @@ import oly.netpowerctrl.executables.Executable;
 import oly.netpowerctrl.executables.ExecutableAndCommand;
 import oly.netpowerctrl.executables.adapter.AdapterSource;
 import oly.netpowerctrl.executables.adapter.ExecutableAdapterItem;
-import oly.netpowerctrl.executables.adapter.InputExecutables;
+import oly.netpowerctrl.executables.adapter.InputConfiguredExecutables;
 import oly.netpowerctrl.scenes.adapter.SceneElementsAdapter;
 import oly.netpowerctrl.scenes.adapter.SceneElementsInFlowLayout;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
@@ -33,7 +35,7 @@ public class SceneElementsAssigning implements RecyclerItemClickListener.OnItemC
                                   SceneElementsChanged sceneElementsChanged, Scene scene) {
         this.sceneElementsChanged = sceneElementsChanged;
         availableData = new AdapterSource(AdapterSource.AutoStartEnum.AutoStartAfterFirstQuery);
-        availableData.addInput(new InputExecutables());
+        availableData.addInput(new InputConfiguredExecutables());
         includedData = new SceneElementsAdapter();
 
         sceneElements = new SceneElementsInFlowLayout(layout_included, includedData, this);
@@ -74,11 +76,15 @@ public class SceneElementsAssigning implements RecyclerItemClickListener.OnItemC
     }
 
     public void addToScene(Set<String> executableUIDSet) {
+        List<Integer> list = new ArrayList<>();
         for (String executableUID : executableUIDSet) {
-            int pos = availableData.findPositionByUUid(executableUID);
-            Executable executable = availableData.getItem(pos).getExecutable();
-            availableData.removeAt(pos);
-            includedData.addItem(executable, ExecutableAndCommand.TOGGLE);
+            list.clear();
+            availableData.findPositionsByUUid(executableUID, list);
+            for (Integer pos : list) {
+                Executable executable = availableData.getItem(pos).getExecutable();
+                availableData.removeAt(pos);
+                includedData.addItem(executable, ExecutableAndCommand.TOGGLE);
+            }
             sceneElementsChanged.onSceneElementsChanged();
         }
     }

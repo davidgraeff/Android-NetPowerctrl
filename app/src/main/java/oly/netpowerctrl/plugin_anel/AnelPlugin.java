@@ -65,7 +65,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
         }
         // The http interface can only toggle. If the current state is the same as the command state
         // then we request values instead of sending a command.
-        if (command == ExecutableAndCommand.NOOP || command == ExecutableAndCommand.TOGGLE && port.current_value == command)
+        if (command == ExecutableAndCommand.NOOP || port.current_value == command)
             HttpThreadPool.execute(new HttpThreadPool.HTTPRunner<>(ioConnection, "strg.cfg",
                     "", ioConnection, false, AnelReceiveSendHTTP.receiveCtrlHtml));
         else {
@@ -164,6 +164,7 @@ final public class AnelPlugin extends AbstractBasePlugin {
             return success;
         } else if (ioConnection instanceof IOConnectionUDP) {
             AnelSendUDP.executeViaUDP((IOConnectionUDP) ioConnection, executable, command, callback);
+            return true;
         }
 
         Log.e(AnelSendUDP.PLUGIN_ID, "execute. No reachable DeviceConnection found!");

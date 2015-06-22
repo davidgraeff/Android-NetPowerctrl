@@ -100,20 +100,23 @@ public class DeviceIOConnections {
      * @return Return true if reachability changed.
      */
     boolean compute_reachability() {
-        boolean was_reachable = cached_last_state == ReachabilityStates.Reachable;
-        if (reachableState() == ReachabilityStates.Reachable && was_reachable) return false;
+        ReachabilityStates last_state = reachableState();
 
-        for (IOConnection existing : connections.values()) {
-            if (existing.reachableState() != ReachabilityStates.NotReachable) {
-                cached_reachable = existing;
-                cached_last_state = cached_reachable.reachableState();
-                return true; // Before: not reachable, now: reachable
+        if (last_state == ReachabilityStates.Reachable) {
+            return false; // was reachable, is still reachable
+        } else {
+            for (IOConnection existing : connections.values()) {
+                if (existing.reachableState() != ReachabilityStates.NotReachable) {
+                    cached_reachable = existing;
+                    cached_last_state = cached_reachable.reachableState();
+                    return true; // Before: not reachable, now: reachable
+                }
             }
-        }
 
-        cached_reachable = null;
-        cached_last_state = ReachabilityStates.NotReachable;
-        return was_reachable; // Return true if was reachable before
+            cached_reachable = null;
+            cached_last_state = ReachabilityStates.NotReachable;
+            return false; // before: not reachable, now: not reachable
+        }
     }
 
     @Nullable

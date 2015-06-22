@@ -363,4 +363,8 @@ public class Executable implements Comparable, IOInterface {
     public boolean hasReachabilityChanged() {
         return cached_ReachabilityHasChanged;
     }
+
+    public void resetReachabilityHasChangedFlag() {
+        cached_ReachabilityHasChanged = false;
+    }
 }

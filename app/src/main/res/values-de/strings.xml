@@ -404,7 +404,7 @@ Du musst UDP auf den Geräten einschalten, im selben Netzwerk sein wie deine Ger
     <string name="plugin_wol_new_device_name">WakeUpOnLan</string>
     <string name="automatic_refreshing_devices">Suche Geräte…</string>
     <string name="group_list_empty">Bisher sind keine Gruppen eingerichtet. Gruppen dienen der Übersicht, dadurch das nur ausgewählte Aktionen in der Aktionsliste angezeigt werden.</string>
-    <string name="drawer_buy">Steckdosen kaufen</string>
+    <string name="drawer_buy">Geräte erwerben</string>
     <string name="buy_notice">Sollte diese App eine Möglichkeit anbieten um käuflich erwerbbare, unterstützte Steckdosen/Geräte aufzulisten?\n\nIch stelle mir dabei eine Händler- und Herstellerneutrale Liste, welche auch kompatible Do-It-Yourself Bausätze enthält, vor.\n\nWechsel bitte in den Feedback-Bildschirm oder schreibe mir via Google+ oder E-Mail für einen ausführlichen Kommentar.</string>
     <string name="poll_no">Dagegen (%1$d)</string>
     <string name="poll_yes">Dafür (%1$d)</string>

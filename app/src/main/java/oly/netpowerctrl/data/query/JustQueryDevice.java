@@ -21,14 +21,13 @@ import oly.netpowerctrl.utils.Logging;
  * The callback is called after a timeout or if all given devices responded.
  */
 public class JustQueryDevice implements DeviceQueryInterface {
-    final long timeoutInMS = 2500; // maximum wait time before finish is called
     final long minimumTimeInMS = 500; // minimum wait time (for broadcast queries important)
     private final int[] repeatTimes = {10, 100, 200, 300};
-
     private final boolean broadcast;
     private final Map<String, Credentials> credentialsList = new TreeMap<>();
     private final onDevicesObserverFinished callback;
     private final long startTime = System.currentTimeMillis();
+    long timeoutInMS = 2500; // maximum wait time before finish is called
     private List<Credentials> success = new ArrayList<>();
     private List<Credentials> failed = new ArrayList<>();
     private int attempt = 0;
@@ -148,6 +147,10 @@ public class JustQueryDevice implements DeviceQueryInterface {
     @Override
     public long getTimeoutInMS() {
         return timeoutInMS;
+    }
+
+    public void setTimeoutMS(int timeoutMS) {
+        timeoutInMS = timeoutMS;
     }
 
     public interface onDevicesObserverFinished {

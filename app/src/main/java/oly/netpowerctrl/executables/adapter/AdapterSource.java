@@ -2,6 +2,7 @@ package oly.netpowerctrl.executables.adapter;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -187,10 +188,14 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
         if (all > 0) emptyListener.onEmptyListener(true);
     }
 
-    public int findPositionByUUid(String uuid) {
-        if (uuid == null)
-            return -1;
-
+    /**
+     * Return a list of all positions where the given executable resides. The list is sorted in reverse order
+     * so that an iteration and removal, for example, is easily possible.
+     *
+     * @param uuid The uuid of an executable.
+     * @param list The output list.
+     */
+    public void findPositionsByUUid(@NonNull String uuid, @NonNull List<Integer> list) {
         int i = -1;
         for (ExecutableAdapterItem info : mItems) {
             ++i;
@@ -198,10 +203,8 @@ public class AdapterSource implements onServiceReady, onDataQueryCompleted {
             if (uid == null) // skip header items
                 continue;
             if (uid.equals(uuid))
-                return i;
+                list.add(0,i);
         }
-
-        return -1;
     }
 
     /**

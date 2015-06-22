@@ -40,7 +40,7 @@ import oly.netpowerctrl.executables.adapter.ExecutablesEditableAdapter;
 import oly.netpowerctrl.executables.adapter.FilterByHidden;
 import oly.netpowerctrl.executables.adapter.FilterByReachable;
 import oly.netpowerctrl.executables.adapter.FilterBySingleGroup;
-import oly.netpowerctrl.executables.adapter.InputExecutables;
+import oly.netpowerctrl.executables.adapter.InputConfiguredExecutables;
 import oly.netpowerctrl.executables.adapter.InputGroupChanges;
 import oly.netpowerctrl.groups.GroupListFragment;
 import oly.netpowerctrl.groups.GroupUtilities;
@@ -225,7 +225,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         adapterSource.addFilter(new FilterByReachable(SharedPrefs.getInstance().isHideNotReachable()));
         adapterSource.addFilter(new FilterByHidden(true));
         adapterSource.addFilter(filterBySingleGroup);
-        adapterSource.addInput(new InputExecutables(), new InputGroupChanges());
+        adapterSource.addInput(new InputConfiguredExecutables(), new InputGroupChanges());
 
         adapter = new ExecutablesEditableAdapter(adapterSource, LoadStoreIconData.iconLoadingThread);
         adapter.setItemsInRow(new ExecutablesAdapter.ItemsInRow() {
@@ -462,14 +462,14 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     @Override
     public void onEmptyListener(boolean empty) {
         View view = getView();
-        if (view == null) return;
+        if (view == null || dataService == null) return;
 
         view.findViewById(R.id.empty_no_outlets_no_devices).setVisibility(View.GONE);
         view.findViewById(R.id.empty_group).setVisibility(View.GONE);
         view.findViewById(R.id.empty_no_outlets).setVisibility(View.GONE);
 
         if (empty) {
-            boolean hasDevices = dataService != null && dataService.credentials.countConfigured() > 0;
+            boolean hasDevices = dataService.credentials.countConfigured() > 0;
             if (!hasDevices) {
                 view.findViewById(R.id.empty_no_outlets_no_devices).setVisibility(View.VISIBLE);
                 automaticSetup.refresh();

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Looper;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -134,13 +133,14 @@ public class ExecutableCollection extends CollectionMapItems<ExecutableCollectio
      * @param save
      */
     public void notifyReachability(String deviceUID, ReachabilityStates r, boolean save) {
-        Log.w(TAG, "Reachability: " + r.name() + " " + deviceUID);
         // Filter scenes
         for (Executable executable : items.values()) {
             if (!executable.needCredentials() || !executable.deviceUID.equals(deviceUID)) continue;
             executable.updateCachedReachability(r);
-            if (executable.hasReachabilityChanged())
+            if (executable.hasReachabilityChanged()) {
+                executable.resetReachabilityHasChangedFlag();
                 notifyObservers(executable, ObserverUpdateActions.UpdateReachableAction);
+            }
             if (save)
                 storage.save(executable);
         }
