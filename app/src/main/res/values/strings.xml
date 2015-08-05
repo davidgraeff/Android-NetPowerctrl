@@ -404,4 +404,5 @@ Please double check that you are in the same network as your devices, UDP on the
     <string name="buy_notice">Should this app include a section to buy supported network controllable sockets? Your feedback is welcome. Please go to the feedback screen and write me a message via google+ or mail.</string>
     <string name="poll_no">Not OK (%1$d)</string>
     <string name="poll_yes">OK (%1$d)</string>
+    <string name="connection_edit_udp_title">UDP connection of %1$s</string>
 </resources>

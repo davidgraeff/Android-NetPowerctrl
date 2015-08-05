@@ -26,8 +26,6 @@ import oly.netpowerctrl.utils.AnimationController;
 import oly.netpowerctrl.utils.ObserverUpdateActions;
 import oly.netpowerctrl.utils.onCollectionUpdated;
 
-;
-
 /**
  * Try to setup all found devices, The dialog shows a short log about the actions.
  */
@@ -173,7 +171,6 @@ public class AutomaticSetup implements onTestCredentialsResult, onServiceReady, 
     public boolean onServiceReady(DataService service) {
         this.dataService = service;
         dataService.credentials.registerObserver(this);
-        updateStatusTextWithUnconfiguredNumber();
         return false;
     }
 
@@ -204,7 +201,8 @@ public class AutomaticSetup implements onTestCredentialsResult, onServiceReady, 
         }
     }
 
-    public void refresh() {
+    public void refresh(DataService dataService) {
+        this.dataService = dataService;
         if (isRunning || isRefreshing) return;
         isRefreshing = true;
         find_device_status.setText(App.getAppString(R.string.automatic_refreshing_devices));
@@ -215,6 +213,6 @@ public class AutomaticSetup implements onTestCredentialsResult, onServiceReady, 
                 updateStatusTextWithUnconfiguredNumber();
             }
         }, 3000);
-        dataService.detectDevices();
+        this.dataService.detectDevices();
     }
 }

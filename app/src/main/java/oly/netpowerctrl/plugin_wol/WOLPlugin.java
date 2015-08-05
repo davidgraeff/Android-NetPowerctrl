@@ -24,7 +24,7 @@ import oly.netpowerctrl.executables.onNameChangeResult;
 import oly.netpowerctrl.ioconnection.DeviceIOConnections;
 import oly.netpowerctrl.ioconnection.IOConnection;
 import oly.netpowerctrl.ioconnection.IOConnectionIPDialog;
-import oly.netpowerctrl.ioconnection.adapter.IOConnectionIP;
+import oly.netpowerctrl.ioconnection.IOConnectionIP;
 import oly.netpowerctrl.network.ReachabilityStates;
 import oly.netpowerctrl.network.Utils;
 import oly.netpowerctrl.network.onExecutionFinished;
@@ -82,7 +82,7 @@ final public class WOLPlugin extends AbstractBasePlugin {
             return false;
         }
 
-        final String mac = ((IOConnectionIP) ioConnection).additional;
+        final String mac = ((IOConnectionIP) ioConnection).physicalAddress;
 
         AsyncTask.execute(new Runnable() {
             @Override

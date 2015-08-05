@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import oly.netpowerctrl.ioconnection.adapter.IOConnectionIP;
 import oly.netpowerctrl.utils.FactoryInterface;
 
 /**

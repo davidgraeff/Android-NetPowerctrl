@@ -178,6 +178,10 @@ public class IOConnectionsFragment extends Fragment
             case R.id.menu_connection_edit: {
                 if (item.ioConnection instanceof IOConnectionHTTP) {
                     IOConnectionHttpDialog.show(getActivity(), (IOConnectionHTTP) item.ioConnection);
+                } else if (item.ioConnection instanceof IOConnectionUDP) {
+                    IOConnectionUDPDialog.show(getActivity(), (IOConnectionUDP) item.ioConnection);
+                } else if (item.ioConnection instanceof IOConnectionIP) {
+                    IOConnectionIPDialog.show(getActivity(), (IOConnectionIP) item.ioConnection);
                 }
                 return true;
             }

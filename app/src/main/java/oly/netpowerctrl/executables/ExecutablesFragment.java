@@ -472,7 +472,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
             boolean hasDevices = dataService.credentials.countConfigured() > 0;
             if (!hasDevices) {
                 view.findViewById(R.id.empty_no_outlets_no_devices).setVisibility(View.VISIBLE);
-                automaticSetup.refresh();
+                automaticSetup.refresh(dataService);
             } else if (filterBySingleGroup.getFilterGroup() != null) {
                 view.findViewById(R.id.empty_group).setVisibility(View.VISIBLE);
             } else {

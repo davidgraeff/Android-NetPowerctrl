@@ -31,19 +31,19 @@ import oly.netpowerctrl.ui.ThemeHelper;
 /**
  * This dialog allows the user to setup a new
  */
-public class IOConnectionIPDialog extends DialogFragment {
+public class IOConnectionUDPDialog extends DialogFragment {
     private ProgressView progressView;
     private Button btnTest;
     private EditText newHost;
     private ImageView connectionStateImage;
     private boolean closeIfReachable = false;
-    private IOConnectionIP ioConnection = null;
+    private IOConnectionUDP ioConnection = null;
 
-    public IOConnectionIPDialog() {
+    public IOConnectionUDPDialog() {
     }
 
-    public static void show(Activity context, IOConnectionIP ioConnection) {
-        IOConnectionIPDialog dialog = (IOConnectionIPDialog) Fragment.instantiate(context, IOConnectionIPDialog.class.getName());
+    public static void show(Activity context, IOConnectionUDP ioConnection) {
+        IOConnectionUDPDialog dialog = (IOConnectionUDPDialog) Fragment.instantiate(context, IOConnectionUDPDialog.class.getName());
         dialog.ioConnection = ioConnection;
         FragmentUtils.changeToDialog(context, dialog);
     }
@@ -74,7 +74,7 @@ public class IOConnectionIPDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final SimpleDialog.Builder builder = new SimpleDialog.Builder(ThemeHelper.getDialogRes(getActivity()));
-        builder.title(getString(R.string.outlet_edit_title, ioConnection.credentials.getDeviceName()));
+        builder.title(getString(R.string.connection_edit_udp_title, ioConnection.credentials.getDeviceName()));
         builder.negativeAction(getString(android.R.string.cancel))
                 .positiveAction(getString(R.string.save));
 
@@ -106,12 +106,13 @@ public class IOConnectionIPDialog extends DialogFragment {
             return;
         }
 
-        IOConnectionIP test_connection = new IOConnectionIP();
-        test_connection.copyFrom(ioConnection);
+        IOConnectionUDP test_connection = new IOConnectionUDP();
         test_connection.connectionUID = UUID.randomUUID().toString();
         test_connection.hostName = host;
+        test_connection.PortUDPReceive = ioConnection.PortUDPReceive;
+        test_connection.PortUDPSend = ioConnection.PortUDPSend;
 
-        new AsyncTask<IOConnectionIP, Void, IOConnectionIP>() {
+        new AsyncTask<IOConnectionUDP, Void, IOConnectionUDP>() {
             private String error_message = null;
             private boolean success = false;
 
@@ -122,22 +123,20 @@ public class IOConnectionIPDialog extends DialogFragment {
             }
 
             @Override
-            protected IOConnectionIP doInBackground(IOConnectionIP... connections) {
+            protected IOConnectionUDP doInBackground(IOConnectionUDP... connections) {
                 if (!MagicPacket.doPing(connections[0].getDestinationHost())) return null;
                 String mac = MagicPacket.getMacFromArpCache(connections[0].getDestinationHost());
                 if (mac == null) return null;
-                connections[0].physicalAddress = mac;
                 success = true;
                 return connections[0];
             }
 
             @Override
-            protected void onPostExecute(IOConnectionIP testConnection) {
+            protected void onPostExecute(IOConnectionUDP testConnection) {
                 progressView.stop();
                 btnTest.setEnabled(true);
 
                 if (success) {
-                    ioConnection.copyFrom(testConnection);
                     ioConnection.incReceivedPackets();
                     if (closeIfReachable) {
                         DataService dataService = DataService.getService();
