@@ -49,9 +49,6 @@
             android:multiprocess="true"
             android:permission="android.permission.MANAGE_DOCUMENTS"
             android:syncable="false">
-            <intent-filter>
-                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
-            </intent-filter>
         </provider>
 
         <!--<meta-data-->
@@ -76,6 +73,10 @@
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/Theme.AppCompat.Translucent">
+            <intent-filter>
+                <action android:name="oly.netpowerctrl.execute" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -161,6 +162,14 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_group_provider" />
+        </receiver>
+
+        <receiver
+            android:name=".main.BroadcastReceiverRequestItems"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="oly.netpowerctrl.getallactions" />
+            </intent-filter>
         </receiver>
 
         <service
