@@ -16,7 +16,7 @@ import android.graphics.PorterDuffXfermode;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -65,7 +65,7 @@ import oly.netpowerctrl.utils.MutableBoolean;
  * This activity is responsible for creating a "executable" either for the executable list
  * in the application or for a shortcut intent for the home-screen.
  */
-public class EditActivity extends ActionBarActivity implements IconSelected, onNameChangeResult {
+public class EditActivity extends AppCompatActivity implements IconSelected, onNameChangeResult {
     /**
      * We pass arguments to this activity via the intent extra bundle und the result is passed via
      * setResult().

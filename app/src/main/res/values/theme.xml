@@ -45,7 +45,6 @@
         <item name="windowActionModeOverlay">true</item>
 
         <item name="mcab_background_color">?colorPrimaryDark</item>
-        <item name="mcab_close_drawable">@drawable/abc_ic_ab_back_mtrl_am_alpha</item>
         <item name="mcab_popup_theme">@style/ThemeOverlay.AppCompat</item>
     </style>
 
@@ -108,7 +107,6 @@
         <item name="android:windowActionBarOverlay">true</item>
 
         <item name="mcab_background_color">?colorPrimaryDark</item>
-        <item name="mcab_close_drawable">@drawable/abc_ic_ab_back_mtrl_am_alpha</item>
         <item name="mcab_popup_theme">@style/ThemeOverlay.AppCompat.Dark</item>
     </style>
 

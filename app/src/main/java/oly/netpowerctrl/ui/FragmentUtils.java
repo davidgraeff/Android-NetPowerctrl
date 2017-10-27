@@ -9,7 +9,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
@@ -116,7 +116,7 @@ public class FragmentUtils {
         }
     }
 
-    public static void applyActivityFlags(ActionBarActivity activity) {
+    public static void applyActivityFlags(AppCompatActivity activity) {
         //Remove title bar
         activity.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
 

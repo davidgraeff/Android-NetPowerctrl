@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 27
+    buildToolsVersion "26.0.2"
 
 //    productFlavors {
 //        //noinspection GroovyMissingReturnStatement
@@ -15,12 +15,12 @@ android {
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 22
-        versionCode 128
-        versionName "8.6.2"
+        targetSdkVersion 27
+        versionCode 129
+        versionName "9.0"
         applicationId appID
         testApplicationId "oly.netpowerctrl.tests"
-        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         resConfig "de"
     }
 
@@ -30,8 +30,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     def getRevision = { ->
@@ -93,16 +93,17 @@ dependencies {
     //compile fileTree(dir: 'libs', include: ['*.jar']) :5.2.08 5.0.89
     //compile 'com.google.android.gms:play-services:5.2.08'
     //noinspection GradleDependency
-    compile 'com.android.support:appcompat-v7:22.0.0'
-    compile 'com.android.support:support-v13:22.2.0'
-    compile 'com.android.support:recyclerview-v7:22.2.0'
-    compile 'com.android.support:palette-v7:22.2.0'
-    compile 'com.android.support:cardview-v7:22.2.0'
+    compile 'com.android.support:appcompat-v7:27.0.0'
+    compile 'com.android.support:support-v13:27.0.0'
+    compile 'com.android.support:recyclerview-v7:27.0.0'
+    compile 'com.android.support:palette-v7:27.0.0'
+    compile 'com.android.support:cardview-v7:27.0.0'
+    compile 'com.afollestad:material-cab:0.1.12',
     compile('com.github.rey5137:material:1.1.0') {
         exclude group: 'com.google.android'
         exclude group: 'com.android.support'
     }
-    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'com.google.code.gson:gson:2.8.0'
     compile('com.wefika:flowlayout:0.3.4') {
         exclude group: 'com.google.android'
         exclude group: 'com.android.support'
@@ -130,5 +131,21 @@ dependencies {
         exclude group: 'com.google.android'
         exclude group: 'com.android.support'
     }
-    androidTestCompile 'junit:junit:4.11'
+
+    // AndroidJUnitRunner and JUnit Rules
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test:rules:1.0.1'
+    androidTestCompile 'junit:junit:4.12'
+    // Espresso dependencies
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-contrib:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-accessibility:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-web:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso.idling:idling-concurrent:3.0.1'
+
+    // The following Espresso dependency can be either "compile"
+    // or "androidTestCompile", depending on your app's implementation
+    androidTestCompile 'com.android.support.test.espresso:espresso-idling-resource:3.0.1'
+    androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
 }

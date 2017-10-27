@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +24,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+
+import com.afollestad.materialcab.MaterialCab;
 
 import oly.netpowerctrl.App;
 import oly.netpowerctrl.R;
@@ -51,7 +54,6 @@ import oly.netpowerctrl.scenes.SceneHelp;
 import oly.netpowerctrl.ui.EmptyListener;
 import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.ItemShadowDecoration;
-import oly.netpowerctrl.ui.MaterialCab;
 import oly.netpowerctrl.ui.RecyclerItemClickListener;
 import oly.netpowerctrl.ui.SimpleListDividerDecoration;
 import oly.netpowerctrl.utils.AnimationController;
@@ -180,7 +182,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         final View view = inflater.inflate(R.layout.fragment_outlets, container, false);
         assert view != null;
 
-        cab = new MaterialCab(getActivity(), R.id.cab_stub);
+        cab = new MaterialCab((AppCompatActivity) getActivity(), R.id.cab_stub);
         cab.setMenu(R.menu.outlets_editmode);
         cab.setTitleRes(R.string.outlets_edit_mode);
 
@@ -195,7 +197,7 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
         mRecyclerView = (RecyclerView) view.findViewById(android.R.id.list);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            mRecyclerView.addItemDecoration(new ItemShadowDecoration((NinePatchDrawable) ContextCompat.getDrawable(getActivity(), R.drawable.material_shadow_z1)));
+            mRecyclerView.addItemDecoration(new ItemShadowDecoration((NinePatchDrawable) ContextCompat.getDrawable(getActivity(), R.drawable.material_shadow_z19)));
         }
         listDividerDecoration = new SimpleListDividerDecoration(ContextCompat.getDrawable(getActivity(), R.drawable.list_divider), true);
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), this, null));
@@ -503,7 +505,8 @@ public class ExecutablesFragment extends Fragment implements PopupMenu.OnMenuIte
     }
 
     @Override
-    public void onCabFinished(MaterialCab cab) {
+    public boolean onCabFinished(MaterialCab cab) {
         setEditMode(false);
+        return true;
     }
 }

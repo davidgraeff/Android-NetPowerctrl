@@ -23,7 +23,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.widget.SlidingPaneLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -42,7 +42,7 @@ import oly.netpowerctrl.ui.FragmentUtils;
 import oly.netpowerctrl.ui.notifications.ChangeLogNotification;
 import oly.netpowerctrl.ui.notifications.InAppNotifications;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
     private boolean firstFragment = true;
     private SlidingPaneLayout panes = null;
 
